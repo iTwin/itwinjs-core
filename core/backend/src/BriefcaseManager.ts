@@ -57,6 +57,12 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 export interface PushChangesArgs extends TokenArg {
   /** A description of the changes. This is visible on the iModel's timeline. */
   description: string;
+  /** If present, a function called periodically while downloading the changesets that must be merged before the local changeset is pushed.
+   * @note This reports only the download portion of pull/merge/push. It is not called while the local changeset is uploaded.
+   * @note Return non-zero from this function to abort the operation. Aborting only takes effect during the download, before any changeset is created or pushed.
+   * @beta
+   */
+  onDownloadProgress?: ProgressFunction;
   /** if present, the locks are retained after the operation. Otherwise, *all* locks are released after the changeset is successfully pushed. */
   retainLocks?: true;
   /** number of times to retry pull/merge if other users are pushing at the same time. Default is 5 */
@@ -108,10 +114,17 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-  /** The index of the changeset to revert to */
+  /** The first changeset index to revert (inclusive). All changesets from `toIndex` through the current index are reverted, leaving the briefcase at `toIndex - 1`. */
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * Specifies the action to take in case of failure during the revert operation. Default is `"revert"`.
+   * - `"revert"`: Reverse all local transactions and delete them, restoring the briefcase to its pre-revert state.
+   * - `"retain"`: Keep local changes as-is for caller inspection or manual recovery.
+   * - `"delete"`: Close the briefcase and delete the local file. If an `accessToken` is available, also release the briefcaseId from iModelHub.
+   */
+  inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
@@ -476,11 +489,12 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
-    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
+    // SchemaSync sets the Schema bit on top of its own, so test the bit rather than comparing whole values.
+    if ((changesetFile.changesType & ChangesetType.Schema) !== 0)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -555,7 +569,7 @@ export class BriefcaseManager {
    * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
    * @returns A promise that resolves when all required changesets have been applied.
    */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & { /** @internal */ noUpdateLoop?: boolean }): Promise<void> {
     const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
     const nativeDb = db[_nativeDb];
 
@@ -611,7 +625,7 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
-    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => (changeset.changesType & ChangesetType.Schema) !== 0);
     const hasLocalSchemaTxn: boolean = briefcaseDb?.checkIfSchemaTxnExists() ?? false;
     const useSemanticRebase: boolean =
       briefcaseDb !== undefined &&
@@ -646,7 +660,7 @@ export class BriefcaseManager {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       try {
-        await this.applySingleChangeset(db, changeset, false);
+        await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
         Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       } catch (err: any) {
         if (err instanceof Error) {
@@ -843,13 +857,18 @@ export class BriefcaseManager {
     let retryCount = arg.mergeRetryCount ?? 5;
     while (true) {
       try {
-        await BriefcaseManager.pullAndApplyChangesets(db, arg);
-        if (!db.skipSyncSchemasOnPullAndPush)
-          await SchemaSync.pull(db);
+        await BriefcaseManager.pullAndApplyChangesets(db, { ...arg, onProgress: arg.onDownloadProgress });
+        SchemaSync.updateDbSchema(db);
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false
-        if (!db[_nativeDb].hasPendingTxns())
+        if (!db[_nativeDb].hasPendingTxns()) {
+          // There is nothing left to push, so the locks this briefcase took for the dropped changes have to go
+          // back the same way the other exits from push release them. Otherwise it keeps the shared schema lock
+          // and no one else can take the exclusive one.
+          if (!arg.retainLocks)
+            await db.locks[_releaseAllLocks]();
           return;
+        }
 
         await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {

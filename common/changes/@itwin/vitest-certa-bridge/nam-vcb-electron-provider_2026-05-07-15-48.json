@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/vitest-certa-bridge",
+      "comment": "Add a custom Electron BrowserProvider for Vitest browser-mode renderer tests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/vitest-certa-bridge"
+}

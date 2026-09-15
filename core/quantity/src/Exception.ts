@@ -25,6 +25,7 @@ export enum QuantityStatus {
   UnsupportedUnit = QUANTITY_ERROR_BASE + 8,
   MissingRequiredProperty = QUANTITY_ERROR_BASE + 9,
   InvertingZero = QUANTITY_ERROR_BASE + 10,
+  InvalidUnitConversion = QUANTITY_ERROR_BASE + 11,
 }
 
 /** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.

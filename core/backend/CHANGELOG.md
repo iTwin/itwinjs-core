@@ -1,6 +1,180 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 05 May 2026 17:44:54 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Sep 2026 20:23:38 GMT and should not be manually modified.
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:55 GMT
+
+### Updates
+
+- Add IModelDb.Elements.queryAspects to stream typed ElementAspects for multiple owning elements in one query.
+- ChangesetECAdaptor now rejects property access strings containing `constructor` or `prototype`, in addition to `__proto__`, and only traverses own properties, preventing a malicious changeset from polluting `Object.prototype`.
+- Added tests and documentation for the new ECSQL `IS` / `IS NOT` operator (null-safe comparison between value expressions).
+- IModelDb.close() now closes its ViewStore, and IModelHost.shutdown() now also disconnects V2 checkpoint containers. Separately, non-public containers with token-refresh enabled (`tokenRefreshSeconds > 0`, the default) keep the process alive until disconnected - disconnect any you manage outside `CloudSqlite.CloudCaches` before exiting.
+- Resolve benign duplicate dgn_Domain inserts by keeping the incoming row instead of aborting, so pulling several domain-upgrade changesets in a single pullChanges no longer fails with 'PRIMARY KEY INSERT CONFLICT - rejecting this changeset'.
+- Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory and deprecate file resource APIs in favor of blobs or strings.
+- Add IModelDb.getIndirectTxn as a beta API for performing edits from element, model, and aspect callbacks.
+- fix: `PropertyStore.CloudAccess.createNewContainer` passing invalid containerType value "property-store" — corrected to "propertystore" to match the service
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+- Add TxnChangedEntity.metadata to TxnManager.onElementsChanged and onModelsChanged via TxnChangedEntitiesWithMetadata while preserving TxnChangedEntities compatibility; document the backend/frontend payload differences.
+- Added `IModelDb.reservations` (@beta), an opt-in coordination mechanism that lets multiple briefcases concurrently insert elements that share an explicit federationGuid (e.g. shared definitions and component template elements) without producing duplicate or conflicting elements.
+- Added a new check to the integrity check to verify that a class maps every inherited property to the same column as each of its base classes.
+- improve schemasync, split upgrade scenario from regular updates
+- Introduce TextAnnotation leader target point
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+### Updates
+
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb.
+- Unskipped previously mark flaky test
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries.
+- Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values.
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+- Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls.
+- Add filtering support to SchemaView and improve performance.
+- Added caching behaviour to ChangesetReader api
+- Changed error codes for "createQueryReader" and "withQueryReader" api and made error messages consistent across the native node add-on apis for the case of db being closed
+- Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+### Updates
+
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Fixed silent loss of CodeValue swaps when applying a changeset containing a single-transaction swap through a null intermediate; the unique-index conflict handler no longer skips the intermediate step during changeset application
+- Added regression coverage that the deprecated `doNotUsePrimaryConnToPrepare` concurrent query config option is a no-op that still round-trips for backward-compatible serialization.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Add performance test for concurrent query
+- Use `CompressedId64Set.isValid` in `DisplayStyle.deserialize` instead of an inline heuristic.
+- IModelHost.getITwinWorkspace() automatically gets settings for parent iTwins and treats those as a lower priority
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+- Document that an empty workspace baseUri uses a local WorkspaceDb.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Allow reversing schema changeset
+- ECSQL: Allow optional ON clause with CROSS JOIN
+- Improve revert timeline changes to handle large number of changesets
+- Add SettingsSchemas.groups to expose registered SettingGroupSchema metadata, including user-facing titles and descriptions
+- Added `SettingsSchemas.getResolvedSettingDef` for resolving nested object properties and array items.
+- Fixed `SettingsSchemas.removeGroup` to remove registered type definitions correctly.
+- Add an optional user-facing title to SettingGroupSchema so settings UIs do not need to rely on schemaPrefix for display text
+- Add lastEditedAt metadata to WorkspaceDb manifests.
+- Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.
+- Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead.
+- Added `IModelDb.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.
+- Add outline geometry as Path instead of Loop in text annotations
+- Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading.
+- Added spillThresholdInBytes parameter to openGroup, openLocalChanges, openInMemoryChanges, openTxn methods of ChangesetReader api
+- Added strict mode to changeset reader api
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+### Updates
+
+- Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
 
 ## 5.9.1
 Tue, 05 May 2026 17:43:30 GMT
@@ -28,6 +202,11 @@ Mon, 04 May 2026 16:32:08 GMT
 - Added ECSql nav prop corresponding `RelatedElementProps` members to the backend `ViewDefinition`, `SpatialViewDefinition`, and `ViewDefinition2d` classes.
 - Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
 - Added ChangesetReader api(along with new unifier apis) and deprecated ChangesetECAdaptor apis(including unifier apis)
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:13 GMT

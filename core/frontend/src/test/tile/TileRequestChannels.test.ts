@@ -38,11 +38,11 @@ describe("TileRequestChannels", () => {
   it("requires unique channel names", () => {
     const channels = new TileRequestChannels(undefined, false);
     channels.add(new TileRequestChannel("abc", 123));
-    expect(() => channels.add(new TileRequestChannel("abc", 456))).toThrowError();
+    expect(() => channels.add(new TileRequestChannel("abc", 456))).toThrow();
     expect(channels.get("abc")!.concurrency).toEqual(123);
 
     channels.getForHttp("xyz");
-    expect(() => channels.add(new TileRequestChannel("xyz", 999))).toThrowError();
+    expect(() => channels.add(new TileRequestChannel("xyz", 999))).toThrow();
     expect(channels.getForHttp("xyz").concurrency).toEqual(channels.httpConcurrency);
   });
 
@@ -76,7 +76,7 @@ describe("TileRequestChannels", () => {
 
   it("extracts hostname from url", () => {
     expect(TileRequestChannels.getNameFromUrl("https://www.google.com/stuff")).toEqual("www.google.com");
-    expect(() => TileRequestChannels.getNameFromUrl("not a url")).toThrowError(TypeError);
+    expect(() => TileRequestChannels.getNameFromUrl("not a url")).toThrow(TypeError);
   });
 
   it("changes RPC concurrency", () => {

@@ -15,7 +15,7 @@ import { PresentationError, PresentationStatus } from "@itwin/presentation-commo
  */
 export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
-  cleanupHandler?: (id: string, value: T, reason: "timeout" | "dispose" | "request") => void;
+  cleanupHandler?: (id: string, value: T, reason: "timeout" | "dispose" | "request" | "eviction") => void;
 
   onDisposedSingle?: (id: string) => void;
   onDisposedAll?: () => void;
@@ -49,6 +49,14 @@ export interface TemporaryStorageProps<T> {
    * or scheduled (controlled by [[cleanupInterval]])).
    */
   maxValueLifetime?: number;
+
+  /**
+   * The maximum number of values the storage is allowed to hold at once. When adding
+   * a value would exceed this limit, the least-recently-used value is evicted first.
+   *
+   * `undefined` (or any value less than `1`) means the number of values is not capped.
+   */
+  maxValues?: number;
 }
 
 /** Value with know last used time */
@@ -120,15 +128,39 @@ export class TemporaryStorage<T> implements Disposable {
       }
     }
     for (const id of valuesToDispose) {
-      this.deleteExistingEntry(id, true);
+      this.deleteExistingEntry(id, "timeout");
     }
   };
 
-  private deleteExistingEntry(id: string, isTimeout: boolean) {
+  private deleteExistingEntry(id: string, reason: "timeout" | "request" | "eviction") {
     assert(this._values.has(id));
-    this.props.cleanupHandler && this.props.cleanupHandler(id, this._values.get(id)!.value, isTimeout ? "timeout" : "request");
+    this.props.cleanupHandler && this.props.cleanupHandler(id, this._values.get(id)!.value, reason);
     this._values.delete(id);
     this.props.onDisposedSingle && this.props.onDisposedSingle(id);
+  }
+
+  /**
+   * Evicts least-recently-used values until there's room to add one more value
+   * without exceeding the configured [[TemporaryStorageProps.maxValues]] limit.
+   */
+  private evictForNewValue() {
+    const maxValues = this.props.maxValues;
+    if (maxValues === undefined || maxValues < 1) {
+      return;
+    }
+    while (this._values.size >= maxValues) {
+      let lruId: string | undefined;
+      let lruTime = Number.POSITIVE_INFINITY;
+      for (const [key, entry] of this._values.entries()) {
+        const time = entry.lastUsed.getTime();
+        if (time < lruTime) {
+          lruTime = time;
+          lruId = key;
+        }
+      }
+      assert(!!lruId);
+      this.deleteExistingEntry(lruId, "eviction");
+    }
   }
 
   /**
@@ -160,13 +192,14 @@ export class TemporaryStorage<T> implements Disposable {
     if (this._values.has(id)) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `A value with given ID "${id}" already exists in this storage.`);
     }
+    this.evictForNewValue();
     this._values.set(id, { value, created: new Date(), lastUsed: new Date() });
   }
 
   /** Deletes a value with given id. */
   public deleteValue(id: string) {
     if (this._values.has(id)) {
-      this.deleteExistingEntry(id, false);
+      this.deleteExistingEntry(id, "request");
     }
   }
 

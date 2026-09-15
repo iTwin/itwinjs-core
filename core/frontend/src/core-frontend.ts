@@ -3,14 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type { TxnEntityMetadata as _TxnEntityMetadata } from "@itwin/core-common";
+
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
+export * from "./GeoProviders";
 export * from "./BriefcaseTxns";
 export * from "./CatalogConnection";
 export * from "./CategorySelectorState";
+export * from "./CesiumAccessClient";
 export * from "./ChangeFlags";
 export * from "./CheckpointConnection";
 export * from "./common";
@@ -108,9 +112,13 @@ export type {
   TxnEntityChangeType,
   TxnEntityChanges,
   TxnEntityChangesFilterOptions,
-  TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
+/** Deprecated frontend alias for the common TxnEntityMetadata interface.
+ * @public
+ * @deprecated in 5.13.0 - will not be removed until after 2027-09-03. Use [TxnEntityMetadata]($common) from @itwin/core-common instead.
+ */
+export type TxnEntityMetadata = _TxnEntityMetadata;
 export {
   type TileTreeDiscloser, DisclosedTileTreeSet,
   type ReadGltfGraphicsArgs, type GltfGraphic, type GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,
@@ -136,6 +144,7 @@ export {
   Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
   TileUsageMarker,
   TileUser,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   BingElevationProvider,
   QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,
@@ -166,6 +175,7 @@ export * from "./tools/IdleTool";
 export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
+export * from "./tools/SetupCameraTools";
 export * from "./tools/Tool";
 export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";

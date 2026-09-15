@@ -192,7 +192,7 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for missing phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingPhenomenonJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(missingPhenomenonJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`),
@@ -200,7 +200,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for missing phenomenon", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenonJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenonJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`),
@@ -215,7 +215,7 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for invalid phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`),
@@ -223,7 +223,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid phenomenon", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`),
@@ -237,7 +237,7 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for missing unit system", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingUnitSystemJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(missingUnitSystemJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`),
@@ -245,7 +245,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for missing unit system", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(missingUnitSystemJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingUnitSystemJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`),
@@ -260,7 +260,7 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for invalid unit system", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`),
@@ -268,7 +268,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid unit system", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`),
@@ -282,7 +282,7 @@ describe("Unit", () => {
       unitSystem: "TestSchema.TestUnitSystem",
     };
     it("async - should throw for missing definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingDefinitionJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(missingDefinitionJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`),
@@ -290,7 +290,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for missing definition", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(missingDefinitionJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingDefinitionJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`),
@@ -305,7 +305,7 @@ describe("Unit", () => {
       unitSystem: "TestSchema.TestUnitSystem",
     };
     it("async - should throw for invalid definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDefinitionJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidDefinitionJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'`),
@@ -313,7 +313,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid definition", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDefinitionJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDefinitionJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'`),
@@ -329,7 +329,7 @@ describe("Unit", () => {
       numerator: "5",
     };
     it("async - should throw for invalid numerator", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidNumeratorJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidNumeratorJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`),
@@ -337,7 +337,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid numerator", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidNumeratorJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidNumeratorJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`),
@@ -353,7 +353,7 @@ describe("Unit", () => {
       denominator: "5",
     };
     it("async - should throw for invalid denominator", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDenominatorJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidDenominatorJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`),
@@ -361,7 +361,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid denominator", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDenominatorJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDenominatorJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`),
@@ -377,7 +377,7 @@ describe("Unit", () => {
       offset: "5",
     };
     it("async - should throw for invalid offset", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidOffsetJson), new SchemaContext())).rejects.toThrowError(
+      await expect(Schema.fromJson(createSchemaJson(invalidOffsetJson), new SchemaContext())).rejects.toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`),
@@ -385,7 +385,7 @@ describe("Unit", () => {
       );
     });
     it("sync - should throw for invalid offset", () => {
-      expect(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson), new SchemaContext())).toThrowError(
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson), new SchemaContext())).toThrow(
         expect.objectContaining({
           constructor: ECSchemaError,
           message: expect.stringContaining(`The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`),

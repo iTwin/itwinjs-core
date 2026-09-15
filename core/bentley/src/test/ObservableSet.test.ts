@@ -9,6 +9,7 @@ class Listener {
   private _added = false;
   private _deleted = false;
   private _cleared = false;
+  private _changed = false;
   private _addCount = 0;
   private _deleteCount = 0;
   private _batchAddCount = 0;
@@ -18,12 +19,13 @@ class Listener {
     set.onAdded.addListener((_) => { this._added = true; this._addCount++; });
     set.onDeleted.addListener((_) => { this._deleted = true; this._deleteCount++; });
     set.onCleared.addListener(() => this._cleared = true);
+    set.onChanged.addListener(() => { this._changed = true; });
     set.onBatchAdded.addListener(() => this._batchAddCount++);
     set.onBatchDeleted.addListener(() => this._batchDeleteCount++);
   }
 
   private clear() {
-    this._added = this._deleted = this._cleared = false;
+    this._added = this._deleted = this._cleared = this._changed = false;
     this._addCount = this._deleteCount = this._batchAddCount = this._batchDeleteCount = 0;
   }
 
@@ -33,6 +35,8 @@ class Listener {
     expect(this._added).to.equal(added);
     expect(this._deleted).to.equal(deleted);
     expect(this._cleared).to.equal(cleared);
+    const deducedChanged = added || deleted || cleared;
+    expect(this._changed).to.equal(deducedChanged);
     this.clear();
   }
 
@@ -43,6 +47,8 @@ class Listener {
     expect(this._batchDeleteCount).to.equal(batchDeleteCount);
     expect(this._addCount).to.equal(0);
     expect(this._deleteCount).to.equal(0);
+    const deducedChanged = batchAddCount > 0 || batchDeleteCount > 0;
+    expect(this._changed).to.equal(deducedChanged);
     this.clear();
   }
 
@@ -76,7 +82,7 @@ describe("ObservableSet", () => {
     const elems = ["a", "b", "c"];
     const observable = new ObservableSet<string>(elems);
     const set = new Set<string>(elems);
-    expect(observable).to.deep.equal(set);
+    expect(Array.from(observable)).to.deep.equal(Array.from(set));
   });
 
   it("addAll should raise onBatchAdded only once", () => {
@@ -122,6 +128,59 @@ describe("ObservableSet", () => {
     expect(set.size).to.equal(3);
   });
 
+  it("addAll should raise events if iteration throws after a change", () => {
+    const set = new ObservableSet<string>();
+    let batchAddedCount = 0;
+    let changedCount = 0;
+    set.onBatchAdded.addListener(() => batchAddedCount++);
+    set.onChanged.addListener(() => changedCount++);
+    const throwing = {
+      [Symbol.iterator]() {
+        let index = 0;
+        return {
+          next() {
+            if (index === 0) {
+              index++;
+              return { value: "a", done: false };
+            }
+            throw new Error("fail");
+          },
+        };
+      },
+    };
+
+    expect(() => set.addAll(throwing as Iterable<string>)).to.throw("fail");
+    expect(set.has("a")).to.be.true;
+    expect(batchAddedCount).to.equal(1);
+    expect(changedCount).to.equal(1);
+  });
+
+  it("addAll should not let listener mutation change whether the current event is raised", () => {
+    const set = new ObservableSet<string>(["a"]);
+    let batchAddedCount = 0;
+    let changedCount = 0;
+    let reentrant = false;
+    set.onBatchAdded.addListener(() => {
+      if (reentrant)
+        return;
+
+      reentrant = true;
+      batchAddedCount++;
+      set.delete("a");
+      set.add("b");
+      reentrant = false;
+    });
+    set.onChanged.addListener(() => changedCount++);
+
+    set.addAll(["a", "c"]);
+
+    expect(batchAddedCount).to.equal(1);
+    expect(changedCount).to.equal(3);
+    expect(set.has("a")).to.be.false;
+    expect(set.has("b")).to.be.true;
+    expect(set.has("c")).to.be.true;
+  });
+
   it("deleteAll should raise onBatchDeleted only once", () => {
     const set = new ObservableSet<string>(["a", "b", "c"]);
     const listener = new Listener(set);
@@ -165,5 +224,75 @@ describe("ObservableSet", () => {
     });
     expect(set.size).to.equal(1);
     expect(set.has("b")).to.be.true;
+  });
+
+  it("deleteAll should raise events if iteration throws after a change", () => {
+    const set = new ObservableSet<string>(["a", "b"]);
+    let batchDeletedCount = 0;
+    let changedCount = 0;
+    set.onBatchDeleted.addListener(() => batchDeletedCount++);
+    set.onChanged.addListener(() => changedCount++);
+    const throwing = {
+      [Symbol.iterator]() {
+        let index = 0;
+        return {
+          next() {
+            if (index === 0) {
+              index++;
+              return { value: "a", done: false };
+            }
+            throw new Error("fail");
+          },
+        };
+      },
+    };
+
+    expect(() => set.deleteAll(throwing as Iterable<string>)).to.throw("fail");
+    expect(set.has("a")).to.be.false;
+    expect(batchDeletedCount).to.equal(1);
+    expect(changedCount).to.equal(1);
+  });
+
+  it("deleteAll should not let listener mutation change whether the current event is raised", () => {
+    const set = new ObservableSet<string>(["a", "b"]);
+    let batchDeletedCount = 0;
+    let changedCount = 0;
+    let reentrant = false;
+    set.onBatchDeleted.addListener(() => {
+      if (reentrant)
+        return;
+
+      reentrant = true;
+      batchDeletedCount++;
+      set.add("c");
+      set.delete("b");
+      reentrant = false;
+    });
+    set.onChanged.addListener(() => changedCount++);
+
+    set.deleteAll(["a", "b"]);
+
+    expect(batchDeletedCount).to.equal(1);
+    expect(changedCount).to.equal(2);
+    expect(set.has("a")).to.be.false;
+    expect(set.has("b")).to.be.false;
+    expect(set.has("c")).to.be.true;
+  });
+
+  it("subclasses can override `add`", () => {
+    class MySet extends ObservableSet<string> {
+      public myAddWasCalled = false;
+
+      public override add(value: string): this {
+        const ret = super.add(value);
+        this.myAddWasCalled = true;
+        return ret;
+      }
+    }
+
+    const set = new MySet();
+    expect(set.myAddWasCalled).to.be.false;
+    set.add("stuff");
+    expect(set.myAddWasCalled).to.be.true;
   });
 });

@@ -2,6 +2,8 @@
 
 An ECSchema is the root container of all other ECObject items and provides the namespace for every item it contains. A schema may be referenced by another schema but may not be embedded within another schema. Therefore, namespaces in ECObjects do not have a hierarchy.
 
+For the XML representation of an ECSchema document, see [ECSchema XML](./ec-schema-xml.md). For the JSON representation, see [ECSchema JSON](./ec-schema-json.md).
+
 ## Attributes
 
 **schemaName** the name of the schema and the namespace for the items within the schema. Must be unique within a given system and a valid [ECName](./ec-name.md). Should be human readable and avoid abbreviations where possible.

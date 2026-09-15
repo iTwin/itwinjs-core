@@ -111,6 +111,26 @@ You can use the optional `backendInitModule` setting to specify a CommonJs modul
 process _before_ executing tests. For example, you can define a local express server that will handle API requests made by your tests.
 Alternatively, (with the electron test runner), you can use this to handle IPC messages in the electron main process.
 
+### Backend callbacks
+
+Test suites can register callbacks in the Certa backend process and invoke them from frontend tests through the public callbacks entry point:
+
+```ts
+// backendInitModule
+import { registerBackendCallback } from "@itwin/certa/callbacks";
+
+registerBackendCallback("getToken", async () => getToken());
+```
+
+```ts
+// frontend test
+import { executeBackendCallback } from "@itwin/certa/callbacks";
+
+const token = await executeBackendCallback("getToken");
+```
+
+`registerBackendCallback` must run from the module configured by `backendInitModule`. `executeBackendCallback` crosses the Certa runner bridge when the test runs in Chrome or Electron and invokes the callback directly for Node tests.
+
 ## Measuring Code Coverage
 
 Certa makes measuring code coverage super easy! Just use the `--cover` CLI option, and Certa will automatically use

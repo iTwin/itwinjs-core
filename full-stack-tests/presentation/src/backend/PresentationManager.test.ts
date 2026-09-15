@@ -170,16 +170,22 @@ describe("PresentationManager", () => {
   });
 
   describe("getElementProperties", () => {
+    it("returns properties of specific elements by element ID", async () => {
+      using manager = new PresentationManager();
+      const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
+      expect((await collect(iterator())).flat()).to.matchSnapshot();
+    });
+
     it("returns properties for some elements of class 'PhysicalObject", async () => {
       using manager = new PresentationManager();
       const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
       expect((await collect(iterator())).flat()).to.matchSnapshot();
     });
 
-    it("returns properties of specific elements by element ID", async () => {
+    it("succeeds in requesting properties of elements whose classes match SQLite keywords", async () => {
       using manager = new PresentationManager();
-      const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
-      expect((await collect(iterator())).flat()).to.matchSnapshot();
+      const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:Group"] });
+      expect((await collect(iterator())).flat()).to.be.empty;
     });
   });
 

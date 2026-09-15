@@ -325,7 +325,14 @@ export class BackgroundMapGeometry {
 
       for (const radiusOffset of radiusOffsets) {
         const ellipsoid = this.getEarthEllipsoid(radiusOffset);
-        const isInside = eyePoint && expectDefined(ellipsoid.worldToLocal(eyePoint)).magnitude() < 1.0;
+        const eyeLocal = eyePoint ? ellipsoid.worldToLocal(eyePoint) : undefined;
+        if (eyePoint && undefined === eyeLocal) {
+          // If the globe transform cannot map the eye point into ellipsoid-local
+          // space, treat the globe as unavailable here and let the caller fall
+          // back to its extents-based depth fitting.
+          return Range1d.createNull();
+        }
+        const isInside = eyeLocal !== undefined && eyeLocal.magnitude() < 1.0;
         const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
         const clipPlaneCount = clipPlanes.planes.length;
 
@@ -355,9 +362,22 @@ export class BackgroundMapGeometry {
               if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
-            clipPlanes.planes.push(expectDefined(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))));
+            // The silhouette arc is the horizon between the visible and hidden
+            // halves of the globe. Its perpendicular vector is the normal of the
+            // clip plane that keeps us on the visible side. If that plane cannot
+            // be constructed, fall back to a view-aligned plane through the
+            // ellipsoid center instead of pushing an invalid entry.
+            const silhouettePlane =
+              ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))
+              ?? ClipPlane.createNormalAndPoint(viewZ, center);
+            if (undefined === silhouettePlane)
+              return Range1d.createNull();
+            clipPlanes.planes.push(silhouettePlane);
           } else {
-            clipPlanes.planes.push(expectDefined(ClipPlane.createNormalAndPoint(viewZ, center)));
+            const centerPlane = ClipPlane.createNormalAndPoint(viewZ, center);
+            if (undefined === centerPlane)
+              return Range1d.createNull();
+            clipPlanes.planes.push(centerPlane);
           }
         }
         if (!isInside || radiusOffset === radiusOffsets[0]) {

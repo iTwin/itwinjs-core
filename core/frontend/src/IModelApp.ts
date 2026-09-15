@@ -40,7 +40,9 @@ import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
 import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
-import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { BingElevationProvider, MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { ElevationProvider, GeoidProvider, LocationProvider } from "./GeoProviders";
+import { BingLocationProvider } from "./BingLocation";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -49,6 +51,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import * as setupCameraTool from "./tools/SetupCameraTools";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
@@ -92,6 +95,20 @@ export interface IModelAppOptions {
    * @beta
    */
   mapLayerOptions?: MapLayerOptions;
+  /** Geospatial service providers for elevation, geoid, and geocoding.
+   * If not supplied, deprecated Bing-backed defaults are used for backward compatibility.
+   * @note If you have not yet migrated to custom providers, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply custom implementations here.
+   * @beta
+   */
+  geospatialProviders?: {
+    /** Terrain height lookup. Defaults to [[BingElevationProvider]]. */
+    elevationProvider?: ElevationProvider;
+    /** Geodetic-to-sea-level offset. Defaults to [[BingElevationProvider]] (which implements both). */
+    geoidProvider?: GeoidProvider;
+    /** Geocoding (query string to location). Defaults to [[BingLocationProvider]]. */
+    locationProvider?: LocationProvider;
+  };
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
@@ -145,6 +162,9 @@ export interface IModelAppOptions {
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
 }
+
+/** CSS class name applied to the notice element of a logo card created by [[IModelApp.makeLogoCard]]. */
+const logoCardNoticeClassName = "logo-cards";
 
 /** Options for [[IModelApp.makeModalDiv]]
  *  @public
@@ -213,6 +233,9 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _elevationProvider: ElevationProvider | undefined;
+  private static _geoidProvider: GeoidProvider | undefined;
+  private static _locationProvider: LocationProvider | undefined;
   private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
@@ -239,6 +262,21 @@ export class IModelApp {
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** The [[ElevationProvider]] for this session.
+   * @beta
+   */
+  public static get elevationProvider(): ElevationProvider { return expectDefined(this._elevationProvider); }
+  public static set elevationProvider(provider: ElevationProvider) { this._elevationProvider = provider; }
+  /** The [[GeoidProvider]] for this session.
+   * @beta
+   */
+  public static get geoidProvider(): GeoidProvider { return expectDefined(this._geoidProvider); }
+  public static set geoidProvider(provider: GeoidProvider) { this._geoidProvider = provider; }
+  /** The [[LocationProvider]] for this session.
+   * @beta
+   */
+  public static get locationProvider(): LocationProvider { return expectDefined(this._locationProvider); }
+  public static set locationProvider(provider: LocationProvider) { this._locationProvider = provider; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @beta
    */
@@ -401,6 +439,7 @@ export class IModelApp {
       selectTool,
       idleTool,
       viewTool,
+      setupCameraTool,
       clipViewTool,
       measureTool,
       accudrawTool,
@@ -435,6 +474,15 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until it is removed in a future major version
+    let defaultBingElevation: BingElevationProvider | undefined;
+    const geo = opts.geospatialProviders;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const lazyBing = () => defaultBingElevation ??= new BingElevationProvider();
+    this._elevationProvider = geo?.elevationProvider ?? lazyBing();
+    this._geoidProvider = geo?.geoidProvider ?? lazyBing();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._locationProvider = geo?.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
@@ -479,6 +527,9 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
+    this._elevationProvider = undefined;
+    this._geoidProvider = undefined;
+    this._locationProvider = undefined;
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
@@ -720,8 +771,18 @@ export class IModelApp {
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
-      /** A *notice* string to be shown on the logo card. May include HTML.  */
+      /** A *notice* string to be shown on the logo card. May include HTML.
+       * @note Never pass untrusted (e.g., server-provided) text here — string notices are parsed as HTML. Use [[noticeLines]] instead.
+       */
       notice?: string | HTMLElement;
+      /** Lines composing the *notice* shown on the logo card, separated by line breaks and styled like [[notice]].
+       * Strings are rendered as plain text — never parsed as HTML — making this the safe choice for untrusted
+       * (e.g., server-provided) content such as copyright attributions; supply an `HTMLElement` for a line requiring markup.
+       * This option is intended for any caller — including applications and map-layer format extensions — that needs to
+       * display text it does not fully control; prefer it over [[notice]] unless you require raw HTML for your own trusted content.
+       * Ignored if [[notice]] is defined.
+       */
+      noticeLines?: Array<string | HTMLElement>;
     }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
@@ -743,9 +804,19 @@ export class IModelApp {
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: logoCardNoticeClassName });
       else
         noticeCell.appendChild(opts.notice);
+    } else if (undefined !== opts.noticeLines) {
+      // A <p> cannot legally contain flow content, so use a <div> when a line is an element.
+      const containerTag = opts.noticeLines.some((line) => typeof line !== "string") ? "div" : "p";
+      const notice = IModelApp.makeHTMLElement(containerTag, { parent: noticeCell, className: logoCardNoticeClassName });
+      opts.noticeLines.forEach((line, index) => {
+        if (index > 0)
+          notice.appendChild(IModelApp.makeHTMLElement("br"));
+        // Strings are appended as text nodes so they are never parsed as HTML.
+        notice.append(line);
+      });
     }
     return card;
   }

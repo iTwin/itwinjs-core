@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { IModelConnection } from "@itwin/core-frontend";
+import { SchemaView } from "@itwin/ecschema-metadata";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
   createTestECClassInfo,
@@ -69,7 +70,7 @@ describe("FavoritePropertiesManager", () => {
     return {
       iModelId: imodelId,
       iTwinId,
-      createQueryReader: sinon.stub(),
+      getSchemaView: sinon.stub().resolves(stubSchemaViewForBaseClasses([])),
     };
   }
 
@@ -83,18 +84,28 @@ describe("FavoritePropertiesManager", () => {
     };
   }
 
-  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string; baseClassFullName: string }>) {
-    let currIndex = -1;
-    const ecSqlReader = {
-      step: sinon.stub().callsFake(async () => ++currIndex < classBaseClass.length),
-      get current() {
-        return {
-          toRow: () => classBaseClass[currIndex],
-        };
-      },
-    };
-    imodelMock.createQueryReader.returns(ecSqlReader);
-    return imodelMock.createQueryReader;
+  function stubSchemaViewForBaseClasses(classBaseClass: Array<{ classFullName: string; baseClassFullName: string }>): SchemaView {
+    interface SchemaViewClass {
+      fullName: string;
+      baseClass: SchemaViewClass | undefined;
+    }
+    const map = new Map<string, SchemaViewClass>();
+    function getOrCreateClass(fullName: string): SchemaViewClass {
+      let cls = map.get(fullName);
+      if (!cls) {
+        cls = { fullName, baseClass: undefined };
+        map.set(fullName, cls);
+      }
+      return cls;
+    }
+    classBaseClass.forEach(({ classFullName, baseClassFullName }) => {
+      const derived = getOrCreateClass(classFullName);
+      const base = getOrCreateClass(baseClassFullName);
+      derived.baseClass = base;
+    });
+    return {
+      findClass: (fullName: string) => map.get(fullName),
+    } as SchemaView;
   }
 
   /* eslint-disable @typescript-eslint/no-deprecated */
@@ -651,12 +662,9 @@ describe("FavoritePropertiesManager", () => {
       });
       const allFields = [a, b];
 
-      const classBaseClass = [
-        { classFullName: "S:A", baseClassFullName: "S:A" },
-        { classFullName: "S:B", baseClassFullName: "S:B" },
+      imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
         { classFullName: "S:B", baseClassFullName: "S:A" },
-      ];
-      const createQueryReaderStub = setupMocksForQueryingBaseClasses(classBaseClass);
+      ]));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));
@@ -671,7 +679,6 @@ describe("FavoritePropertiesManager", () => {
       await manager.changeFieldPriority(imodel, b, a, allFields);
       expect(orderInfos[0]).to.eq(oldOrderInfo[0]); // a
       expect(orderInfos[1]).to.eq(oldOrderInfo[1]); // b
-      expect(createQueryReaderStub).to.have.been.calledOnce;
     });
   });
 
@@ -705,15 +712,10 @@ describe("FavoritePropertiesManager", () => {
     const allFields = [a1, b1, a2, b2, c];
     const visibleFields = [a1, a2, c]; // imitating a selection of a class C instance
 
-    // data of table ECDbMeta.ClassHasAllBaseClasses
-    const classBaseClass = [
-      { classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" },
+    imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
       { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" },
       { classFullName: "S:C", baseClassFullName: "S:A" },
-    ];
-    setupMocksForQueryingBaseClasses(classBaseClass);
+    ]));
 
     const fieldInfos = getFieldsInfos(allFields);
     storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));
@@ -760,15 +762,10 @@ describe("FavoritePropertiesManager", () => {
     const allFields = [c, b2, a2, b1, a1];
     const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
-    // data of table ECDbMeta.ClassHasAllBaseClasses
-    const classBaseClass = [
-      { classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" },
+    imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
       { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" },
       { classFullName: "S:C", baseClassFullName: "S:A" },
-    ];
-    setupMocksForQueryingBaseClasses(classBaseClass);
+    ]));
 
     const fieldInfos = getFieldsInfos(allFields);
     storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));
@@ -815,15 +812,10 @@ describe("FavoritePropertiesManager", () => {
     const allFields = [c, b2, a2, b1, a1];
     const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
-    // data of table ECDbMeta.ClassHasAllBaseClasses
-    const classBaseClass = [
-      { classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" },
+    imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
       { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" },
       { classFullName: "S:C", baseClassFullName: "S:A" },
-    ];
-    setupMocksForQueryingBaseClasses(classBaseClass);
+    ]));
 
     const fieldInfos = getFieldsInfos(allFields);
     storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));
@@ -871,15 +863,10 @@ describe("FavoritePropertiesManager", () => {
     const allFields = [a, b1, prim, b2, c];
     const visibleFields = [a, c]; // imitating a selection of a class C instance
 
-    // data of table ECDbMeta.ClassHasAllBaseClasses
-    const classBaseClass = [
-      { classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" },
+    imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
       { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" },
       { classFullName: "S:C", baseClassFullName: "S:A" },
-    ];
-    setupMocksForQueryingBaseClasses(classBaseClass);
+    ]));
 
     const fieldInfos = getFieldsInfos(allFields);
     storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));
@@ -943,15 +930,10 @@ describe("FavoritePropertiesManager", () => {
     const allFields = [a1, b, caa2];
     const visibleFields = [a1, caa2]; // imitating a selection of a class C instance
 
-    // data of table ECDbMeta.ClassHasAllBaseClasses
-    const classBaseClass = [
-      { classFullName: "S:A", baseClassFullName: "S:A" },
-      { classFullName: "S:B", baseClassFullName: "S:B" },
+    imodelMock.getSchemaView.resolves(stubSchemaViewForBaseClasses([
       { classFullName: "S:B", baseClassFullName: "S:A" },
-      { classFullName: "S:C", baseClassFullName: "S:C" },
       { classFullName: "S:C", baseClassFullName: "S:A" },
-    ];
-    setupMocksForQueryingBaseClasses(classBaseClass);
+    ]));
 
     const fieldInfos = getFieldsInfos(allFields);
     storageMock.loadProperties.resolves(new Set<PropertyFullName>(fieldInfos));

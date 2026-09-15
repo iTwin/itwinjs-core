@@ -234,7 +234,7 @@ export abstract class BooleanClipNode implements Clipper {
 }
 
 /**
- * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children.
+ * Implement [BooleanClipNode] virtual methods for union (boolean OR) among children.
  * @internal
  */
 export class BooleanClipNodeUnion extends BooleanClipNode {
@@ -276,7 +276,7 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
 }
 
 /**
- * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children.
+ * Implement [BooleanClipNode] virtual methods for parity (boolean XOR) among children.
  * @internal
  */
 export class BooleanClipNodeParity extends BooleanClipNode {

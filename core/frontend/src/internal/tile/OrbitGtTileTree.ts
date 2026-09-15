@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { assert, BeTimePoint, compareStringsOrUndefined, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, compareStringsOrUndefined, expectDefined, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -18,6 +18,7 @@ import {
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
@@ -359,6 +360,34 @@ export class OrbitGtTileTree extends TileTree {
   }
 }
 
+/** Computes the vertical shift, in meters along geodetic up, to correctly place a point cloud whose CRS does not
+ * define a vertical datum, assuming its heights are orthometric (relative to the geoid).
+ *
+ * The shift is the difference between converting the point cloud's origin with its height treated as orthometric
+ * versus ellipsoidal (`heightAsEllipsoidalDbZ`, already computed by the caller). Returns zero if the shift cannot
+ * be computed or the iModel's converter makes no distinction between the two.
+ * Exported strictly for tests.
+ * @internal
+ */
+export async function computeOrthometricVerticalShift(geoOrigin: Point3d, heightAsEllipsoidalDbZ: number, iModel: IModelConnection): Promise<number> {
+  const geoidConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter({ horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } });
+  if (undefined === geoidConverter)
+    return 0;
+
+  try {
+    const response = await geoidConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
+    if (response.iModelCoords[0].s !== GeoCoordStatus.Success) {
+      Logger.logWarning(FrontendLoggerCategory.RealityData, `Failed to compute orthometric height correction for point cloud (status ${response.iModelCoords[0].s}); heights will be treated as ellipsoidal`);
+      return 0;
+    }
+
+    return Point3d.fromJSON(response.iModelCoords[0].p).z - heightAsEllipsoidalDbZ;
+  } catch (err) {
+    Logger.logError(FrontendLoggerCategory.RealityData, err);
+    return 0;
+  }
+}
+
 export namespace OrbitGtTileTree {
   export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
     orbitGtBlob?: OrbitGtBlobProps;
@@ -450,7 +479,7 @@ export namespace OrbitGtTileTree {
       const wgs84CRS = "4978";
       await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
       const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS));
-      const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
+      let pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
       ecefTransform.setFrom(pointCloudCenterToEcef);
 
       let ecefToDb = iModel.getMapEcefToDb(0);
@@ -471,7 +500,26 @@ export namespace OrbitGtTileTree {
           const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
           const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
           if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
-            const ecefToDbOrigin = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
+            const dbOriginFromGcs = Point3d.fromJSON(response.iModelCoords[0].p);
+
+            // A projected CRS defines no vertical datum, so the point cloud's heights are conventionally orthometric -
+            // but pointCloudToEcef above treated them as ellipsoidal. Correct the placement by the difference.
+            // (A compound CRS also takes this path; that stays correct unless orbitgt gains a geoid model.)
+            if (CRSManager.ENGINE.isProjectedCRS(pointCloudCRS)) {
+              const verticalShift = await computeOrthometricVerticalShift(geoOrigin, dbOriginFromGcs.z, iModel);
+              if (0 !== verticalShift) {
+                const upVector = Vector3d.createStartEnd(
+                  cartographicOrigin.toEcef(),
+                  Cartographic.fromRadians({ longitude: cartographicOrigin.longitude, latitude: cartographicOrigin.latitude, height: cartographicOrigin.height + 1 }).toEcef(),
+                ).normalize();
+                if (undefined !== upVector) {
+                  pointCloudCenterToEcef = Transform.createTranslation(upVector.scale(verticalShift)).multiplyTransformTransform(pointCloudCenterToEcef);
+                  ecefTransform.setFrom(pointCloudCenterToEcef);
+                }
+              }
+            }
+
+            const ecefToDbOrigin = await calculateEcefToDbTransformAtLocation(dbOriginFromGcs, iModel);
             if (ecefToDbOrigin)
               ecefToDb = ecefToDbOrigin;
           }
@@ -541,7 +589,11 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    strings.forEach((str, index) => {
+      if (index > 0)
+        div.appendChild(document.createElement("br"));
+      div.appendChild(document.createTextNode(str));
+    });
     return div;
   }
 }

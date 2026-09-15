@@ -137,6 +137,13 @@ export namespace AzuriteTest {
   }
 
   const fakeUser = () => `token ${Guid.createValue()}`;
+  /** Maps child iTwinId → parent iTwinId for simulating iTwin hierarchy in tests. */
+  const parentITwins = new Map<string, string>();
+  export const setParentITwin = (childITwinId: string, parentITwinId: string) => parentITwins.set(childITwinId, parentITwinId);
+  export const clearParentITwins = () => parentITwins.clear();
+
+  const getAccountITwinId = (requestedITwinId: string): string => parentITwins.get(requestedITwinId) ?? requestedITwinId;
+
   export const service: BlobContainer.ContainerService & { userToken: { admin: string, readOnly: string, readWrite: string } } = {
     userToken: {
       admin: fakeUser(), // just unique strings
@@ -188,15 +195,27 @@ export namespace AzuriteTest {
       };
     },
     queryContainersMetadata: async (_userToken: AccessToken, args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
-      const { containerType, iTwinId, iModelId, label } = args;
+      const { containerType, iTwinId, iModelId, label, includeParentITwins } = args;
+      const includeAccountITwin = typeof includeParentITwins === "object" && includeParentITwins.filter === "accountOnly";
       const results: BlobContainer.MetadataResponse[] = [];
       for await (const { name, metadata } of createAzBlobClient().listContainers({ includeMetadata: true })) {
         const m = metadata as any;
+        const ownerITwinId = m?.itwinid;
+        const accountITwinId = includeAccountITwin ? getAccountITwinId(iTwinId) : undefined;
+        const matchesITwin = ownerITwinId === iTwinId || (includeAccountITwin && ownerITwinId === accountITwinId);
         if ((containerType === undefined || m?.containertype === containerType)
-          && m?.itwinid === iTwinId
+          && matchesITwin
           && (iModelId === undefined || m?.imodelid === iModelId)
           && (label === undefined || m?.label === label))
-          results.push({ containerId: name, containerType: m?.containertype, label: m?.label, description: m?.description, json: m?.json ? JSON.parse(m.json) : undefined });
+          results.push({
+            containerId: name,
+            containerType: m?.containertype,
+            label: m?.label,
+            description: m?.description,
+            json: m?.json ? JSON.parse(m.json) : undefined,
+            iTwinId: ownerITwinId ?? args.iTwinId,
+            accountITwinId: includeAccountITwin ? accountITwinId : undefined,
+          });
       }
       return results;
     },

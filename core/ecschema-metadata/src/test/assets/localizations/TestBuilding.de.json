@@ -1,0 +1,106 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestBuilding",
+  "version": "01.XX.XX",
+  "locale": "de",
+  "label": "Test-Gebäudeschema",
+  "description": "Ein Testschema für Gebäudeelemente",
+  "items": {
+    "Building": {
+      "label": "Gebäude",
+      "description": "Eine physische Gebäudestruktur",
+      "members": {
+        "Height": {
+          "label": "Höhe",
+          "description": "Die Höhe des Gebäudes in Metern"
+        },
+        "FloorCount": {
+          "label": "Stockwerkanzahl",
+          "description": "Die Anzahl der Stockwerke im Gebäude"
+        },
+        "Name": {
+          "label": "Name",
+          "description": "Der Name des Gebäudes"
+        }
+      }
+    },
+    "Wall": {
+      "label": "Wand",
+      "description": "Eine vertikale Baukomponente",
+      "members": {
+        "Thickness": {
+          "label": "Dicke",
+          "description": "Die Dicke der Wand in Metern"
+        },
+        "Material": {
+          "label": "Material",
+          "description": "Das Material der Wand"
+        }
+      }
+    },
+    "Address": {
+      "label": "Adresse",
+      "description": "Eine Postadressenstruktur"
+    },
+    "BuildingMetadata": {
+      "label": "Gebäudemetadaten",
+      "description": "Benutzerdefiniertes Attribut für Gebäudemetadaten"
+    },
+    "BuildingHasRooms": {
+      "label": "Gebäude hat Räume",
+      "description": "Beziehung zwischen Gebäude und Räumen"
+    },
+    "ISpatialElement": {
+      "label": "Räumliches Element",
+      "description": "Mixin für räumliche Elemente"
+    },
+    "BuildingType": {
+      "label": "Gebäudetyp",
+      "description": "Arten von Gebäuden",
+      "members": {
+        "Residential": {
+          "label": "Wohngebäude",
+          "description": "Ein Wohngebäude"
+        },
+        "Commercial": {
+          "description": "Ein Gewerbegebäude"
+        },
+        "Industrial": {
+          "label": "Industriegebäude"
+        }
+      }
+    },
+    "SpatialCategory": {
+      "label": "Räumliche Kategorie",
+      "description": "Kategorie für räumliche Eigenschaften"
+    },
+    "LENGTH_KOQ": {
+      "label": "Längen-KOQ",
+      "description": "Größenart für Länge"
+    },
+    "M": {
+      "label": "Meter",
+      "description": "Metereinheit"
+    },
+    "PER_M": {
+      "label": "Pro Meter",
+      "description": "Invertierte Metereinheit"
+    },
+    "METRIC": {
+      "label": "Metrisch",
+      "description": "Metrisches Einheitensystem"
+    },
+    "LENGTH": {
+      "label": "Länge",
+      "description": "Längenphänomen"
+    },
+    "PI": {
+      "label": "Pi",
+      "description": "Mathematische Konstante Pi"
+    },
+    "DefaultReal": {
+      "label": "Standard-Realformat",
+      "description": "Standardformat für reelle Zahlen"
+    }
+  }
+}

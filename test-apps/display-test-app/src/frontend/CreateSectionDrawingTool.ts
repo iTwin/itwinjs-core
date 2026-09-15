@@ -70,6 +70,7 @@ export class CreateSectionDrawingTool extends Tool {
 
     // Enable all 2d categories.
     const categories = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of spatialView.iModel.createQueryReader("SELECT ECInstanceId from BisCore.DrawingCategory", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       categories.push(row.id);
     }

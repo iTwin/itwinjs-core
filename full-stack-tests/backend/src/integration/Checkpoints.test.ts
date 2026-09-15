@@ -45,7 +45,7 @@ describe("Checkpoints", () => {
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
-    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);
+    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 0o744);
     daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));

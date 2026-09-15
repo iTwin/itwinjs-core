@@ -1,6 +1,129 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Tue, 05 May 2026 17:44:54 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Sep 2026 20:23:38 GMT and should not be manually modified.
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- Update Units Schema to 01.00.11.
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Bearing/Azimuth formatting and parsing now only apply the north-measured conversion when the persistence unit's phenomenon is `Units.ANGLE`. `Units.HORIZONTAL_DIRECTION` values are already true azimuths and are left unconverted.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:46 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Stabilize generated unit conversion output across Node runtimes.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+- Add generated unit schema names and UnitConversions helpers backed by bundled basic units
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
 
 ## 5.9.1
 Tue, 05 May 2026 17:43:30 GMT
@@ -17,6 +140,11 @@ Mon, 04 May 2026 16:32:08 GMT
 ### Updates
 
 - Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:14 GMT

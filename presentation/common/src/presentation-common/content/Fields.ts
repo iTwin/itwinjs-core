@@ -194,7 +194,7 @@ export class Field implements FieldProps {
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
    * @param extendedData Extended data associated with this field
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `FieldProps` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use an overload with `FieldProps` instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -275,7 +275,7 @@ export class Field implements FieldProps {
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[toCompressedJSON]] instead.
    */
   public toJSON(): FieldJSON {
     return this.toCompressedJSON({});
@@ -298,7 +298,7 @@ export class Field implements FieldProps {
 
   /**
    * Deserialize [[Field]] from JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[fromCompressedJSON]] instead.
    */
   public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined {
     if (!json) {
@@ -412,7 +412,7 @@ export class PropertiesField extends Field implements PropertiesFieldProps {
    * @param properties A list of properties this field is created from
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `PropertiesFieldProps` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use an overload with `PropertiesFieldProps` instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -516,7 +516,7 @@ export class PropertiesField extends Field implements PropertiesFieldProps {
 
   /**
    * Serialize this object to JSON
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): PropertiesFieldJSON {
     return {
@@ -536,7 +536,7 @@ export class PropertiesField extends Field implements PropertiesFieldProps {
 
   /**
    * Deserialize [[PropertiesField]] from JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined {
     if (!json) {
@@ -656,7 +656,7 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
 
   /**
    * Creates an instance of [[ArrayPropertiesField]].
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `ArrayPropertiesFieldProps` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use an overload with `ArrayPropertiesFieldProps` instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -730,7 +730,7 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): ArrayPropertiesFieldJSON {
     return {
@@ -751,7 +751,7 @@ export class ArrayPropertiesField extends PropertiesField implements ArrayProper
 
   /**
    * Deserialize [[ArrayPropertiesField]] from JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField {
     return new ArrayPropertiesField({
@@ -797,7 +797,7 @@ export class StructPropertiesField extends PropertiesField implements StructProp
 
   /**
    * Creates an instance of [[StructPropertiesField]].
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `StructPropertiesFieldProps` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use an overload with `StructPropertiesFieldProps` instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -871,7 +871,7 @@ export class StructPropertiesField extends PropertiesField implements StructProp
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): StructPropertiesFieldJSON {
     return {
@@ -892,7 +892,7 @@ export class StructPropertiesField extends PropertiesField implements StructProp
 
   /**
    * Deserialize [[StructPropertiesField]] from JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField {
     return new StructPropertiesField({
@@ -1004,7 +1004,7 @@ export class NestedContentField extends Field implements NestedContentFieldProps
    * @param autoExpand Flag specifying whether field should be expanded
    * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use an overload with `NestedContentFieldProps` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use an overload with `NestedContentFieldProps` instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -1083,7 +1083,7 @@ export class NestedContentField extends Field implements NestedContentFieldProps
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): NestedContentFieldJSON {
     return {

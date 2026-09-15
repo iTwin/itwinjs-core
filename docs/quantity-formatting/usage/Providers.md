@@ -58,6 +58,21 @@ const provider = createUnitsProvider({
 
 When no `primary` is supplied, `createUnitsProvider()` returns a plain `new BasicUnitsProvider()` — no wrapper.
 
+You can also use the generated canonical identifiers exported by `@itwin/core-quantity` to avoid magic strings when looking up bundled BIS units:
+
+```ts
+import { BasicUnitsProvider, getDefaultPersistenceUnit, Phenomena, Units } from "@itwin/core-quantity";
+
+const provider = new BasicUnitsProvider();
+const persistenceUnit = getDefaultPersistenceUnit(Phenomena.LENGTH);
+const meter = await provider.findUnitByName(Units.LENGTH.M);
+const lengthUnits = await provider.getUnitsByFamily(Phenomena.LENGTH);
+```
+
+When you need a recommended built-in persistence unit for a bundled phenomenon, use [getDefaultPersistenceUnit]($quantity). For example, `getDefaultPersistenceUnit(Phenomena.LENGTH)` returns `Units.LENGTH.M`.
+
+> **Note:** `getDefaultPersistenceUnit(...)` intentionally does not accept `Phenomena.LENGTH_RATIO` yet, because the bundled built-in unit set does not currently provide an agreed default for that phenomenon.
+
 #### SchemaUnitProvider
 
 [SchemaUnitProvider]($ecschema-metadata) loads unit definitions from EC schemas using a [SchemaContext]($ecschema-metadata). It provides access to the extensive Units schema as well as custom units defined in domain schemas.

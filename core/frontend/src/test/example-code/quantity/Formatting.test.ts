@@ -1,6 +1,7 @@
 import { EmptyLocalization } from "@itwin/core-common";
 import { BasicUnit, Format, FormatterSpec, ParserSpec } from "@itwin/core-quantity";
 import { IModelApp } from "../../../IModelApp";
+import { createQuantityDescription } from "../../../properties/FormattedQuantityDescription";
 import { QuantityFormatter } from "../../../quantity-formatting/QuantityFormatter";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -100,6 +101,20 @@ describe("Formatting examples", () => {
     // __PUBLISH_EXTRACT_END__
 
     expect(formattedValue).toBe("3'-3 3/8\"");
+  });
+
+  it("Quantity Property Description", () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Property_Description
+    const description = createQuantityDescription({
+      name: "cameraHeight",
+      displayLabel: "Camera Height",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+      persistenceUnitName: "Units.M",
+    });
+    // __PUBLISH_EXTRACT_END__
+
+    expect(description.name).toBe("cameraHeight");
+    expect(description.kindOfQuantityName).toBe("DefaultToolsUnits.LENGTH");
   });
 
   it("General Pattern - Complete Workflow", async () => {

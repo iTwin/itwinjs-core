@@ -412,10 +412,7 @@ export class Transform implements BeJSONFunctions {
     // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
-  /**
-   * Transform the input 3d point in place (using `Tp = M*p + o`).
-   * Return as a new point or in the pre-allocated result (if result is given).
-   */
+  /** Transform the input 3d point in place (using `Tp = M*p + o`). */
   public multiplyXYAndZInPlace(point: XYAndZ): void {
     return Matrix3d.xyzPlusMatrixTimesXYZInPlace(this._origin, this._matrix, point);
   }
@@ -715,8 +712,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Multiply `this` Transform times `other` Transform.
    * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as `[A*B   Ab+a]` because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
    *    \text{other Transform with matrix part }\bold{B}\text{ and origin part }\bold{b} & \blockTransform{B}{b} \\
@@ -738,8 +734,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Multiply `this` Transform times `other` Matrix3d (considered to be a Transform with 0 `origin`).
    * * **Note:** If `this = [A   a]` and `other = [B   0]`, then `this * other` is defined as [A*B   a] because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
    *    \text{other matrix }\bold{B}\text{ promoted to block Transform} & \blockTransform{B}{0} \\

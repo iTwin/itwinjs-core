@@ -13,7 +13,7 @@ import { Model } from "./Model";
 import { Element } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Relationship, RelationshipProps } from "./Relationship";
-import * as assert from "assert";
+import { ok as assert } from "node:assert/strict";
 
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
  * other entity classes. In the future if there is a need

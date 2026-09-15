@@ -6,8 +6,8 @@
  * @module RPC
  */
 
-import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
+import { IModelDb, IpcHost, RpcTrace } from "@itwin/core-backend";
+import { AccessToken, BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
   ClientDiagnostics,
@@ -74,6 +74,30 @@ export const MAX_ALLOWED_PAGE_SIZE = 1000;
 export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
 
 const DEFAULT_REQUEST_TIMEOUT = 5000;
+
+/**
+ * Derives a stable cache key for a client `PresentationManager` from the given access token.
+ * Returns the JWT `sub` (subject) claim - a stable, server-issued identifier for the authenticated
+ * user - when the token is a well-formed JWT. Returns `undefined` otherwise (e.g. no token, opaque
+ * token or malformed token), in which case the default shared manager is used.
+ */
+function getManagerKeyFromAccessToken(accessToken: AccessToken | undefined): string | undefined {
+  if (!accessToken) {
+    return undefined;
+  }
+  try {
+    // the token may be prefixed with the authorization scheme (e.g. "Bearer <jwt>")
+    const jwt = accessToken.substring(accessToken.lastIndexOf(" ") + 1);
+    const parts = jwt.split(".");
+    if (parts.length !== 3) {
+      return undefined;
+    }
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as { sub?: unknown };
+    return typeof payload.sub === "string" && payload.sub.length > 0 ? payload.sub : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -146,10 +170,16 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
   }
 
   /**
-   * Get the [[PresentationManager]] used by this RPC impl.
+   * Get the [[PresentationManager]] used by this RPC impl for the currently authenticated client.
+   *
+   * In IPC apps there's a single trusted local user, so a single shared manager is used for all
+   * requests (consistent with [[PresentationIpcHandler]]). In web apps, the manager is keyed by the
+   * JWT `sub` (subject) claim derived from the request's access token, so all sessions of the same
+   * user share a manager. When there's no usable token, the default shared manager is used.
    */
-  public getManager(clientId?: string): PresentationManager {
-    return Presentation.getManager(clientId);
+  public getManager(): PresentationManager {
+    const managerKey = IpcHost.isValid ? undefined : getManagerKeyFromAccessToken(RpcTrace.expectCurrentActivity.accessToken);
+    return Presentation.getManager(managerKey);
   }
 
   private async getIModel(token: IModelRpcProps): Promise<IModelDb> {
@@ -253,7 +283,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.makeRequest(token, "getNodesCount", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId).getNodesCount(options);
+      return this.getManager().getNodesCount(options);
     });
   }
 
@@ -261,8 +291,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
       options = enforceValidPageSize(options);
       const [serializedHierarchyLevel, count] = await Promise.all([
-        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodes(options),
-        this.getManager(requestOptions.clientId).getNodesCount(options),
+        this.getManager()[_presentation_manager_detail].getNodes(options),
+        this.getManager().getNodesCount(options),
       ]);
       const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
       return {
@@ -277,7 +307,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: HierarchyLevelDescriptorRpcRequestOptions,
   ): PresentationRpcResponse<string | DescriptorJSON | undefined> {
     return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodesDescriptor(options);
+      return this.getManager()[_presentation_manager_detail].getNodesDescriptor(options);
     });
   }
 
@@ -286,7 +316,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
   ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodePaths(options);
+      return this.getManager()[_presentation_manager_detail].getNodePaths(options);
     });
   }
 
@@ -295,7 +325,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
   ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getFilteredNodePaths(options);
+      return this.getManager()[_presentation_manager_detail].getFilteredNodePaths(options);
     });
   }
 
@@ -306,7 +336,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: ContentSourcesRpcRequestOptions,
   ): PresentationRpcResponse<ContentSourcesRpcResult> {
     return this.makeRequest(token, "getContentSources", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getContentSources(options);
+      const result = await this.getManager().getContentSources(options);
       const classesMap = {};
       const selectClasses = result.map((sci) => SelectClassInfo.toCompressedJSON(sci, classesMap));
       return { sources: selectClasses, classesMap };
@@ -325,9 +355,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       };
       // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
       // bypassing unnecessary deserialization and serialization.
-      return Presentation.getManager(requestOptions.clientId)[_presentation_manager_detail].getContentDescriptor(options) as unknown as
-        | DescriptorJSON
-        | undefined;
+      return this.getManager()[_presentation_manager_detail].getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
     });
   }
 
@@ -337,7 +365,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         ...options,
         keys: KeySet.fromJSON(options.keys),
       };
-      return this.getManager(requestOptions.clientId).getContentSetSize(options);
+      return this.getManager().getContentSetSize(options);
     });
   }
 
@@ -352,8 +380,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       });
 
       const [size, content] = await Promise.all([
-        this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getContent(options),
+        this.getManager().getContentSetSize(options),
+        this.getManager()[_presentation_manager_detail].getContent(options),
       ]);
 
       if (!content) {
@@ -393,8 +421,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: SingleElementPropertiesRpcRequestOptions,
   ): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      const { clientId, ...restOptions } = options;
-      return this.getManager(clientId).getElementProperties(restOptions);
+      return this.getManager().getElementProperties(options);
     });
   }
 
@@ -407,7 +434,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         ...options,
         keys: KeySet.fromJSON(options.keys),
       });
-      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getPagedDistinctValues(options);
+      return this.getManager()[_presentation_manager_detail].getPagedDistinctValues(options);
     });
   }
 
@@ -430,8 +457,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       );
 
       const [size, content] = await Promise.all([
-        this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getContent(options),
+        this.getManager().getContentSetSize(options),
+        this.getManager()[_presentation_manager_detail].getContent(options),
       ]);
 
       if (size === 0 || !content) {
@@ -450,7 +477,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: DisplayLabelRpcRequestOptions,
   ): PresentationRpcResponse<LabelDefinition> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId)[_presentation_manager_detail].getDisplayLabelDefinition(options);
+      const label = await this.getManager()[_presentation_manager_detail].getDisplayLabelDefinition(options);
       return label;
     });
   }
@@ -464,7 +491,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       requestOptions.keys.splice(pageOpts.paging.size);
     }
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId)[_presentation_manager_detail].getDisplayLabelDefinitions({
+      const labels = await this.getManager()[_presentation_manager_detail].getDisplayLabelDefinitions({
         ...options,
         keys: options.keys,
       });
@@ -477,14 +504,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
   /* eslint-disable @typescript-eslint/no-deprecated */
   public override async getSelectionScopes(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
-    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (options) =>
-      this.getManager(requestOptions.clientId).getSelectionScopes(options),
-    );
+    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (options) => this.getManager().getSelectionScopes(options));
   }
 
   public override async computeSelection(token: IModelRpcProps, requestOptions: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.makeRequest(token, "computeSelection", requestOptions, async (options) => {
-      const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
+      const keys = await this.getManager().computeSelection(options);
       return keys.toJSON();
     });
   }

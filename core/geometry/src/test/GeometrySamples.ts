@@ -1800,7 +1800,7 @@ export class Sample {
       if (frame) {
         const perpVector = frame.matrix.columnZ();
         perpVector.scaleInPlace(10.0);
-        const c1 = c.cloneTransformed(Transform.createTranslation(perpVector)) as CurvePrimitive;
+        const c1 = c.cloneTransformed(Transform.createTranslation(perpVector));
         allSweeps.push(RuledSweep.create([Path.create(c), Path.create(c1)], false)!);
       }
     }
@@ -2517,7 +2517,7 @@ export class Sample {
       result.push(RotationalSweep.create(contourZ.clone(), axis.clone(), rotationAngle, false)!);
     result.push(RuledSweep.create([contourA.clone(), contourB.clone()], capped)!);
     const transformC = Transform.createScaleAboutPoint(Point3d.create(0, 0, 8), 0.5);
-    const contourC = contourB.cloneTransformed(transformC)!;
+    const contourC = contourB.cloneTransformed(transformC);
     result.push(RuledSweep.create([contourA.clone(), contourB.clone(), contourC.clone()], capped)!);
     return result;
   }
@@ -2584,7 +2584,7 @@ export class Sample {
   }
 
   // cspell:word creat
-  /** @deprecated in 4.0.0 - will not be removed until after 2026-06-13. Use createVerticalStaggerPolygon instead. */
+  /** @deprecated in 4.0.0 - might be removed in next major version. Use createVerticalStaggerPolygon instead. */
   public static creatVerticalStaggerPolygon(
     dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number,
   ): Point3d[] {

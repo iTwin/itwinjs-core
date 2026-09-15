@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, PriorityQueue } from "@itwin/core-bentley";
+import { assert, NonFunctionPropertiesOf, PriorityQueue } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
 import { Tile, TileContent, TileRequest } from "./internal";
 
@@ -83,7 +83,7 @@ export class TileRequestChannelStatistics {
   /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
     for (const propName in this) { // eslint-disable-line guard-for-in
-      const key = propName as keyof TileRequestChannelStatistics;
+      const key = propName as keyof NonFunctionPropertiesOf<TileRequestChannelStatistics>;
       const val = this[key];
       if (typeof val === "number") {
         assert(typeof stats[key] === "number");

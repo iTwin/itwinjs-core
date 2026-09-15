@@ -826,7 +826,10 @@ export class TestRunner {
     let testName = prefix ?? "";
     const configs = this.curConfig;
 
-    testName += configs.iModelName.replace(/\.[^/.]+$/, "");
+    if (configs.iModelNameAlias)
+      testName += configs.iModelNameAlias.replace(/\.[^/.]+$/, "");
+    else
+      testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
     testName = testName.replace(/[/\\?%*:|"<>]/g, "-");

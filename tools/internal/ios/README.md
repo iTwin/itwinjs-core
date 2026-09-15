@@ -2,8 +2,8 @@
 
 Steps 1 and 2 occur when running `npm run ios:build:tests`
 
-1. Webpack Mocha and tests.
-    - Note the `entry` field in ios.webpack.config.js. Mocha is configured programmatically in configureMocha.js. The TEST_RESULTS_PATH, which is set in ViewController.swift, is passed to the BentleyMochaReporter. The tests are then bundled using glob. Lastly, runMocha.js runs the webpacked tests and signals to IModelJsMobile on process exit.
+1. Bundle Mocha and the tests with Vite.
+    - `ios.vite.config.mts` creates an ordered entry that configures Mocha, registers the compiled tests selected by `TESTS_GLOB`, and then runs Mocha. `TEST_RESULTS_PATH`, which is set in `ViewController.swift`, is passed to `BentleyMochaReporter`. Finally, `runMocha.js` signals test completion to `IModelJsMobile` on process exit.
 
 2. Copy test assets.
     - Test assets are copied to lib/ios/assets.

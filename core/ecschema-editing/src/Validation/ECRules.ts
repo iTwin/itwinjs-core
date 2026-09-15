@@ -87,6 +87,7 @@ export const DiagnosticCodes = {
   // Relationship Constraint Rule Codes (1600-1699)
   AtLeastOneConstraintClassDefined: getCode(1600),
   AbstractConstraintMustExistWithMultipleConstraints: getCode(1601),
+  NonPolymorphicConstraintMustBeConcrete: getCode(1602),
 };
 
 /**
@@ -185,6 +186,10 @@ export const Diagnostics = {
   /** EC-1601: Required message parameters: relationship end (source/target), relationship name */
   AbstractConstraintMustExistWithMultipleConstraints: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
     "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."),
+
+  /** EC-1602: Required message parameters: relationship end (source/target), relationship name, abstract constraint class name */
+  NonPolymorphicConstraintMustBeConcrete: createRelationshipConstraintDiagnosticClass<[string, string, string]>(DiagnosticCodes.NonPolymorphicConstraintMustBeConcrete,
+    "The {0}-Constraint of '{1}' is not polymorphic but includes the abstract class '{2}'. Non-polymorphic constraints may only reference concrete classes."),
 };
 
 /**
@@ -215,6 +220,7 @@ export const ECRuleSet: IRuleSet = {
   relationshipConstraintRules: [
     atLeastOneConstraintClassDefined,
     abstractConstraintMustExistWithMultipleConstraints,
+    nonPolymorphicConstraintMustBeConcrete,
   ],
   enumerationRules: [
     enumerationTypeUnsupported,
@@ -545,12 +551,13 @@ export async function* constraintClassesDeriveFromAbstractConstraint(ecClass: Re
 }
 
 /**
- * Validates a RelationshipConstraint and yields EC-1600 and EC-1601 rule violations.
+ * Validates a RelationshipConstraint and yields EC-1600, EC-1601, and EC-1602 rule violations.
  * @internal
  */
 export async function* validateRelationshipConstraint(constraint: RelationshipConstraint): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
   yield* atLeastOneConstraintClassDefined(constraint);
   yield* abstractConstraintMustExistWithMultipleConstraints(constraint);
+  yield* nonPolymorphicConstraintMustBeConcrete(constraint);
 }
 
 /**
@@ -579,6 +586,25 @@ export async function* abstractConstraintMustExistWithMultipleConstraints(constr
 
   const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
   yield new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(constraint, [constraintType, constraint.relationshipClass.fullName]);
+}
+
+/**
+ * EC Rule: A relationship constraint that is not polymorphic must only reference concrete (non-abstract) classes
+ * @internal
+ */
+export async function* nonPolymorphicConstraintMustBeConcrete(constraint: RelationshipConstraint): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
+  if (constraint.polymorphic)
+    return;
+
+  if (!constraint.constraintClasses || constraint.constraintClasses.length === 0)
+    return;
+
+  const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
+  for (const classPromise of constraint.constraintClasses) {
+    const constraintClass = await classPromise;
+    if (constraintClass.modifier === ECClassModifier.Abstract)
+      yield new Diagnostics.NonPolymorphicConstraintMustBeConcrete(constraint, [constraintType, constraint.relationshipClass.fullName, constraintClass.fullName]);
+  }
 }
 
 function propertyTypesMatch(propertyA: Property, propertyB: Property) {

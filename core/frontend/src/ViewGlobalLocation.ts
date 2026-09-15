@@ -8,7 +8,7 @@
 
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { Cartographic, GlobeMode } from "@itwin/core-common";
-import { BingElevationProvider } from "./tile/internal";
+import { IModelApp } from "./IModelApp";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
@@ -57,18 +57,15 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
   return output;
 }
 
-/** Queries the actual elevation of a cartographic point on the globe (using Bing elevation services)
+/** Queries the actual elevation of a cartographic point on the globe.
  * @public
  * @extensions
  */
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
-  const bingElevationProvider = new BingElevationProvider();
   if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
     const view3d = viewport.view;
     if (view3d.displayStyle.displayTerrain) {
-      const elevationOffset = await bingElevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
-      if (elevationOffset !== undefined)
-        return elevationOffset;
+      return IModelApp.elevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
     }
   }
   return 0;

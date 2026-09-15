@@ -29,6 +29,8 @@ export interface RealityTileParams extends TileParams {
   readonly rangeCorners?: Point3d[];
   readonly region?: RealityTileRegion;
   readonly geometricError?: number;
+  /** The URL of this tile's content, used to resolve resources (e.g. external glTF images) referenced relatively by the content. */
+  readonly contentUrl?: string;
 }
 
 /** The geometry representing the contents of a reality tile. Currently only polyfaces are returned.
@@ -68,6 +70,9 @@ export class RealityTile extends Tile {
   public readonly rangeCorners?: Point3d[];
   /** @internal */
   public readonly region?: RealityTileRegion;
+  /** The URL of this tile's content, used to resolve resources (e.g. external glTF images) referenced relatively by the content.
+   * @internal */
+  public readonly contentUrl?: string;
   /** @internal */
   protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
@@ -92,6 +97,7 @@ export class RealityTile extends Tile {
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
+    this.contentUrl = props.contentUrl;
     this._geometricError = props.geometricError;
     this.tree = tree;
 

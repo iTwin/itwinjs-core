@@ -1,6 +1,166 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 05 May 2026 17:44:54 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Sep 2026 20:23:38 GMT and should not be manually modified.
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- EmphasizeElements' default appearance applies even if no elements are emphasized.
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
+- Update Units Schema to 01.00.11.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Map-layer credentials can now be restricted to trusted origins via the opt-in MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins, and blocked requests are reported through MapLayerImageryProviderStatus.UntrustedOrigin. While the restriction is enabled, requests carrying credentials refuse redirects so that credentials cannot reach an unlisted origin. Server-provided attribution text, ArcGIS identify tooltip fields, and map-layer and reality-model names and properties are now rendered as plain text instead of HTML; WMS GetFeatureInfo responses from trusted origins intentionally keep their rich HTML, so applications must sanitize that content themselves.
+- Handle incompatible format-provider entries during QuantityFormatter registry reload.
+- Deprecate the existing @itwin/core-frontend TxnEntityMetadata export; use TxnEntityMetadata from @itwin/core-common instead. Frontend TxnEntityChange.metadata uses the shared contract.
+- Invalidate cached decorations when always/never-drawn elements change.
+- Upgrade wms-capabilities to 0.6.0 (drops minimist runtime dependency) and harden WMS GetCapabilities XML parsing against malformed and hostile input
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in DrawingViewState, IModelConnection, and ViewCreator2d ECSQL queries.
+- Removed AccuDraw's manual bearing north-correction, now redundant since `@itwin/core-quantity` applies it automatically. Fixes a double-conversion bug in plane-fixed bearing mode.
+- Added IpcApp.handle and IpcHandler to support backend-to-frontend IPC calls.
+- Clarify/document/prove support for the KHR_mesh_primitive_restart glTF extension for line strip primitives.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Add filtering support to SchemaView and improve performance.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Add CesiumAccessClient interface to allow applications to plug in custom Cesium Ion authentication, with CesiumIonClient as the built-in fallback.
+- Stop clearing SubCategoriesCache on subcategory insert; reload instead
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+- ECSqlReader now returns no rows instead of throwing when an IModelConnection is closed before query iteration.
+- Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception.
+- Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling.
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+- Added `GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold` to configure the world-space coordinate magnitude (default 10km) beyond which graphics for elements modified during the scope use `rtcCenter` centering instead of absolute float32 positions, preventing precision artifacts like jagged curves for projects far from the coordinate system origin.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, with their externally-referenced textures (e.g. `.webp` images) resolved against the tile's content URL. Previously such tiles were silently discarded, or rendered untextured/white.
+- Remove dormant internal Azure Maps imagery provider code from core frontend.
+- Deprecate Bing Maps imagery format and provider. `MapLayerOptions.BingMaps` is retained (non-deprecated) for elevation and location services.
+- Deprecate BingElevationProvider and BingLocationProvider; add ElevationProvider, GeoidProvider, and LocationProvider interfaces
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
+- Added `IModelConnection.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
 
 ## 5.9.1
 Tue, 05 May 2026 17:43:30 GMT
@@ -22,6 +182,13 @@ Mon, 04 May 2026 16:32:08 GMT
 - added EditTxn apis
 - Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
 - Fix event listener leak in LayerTileTreeReferenceHandler
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:14 GMT

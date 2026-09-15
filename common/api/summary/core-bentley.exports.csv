@@ -109,8 +109,10 @@ public;type;MarkRequired
 public;type;MaybePromise
 public;type;Mutable
 public;class;MutableCompressedId64Set
+beta;type;NestedValueOf
 public;type;NonFunctionPropertiesOf
 public;type;NonFunctionPropertyNamesOf
+public;class;ObservableMap
 public;class;ObservableSet
 public;function;omit
 beta;class;OneAtATimeAction
@@ -164,6 +166,7 @@ public;class;UnexpectedErrors
 public;function;using
 deprecated;function;using
 public;function;utf8ToString
+beta;type;ValueOf
 beta;function;wrapTimerCallback
 public;class;YieldManager
 public;interface;YieldManagerOptions

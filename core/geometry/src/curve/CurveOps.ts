@@ -26,22 +26,22 @@ import { OffsetOptions } from "./OffsetOptions";
 import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
-  /**
-   * Options bundle for use in [[CurveOps.isPlanar]] and [[CurveOps.isColinear]].
-   * @public
-   */
-  export interface PlanarColinearOptions {
-    /** Maximum allowable distance that geometry can deviate from planarity/colinearity. Default is [[Geometry.smallMetricDistance]]. */
-    maxDeviation?: number;
-    /** Whether colinearity test ignores z-coordinates. Default is `false`. */
-    xyColinear?: boolean;
-    /** Radian tolerance for xy-colinearity, measuring maximum angular deviation from a vertical plane. Default is [[Geometry.smallAngleRadians]]. */
-    radianTolerance?: number;
-    /** Pre-allocated object to populate with the computed plane-to-world transformation and return when planarity test succeeds. */
-    localToWorld?: Transform;
-    /** Pre-allocated object to populate with the computed line and return when colinear test succeeds. */
-    colinearRay?: Ray3d;
-  }
+/**
+ * Options bundle for use in [[CurveOps.isPlanar]] and [[CurveOps.isColinear]].
+ * @public
+ */
+export interface PlanarColinearOptions {
+  /** Maximum allowable distance that geometry can deviate from planarity/colinearity. Default is [[Geometry.smallMetricDistance]]. */
+  maxDeviation?: number;
+  /** Whether colinearity test ignores z-coordinates. Default is `false`. */
+  xyColinear?: boolean;
+  /** Radian tolerance for xy-colinearity, measuring maximum angular deviation from a vertical plane. Default is [[Geometry.smallAngleRadians]]. */
+  radianTolerance?: number;
+  /** Pre-allocated object to populate with the computed plane-to-world transformation and return when planarity test succeeds. */
+  localToWorld?: Transform;
+  /** Pre-allocated object to populate with the computed line and return when colinear test succeeds. */
+  colinearRay?: Ray3d;
+}
 
 /**
  * Static methods for miscellaneous curve operations.
