@@ -1256,11 +1256,15 @@ export abstract class Viewport implements Disposable, TileUser {
     if (ref.isSpatial()) {
       removals.push(ref.onModelClipGroupsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveHiddenLineSettingsChanged.addListener(invalidateScene));
-      removals.push(ref.onViewedModelsLoaded.addListener(() => {
+
+      const modelsChanged = () => {
         this.invalidateScene();
         if (ref === this.primaryIModelRef)
           this._changeFlags.setViewedModels();
-      }));
+      };
+
+      removals.push(ref.viewedModels.onChanged.addListener(modelsChanged));
+      removals.push(ref.onViewedModelsLoaded.addListener(modelsChanged));
     }
   }
 

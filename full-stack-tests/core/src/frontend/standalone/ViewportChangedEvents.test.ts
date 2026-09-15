@@ -353,7 +353,7 @@ describe.only("Viewport changed events", async () => {
     // removing a model not present produces no event
     mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x9876543", false));
 
-    // setting viewed models directly always produces event - we don't check if contents of set exactly match current set
+    // Assigning to `models` emits an event - it doesn't check if the net contents remain the same afterward.
     let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
     selectedModels = new Set<string>();
