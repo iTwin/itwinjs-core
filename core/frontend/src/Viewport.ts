@@ -808,7 +808,7 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
     this.primaryIModelRef.changeCategoryDisplay({
-      categories,
+      categories: Id64.iterable(categories),
       display,
       enableAllSubCategories,
       noBatchNotify: true !== batchNotify,
@@ -1021,7 +1021,7 @@ export abstract class Viewport implements Disposable, TileUser {
     if (!ref.isSpatial())
       return false;
 
-    ref.viewedModels[display ? "addAll" : "deleteAll"](models);
+    ref.viewedModels[display ? "addAll" : "deleteAll"](Id64.iterable(models));
     return true;
   }
 
