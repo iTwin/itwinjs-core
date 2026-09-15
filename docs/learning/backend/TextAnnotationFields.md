@@ -43,6 +43,8 @@ For each `"quantity"` or `"coordinate"` field the formatter looks up a [Formatte
 1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
 2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair, and skipped entirely when `persistenceUnit` names a *different* unit than the property's own.
 
+Skipping the property-side pair when the units disagree is deliberate. `kindOfQuantity` only chooses how a magnitude is displayed, so falling back to the property's is harmless. `persistenceUnit` instead states what the stored magnitude *means*: a field declaring `Units.FT` asserts the `2.5` on the property is 2.5 feet, and formatting it through the property's meter-based pair would render `2.5 m` — off by the conversion factor, with nothing to signal the substitution. So a disagreeing `persistenceUnit` renders raw rather than falling back.
+
 The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
 
 ## Managing warm-up

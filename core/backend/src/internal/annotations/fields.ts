@@ -63,9 +63,8 @@ export interface UpdateFieldsContext {
 
   /** Resolves `"quantity"` and `"coordinate"` values through pre-warmed
    * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the bucket matching the
-   * field's [QuantityFieldFormatOptions.formatSet]($common); a requirement that was never
-   * pre-warmed — or an absent provider entirely — leaves the field on the raw-string fallback
-   * via [[formatFieldValue]] and is recorded in
+   * field's [QuantityFieldFormatOptions.formatSet]($common); anything unwarmed falls back to
+   * the raw string representation and is recorded in
    * [FieldFormattingSpecProvider.misses]($backend).
    */
   readonly formattingSpecProvider?: FieldFormattingSpecProvider;
@@ -291,12 +290,9 @@ function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): F
     }
   }
 
-  // A numeric leaf is typed a `"quantity"`: JSON carries no units, so the field is expected to
-  // declare a [QuantityFieldFormatOptions.kindOfQuantity]($common) and
-  // [QuantityFieldFormatOptions.persistenceUnit]($common) of its own. It costs nothing when it
-  // doesn't -- `collectFieldQuantityPairs` emits a candidate only when both halves are present, so
-  // an incomplete key yields no candidates, records no pre-warm miss, and renders through the same
-  // raw `toString()` fallback a `"string"` leaf would have used.
+  // A numeric leaf is typed `"quantity"`: JSON carries no units, so only the field's own
+  // `kindOfQuantity` + `persistenceUnit` overrides can form a candidate. An incomplete key yields
+  // no candidates and renders through the same raw `toString()` a `"string"` leaf would have used.
   switch (typeof cur) {
     case "number":
       return { value: cur, type: "quantity" };
@@ -353,11 +349,8 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
       case PrimitiveType.Long:
         // Any numeric property is a potential quantity. Classifying one as "quantity" is not an
         // assertion that it *has* units -- it only decides whether the KoQ/units pipeline is
-        // consulted (see `resolveFormatMagnitude`). A number that resolves no spec, because
-        // neither the property nor the field names a KindOfQuantity, falls back to the exact same
-        // `toString()` the "string" formatter would have produced. So counts and identifiers still
-        // render bare, while a caller that declares `formatOptions.quantity` on one keeps the
-        // documented override escape hatch that doubles already enjoy.
+        // consulted. A number that resolves no spec falls back to the same `toString()` the
+        // "string" formatter would have produced, so counts and identifiers still render bare.
         return "quantity";
       case PrimitiveType.Point2d:
       case PrimitiveType.Point3d:
@@ -412,11 +405,8 @@ function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: Upd
 /** Recomputes a single field's cached display string synchronously. Returns true iff
  * cachedContent changed.
  *
- * Resolving the property value and formatting it are both fallible — formatting in particular
- * runs [FormatterSpec.applyFormatting]($core-quantity), which can throw on a malformed format.
- * A failure of either is logged and degrades *this* field to
- * [FieldRun.invalidContentIndicator]($common); it never escapes to abandon the sibling fields of
- * the same annotation, which would leave them mutated in memory but unpersisted.
+ * Resolving the property value and formatting it are both fallible. A failure of either is
+ * logged and degrades *this* field to [FieldRun.invalidContentIndicator]($common);
  */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
@@ -510,10 +500,9 @@ type FieldTerminal = Property | typeof jsonInStringTerminal;
  * cannot be followed, or [[jsonInStringTerminal]] when it dives into a JSON-in-string leaf.
  *
  * Walks with the same [[advanceSchemaCursor]] the value path uses, so the two agree on which
- * paths are legal. It is deliberately more permissive in one direction: it cannot know whether
- * the stored string actually parses as JSON, so a JSON-in-string path may pre-warm a
- * [FormatterSpec]($core-quantity) that evaluation never consults. An unused warmed spec is
- * harmless; a missing one is not.
+ * paths are legal. It cannot know whether the stored string actually parses as JSON, so a
+ * JSON-in-string path may pre-warm a spec that evaluation never consults — harmless, where a
+ * missing one is not.
  */
 function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldTerminal | undefined {
   const host = field.propertyHost;
@@ -551,20 +540,16 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
   return cursor.ecProp;
 }
 
-/** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at
- * formatting time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
+/** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at formatting
+ * time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
  * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
- * overrides. Delegates to [[collectFieldQuantityPairs]] so pre-warm enumerates the same
- * candidates the runtime iterates. See
- * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
+ * overrides. See [[QuantityFieldFormatOptions]] for the priority contract.
  *
- * This is the single source of the `field -> (KoQ, persistenceUnit)` mapping. Pre-warm and
- * evaluation must agree on it exactly: a requirement that differs from the candidate the
- * runtime actually walks does not merely fail to format, it lets the runtime resolve a
- * *different* pair and scale the value by the wrong unit. That agreement is enforced here by
- * construction — both paths share `collectFieldQuantityPairs`, and the metadata walk shares
- * `advanceSchemaCursor` with the runtime value walk — which is why this computation stays in
- * core even though callers choose for themselves which fields to ask about.
+ * Pre-warm and evaluation must enumerate identical candidates: a requirement that differs from
+ * the pair the runtime walks does not merely fail to format, it lets the runtime resolve a
+ * *different* pair and scale the value by the wrong unit. Both paths therefore share
+ * [[collectFieldQuantityPairs]], and this metadata walk shares [[advanceSchemaCursor]] with the
+ * runtime value walk.
  * @internal
  */
 export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
