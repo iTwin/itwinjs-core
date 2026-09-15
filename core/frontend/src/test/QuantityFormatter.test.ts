@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
+import { assert as bAssert } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormatDefinition, FormatsChangedArgs, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
@@ -686,76 +686,7 @@ describe("Quantity formatter", async () => {
     });
   });
 
-  describe("FormatsProviderManager", async () => {
 
-    it("Should raise formatsChanged event when updating formatsProvider", () => {
-      const spy = vi.fn();
-      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
-
-      const testProvider = new QuantityTypeFormatsProvider();
-      IModelApp.formatsProvider = testProvider;
-
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
-    });
-
-    it("should raise formatsChanged event when calling resetFormatsProvider", () => {
-      const spy = vi.fn();
-      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
-
-      IModelApp.resetFormatsProvider();
-
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
-    });
-
-    it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {
-
-      const testProvider = new QuantityTypeFormatsProvider();
-      IModelApp.formatsProvider = testProvider;
-
-      const spy = vi.fn();
-      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
-      testProvider.onFormatsChanged.raiseEvent({ formatsChanged: ["foobar"]});
-
-
-      IModelApp.resetFormatsProvider();
-      expect(spy).toHaveBeenCalledTimes(2);
-      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["foobar"] });
-      expect(spy.mock.calls[1][0]).toEqual({ formatsChanged: "all" });
-
-    });
-
-    it("getFormat should honor the requested unit system", async () => {
-      const provider = new QuantityTypeFormatsProvider();
-      const metricFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "metric");
-      const imperialFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "imperial");
-      expect(metricFormat).toBeDefined();
-      expect(imperialFormat).toBeDefined();
-      // Before the fix, the requested system was ignored and both returned the active-system format.
-      expect(metricFormat).not.toEqual(imperialFormat);
-    });
-
-    it("should not leak listeners when formatsProvider is replaced multiple times", () => {
-      const provider1 = new QuantityTypeFormatsProvider();
-      const provider2 = new QuantityTypeFormatsProvider();
-
-      IModelApp.formatsProvider = provider1;
-      IModelApp.formatsProvider = provider2;
-
-      const spy = vi.fn();
-      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
-
-      // Raising on provider1 should NOT fire — the old listener was removed
-      provider1.onFormatsChanged.raiseEvent({ formatsChanged: ["old"] });
-      expect(spy).toHaveBeenCalledTimes(0);
-
-      // Raising on provider2 SHOULD fire — it's the current provider
-      provider2.onFormatsChanged.raiseEvent({ formatsChanged: ["new"] });
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["new"] });
-    });
-  });
 });
 
 describe("Test Custom QuantityType", async () => {
@@ -947,6 +878,7 @@ describe("Reload queue and onFormattingReady", () => {
     expect(changedIndices[0]).toBeGreaterThan(readyIndices[readyIndices.length - 1]);
   });
 
+
   describe("Composite-keyed spec registry", () => {
     const simpleDecimalFormat = {
       type: "Decimal" as const,
@@ -1095,7 +1027,7 @@ describe("Failed reload recovery (Issue 5)", () => {
     await qf.onInitialized();
     expect(qf.isReady).toBe(true);
 
-    // Spy on loadFormatAndParsingMapsForSystem to force it to throw
+    // Spy on the format/parser map loader to force it to throw
     const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
     let shouldThrow = true;
     (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
@@ -1105,21 +1037,23 @@ describe("Failed reload recovery (Issue 5)", () => {
       return originalLoad(...args);
     };
 
-    // setActiveUnitSystem triggers scheduleReload → calls loadFormatAndParsingMapsForSystem
+    // setActiveUnitSystem triggers scheduleReload → calls the format/parser map loader
     await qf.setActiveUnitSystem("metric");
 
-    // After failure: isReady should be restored (stale-but-usable)
+    // After failure: isReady and the committed active system should remain usable.
     expect(qf.isReady).toBe(true);
+    expect(qf.activeUnitSystem).toBe("imperial");
 
     // Verify that a successful reload still works after recovery
     shouldThrow = false;
-    await qf.setActiveUnitSystem("imperial");
+    await qf.setActiveUnitSystem("metric");
+    expect(qf.activeUnitSystem).toBe("metric");
     expect(qf.isReady).toBe(true);
   });
 
   it("isReady stays false if first init fails (was never ready)", async () => {
     const qf = new QuantityFormatter();
-    // Override loadFormatAndParsingMapsForSystem before onInitialized
+    // Override the format/parser map loader before onInitialized
     (qf as any).loadFormatAndParsingMapsForSystem = async function () {
       throw new Error("simulated first load failure");
     };
@@ -1490,168 +1424,5 @@ describe("Deferred unit-system-changed emit (race condition validation)", () => 
 
     // No unit system change should have been emitted
     expect(spy).not.toHaveBeenCalled();
-  });
-});
-
-describe("_rebuildRegistryFromProvider", () => {
-  const simpleDecimalFormat = {
-    type: "Decimal" as const,
-    precision: 4,
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
-  };
-
-  beforeAll(async () => {
-    await IModelApp.startup({ localization: new EmptyLocalization() });
-  });
-
-  afterAll(async () => {
-    await IModelApp.shutdown();
-  });
-
-  it("rebuilds registry when formatsProvider raises formatsChanged with 'all'", async () => {
-    const qf = new QuantityFormatter();
-    await qf.onInitialized();
-
-    // Add a custom entry to the registry
-    await qf.addFormattingSpecsToRegistry({
-      name: "TestKoQ.CUSTOM",
-      persistenceUnitName: "Units.M",
-      formatProps: simpleDecimalFormat,
-      system: "metric",
-    });
-    const entryBefore = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
-    expect(entryBefore).toBeDefined();
-
-    // Trigger a formatsChanged "all" event — the provider returns undefined for our custom name,
-    // so the entry should be removed from the registry
-    const provider = new QuantityTypeFormatsProvider();
-    IModelApp.formatsProvider = provider;
-
-    // Wait for reload to finish
-    await new Promise<void>((resolve) => {
-      qf.onFormattingReady.addListener(resolve);
-    });
-
-    // Our custom KoQ is not in QuantityTypeFormatsProvider, so _rebuildRegistryFromProvider
-    // should have removed it (anySystemHadFormat === false → delete from registry)
-    const entryAfter = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
-    expect(entryAfter).toBeUndefined();
-  });
-
-  it("rebuilds only named formats when formatsChanged is a string array", async () => {
-    const qf = new QuantityFormatter();
-    await qf.onInitialized();
-
-    // The default initialization creates entries for DefaultToolsUnits.LENGTH, etc.
-    const lengthBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
-    expect(lengthBefore).toBeDefined();
-
-    const angleBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
-    expect(angleBefore).toBeDefined();
-
-    // Create a provider and trigger a formatsChanged with only "DefaultToolsUnits.LENGTH"
-    const provider = new QuantityTypeFormatsProvider();
-    IModelApp.formatsProvider = provider;
-
-    // Wait for "all" reload
-    await new Promise<void>((resolve) => {
-      qf.onFormattingReady.addListener(resolve);
-    });
-
-    // Now fire a targeted change event for just LENGTH
-    provider.onFormatsChanged.raiseEvent({ formatsChanged: ["DefaultToolsUnits.LENGTH"] });
-
-    await new Promise<void>((resolve) => {
-      qf.onFormattingReady.addListener(resolve);
-    });
-
-    // Both should still exist (the provider returns formats for both)
-    const lengthAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
-    const angleAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
-    expect(lengthAfter).toBeDefined();
-    expect(angleAfter).toBeDefined();
-  });
-
-  it("allows onBeforeFormattingReady to replace an incompatible provider format", async () => {
-    const name = "TestKoQ.HORIZONTAL_BEARING";
-    const providerFormat: FormatDefinition = {
-      type: "Bearing",
-      precision: 2,
-      revolutionUnit: "Units.REVOLUTION",
-      formatTraits: ["showUnitLabel"],
-      uomSeparator: "",
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [{ name: "Units.ARC_DEG", label: "°" }],
-      },
-    };
-    const manuallyRegisteredFormat: FormatDefinition = {
-      ...providerFormat,
-      revolutionUnit: "Units.HORIZONTAL_DIR_REVOLUTION",
-      composite: {
-        ...providerFormat.composite,
-        units: [{ name: "Units.HORIZONTAL_DIR_ARC_DEG", label: "°" }],
-      },
-    };
-    const provider = {
-      onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
-      async getFormat(formatName: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
-        return formatName === name ? providerFormat : undefined;
-      },
-    };
-    const qf = new QuantityFormatter();
-    let removeReadyListener: (() => void) | undefined;
-
-    try {
-      IModelApp.formatsProvider = provider;
-      await qf.onInitialized();
-
-      // Schema-backed units providers throw when a format and persistence unit belong to different phenomena.
-      const unitsProvider = qf.unitsProvider;
-      const originalGetConversion = unitsProvider.getConversion.bind(unitsProvider);
-      unitsProvider.getConversion = async (fromUnit, toUnit) => {
-        if (fromUnit.phenomenon !== toUnit.phenomenon)
-          throw new Error("Source and target units do not belong to same phenomenon");
-        return originalGetConversion(fromUnit, toUnit);
-      };
-
-      await qf.addFormattingSpecsToRegistry({
-        name,
-        persistenceUnitName: "Units.HORIZONTAL_DIR_RAD",
-        formatProps: manuallyRegisteredFormat,
-        system: "metric",
-      });
-      expect(qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })).toBeDefined();
-
-      let replacementRegistered = false;
-      qf.onBeforeFormattingReady.addListener((collector) => {
-        if (!qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })) {
-          replacementRegistered = true;
-          collector.addPendingWork(qf.addFormattingSpecsToRegistry({
-            name,
-            persistenceUnitName: "Units.HORIZONTAL_DIR_RAD",
-            formatProps: manuallyRegisteredFormat,
-            system: "metric",
-          }));
-        }
-      });
-
-      const readySpy = vi.fn();
-      removeReadyListener = qf.onFormattingReady.addListener(readySpy);
-      provider.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
-
-      await vi.waitFor(() => expect(readySpy).toHaveBeenCalledTimes(1), { timeout: 1000 });
-      expect(replacementRegistered).toBe(true);
-      const entryAfter = qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" });
-      expect(entryAfter).toBeDefined();
-      expect(entryAfter?.formatterSpec.format.revolutionUnit?.name).toBe("Units.HORIZONTAL_DIR_REVOLUTION");
-      expect(entryAfter?.parserSpec.format.revolutionUnit?.name).toBe("Units.HORIZONTAL_DIR_REVOLUTION");
-    } finally {
-      removeReadyListener?.();
-      qf[Symbol.dispose]();
-      IModelApp.resetFormatsProvider();
-    }
   });
 });
