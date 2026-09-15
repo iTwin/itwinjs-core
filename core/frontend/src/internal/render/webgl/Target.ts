@@ -790,10 +790,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     let result: Pixel.Buffer | undefined;
 
-    // this.renderSystem.frameBufferStack.execute(expectDefined(this._fbo), false, false, () => {
-    //   this.compositor.preDraw();
-    // });
-
     this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
       let updatedExclusions = false;
       if (excludedElements) {
