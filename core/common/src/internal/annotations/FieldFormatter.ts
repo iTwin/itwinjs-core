@@ -21,11 +21,9 @@ export interface FieldValue {
   value: FieldPrimitiveValue;
   /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]]. */
   type: FieldPropertyType;
-  /** Full name of the property's KindOfQuantity, e.g. `"AecUnits.LENGTH"`, if it has one. */
+  /** EC full name of the property's KindOfQuantity, e.g. `"AecUnits.LENGTH"`, if it has one. */
   kindOfQuantityFullName?: string;
-  /** Full name of the property's persistence unit, e.g. `"Units.M"`, if one is derivable
-   * from its KindOfQuantity. This is the unit the stored magnitude is expressed in.
-   */
+  /** EC full name of the unit the stored magnitude is expressed in, e.g. `"Units.M"`. */
   persistenceUnitFullName?: string;
 }
 
