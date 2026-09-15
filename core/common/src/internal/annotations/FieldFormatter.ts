@@ -124,7 +124,7 @@ function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude):
  * prefix/suffix/case.
  *
  * `formatMagnitude` is consulted only by the `"quantity"` and `"coordinate"` branches. Omitting
- * it falls those values back to their raw string representation.
+ * it falls those values back to `value.toString()`.
  * @internal
  */
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined {
