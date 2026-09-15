@@ -6,7 +6,7 @@
 import { FieldValue, QuantityFieldFormatOptions } from "@itwin/core-common";
 import { FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
 
-/** The provider capability synchronous field evaluation needs: look up an already-warmed
+/** The provider capability synchronous field evaluation needs: look up an already-built
  * [FormatterSpec]($core-quantity), and format a magnitude through it.
  *
  * Narrower than [FormattingSpecProvider]($core-quantity), which also produces a
@@ -14,14 +14,14 @@ import { FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
  * @internal
  */
 export interface FieldSpecProvider {
-  /** Returns the pre-warmed spec for `args`, or `undefined` if it was never warmed. */
+  /** Returns the spec already built for `args`, or `undefined` if no spec was found. */
   getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
   /** Applies `formatSpec` to `magnitude`. */
   formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
 }
 
 /** Cache key for one [FormattingSpecArgs]($core-quantity). Must name everything that changes the
- * resulting spec: if two distinct requirements share a key, only the first is warmed and the
+ * resulting spec: if two distinct requirements share a key, only the first is built and the
  * second silently formats through it, converting from the wrong unit.
  * @internal
  */
@@ -29,13 +29,14 @@ export function specKey(args: FormattingSpecArgs): string {
   return `${args.name}|${args.persistenceUnitName}|${args.system ?? ""}`;
 }
 
-/** Builds the ordered candidate specs a quantity/coordinate FieldValue may format through, in the
- * priority order documented on [[QuantityFieldFormatOptions]]. Used by both [[lookupFieldSpec]]
- * and `collectFieldRequirements`, so pre-warm enumerates exactly what evaluation iterates.
+/** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate FieldValue may
+ * format through, in the priority order documented on [[QuantityFieldFormatOptions]]. Used by
+ * both [[lookupFieldSpec]] and `collectFieldRequirements`, so pre-warm enumerates exactly what
+ * evaluation iterates.
  *
- * A candidate needs both a name and a persistence unit, so a property with no
- * [KindOfQuantity]($ecschema-metadata) contributes none. The property-side pair is also withheld
- * when `overridePersistence` names a different unit.
+ * A pair needs both halves, so a property with no [KindOfQuantity]($ecschema-metadata)
+ * contributes none. The property-side pair is also withheld when `overridePersistence` names a
+ * different unit.
  * @internal
  */
 export function collectFieldQuantityPairs(args: {
@@ -68,8 +69,8 @@ export function collectFieldQuantityPairs(args: {
   return pairs;
 }
 
-/** Returns the first already-warmed [FormatterSpec]($core-quantity) `provider` holds for `value`,
- * along with the candidates that were tried, so the caller can record a miss when none resolved.
+/** Returns the first [FormatterSpec]($core-quantity) `provider` already holds for `value`, along
+ * with the pairs that were tried, so the caller can record a miss when none resolved.
  * @internal
  */
 export function lookupFieldSpec(

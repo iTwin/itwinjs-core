@@ -196,8 +196,8 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * [[FieldFormattingSpecProvider]] registered for `args.iModel` by
    * [[registerFieldFormattingProvider]].
    *
-   * A field whose requirement was never pre-warmed, or any field evaluated with no provider
-   * registered, falls back to its raw string representation and is recorded in
+   * A field whose format was never built, or any field evaluated with no provider registered,
+   * falls back to `value.toString()` and is recorded in
    * [FieldFormattingSpecProvider.misses]($backend). A field whose property cannot be resolved,
    * or whose format throws, is logged and rendered as
    * [FieldRun.invalidContentIndicator]($common); one bad field does not abandon the rest of the
@@ -211,7 +211,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   /** Returns the [FormattingSpecArgs]($core-quantity) needed to format every
    * `"quantity"` and `"coordinate"` [FieldRun]($common) in `args.block`. Pass these to
    * [FieldFormattingSpecProvider.warmUp]($backend) before inserting or updating an annotation,
-   * so its fields resolve on the next evaluation rather than falling back to raw strings.
+   * so its fields resolve on the next evaluation rather than falling back to `value.toString()`.
    *
    * Fields whose target property has no [KindOfQuantity]($ecschema-metadata) and no
    * `kindOfQuantity` / `persistenceUnit` override are omitted.
@@ -223,9 +223,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Returns the [FormattingSpecArgs]($core-quantity) that formatting `field` may consult —
-   * usually one entry, more when the field's `formatOptions.quantity` overrides produce
-   * additional candidates, and none when the target property carries no
-   * [KindOfQuantity]($ecschema-metadata) and the field supplies no override.
+   * usually one entry, more when the field's `formatOptions.quantity` overrides name a
+   * [KindOfQuantity]($ecschema-metadata) or persistence unit differing from the property's, and
+   * none when the property carries no KindOfQuantity and the field supplies no override.
    *
    * @beta
    */
@@ -238,7 +238,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * callbacks can format `"quantity"` and `"coordinate"` [FieldRun]($common)s synchronously.
    *
    * **Call this when the iModel opens**, before any editing code touches it. A field evaluated
-   * with no provider registered persists its raw string and is not revisited until the *next*
+   * with no provider registered persists `value.toString()` and is not revisited until the *next*
    * edit to the same source element, since registering does not walk existing annotations.
    *
    * `requirements` is mandatory — iTwin.js does not discover them. Build the array with
@@ -281,8 +281,8 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * any. Typically called from an [IModelDb.onBeforeClose]($backend) listener.
    *
    * Existing [FieldRun.cachedContent]($common) is unchanged, but the next source-element edit
-   * re-runs [[evaluateFields]] with no provider and overwrites `cachedContent` with the raw
-   * string. To swap FormatSets, call [[registerFieldFormattingProvider]] again rather than
+   * re-runs [[evaluateFields]] with no provider and overwrites `cachedContent` with
+   * `value.toString()`. To swap FormatSets, call [[registerFieldFormattingProvider]] again rather than
    * unregistering in between.
    * @beta
    */

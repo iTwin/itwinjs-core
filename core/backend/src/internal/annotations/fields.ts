@@ -61,10 +61,10 @@ export interface UpdateFieldsContext {
    */
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Resolves `"quantity"` and `"coordinate"` values through pre-warmed
-   * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the bucket matching the
-   * field's [QuantityFieldFormatOptions.formatSet]($common); anything unwarmed falls back to
-   * the raw string representation and is recorded in
+  /** Resolves `"quantity"` and `"coordinate"` values through already-built
+   * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the formats of the
+   * FormatSet named by [QuantityFieldFormatOptions.formatSet]($common); anything un-built falls
+   * back to `value.toString()` and is recorded in
    * [FieldFormattingSpecProvider.misses]($backend).
    */
   readonly formattingSpecProvider?: FieldFormattingSpecProvider;
@@ -209,8 +209,8 @@ function enterProperty(prop: Property, containingClass: AnyClass): SchemaCursor 
 /** Advances a schema cursor by one [FieldPropertyPath]($common) accessor, or returns `undefined`
  * when the accessor doesn't apply to the current property.
  *
- * Shared by the value walker in [[getFieldPropertyValue]] and the metadata-only walker in
- * [[resolveFieldTerminalProperty]] so the two cannot disagree about which paths are legal.
+ * Shared by [[getFieldPropertyValue]], which reads values, and [[resolveFieldTerminalProperty]],
+ * which reads metadata, so the two cannot disagree about which paths are legal.
  */
 function advanceSchemaCursor(cursor: SchemaCursor, accessor: string | number): SchemaCursor | undefined {
   const { ecProp, ecClass } = cursor;
@@ -247,7 +247,7 @@ function classifyEcValue(prop: Property, value: any): FieldValueType | undefined
   return prop.isPrimitive() ? { primitive: value } : undefined;
 }
 
-/** Whether `curValue` is a string property the field can index into, i.e. a candidate serialized
+/** Whether `curValue` is a string property the field can index into, i.e. possibly a serialized
  * JSON blob. Narrows `curValue.primitive` to `string` for the caller.
  */
 function isIndexableJsonString(rootProp: Property, curValue: FieldValueType): curValue is { primitive: string } {
@@ -291,8 +291,8 @@ function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): F
   }
 
   // A numeric leaf is typed `"quantity"`: JSON carries no units, so only the field's own
-  // `kindOfQuantity` + `persistenceUnit` overrides can form a candidate. An incomplete key yields
-  // no candidates and renders through the same raw `toString()` a `"string"` leaf would have used.
+  // `kindOfQuantity` + `persistenceUnit` overrides can name a format. Supplying only one of the
+  // two renders through the same `toString()` a `"string"` leaf would have used.
   switch (typeof cur) {
     case "number":
       return { value: cur, type: "quantity" };
@@ -379,9 +379,9 @@ export function createUpdateContext(
 }
 
 /** Resolves the [FormatterSpec]($core-quantity) this field should render its magnitudes through,
- * returning a callback bound to it, or `undefined` when the value is not unitized, no provider is
- * registered, or nothing was pre-warmed for any of the field's candidate (KoQ, persistence unit)
- * pairs. In that last case the shortfall is recorded on the provider.
+ * returning a callback bound to it, or `undefined` when not a quantity or coordinate, no provider is
+ * registered, or no format was built for any of the (KindOfQuantity, persistence unit) pairs the
+ * field may resolve through. In that last case the unresolved pairs are recorded on the provider.
  */
 function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
   const specProvider = context.formattingSpecProvider;
@@ -501,7 +501,7 @@ type FieldTerminal = Property | typeof jsonInStringTerminal;
  *
  * Walks with the same [[advanceSchemaCursor]] the value path uses, so the two agree on which
  * paths are legal. It cannot know whether the stored string actually parses as JSON, so a
- * JSON-in-string path may pre-warm a spec that evaluation never consults — harmless, where a
+ * JSON-in-string path may build a spec that evaluation never consults — harmless, where a
  * missing one is not.
  */
 function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldTerminal | undefined {
@@ -545,9 +545,9 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
  * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
  * overrides. See [[QuantityFieldFormatOptions]] for the priority contract.
  *
- * Pre-warm and evaluation must enumerate identical candidates: a requirement that differs from
- * the pair the runtime walks does not merely fail to format, it lets the runtime resolve a
- * *different* pair and scale the value by the wrong unit. Both paths therefore share
+ * Pre-warm and evaluation must enumerate identical pairs: a requirement that differs from the
+ * pair the runtime resolves does not merely fail to format, it lets the runtime pick a
+ * *different* pair and convert the value by the wrong factor. Both paths therefore share
  * [[collectFieldQuantityPairs]], and this metadata walk shares [[advanceSchemaCursor]] with the
  * runtime value walk.
  * @internal
@@ -562,8 +562,8 @@ export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): For
 
   if (terminal === jsonInStringTerminal) {
     // A JSON leaf has no property-side pair to fall back to, so only the field's own overrides
-    // can form a candidate. `collectFieldQuantityPairs` drops an incomplete key, which matches
-    // the runtime falling through to the raw `toString()` representation.
+    // can name a format. `collectFieldQuantityPairs` drops an incomplete pair, which matches the
+    // runtime falling through to `value.toString()`.
     return collectFieldQuantityPairs({
       overrideName: quantityOptions?.kindOfQuantity,
       overridePersistence: quantityOptions?.persistenceUnit,

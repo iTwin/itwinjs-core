@@ -17,7 +17,7 @@ import { IModelDb } from "../IModelDb";
 import { FieldSpecProvider, specKey } from "../internal/annotations/fieldSpecs";
 
 /** Describes a [FormatterSpec]($core-quantity) that a [FieldRun]($common) asked for but which
- * [[FieldFormattingSpecProvider]] had not pre-warmed, recorded by
+ * [[FieldFormattingSpecProvider]] had not built, recorded by
  * [[FieldFormattingSpecProvider.misses]].
  * @beta
  */
@@ -108,8 +108,8 @@ class FieldSpecBucket implements FieldSpecProvider {
   public constructor(
     private readonly _formatsProvider: FormatsProvider,
     private readonly _fallback: FieldSpecBucket | undefined,
-    /** The FormatSet backing this bucket, when it has one. Only consulted to decide whether a
-     * requirement is this bucket's own business or the fallback's — see [[warmUp]].
+    /** The FormatSet backing this bucket, when it has one. Only consulted to decide whether this
+     * bucket or its fallback should build a given requirement — see [[warmUp]].
      */
     private readonly _formatSet: FormatSet | undefined = undefined,
   ) { }
@@ -184,7 +184,10 @@ export interface FieldFormattingSpecProviderArgs {
    * adopted.
    */
   unitSystem?: UnitSystemKey;
-  /** The specs to pre-build, so that the synchronous evaluation that follows finds each in cache.
+  /** The specs to build up front, so that the synchronous evaluation can format fields.
+   * Each entry names a [KindOfQuantity]($ecschema-metadata) and the persistence unit its
+   * values are stored in; together they identify one [Format]($core-quantity) to build.
+   *
    * Required — iTwin.js does not discover requirements on its own. Compose it from
    * [[FieldFormattingSpecProvider.collectSchemaFormattingRequirements]],
    * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) and/or
@@ -201,16 +204,16 @@ export interface FieldFormattingSpecProviderArgs {
  * callbacks — neither of which can await — format as asynchronous code would. All asynchronous
  * work happens in [[warmUp]]; evaluation afterwards is a map lookup.
  *
- * One provider holds every FormatSet an iModel uses, each warmed into its own bucket. Formats
- * resolve in this order:
+ * One provider holds every FormatSet an iModel uses, caching each FormatSet's formats separately.
+ * Formats resolve in this order:
  *
  *  1. The FormatSet named by the field's [QuantityFieldFormatOptions.formatSet]($common).
  *  2. The FormatSet adopted for the iModel ([[FieldFormattingSpecProviderArgs.formatSet]]).
  *  3. The KindOfQuantity's presentation format for [[FieldFormattingSpecProviderArgs.unitSystem]].
- *  4. The raw string representation, with the shortfall recorded in [[misses]].
+ *  4. `value.toString()`, with the unresolved requirement recorded in [[misses]].
  *
- * Steps 1-3 resolve during [[warmUp]], not at lookup time, so a requirement that was never warmed
- * falls straight to step 4.
+ * Steps 1-3 resolve during [[warmUp]], not at lookup time, so a requirement whose format was
+ * never built falls straight to step 4.
  *
  * @see [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) to construct, warm
  * and register one in a single call — normally when the iModel opens.
@@ -273,8 +276,8 @@ export class FieldFormattingSpecProvider {
    * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
    *
    * Two metadata queries, bounded by the schemas rather than by the data, so it is safe to call
-   * on open. The trade is that it warms every declared KindOfQuantity, referenced or not, and
-   * cannot see a pair that only a field's overrides name — use
+   * on open. In exchange it warms every declared KindOfQuantity, whether any field uses it or
+   * not. This method cannot see a KindOfQuantity that only a field's overrides name — use
    * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) or
    * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) for those.
    * @beta
@@ -298,7 +301,7 @@ export class FieldFormattingSpecProvider {
 
   /** Requirements that were requested during evaluation but had no pre-warmed spec — typically
    * a [FieldRun]($common) added, or re-targeted at a different property, after the last
-   * [[warmUp]]. Such fields fall back to their raw string representation.
+   * [[warmUp]]. Such fields fall back to `value.toString()`.
    *
    * Misses accumulate rather than raising an event, because they are recorded from inside
    * synchronous `TxnManager` callbacks where re-entrant work is unsafe. Poll this after an edit,
@@ -326,7 +329,7 @@ export class FieldFormattingSpecProvider {
     }
   }
 
-  /** Returns the bucket that formats fields declaring `formatSet`. Fields with no `formatSet`, or
+  /** Returns the formats to use for fields declaring `formatSet`. Fields with no `formatSet`, or
    * naming one this provider wasn't given, resolve against the iModel's schema formats.
    * @internal
    */
@@ -334,8 +337,9 @@ export class FieldFormattingSpecProvider {
     return (formatSet ? this._buckets.get(formatSet) : undefined) ?? this._default;
   }
 
-  /** Looks up a spec in the schema-backed default bucket. Fields routed to a FormatSet are
-   * resolved through [[getProviderFor]] instead.
+  /** Looks up a spec among the iModel's schema formats and the adopted
+   * [[FieldFormattingSpecProviderArgs.formatSet]]. Fields naming a different FormatSet resolve
+   * against that FormatSet's own formats instead.
    */
   public getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined {
     return this._default.getFormatterSpec(args);
@@ -357,8 +361,8 @@ export class FieldFormattingSpecProvider {
    * requirements by walking the iModel.
    */
   public async warmUp(requirements: FormattingSpecArgs[]): Promise<void> {
-    // Warm the default bucket first so the cache is populated in resolution order. Ordering is not
-    // load-bearing: no bucket reads another's cache while warming.
+    // Warm the default bucket first so the cache is populated in resolution order. The order does
+    // not affect the result: no bucket reads another's cache while warming.
     for (const bucket of [this._default, ...this._buckets.values()]) {
       await bucket.warmUp(requirements, this._unitsProvider);
     }

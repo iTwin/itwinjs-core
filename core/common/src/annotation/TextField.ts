@@ -20,8 +20,9 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
  * @note `"quantity"` and `"coordinate"` values format through the quantity pipeline only when a
- * [FieldFormattingSpecProvider]($backend) is registered for the iModel and pre-warmed with the
- * field's requirements; otherwise they render their raw string representation.
+ * [FieldFormattingSpecProvider]($backend) is registered for the iModel and has already built a
+ * [Format]($core-quantity) for the field. Otherwise they render as `value.toString()` — a bare
+ * number, or `(x, y[, z])` for a coordinate.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
