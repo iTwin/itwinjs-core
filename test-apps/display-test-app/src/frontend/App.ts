@@ -63,6 +63,7 @@ import { SaveImageTool } from "./SaveImageTool";
 import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { ReproInvalidFramebufferTool } from "./ReproInvalidFramebufferTool";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
@@ -436,6 +437,7 @@ export class DisplayTestApp {
       RecordTileSizesTool,
       RefreshTilesTool,
       ReopenIModelTool,
+      ReproInvalidFramebufferTool,
       ReproJaggedCurvesTool,
       ResizeWindowTool,
       RestoreWindowTool,
