@@ -36,7 +36,7 @@ A field that should not simply inherit its property's KindOfQuantity configures 
 
 [[include:TextAnnotationFields.ConfigureFieldRun]]
 
-`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller pin how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
+`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller control how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
 
 For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
 
@@ -77,7 +77,7 @@ A block authored later in the session may need a spec the initial warm-up never 
 
 ### Repairing a gap
 
-If a field needs a spec that was never warmed, it renders as its raw string representation and the shortfall is recorded on the provider. Applications can detect this, warm the gap, and re-evaluate:
+If a field needs a spec that was never warmed, it renders as `value.toString()` and the unresolved requirement is recorded on the provider. Applications can detect this, warm the missing requirements, and re-evaluate:
 
 [[include:TextAnnotationFields.HandleMisses]]
 
@@ -91,13 +91,13 @@ To mix formats within a single iModel:
 
 Generally speaking, the FormatSet id should be the id of the FormatSet definition element, but as Core does not enforce the definition element workflow, this is typed as a string. If two entries share an id, the last one wins.
 
-This is still a **single** registration. One [FieldFormattingSpecProvider]($backend) holds every FormatSet the iModel uses — each is warmed into its own bucket, and fields select among them at evaluation time. There is no need to register once per FormatSet, and no need to swap providers to change which format a given field gets.
+This is still a **single** registration. One [FieldFormattingSpecProvider]($backend) holds every FormatSet the iModel uses — each FormatSet's formats are cached separately, and fields select among them at evaluation time. There is no need to register once per FormatSet, and no need to swap providers to change which format a given field gets.
 
 ### Provider lifetime
 
-Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never sweeps them automatically, so unregister when the iModel closes. Provider lifetime is deliberately the application's to manage.
+Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never removes them automatically, so unregister when the iModel closes. Provider lifetime is deliberately the application's to manage.
 
-Forgetting to unregister pins the iModel's [SchemaContext]($ecschema-metadata), and the closed `IModelDb` behind it, alive for the lifetime of the process. And although [IModel.key]($common) is a fresh GUID on each open by default, an application that supplies its own stable `key` when opening will find the stale registration again on reopen and format against a closed schema context.
+Forgetting to unregister keeps the iModel's [SchemaContext]($ecschema-metadata), and the closed `IModelDb` behind it, in memory for the lifetime of the process. And although [IModel.key]($common) is a fresh GUID on each open by default, an application that supplies its own stable `key` when opening will find the stale registration again on reopen and format against a closed schema context.
 
 Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to overwrite their formatted `cachedContent` with the raw string representation.
 
