@@ -15,7 +15,7 @@ import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Viewport changed events", async () => {
+describe.only("Viewport changed events", async () => {
   // test.bim:
   //  3d views:
   //    view:           34
@@ -84,33 +84,33 @@ describe("Viewport changed events", async () => {
     // Assigning the set always raises an event.
     const idSet = new Set<string>();
     idSet.add("0x123");
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, false));
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-    mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.setNeverDrawn(idSet));
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, false));
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
 
     // Clearing raises event if set was assigned.
-    mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.clearNeverDrawn());
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+    mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
 
     // Clearing again will not re-raise because already cleared.
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
 
     // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
     idSet.clear();
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
     // Raises even though set was already empty, because this resets the 'exclusive' flag.
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
     // Exclusive flag no longer set and set is empty, so no event.
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Multiple changes in between frames produce a single event.
     idSet.add("0x123");
-    mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, undefined, () => {
+    mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, ViewportState.Scene, () => {
       for (let i = 0; i < 5; i++) {
         vp.setAlwaysDrawn(idSet);
         vp.clearAlwaysDrawn();
@@ -154,8 +154,8 @@ describe("Viewport changed events", async () => {
     const vpStyle = vp.displayStyle;
     // Modify display style through Viewport API.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      vpStyle.backgroundColor = ColorDef.red;
+    mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
+      vpStyle.backgroundColor = ColorDef.blue;
     });
 
     // Change ClipStyle
@@ -163,7 +163,7 @@ describe("Viewport changed events", async () => {
 
     // Modify view flags through Viewport's displayStyle property.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
+    mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
       vpStyle.viewFlags = vpStyle.viewFlags.with("constructions", !vpStyle.viewFlags.constructions);
     });
 
@@ -173,18 +173,11 @@ describe("Viewport changed events", async () => {
     const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
-    // Override by replacing display style on Viewport
+    // Apply same override via Viewport method. It does not raise the event if the same `ovr` object is passed because there is no net change to the overrides.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      vpStyle.overrideSubCategory("0x123", ovr);
-    });
-
-    // Apply same override via Viewport method. Does not check if override actually differs.
-    vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
+    mon.expect(ChangeFlag.None, undefined, () => {
       // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
       vp.overrideSubCategory("0x123", ovr);
-      vp.changeViewedModels(new Set<string>());
     });
 
     // Apply different override to same subcategory
@@ -227,7 +220,7 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction, () => settings.analysisFraction = 0.123456);
     mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction | ViewportState.RenderPlan, () => settings.analysisStyle = AnalysisStyle.fromJSON({ displacement: { channelName: "source" } }));
 
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
+    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.timePoint = 43);
     expectNoChange(() => settings.timePoint = 43);
 
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);

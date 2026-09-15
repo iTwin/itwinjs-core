@@ -1238,8 +1238,20 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(ref.onActiveViewFlagsChanged.addListener(invalidateScene));
     removals.push(ref.onActiveClipStyleChanged.addListener(invalidateScene));
     removals.push(ref.onSymbologyOverridesInvalidated.addListener(invalidateScene));
+    removals.push(ref.onModelDisplayTransformProviderChanged.addListener(invalidateScene));
+    removals.push(ref.perModelCategoryVisibility.onChanged.addListener(() => this.setViewedCategoriesPerModelChanged()));
+
+    const styleAndOverridesChanged = () => {
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+      this.setFeatureOverrideProviderChanged();
+    };
+
+    removals.push(ref.subCategoryOverrides.onChanged.addListener(styleAndOverridesChanged));
+    removals.push(ref.modelAppearanceOverrides.onChanged.addListener(styleAndOverridesChanged));
 
     if (ref.isSpatial()) {
+      removals.push(ref.onModelClipGroupsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveHiddenLineSettingsChanged.addListener(invalidateScene));
       removals.push(ref.onViewedModelsLoaded.addListener(() => {
         this.invalidateScene();
@@ -1268,7 +1280,6 @@ export abstract class Viewport implements Disposable, TileUser {
       this.setFeatureOverrideProviderChanged();
     };
 
-    removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
