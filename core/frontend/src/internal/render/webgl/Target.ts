@@ -920,6 +920,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
       contourLine: top.contourLine,
+      iModelRef: top.iModelRef,
     });
 
     this.pushState(state);
