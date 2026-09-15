@@ -16,6 +16,9 @@ parameters:
   - name: nativePrVal
     type: boolean
     default: false
+  - name: profileWindows
+    type: boolean
+    default: false
 
 steps:
   - task: UseNode@1
@@ -92,13 +95,22 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     displayName: "rush webpack:test (for rush cover)"
 
+  - ${{ if parameters.profileWindows }}:
+      - powershell: node common/config/azure-pipelines/profiling/run.cjs
+        displayName: Profile Windows backend (isolated / concurrent / isolated)
+        workingDirectory: ${{ parameters.workingDir }}
+        timeoutInMinutes: 100
+        env:
+          NODE_ENV: development
+          ITWIN_WINDOWS_PROFILE_OUTPUT: $(Agent.TempDirectory)/windows-profile/$(Build.BuildId)
+
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     env:
       NODE_ENV: development
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), not(${{ parameters.profileWindows }}), eq(variables['Agent.OS'], 'Linux'))
     retryCountOnTaskFailure: 1
 
   # MacOS and Windows agents work without any virtual display
@@ -107,9 +119,10 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     env:
       NODE_ENV: development
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), not(${{ parameters.profileWindows }}), ne(variables['Agent.OS'], 'Linux'))
     retryCountOnTaskFailure: 1
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), not(${{ parameters.profileWindows }}))
