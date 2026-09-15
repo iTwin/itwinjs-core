@@ -7,7 +7,8 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  ObservableSet,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -28,7 +29,7 @@ import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FeatureOverrideProvider, FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
@@ -48,7 +49,6 @@ import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
@@ -69,6 +69,8 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
+import { IModelDisplayReferences } from "./IModelDisplayReferences";
+import { IModelDisplayReference } from "./IModelDisplayReference";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -178,6 +180,7 @@ declare global {
 
 /** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
  * @public
+ * @deprecated Use [[Viewport.onFlashedElementChanged]].
  */
 export type OnFlashedIdChangedEventArgs = {
   readonly current: Id64String;
@@ -189,6 +192,25 @@ export type OnFlashedIdChangedEventArgs = {
   readonly previous: Id64String;
   readonly current: undefined;
 };
+
+/** Pairs and element Id with the IModelConnection that contains it.
+ * @public
+ */
+export interface IModelAndElementId {
+  readonly iModel: IModelConnection;
+  readonly id: Id64String;
+}
+
+/** Serves as an [OrderedComparator](@bentley) for two [[IModelAndElementId]]s.
+ * @public
+ */
+export function compareIModelElements(a: IModelAndElementId, b: IModelAndElementId): number {
+  return compareStrings(a.id, b.id) || compareStrings(a.iModel.key, b.iModel.key);
+}
+
+function areIModelElementsEqual(a: IModelAndElementId | undefined, b: IModelAndElementId | undefined): boolean {
+  return a?.id === b?.id && a?.iModel === b?.iModel;
+}
 
 /** Arguments to [[Viewport.getPixelDataWorldPoint]].
  * @public
@@ -274,6 +296,20 @@ export interface ReadImageToCanvasOptions {
   omitCanvasDecorations?: boolean;
 }
 
+/** Wraps a deprecated FeatureOverrideProvider (which is registered with a Viewport and operates on Viewport.iModel) with a FeatureSymbologyOverrider
+ * (which is registered with and operates upon the viewport's primary IModelDisplayReference), until such time as we can remove FeatureOverrideProvider.
+ */
+class ProxyOverrideProvider implements FeatureSymbologyOverrider {
+  constructor(
+    public readonly proxiedProvider: FeatureOverrideProvider,
+    private readonly _vp: Viewport,
+  ) { }
+
+  public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _iModelRef: IModelDisplayReference): void {
+    this.proxiedProvider.addFeatureOverrides(overrides, this._vp);
+  }
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -316,8 +352,8 @@ export abstract class Viewport implements Disposable, TileUser {
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of never-drawn elements changes. */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
-   * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
+  /** Event called on the next frame after one or more aspects of this viewport's [[DisplayStyleState]] change.
+   * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings, among others.
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed categories changes. */
@@ -345,8 +381,12 @@ export abstract class Viewport implements Disposable, TileUser {
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
   /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
+   * @deprecated Use [[onFlashedElementChanged]].
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  /** Event dispatched immediately after [[flashedElement]] changes, supplying the previously-flashed element (if any) as the event payload. */
+  public readonly onFlashedElementChanged = new BeEvent<(previousFlashedElement: IModelAndElementId | undefined) => void>();
 
   /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
  * @beta
@@ -462,22 +502,24 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected _changeFlags = new MutableChangeFlags();
   private _selectionSetDirty = true;
-  private readonly _perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   private _tileSizeModifier?: number;
-
-  /** @internal */
-  public readonly subcategories = new SubCategoriesCache.Queue();
 
   /** Time the current flash started. */
   private _flashUpdateTime?: BeTimePoint;
   /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
   private _flashIntensity = 0;
   /** Id of the currently flashed element. */
-  private _flashedElem?: string;
+  private _flashedElem?: IModelAndElementId;
   /** Id of last flashed element. */
-  private _lastFlashedElem?: string;
-  /** The Id of the most recently flashed element, if any. */
+  private _lastFlashedElem?: IModelAndElementId;
+  /** The Id of the most recently flashed element, if any.
+   * @deprecated Use [[lastFlashedElement]].
+   */
   public get lastFlashedElementId(): Id64String | undefined {
+    return this._lastFlashedElem?.id;
+  }
+  /** The most-recently-flashed element, if any. */
+  public get lastFlashedElement(): IModelAndElementId | undefined {
     return this._lastFlashedElem;
   }
 
@@ -525,9 +567,6 @@ export abstract class Viewport implements Disposable, TileUser {
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
-  private _neverDrawn?: Id64Set;
-  private _alwaysDrawn?: Id64Set;
-  private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
@@ -647,9 +686,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
-  public set displayStyle(style: DisplayStyleState) {
-    this.view.displayStyle = style;
-  }
 
   /** Selectively override aspects of this viewport's display style.
    * @see [DisplayStyleSettings.applyOverrides]($common)
@@ -694,27 +730,30 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
    * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
+   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public dropSubCategoryOverride(id: Id64String): void {
-    this.view.displayStyle.dropSubCategoryOverride(id);
+    this.primaryIModelRef.subCategoryOverrides.delete(id);
   }
 
   /** Override the symbology of geometry belonging to a specific subcategory when rendered within this viewport.
    * @param id The Id of the subcategory.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
    * @see [[dropSubCategoryOverride]]
+   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
-    this.view.displayStyle.overrideSubCategory(id, ovr);
+    this.primaryIModelRef.subCategoryOverrides.set(id, ovr);
   }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this viewport.
    * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    * @see [[overrideSubCategory]]
+   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
-    return this.view.displayStyle.getSubCategoryOverride(id);
+    return this.primaryIModelRef.subCategoryOverrides.get(id);
   }
 
   /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this viewport.
@@ -723,62 +762,40 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @return The symbology of the subcategory within this viewport, including any overrides.
    * @see [[overrideSubCategory]]
+   * @deprecated Use [[IModelDisplayReference.getSubCategoryAppearance]].
    */
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
-    if (undefined === app)
-      return SubCategoryAppearance.defaults;
-
-    const ovr = this.getSubCategoryOverride(id);
-    return undefined !== ovr ? ovr.override(app) : app;
+    return this.primaryIModelRef.getSubCategoryAppearance(id);
   }
 
   /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport, assuming the containing Category is displayed.
    * @param id The Id of the subcategory
    * @returns true if the subcategory is visible in this viewport.
    * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
+   * @deprecated Use [[IModelDisplayReference.isSubCategoryVisible]].
    */
-  public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
+  public isSubCategoryVisible(id: Id64String): boolean {
+    return this.primaryIModelRef.isSubCategoryVisible(id);
+  }
 
   /** Override the appearance of a model when rendered within this viewport.
    * @param id The Id of the model.
-   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified model.
    * @see [DisplayStyleSettings.overrideModelAppearance]($common)
+   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
-    this.view.displayStyle.settings.overrideModelAppearance(id, ovr);
+    this.primaryIModelRef.modelAppearanceOverrides.set(id, ovr);
   }
 
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
    * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
+   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.view.displayStyle.settings.dropModelAppearanceOverride(id);
+    this.primaryIModelRef.modelAppearanceOverrides.delete(id);
   }
-
-  /** Some changes do not alter the set of graphics being displayed (the "scene") but may alter the visibility of objects within those graphics.
-   * Under certain circumstances, we may want to recreate the scene after such changes.
-   * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
-   * - Viewed categories and subcategories;
-   * - Always/never drawn elements
-   * - Symbology overrides.
-   * Cached decorations will also be invalidated in case they depend on object visibility.
-   */
-  private maybeInvalidateScene(): void {
-    // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
-    // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
-    if (!this._sceneValid)
-      return;
-
-    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
-      this.invalidateScene();
-
-    this.onSceneVisibilityChanged();
-  }
-
-  /** @internal Invoked by [[maybeInvalidateScene]] when the visibility of objects in the scene may have changed, but the scene itself has not changed. */
-  protected onSceneVisibilityChanged() { }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
@@ -787,53 +804,24 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    * @param batchNotify If true, a single batch event is raised instead of one event per category. This is more efficient when changing many categories at once.
+   * @deprecated Use [[IModelDisplayReference.changeCategoryDisplay]].
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
-    if (!display) {
-      if (batchNotify)
-        this.view.categorySelector.dropCategoriesBatched(categories);
-      else
-        this.view.categorySelector.dropCategories(categories);
-      return;
-    }
-
-    if (batchNotify)
-      this.view.categorySelector.addCategoriesBatched(categories);
-    else
-      this.view.categorySelector.addCategories(categories);
-    const categoryIds = Id64.toIdSet(categories);
-
-    this.updateSubCategories(categoryIds, enableAllSubCategories);
-  }
-
-  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
-      if (true === enableAllSubCategories)
-        this.enableAllSubCategories(categoryIds);
-
-      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded) {
-        this._changeFlags.setViewedCategories();
-        this.maybeInvalidateScene();
-        IModelApp.requestNextAnimation();
-      }
+    this.primaryIModelRef.changeCategoryDisplay({
+      categories,
+      display,
+      enableAllSubCategories,
+      noBatchNotify: true !== batchNotify,
     });
   }
-
-  private enableAllSubCategories(categoryIds: Id64Arg): void {
-    if (this.displayStyle.enableAllLoadedSubCategories(categoryIds))
-      this.maybeInvalidateScene();
-  }
-
-  /** @internal */
-  public getSubCategories(categoryId: Id64String): Id64Set | undefined { return this.iModel.subcategories.getSubCategories(categoryId); }
 
   /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
+   * @deprecated Use [[IModelDisplayReference.changeSubCategoryDisplay]].
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
-    if (this.displayStyle.setSubCategoryVisible(subCategoryId, display))
-      this.maybeInvalidateScene();
+    this.primaryIModelRef.changeSubCategoryDisplay(subCategoryId, display);
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -958,7 +946,9 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public resetMapLayer(mapLayerIndex: MapLayerIndex) { this._mapTiledGraphicsProvider?.resetMapLayer(mapLayerIndex); }
 
-  /** Returns true if this Viewport is currently displaying the model with the specified Id. */
+  /** Returns true if this Viewport is currently displaying the model with the specified Id.
+   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]] or [[IModelDisplayReference2d.viewedModel]].
+   */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
   /** Attempt to change the 2d Model this Viewport is displaying, if its ViewState is a ViewState2d.
@@ -988,15 +978,17 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
-   * @note This function *does not load* any models. If any of the supplied `modelIds` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
-   * @see [[replaceViewedModels]] for a similar function that also ensures the requested models are loaded.
+   * @note This function returns immediately; any requested models that aren't yet loaded are subsequently loaded in the background.
+   * @see [[replaceViewedModels]] for a similar function returning a promise that resolves after all unloaded models are loaded.
+   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
-    if (!this.view.isSpatialView())
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
       return false;
 
-    this.view.modelSelector.models.clear();
-    this.view.modelSelector.addModels(modelIds);
+    ref.viewedModels.clear();
+    ref.viewedModels.addAll(Id64.iterable(modelIds));
     return true;
   }
 
@@ -1004,12 +996,15 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param modelIds The Ids of the models to be displayed.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   * @deprecated Use `clear` on [[SpatialIModelDisplayReference.viewedModels]] and then [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
-    if (this.view.isSpatialView()) {
-      this.view.modelSelector.models.clear();
-      return this.addViewedModels(modelIds);
-    }
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
+      return;
+
+    ref.viewedModels.clear();
+    return ref.addAndLoadViewedModels(modelIds);
   }
 
   /** Add or remove a set of models from those models currently displayed in this viewport.
@@ -1019,16 +1014,14 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
    * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
+   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]].
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
-    if (!this.view.isSpatialView())
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
       return false;
 
-    if (display)
-      this.view.modelSelector.addModels(models);
-    else
-      this.view.modelSelector.dropModels(models);
-
+    ref.viewedModels[display ? "addAll" : "deleteAll"](models);
     return true;
   }
 
@@ -1037,22 +1030,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not to display the specified models in the viewport.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async addViewedModels(models: Id64Arg): Promise<void> {
-    // NB: We want the model selector to update immediately, to avoid callers repeatedly requesting we load+display the same models while we are already loading them.
-    // This will also trigger scene invalidation and changed events.
-    if (!this.changeModelDisplay(models, true))
-      return; // means it's a 2d model - this function can do nothing useful in 2d.
-
-    const unloaded = this.iModel.models.filterLoaded(models);
-    if (undefined === unloaded)
-      return;
-
-    // Need to redraw once models are available. Don't want to trigger events again.
-    await this.iModel.models.load(models);
-    this.invalidateScene();
-    assert(this.view.isSpatialView());
-    this.view.markModelSelectorChanged();
+    return this.primaryIModelRef.isSpatial() ? this.primaryIModelRef.addAndLoadViewedModels(Id64.iterable(models)) : Promise.resolve();
   }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes. Chiefly for debugging.
@@ -1170,7 +1151,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
-    this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerUser(this);
   }
 
@@ -1179,7 +1159,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
 
     this._target = dispose(this._target);
-    this.subcategories[Symbol.dispose]();
+    // ###TODO? this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
@@ -1211,19 +1191,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this.registerViewListeners();
     this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
-
-    // ViewState.load loads all the subcategories for the categories in its category selector.
-    // But the set of categories may have changed since loading the view.
-    // Ensure we fill the cache for the current set of categories.
-    this.updateSubCategories(this.view.categorySelector.categories, undefined);
-  }
-
-  private getSubCategoryReloadCategoryIds(): Id64Set {
-    const categoryIds = Id64.toIdSet(this.view.categorySelector.categories);
-    for (const { categoryId } of this.perModelCategoryVisibility)
-      categoryIds.add(categoryId);
-
-    return categoryIds;
   }
 
   private registerViewListeners(): void {
@@ -1233,44 +1200,51 @@ export abstract class Viewport implements Disposable, TileUser {
     // When we detach from the view, also unregister display style listeners.
     removals.push(() => this.detachFromDisplayStyle());
 
-    removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
-    removals.push(view.onViewedCategoriesChanged.addListener(() => {
-      this._changeFlags.setViewedCategories();
-      this.updateSubCategories(view.categorySelector.categories, undefined);
-      this.maybeInvalidateScene();
-    }));
-
-    removals.push(this.iModel.subcategories.addChangedListener(() => {
-      this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
-    }));
-
-    removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
-      this._changeFlags.setDisplayStyle();
-      this.setFeatureOverrideProviderChanged();
-      this.invalidateRenderPlan();
-
-      this.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, newStyle);
-      this.registerDisplayStyleListeners(newStyle);
-    }));
-
-    if (view.isSpatialView()) {
-      removals.push(view.onViewedModelsChanged.addListener(() => {
-        this._changeFlags.setViewedModels();
-        this.invalidateScene();
-      }));
-
-      removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
-        this.invalidateScene();
-      }));
-
+    if (this.iModelRefs.isSpatial) {
       // If a map elevation request is required (only in cases where terrain is not geodetic)
       // then the completion of the request will require synching with the view so that the
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
+      }));
+
+      removals.push(this.iModelRefs.onLinked.addListener((ref) => {
+        this.addIModelRefListeners(ref);
+        this.invalidateScene();
+      }));
+
+      removals.push(this.iModelRefs.onUnlinked.addListener(() => {
+        // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
+        this.invalidateScene();
+      }));
+    }
+
+    for (const ref of this.iModelRefs)
+      this.addIModelRefListeners(ref);
+  }
+
+  private addIModelRefListeners(ref: IModelDisplayReference): void {
+    const removals = this._detachFromView;
+
+    removals.push(ref.onViewedCategoriesLoaded.addListener(() => {
+      this.invalidateScene();
+      if (ref === this.primaryIModelRef)
+        this._changeFlags.setViewedCategories();
+    }));
+
+    const invalidateScene = () => this.invalidateScene();
+    removals.push(ref.onActiveViewFlagsChanged.addListener(invalidateScene));
+    removals.push(ref.onActiveClipStyleChanged.addListener(invalidateScene));
+    removals.push(ref.onSymbologyOverridesInvalidated.addListener(invalidateScene));
+
+    if (ref.isSpatial()) {
+      removals.push(ref.onActiveHiddenLineSettingsChanged.addListener(invalidateScene));
+      removals.push(ref.onViewedModelsLoaded.addListener(() => {
+        this.invalidateScene();
+        if (ref === this.primaryIModelRef)
+          this._changeFlags.setViewedModels();
       }));
     }
   }
@@ -1295,7 +1269,6 @@ export abstract class Viewport implements Disposable, TileUser {
     };
 
     removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
@@ -1306,7 +1279,6 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
-    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
       displayStyleChanged();
       // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
@@ -1393,7 +1365,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
-      this.maybeInvalidateScene();
+      this.invalidateScene();
       this.setFeatureOverrideProviderChanged();
     }));
 
@@ -1473,6 +1445,20 @@ export abstract class Viewport implements Disposable, TileUser {
     return this._view;
   }
 
+  /** The set of iModel references displayed by and interacted with via this viewport.
+   * @beta
+   */
+  public get iModelRefs(): IModelDisplayReferences {
+    return this._view.iModelRefs;
+  }
+
+  /** The reference to the primary iModel displayed by and interacted with via this Viewport.
+   * @beta
+   */
+  public get primaryIModelRef(): IModelDisplayReference {
+    return this.iModelRefs.primary;
+  }
+
   /** @internal */
   public get pixelsPerInch() {
     // ###TODO? This is apparently unobtainable information in a browser...
@@ -1485,48 +1471,59 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
+   * @deprecated Use [[IModelDisplayReference.neverDrawn]].
    */
-  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+  public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
 
   /** Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
    * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
-  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
+  public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearAlwaysDrawn(): void {
-    if ((undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) || this._alwaysDrawnExclusive) {
-      if (undefined !== this.alwaysDrawn)
-        this.alwaysDrawn.clear();
+    if (0 < this.alwaysDrawn.size || this.isAlwaysDrawnExclusive) {
+      this.alwaysDrawn.clear();
 
-      this._alwaysDrawnExclusive = false;
+      this.primaryIModelRef.isAlwaysDrawnExclusive = false;
+
+      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setAlwaysDrawn();
-      this.maybeInvalidateScene();
+      this.invalidateScene();
     }
   }
 
   /** Clear the set of never-drawn elements.
    * @see [[neverDrawn]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearNeverDrawn(): void {
-    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
+    if (0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
+
+      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setNeverDrawn();
-      this.maybeInvalidateScene();
+      this.invalidateScene();
     }
   }
 
   /** Specify the Ids of a set of elements which should never be rendered within this view.
    * @see [[neverDrawn]].
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public setNeverDrawn(ids: Id64Set): void {
-    this._neverDrawn = ids;
+    this.neverDrawn.clear();
+    this.neverDrawn.addAll(ids);
+
+    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setNeverDrawn();
-    this.maybeInvalidateScene();
+    this.invalidateScene();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1534,26 +1531,28 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param exclusive If true, *only* the specified elements will be drawn.
    * @see [[alwaysDrawn]]
    * @see [[isAlwaysDrawnExclusive]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
-    this._alwaysDrawn = ids;
-    this._alwaysDrawnExclusive = exclusive;
+    this.alwaysDrawn.clear();
+    this.alwaysDrawn.addAll(ids);
+    this.primaryIModelRef.isAlwaysDrawnExclusive = exclusive;
+
+    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setAlwaysDrawn();
-    this.maybeInvalidateScene();
+    this.invalidateScene();
   }
 
-  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
-  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
-
-  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
-  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
-
-  /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
-   * category selector in the context of specific models.
-   * @internal
+  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view.
+   * @deprecated Use [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
-  public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    this._perModelCategoryVisibility.addOverrides(fs, ovrs);
+  public get isAlwaysDrawnExclusive(): boolean { return this.primaryIModelRef.isAlwaysDrawnExclusive; }
+
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
+   * @deprecated Use [[IModelDisplayReference.perModelCategoryVisibility]].
+   */
+  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
+    return this.primaryIModelRef.perModelCategoryVisibility;
   }
 
   /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
@@ -1572,6 +1571,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return false;
 
     this._featureOverrideProviders.push(provider);
+    this.primaryIModelRef.featureOverrideProviders.add(new ProxyOverrideProvider(provider, this));
     this.setFeatureOverrideProviderChanged();
     return true;
   }
@@ -1587,6 +1587,14 @@ export abstract class Viewport implements Disposable, TileUser {
       return false;
 
     this._featureOverrideProviders.splice(index, 1);
+
+    for (const iModelProvider of this.primaryIModelRef.featureOverrideProviders) {
+      if (iModelProvider instanceof ProxyOverrideProvider && iModelProvider.proxiedProvider === provider) {
+        this.primaryIModelRef.featureOverrideProviders.delete(iModelProvider);
+        break;
+      }
+    }
+
     this.setFeatureOverrideProviderChanged();
     return true;
   }
@@ -1636,7 +1644,8 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
-    this.maybeInvalidateScene();
+    this.primaryIModelRef.invalidateSymbologyOverrides();
+    this.invalidateScene();
   }
 
   /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
@@ -1784,7 +1793,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateDecorations();
   }
 
-  private _assigningFlashedId = false;
+  private _assigningFlashedElement = false;
 
   /** The Id of the currently-flashed object.
    * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
@@ -1795,34 +1804,58 @@ export abstract class Viewport implements Disposable, TileUser {
    * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
    * @see [[flashSettings]] to customize the visual effect.
+   * @deprecated Use [[flashedElement]].
    */
   public get flashedId(): Id64String | undefined {
-    return this._flashedElem;
+    return this._flashedElem?.id;
   }
   public set flashedId(id: Id64String | undefined) {
-    if (this._assigningFlashedId)
-      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
+    this.flashedElement = undefined !== id ? { id, iModel: this.iModel } : undefined;
+  }
 
-    if (id === Id64.invalid)
-      id = undefined;
+  /** Identifies the currently-flashed object.
+   * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
+   * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
+   * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]],
+   * in which case the element Id will be a transient Id.
+   * The setter ignores any string that is not a well-formed [Id64String]($core-bentley). Passing [Id64.invalid]($core-bentley) to the
+   * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
+   * @throws Error if an attempt is made to change this property from within an [[onFlashedElementChanged]] event callback.
+   * @see [[onFlashedElementChanged]] to be notified when the flashed object changes.
+   * @see [[flashSettings]] to customize the visual effect.
+   */
+  public get flashedElement(): IModelAndElementId | undefined {
+    return this._flashedElem;
+  }
+
+  public set flashedElement(flashed: IModelAndElementId | undefined) {
+    if (this._assigningFlashedElement)
+      throw new Error("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
+
+    if (flashed?.id === Id64.invalid)
+      flashed = undefined;
+
+    if (undefined !== flashed && !Id64.isId64(flashed.id))
+      return;
 
     const previous = this._flashedElem;
-    if (id === previous || (undefined !== id && !Id64.isId64(id)))
+    if (areIModelElementsEqual(flashed, previous))
       return;
 
     this._lastFlashedElem = this._flashedElem;
-    this._flashedElem = id;
+    this._flashedElem = flashed ? { id: flashed.id, iModel: flashed.iModel } : undefined;
 
-    this._assigningFlashedId = true;
+    this._assigningFlashedElement = true;
     try {
       // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
-      assert(undefined !== id || undefined !== previous);
-      // Note; we don't actually know that id is defined below, but since only current of previous needs to be
+      assert(undefined !== flashed || undefined !== previous);
+      // Note; we don't actually know that flashed is defined below, but since only current or previous needs to be
       // defined, we only need to assert that one of them is defined. Either would work.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+      this.onFlashedIdChanged.raiseEvent(this, { current: flashed?.id!, previous: previous?.id });
+      this.onFlashedElementChanged.raiseEvent(previous);
     } finally {
-      this._assigningFlashedId = false;
+      this._assigningFlashedElement = false;
     }
   }
 
@@ -1875,7 +1908,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateController();
 
     const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
-    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
+    this.target.reset(isMapLayerChanged, view.iModelRefs.primary);
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
@@ -2521,14 +2554,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this.flashedId !== this._lastFlashedElem) {
+    if (!areIModelElementsEqual(this._flashedElem, this._lastFlashedElem)) {
       this._flashIntensity = 0.0;
       this._flashUpdateTime = BeTimePoint.now();
-      this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
-      needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedElement === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+    if (this.flashedElement !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
       assert(undefined !== this._flashUpdateTime);
 
       const flashDuration = this.flashSettings.duration;
@@ -2611,7 +2644,7 @@ export abstract class Viewport implements Disposable, TileUser {
       this.setupFromView();
 
     if (this._selectionSetDirty) {
-      target.setHiliteSet(view.iModel.hilited);
+      target.invalidateHilites();
       this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }
@@ -2682,7 +2715,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this.flashedId ? this.flashedId : Id64.invalid, this._flashIntensity);
+      target.setFlashed(this._flashedElem, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this.flashedId;
     }
@@ -3050,25 +3083,16 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
     const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
-    let removeSettingsListener = addSettingsListener(this.displayStyle);
-
-    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
-      listener(style.settings.analysisStyle);
-      removeSettingsListener();
-      removeSettingsListener = addSettingsListener(view.displayStyle);
-    });
-
-    const removeStyleListener = addStyleListener(this.view);
+    const removeSettingsListener = addSettingsListener(this.displayStyle);
 
     const removeViewListener = this.onChangeView.addListener((vp) => {
       listener(vp.view.displayStyle.settings.analysisStyle);
-      removeStyleListener();
-      addStyleListener(vp.view);
+      removeSettingsListener();
+      addSettingsListener(vp.view.displayStyle);
     });
 
     return () => {
       removeSettingsListener();
-      removeStyleListener();
       removeViewListener();
     };
   }
@@ -3217,15 +3241,6 @@ export class ScreenViewport extends Viewport {
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
     this._decorationCache.clear();
-  }
-
-  /** @internal */
-  protected override onSceneVisibilityChanged(): void {
-    super.onSceneVisibilityChanged();
-
-    // Cached decorations may be associated with objects in the scene whose visibility has changed. Give them the opportunity to react.
-    this._decorationCache.clear();
-    this.invalidateDecorations();
   }
 
   /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.

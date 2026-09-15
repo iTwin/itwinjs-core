@@ -16,8 +16,9 @@ import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
 import { RealityDataSource } from "./RealityDataSource";
 import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
-import { ViewState } from "./ViewState";
 import { SpatialClassifiersState } from "./SpatialClassifiersState";
+import { IModelDisplayReference } from "./IModelDisplayReference";
+import { _backingView } from "./common/internal/Symbols";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -113,12 +114,13 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   }
 
   /** @internal */
-  public createTileTreeReference(view: ViewState): TileTreeReference {
+  public createTileTreeReference(iModelRef: IModelDisplayReference): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
 
+    const view = iModelRef.parent[_backingView];
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
-    const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
+    const getDisplaySettings = () => (iModelRef.isSpatial() ? iModelRef.realityModelDisplaySettings.get(this.id) : undefined) ?? RealityModelDisplaySettings.defaults;
     const getBackgroundBase = () => view.displayStyle.settings?.mapImagery.backgroundBase;
     const getBackgroundLayers = () => view.displayStyle.settings?.mapImagery.backgroundLayers
 
@@ -129,7 +131,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         createRealityTileTreeReference({
           rdSourceKey,
           iModel: this.iModel,
-          source: view,
+          source: iModelRef,
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
@@ -140,7 +142,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         createOrbitGtTileTreeReference({
           rdSourceKey,
           iModel: this.iModel,
-          source: view,
+          source: iModelRef,
           modelId: this.id,
           // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
@@ -166,7 +168,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       return createOrbitGtTileTreeReference({
         rdSourceKey: rdSourceKeyOGT,
         iModel: this.iModel,
-        source: view,
+        source: iModelRef,
         modelId: this.id,
         orbitGtBlob,
         name: orbitGtName,
@@ -184,7 +186,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         rdSourceKey: rdSourceKeyCS,
         url : tilesetUrl,
         iModel: this.iModel,
-        source: view,
+        source: iModelRef,
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
@@ -194,7 +196,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     });
     }
 
-    return createPrimaryTileTreeReference(view, this, getBackgroundBase, getBackgroundLayers);
+    return createPrimaryTileTreeReference(iModelRef, this, getBackgroundBase, getBackgroundLayers);
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).

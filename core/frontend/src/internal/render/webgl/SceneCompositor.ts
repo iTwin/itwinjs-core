@@ -45,6 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
+import { IModelDisplayFeature, IModelDisplayReference } from "../../../IModelDisplayReference";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -617,8 +618,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 
 interface BatchInfo {
   featureTable: RenderFeatureTable;
-  iModel?: IModelConnection;
-  transformFromIModel?: Transform;
+  iModelRef?: IModelDisplayReference;
   tileId?: string;
   viewAttachmentId?: Id64String;
   inSectionDrawingAttachment?: boolean;
@@ -631,7 +631,7 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
   private readonly _batchState: BatchState;
-  private readonly _scratchModelFeature = ModelFeature.create();
+  private readonly _scratchFeature: IModelDisplayFeature;
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
@@ -653,32 +653,21 @@ class PixelBuffer implements Pixel.Buffer {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getFeature(pixelIndex: number, result: ModelFeature): ModelFeature | undefined {
-    const featureId = this.getFeatureId(pixelIndex);
-    return undefined !== featureId ? this._batchState.getFeature(featureId, result) : undefined;
-  }
+  private getPixelFeatureInfo(pixelIndex: number, outFeature: IModelDisplayFeature): BatchInfo | undefined {
+    const featureId = undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
+    if (undefined === featureId || undefined === this._batchState.getFeature(featureId, outFeature))
+      return undefined;
 
-  private getFeatureId(pixelIndex: number): number | undefined {
-    return undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
-  }
+    const batch = this._batchState.find(featureId);
+    if (undefined === batch)
+      return undefined;
 
-  private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
-    const featureId = this.getFeatureId(pixelIndex);
-    if (undefined !== featureId) {
-      const batch = this._batchState.find(featureId);
-      if (undefined !== batch) {
-        return {
-          featureTable: batch.featureTable,
-          iModel: batch.batchIModel,
-          transformFromIModel: batch.transformFromBatchIModel,
-          tileId: batch.tileId,
-          viewAttachmentId: batch.viewAttachmentId,
-          inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
-        };
-      }
-    }
-
-    return undefined;
+    return {
+      featureTable: batch.featureTable,
+      tileId: batch.tileId,
+      viewAttachmentId: batch.viewAttachmentId,
+      inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
+    };
   }
 
   private readonly _scratchUint32Array = new Uint32Array(1);
@@ -723,8 +712,7 @@ class PixelBuffer implements Pixel.Buffer {
     let planarity = px.planarity;
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
-    const feature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
-    const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
+    const batchInfo = haveFeatureIds ? this.getPixelFeatureInfo(index, this._scratchFeature) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
@@ -763,24 +751,21 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
+    let featureTable, iModelRef, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
-      iModel = batchInfo.iModel;
-      transformToIModel = batchInfo.transformFromIModel;
+      iModelRef = batchInfo.iModelRef;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
       inSectionDrawingAttachment = batchInfo.inSectionDrawingAttachment;
     }
 
     return new Pixel.Data({
-      feature,
+      feature: undefined !== batchInfo ? this._scratchFeature : undefined,
       distanceFraction,
       type: geometryType,
       planarity,
       batchType: featureTable?.type,
-      iModel,
-      transformFromIModel: transformToIModel,
       tileId,
       viewAttachmentId,
       inSectionDrawingAttachment,
@@ -788,6 +773,9 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
+    const iModelRef = compositor.target.currentBranch.iModelRef;
+    assert(undefined !== iModelRef);
+    this._scratchFeature = IModelDisplayFeature.create(iModelRef);
     this._rect = rect.clone();
     this._selector = selector;
     this._batchState = compositor.target.uniforms.batch.state;
@@ -1797,7 +1785,7 @@ class Compositor extends SceneCompositor {
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
       planarClassifier: top.planarClassifier,
-      iModel: top.iModel,
+      iModelRef: top.iModelRef,
       is3d: top.is3d,
       edgeSettings: top.edgeSettings,
       contourLine: top.contourLine,
@@ -2172,7 +2160,11 @@ class Compositor extends SceneCompositor {
     // and this stage can be skipped.  In order for this to work the list of commands needs to get reduced to only the ones which draw hilited volumes.
     // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn't need to since it is only used elsewhere when Z write is turned off)
     // and we don't really want another whole set of hilite shaders just for this.
-    const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
+
+    // ###TODO this is using only the hilite set from the primary iModel.
+    const hilites = this.target.currentBranch.iModelRef?.iModel.hilited;
+    assert(undefined !== hilites);
+    const cmdsSelected = extractHilitedVolumeClassifierCommands(hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
     if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited
@@ -2232,7 +2224,7 @@ class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex, numCmdsPerClassifier);
+    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedElem?.id, cmdsByIndex, numCmdsPerClassifier);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {

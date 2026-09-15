@@ -58,6 +58,7 @@ public;class;AuxCoordSystem3dState
 public;class;AuxCoordSystemSpatialState
 public;class;AuxCoordSystemState
 internal;class;BackgroundMapGeometry
+public;const;_backingView
 beta;class;BaseUnitFormattingSettingsProvider
 public;interface;BatchOptions
 beta;interface;BatchTableProperties
@@ -93,6 +94,7 @@ beta;namespace;CatalogConnection
 public;class;CategorySelectorState
 beta;interface;CesiumAccessClient
 beta;interface;CesiumAssetEndpoint
+beta;interface;ChangeCategoryDisplayArgs
 public;enum;ChangeFlag
 public;class;ChangeFlags
 public;interface;ChangeViewedModel2dOptions
@@ -102,6 +104,7 @@ public;enum;ClipEventType
 public;class;Cluster
 internal;function;collectMaskRefs
 public;type;CollectTileStatus
+public;function;compareIModelElements
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs
 beta;interface;ComputeDisplayTransformArgs
@@ -122,6 +125,7 @@ internal;class;CoreTools
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
+internal;function;createIModelDisplayReferences2d
 beta;function;createQuantityDescription
 beta;interface;CreateQuantityDescriptionProps
 beta;interface;CreateRenderInstancesParamsBuilderArgs
@@ -193,6 +197,7 @@ public;interface;FeatureOverrideProvider
 internal;interface;FeatureSymbolizedRenderer
 public;namespace;FeatureSymbology
 alpha;interface;Source
+beta;interface;FeatureSymbologyOverrider
 internal;interface;FeatureSymbologyRenderer
 public;class;FitViewTool
 internal;class;Flags
@@ -243,6 +248,7 @@ beta;function;getHeightAverage
 beta;function;getHeightRange
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
+public;const;_getModelClip
 public;interface;GetPixelDataWorldPointArgs
 public;function;getQuantityTypeKey
 public;interface;GlobalAlignmentOptions
@@ -322,10 +328,19 @@ internal;class;ImageryMapTileTree
 internal;interface;ImdlDecoder
 internal;interface;ImdlReader
 internal;namespace;ImdlReader
+public;interface;IModelAndElementId
 public;class;IModelApp
 public;interface;IModelAppOptions
 public;class;IModelConnection
 public;namespace;IModelConnection
+beta;interface;IModelDisplayFeature
+public;namespace;IModelDisplayFeature
+beta;interface;IModelDisplayOverrides
+beta;type;IModelDisplayOverridesProps
+beta;interface;IModelDisplayReference
+beta;interface;IModelDisplayReference2d
+beta;type;IModelDisplayReferences
+beta;interface;IModelDisplayReferences2d
 internal;class;IModelFrameLifecycle
 public;interface;IModelIdArg
 public;class;IModelRoutingContext
@@ -358,6 +373,7 @@ internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
 deprecated;class;LengthDescription
 internal;function;linePlaneIntersect
+beta;interface;LinkSpatialIModelArgs
 alpha;class;LocalExtensionProvider
 alpha;interface;LocalExtensionProviderProps
 internal;class;LocalhostIpcApp
@@ -449,6 +465,7 @@ public;class;ModelSelectorState
 public;class;ModelState
 public;type;ModelSubCategoryHiliteMode
 public;enum;ModifyElementSource
+beta;class;MultiIModelSelectionTool
 public;class;MutableChangeFlags
 public;class;NativeApp
 internal;class;NativeAppLogger
@@ -463,6 +480,7 @@ public;class;OffScreenViewport
 public;interface;OffScreenViewportOptions
 public;type;OnDownloadProgress
 public;type;OnFlashedIdChangedEventArgs
+deprecated;type;OnFlashedIdChangedEventArgs
 internal;class;OnScreenTarget
 public;interface;OnViewExtentsError
 beta;function;openImageDataUrlInNewWindow
@@ -485,6 +503,8 @@ public;interface;ParticleProps
 internal;interface;PatternGraphicParams
 internal;class;PerformanceMetrics
 public;namespace;PerModelCategoryVisibility
+internal;interface;CreateOverridesArgs
+internal;function;create
 beta;interface;Props
 public;type;PersistentSpatialClassifier
 public;class;PhysicalModelState
@@ -620,6 +640,10 @@ public;enum;SnapMode
 public;class;SnapshotConnection
 public;enum;SnapStatus
 public;class;SpatialClassifiersState
+beta;interface;SpatialIModelDisplayOverrides
+beta;type;SpatialIModelDisplayOverridesProps
+beta;interface;SpatialIModelDisplayReference
+beta;interface;SpatialIModelDisplayReferences
 alpha;interface;SpatialLocationAndExtents
 public;class;SpatialLocationModelState
 public;class;SpatialModelState

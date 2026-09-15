@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableMap, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -313,7 +313,7 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "real
  *  - JSON representation kept in sync with changes to map; and
  *  - Events dispatched when map contents change.
  */
-class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
+class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
   public override get [Symbol.toStringTag]() { return "OverridesMap"; }
 
@@ -459,7 +459,7 @@ export class DisplayStyleSettings {
   /** Planar clip masks to be applied to persistent reality models (@see [SpatialModelState.isRealityModel]($frontend).
    * The key for each entry is the Id of the model to which the mask settings apply.
    */
-  public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
+  public get planarClipMasks(): ObservableMap<Id64String, PlanarClipMaskSettings> {
     return this._planarClipMasks;
   }
 
@@ -474,6 +474,8 @@ export class DisplayStyleSettings {
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
+  /** Event raised just after assignment to the [[viewFlags]] property. */
+  public readonly onAfterViewFlagsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
   public readonly onBackgroundColorChanged = new BeEvent<(newColor: ColorDef) => void>();
   /** Event raised just prior to assignment to the [[monochromeColor]] property. */
@@ -503,6 +505,8 @@ export class DisplayStyleSettings {
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
+  /** Event raised just after assignment to the [[clipStyle]] property. */
+  public readonly onAfterClipStyleChanged = new BeEvent<() => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
@@ -517,6 +521,8 @@ export class DisplayStyleSettings {
   public readonly onContoursChanged = new BeEvent<(newContours: ContourDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
+  /** Event raised just after assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
+  public readonly onAfterHiddenLineSettingsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
@@ -611,6 +617,7 @@ export class DisplayStyleSettings {
     this.onViewFlagsChanged.raiseEvent(flags);
     this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
+    this.onAfterViewFlagsChanged.raiseEvent();
   }
 
   /** The color displayed in the view background - by default, [[ColorDef.black]]. */
@@ -786,7 +793,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> {
+  public get subCategoryOverrides(): ObservableMap<Id64String, SubCategoryOverride> {
     return this._subCategoryOverrides;
   }
 
@@ -823,7 +830,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
+  public get modelAppearanceOverrides(): ObservableMap<Id64String, FeatureAppearance> {
     return this._modelAppearanceOverrides;
   }
 
@@ -861,6 +868,14 @@ export class DisplayStyleSettings {
       this._realityModelDisplaySettings.set(modelId, settings);
     else
       this._realityModelDisplaySettings.delete(modelId);
+  }
+
+  /** Maps the Id of a persistent reality model (@see [SpatialModelState.isRealityModel]($frontend) to
+   * a description of how to customize its display.
+   * @beta
+   */
+  public get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings> {
+    return this._realityModelDisplaySettings;
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -914,6 +929,8 @@ export class DisplayStyleSettings {
       delete this._json.clipStyle;
     else
       this._json.clipStyle = style.toJSON();
+
+    this.onAfterClipStyleChanged.raiseEvent();
   }
 
   /** Convert these settings to their JSON representation. */
@@ -1247,6 +1264,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onHiddenLineSettingsChanged.raiseEvent(hline);
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
+    this.onAfterHiddenLineSettingsChanged.raiseEvent();
   }
 
   /** The settings that control how ambient occlusion is displayed. */

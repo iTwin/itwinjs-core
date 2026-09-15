@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { IModelDisplayReference } from "./IModelDisplayReference";
 import { Viewport } from "./Viewport";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
@@ -21,4 +22,15 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 export interface FeatureOverrideProvider {
   /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+/** An object that customizes the appearances of [[IModelDisplayFeature]]s within an [[IModelDisplayReference]] using [[FeatureSymbology.Overrides]].
+ * The [[addFeatureOverrides]] method will be invoked whenever the symbology overrides need to be recreated.
+ * If some internal state of your overrider changes such that the overrides should be recreated, invoke [[IModelDisplayReference.invalidateSymbologyOverrides]].
+ *
+ * @see [[IModelDisplayReference.featureOverrideProviders]] for the set of overriders associated with an [[IModelDisplayReference]].
+ * @beta
+ */
+export interface FeatureSymbologyOverrider {
+  addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
 }

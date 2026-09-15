@@ -779,6 +779,7 @@ export class AccuSnap implements Decorator {
         snapModes.push(SnapMode.Nearest);
     }
 
+    const modelToWorld = thisHit.isExternalIModelHit ? thisHit.feature.iModelRef.linearTransformToParent : undefined;
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
@@ -790,7 +791,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
-      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
+      modelToWorld: modelToWorld?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));

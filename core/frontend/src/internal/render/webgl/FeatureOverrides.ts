@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, expectDefined, Id64 } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearanceProvider, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { WebGLDisposable } from "./Disposable";
@@ -16,12 +16,13 @@ import { UniformHandle } from "./UniformHandle";
 import { EmphasisFlags, TextureUnit } from "./RenderFlags";
 import { sync, SyncObserver } from "./Sync";
 import { System } from "./System";
-import { Hilites, Target } from "./Target";
+import { FlashedElem, Hilites, Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { IModelConnection } from "../../../IModelConnection";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
@@ -42,9 +43,10 @@ const scratchPackedFeature = PackedFeature.createWithIndex();
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
+  private readonly _iModel: IModelConnection;
   private _lut?: Texture2DHandle;
   private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
-  private _lastFlashId = Id64.invalid;
+  private _lastFlashId?: Id64String;
   private _hiliteSyncObserver: SyncObserver = {};
   private _pickExclusionsSyncObserver: SyncObserver = {};
   private _anyOverridden = true;
@@ -99,7 +101,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return this._lut.dataBytes;
   }
 
-  private _initialize(provider: FeatureAppearanceProvider, map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
+  private _initialize(provider: FeatureAppearanceProvider, map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: FlashedElem): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeDimensions(nFeatures, 3, 0, System.instance.maxTextureSize);
     const width = dims.width;
@@ -116,7 +118,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(provider: FeatureAppearanceProvider, map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
+  private _update(provider: FeatureAppearanceProvider, map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: FlashedElem, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(expectDefined(lut.dataBytes));
 
     if (undefined === ovrs) {
@@ -156,12 +158,13 @@ export class FeatureOverrides implements WebGLDisposable {
     map: RenderFeatureTable,
     ovr: FeatureSymbology.Overrides,
     pickExclude: Id64.Uint32Set | undefined,
-    flashedIdParts: Id64.Uint32Pair | undefined,
+    flashedElem: FlashedElem | undefined,
     hilites: Hilites
   ) {
     const allowHilite = true !== this._options.noHilite;
-    const allowFlash = true !== this._options.noFlash;
     const allowEmphasis = true !== this._options.noEmphasis;
+    const allowFlash = true !== this._options.noFlash;
+    const flashedIdParts = flashedElem?.iModel === this._iModel ? flashedElem?.idPair : undefined;
 
     let isModelHilited = false;
     const prevModelId = { lower: -1, upper: -1 };
@@ -287,7 +290,7 @@ export class FeatureOverrides implements WebGLDisposable {
   }
 
   // NB: If hilites is undefined, it means that the hilited set has not changed.
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: RenderFeatureTable, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: RenderFeatureTable, pickExcludes: Id64.Uint32Set | undefined, flashed?: FlashedElem, hilites?: Hilites) {
     if (!hilites || true === this._options.noHilite) {
       this.updateFlashed(data, map, pickExcludes, flashed);
       return;
@@ -295,6 +298,8 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const allowFlash = true !== this._options.noFlash;
     const intersect = "intersection" === hilites.modelSubCategoryMode;
+    if (flashed?.iModel !== this._iModel)
+      flashed = undefined;
 
     this._anyOverridden = this._anyHilited = false;
     for (const feature of map.iterable(scratchPackedFeature)) {
@@ -317,7 +322,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
       let isFlashed = false;
       if (flashed && allowFlash)
-        isFlashed = feature.elementId.lower === flashed.lower && feature.elementId.upper === flashed.upper;
+        isFlashed = feature.elementId.lower === flashed.idPair.lower && feature.elementId.upper === flashed.idPair.upper;
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -335,9 +340,12 @@ export class FeatureOverrides implements WebGLDisposable {
     this.updateUniformSymbologyFlags();
   }
 
-  private updateFlashed(data: Texture2DDataUpdater, map: RenderFeatureTable, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair): void {
+  private updateFlashed(data: Texture2DDataUpdater, map: RenderFeatureTable, pickExcludes: Id64.Uint32Set | undefined, flashed?: FlashedElem): void {
     if (true === this._options.noFlash && !pickExcludes)
       return;
+
+    if (flashed?.iModel !== this._iModel)
+      flashed = undefined;
 
     this._anyOverridden = false;
     const elemId = { lower: 0, upper: 0 };
@@ -354,7 +362,7 @@ export class FeatureOverrides implements WebGLDisposable {
       let thisElemId: Id64.Uint32Pair | undefined;
       if (flashed && !this._options.noFlash) {
         thisElemId = map.getElementIdPair(i, elemId);
-        isFlashed = thisElemId.lower === flashed.lower && thisElemId.upper === flashed.upper;
+        isFlashed = thisElemId.lower === flashed.idPair.lower && thisElemId.upper === flashed.idPair.upper;
       }
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
@@ -374,14 +382,15 @@ export class FeatureOverrides implements WebGLDisposable {
     this.updateUniformSymbologyFlags();
   }
 
-  private constructor(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
+  private constructor(iModel: IModelConnection, target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
     this.target = target;
+    this._iModel = iModel;
     this._options = options;
     this._cleanup = cleanup;
   }
 
-  public static createFromTarget(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
-    return new FeatureOverrides(target, options, cleanup);
+  public static createFromTarget(iModel: IModelConnection, target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
+    return new FeatureOverrides(iModel, target, options, cleanup);
   }
 
   public get isDisposed(): boolean { return undefined === this._lut; }
@@ -402,9 +411,9 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     this._mostRecentSymbologyOverrides = ovrs;
-    const hilite = this.target.hilites;
-    this._lut = this._initialize(provider, map, ovrs, this.target.pickExclusions, hilite, this.target.flashed);
-    this._lastFlashId = Id64.invalid;
+    const hilite = this._iModel.hilited;
+    this._lut = this._initialize(provider, map, ovrs, this.target.pickExclusions, hilite, this.target.flashedElem);
+    this._lastFlashId = undefined;
     this._hiliteSyncObserver = {};
     this._pickExclusionsSyncObserver = {};
   }
@@ -417,9 +426,9 @@ export class FeatureOverrides implements WebGLDisposable {
     else
       ovrs = undefined;
 
-    const flashedId = this.target.flashedId;
+    const flashedId = this._iModel === this.target.flashedElem?.iModel ? this.target.flashedElem.id : undefined;
 
-    const hilite = this.target.hilites;
+    const hilite = this._iModel.hilited;
     const hiliteUpdated = !sync(this.target.hiliteSyncTarget, this._hiliteSyncObserver);
     const pickExcludesUpdated = !sync(this.target.pickExclusionsSyncTarget, this._pickExclusionsSyncObserver);
 
@@ -431,7 +440,7 @@ export class FeatureOverrides implements WebGLDisposable {
           features,
           this._lut,
           undefined !== ovrs || pickExcludesUpdated ? this.target.pickExclusions : undefined,
-          this.target.flashed,
+          this.target.flashedElem,
           undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs,
         );
       }
