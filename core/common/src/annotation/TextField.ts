@@ -19,11 +19,9 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
- * @note `"quantity"` and `"coordinate"` fields format through the iTwin.js quantity pipeline
- * only when a [FieldFormattingSpecProvider]($backend) has been registered for the iModel via
- * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) and pre-warmed with
- * the field's requirements. Otherwise — and for a requirement that was never warmed — they
- * fall back to the raw string representation.
+ * @note `"quantity"` and `"coordinate"` values format through the quantity pipeline only when a
+ * [FieldFormattingSpecProvider]($backend) is registered for the iModel and pre-warmed with the
+ * field's requirements; otherwise they render their raw string representation.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
@@ -89,71 +87,35 @@ export interface DateTimeFieldFormatOptions {
 /** As part of a [[FieldFormatOptions]], specifies how to format [[FieldPropertyType]]
  * `"quantity"` or `"coordinate"` values.
  *
- * [[kindOfQuantity]] and [[persistenceUnit]] are **independent** overrides: setting one
- * falls through to the property side for the other. At runtime the formatter tries the
- * (KindOfQuantity name, persistence unit name) pairs in this order:
+ * [[kindOfQuantity]] and [[persistenceUnit]] are independent overrides: setting one falls
+ * through to the property for the other. A field that resolves no format renders its raw value.
  *
- *  1. **Effective override pair.** `kindOfQuantity ?? propertyKindOfQuantity` paired with
- *     `persistenceUnit ?? propertyPersistenceUnit`, looked up via the active
- *     [FormatsProvider]($core-quantity).
- *  2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped
- *     when identical to the effective pair, and skipped entirely when [[persistenceUnit]] names
- *     a **different** unit than the property's own (see below).
- *
- * The property-side fallback is a *presentation* fallback only. [[kindOfQuantity]] chooses how a
- * magnitude is displayed, so falling back to the property's KoQ yields a different-looking but
- * still correct number. [[persistenceUnit]], by contrast, is a statement about what the stored
- * magnitude *means*: a field declaring `persistenceUnit: "Units.FT"` asserts that the `2.5` on
- * the property is 2.5 feet. Formatting that 2.5 through the property's meter-based pair would
- * render it as 2.5 m — a silently wrong value, off by the conversion factor. So when
- * [[persistenceUnit]] disagrees with the property's persistence unit, there is no fallback:
- * either the requested pair is pre-warmed, or the field renders its raw value and the shortfall
- * is reported (on the synchronous path, via
- * [FieldFormattingSpecProvider.misses]($backend)). When [[persistenceUnit]] agrees with the
- * property's unit — or is omitted — the property-side pair remains a safe fallback.
- *
- * The first pair with a pre-warmed [FormatterSpec]($core-quantity) wins; if neither resolves,
- * the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])` tuple for
- * `"coordinate"`. Core does not synthesize a coordinate format — coordinate presentation is
- * [FormatsProvider]($core-quantity) territory.
- *
- * **Values read out of a JSON-in-string property are a special case.** Such a leaf has no EC
- * property behind it, so there is no property-side pair to fall through to and only
- * [[kindOfQuantity]] and [[persistenceUnit]] can form a candidate. Declaring just one — or
- * neither — is not an error: the field simply renders its raw value, exactly as it would have
- * without a quantity type at all.
- *
- * These property names are also the **persisted** form: a [[FieldRun]] serializes them verbatim
- * into its element's `TextAnnotationData`. Applications may therefore rely on the literal strings
- * `"kindOfQuantity"` and `"persistenceUnit"` when querying for annotations carrying quantity
- * overrides — for example to decide what to pre-warm.
+ * These property names are also the persisted form — a [[FieldRun]] serializes them verbatim
+ * into its element's `TextAnnotationData` — so applications can query for annotations carrying
+ * quantity overrides by the literal strings `"kindOfQuantity"` and `"persistenceUnit"`.
+ * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
+ * for the full resolution order.
  * @beta
  */
 export interface QuantityFieldFormatOptions {
-  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the persistence unit
-   * when constructing a [FormatterSpec]($core-quantity); overrides the property's persistence
-   * unit. Coordinate values whose EC property has no [KindOfQuantity]($ecschema-metadata)
-   * require this to be set explicitly (for BIS geometry, always stored in meters, that is
-   * `"Units.M"` — available as the `Units.LENGTH.M` constant from `@itwin/core-quantity`; see
-   * `docs/bis/guide/other-topics/units.md`) for an override to take effect. See the interface
-   * JSDoc for the full resolution priority.
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) a
+   * magnitude is expressed in, overriding the property's persistence unit.
+   *
+   * Because this states what the value *means* rather than how it looks, it does not fall back
+   * to the property's own unit when the two disagree — the field renders raw instead.
    */
   persistenceUnit?: string;
-  /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up
-   * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ. See
-   * the interface JSDoc for the full resolution priority.
+  /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to format
+   * through, overriding the property's own.
    */
   kindOfQuantity?: string;
   /** Identifier of a FormatSet whose formats take precedence for this field, letting one iModel
-   * mix presentations (e.g. metric and imperial callouts).
+   * mix presentations such as metric and imperial callouts.
    *
-   * This is an application-chosen identifier, matched against the ids the application supplies
-   * alongside each FormatSet to
-   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). iTwin.js does not
-   * interpret it and does not resolve it against anything persisted in the iModel. A FormatSet
-   * with no entry for the field's [KindOfQuantity]($ecschema-metadata) — and a field naming an id
-   * that was never supplied — falls through to the iModel's schema presentation format rather
-   * than to the raw string.
+   * Application-chosen, and matched against the ids supplied to
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); iTwin.js does not
+   * resolve it against anything persisted in the iModel. A field naming an id that was never
+   * supplied falls through to the iModel's schema presentation format.
    */
   formatSet?: string;
 }
@@ -171,8 +133,6 @@ export interface FieldFormatOptions {
   case?: FieldCase;
   /** Formatting options for [[FieldPropertyType]] "datetime". */
   dateTime?: DateTimeFieldFormatOptions;
-  /** Formatting options for [[FieldPropertyType]] `"quantity"` and `"coordinate"`. See
-   * [[QuantityFieldFormatOptions]] for the resolution priority.
-   */
+  /** Formatting options for [[FieldPropertyType]] `"quantity"` and `"coordinate"`. */
   quantity?: QuantityFieldFormatOptions;
 }

@@ -68,7 +68,8 @@ export function collectFieldQuantityPairs(args: {
   return pairs;
 }
 
-/** Returns the first already-warmed [FormatterSpec]($core-quantity) `provider` holds for `value`s
+/** Returns the first already-warmed [FormatterSpec]($core-quantity) `provider` holds for `value`,
+ * along with the candidates that were tried, so the caller can record a miss when none resolved.
  * @internal
  */
 export function lookupFieldSpec(

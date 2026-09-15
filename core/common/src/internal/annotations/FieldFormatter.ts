@@ -19,10 +19,7 @@ export interface FieldValue {
    * the primitive scalar the [FieldRun]($common)'s propertyPath ultimately resolved to.
    */
   value: FieldPrimitiveValue;
-  /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]].
-   * `"quantity"` and `"coordinate"` render their magnitudes through the caller-supplied
-   * `formatMagnitude` callback when one is given, and stringify them otherwise.
-   */
+  /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]]. */
   type: FieldPropertyType;
   /** Full name of the property's KindOfQuantity, e.g. `"AecUnits.LENGTH"`, if it has one. */
   kindOfQuantityFullName?: string;
@@ -111,9 +108,8 @@ function formatMagnitudeValue(v: FieldPrimitiveValue, formatMagnitude?: FormatMa
 }
 
 /** A coordinate rendered as `(x, y[, z])`, each component passed through `formatMagnitude` when
- * one is supplied. Without a callback the components render bare, with no unit labels: Core
- * deliberately carries no built-in coordinate format, because presentation is a
- * [FormatsProvider]($core-quantity) / FormatSet concern. See [[QuantityFieldFormatOptions]].
+ * one is supplied. Without a callback the components render bare, with no unit labels — Core
+ * carries no built-in coordinate format.
  */
 function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude): string | undefined {
   const magnitudes = getCoordinateMagnitudes(v);
@@ -124,13 +120,11 @@ function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude):
   return `(${magnitudes.map((m) => formatMagnitude ? formatMagnitude(m) : `${m}`).join(", ")})`;
 }
 
-/** Formats `value` through the per-type entry in the built-in formatter table (see [[formatters]]),
- * wrapping the result with prefix/suffix/case.
+/** Formats `value` through the per-type entry in [[formatters]], wrapping the result with
+ * prefix/suffix/case.
  *
- * `formatMagnitude` is consulted only by the `"quantity"` and `"coordinate"` branches. Callers
- * that have resolved a [FormatterSpec]($core-quantity) for the field pass one to render its
- * magnitudes through that spec; callers that have not — or that resolved none — omit it, and
- * those values fall back to their raw string representation.
+ * `formatMagnitude` is consulted only by the `"quantity"` and `"coordinate"` branches. Omitting
+ * it falls those values back to their raw string representation.
  * @internal
  */
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined {
