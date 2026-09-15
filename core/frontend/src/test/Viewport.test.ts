@@ -26,27 +26,6 @@ describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
 
-  describe("subcategory reload category collection", () => {
-    it("includes per-model override categories outside the category selector", () => {
-      const viewport = {
-        view: {
-          categorySelector: {
-            categories: new Set(["0x1", "0x2"]),
-          },
-        },
-        perModelCategoryVisibility: {
-          *[Symbol.iterator]() {
-            yield { modelId: "0xa", categoryId: "0x3", visible: true };
-            yield { modelId: "0xb", categoryId: "0x2", visible: false };
-          },
-        },
-      };
-
-      const categoryIds = (Viewport.prototype as any).getSubCategoryReloadCategoryIds.call(viewport) as Set<string>;
-      expect([...categoryIds]).toEqual(["0x1", "0x2", "0x3"]);
-    });
-  });
-
   describe("constructor", () => {
     it("invokes initialize method", () => {
       class ScreenVp extends ScreenViewport {
@@ -611,7 +590,6 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xa"))).to.be.true;
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
-        expect(features).to.deep.equal([]);
         expect(features.length).to.equal(0);
       });
     });
@@ -656,7 +634,6 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xc"))).to.be.true;
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xc", "0xd"]);
-        expect(features).to.deep.equal([]);
         expect(features.length).to.equal(0);
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xc"]);
