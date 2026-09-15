@@ -1228,11 +1228,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private addIModelRefListeners(ref: IModelDisplayReference): void {
     const removals = this._detachFromView;
 
-    removals.push(ref.onViewedCategoriesLoaded.addListener(() => {
+    const categoriesChanged = () => {
       this.invalidateScene();
       if (ref === this.primaryIModelRef)
         this._changeFlags.setViewedCategories();
-    }));
+    };
+
+    removals.push(ref.onViewedCategoriesLoaded.addListener(categoriesChanged));
+    removals.push(ref.viewedCategories.onChanged.addListener(categoriesChanged));
 
     const invalidateScene = () => this.invalidateScene();
     removals.push(ref.onActiveViewFlagsChanged.addListener(invalidateScene));
