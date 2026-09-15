@@ -761,7 +761,7 @@ class PixelBuffer implements Pixel.Buffer {
     }
 
     return new Pixel.Data({
-      feature: this._scratchFeature,
+      feature: undefined !== batchInfo ? this._scratchFeature : undefined,
       distanceFraction,
       type: geometryType,
       planarity,
