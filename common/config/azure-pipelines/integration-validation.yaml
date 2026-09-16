@@ -5,14 +5,19 @@
 # Rather than running every integration test on the full Cartesian product of
 # OS x architecture x Node version, coverage is separated into targeted lanes:
 #
-# | Lane                  | Pool / image         | Node | Core full-stack suites        | Owns coverage for                            |
-# | --------------------- | -------------------- | ---- | ----------------------------- | -------------------------------------------- |
-# | Renderer_Linux_x64    | ubuntu-latest        | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Linux x64     |
-# | Renderer_Windows_x64  | windows-latest       | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Windows x64   |
-# | Renderer_MacOS_arm64  | iModelTechMacArm     | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on macOS arm64   |
-# | Arch_Linux_arm64      | Platform-Debian12-ARM| 24.x | full (Chrome + Electron)      | Linux arm64 architecture (incl. rendering)   |
-# | NodeCompat_20         | ubuntu-latest        | 20.x | Chrome only, no #graphics     | Node 20 backend/RPC/cross-layer compat       |
-# | NodeCompat_22         | ubuntu-latest        | 22.x | Chrome only, no #graphics     | Node 22 backend/RPC/cross-layer compat       |
+# | Lane                  | Pool / image           | Node | Core full-stack suites        | Owns coverage for                            |
+# | --------------------- | ---------------------- | ---- | ----------------------------- | -------------------------------------------- |
+# | Renderer_Linux_x64    | imodelNative-Debian12  | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Linux x64     |
+# | Renderer_Windows_x64  | windows-latest         | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Windows x64   |
+# | Renderer_MacOS_arm64  | iModelTechMacArm       | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on macOS arm64   |
+# | Arch_Linux_arm64      | Platform-Debian12-ARM  | 24.x | full (Chrome + Electron)      | Linux arm64 architecture (incl. rendering)   |
+# | NodeCompat_20         | imodelNative-Debian12  | 20.x | Chrome only, no #graphics     | Node 20 backend/RPC/cross-layer compat       |
+# | NodeCompat_22         | imodelNative-Debian12  | 22.x | Chrome only, no #graphics     | Node 22 backend/RPC/cross-layer compat       |
+#
+# Linux x64 lanes use the self-hosted 16-core imodelNative-Debian12 pool: hosted
+# ubuntu-latest agents have 2 cores, which fails ConcurrentQuery config tests
+# (itwinjs-backlog#2422) and slows builds. Hosted-Ubuntu renderer coverage is still
+# exercised on every PR by integration-pr-validation.yaml.
 #
 # Rationale:
 # - Renderer behavior varies by OS, GPU stack, and architecture.
@@ -56,8 +61,8 @@ jobs:
     strategy:
       matrix:
         Renderer_Linux_x64_node_24_x:
-          imageName: ubuntu-latest
-          poolName:
+          imageName:
+          poolName: "imodelNative-Debian12"
           nodeVersion: 24.x
         Renderer_Windows_x64_node_24_x:
           imageName: windows-latest
@@ -107,8 +112,9 @@ jobs:
           nodeVersion: 20.x
         NodeCompat_Linux_x64_node_22_x:
           nodeVersion: 22.x
-    pool:
-      vmImage: ubuntu-latest
+    # Self-hosted 16-core pool: hosted ubuntu-latest agents have 2 cores, which fails the
+    # ConcurrentQuery config tests and slows builds/tests.
+    pool: "imodelNative-Debian12"
     steps:
       - checkout: self
         clean: true
