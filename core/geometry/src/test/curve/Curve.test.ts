@@ -1154,19 +1154,16 @@ describe("CoordinateXYZ", () => {
     const transform = Transform.createScaleAboutPoint(pointS, scale);
     const coordinateA = CoordinateXYZ.create(Point3d.create(1, 2, 3));
     const coordinateB = coordinateA.clone();
-    if (ck.testPointer(coordinateB) && coordinateB instanceof CoordinateXYZ) {
-      const coordinateC = coordinateA.cloneTransformed(transform) as CoordinateXYZ;
-      ck.testPoint3d(coordinateA.point, coordinateB.point);
-      const distanceAC = pointS.distance(coordinateC.point);
-      ck.testCoordinate(scale * pointS.distance(coordinateA.point), distanceAC);
-      const range = coordinateA.range();
-      coordinateC.extendRange(range);
-      // with only 2 points, the range diagonal must join the points . . .
-      ck.testTrue(coordinateA.isSameGeometryClass(coordinateC));
-      ck.testFalse(coordinateA.isAlmostEqual(coordinateC));
-      ck.testTrue(coordinateA.isAlmostEqual(coordinateB));
-    }
-
+    const coordinateC = coordinateA.cloneTransformed(transform);
+    ck.testPoint3d(coordinateA.point, coordinateB.point);
+    const distanceAC = pointS.distance(coordinateC.point);
+    ck.testCoordinate(scale * pointS.distance(coordinateA.point), distanceAC);
+    const range = coordinateA.range();
+    coordinateC.extendRange(range);
+    // with only 2 points, the range diagonal must join the points . . .
+    ck.testTrue(coordinateA.isSameGeometryClass(coordinateC));
+    ck.testFalse(coordinateA.isAlmostEqual(coordinateC));
+    ck.testTrue(coordinateA.isAlmostEqual(coordinateB));
     ck.checkpoint("CoordinateXYZ.Hello");
     expect(ck.getNumErrors()).toBe(0);
   });

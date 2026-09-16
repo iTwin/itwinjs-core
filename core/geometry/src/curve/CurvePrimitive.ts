@@ -15,16 +15,18 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { AppendPlaneIntersectionStrokeHandler } from "./internalContexts/AppendPlaneIntersectionStrokeHandler";
 import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStrokeHandler";
-import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
 import { LineString3d } from "./LineString3d";
 
 import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import type { Arc3d } from "./Arc3d";
 import type { BezierCurve3d } from "../bspline/BezierCurve3d";
+import type { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import type { BSplineCurve3d } from "../bspline/BSplineCurve";
+import type { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import type { Clipper } from "../clipping/ClipUtils";
 import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
@@ -60,7 +62,7 @@ export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bspline
  * using [[CurvePrimitive.curvePrimitiveType]].
  * @public
  */
-export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BSplineCurve3dH | BezierCurve3d | BezierCurve3dH | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
 /**
  * Union type for a linear [[CurvePrimitive]].
  * @public
@@ -665,8 +667,13 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /** Return a deep clone. */
   public abstract override clone(): CurvePrimitive;
-  /** Return a transformed deep clone. */
-  public abstract override cloneTransformed(transform: Transform): CurvePrimitive | undefined;
+  /**
+   * Return a transformed deep clone.
+   * * This override removes `undefined` from the return type of the base class.
+   * * Curve transformations always succeed, however subclasses are free to ignore certain effects of
+   * the input transform, e.g.,`TransitionSpiral`s only apply the rigid part of the transform.
+   */
+  public abstract override cloneTransformed(transform: Transform): CurvePrimitive;
   /**
    * Return (if possible) a curve primitive which is a portion of this curve.
    * @param _fractionA [in] start fraction

@@ -94,6 +94,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public cursor = "default";
   private readonly _viewports: ScreenViewport[] = [];
   public readonly decorators: Decorator[] = [];
+  private _selectedViewportChange: Promise<void> = Promise.resolve();
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
@@ -250,8 +251,16 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
-    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);// eslint-disable-line @typescript-eslint/no-floating-promises
+    const selectedViewportChange = IModelApp.toolAdmin.onSelectedViewportChanged(previous, current)
+      .catch(() => undefined);
+    this._selectedViewportChange = this._selectedViewportChange.then(async () => selectedViewportChange, async () => selectedViewportChange)
+      .then(() => undefined, () => undefined);
     this.onSelectedViewportChanged.emit({ previous, current });
+  }
+
+  /** @internal */
+  public async waitForSelectedViewportChange(): Promise<void> {
+    await this._selectedViewportChange;
   }
 
   /** The "selected view" is the default for certain operations.  */

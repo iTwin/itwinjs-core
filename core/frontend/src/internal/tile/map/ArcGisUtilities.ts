@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -187,7 +187,17 @@ export class ArcGisUtilities {
   */
   public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache, capabilitiesFilter} = args;
-    const metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
+    let metadata: ArcGISServiceMetadata | undefined;
+    try {
+      metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
+    } catch (err) {
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
+      throw err;
+    }
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -259,6 +269,9 @@ export class ArcGisUtilities {
    * @param password Password to use for legacy token based security
    * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
    * @param requireToken Flag to indicate if a token is required
+   * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
+   * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
+   * all other errors are caught and reported by returning `undefined`.
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
@@ -298,8 +311,19 @@ export class ArcGisUtilities {
       }
       let response = await fetch(tmpUrl, { method: "GET" });
       if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(tmpUrl, {method: "GET", credentials: "include" });
+        // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+        const challengedUrl = response.url || tmpUrl.toString();
+        if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
+          throw new MapLayerUntrustedOriginError(challengedUrl);
+
+        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
+
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+        response = await fetch(challengedUrl, {
+          method: "GET",
+          credentials: "include",
+          redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+        });
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service
@@ -323,8 +347,10 @@ export class ArcGisUtilities {
       ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 
-    } catch {
+    } catch (err) {
       ArcGisUtilities._serviceCache.set(url, undefined);
+      if (err instanceof MapLayerUntrustedOriginError)
+        throw err;    // propagate so callers can report the blocked origin
       return undefined;
     }
   }

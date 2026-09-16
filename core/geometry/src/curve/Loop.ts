@@ -9,13 +9,15 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.
@@ -25,12 +27,19 @@ import { StrokeOptions } from "./StrokeOptions";
 export class Loop extends CurveChain {
   /** String name for schema properties */
   public readonly curveCollectionType = "loop";
-  /** Tag value that can be set to true for user code to mark inner and outer loops. */
-  public override isInner: boolean = false;
+  /**
+   * Flag for inner loop status (default value is `false`).
+   * * Typical usage is to set to `true` on hole `Loop`s in a `ParityRegion` to distinguish them from the outer `Loop`.
+   * * This property is only set by the user, and does not affect region processing.
+   * * This property is propagated through [[clone]] and JSON/FlatBuffer de/serialization.
+   * * For best de/serialization results, avoid setting to `false` on multiple `Loop`s of a `ParityRegion`.
+   */
+  public isInner: boolean = false;
   /** Test if `other` is a `Loop` */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof Loop;
   }
+  /** Construct an empty loop. */
   public constructor() {
     super();
   }
@@ -100,9 +109,27 @@ export class Loop extends CurveChain {
     emptyClone.isInner = this.isInner;
     return emptyClone;
   }
+  /** Return a deep copy. */
+  public override clone(): Loop {
+    return super.clone() as Loop;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): Loop {
+    return super.cloneTransformed(transform) as Loop;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): Loop {
+    return super.cloneWithExpandedLineStrings() as Loop;
+  }
   /** Second step of double dispatch:  call `handler.handleLoop(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLoop(this);
+  }
+  /** Test for near equality */
+  public override isAlmostEqual(other: GeometryQuery): boolean {
+    if (!super.isAlmostEqual(other))
+      return false;
+    return this.isInner === (other as Loop).isInner;
   }
 }
 

@@ -306,7 +306,7 @@ export interface PresentationManagerProps {
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
    *
-   * @deprecated in 5.1 - will not be removed until after 2026-08-08. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
+   * @deprecated in 5.1 - might be removed in next major version. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
@@ -354,7 +354,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelDb.schemaContext]($core-backend) is now used instead.
+   * @deprecated in 5.1 - might be removed in next major version. By default [IModelDb.schemaContext]($core-backend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 

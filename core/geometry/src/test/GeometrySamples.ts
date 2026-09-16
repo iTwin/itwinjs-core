@@ -1800,7 +1800,7 @@ export class Sample {
       if (frame) {
         const perpVector = frame.matrix.columnZ();
         perpVector.scaleInPlace(10.0);
-        const c1 = c.cloneTransformed(Transform.createTranslation(perpVector)) as CurvePrimitive;
+        const c1 = c.cloneTransformed(Transform.createTranslation(perpVector));
         allSweeps.push(RuledSweep.create([Path.create(c), Path.create(c1)], false)!);
       }
     }
@@ -2517,7 +2517,7 @@ export class Sample {
       result.push(RotationalSweep.create(contourZ.clone(), axis.clone(), rotationAngle, false)!);
     result.push(RuledSweep.create([contourA.clone(), contourB.clone()], capped)!);
     const transformC = Transform.createScaleAboutPoint(Point3d.create(0, 0, 8), 0.5);
-    const contourC = contourB.cloneTransformed(transformC)!;
+    const contourC = contourB.cloneTransformed(transformC);
     result.push(RuledSweep.create([contourA.clone(), contourB.clone(), contourC.clone()], capped)!);
     return result;
   }

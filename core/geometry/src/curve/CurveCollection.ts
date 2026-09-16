@@ -12,6 +12,7 @@ import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -19,7 +20,6 @@ import { Transform } from "../geometry3d/Transform";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
@@ -34,6 +34,7 @@ import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
 
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 import type { Path } from "./Path";
 import type { Loop } from "./Loop";
 
@@ -69,8 +70,6 @@ export abstract class CurveCollection extends GeometryQuery {
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
-  /** Flag for inner loop status. Only used by `Loop`. */
-  public isInner: boolean = false;
   /** Return the curve children. */
   public abstract override get children(): AnyCurve[];
   /** Return the sum of the lengths of all contained curves. */
@@ -222,8 +221,8 @@ export abstract class CurveCollection extends GeometryQuery {
     return CloneCurvesContext.clone(this) as CurveCollection;
   }
   /** Create a deep copy of transformed curves. */
-  public override cloneTransformed(transform: Transform): CurveCollection | undefined {
-    return CloneCurvesContext.clone(this, transform);
+  public override cloneTransformed(transform: Transform): CurveCollection {
+    return CloneCurvesContext.clone(this, transform) as CurveCollection;
   }
   /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
   public cloneWithExpandedLineStrings(): CurveCollection {
@@ -386,6 +385,21 @@ export abstract class CurveCollection extends GeometryQuery {
     }
     return undefined;
   };
+  /**
+   * Ask if the curves of the collection are within tolerance of the input plane.
+   * @returns whether the collection is nonempty and its curves lie within tolerance of the plane.
+   */
+  public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
+    if (0 === this.children.length)
+      return false; // punt on empty parent...
+    for (const child of this.children) {
+      if (child instanceof CurveCollection && 0 === child.children.length)
+        continue; // ...but ignore an empty child
+      if (!child.isInPlane(plane))
+        return false;
+    }
+    return true;
+  }
 }
 
 /**
@@ -500,6 +514,19 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
   public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
+  /** Return a deep copy. */
+  public override clone(): CurveChain {
+    return super.clone() as CurveChain;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): CurveChain {
+    return super.cloneTransformed(transform) as CurveChain;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): CurveChain {
+    return super.cloneWithExpandedLineStrings() as CurveChain;
+  }
+
   /**
    * Add a child curve.
    * @param child curve to add to the chain. The curve is captured by this instance.
@@ -630,6 +657,18 @@ export class BagOfCurves extends CurveCollection {
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {
     return new BagOfCurves();
+  }
+  /** Return a deep copy. */
+  public override clone(): BagOfCurves {
+    return super.clone() as BagOfCurves;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): BagOfCurves {
+    return super.cloneTransformed(transform) as BagOfCurves;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): BagOfCurves {
+    return super.cloneWithExpandedLineStrings() as BagOfCurves;
   }
   /** Add a child  */
   public tryAddChild(child: AnyCurve | undefined): boolean {

@@ -999,7 +999,11 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
           strings.push(`${key}: ${JSON.stringify(batch[key])}`);
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    strings.forEach((str, index) => {
+      if (index > 0)
+        div.appendChild(document.createElement("br"));
+      div.appendChild(document.createTextNode(str));
+    });
     return div;
   }
 

@@ -169,6 +169,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     return {
       abbreviateBlobs: opts.abbreviateBlobs,
       classIdsToClassNames: opts.classIdsToClassNames,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       useJsName: opts.useJsName,
     };
   }
@@ -556,5 +557,4 @@ export class ChangesetReader implements Disposable, ChangeSource {
     this.close();
   }
 }
-
 

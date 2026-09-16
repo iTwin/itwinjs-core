@@ -266,6 +266,7 @@ public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RotationalSweepConstructiveFrameOptions
 public;class;RuledSweep
+public;interface;ScaledToleranceOptions
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
 public;namespace;SerializationHelpers

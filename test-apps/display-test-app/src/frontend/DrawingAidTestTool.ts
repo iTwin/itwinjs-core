@@ -285,6 +285,7 @@ export class DisplayTestAppShortcutsUI {
       this.addShortcut("L", "Place Line String", () => { void IModelApp.tools.run(PlaceLineStringTool.toolId); }, shortcutsForQ);
       this.addShortcut("C", "Clear Saved Values", () => { AccuDrawShortcuts.clearSavedValues(); }, shortcutsForQ);
       this.addShortcut("P", "Snap Perpendicular", () => { DisplayTestApp.setSnapModeOverride(SnapMode.PerpendicularPoint); }, shortcutsForQ);
+      this.addShortcut("S", "Toggle ACS Plane Snap", () => { IModelApp.toolAdmin.acsPlaneSnapLock = !IModelApp.toolAdmin.acsPlaneSnapLock; }, shortcutsForQ);
     }
   }
 

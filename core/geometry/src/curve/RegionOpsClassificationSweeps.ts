@@ -399,7 +399,7 @@ export class RegionGroup {
   // push new members into the group.
   public addMember(data: AnyRegion | AnyRegion[] | LineSegment3d | undefined, allowLineSegment: boolean = false) {
     if (data instanceof Loop || data instanceof ParityRegion) {
-      let cleanerData = data.clone() as (ParityRegion | Loop);
+      let cleanerData = data.clone();
       RegionOps.consolidateAdjacentPrimitives(cleanerData);
       cleanerData = TransferWithSplitArcs.clone(cleanerData) as (ParityRegion | Loop);
       this.members.push(new RegionGroupMember(cleanerData, this));

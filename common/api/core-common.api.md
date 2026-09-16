@@ -875,6 +875,8 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
+    // @internal
+    SchemaSyncElementReserved = 16777206,
     Unassigned = 0
 }
 
@@ -2381,6 +2383,12 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
+// @beta
+export interface DefinitionSetProps extends DefinitionElementProps {
+    // (undocumented)
+    rank?: Rank;
+}
+
 // @public
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
@@ -3275,6 +3283,31 @@ export interface ElementProps extends EntityProps {
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
+}
+
+// @beta
+export interface ElementReservationError extends ITwinError {
+    readonly federationGuid?: GuidString;
+}
+
+// @beta (undocumented)
+export namespace ElementReservationError {
+    const scope = "itwin-ElementReservation";
+    export function isError(error: unknown, key?: Key): error is ElementReservationError;
+    export type Key =
+    /** A proposed or inserted reservation is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or a missing federationGuid. */
+    "invalid-reservation" |
+    /** The requested reservation conflicts with an existing reservation (a different class or code). */
+    "reservation-conflict" |
+    /** No reservation exists for the element being inserted; it must be reserved first. */
+    "reservation-not-found" |
+    /** The element cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of element ids available for reservations has been exhausted. */
+    "id-sequence-exhausted" |
+    /** The persisted reservation bookkeeping data is corrupt. */
+    "corrupt-reservation-data";
+    export function throwError<T extends ElementReservationError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
 // @public
@@ -4469,7 +4502,10 @@ export function getMarkerText(marker: ListMarker, num: number): string;
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 // @internal
-export const getPullChangesIpcChannel: (iModelId: string) => string;
+export const getPullChangesIpcChannel: (key: string) => string;
+
+// @internal
+export const getPushChangesIpcChannel: (key: string) => string;
 
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
@@ -5600,6 +5636,7 @@ export interface IpcAppFunctions {
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
+    cancelPushChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
@@ -5615,7 +5652,7 @@ export interface IpcAppFunctions {
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
-    pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+    pushChanges: (key: string, description: string, options?: PushChangesOptions) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -7626,6 +7663,13 @@ export interface PullChangesOptions {
     enableCancellation?: boolean;
     progressInterval?: number;
     reportProgress?: boolean;
+}
+
+// @internal
+export interface PushChangesOptions {
+    downloadProgressInterval?: number;
+    enableCancellation?: boolean;
+    reportDownloadProgress?: boolean;
 }
 
 // @public
@@ -10200,6 +10244,12 @@ export interface TabRunProps extends TextBlockComponentProps {
 }
 
 // @beta
+export type TargetPointShape = typeof targetPointShapes[number];
+
+// @beta
+export const targetPointShapes: readonly ["cross", "plus", "circle", "square", "rectangle"];
+
+// @beta
 export type TerminatorShape = typeof terminatorShapes[number];
 
 // @beta
@@ -10446,6 +10496,11 @@ export type TextJustification = "left" | "center" | "right";
 export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
+    showLeaders?: boolean;
+    showTargetPoint?: boolean;
+    showTerminators?: boolean;
+    targetPointOffsetFactor?: number;
+    targetPointShape?: TargetPointShape;
     terminatorHeightFactor?: number;
     terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
@@ -11321,6 +11376,12 @@ export enum TxnAction {
     None = 0,
     Reinstate = 4,
     Reverse = 3
+}
+
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
 }
 
 // @internal

@@ -16,8 +16,8 @@ import * as path from "path";
 import { AsyncMethodsOf, BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
-import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { electronIpcStrings } from "../common/ElectronIpcInterface";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager.js";
+import { electronIpcStrings } from "../common/ElectronIpcInterface.js";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -171,15 +171,18 @@ export class ElectronHost {
       const saveMaximized = (maximized: boolean) => {
         NativeHost.settingsStore.setData(`windowMaximized-${windowName}`, maximized);
       };
+      const saveWindowState = () => {
+        saveWindowPosition();
+        saveMaximized(mainWindow.isMaximized());
+      };
 
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
-      saveMaximized(mainWindow.isMaximized());
 
-      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition());
-      mainWindow.on("resize", () => debouncedSaveWindowSizeAndPos());
-      mainWindow.on("move", () => debouncedSaveWindowSizeAndPos());
-      saveWindowPosition();
+      const debouncedSaveWindowState = debounce(() => saveWindowState());
+      mainWindow.on("resize", () => debouncedSaveWindowState());
+      mainWindow.on("move", () => debouncedSaveWindowState());
+      saveWindowState();
     }
   }
 

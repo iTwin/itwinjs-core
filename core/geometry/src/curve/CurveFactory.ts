@@ -836,11 +836,10 @@ export class CurveFactory {
       // The alignment condition is equivalent to positive projected curve area computed wrt to the plane normal.
       const toLocal = Matrix3d.createRigidHeadsUp(planeNormal).transpose();
       const projection = closedCurve.cloneTransformed(Transform.createOriginAndMatrix(undefined, toLocal));
-      if (projection) { // now we can ignore z-coords
-        const areaXY = RegionOps.computeXYArea(projection as AnyRegion);
-        if (areaXY && areaXY < 0)
-          curve.reverseInPlace();
-      }
+      // now we can ignore z-coords
+      const areaXY = RegionOps.computeXYArea(projection);
+      if (areaXY && areaXY < 0)
+        curve.reverseInPlace();
     }
   }
 
