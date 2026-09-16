@@ -40,6 +40,18 @@ jobs:
           node-version: "24.x"
 
       - name: Run update-changelogs.mjs
+        id: prepare
+        run: node ./.github/workflows/automation-scripts/update-changelogs.mjs
+
+      # GIT_ASKPASS avoids the token ever appearing in argv/ps/.git/config.
+      - name: Push finalized release
+        if: steps.prepare.outputs.refs != ''
         env:
           IMJS_ADMIN_GH_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
-        run: node ./.github/workflows/automation-scripts/update-changelogs.mjs
+        run: |
+          askpass="$(mktemp)"
+          trap 'rm -f "$askpass"' EXIT
+          printf '#!/bin/sh\necho "$IMJS_ADMIN_GH_TOKEN"\n' > "$askpass"
+          chmod +x "$askpass"
+          GIT_ASKPASS="$askpass" git -c credential.https://github.com.username=x-access-token \
+            push --atomic origin ${{ steps.prepare.outputs.refs }}

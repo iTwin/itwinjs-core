@@ -1,9 +1,10 @@
 // Cherry-picks changelogs from a just-released branch onto the next target branch
-// (the latest release branch, or master), then pushes the result.
+// (the latest release branch, or master), then commits the result.
 //
-// Uses only Node built-ins and the Rush version pinned in rush.json. This runs with
-// credentials that can push to protected branches, so it must not fetch and execute
-// arbitrary code at run time.
+// Uses only Node built-ins and the Rush version pinned in rush.json (via ./rush-lockfile,
+// so `npm ci` runs instead of a ranged install). This script never pushes and never
+// receives the admin push token; it only commits locally and prints/emits the refspecs
+// still needing a push.
 //
 /****************************************************************
 * To run manually:
@@ -12,8 +13,9 @@
 * 3. Uncomment both lines in the MANUAL RUN BLOCK at the bottom of this file and
 *    replace X.X.X in each with the released version. Uncommenting only the checkout
 *    leaves the final push aimed at the protected target branch.
-* 4. IMJS_ADMIN_GH_TOKEN=<token with push access> node .github/workflows/automation-scripts/update-changelogs.mjs
-* 5. Open a PR from finalize-release-X.X.X into the target branch.
+* 4. node .github/workflows/automation-scripts/update-changelogs.mjs
+* 5. Run the `git push --atomic origin ...` command it prints.
+* 6. Open a PR from finalize-release-X.X.X into the target branch.
 *****************************************************************/
 
 import { execFileSync } from "node:child_process";
@@ -23,10 +25,7 @@ import path from "node:path";
 const repoRoot = process.cwd();
 const targetPath = "temp-target-changelogs";
 const incomingPath = "temp-incoming-changelogs";
-
-// Captured once, then removed from process.env so no spawned child process can read it.
-const adminToken = process.env.IMJS_ADMIN_GH_TOKEN;
-delete process.env.IMJS_ADMIN_GH_TOKEN;
+const rushLockfilePath = path.join(repoRoot, ".github", "workflows", "automation-scripts", "rush-lockfile", "package-lock.json");
 
 // No shell is spawned, so arguments are not subject to word splitting or expansion.
 function run(command, args, options = {}) {
@@ -42,21 +41,29 @@ function git(...args) {
   return run("git", args).trim();
 }
 
-// Pushes with the admin token via a per-invocation `-c http.extraheader`, so it's
-// never written to .git/config or exposed to any other process this script spawns.
-function authenticatedGitPush(...args) {
-  if (!adminToken)
-    throw new Error("IMJS_ADMIN_GH_TOKEN is not set; cannot push.");
-  const basicAuth = Buffer.from(`x-access-token:${adminToken}`).toString("base64");
-  return run("git", [
-    "-c", `http.https://github.com/.extraheader=AUTHORIZATION: basic ${basicAuth}`,
-    "push", ...args,
-  ]);
+const pendingPushRefs = [];
+
+function pushRef(refspec) {
+  pendingPushRefs.push(refspec);
+}
+
+function assertRushLockfileMatches() {
+  const { rushVersion } = readJson(path.join(repoRoot, "rush.json"));
+  const lockedVersion = readJson(rushLockfilePath).packages?.[""]?.dependencies?.["@microsoft/rush"];
+  if (lockedVersion !== rushVersion) {
+    throw new Error(
+      `Rush bootstrap lockfile is out of date: rush.json pins ${rushVersion}, but ` +
+      `${path.relative(repoRoot, rushLockfilePath)} pins ${lockedVersion}. Regenerate it ` +
+      "(see the README next to it) before releasing.",
+    );
+  }
 }
 
 function rush(...args) {
+  assertRushLockfileMatches();
   run(process.execPath, [path.join("common", "scripts", "install-run-rush.js"), ...args], {
     stdio: "inherit",
+    env: { ...process.env, INSTALL_RUN_RUSH_LOCKFILE_PATH: rushLockfilePath },
   });
 }
 
@@ -188,7 +195,7 @@ if (commitMessage.endsWith(".0")) {
   editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
   git("add", docsYamlPath);
   git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
-  authenticatedGitPush("origin", `HEAD:${currentBranch}`);
+  pushRef(`${currentBranch}:${currentBranch}`);
 }
 
 targetBranch = targetBranch.replace("origin/", "");
@@ -238,4 +245,12 @@ git("commit", "-m", `${commitMessage} Changelogs`);
 rush("change", "--bulk", "--message", "", "--bump-type", "none");
 git("add", ".");
 git("commit", "--amend", "--no-edit");
-authenticatedGitPush("origin", `HEAD:${targetBranch}`);
+pushRef(`HEAD:${targetBranch}`);
+
+const refs = pendingPushRefs.join(" ");
+if (process.env.GITHUB_OUTPUT) {
+  // Hand off queued refspecs to the workflow's push step.
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `refs=${refs}\n`);
+} else {
+  console.log(`\nRun this to push the finalized release:\n  git push --atomic origin ${refs}\n`);
+}
