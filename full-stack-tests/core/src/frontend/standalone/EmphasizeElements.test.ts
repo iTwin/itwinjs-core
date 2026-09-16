@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
+  EmphasizeElements, EmphasizeElementsImpl, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -31,6 +31,18 @@ describe("EmphasizeElements tests", () => {
   after(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
+  });
+
+  it("EmphasizeElementsImpl operates on IModelDisplayReference", async () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const ref = vp.primaryIModelRef;
+    const impl = new EmphasizeElementsImpl();
+
+    assert.isTrue(impl.hideElements(new Set<string>(["0x1", "0x2"]), ref, true));
+    assert.isTrue(ref.neverDrawnElements.size === 2);
+
+    EmphasizeElements.clear(vp);
   });
 
   it("Emphasize add/replace/clear", async () => {
