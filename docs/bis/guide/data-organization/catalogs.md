@@ -29,15 +29,13 @@ See [Components from Catalogs](../../../learning/backend/IModelContents.md#compo
 
 *Component* commonly refers to a single reusable catalog entry: a pipe type, a valve, a title-block template. In BIS terms, a catalog entry is rooted at a [DefinitionElement](../references/glossary.md#DefinitionElement), typically a [TypeDefinitionElement](../fundamentals/type-definitions.md), but that entry-point element is rarely self-contained. On this page, a *definition bundle* means the entry-point `DefinitionElement` together with the owned and referenced data required to use it. This is descriptive terminology, not a formal BIS construct.
 
-A definition bundle may include:
+Discovery starts at the highest element of the selected bundle, then follows its descendants and required references. Start with PVC-300's `PhysicalType`, rather than selecting one of its template geometry elements and trying to discover the component by climbing its ancestors.
 
-- `ElementAspect`s and child elements owned by any element in the bundle,
-- a sub-model of any `ISubModeledElement` in the bundle and the elements contained in that model,
-- for an element discovered in another model, its containing model, that model's modeled element, and the modeled element's parent hierarchy,
-- elements referenced through navigation properties, such as a `RecipeDefinitionElement`, `Category`, `PhysicalMaterial`, or `RenderMaterial`, and
-- dependency relationships represented by subclasses of [`ElementRefersToElements`](../fundamentals/relationship-fundamentals.md#link-table), together with the element at the opposite endpoint of each link-table relationship.
+### Example: a pipe type
 
-In the running example, the PVC-300 component is more than its `PhysicalType` element:
+PVC-300 references a `TemplateRecipe3d`, an element that describes its reusable template. The recipe has a sub-model containing the template geometry. Those geometry elements reference the category used to display them. The pipe type also references its physical material and owns an aspect containing additional properties.
+
+The arrows below show how discovery reaches those dependencies from the selected pipe type:
 
 ```mermaid
 graph TD
@@ -48,12 +46,6 @@ graph TD
     CAT["SpatialCategory<br/>Pipes"]
     MAT["PhysicalMaterial<br/>PVC"]
     ASP["ElementAspect<br/>pressure rating"]
-    CLS["Classification<br/>Pipes"]
-    CLS2["Classification<br/>Manholes"]
-    CLSM["DefinitionModel<br/>classification table sub-model"]
-    CLST["ClassificationTable<br/>Utility Elements"]
-    CLSS["ClassificationSystem<br/>OpenSite Hierarchy"]
-    PT2["PhysicalType<br/>PVC-450 (another component)"]
 
     PT -- "Recipe" --> TR
     TR -- "is sub-modeled by" --> SM
@@ -61,31 +53,49 @@ graph TD
     GEO -- "is in category" --> CAT
     PT -- "references" --> MAT
     PT -- "owns" --> ASP
-    CAT <-->|"symbolizes (link table)"| CLS
-    CLST -- "is sub-modeled by" --> CLSM
-    CLSM -- "contains" --> CLS
-    CLSM -- "contains" --> CLS2
-    CLST -- "is child of" --> CLSS
-    PT2 -. "also references" .-> CAT
-    PT2 -. "also references" .-> MAT
 
     classDef entry fill:#e7f1ff,stroke:#477db3,stroke-width:2px,color:#1f2937
     classDef dep fill:#eef1f4,stroke:#6b7280,stroke-width:1px,color:#1f2937
     classDef shared fill:#fdf3e0,stroke:#b98a2f,stroke-width:1px,color:#1f2937
-    classDef other fill:#f4f4f4,stroke:#8a8a8a,stroke-width:1px,color:#1f2937
     class PT entry
-    class TR,SM,GEO,ASP,CLSM dep
-    class CAT,MAT,CLS,CLS2,CLST,CLSS shared
-    class PT2 other
+    class TR,SM,GEO,ASP dep
+    class CAT,MAT shared
 ```
 
-The PVC-300 bundle contains every node shown in the diagram except PVC-450. It includes the `PhysicalType`, its referenced `TemplateRecipe3d`, the recipe's template sub-model and geometry, the *Pipes* category, the *PVC* material, the `ElementAspect`, the classification structure, and the relationships among them.
+For this example, every node shown belongs to the PVC-300 bundle. Copying only the `PhysicalType` would omit the template geometry and the definitions needed to use it. The amber category and material may be shared: importing another pipe type, PVC-450, can reuse those same cached definitions instead of copying them again.
 
-Following the category's link-table relationship discovers the *Pipes* classification. The bundle then includes the classification's `DefinitionModel`, the `ClassificationTable` modeled by that model, and the table's parent `ClassificationSystem`. Because discovery is recursive, the bundle also includes the other elements in the table's sub-model, such as the *Manholes* classification shown here. Newly discovered elements contribute their owned child elements.
+This diagram shows ownership, sub-models, and direct references. A real pipe type may have additional dependencies, including the link-table and geometry-stream references described below.
 
-The amber nodes are dependencies that may be shared with other components. PVC-450 is shown sharing the *Pipes* category and *PVC* material.
+### Example: a classification tree
 
-There is currently no single BIS construct that identifies a definition bundle as a unit.
+A component need not be a type that a user places. In OS+, a complete classification tree is one bundle that the application requires from the beginning. An administrator chooses the tree from a catalog by selecting its root `ClassificationSystem` element, not an individual classification within the tree.
+
+In this example, the system owns a `ClassificationTable`. The table's sub-model contains the classifications:
+
+```mermaid
+graph TD
+    SYS["ClassificationSystem<br/>selected tree root"]
+    TABLE["ClassificationTable<br/>Utility Elements"]
+    MODEL["DefinitionModel<br/>table sub-model"]
+    PIPES["Classification<br/>Pipes"]
+    MANHOLES["Classification<br/>Manholes"]
+
+    SYS -- "owns child" --> TABLE
+    TABLE -- "is sub-modeled by" --> MODEL
+    MODEL -- "contains" --> PIPES
+    MODEL -- "contains" --> MANHOLES
+
+    classDef entry fill:#e7f1ff,stroke:#477db3,stroke-width:2px,color:#1f2937
+    classDef dep fill:#eef1f4,stroke:#6b7280,stroke-width:1px,color:#1f2937
+    class SYS entry
+    class TABLE,MODEL,PIPES,MANHOLES dep
+```
+
+Discovery proceeds down from the selected system through its tables, their sub-model contents, and any nested child elements, then follows required references. The whole tree is selected deliberately; it is not discovered by importing a pipe and climbing from a referenced classification to its ancestors.
+
+OS+ uses only one classification tree in an end-user iModel, although users may have multiple trees available in different versioned catalogs. This is an OS+ application requirement, not a BIS restriction on how many trees a repository or table can contain.
+
+There is currently no single BIS construct that identifies a definition bundle as a unit. The application determines which root represents the component its users need.
 
 ### Generic discovery mechanisms
 
@@ -93,25 +103,37 @@ Starting with the entry-point element, apply these BIS mechanisms recursively to
 
 - Include owned `ElementAspect`s and child elements. Classes expected to own children implement `IParentElement`.
 - For each `ISubModeledElement`, include its sub-model and the elements contained in that model. `TemplateRecipe3d` and `DefinitionContainer` are examples of sub-modeled elements.
-- When discovery pulls a required element from another model, include the model and its modeled element. If the modeled element is a child element, include its parent and continue through the complete ancestor hierarchy. The other discovery rules then apply recursively to those newly included elements, including their children and sub-model contents.
-- Follow navigation properties from the referencing element to the referenced element, not in the reverse direction. Examples include `TypeDefinitionElement.Recipe`, `PhysicalType.PhysicalMaterial`, `GeometricElement3d.Category`, and `PhysicalMaterial.RenderMaterial`.
-- Traverse dependency relationships represented by subclasses of `ElementRefersToElements` in either direction, include the link-table relationship, and include the element at the opposite endpoint.
+- Discover navigation-property references from the schema and follow them from the referencing element to the referenced element, not in reverse. Follow the many-to-zero/one reference toward its zero/one target; an unset optional reference contributes no element. Examples include `TypeDefinitionElement.Recipe`, `PhysicalType.PhysicalMaterial`, `GeometricElement3d.Category`, and `PhysicalMaterial.RenderMaterial`.
+- Follow link-table dependencies only according to the traversal rules supplied by the caller, as described in the next section. Include the traversed relationship and the required element it reaches.
+
+These rules do not add a containing model, its modeled element, or ancestors merely because a referenced element was discovered. Ownership and sub-model traversal proceeds downward from bundle elements. Copying may still require the application or transfer tooling to create or map destination models and preserve required parent relationships. That transfer work does not make every source ancestor, sibling, or containing model's contents part of the selected bundle.
 
 For PVC-300, these mechanisms first follow the `Recipe` navigation property from the `PhysicalType` to its `TemplateRecipe3d`, then include the recipe's sub-model and its contents. The traversal also includes the referenced *Pipes* category and *PVC* material, the owned aspect, and any dependencies discovered from those elements.
 
 ### Link-table relationship discovery
 
-Navigation properties and link-table dependency relationships have different traversal rules. A navigation property is followed only from its referencing element to its referenced element. A dependency relationship represented by a subclass of `ElementRefersToElements` is traversed from either endpoint to the other.
+A [link-table relationship](../fundamentals/relationship-fundamentals.md#link-table) connects elements without a navigation property. Schemas expose these relationships and their endpoints, but do not capture enough dependency semantics to determine which direction discovery should follow. Deriving from `ElementRefersToElements` does not mean that a relationship should automatically be traversed in both directions.
 
-The [OpenSite domain schema](https://github.com/iTwin/bis-schemas/blob/master/Domains/4-Application/OpenSite/OpenSite.ecschema.xml) provides an example. Its abstract `CategorySymbolizesClassification` relationship derives from `ElementRefersToElements`; concrete subclasses relate a source `Category` to a target `Classification`. Reaching either endpoint therefore includes the relationship and the other endpoint. In the PVC-300 example, reaching the *Pipes* category discovers the *Pipes* classification. Reaching that classification first would likewise discover the category.
+The caller supplies the link-table relationships to traverse. The application must also establish the traversal direction for each dependency; a relationship name alone does not explain which endpoint requires the other. This page does not define an API for supplying those rules.
 
-The classification also illustrates model and ownership closure. Its containing `DefinitionModel`, the `ClassificationTable` modeled by that model, and the table's parent `ClassificationSystem` are included. Applying the discovery rules recursively to those elements includes the table's complete sub-model contents and child elements nested beneath the discovered hierarchy. Because a `ClassificationSystem` owns its `ClassificationTable` child elements, the same recursive rules also include any other tables in that system, their sub-model contents, and their nested classifications.
+Examples requiring caller-supplied rules include:
+
+- `CategorySymbolizesClassification`: in the [OpenSite domain schema](https://github.com/iTwin/bis-schemas/blob/master/Domains/4-Application/OpenSite/OpenSite.ecschema.xml), concrete subclasses connect a source `Category` to a target `Classification`.
+- `PhysicalTypeComposesSubTypes`.
+- `SpatialLocationTypeRepresentsTypeDefinition`.
+
+These are examples, not a built-in list that every importer must always follow. For the classification-tree example, the caller must specify any category dependencies needed by the application. Merely reaching a category while discovering the pipe bundle does not automatically select an entire classification tree.
 
 ### Discovery limits
 
-These mechanisms do not guarantee discovery of every dependency. They cover dependencies expressed through BIS ownership, sub-modeling, navigation properties, and link-table dependency relationships.
+The mechanisms above cover ownership, sub-modeling, navigation-property references, and caller-selected link-table dependencies. They do not guarantee discovery of every dependency.
 
-Other dependencies may be encoded in property payloads, geometry streams, or application-defined data. Those dependencies require class-, schema-, or application-specific discovery and copy handling. For example, a geometry stream may refer to a `RenderMaterial`, while a `RenderMaterial` may identify a `Texture` through its `JsonProperties`. These examples are not exhaustive.
+Some references are stored inside data rather than exposed as navigation properties or link-table relationships:
+
+- Geometry streams must be inspected for referenced `Texture`s and `GeometryPart`s. They may also refer to `RenderMaterial`s.
+- A `RenderMaterial` can reference a `Texture` through its `JsonProperties`. A link-table relationship for this association has been proposed, but is not the current representation.
+
+These references require special discovery and copy handling, including remapping source identifiers to the copied or reused destination elements. Other property payloads or application-defined data may require additional rules.
 
 A `TemplateRecipe3d` can be referenced by multiple `PhysicalType`s. Whether required dependencies should span separately maintained catalogs, and how versions of those catalogs would be resolved together, remain unresolved. This page does not define a cross-catalog version-resolution policy.
 

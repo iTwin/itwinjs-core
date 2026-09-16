@@ -1,118 +1,103 @@
 # Catalogs (CatalogDb)
 
-This page covers the backend APIs for working with a **catalog**, a repository of reusable definitions that applications copy into iModels, when that catalog is stored as an iModel. The concepts (what a catalog is, what makes up a component, how cached definitions are organized in an iModel, and how their provenance is recorded) are described in [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md).
+A **catalog** stores reusable definitions that applications copy into iModels. For example, a piping application can copy a pipe type from a catalog so that users can place pipes of that type without needing access to the original catalog each time.
 
-Storing a catalog as an iModel is one possible implementation, not a requirement. A catalog authority may host and serve its definitions any way it chooses; the BIS organization and provenance patterns apply to the *destination* iModel regardless of how the catalog itself is stored.
+This walkthrough follows that import workflow: open a catalog, select a component, find what it needs, copy it, and record where it came from. It explains which parts iTwin.js provides and which parts your application must implement. It assumes you have a catalog to read and a destination iModel that your application can edit; it is not a complete importer implementation. For background on reading and writing elements, see [Access Elements](./AccessElements.md) and [Create Elements](./CreateElements.md).
 
-## A catalog iModel is a StandaloneDb
+The example uses **PVC-300**, a pipe type stored as a `PhysicalType` element. The [BIS catalog guide](../../bis/guide/data-organization/catalogs.md) follows the same example and explains the recommended organization and provenance of copied definitions in more detail.
 
-On the backend, [CatalogDb]($backend) extends [StandaloneDb]($backend) and opens a catalog iModel. The [CatalogIModel]($common) TypeScript namespace defines interfaces and types shared by the backend and frontend catalog APIs; on the frontend, use [CatalogConnection]($frontend).
+## 1. Open the catalog
 
-A catalog iModel has these properties:
+When a catalog is stored as an iModel, use [CatalogDb]($backend) to open it on the backend. On the frontend, use [CatalogConnection]($frontend). Storing a catalog as an iModel is one possible implementation: other catalog authorities may host and serve definitions differently.
 
-- `iTwinId` is always [Guid.empty]($bentley).
-- `BriefcaseId` is always [BriefcaseIdValue.Unassigned]($common).
-- It has no timeline and cannot apply or generate [changesets](../Glossary.md#changeset).
-- It does not use an iModelHub checkout.
+Open the catalog with [CatalogDb.openReadonly]($backend), or [CatalogConnection.openReadonly]($frontend). Both accept [CatalogIModel.OpenArgs]($common):
 
-By contrast, an iModel managed by iModelHub uses a [BriefcaseDb]($backend) (see [Accessing iModels](./AccessingIModels.md)), belongs to an iTwin, and records changes on an iModelHub timeline.
+- For a **local file**, omit `containerId` and pass the file path as `dbName`.
+- For a **cloud container**, pass the `containerId` of the [BlobContainer]($backend) that holds the catalog. Set `dbName` if the database name differs from the default, `catalog-db`. You can also supply a semantic-version range in `version`; omitting it selects the newest available version.
 
-## Opening a catalog
+Keep the catalog open while reading its contents, and close it when finished. Opening a catalog gives you access to its contents; it does not copy anything into the destination iModel.
 
-Open a catalog with [CatalogDb.openReadonly]($backend) on the backend, or [CatalogConnection.openReadonly]($frontend) on the frontend. Both accept [CatalogIModel.OpenArgs]($common), which covers the two storage cases:
+### Identify the version you opened
 
-- **Local file**: omit `containerId` and pass the file path as `dbName`.
-- **Cloud container**: pass the `containerId` of the [BlobContainer]($backend) that holds the catalog, and optionally a semantic-version range in `version` (defaults to the newest available version).
+Cloud catalogs are versioned. A request for a version range resolves to a particular version, so record the version actually opened rather than just the requested range. `CatalogDb.getVersion` returns that version, and `CatalogDb.getManifest` returns the manifest when one is present. You will use the catalog's identity and version when recording where the copied definitions came from in step 5.
 
-Close the `CatalogDb` when finished with it.
+Published, non-prerelease catalog versions are immutable. If the authority changes PVC-300, it publishes a new catalog version rather than changing the released version that existing iModels rely on. Publishing APIs are described after the import workflow.
 
-## Catalog versions
+## 2. Select the component's root element
 
-Catalogs stored in cloud containers are versioned with [semantic versioning](https://semver.org), much like [WorkspaceDb]($backend)s. Once a version of a catalog has been published, it is immutable (unless it is a prerelease version). This is the concrete mechanism behind the immutable catalog versions that the [provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) relies on.
+A catalog iModel contains Models and Elements, like any other iModel. Use [ECSQL](../ECSQL.md) to query its contents and the [element-reading APIs](./AccessElements.md) to read the selected elements. The domain schema determines which classes and properties identify the entries your application offers.
 
-- [CatalogDb.openReadonly]($backend) resolves the `version` range in its arguments to a specific version.
-- `CatalogDb.getVersion` returns the version of an open catalog, and `CatalogDb.getManifest` returns the manifest stored inside it. Use these to identify the catalog version, for example when creating the `RepositoryLink` that records provenance.
-- Catalog authorities publish new versions with [CatalogDb.acquireWriteLock]($backend), [CatalogDb.createNewVersion]($backend) (a copy of an existing version, incremented as major, minor, or patch), [CatalogDb.openEditable]($backend) to modify the new version, and [CatalogDb.releaseWriteLock]($backend) to publish it.
-- [CatalogDb.createNewContainer]($backend) creates a new cloud container seeded from a local catalog file. It requires administrator authorization.
+For the piping application, present a choice such as "PVC-300 pipe type" and resolve that choice to its `PhysicalType` element. That element is the **bundle root**: the highest element of the component the user wants. Do not start with a piece of its template geometry and try to find the pipe type by climbing ancestors.
 
-## Reading catalog contents
+Selection need not be an end-user placement action. In OS+, an administrator selects a `ClassificationSystem` from a catalog. Its entire classification tree is one component, required from application startup. OS+ uses one tree in each end-user iModel, even if multiple trees are available in different versioned catalogs. See the [classification-tree example](../../bis/guide/data-organization/catalogs.md#example-a-classification-tree) for that application-specific workflow.
 
-A catalog iModel contains Models and Elements defined by BIS and domain schemas, like any other iModel. Applications read it with the standard APIs:
+## 3. Discover the definitions the component needs
 
-- [ECSQL](../ECSQL.md) to query catalog contents,
-- [Access Elements](./AccessElements.md) to read individual Elements.
+PVC-300's `PhysicalType` is not self-contained. It references a `TemplateRecipe3d`, whose sub-model contains the template geometry. The geometry references a category, and the type references its physical material. Copying only the pipe type would leave those dependencies missing.
 
-## Copying definitions into another iModel
+The root and the owned and referenced data required to use it form a **definition bundle**. The [pipe-type example](../../bis/guide/data-organization/catalogs.md#example-a-pipe-type) shows how discovery reaches these elements.
 
-`CatalogDb` does not copy definitions into another iModel. Applications implement the import workflow with the standard element-reading and element-creation APIs (see [Create Elements](./CreateElements.md)).
+Starting at the selected root, your application discovers owned aspects, child elements, sub-models and their contents, and referenced dependencies recursively. Different references need different handling:
 
-```mermaid
-graph LR
-    C("Catalog iModel<br/>DefinitionModel → DefinitionElements")
-    P("Destination iModel<br/>independent copied definitions")
+| Reference representation | What discovery must do |
+| --- | --- |
+| Navigation property | Discover the reference from the schema and follow it from the referencing element to its zero/one target, not backward to other elements that reference it. |
+| Link-table relationship | Use the caller-supplied relationships and the application's traversal directions. The schema alone does not identify the semantic dependency direction. |
+| Geometry stream or property payload | Inspect the data using class- or application-specific handling. Examples include geometry references to `GeometryPart`s and `Texture`s, and texture references in a `RenderMaterial`'s JSON. |
 
-    subgraph Core["iTwin.js APIs"]
-        direction TB
-        R("CatalogDb / CatalogConnection<br/>open and read catalog contents")
-        E("ExternalSourceAspect<br/>available provenance primitive")
-        W("IModelDb APIs<br/>insert definitions into another iModel")
-        R ~~~ E
-        E ~~~ W
-    end
+`CategorySymbolizesClassification`, `PhysicalTypeComposesSubTypes`, and `SpatialLocationTypeRepresentsTypeDefinition` are examples of link-table relationships requiring explicit traversal rules, not a universal list that every importer automatically follows. See [Generic discovery mechanisms](../../bis/guide/data-organization/catalogs.md#generic-discovery-mechanisms) and the following sections for the rules and their limits.
 
-    subgraph App["Application responsibilities"]
-        S("Select catalog entries")
-        D("Resolve dependent definitions<br/>and relationships")
-        X("Copy definitions")
-        O("Choose and record provenance")
-        U("Detect catalog changes<br/>and offer updates")
-        S --> D --> X --> O
-    end
+Finding a referenced element does not automatically add its source model, modeled element, ancestors, or their other descendants to the bundle. Starting from the correct root provides the intended downward discovery path.
 
-    C --> R
-    R --> S
-    X --> W
-    W --> P
-    O --> E
-    E --> P
-    P -.-> U
+## 4. Copy the bundle into the destination iModel
 
-    classDef data fill:#eef1f4,stroke:#6b7280,color:#1f2937
-    classDef core fill:#e7f1ff,stroke:#477db3,color:#1f2937
-    classDef app fill:#f4f4f4,stroke:#8a8a8a,color:#1f2937
-    class C,P data
-    class R,E,W core
-    class S,D,X,O,U app
-    style Core fill:#f7fbff,stroke:#8fb3d9,stroke-width:1px
-    style App fill:#fafafa,stroke:#b8b8b8,stroke-width:1px
-```
+`CatalogDb` does not copy definitions into another iModel. Your application implements the transfer, including creating destination elements, mapping source identifiers to destination identifiers, and preserving required relationships. The [element-creation APIs](./CreateElements.md) provide the underlying write operations, not a complete bundle importer.
 
-The blue boxes are APIs supplied by iTwin.js. The gray boxes are workflow steps that the application must implement. The dashed arrow shows that iTwin.js does not detect catalog changes automatically.
+For PVC-300, copy the type and its discovered dependencies. If the same version of the *Pipes* category or *PVC* material has already been cached, reuse it rather than creating another copy. Update references in the copied data to point to the corresponding destination elements, including references inside geometry streams and JSON.
 
-The application must decide:
+Transfer also needs valid destination models and parent relationships. Your application or transfer tooling must create or map that structure as needed. This is separate from expanding the selected bundle: needing a destination model does not imply that all elements in the source model should be imported.
 
-- which definitions to copy: the entry-point `DefinitionElement` plus its required dependencies,
-- how to discover dependencies that require class-, schema-, or application-specific handling,
-- how to record the origin of definitions cached beneath the catalog authority's well-known `DefinitionContainer`: follow the [recommended provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) using [RepositoryLink]($backend), [ExternalSourceAspect]($backend), and `FederationGuid`,
-- how to record the origin of definitions copied elsewhere when a recipe or template is used; this remains application-specific, and
-- whether and how to offer later updates when the catalog publishes a new version.
+The recommended destination organization places catalog-sourced definitions beneath a well-known `DefinitionContainer` for the catalog authority. Follow [Organization of cached definitions](../../bis/guide/data-organization/catalogs.md#organization-of-cached-definitions-in-a-bis-repository) for the container and sub-model conventions.
 
-Copying only the entry-point element can produce an incomplete definition. See [Components and their dependencies](../../bis/guide/data-organization/catalogs.md#components-and-their-dependencies) for the generic discovery mechanisms and their limits. The destination iModel owns each copied definition independently of the catalog.
+## 5. Record where the copies came from
 
-## What remains application-specific
+The destination iModel stores its own copies. To recognize those definitions later, record their **provenance**: the catalog, catalog version, and entry that each came from. iTwin.js supplies provenance primitives, but the application creates and maintains the associations.
 
-Applications and domain schemas define the parts of the catalog workflow that iTwin.js does not provide:
+For PVC-300 from Piping Catalog version 1, the [recommended mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) uses:
 
-- administering and discovering available catalogs,
-- selecting catalog entries; selection UX is application- and context-specific (an application presents domain choices such as "pipe type", not raw definition elements),
-- applying generic and domain-specific dependency rules and copying definitions into other iModels,
-- recording provenance,
-- detecting and presenting updates, and
-- integrating domain-specific definitions.
+- A [RepositoryLink]($backend) to identify Piping Catalog version 1.
+- An [ExternalSourceAspect]($backend) on the cached definition to identify its stable catalog entry and associate it with that catalog version.
+- The definition's `FederationGuid` to identify the specific version of that definition, so an unchanged definition can be recognized and reused.
 
-## Further reading
+Apply that mapping to every catalog-sourced `DefinitionElement` in the bundle, not just the selected pipe type. The BIS guide also explains code scopes, definitions shared across catalog versions, and the distinction between an entry's stable identity and its version identity. Establish these identities as part of copying so that subsequent imports can recognize definitions already cached.
 
-- **[Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md):** catalog concepts, data organization, and provenance in the destination iModel.
-- **[iModel contents](./IModelContents.md#components-from-catalogs):** guidance on which catalog definitions belong in an iModel.
-- **[CatalogDb]($backend) and [CatalogConnection]($frontend):** API references for backend and frontend access to a catalog iModel.
-- **[Provenance in BIS](../../bis/domains/Provenance-in-BIS.md):** mechanisms for relating copied data to an external source.
+Definitions copied elsewhere when a recipe or template is used may need different provenance handling; that remains application-specific.
+
+## 6. Handle a later catalog update
+
+Suppose the authority corrects PVC-300's wall thickness and publishes Piping Catalog version 2. The cached version 1 definition remains unchanged. Your application decides how to discover and offer the update; iTwin.js does not detect catalog changes automatically.
+
+If the application imports the changed pipe type, it creates a new definition with a new definition-version identity. Unchanged dependencies can remain cached once and gain provenance associations for the additional catalog version. See [The example, end to end](../../bis/guide/data-organization/catalogs.md#the-example-end-to-end) for the complete versioning example.
+
+## Reference: a catalog iModel is a StandaloneDb
+
+[CatalogDb]($backend) extends [StandaloneDb]($backend). The [CatalogIModel]($common) TypeScript namespace defines interfaces and types shared by the backend and frontend catalog APIs.
+
+A catalog iModel:
+
+- has `iTwinId` set to [Guid.empty]($bentley) and `BriefcaseId` set to [BriefcaseIdValue.Unassigned]($common),
+- has no timeline and cannot apply or generate [changesets](../Glossary.md#changeset), and
+- does not use an iModelHub checkout.
+
+By contrast, an iModel managed by iModelHub uses a [BriefcaseDb]($backend), belongs to an iTwin, and records changes on an iModelHub timeline. See [Accessing iModels](./AccessingIModels.md).
+
+## Reference: publishing cloud catalog versions
+
+Catalogs stored in cloud containers use [semantic versioning](https://semver.org), much like [WorkspaceDb]($backend)s. Published versions are immutable unless they are prerelease versions. The provenance conventions above assume immutable catalog versions.
+
+Catalog authorities use these APIs to publish catalogs:
+
+- [CatalogDb.createNewContainer]($backend) creates a cloud container seeded from a local catalog file. It requires administrator authorization.
+- [CatalogDb.acquireWriteLock]($backend), [CatalogDb.createNewVersion]($backend), [CatalogDb.openEditable]($backend), and [CatalogDb.releaseWriteLock]($backend) support creating, editing, and publishing a new version. `createNewVersion` copies an existing version and increments it as major, minor, or patch.
+
+Applications still define catalog administration, discovery and selection interfaces, dependency rules, transfer, provenance, and update policies. `CatalogDb` provides access to the catalog storage, not those workflows.
