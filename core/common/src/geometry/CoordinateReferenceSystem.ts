@@ -292,12 +292,18 @@ export class HorizontalCRS implements HorizontalCRSProps {
  * @extensions
  */
 export interface VerticalCRSProps {
-  /** Vertical CRS Key name.
-   * @see [[VerticalCRS.id]]
+  /** Legacy key — preserved for backwards compatibility
+   * @note You must continue to use one of the supported keys for backward compatibility so that new models can
+   * still be opened with older versions of itwin.js.
    */
   id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+  /** EPSG code, e.g. 5773 for EGM96 height. Takes precedence over id when set.
+   * @beta */
+  epsg?: number;
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id and epsg when set.
+   * @beta */
+  crsName?: string;
 }
-
 /** Vertical Coordinate reference System implementation.
  *  The VerticalCRS contains currently a single identifier property of string type. Although
  *  we currently only support five distinct key values "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID"
@@ -317,11 +323,20 @@ export class VerticalCRS implements VerticalCRSProps {
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
   */
   public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+  /** EPSG code, e.g. 5773 for EGM96 height. Takes precedence over id when set.
+   * @beta */
+  public readonly epsg?: number;
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id and epsg when set.
+   * @beta */
+  public readonly crsName?: string;
 
   public constructor(data?: VerticalCRSProps) {
     this.id = "GEOID";
-    if (data)
+    if (data) {
       this.id = data.id;
+      this.epsg = data.epsg;
+      this.crsName = data.crsName;
+    }
   }
 
   /** Creates a Vertical CRS from JSON representation.
@@ -333,7 +348,7 @@ export class VerticalCRS implements VerticalCRSProps {
   /** Creates a JSON from the Vertical CRS definition
    * @public */
   public toJSON(): VerticalCRSProps {
-    return { id: this.id };
+    return { id: this.id, epsg: this.epsg, crsName: this.crsName };
   }
 
   /** Compares two vertical CRS.
