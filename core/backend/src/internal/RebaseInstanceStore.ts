@@ -67,7 +67,7 @@ export interface RebaseInstanceMetadata {
 
 /**
  * Durable, on-disk store of the EC instances changed by a single Txn, captured while that Txn is
- * reversed in preparation for an interactive rebase (see [[TxnManager]] `_captureInstanceChanges`)
+ * reversed in preparation for an interactive rebase (see [[InteractiveRebase.onBeforeReverseLocalTxn]])
  * and later replayed as instance patches instead of a raw SQLite changeset.
  *
  * Unlike [[PartialChangeUnifier]] - which merges partial per-table rows into complete instances

@@ -25,7 +25,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _hubAccess, _nativeDb, _releaseAllLocks, _setCaptureSchemaView } from "./internal/Symbols";
+import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
 import { InteractiveRebase } from "./InteractiveRebase";
@@ -622,14 +622,13 @@ export class BriefcaseManager {
       return [];
     });
 
+    let interactiveRebase: InteractiveRebase | undefined;
+
     // If we need to rebase, reverse the local changes first.
     if (rebaseChangesets.length > 0) {
       db.txns.rebaser.notifyReverseLocalChangesBegin();
-      // `pullMergeReverseLocalChanges` synchronously triggers `TxnManager._captureInstanceChanges` per
-      // reversed Txn, which needs a `SchemaView` to classify embedding ownership but can't fetch one itself
-      // (it's a synchronous native callback and `getSchemaView` is async) - resolve it here instead.
-      db.txns[_setCaptureSchemaView](await db.getSchemaView());
-      const localReversedTxns = nativeDb.pullMergeReverseLocalChanges(true);
+      interactiveRebase = new InteractiveRebase(db, [], await db.getSchemaView());
+      const localReversedTxns = nativeDb.pullMergeReverseLocalChanges(interactiveRebase);
       const localReversedTxnProps = localReversedTxns.map((txn) => db.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
       db.txns.rebaser.notifyReverseLocalChangesEnd(localReversedTxnProps);
       Logger.logInfo(loggerCategory, `Reversed ${localReversedTxns.length} local changes`);
@@ -653,11 +652,15 @@ export class BriefcaseManager {
 
     db.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
 
-    const schemaView = await db.getSchemaView();
     const reversedTxns = nativeDb.pullMergeRebaseBegin();
     const reversedTxnProps = reversedTxns.map((_) => db.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
 
-    return new InteractiveRebase(db, reversedTxnProps, schemaView);
+    if (interactiveRebase) {
+      interactiveRebase.initializeTxns(reversedTxnProps);
+      return interactiveRebase;
+    }
+
+    return new InteractiveRebase(db, reversedTxnProps, await db.getSchemaView());
 
     // if (rebaseChangesets.length > 0) {
     //   db.txns.rebaser.addConflictHandler({
@@ -797,10 +800,6 @@ export class BriefcaseManager {
     if (rebaseChangesets.length > 0 && !reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        // See the comment in `pullAndApplyChangesetsInteractive`: `pullMergeReverseLocalChanges` synchronously
-        // triggers instance-change capture (only when `useSemanticRebase`), which needs this resolved first.
-        if (useSemanticRebase)
-          briefcaseDb.txns[_setCaptureSchemaView](await briefcaseDb.getSchemaView());
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.

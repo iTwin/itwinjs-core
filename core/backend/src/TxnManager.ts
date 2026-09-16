@@ -11,18 +11,16 @@ import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
-import type { SchemaView } from "@itwin/ecschema-metadata";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb, _setCaptureSchemaView } from "./internal/Symbols";
+import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangesetReader } from "./ChangesetReader";
 import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 
 /** A string that identifies a Txn.
@@ -1002,18 +1000,6 @@ export class TxnManager {
   /** @internal */
   public readonly rebaser: RebaseManager;
 
-  /** The `SchemaView` to use while capturing instance changes for interactive rebase (see
-   * [[_captureInstanceChanges]]), set by [[BriefcaseManager.pullAndApplyChangesetsInteractive]] (or the
-   * automatic semantic-rebase path) before triggering the native reversal that synchronously invokes it -
-   * `_captureInstanceChanges` itself cannot call the async `IModelDb.getSchemaView` directly.
-   */
-  private _captureSchemaView?: SchemaView;
-
-  /** @internal */
-  public [_setCaptureSchemaView](schemaView: SchemaView): void {
-    this._captureSchemaView = schemaView;
-  }
-
   /** @internal */
   constructor(private _iModel: BriefcaseDb) {
     this.rebaser = new RebaseManager(_iModel);
@@ -1084,37 +1070,6 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
-  }
-
-  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
-   * @internal */
-  protected _captureInstanceChanges(id: TxnIdString) {
-    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
-
-    // We shouldn't use strict mode here because lets think of a scenario:
-    // 1) an element is inserted in a txn which inserted some data in table A first row
-    // 2) In second txn, importing a schema increased the number of columns of table A
-    // 3) During rebase when we are reversing the schema txn, the newly added columns are not deleted
-    // so using strict mode will cause error in this case when we will try to capture changes for first txn
-    // because the number of columns in table A will be different than what it was when the changes were originally made.
-    // So to avoid this issue we are not using strict mode here.
-    using reader = ChangesetReader.openTxn({
-      db: this._iModel,
-      txnId: id,
-      rowOptions: {
-        useJsNames: true,
-        abbreviateBlobs: false,
-        includeNulls: true,
-        useClassFullNameInsteadofClassName: true
-      }
-    });
-
-    const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
-    assert(this._captureSchemaView !== undefined, "_setCaptureSchemaView must be called before reversing local changes triggers instance-change capture");
-    using store = RebaseInstanceStore.createNew(dbPath, this._iModel, this._captureSchemaView);
-    while (reader.step()) {
-      store.appendChange(reader);
-    }
   }
 
   /** @internal */

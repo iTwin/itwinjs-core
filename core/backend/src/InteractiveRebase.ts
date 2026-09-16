@@ -15,6 +15,8 @@ import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
+import { ChangesetReader } from "./ChangesetReader";
+import { TxnIdString } from "./TxnManager";
 
 /** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
  * @beta
@@ -294,8 +296,39 @@ export class InteractiveRebase {
   constructor(db: BriefcaseDb, txns: TxnProps[], schemaView: SchemaView) {
     this._db = db;
     this._schemaView = schemaView;
+    this._txns = [];
+    this._groups = [];
+    this.initializeTxns(txns);
+  }
+
+  /** @internal */
+  public initializeTxns(txns: TxnProps[]): void {
     this._txns = txns;
-    this._groups = this._txns.map(txn => ({ txns: [txn] }));
+    this._groups = txns.map(txn => ({ txns: [txn] }));
+  }
+
+  /** Called by native before reversing each local data Txn to capture the instance changes for replay. @internal */
+  public onBeforeReverseLocalTxn(id: TxnIdString): void {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._db, id))
+      return;
+
+    // Do not use strict mode. A later schema Txn can add columns that remain present while an earlier
+    // data Txn is captured, so its stored changeset can legitimately have fewer columns than the table.
+    using reader = ChangesetReader.openTxn({
+      db: this._db,
+      txnId: id,
+      rowOptions: {
+        useJsNames: true,
+        abbreviateBlobs: false,
+        includeNulls: true,
+        useClassFullNameInsteadofClassName: true,
+      },
+    });
+
+    const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._db, id);
+    using store = RebaseInstanceStore.createNew(dbPath, this._db, this._schemaView);
+    while (reader.step())
+      store.appendChange(reader);
   }
 
   public [Symbol.dispose](): void {
