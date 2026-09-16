@@ -200,8 +200,8 @@ export class RebaseInstanceStore implements Disposable {
 
   public set(change: RebaseInstanceChange): void {
     // `id`/`classFullName` are identical on `old` and `new` (both snapshot the same instance), so either
-    // suffices; `old ?? new` covers every operation (Insert has no `old`, Delete has no `new`).
-    const props = change.old ?? change.new;
+    // suffices; `new ?? old` covers every operation (Insert has no `old`, Delete has no `new`).
+    const props = change.new ?? change.old;
     assert(props !== undefined, "a RebaseInstanceChange must have at least one of old/new");
     const operation: RebaseInstanceOperation = change.new === undefined ? "Delete" : change.old === undefined ? "Insert" : "Update";
     const isIndirect = change.new?.$meta.isIndirectChange === true || change.old?.$meta.isIndirectChange === true;
@@ -209,16 +209,15 @@ export class RebaseInstanceStore implements Disposable {
     assert(this._schemaView !== undefined, "set() requires a store created via createNew");
     // Ownership is taken from `new` when present (Insert/Update), falling back to `old` only for a pure
     // Delete - this is what makes reparenting correct (see [[InteractiveRebase.buildDependencyForest]]).
-    const ownershipProps = change.new ?? change.old;
-    assert(ownershipProps !== undefined, "a RebaseInstanceChange must have at least one of old/new");
-    const ownerId = this.getOwnerId(this._schemaView, props.classFullName, ownershipProps);
+    const ownerId = this.getOwnerId(this._schemaView, props.classFullName, props);
     const isElement = this.isElementOrSubclass(this._schemaView, props.classFullName);
 
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement])
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT ([instanceKey])
-       DO UPDATE SET [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties],
+       DO UPDATE SET
+         [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties],
          [instanceId] = [excluded].[instanceId], [classFullName] = [excluded].[classFullName], [operation] = [excluded].[operation],
          [isIndirect] = [excluded].[isIndirect], [ownerId] = [excluded].[ownerId], [isElement] = [excluded].[isElement]`,
       (stmt: SqliteStatement) => {
