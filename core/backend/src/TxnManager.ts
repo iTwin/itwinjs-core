@@ -11,13 +11,14 @@ import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
+import type { SchemaView } from "@itwin/ecschema-metadata";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _nativeDb, _setCaptureSchemaView } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1001,6 +1002,18 @@ export class TxnManager {
   /** @internal */
   public readonly rebaser: RebaseManager;
 
+  /** The `SchemaView` to use while capturing instance changes for interactive rebase (see
+   * [[_captureInstanceChanges]]), set by [[BriefcaseManager.pullAndApplyChangesetsInteractive]] (or the
+   * automatic semantic-rebase path) before triggering the native reversal that synchronously invokes it -
+   * `_captureInstanceChanges` itself cannot call the async `IModelDb.getSchemaView` directly.
+   */
+  private _captureSchemaView?: SchemaView;
+
+  /** @internal */
+  public [_setCaptureSchemaView](schemaView: SchemaView): void {
+    this._captureSchemaView = schemaView;
+  }
+
   /** @internal */
   constructor(private _iModel: BriefcaseDb) {
     this.rebaser = new RebaseManager(_iModel);
@@ -1097,7 +1110,8 @@ export class TxnManager {
     });
 
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
-    using store = RebaseInstanceStore.createNew(dbPath, this._iModel);
+    assert(this._captureSchemaView !== undefined, "_setCaptureSchemaView must be called before reversing local changes triggers instance-change capture");
+    using store = RebaseInstanceStore.createNew(dbPath, this._iModel, this._captureSchemaView);
     while (reader.step()) {
       store.appendChange(reader);
     }

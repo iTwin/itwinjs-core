@@ -1771,4 +1771,52 @@ describe("InteractiveRebase", () => {
     chai.expect(otherElementProps.federationGuid).to.equal(federationGuid);
     chai.expect(briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id)).to.be.undefined;
   });
+
+  it("rebases a large changeset (stress) without regressing correctness at scale", async () => {
+    const count = 200;
+    const ids = await withEditTxn(briefcase1, async (txn) => {
+      const inserted: Id64String[] = [];
+      for (let i = 0; i < count; i++) {
+        inserted.push(txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          foo: `Stress${i}`,
+          somePoint: new Point2d(i, i),
+        } as SomeGraphicalElementProps));
+      }
+      return inserted;
+    });
+    await briefcase1.pushChanges({ description: "Insert many elements" });
+    await briefcase2.pullChanges();
+
+    // Local edits touching every one of the `count` elements, plus a forced conflict on `id`, all in
+    // a single Txn - exercising forest-building/root-ordering/replay over many nodes at once.
+    await withEditTxn(briefcase2, async (txn) => {
+      for (const elId of ids)
+        txn.updateElement<SomeGraphicalElementProps>({ id: elId, foo: `Local${elId}` });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // Only the forced conflict should surface - all `count` unrelated local edits must replay cleanly.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(id);
+
+    for (const elId of [ids[0], ids[Math.floor(count / 2)], ids[count - 1]]) {
+      const props = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elId);
+      chai.expect(props.foo).to.equal(`Local${elId}`);
+    }
+  });
 });

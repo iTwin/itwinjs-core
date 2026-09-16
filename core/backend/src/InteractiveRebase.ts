@@ -10,10 +10,10 @@ import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
 import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@itwin/core-common";
-import { SchemaView, SchemaViewPrimitiveType, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
+import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 
 /** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
@@ -241,17 +241,25 @@ export interface TxnRebaseGroup {
 const MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS = 10;
 
 /** A node in the per-Txn embedding-ownership forest built by [[InteractiveRebase.buildDependencyForest]].
- * `change` is undefined for a node discovered live (section 6 of the design) - a dependent upstream
- * inserted or otherwise left behind that our own local Txn never captured a change for.
+ * Carries only lightweight metadata (never the potentially large `old`/`new` snapshots) - see
+ * [[InteractiveRebase.getChange]] for loading a captured node's change on demand.
  */
 interface DependencyNode {
   instanceKey: string;
   id: Id64String;
   classFullName: string;
-  change: RebaseInstanceChange | undefined;
+  /** False for a node discovered live (section 6 of the design) - a dependent upstream inserted or
+   * otherwise left behind that our own local Txn never captured a change for, so it has no row in
+   * [[RebaseInstanceStore]] and no change of its own to apply. */
+  isCaptured: boolean;
+  /** For a captured node, the operation its change represents. Always `"Delete"` for a discovered node,
+   * since [[InteractiveRebase.applyUpstreamDependentDelete]] only ever removes it. */
+  operation: RebaseInstanceOperation;
+  isIndirect: boolean;
   /** Owner's ECInstanceId, or undefined if this instance has no embedding owner (or its owner wasn't
-   * captured by this Txn - see [[InteractiveRebase.getOwnerId]]). */
+   * captured by this Txn - see [[RebaseInstanceStore]]'s `ownerId` classification). */
   ownerId: Id64String | undefined;
+  isElement: boolean;
   dependents: DependencyNode[];
 }
 
@@ -264,15 +272,12 @@ export class InteractiveRebase {
   private _currentGroupIndex: number = -1;
   private _conflicts: RebaseConflict[] = [];
 
-  /** classFullName -> access string of its embedding-owner nav property, or undefined if it has none. */
-  private _embeddingOwnerProperty = new Map<string, string | undefined>();
-
-  /** Pre-replay ("theirs") snapshot of every instance involved in the current group's Txn, captured
-   * immediately after `pullMergeRebaseNext()` and before any local replay writes anything. Retained for
-   * the lifetime of the group's conflicts - resolution (restoring an owner's closure) needs it. Keyed by
-   * `instanceKey`.
+  /** The store backing the current group's replay - kept open for the whole group's lifetime (not just
+   * during [[reinstateDataTxn]]) because conflict resolution reads the persisted "theirs" snapshot (see
+   * [[getTheirsSnapshot]]/[[captureTheirsSnapshot]]) well after replay itself has finished. Disposed when
+   * moving to a new group's store, or when this `InteractiveRebase` itself is disposed.
    */
-  private _theirsSnapshot = new Map<string, RebaseConflictProperties | undefined>();
+  private _store: RebaseInstanceStore | undefined;
 
   /** Every node of the current group's dependency forest (section 5 of the design), keyed by
    * `instanceKey`. Includes both captured changes and any live-discovered dependents (section 6).
@@ -297,6 +302,8 @@ export class InteractiveRebase {
     if (this._editTxn) {
       this._editTxn.end("abandon");
     }
+    this._store?.[Symbol.dispose]();
+    this._store = undefined;
   }
 
   /**
@@ -468,9 +475,10 @@ export class InteractiveRebase {
       throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
     }
 
+    this._store?.[Symbol.dispose]();
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._db, txnProps.id);
-    using store = RebaseInstanceStore.openExisting(dbPath);
-    const roots = this.buildDependencyForest(store);
+    this._store = RebaseInstanceStore.openForReplay(dbPath);
+    const roots = this.buildDependencyForest(this._store);
     this.captureTheirsSnapshot();
     this.replayForest(roots);
     this.linkConflictOwnership();
@@ -479,112 +487,76 @@ export class InteractiveRebase {
     // it to revert already-reinstated txns (currently unimplemented, see the TODOs below).
   }
 
-  /** classFullName -> access string of its embedding-owner nav property, or undefined if it has none.
-   * Modeled on the existing nav-property walk in [[findBrokenRelationships]].
+  /** Loads a captured node's change from the store, or throws if `node` wasn't actually captured (a
+   * discovered node - see [[discoverUpstreamDependents]] - has no row to load).
    */
-  private getEmbeddingOwnerProperty(classFullName: string): string | undefined {
-    if (this._embeddingOwnerProperty.has(classFullName))
-      return this._embeddingOwnerProperty.get(classFullName);
-
-    const schemaClassDef = this._schemaView.findClass(classFullName);
-    let ownerProp: string | undefined;
-    if (schemaClassDef !== undefined) {
-      for (const prop of schemaClassDef.getProperties()) {
-        if (!prop.isNavigation())
-          continue;
-        if (prop.relationshipClass.strength !== StrengthType.Embedding)
-          continue;
-        // Backward references the relationship's source, which is the owning end. A Forward embedding
-        // nav property points at the owned instance and would invert the tree.
-        if (prop.direction !== StrengthDirection.Backward)
-          continue;
-        // An `Element` also has an Embedding+Backward `Model` nav property (`ModelContainsElements`),
-        // which is not the aspect/child-element ownership this design is about - a Model's deletion
-        // does not (and should not) cascade through this mechanism. Restrict to relationships whose
-        // owning (source) side is itself `BisCore:Element` or a subclass, which excludes `Model` (not
-        // an Element) while still matching `ElementOwnsUniqueAspect`/`MultiAspect`/`ChildElements`.
-        const sourceConstraintClass = prop.relationshipClass.source?.abstractConstraint?.fullName
-          ?? prop.relationshipClass.source?.constraintClasses[0]?.fullName;
-        if (sourceConstraintClass === undefined || !this.isElementOrSubclass(sourceConstraintClass))
-          continue;
-        ownerProp = ECJsNames.toJsName(prop.name);
-        break;
-      }
-    }
-    this._embeddingOwnerProperty.set(classFullName, ownerProp);
-    return ownerProp;
+  private getChange(node: DependencyNode): RebaseInstanceChange {
+    assert(node.isCaptured, "getChange requires a captured node");
+    assert(this._store !== undefined, "getChange requires an active replay (see reinstateDataTxn)");
+    const change = this._store.get(node.instanceKey);
+    assert(change !== undefined, "a captured node must have a row in the store");
+    return change;
   }
 
-  /** True for a captured Delete (no `new` snapshot) on an instance whose class has an embedding
-   * owner - an aspect or child element removed as a side effect of its owner's deletion. Scoped to
-   * deletes only; other indirect changes (including an `ON DELETE SET NULL` side effect) are
-   * unaffected and keep force-applying.
+  /** True for a captured Delete on an instance whose class has an embedding owner - an aspect or child
+   * element removed as a side effect of its owner's deletion. Scoped to deletes only; other indirect
+   * changes (including an `ON DELETE SET NULL` side effect) are unaffected and keep force-applying.
    */
-  private isCascadedDependentDelete(change: RebaseInstanceChange): boolean {
-    if (change.new !== undefined || change.old === undefined)
-      return false;
-    return this.getEmbeddingOwnerProperty(change.old.classFullName) !== undefined;
+  private isCascadedDependentDelete(node: DependencyNode): boolean {
+    return node.operation === "Delete" && node.ownerId !== undefined;
   }
 
   /** True if `classFullName` is `BisCore:Element` or a subclass of it - the owning (source) constraint
-   * class of every embedding relationship relevant here.
+   * class of every embedding relationship relevant here. Only needed for a node discovered live (see
+   * [[discoverUpstreamDependents]]); a captured node's `isElement` is already classified by
+   * [[RebaseInstanceStore]] at capture time.
    */
   private isElementOrSubclass(classFullName: string): boolean {
     return this._schemaView.findClass(classFullName)?.is("BisCore:Element") ?? false;
   }
 
-  /** Extracts the embedding-owner id from `props` (a captured instance's `new` snapshot when one exists,
-   * else its `old` snapshot - see [[buildDependencyForest]]), or undefined if `classFullName` has no
-   * embedding owner or the nav property has no value.
-   */
-  private getOwnerId(classFullName: string, props: RebaseConflictProperties): Id64String | undefined {
-    const ownerProp = this.getEmbeddingOwnerProperty(classFullName);
-    if (ownerProp === undefined)
-      return undefined;
-    const navValue = getPropertyValue(props, ownerProp);
-    const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
-    return typeof navId === "string" && Id64.isValidId64(navId) ? navId : undefined;
-  }
-
   /**
-   * Builds the current group's per-Txn embedding-ownership forest (design doc section 5) from `changes`,
-   * populating [[_dependencyNodesById]] and [[_ownersById]], and returns its root nodes (instances whose
-   * embedding owner either doesn't exist or wasn't captured by this Txn).
+   * Builds the current group's per-Txn embedding-ownership forest (design doc section 5) from a
+   * metadata-only scan of the store (see [[RebaseInstanceStore.allMetadata]]) - `old`/`new` snapshots,
+   * which can be large (e.g. geometry), are not parsed here and are loaded lazily per node only when
+   * actually needed (see [[getChange]]) - populating [[_dependencyNodesById]] and [[_ownersById]], and
+   * returning its root nodes (instances whose embedding owner either doesn't exist or wasn't captured by
+   * this Txn).
    *
-   * A node's `ownerId` is taken from its `new` snapshot when one exists (Insert/Update), falling back to
-   * `old` only for a pure Delete - this is what makes reparenting correct, since a child moved from `A`
-   * to `B` in the same edit set must link to `B`, not be dragged into an unrelated deletion of `A`.
+   * A node's `ownerId` was classified from its `new` snapshot when one exists (Insert/Update), falling
+   * back to `old` only for a pure Delete - this is what makes reparenting correct, since a child moved
+   * from `A` to `B` in the same edit set must link to `B`, not be dragged into an unrelated deletion of
+   * `A` - see [[RebaseInstanceStore.set]].
    *
    * Also performs the design doc section 6 live discovery: for every captured pure-Delete on an Element
    * (or subclass) instance, queries the live DB for dependents our Txn never touched (e.g. an aspect
    * upstream inserted after our local edit), recursively, and adds them to the forest and to
-   * [[_dependencyNodesById]] with `change: undefined` so they can still be reported and cascaded away.
+   * [[_dependencyNodesById]] with `isCaptured: false` so they can still be reported and cascaded away.
    */
   private buildDependencyForest(store: RebaseInstanceStore): DependencyNode[] {
+    this._store = store;
     this._dependencyNodesByInstanceKey = new Map();
     this._ownersById = new Map();
 
-    for (const change of store.all()) {
-      const props = change.new ?? change.old;
-      if (props === undefined)
-        continue;
+    for (const meta of store.allMetadata()) {
       const node: DependencyNode = {
-        instanceKey: props.$meta.instanceKey,
-        id: props.id,
-        classFullName: props.classFullName,
-        change,
-        ownerId: undefined,
-        dependents: []
+        instanceKey: meta.instanceKey,
+        id: meta.id,
+        classFullName: meta.classFullName,
+        isCaptured: true,
+        operation: meta.operation,
+        isIndirect: meta.isIndirect,
+        ownerId: meta.ownerId,
+        isElement: meta.isElement,
+        dependents: [],
       };
       this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
-      if (this.isElementOrSubclass(node.classFullName))
+      if (node.isElement)
         this._ownersById.set(node.id, node);
     }
 
     const roots: DependencyNode[] = [];
     for (const node of this._dependencyNodesByInstanceKey.values()) {
-      const change = node.change!;
-      node.ownerId = this.getOwnerId(node.classFullName, change.new ?? change.old!);
       const owner = node.ownerId !== undefined ? this._ownersById.get(node.ownerId) : undefined;
       if (owner !== undefined)
         owner.dependents.push(node);
@@ -593,7 +565,7 @@ export class InteractiveRebase {
     }
 
     for (const node of this._dependencyNodesByInstanceKey.values()) {
-      if (node.change?.old !== undefined && node.change?.new === undefined && this.isElementOrSubclass(node.classFullName))
+      if (node.isCaptured && node.operation === "Delete" && node.isElement)
         this.discoverUpstreamDependents(node);
     }
 
@@ -629,9 +601,18 @@ export class InteractiveRebase {
       if (this._dependencyNodesByInstanceKey.has(instanceKey))
         continue;
 
-      const node: DependencyNode = { instanceKey, id, classFullName, change: undefined, ownerId: ownerNode.id, dependents: [] };
+      const isElement = this.isElementOrSubclass(classFullName);
+      const node: DependencyNode = {
+        instanceKey, id, classFullName,
+        isCaptured: false,
+        operation: "Delete",
+        isIndirect: false,
+        ownerId: ownerNode.id,
+        isElement,
+        dependents: [],
+      };
       this._dependencyNodesByInstanceKey.set(instanceKey, node);
-      if (this.isElementOrSubclass(classFullName))
+      if (isElement)
         this._ownersById.set(id, node);
       ownerNode.dependents.push(node);
 
@@ -639,14 +620,20 @@ export class InteractiveRebase {
     }
   }
 
-  /** Design doc section 7: captures the pre-replay ("theirs") state of every instance in the current
-   * group's dependency forest. Must be called after `pullMergeRebaseNext()` and before any local replay
-   * writes anything.
+  /** Design doc section 7: persists the pre-replay ("theirs") state of every instance in the current
+   * group's dependency forest into the store (see [[RebaseInstanceStore.setTheirs]]), instead of holding
+   * every node's (potentially large) snapshot in memory for the group's whole lifetime. Must be called
+   * after `pullMergeRebaseNext()` and before any local replay writes anything.
    */
   private captureTheirsSnapshot(): void {
-    this._theirsSnapshot = new Map();
+    assert(this._store !== undefined, "captureTheirsSnapshot requires an active replay store");
     for (const node of this._dependencyNodesByInstanceKey.values())
-      this._theirsSnapshot.set(node.instanceKey, this.tryReadCurrentInstance(node.id, node.classFullName));
+      this._store.setTheirs(node.instanceKey, this.tryReadCurrentInstance(node.id, node.classFullName));
+  }
+
+  /** Reads `instanceKey`'s pre-replay "theirs" snapshot (see [[captureTheirsSnapshot]]) from the store. */
+  private getTheirsSnapshot(instanceKey: string): RebaseConflictProperties | undefined {
+    return this._store?.getTheirs(instanceKey);
   }
 
   /** Design doc section 8: replays the forest depth-first. Owners are applied before dependents for
@@ -687,30 +674,52 @@ export class InteractiveRebase {
    */
   private orderRoots(roots: DependencyNode[]): DependencyNode[] {
     const category = (node: DependencyNode): number => {
-      if (node.change === undefined || (node.change.new === undefined && node.change.old !== undefined))
+      if (node.operation === "Delete")
         return 1; // Delete
-      return node.change.old === undefined ? 2 : 0; // Insert : Update
+      return node.operation === "Insert" ? 2 : 0; // Insert : Update
     };
     const baseIndex = new Map<DependencyNode, number>();
     roots.forEach((node, i) => baseIndex.set(node, category(node) * roots.length + i));
 
+    // "kind|value" -> every root that frees/claims it, computed once per root (rather than comparing
+    // every root's freed values against every other root's claimed values, which is both O(roots^2) and
+    // reloads each root's change from the store once per comparison instead of once overall).
+    const freedByValue = new Map<string, DependencyNode[]>();
+    const claimedByValue = new Map<string, DependencyNode[]>();
+    for (const node of roots) {
+      const { freed, claimed } = this.getIdentityValueDelta(node);
+      for (const [key, value] of freed) {
+        const identityKey = `${key}|${value}`;
+        const freers = freedByValue.get(identityKey);
+        if (freers === undefined)
+          freedByValue.set(identityKey, [node]);
+        else
+          freers.push(node);
+      }
+      for (const [key, value] of claimed) {
+        const identityKey = `${key}|${value}`;
+        const claimers = claimedByValue.get(identityKey);
+        if (claimers === undefined)
+          claimedByValue.set(identityKey, [node]);
+        else
+          claimers.push(node);
+      }
+    }
+
     // from -> every root that must be replayed after `from`, because `from` frees a value that root claims.
     const mustFollow = new Map<DependencyNode, Set<DependencyNode>>();
-    for (const freer of roots) {
-      const freed = this.getFreedIdentityValues(freer);
-      if (freed.size === 0)
+    for (const [identityKey, freers] of freedByValue) {
+      const claimers = claimedByValue.get(identityKey);
+      if (claimers === undefined)
         continue;
-      for (const claimer of roots) {
-        if (claimer === freer)
-          continue;
-        const claimed = this.getClaimedIdentityValues(claimer);
-        for (const [key, value] of freed) {
-          if (claimed.get(key) === value) {
-            let followers = mustFollow.get(freer);
-            if (followers === undefined)
-              mustFollow.set(freer, followers = new Set());
-            followers.add(claimer);
-          }
+      for (const freer of freers) {
+        for (const claimer of claimers) {
+          if (claimer === freer)
+            continue;
+          let followers = mustFollow.get(freer);
+          if (followers === undefined)
+            mustFollow.set(freer, followers = new Set());
+          followers.add(claimer);
         }
       }
     }
@@ -763,53 +772,44 @@ export class InteractiveRebase {
   }
 
   /** The subset of `node`'s old identity values (see [[getUniqueIdentityValues]]) that this replay is
-   * about to free up, because `node` is a Delete, or an Update that changes the value away from it.
+   * about to free up (a Delete, or an Update that changes the value away from it), and the subset of its
+   * new identity values that this replay is about to claim (an Insert, or an Update that changes the
+   * value to it) - computed together from a single [[getChange]] load, since [[orderRoots]] needs both.
    */
-  private getFreedIdentityValues(node: DependencyNode): Map<string, string> {
-    if (node.change === undefined)
-      return new Map();
-    const oldValues = this.getUniqueIdentityValues(node.change.old);
-    const newValues = this.getUniqueIdentityValues(node.change.new);
+  private getIdentityValueDelta(node: DependencyNode): { freed: Map<string, string>, claimed: Map<string, string> } {
+    if (!node.isCaptured)
+      return { freed: new Map(), claimed: new Map() };
+    const change = this.getChange(node);
+    const oldValues = this.getUniqueIdentityValues(change.old);
+    const newValues = this.getUniqueIdentityValues(change.new);
     const freed = new Map<string, string>();
     for (const [key, value] of oldValues) {
       if (newValues.get(key) !== value)
         freed.set(key, value);
     }
-    return freed;
-  }
-
-  /** The subset of `node`'s new identity values (see [[getUniqueIdentityValues]]) that this replay is
-   * about to claim, because `node` is an Insert, or an Update that changes the value to it.
-   */
-  private getClaimedIdentityValues(node: DependencyNode): Map<string, string> {
-    if (node.change === undefined)
-      return new Map();
-    const oldValues = this.getUniqueIdentityValues(node.change.old);
-    const newValues = this.getUniqueIdentityValues(node.change.new);
     const claimed = new Map<string, string>();
     for (const [key, value] of newValues) {
       if (oldValues.get(key) !== value)
         claimed.set(key, value);
     }
-    return claimed;
+    return { freed, claimed };
   }
 
   private replayNode(node: DependencyNode): void {
-    const isDelete = node.change === undefined || (node.change.new === undefined && node.change.old !== undefined);
+    const isDelete = node.operation === "Delete";
 
     if (isDelete) {
       for (const dependent of node.dependents)
         this.replayNode(dependent);
     }
 
-    if (node.change === undefined) {
-      // Discovered live (section 6) - our Txn never captured a change for it, so nothing in `store.all()`
+    if (!node.isCaptured) {
+      // Discovered live (section 6) - our Txn never captured a change for it, so nothing in the store
       // will ever apply or report it, yet replaying our own owner's delete cascades it away regardless.
       this.applyUpstreamDependentDelete(node);
     } else {
-      const change = node.change;
-      const isIndirect = change.new?.$meta.isIndirectChange === true || change.old?.$meta.isIndirectChange === true;
-      if (isIndirect && !this.isCascadedDependentDelete(change)) {
+      const change = this.getChange(node);
+      if (node.isIndirect && !this.isCascadedDependentDelete(node)) {
         // Indirect changes are derived side effects (e.g. a Model's GeometryGuid updated as a side
         // effect of a GeometricElement change) rather than deliberate edits, so they are force-applied
         // without conflict detection, matching the automatic semantic-rebase path's `applyInstanceChange`.
@@ -831,7 +831,7 @@ export class InteractiveRebase {
    * our local Txn never touched that would otherwise be silently cascaded away by our owner's delete.
    */
   private applyUpstreamDependentDelete(node: DependencyNode): void {
-    const theirs = this._theirsSnapshot.get(node.instanceKey);
+    const theirs = this.getTheirsSnapshot(node.instanceKey);
     if (theirs === undefined) {
       // Already gone by the time we discovered it (e.g. a real ON DELETE CASCADE already removed an
       // aspect earlier in this same replay) - nothing to report or remove.
@@ -918,7 +918,7 @@ export class InteractiveRebase {
     }
 
     // Does the updated instance exist at all?
-    const theirs = this._theirsSnapshot.get(instanceKey);
+    const theirs = this.getTheirsSnapshot(instanceKey);
     if (theirs === undefined) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
       RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, instanceKey, oldProps, newProps, result.conflictingProperties);
@@ -942,7 +942,7 @@ export class InteractiveRebase {
 
     // Native reports `conflictingProperties` populated with every checked property when the row itself no
     // longer exists, so existence (not `conflictingProperties.length`) is what distinguishes the two cases.
-    const theirs = this._theirsSnapshot.get(instanceKey);
+    const theirs = this.getTheirsSnapshot(instanceKey);
     if (theirs === undefined) {
       // The incoming changes already deleted it - nothing more to do.
       return;
@@ -1303,7 +1303,7 @@ export class InteractiveRebase {
    * - if it has its own recorded conflict, writes whichever of its `ours`/`theirs` matches `side` (the
    *   same side just chosen for the dependent that triggered this), via [[writeConflictResolution]] so
    *   any UNIQUE constraint the write provokes is handled the same way as any other resolution;
-   * - otherwise, restores it verbatim from [[_theirsSnapshot]] - its pre-replay state, untouched by
+   * - otherwise, restores it verbatim from [[getTheirsSnapshot]] - its pre-replay state, untouched by
    *   either side, which is the only data available for an owner neither side ever recorded a
    *   conflict for (design doc section 10.1's "closure" reasoning applied upward instead of down).
    *
@@ -1325,8 +1325,8 @@ export class InteractiveRebase {
       this.ensureOwnerExists(ownerConflict, side);
 
     const ownerProps = ownerConflict !== undefined
-      ? this.serializeConflictSide(ownerNode.classFullName, side === "ours" ? ownerConflict.ours : ownerConflict.theirs)
-      : this._theirsSnapshot.get(ownerNode.instanceKey);
+      ? ownerConflict.getRaw(side)
+      : this.getTheirsSnapshot(ownerNode.instanceKey);
     if (ownerProps === undefined)
       return;
 
@@ -1365,7 +1365,7 @@ export class InteractiveRebase {
    *   (`_selectedSide`, set only by an explicit, direct `acceptOurs`/`acceptTheirs` call on that
    *   dependent) so an explicit user choice is preserved, falling back to `side` - the side just chosen
    *   for `conflict` - otherwise;
-   * - a dependent with no recorded conflict restores verbatim from [[_theirsSnapshot]], its pre-replay
+   * - a dependent with no recorded conflict restores verbatim from [[getTheirsSnapshot]], its pre-replay
    *   state, unmodified by either side.
    */
   private restoreDependentClosure(conflict: RebaseConflictImpl, side: "ours" | "theirs"): void {
@@ -1380,8 +1380,8 @@ export class InteractiveRebase {
     const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
     const side = conflict?._selectedSide ?? inheritedSide;
     const props = conflict !== undefined
-      ? this.serializeConflictSide(node.classFullName, side === "ours" ? conflict.ours : conflict.theirs)
-      : this._theirsSnapshot.get(node.instanceKey);
+      ? conflict.getRaw(side)
+      : this.getTheirsSnapshot(node.instanceKey);
 
     if (props === undefined) {
       this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
@@ -1397,7 +1397,7 @@ export class InteractiveRebase {
   }
 
   /** Writes an instance with no [[RebaseConflict]] of its own (an untouched dependent being restored
-   * from [[_theirsSnapshot]] as part of its owner's closure), without the UNIQUE-constraint retry
+   * from [[getTheirsSnapshot]] as part of its owner's closure), without the UNIQUE-constraint retry
    * machinery [[writeConflictResolution]] provides for a real conflict.
    */
   private writeRestoredInstance(props: RebaseConflictProperties): void {
@@ -1408,20 +1408,6 @@ export class InteractiveRebase {
         throw err;
       this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
     }
-  }
-
-  /** `conflict.ours`/`conflict.theirs` are deserialized into the public [[RebaseConflictProperties]]
-   * shape (e.g. a nested `code: { value, spec, scope }`) for consumers, not the raw/native shape
-   * `writeConflictResolution`/`writeRestoredInstance` need to write - mirrors the `classDef.serialize`
-   * step [[applyResolution]] performs for a top-level `acceptOurs`/`acceptTheirs` call. Props already
-   * sourced from [[_theirsSnapshot]] (a live native read) are already in the raw shape and must not be
-   * passed through this again.
-   */
-  private serializeConflictSide(classFullName: string, props: RebaseConflictProperties | undefined): RebaseConflictProperties | undefined {
-    if (props === undefined)
-      return undefined;
-    const classDef = this.iModel.getJsClass<typeof Element>(classFullName);
-    return classDef.serialize(props as ElementProps, this.iModel);
   }
 
   /** Writes a resolved conflict's properties, resolving any UNIQUE constraint violation the write provokes the
@@ -1613,36 +1599,36 @@ function addPropsAccessStrings(target: string[], classDef: typeof Element, insta
 
 /** Resolves a conflict by writing `properties` (props access strings) taken from `source` onto the instance,
  * leaving its other properties as they are. If `properties` is not specified, or is empty, every property of
- * `source` is written instead, fully replacing the instance with `source`'s version. The values are
- * round-tripped through [[Entity.serialize]], which is what knows how a props value is represented in an
- * ECSql instance (e.g. props `placement.origin` `[x, y]` is instance `origin` `{x, y}`).
+ * `source` is written instead, fully replacing the instance with `source`'s version. `source` is read via
+ * [[RebaseConflictImpl.getRaw]] - already in the native/instance shape a write needs - rather than the public
+ * (lazily deserialized) {@link RebaseConflict.ours}/{@link RebaseConflict.theirs}, so no deserialize-then-
+ * reserialize round-trip is needed just to write it back out.
  */
 function applyResolution(
   rebase: InteractiveRebase,
-  conflict: RebaseConflict,
+  conflict: RebaseConflictImpl,
   side: "ours" | "theirs",
   properties?: string[]
 ): void {
-  const source = side === "ours" ? conflict.ours : conflict.theirs;
+  const source = conflict.getRaw(side);
   let fullReplace = true;
-  let updateProps: RebaseConflictProperties | undefined = undefined;;
+  let updateProps: RebaseConflictProperties | undefined = undefined;
 
   if (source !== undefined) {
-    const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
-    const instance = classDef.serialize(source as ElementProps, rebase.iModel);
-
-    updateProps = instance;
+    // Shallow-copy so the write path never mutates the conflict's own stored snapshot.
+    updateProps = { ...source };
 
     if (properties !== undefined && properties.length > 0) {
       // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
       // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
       // any property it isn't given untouched, so an `undefined` here must become an explicit `null` rather
       // than being omitted, or it would silently keep whatever value is currently in the iModel.
+      const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
       fullReplace = false;
       updateProps = { id: conflict.id, classFullName: conflict.classFullName };
       for (const prop of properties) {
         const instanceAccessString = classDef.toInstanceAccessString(prop);
-        const value = getPropertyValue(instance, instanceAccessString);
+        const value = getPropertyValue(source, instanceAccessString);
         setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
       }
     }
@@ -1660,9 +1646,20 @@ class RebaseConflictImpl implements RebaseConflict {
   public readonly instanceKey: string;
   public readonly id: Id64String;
   public readonly classFullName: string;
-  public original: RebaseConflictProperties | undefined = undefined;
-  public theirs: RebaseConflictProperties | undefined = undefined;
-  public ours: RebaseConflictProperties | undefined = undefined;
+
+  /** Raw (native, not yet deserialized) `original`/`theirs`/`ours` rows - see the public getters below. */
+  private _original: RebaseConflictProperties | undefined = undefined;
+  private _theirs: RebaseConflictProperties | undefined = undefined;
+  private _ours: RebaseConflictProperties | undefined = undefined;
+
+  /** Deserializes {@link _original}/{@link _theirs}/{@link _ours} into the public {@link RebaseConflictProperties}
+   * shape on every access rather than at record time, so a conflict nobody inspects never pays for it, and a
+   * conflict that is inspected doesn't retain both the raw and deserialized forms for the group's whole lifetime.
+   */
+  public get original(): RebaseConflictProperties | undefined { return this.deserialize(this._original); }
+  public get theirs(): RebaseConflictProperties | undefined { return this.deserialize(this._theirs); }
+  public get ours(): RebaseConflictProperties | undefined { return this.deserialize(this._ours); }
+
   public readonly theirModifiedProperties: string[] = [];
   public readonly ourModifiedProperties: string[] = [];
   public readonly conflictingProperties: string[] = [];
@@ -1695,6 +1692,24 @@ class RebaseConflictImpl implements RebaseConflict {
     return conflict;
   }
 
+  /** Deserializes a raw row (one of {@link _original}/{@link _theirs}/{@link _ours}) into the public
+   * {@link RebaseConflictProperties} shape, or undefined if `raw` is undefined.
+   */
+  private deserialize(raw: RebaseConflictProperties | undefined): RebaseConflictProperties | undefined {
+    if (raw === undefined)
+      return undefined;
+    return this._rebase.iModel.getJsClass<typeof Element>(this.classFullName).deserialize({ row: raw, iModel: this._rebase.iModel });
+  }
+
+  /** The raw (native, not yet deserialized) form of `side`, for internal write-back paths that would
+   * otherwise read the deserialized {@link ours}/{@link theirs} only to immediately reserialize it back
+   * to this same raw shape.
+   * @internal
+   */
+  public getRaw(side: "ours" | "theirs"): RebaseConflictProperties | undefined {
+    return side === "ours" ? this._ours : this._theirs;
+  }
+
   /** Both the incoming (their) changes and the local (our) changes modified the same instance. */
   public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
@@ -1705,9 +1720,9 @@ class RebaseConflictImpl implements RebaseConflict {
     addPropsAccessStrings(conflict.ourModifiedProperties, classDef, computeChangedProperties(original, ours));
     addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(theirs, ours));
 
-    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
-    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
-    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+    conflict._original = original;
+    conflict._theirs = theirs;
+    conflict._ours = ours;
   }
 
   /** The incoming (their) changes modified properties on an instance that was deleted by the local (our) changes. */
@@ -1717,8 +1732,8 @@ class RebaseConflictImpl implements RebaseConflict {
 
     addPropsAccessStrings(conflict.theirModifiedProperties, classDef, updatedProperties);
 
-    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
-    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    conflict._original = original;
+    conflict._theirs = theirs;
   }
 
   /** The incoming (their) changes deleted an instance that was modified by the local (our) changes. */
@@ -1728,8 +1743,8 @@ class RebaseConflictImpl implements RebaseConflict {
 
     addPropsAccessStrings(conflict.ourModifiedProperties, classDef, updatedProperties);
 
-    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
-    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+    conflict._original = original;
+    conflict._ours = ours;
   }
 
   /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
@@ -1739,8 +1754,8 @@ class RebaseConflictImpl implements RebaseConflict {
 
     addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(ours, theirs));
 
-    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
-    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+    conflict._theirs = theirs;
+    conflict._ours = ours;
   }
 
   /** An embedded dependent (aspect or child element) that our local Txn never touched, discovered live
@@ -1749,9 +1764,8 @@ class RebaseConflictImpl implements RebaseConflict {
    * no knowledge of it at all, only `theirs`.
    */
   public static recordUpstreamDependent(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, theirs: RebaseConflictProperties): void {
-    const classDef = rebase.iModel.getJsClass<typeof Element>(theirs.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, theirs.id, theirs.classFullName);
-    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    conflict._theirs = theirs;
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
@@ -1760,15 +1774,13 @@ class RebaseConflictImpl implements RebaseConflict {
     const classFullName = ours.classFullName ?? original?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId, classFullName);
 
-    const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
-
     if (original !== undefined) {
-      conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+      conflict._original = original;
     }
-    if (theirs !== undefined && conflict.theirs === undefined) {
-      conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    if (theirs !== undefined && conflict._theirs === undefined) {
+      conflict._theirs = theirs;
     }
-    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+    conflict._ours = ours;
 
     return conflict.upsertUniqueConstraintViolation(detail);
   }
@@ -1779,16 +1791,14 @@ class RebaseConflictImpl implements RebaseConflict {
     const classFullName = ours?.classFullName ?? original?.classFullName ?? theirs?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId!, classFullName!);
 
-    const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
-
     if (original !== undefined) {
-      conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+      conflict._original = original;
     }
-    if (theirs !== undefined && conflict.theirs === undefined) {
-      conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    if (theirs !== undefined && conflict._theirs === undefined) {
+      conflict._theirs = theirs;
     }
     if (ours !== undefined) {
-      conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+      conflict._ours = ours;
     }
 
     for (const broken of brokenRelationships) {
@@ -1815,16 +1825,16 @@ class RebaseConflictImpl implements RebaseConflict {
 
     const existing = this.uniqueConstraintViolations.find((other) =>
       other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
-      other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]));
+      other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i])) as UniqueConstraintViolationImpl | undefined;
 
-    const conflictingInstance = classDef.deserialize({ row: detail?.conflictingInstance ?? {}, iModel: this._rebase.iModel });
+    const conflictingInstanceRaw = detail?.conflictingInstance ?? {};
     if (existing !== undefined) {
-      existing.conflictingInstance = conflictingInstance;
+      existing.setRaw(conflictingInstanceRaw);
       existing.appliedFix = undefined;
       return existing;
     }
 
-    const violation: UniqueConstraintViolation = { uniqueConstraintProperties, conflictingInstance: conflictingInstance };
+    const violation = new UniqueConstraintViolationImpl(this._rebase, this.classFullName, uniqueConstraintProperties, conflictingInstanceRaw);
     this.uniqueConstraintViolations.push(violation);
     return violation;
   }
@@ -1854,5 +1864,31 @@ class RebaseConflictImpl implements RebaseConflict {
     if (properties === undefined || properties.length === 0)
       this._selectedSide = "theirs";
     applyResolution(this._rebase, this, "theirs", properties);
+  }
+}
+
+/** Implements {@link UniqueConstraintViolation}, deserializing {@link conflictingInstance} on access
+ * rather than at record time - see [[RebaseConflictImpl.deserialize]] for why.
+ */
+class UniqueConstraintViolationImpl implements UniqueConstraintViolation {
+  public readonly uniqueConstraintProperties: string[];
+  public appliedFix?: { property: string, value: any };
+  private _conflictingInstance: RebaseConflictProperties;
+
+  public constructor(private readonly _rebase: InteractiveRebase, private readonly _classFullName: string, uniqueConstraintProperties: string[], conflictingInstance: RebaseConflictProperties) {
+    this.uniqueConstraintProperties = uniqueConstraintProperties;
+    this._conflictingInstance = conflictingInstance;
+  }
+
+  public get conflictingInstance(): RebaseConflictProperties {
+    return this._rebase.iModel.getJsClass<typeof Element>(this._classFullName).deserialize({ row: this._conflictingInstance, iModel: this._rebase.iModel });
+  }
+
+  /** Updates the raw conflicting-instance row when this same constraint is re-violated (see
+   * [[RebaseConflictImpl.upsertUniqueConstraintViolation]]).
+   * @internal
+   */
+  public setRaw(conflictingInstance: RebaseConflictProperties): void {
+    this._conflictingInstance = conflictingInstance;
   }
 }
