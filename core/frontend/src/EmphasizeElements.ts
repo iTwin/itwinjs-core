@@ -852,7 +852,13 @@ export class EmphasizeIModelElements implements FeatureSymbologyOverrider {
     return getOverrideFromKey(key);
   }
 
-  /** Establish a default appearance to apply to elements without overrides. */
+  /** Establish a default appearance to apply to elements without overrides.
+   * without also calling emphasizeElements/overrideElements, an explicit refresh must be requested for the change to take effect.
+   * @note Setting this to `undefined` to undo [[emphasizeElements]] or [[isolateElements]] leaves the always-drawn/isolated
+   * element IDs in place but invisible to [[getEmphasizedElements]], [[getEmphasizedIsolatedElements]], and [[clearEmphasizedElements]].
+   * Prefer [[clearEmphasizedElements]] or [[clearEmphasizedIsolatedElements]] to undo emphasis, which clear both together.
+   * @see [[IModelDisplayReference.invalidateSymbologyOverrides]].
+   */
   public get defaultAppearance(): FeatureAppearance | undefined { return this.#state.defaultAppearance; }
   public set defaultAppearance(appearance: FeatureAppearance | undefined) { this.#state.defaultAppearance = appearance; }
 
