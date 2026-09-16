@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.14.0-dev.11",
+  "version": "5.14.0-dev.12",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "exports": {
     "./renderer": {
