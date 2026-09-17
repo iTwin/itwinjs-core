@@ -14,7 +14,6 @@ export default defineConfig({
   define: { "process.env.VITEST_RPC_ENVIRONMENT": JSON.stringify("electron") },
   resolve: {
     alias: {
-      "@itwin/certa/lib/utils/CallbackUtils": path.resolve(packageRoot, "src/frontend/vitestCallbackUtils.ts"),
       "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(packageRoot, "../../core/mobile/src/MobileFrontend.ts"),
     },
   },
