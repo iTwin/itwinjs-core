@@ -68,42 +68,6 @@ function exitProviderProcess(exitCode: number): void {
   app.exit(exitCode);
 }
 
-function sendToProvider(message: ProviderSessionMessage): void {
-  try {
-    process.send?.(message, () => {});
-  } catch {
-    // The provider may already have disconnected while Electron was shutting down.
-  }
-}
-
-function exitProviderProcess(exitCode: number): void {
-  if (!process.connected) {
-    // runProviderSession completed cleanup, and no parent remains to terminate Electron's helpers.
-    process.kill(process.platform === "win32" ? process.pid : -process.pid, "SIGKILL");
-    return;
-  }
-  process.disconnect();
-  app.exit(exitCode);
-}
-
-function sendToProvider(message: ProviderSessionMessage): void {
-  try {
-    process.send?.(message, () => {});
-  } catch {
-    // The provider may already have disconnected while Electron was shutting down.
-  }
-}
-
-function exitProviderProcess(exitCode: number): void {
-  if (!process.connected) {
-    // runProviderSession completed cleanup, and no parent remains to terminate Electron's helpers.
-    process.kill(process.platform === "win32" ? process.pid : -process.pid, "SIGKILL");
-    return;
-  }
-  process.disconnect();
-  app.exit(exitCode);
-}
-
 /** Run one provider-owned Electron main process. This function never collects or executes tests.
  * @internal
  */
