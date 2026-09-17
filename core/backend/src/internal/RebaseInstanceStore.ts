@@ -241,10 +241,12 @@ export class RebaseInstanceStore implements Disposable {
     return schemaView.findClass(classFullName)?.is("BisCore:Element") ?? false;
   }
 
-  /** classFullName -> access string of its embedding-owner nav property, or undefined if it has none.
-   * Mirrors [[InteractiveRebase.getEmbeddingOwnerProperty]]; duplicated here (rather than shared) because
-   * that copy is scoped to a single `InteractiveRebase` instance's lifetime, while this one is scoped to
-   * this store's lifetime and keyed off the `SchemaView` given to [[createNew]].
+  /**
+   * Given a classFullName, gets the access string of the class's embedding-owner nav property,
+   * or undefined if it has none. For example, if the class is an aspect, this will be
+   * `"element"`, which is the access string of the navigation property pointing to the
+   * aspect's owning element. If the class is an element, this will be `"parent"`, which is
+   * the access string of the navigation property pointing to owning parent element.
    */
   private getEmbeddingOwnerProperty(schemaView: SchemaView, classFullName: string): string | undefined {
     if (this._embeddingOwnerProperty.has(classFullName))
@@ -262,6 +264,7 @@ export class RebaseInstanceStore implements Disposable {
           continue;
         const sourceConstraintClass = prop.relationshipClass.source?.abstractConstraint?.fullName
           ?? prop.relationshipClass.source?.constraintClasses[0]?.fullName;
+        // TODO: this currently requires that the owner is an element. But the owner of a model is a model, right?
         if (sourceConstraintClass === undefined || !this.isElementOrSubclass(schemaView, sourceConstraintClass))
           continue;
         ownerProp = ECJsNames.toJsName(prop.name);
@@ -272,16 +275,17 @@ export class RebaseInstanceStore implements Disposable {
     return ownerProp;
   }
 
-  /** Extracts the embedding-owner id from `props`, or undefined if `classFullName` has no embedding owner
+  /**
+   * Extracts the embedding-owner id from `props`, or undefined if `classFullName` has no embedding owner
    * or the nav property has no value.
    */
   private getOwnerId(schemaView: SchemaView, classFullName: string, props: ChangeInstance): Id64String | undefined {
     const ownerProp = this.getEmbeddingOwnerProperty(schemaView, classFullName);
     if (ownerProp === undefined)
       return undefined;
-    const navValue = (props as Record<string, any>)[ownerProp];
-    const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
-    return typeof navId === "string" && Id64.isValidId64(navId) ? navId : undefined;
+    const navValue = props[ownerProp];
+    const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : Id64.invalid);
+    return Id64.isValidId64(navId) ? navId : undefined;
   }
 
   /** Iterate over every captured instance's old/new snapshot pair. */
@@ -297,10 +301,9 @@ export class RebaseInstanceStore implements Disposable {
     }
   }
 
-  /** Iterate over every captured instance's metadata (id, class, operation, ownership) without parsing
-   * its `old`/`new` snapshots - used by [[InteractiveRebase.buildDependencyForest]] to build the
-   * embedding-ownership forest without holding every instance's (potentially large, geometry-bearing)
-   * captured data in memory at once.
+  /**
+   * Iterate over every captured instance's metadata (id, class, operation, ownership) without parsing
+   * its `old`/`new` snapshots, which can be quite large compared to the metadata.
    */
   public *allMetadata(): IterableIterator<RebaseInstanceMetadata> {
     using stmt = this._db.prepareSqliteStatement(
@@ -318,11 +321,12 @@ export class RebaseInstanceStore implements Disposable {
     }
   }
 
-  /** Persists `props` (a raw native-read instance row, or undefined if the instance doesn't exist) as
+  /**
+   * Persists `props` (a raw native-read instance row, or undefined if the instance doesn't exist) as
    * `instanceKey`'s pre-replay "theirs" snapshot - see [[getTheirs]]. Requires a store opened via
    * [[openForReplay]].
    */
-  public setTheirs(instanceKey: string, props: Record<string, any> | undefined): void {
+  public setTheirs(instanceKey: string, props: ECSqlRow | undefined): void {
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${theirsTableName} ([instanceKey], [theirs])
        VALUES (?, ?)
@@ -340,7 +344,7 @@ export class RebaseInstanceStore implements Disposable {
    * doesn't exist (either it was never captured, or the instance didn't exist upstream - both cases are
    * indistinguishable, matching the in-memory `Map` this replaced).
    */
-  public getTheirs(instanceKey: string): Record<string, any> | undefined {
+  public getTheirs(instanceKey: string): ECSqlRow | undefined {
     return this._db.withPreparedSqliteStatement(
       `SELECT [theirs] FROM ${theirsTableName} WHERE [instanceKey]=?`,
       (stmt: SqliteStatement) => {
