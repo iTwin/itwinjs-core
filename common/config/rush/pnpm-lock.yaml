@@ -2844,6 +2844,9 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+      '@itwin/vitest-browser-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-browser-bridge
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2862,6 +2865,9 @@ importers:
       '@types/spdy':
         specifier: ^3.4.4
         version: 3.4.9
+      '@vitest/browser':
+        specifier: ^4.1.11
+        version: 4.1.11(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.11)
       assert:
         specifier: ^2.0.0
         version: 2.1.0
@@ -2895,6 +2901,9 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0)
       webpack:
         specifier: ^5.97.1
         version: 5.110.3(webpack-cli@5.1.4)

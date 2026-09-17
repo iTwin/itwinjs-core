@@ -14,7 +14,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@itwin/certa/lib/utils/CallbackUtils": path.resolve(packageRoot, "src/frontend/vitestCallbackUtils.ts"),
-      "@itwin/core-electron/lib/cjs/ElectronFrontend": path.resolve(packageRoot, "../../core/electron/src/ElectronFrontend.ts"),
       "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(packageRoot, "../../core/mobile/src/MobileFrontend.ts"),
     },
   },

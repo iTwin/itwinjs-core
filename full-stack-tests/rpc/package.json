@@ -43,7 +43,7 @@
     "@types/node": "~20.17.0",
     "@types/semver": "7.3.10",
     "@types/spdy": "^3.4.4",
-    "@vitest/browser": "^4.1.10",
+    "@vitest/browser": "^4.1.11",
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
     "browserify-zlib": "^0.2.0",
@@ -55,7 +55,7 @@
     "source-map-loader": "^5.0.0",
     "stream-browserify": "^3.0.0",
     "typescript": "~5.6.2",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
   }

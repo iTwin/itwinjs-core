@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { type RegisterBackendCallback, registerCertaBackendCallback } from "./CallbackRegistrar";
 import { ElectronHost } from "@itwin/core-electron/main";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
