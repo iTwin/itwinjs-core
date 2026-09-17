@@ -29,6 +29,7 @@ export interface FeatureOverrideProvider {
  * If some internal state of your overrider changes such that the overrides should be recreated, invoke [[IModelDisplayReference.invalidateSymbologyOverrides]].
  *
  * @see [[IModelDisplayReference.featureOverrideProviders]] for the set of overriders associated with an [[IModelDisplayReference]].
+ * @see [[EmphasizeIModelElements]] for an example implementation of this interface.
  * @beta
  */
 export interface FeatureSymbologyOverrider {
