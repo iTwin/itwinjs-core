@@ -297,10 +297,7 @@ export interface VerticalCRSProps {
    * still be opened with older versions of itwin.js.
    */
   id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
-  /** EPSG code, e.g. 5773 for EGM96 height. Takes precedence over id when set.
-   * @beta */
-  epsg?: number;
-  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id and epsg when set.
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id when set.
    * @beta */
   crsName?: string;
 }
@@ -323,10 +320,7 @@ export class VerticalCRS implements VerticalCRSProps {
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
   */
   public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
-  /** EPSG code, e.g. 5773 for EGM96 height. Takes precedence over id when set.
-   * @beta */
-  public readonly epsg?: number;
-  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id and epsg when set.
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id when set.
    * @beta */
   public readonly crsName?: string;
 
@@ -334,7 +328,6 @@ export class VerticalCRS implements VerticalCRSProps {
     this.id = "GEOID";
     if (data) {
       this.id = data.id;
-      this.epsg = data.epsg;
       this.crsName = data.crsName;
     }
   }
@@ -348,7 +341,7 @@ export class VerticalCRS implements VerticalCRSProps {
   /** Creates a JSON from the Vertical CRS definition
    * @public */
   public toJSON(): VerticalCRSProps {
-    return { id: this.id, epsg: this.epsg, crsName: this.crsName };
+    return { id: this.id, crsName: this.crsName };
   }
 
   /** Compares two vertical CRS.
