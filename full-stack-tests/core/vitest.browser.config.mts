@@ -165,6 +165,7 @@ export default defineConfig({
     // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
     include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
     exclude: [
+      // These suites require Electron's native-app/IPC APIs and run in the Electron project.
       "**/app/NativeApp.test.ts",
       "**/standalone/BriefcaseConnection.test.ts",
       "**/standalone/CatalogConnection.test.ts",
