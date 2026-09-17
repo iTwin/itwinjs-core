@@ -211,6 +211,14 @@ export class ECSqlDatasets {
         assert.fail("Expected another element id");
       const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId2));
       assert.isTrue(Id64.isValidId64(txn.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
+
+      // Add a single link table relationship instance. Inserted last so that it does not shift
+      // the ids of any of the elements or aspects above.
+      assert.isTrue(Id64.isValidId64(txn.insertRelationship({
+        classFullName: "AllProperties:TestElementRefersToElements",
+        sourceId: elementIds[0],
+        targetId: elementIds[1],
+      })), "link table relationship insert failed");
     });
     iModel.close();
   }
