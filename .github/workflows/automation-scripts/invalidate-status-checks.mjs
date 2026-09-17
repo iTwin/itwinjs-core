@@ -24,8 +24,8 @@ function exponentialBackoffMs(attempt) {
   return 2 ** attempt * 1000;
 }
 
-// Falls back to exponential backoff if no rate-limit headers are present.
-function getRetryDelayMs(response, attempt) {
+// Falls back to exponential backoff if no rate-limit headers or secondary rate limit message are present.
+function getRetryDelayMs(response, attempt, isSecondaryRateLimit) {
   const retryAfter = response.headers.get("retry-after");
   if (retryAfter !== null && !Number.isNaN(Number(retryAfter)))
     return Number(retryAfter) * 1000;
@@ -35,24 +35,38 @@ function getRetryDelayMs(response, attempt) {
   if (rateLimitRemaining === "0" && rateLimitReset !== null && !Number.isNaN(Number(rateLimitReset)))
     return Math.max(0, Number(rateLimitReset) * 1000 - Date.now());
 
+  if (isSecondaryRateLimit) {
+    // Wait at least one minute: https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#exceeding-the-rate-limit
+    const minSecondaryRateLimitDelayMs = 60 * 1000;
+    return Math.max(minSecondaryRateLimitDelayMs, exponentialBackoffMs(attempt));
+  }
+
   return exponentialBackoffMs(attempt);
 }
 
-function isRateLimited(response) {
+// GitHub doesn't always set Retry-After/x-ratelimit-remaining for secondary rate limits, so fall back to the message.
+function isSecondaryRateLimitMessage(bodyText) {
+  const secondaryRateLimitMessage = /secondary rate limit/i;
+  return typeof bodyText === "string" && secondaryRateLimitMessage.test(bodyText);
+}
+
+function isRateLimited(response, isSecondaryRateLimit) {
   if (response.status === 429)
     return true;
   if (response.status !== 403)
     return false;
-  // 403 can mean primary limit exhausted (remaining=0) or secondary/abuse limit (Retry-After set).
-  return response.headers.get("x-ratelimit-remaining") === "0" || response.headers.get("retry-after") !== null;
+  // 403 covers primary limit exhausted, secondary/abuse limit, or secondary limit with no headers set.
+  return response.headers.get("x-ratelimit-remaining") === "0"
+    || response.headers.get("retry-after") !== null
+    || isSecondaryRateLimit;
 }
 
-function isRetryableStatus(response) {
-  return RETRYABLE_STATUS_CODES.has(response.status) || isRateLimited(response);
+function isRetryableStatus(response, isSecondaryRateLimit) {
+  return RETRYABLE_STATUS_CODES.has(response.status) || isRateLimited(response, isSecondaryRateLimit);
 }
 
-async function buildStatusError(url, response) {
-  return new Error(`GitHub API request to ${url} failed with ${response.status} ${response.statusText}: ${await response.text()}`);
+function buildStatusError(url, response, bodyText) {
+  return new Error(`GitHub API request to ${url} failed with ${response.status} ${response.statusText}: ${bodyText}`);
 }
 
 async function githubRequest(url, options = {}) {
@@ -72,12 +86,15 @@ async function githubRequest(url, options = {}) {
     if (response.ok)
       return response;
 
-    if (!isRetryableStatus(response))
-      throw await buildStatusError(url, response);
+    const bodyText = await response.text();
+    const isSecondaryRateLimit = isSecondaryRateLimitMessage(bodyText);
 
-    lastError = await buildStatusError(url, response);
+    if (!isRetryableStatus(response, isSecondaryRateLimit))
+      throw buildStatusError(url, response, bodyText);
+
+    lastError = buildStatusError(url, response, bodyText);
     if (attempt < MAX_RETRIES)
-      await sleep(getRetryDelayMs(response, attempt));
+      await sleep(getRetryDelayMs(response, attempt, isSecondaryRateLimit));
   }
 
   throw lastError;
