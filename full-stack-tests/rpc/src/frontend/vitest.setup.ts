@@ -5,7 +5,7 @@
 
 import { afterAll, beforeAll } from "vitest";
 import { EmptyLocalization } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/renderer";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { setupFrontend, teardownFrontend } from "./testSetup";
 
