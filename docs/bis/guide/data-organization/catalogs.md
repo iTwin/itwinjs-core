@@ -8,7 +8,11 @@ This page describes how catalog-sourced definitions are organized inside a BIS r
 
 ## A running example
 
-The sections below follow one example through the catalog lifecycle. A catalog authority publishes a *Piping Catalog* containing pipe types. Version 1 of the catalog includes **PVC-300**, a 300&nbsp;mm PVC pipe type modeled as a `PhysicalType`. PVC-300 references a `TemplateRecipe3d` that supplies its template geometry. An application imports PVC-300 and its dependencies into a BIS repository so that pipes of that type can be placed. Later, the authority corrects PVC-300's wall thickness and publishes version 2 of the catalog.
+Consider an engineering firm using OpenSite+, a civil site design application. The examples below illustrate two uses of catalogs: a designer selects a reusable pipe type, and a project administrator may select a [classification tree](../fundamentals/data-classification.md#classification-systems) that organizes the meaning of elements such as pipes and manholes. The example catalog contents are illustrative, not a description of a shipped OpenSite+ catalog.
+
+The firm's catalog maintainer publishes a *Piping Catalog* containing pipe types. The firm is the *catalog authority*: the organization responsible for those definitions. In this example, the maintainer updates and publishes the catalog, while the project administrator chooses which definitions the project uses.
+
+Version 1 of the catalog includes **PVC-300**, a 300&nbsp;mm PVC pipe type modeled as a `PhysicalType`. The application imports this type and the definitions it needs so that the designer can place pipes of that type. Later, the catalog maintainer corrects PVC-300's wall thickness and publishes version 2. The sections below follow that lifecycle, with a separate example showing why the administrator selects a classification tree as a whole.
 
 ## Why copy definitions into a BIS repository
 
@@ -29,11 +33,13 @@ See [Components from Catalogs](../../../learning/backend/IModelContents.md#compo
 
 *Component* commonly refers to a single reusable catalog entry: a pipe type, a valve, a title-block template. In BIS terms, a catalog entry is rooted at a [DefinitionElement](../references/glossary.md#DefinitionElement), typically a [TypeDefinitionElement](../fundamentals/type-definitions.md), but that entry-point element is rarely self-contained. On this page, a *definition bundle* means the entry-point `DefinitionElement` together with the owned and referenced data required to use it. This is descriptive terminology, not a formal BIS construct.
 
+Before copying a component, the application must find all the data needed to use it. Otherwise, it could copy a pipe type without the template geometry or materials that the type requires. Finding that data is called *dependency discovery*.
+
 Discovery starts at the highest element of the selected bundle, then follows its descendants and required references. Start with PVC-300's `PhysicalType`, rather than selecting one of its template geometry elements and trying to discover the component by climbing its ancestors.
 
 ### Example: a pipe type
 
-PVC-300 references a `TemplateRecipe3d`, an element that describes its reusable template. The recipe has a sub-model containing the template geometry. Those geometry elements reference the category used to display them. The pipe type also references its physical material and owns an aspect containing additional properties.
+PVC-300 references a `TemplateRecipe3d`, a definition element whose sub-model contains the reusable 3D template geometry. Those geometry elements reference the category used to display them. The pipe type also references its physical material and owns an aspect containing additional properties.
 
 The arrows below show how discovery reaches those dependencies from the selected pipe type:
 
@@ -62,13 +68,15 @@ graph TD
     class CAT,MAT shared
 ```
 
-For this example, every node shown belongs to the PVC-300 bundle. Copying only the `PhysicalType` would omit the template geometry and the definitions needed to use it. The amber category and material may be shared: importing another pipe type, PVC-450, can reuse those same cached definitions instead of copying them again.
+For this example, every node shown belongs to the PVC-300 bundle. Copying only the `PhysicalType` would omit the template geometry and the definitions needed to use it. The amber category and material may be shared: importing another pipe type, say, one called PVC-450, can reuse those same cached definitions instead of copying them again.
 
 This diagram shows ownership, sub-models, and direct references. A real pipe type may have additional dependencies, including the link-table and geometry-stream references described below.
 
 ### Example: a classification tree
 
-A component need not be a type that a user places. In OS+, a complete classification tree is one bundle that the application requires from the beginning. An administrator chooses the tree from a catalog by selecting its root `ClassificationSystem` element, not an individual classification within the tree.
+A *classification* expresses what an element represents according to an industry or company-specific scheme. For example, the firm's scheme might distinguish pipes from manholes independently of their particular product types. A classification tree organizes those meanings in a hierarchy. See [Classification Systems](../fundamentals/data-classification.md#classification-systems) for background and examples of industry schemes.
+
+Unlike a pipe type, a classification tree is not something a designer places. OpenSite+ requires the complete tree as one bundle from application startup. For example, a project administrator may choose that tree from a catalog by selecting its root `ClassificationSystem` element, not an individual classification within the tree.
 
 In this example, the system owns a `ClassificationTable`. The table's sub-model contains the classifications:
 
@@ -93,7 +101,7 @@ graph TD
 
 Discovery proceeds down from the selected system through its tables, their sub-model contents, and any nested child elements, then follows required references. The whole tree is selected deliberately; it is not discovered by importing a pipe and climbing from a referenced classification to its ancestors.
 
-OS+ uses only one classification tree in an end-user iModel, although users may have multiple trees available in different versioned catalogs. This is an OS+ application requirement, not a BIS restriction on how many trees a repository or table can contain.
+OpenSite+ currently uses only one classification tree in an end-user iModel, although users may have multiple trees available in different versioned catalogs. This is an OpenSite+ application requirement, not a BIS restriction on how many trees a repository or table can contain.
 
 There is currently no single BIS construct that identifies a definition bundle as a unit. The application determines which root represents the component its users need.
 
@@ -114,7 +122,7 @@ For PVC-300, these mechanisms first follow the `Recipe` navigation property from
 
 A [link-table relationship](../fundamentals/relationship-fundamentals.md#link-table) connects elements without a navigation property. Schemas expose these relationships and their endpoints, but do not capture enough dependency semantics to determine which direction discovery should follow. Deriving from `ElementRefersToElements` does not mean that a relationship should automatically be traversed in both directions.
 
-The caller supplies the link-table relationships to traverse. The application must also establish the traversal direction for each dependency; a relationship name alone does not explain which endpoint requires the other. This page does not define an API for supplying those rules.
+The caller supplies the link-table relationships to traverse. The application must also establish the traversal direction for each dependency; a relationship name alone does not explain which endpoint requires the other.
 
 Examples requiring caller-supplied rules include:
 
@@ -183,7 +191,7 @@ This mapping applies to definitions cached beneath the catalog authority's well-
 Applying the mapping to the running example:
 
 1. The application imports PVC-300 from Piping Catalog version 1. It creates a `RepositoryLink` for *Piping Catalog v1*, copies the component into the well-known container's sub-model, sets the cached `PhysicalType`'s `FederationGuid` to the authority's identifier for *this version* of PVC-300, scopes the element's `Code` to the v1 `RepositoryLink`, and attaches an `ExternalSourceAspect` with `Identifier` set to the authority's stable identifier for PVC-300 and `Scope` referencing the v1 `RepositoryLink`.
-2. The authority corrects PVC-300's wall thickness and publishes catalog version 2. Version 1 is unchanged; it remains valid and immutable.
+2. The catalog maintainer corrects PVC-300's wall thickness and publishes catalog version 2. Version 1 is unchanged; it remains valid and immutable.
 3. The application detects (by its own means; nothing in the BIS repository does this automatically) that catalog v2 contains a newer PVC-300 and imports it. The updated pipe type is a **new** `DefinitionElement` with a **new** `FederationGuid`, an `ExternalSourceAspect` with the **same** stable `Identifier`, and `Scope` referencing a new *Piping Catalog v2* `RepositoryLink`. Its `CodeValue` is unchanged, but its `Code` is scoped to the v2 `RepositoryLink`, so the two cached copies do not collide.
 4. The *PVC* material did not change between v1 and v2. It stays cached once, and gains a second `ExternalSourceAspect` scoped to the v2 `RepositoryLink`.
 

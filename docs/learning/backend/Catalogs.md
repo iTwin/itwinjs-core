@@ -1,10 +1,14 @@
 # Catalogs (CatalogDb)
 
-A **catalog** stores reusable definitions that applications copy into iModels. For example, a piping application can copy a pipe type from a catalog so that users can place pipes of that type without needing access to the original catalog each time.
+A **catalog** stores reusable definitions that applications copy into iModels. For example, an application can copy a pipe type from a catalog so that designers can place pipes of that type without needing access to the original catalog each time.
 
 This walkthrough follows that import workflow: open a catalog, select a component, find what it needs, copy it, and record where it came from. It explains which parts iTwin.js provides and which parts your application must implement. It assumes you have a catalog to read and a destination iModel that your application can edit; it is not a complete importer implementation. For background on reading and writing elements, see [Access Elements](./AccessElements.md) and [Create Elements](./CreateElements.md).
 
-The example uses **PVC-300**, a pipe type stored as a `PhysicalType` element. The [BIS catalog guide](../../bis/guide/data-organization/catalogs.md) follows the same example and explains the recommended organization and provenance of copied definitions in more detail.
+## The scenario
+
+Follow the [BIS guide's example](../../bis/guide/data-organization/catalogs.md#a-running-example) of an engineering firm using OpenSite+, a civil site design application. The firm's catalog maintainer publishes a *Piping Catalog* containing **PVC-300**, an illustrative 300&nbsp;mm pipe type stored as a `PhysicalType` element, not an entry from a shipped OpenSite+ catalog.
+
+The steps below follow a designer's pipe-type selection. A second example shows how a project administrator might select a classification tree. The BIS guide explains the roles, catalog concepts, and detailed discovery rules; this page focuses on implementing the import workflow.
 
 ## 1. Open the catalog
 
@@ -21,33 +25,23 @@ Keep the catalog open while reading its contents, and close it when finished. Op
 
 Cloud catalogs are versioned. A request for a version range resolves to a particular version, so record the version actually opened rather than just the requested range. `CatalogDb.getVersion` returns that version, and `CatalogDb.getManifest` returns the manifest when one is present. You will use the catalog's identity and version when recording where the copied definitions came from in step 5.
 
-Published, non-prerelease catalog versions are immutable. If the authority changes PVC-300, it publishes a new catalog version rather than changing the released version that existing iModels rely on. Publishing APIs are described after the import workflow.
+Published, non-prerelease catalog versions are immutable. If the catalog maintainer changes PVC-300, they publish a new catalog version rather than changing the released version that existing iModels rely on. Publishing APIs are described after the import workflow.
 
 ## 2. Select the component's root element
 
 A catalog iModel contains Models and Elements, like any other iModel. Use [ECSQL](../ECSQL.md) to query its contents and the [element-reading APIs](./AccessElements.md) to read the selected elements. The domain schema determines which classes and properties identify the entries your application offers.
 
-For the piping application, present a choice such as "PVC-300 pipe type" and resolve that choice to its `PhysicalType` element. That element is the **bundle root**: the highest element of the component the user wants. Do not start with a piece of its template geometry and try to find the pipe type by climbing ancestors.
+For the designer's pipe selection, present a choice such as "PVC-300 pipe type" and resolve that choice to its `PhysicalType` element. That element is the **bundle root**: the highest element of the component the user wants. Do not start with a piece of its template geometry and try to find the pipe type by climbing ancestors.
 
-Selection need not be an end-user placement action. In OS+, an administrator selects a `ClassificationSystem` from a catalog. Its entire classification tree is one component, required from application startup. OS+ uses one tree in each end-user iModel, even if multiple trees are available in different versioned catalogs. See the [classification-tree example](../../bis/guide/data-organization/catalogs.md#example-a-classification-tree) for that application-specific workflow.
+Selection can also configure the application rather than choose something to place. A classification tree organizes what elements mean according to an industry or company-specific scheme. For example, a project administrator may select a `ClassificationSystem` as the root of an entire tree, rather than an individual classification. See the [OpenSite+ classification-tree example](../../bis/guide/data-organization/catalogs.md#example-a-classification-tree) for the concepts, bundle structure, and application requirements.
 
 ## 3. Discover the definitions the component needs
 
-PVC-300's `PhysicalType` is not self-contained. It references a `TemplateRecipe3d`, whose sub-model contains the template geometry. The geometry references a category, and the type references its physical material. Copying only the pipe type would leave those dependencies missing.
+PVC-300's `PhysicalType` is not self-contained. It references a `TemplateRecipe3d`, a definition element whose sub-model contains the reusable 3D template geometry. The geometry references a category, and the type references its physical material. Copying only the pipe type would leave those dependencies missing. Before copying, the application must find all the data needed to use the component. This process is called *dependency discovery*.
 
 The root and the owned and referenced data required to use it form a **definition bundle**. The [pipe-type example](../../bis/guide/data-organization/catalogs.md#example-a-pipe-type) shows how discovery reaches these elements.
 
-Starting at the selected root, your application discovers owned aspects, child elements, sub-models and their contents, and referenced dependencies recursively. Different references need different handling:
-
-| Reference representation | What discovery must do |
-| --- | --- |
-| Navigation property | Discover the reference from the schema and follow it from the referencing element to its zero/one target, not backward to other elements that reference it. |
-| Link-table relationship | Use the caller-supplied relationships and the application's traversal directions. The schema alone does not identify the semantic dependency direction. |
-| Geometry stream or property payload | Inspect the data using class- or application-specific handling. Examples include geometry references to `GeometryPart`s and `Texture`s, and texture references in a `RenderMaterial`'s JSON. |
-
-`CategorySymbolizesClassification`, `PhysicalTypeComposesSubTypes`, and `SpatialLocationTypeRepresentsTypeDefinition` are examples of link-table relationships requiring explicit traversal rules, not a universal list that every importer automatically follows. See [Generic discovery mechanisms](../../bis/guide/data-organization/catalogs.md#generic-discovery-mechanisms) and the following sections for the rules and their limits.
-
-Finding a referenced element does not automatically add its source model, modeled element, ancestors, or their other descendants to the bundle. Starting from the correct root provides the intended downward discovery path.
+Your importer must combine schema-discoverable ownership and navigation-property references with application-supplied link-table traversal rules and special handling for references inside geometry streams or property payloads. Apply the [generic discovery mechanisms](../../bis/guide/data-organization/catalogs.md#generic-discovery-mechanisms) and the following sections on link-table relationships and discovery limits. Those sections define traversal directions, explain why discovery does not automatically expand to source ancestors, and identify dependencies that need special handling.
 
 ## 4. Copy the bundle into the destination iModel
 
@@ -75,7 +69,7 @@ Definitions copied elsewhere when a recipe or template is used may need differen
 
 ## 6. Handle a later catalog update
 
-Suppose the authority corrects PVC-300's wall thickness and publishes Piping Catalog version 2. The cached version 1 definition remains unchanged. Your application decides how to discover and offer the update; iTwin.js does not detect catalog changes automatically.
+Suppose the catalog maintainer corrects PVC-300's wall thickness and publishes Piping Catalog version 2. The cached version 1 definition remains unchanged. Your application decides how to discover and offer the update; iTwin.js does not detect catalog changes automatically.
 
 If the application imports the changed pipe type, it creates a new definition with a new definition-version identity. Unchanged dependencies can remain cached once and gain provenance associations for the additional catalog version. See [The example, end to end](../../bis/guide/data-organization/catalogs.md#the-example-end-to-end) for the complete versioning example.
 
