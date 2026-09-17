@@ -64,7 +64,7 @@ function installFrameRouting(): void {
 
 installFrameRouting();
 
-// Select the bridge callback registry before loading the shared backend initializer.
-process.env.VITEST_CORE_RUNNER = "vitest";
+// Reuse the backend initializer and add only the frame routing required by Vitest's child
+// tester iframe.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 module.exports = require("./backend") as Promise<(() => Promise<void>) | undefined>;

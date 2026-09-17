@@ -5,6 +5,7 @@
 
 import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { ElectronHost } from "@itwin/core-electron/main";
+import { installElectronFrameRouting } from "@itwin/vitest-browser-bridge/electron/frame-routing";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
 import { setupIpcTestElectron } from "./ipc";

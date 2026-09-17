@@ -202,8 +202,8 @@ export class TestUtility {
 
   private static async loadMockRender(): Promise<typeof MockRender> {
     if (this._mockRender === undefined) {
-      // Vitest aliases this internal CJS specifier to a deferred ESM compatibility module.
-      const mockRenderModule = await import("@itwin/core-frontend/lib/cjs/internal/render/MockRender.js");
+      // Vitest maps the CJS-shaped internal specifier to core-frontend's ESM build.
+      const mockRenderModule = await import("@itwin/core-frontend/lib/cjs/internal/test-support");
       this._mockRender = mockRenderModule.MockRender;
     }
     return this._mockRender;
