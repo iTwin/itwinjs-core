@@ -515,9 +515,6 @@ export class InteractiveRebase {
     this.captureTheirsSnapshot();
     this.replayForest(roots);
     this.linkConflictOwnership();
-    // Note: unlike the automatic "semantic rebase" replay, the captured data folder is intentionally
-    // left in place here - `previousGroup`/`restartGroup`/`restartAll` are expected to eventually need
-    // it to revert already-reinstated txns (currently unimplemented, see the TODOs below).
   }
 
   /** Loads a captured node's change from the store, or throws if `node` wasn't actually captured (a
@@ -571,6 +568,7 @@ export class InteractiveRebase {
     this._dependencyNodesByInstanceKey = new Map();
     this._ownersById = new Map();
 
+    // Create a forest node for every instance.
     for (const meta of store.allMetadata()) {
       const node: DependencyNode = {
         instanceKey: meta.instanceKey,
@@ -588,6 +586,7 @@ export class InteractiveRebase {
         this._ownersById.set(node.id, node);
     }
 
+    // Link each node to its owner, if any, and collect root nodes (those without an owner).
     const roots: DependencyNode[] = [];
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       const owner = node.ownerId !== undefined ? this._ownersById.get(node.ownerId) : undefined;
@@ -597,20 +596,36 @@ export class InteractiveRebase {
         roots.push(node);
     }
 
+    // Discover any not-yet-known dependents for captured element deletions.
+    // The delete will cascade to these instances when applied.
     for (const node of this._dependencyNodesByInstanceKey.values()) {
-      if (node.isCaptured && node.operation === "Delete" && node.isElement)
-        this.discoverUpstreamDependents(node);
+      if (node.isCaptured && node.operation === "Delete" && node.isElement) {
+        // This will potentially add new nodes to _dependencyNodesByInstanceKey while we're iterating over it,
+        // but the Map class guarantees this is safe. Our new entries will be iterated at the end.
+        this.discoverUnknownDependents(node);
+      }
     }
 
     return roots;
   }
 
-  /** Design doc section 6: queries the live DB for `ownerNode`'s current aspects and child elements,
-   * adding any not already known to this Txn (i.e. upstream-inserted, or otherwise never captured by
-   * our local edits) to the forest as a dependent of `ownerNode`, recursively.
+  /**
+   * Queries the live DB for `ownerNode`'s current aspects and child elements that are currently
+   * unknown to the dependency forest. These were inserted by "theirs" or otherwise never captured
+   * by our local edits. If we delete this instance, the delete will cascade to these aspects and
+   * sub-elements, too.
+   *
+   * We need to know about these dependent instances explicitly in order to give the user a complete
+   * picture of the effect of "our" deletion. We will also use them when the user chooses to "accept theirs"
+   * instead of accepting "our" deletion, because in that scenario these instances will be preserved
+   * rather than deleted.
+   *
+   * This method operates recursively, discovering and adding all transitive dependent instances that
+   * are not yet known to the dependency forest.
    */
-  private discoverUpstreamDependents(ownerNode: DependencyNode): void {
-    const discovered: { id: Id64String, classId: string, classFullName: string }[] = [];
+  private discoverUnknownDependents(ownerNode: DependencyNode): void {
+    const recurse: DependencyNode[] = [];
+
     // `Element` is declared separately on ElementUniqueAspect (via ElementOwnsUniqueAspect) and
     // ElementMultiAspect (via ElementOwnsMultiAspects), not on the abstract ElementAspect base -
     // querying the base class directly fails with "No property or enumeration found for
@@ -623,40 +638,45 @@ export class InteractiveRebase {
     for (const sql of queries) {
       const binder = new QueryBinder().bindId(1, ownerNode.id);
       this._db.withQueryReader(sql, (reader) => {
-        for (const row of reader)
-          discovered.push({ id: row[0], classId: row[1], classFullName: row[2] });
-        return true;
+        for (const row of reader) {
+          const id = row[0];
+          const classId = row[1];
+          const instanceKey = `${id}-${classId}`;
+          if (this._dependencyNodesByInstanceKey.has(instanceKey))
+            continue;
+
+          // Previously unknown instance. Create a node for it and add it to the forest.
+          const classFullName = row[2];
+          const isElement = this.isElementOrSubclass(classFullName);
+          const node: DependencyNode = {
+            instanceKey, id, classFullName,
+            isCaptured: false,
+            operation: "Delete",
+            isIndirect: false,
+            ownerId: ownerNode.id,
+            isElement,
+            dependents: [],
+          };
+          this._dependencyNodesByInstanceKey.set(instanceKey, node);
+          if (isElement)
+            this._ownersById.set(id, node);
+          ownerNode.dependents.push(node);
+
+          // Recurse on this new node to discover its dependents.
+          recurse.push(node);
+        }
       }, binder);
     }
 
-    for (const { id, classId, classFullName } of discovered) {
-      const instanceKey = `${id}-${classId}`;
-      if (this._dependencyNodesByInstanceKey.has(instanceKey))
-        continue;
-
-      const isElement = this.isElementOrSubclass(classFullName);
-      const node: DependencyNode = {
-        instanceKey, id, classFullName,
-        isCaptured: false,
-        operation: "Delete",
-        isIndirect: false,
-        ownerId: ownerNode.id,
-        isElement,
-        dependents: [],
-      };
-      this._dependencyNodesByInstanceKey.set(instanceKey, node);
-      if (isElement)
-        this._ownersById.set(id, node);
-      ownerNode.dependents.push(node);
-
-      this.discoverUpstreamDependents(node);
+    for (const node of recurse) {
+      this.discoverUnknownDependents(node);
     }
   }
 
-  /** Design doc section 7: persists the pre-replay ("theirs") state of every instance in the current
-   * group's dependency forest into the store (see [[RebaseInstanceStore.setTheirs]]), instead of holding
-   * every node's (potentially large) snapshot in memory for the group's whole lifetime. Must be called
-   * after `pullMergeRebaseNext()` and before any local replay writes anything.
+  /**
+   * Persists the pre-replay ("theirs") state of every instance in the current group's dependency
+   * forest into the store (see [[RebaseInstanceStore.setTheirs]]). Must be called after
+   * `pullMergeRebaseNext()` and before any local replay writes anything.
    */
   private captureTheirsSnapshot(): void {
     assert(this._store !== undefined, "captureTheirsSnapshot requires an active replay store");
