@@ -87,9 +87,12 @@ export function getSubCategoryAppearance(ref: IModelDisplayReference, id: Id64St
 }
 
 export async function loadViewedCategories(ref: IModelDisplayReference): Promise<void> {
-  await ref.iModel.subcategories.load(ref.viewedCategories)?.promise;
-  ref.invalidateSymbologyOverrides();
-  ref.onViewedCategoriesLoaded.raiseEvent();
+  const promise = ref.iModel.subcategories.load(ref.viewedCategories)?.promise;
+  const anyLoaded = undefined !== promise && (await promise);
+  if (anyLoaded) {
+    ref.invalidateSymbologyOverrides();
+    ref.onViewedCategoriesLoaded.raiseEvent();
+  }
 }
 
 export async function loadViewedModels(ref: SpatialIModelDisplayReference): Promise<void> {

@@ -399,15 +399,17 @@ describe.only("Viewport changed events", async () => {
   it("should be dispatched when category selector is modified using Viewport APIs", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15))); // view category selector 0x0f
 
+    // We're already viewing 0x1, so enabling its display produces no event.
     using mon = new ViewportChangedHandler(vp);
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
+    expect(vp.primaryIModelRef.viewedCategories.has(id64(0x01))).to.be.true;
+    mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
 
     // We're not viewing 0x1a, so this will not produce an event.
     mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
     // Two changes which produce no net change still produce event - we do not track net changes
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
+    mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
       vp.changeCategoryDisplay(id64(0x01), false);
       vp.changeCategoryDisplay(id64(0x01), true);
     });
@@ -426,7 +428,7 @@ describe.only("Viewport changed events", async () => {
     mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view17));
 
     // Changing category selector, then switching to a view with same categories enabled produces no event.
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
+    mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
       vp.changeCategoryDisplay(vp.view.categorySelector.categories, false);
       vp.changeCategoryDisplay(view13.categorySelector.categories, true);
     });
