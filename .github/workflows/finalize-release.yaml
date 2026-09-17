@@ -14,7 +14,8 @@ on:
     - '**/CHANGELOG.md'
 
 permissions:
-  contents: write
+  # The push uses IMJS_ADMIN_GH_TOKEN via GIT_ASKPASS, never GITHUB_TOKEN.
+  contents: read
 
 jobs:
   finalize:
