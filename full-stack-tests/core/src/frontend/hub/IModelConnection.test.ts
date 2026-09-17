@@ -217,7 +217,7 @@ describe("IModelConnection (#integration)", () => {
     const formatProps = await IModelApp.formatsProvider.getFormat(formatECName);
     expect(formatProps).toBeDefined();
     const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName("Units.M");
-    const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps)
+    const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps!)
     const spec = await FormatterSpec.create(`${formatECName}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
     const formattedValue = spec.applyFormatting(5.0);
     expect(formattedValue).toBe("5.0 m");
@@ -226,11 +226,11 @@ describe("IModelConnection (#integration)", () => {
   it("properly deserializes gcs latitude", async () => {
     const iTwinId = await TestUtility.getTestITwinId();
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
-    const connection = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    const smallTex = await CheckpointConnection.openRemote(iTwinId, iModelId);
     try {
-      assert.notEqual(connection.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+      expect(smallTex.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude).not.toBe(0);
     } finally {
-      await connection.close();
+      await smallTex.close();
     }
   });
 });

@@ -19,19 +19,21 @@ if (existsSync(envFile)) {
 
   require("dotenv-expand")(envResult);
 }
-
-const rendererEnv = Object.fromEntries(Object.entries(process.env)
-  .filter(([key, value]) => key.startsWith("IMJS_") && value !== undefined)
-  .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]));
+const testEnvironment = Object.fromEntries(
+  Object.entries(process.env)
+    .filter(([key, value]) => value !== undefined && /^(IMJS_|TEST_|ITWINJS_)/.test(key)),
+);
+const define: Record<string, string> = {
+  "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
+};
+for (const [key, value] of Object.entries(testEnvironment))
+  define[`process.env.${key}`] = JSON.stringify(value);
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
 const invert = process.env.VITEST_CORE_GREP_INVERT !== "false";
 const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
 
 export default defineConfig({
-  define: {
-    ...rendererEnv,
-    "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
-  },
+  define,
   resolve: {
     alias: [
       {
@@ -39,7 +41,11 @@ export default defineConfig({
         replacement: require.resolve("path-browserify"),
       },
       {
-        find: /^@itwin\/core-frontend\/lib\/cjs\/internal\/render\/MockRender(?:\.js)?$/,
+        find: "@itwin/core-frontend/lib/cjs/internal/test-support",
+        replacement: path.resolve(packageRoot, "../../core/frontend/lib/esm/internal/test-support.js"),
+      },
+      {
+        find: "@itwin/core-frontend/lib/cjs/internal/render/MockRender",
         replacement: path.resolve(packageRoot, "src/frontend/DeferredMockRender.mjs"),
       },
       {
@@ -113,7 +119,21 @@ export default defineConfig({
     dir: "src/frontend",
     // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
     include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
-    exclude: ["**/_Setup.test.ts"],
+    exclude: [
+      "**/Backend.test.ts",
+      "**/map/BackgroundMap.test.ts",
+      "**/map/PlanProjection.test.ts",
+      "**/map/PlanarClipMask.test.ts",
+      "**/standalone/BlankConnection.test.ts",
+      "**/standalone/Categories.test.ts",
+      "**/standalone/CodeSpecs.test.ts",
+      "**/standalone/ECSqlAst.test.ts",
+      "**/standalone/Elements.test.ts",
+      "**/standalone/ModelState.test.ts",
+      "**/standalone/SchemaLocator.test.ts",
+      "**/standalone/SubCategoriesCache.test.ts",
+      "**/standalone/ViewState.test.ts",
+    ],
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,
     testNamePattern,

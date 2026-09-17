@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./RpcImpl";
-// Sets up certa to allow a method on the frontend to get an access token
 
 import {
   BriefcaseDb, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, EditTxn, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
@@ -266,10 +265,6 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
 
 async function init() {
-  if (process.env.VITEST_CORE_RUNNER !== "vitest") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend");
-  }
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 

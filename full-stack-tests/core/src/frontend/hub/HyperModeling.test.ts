@@ -207,9 +207,8 @@ describe("HyperModeling (#integration)", () => {
     HyperModeling.replaceConfiguration();
   });
 
-  // The Electron test harness does not serve the hypermodeling package's key-in JSON asset.
-  (ProcessDetector.isElectronAppFrontend ? it.skip : it)("adjusts marker display via key-in", async () => {
-
+  const itChrome = ProcessDetector.isElectronAppFrontend ? it.skip : it;
+  itChrome("adjusts marker display via key-in", async () => {
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
       const dec = (await HyperModeling.startOrStop(vp, true))!;
       expect(dec).not.toBeUndefined();
