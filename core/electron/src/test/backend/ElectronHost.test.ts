@@ -268,17 +268,6 @@ async function waitForStableBounds(window: BrowserWindow): Promise<void> {
   throw new Error("Window bounds did not stabilize");
 }
 
-/**
- * Polls `condition` until it holds, for up to ~1.25 seconds.
- * @note `ElectronHost` persists window state from a debounced handler, so the settings file lags the window.
- */
-async function waitUntil(condition: () => boolean): Promise<boolean> {
-  for (let i = 0; i < 25 && !condition(); ++i)
-    await BeDuration.wait(50);
-
-  return condition();
-}
-
 function assertElectronHostNotInitialized() {
   assert(!ElectronHost.isValid);
   assert(!NativeHost.isValid);
