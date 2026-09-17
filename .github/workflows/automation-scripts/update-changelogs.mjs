@@ -2,9 +2,8 @@
 // (the latest release branch, or master), then commits the result.
 //
 // Uses only Node built-ins and the Rush version pinned in rush.json (via ./rush-lockfile,
-// so `npm ci` runs instead of a ranged install). This script never pushes and never
-// receives the admin push token; it only commits locally and prints/emits the refspecs
-// still needing a push.
+// so `npm ci` runs; see check-rush-lockfile.yaml). Never pushes or receives the admin
+// push token — only commits locally and prints/emits the refspecs still needing a push.
 //
 /****************************************************************
 * To run manually:
@@ -21,10 +20,9 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { assertRushLockfileMatches } from "./check-rush-lockfile.mjs";
 
 const repoRoot = process.cwd();
-const targetPath = "temp-target-changelogs";
-const incomingPath = "temp-incoming-changelogs";
 const rushLockfilePath = path.join(repoRoot, ".github", "workflows", "automation-scripts", "rush-lockfile", "package-lock.json");
 
 // No shell is spawned, so arguments are not subject to word splitting or expansion.
@@ -47,20 +45,8 @@ function pushRef(refspec) {
   pendingPushRefs.push(refspec);
 }
 
-function assertRushLockfileMatches() {
-  const { rushVersion } = readJson(path.join(repoRoot, "rush.json"));
-  const lockedVersion = readJson(rushLockfilePath).packages?.[""]?.dependencies?.["@microsoft/rush"];
-  if (lockedVersion !== rushVersion) {
-    throw new Error(
-      `Rush bootstrap lockfile is out of date: rush.json pins ${rushVersion}, but ` +
-      `${path.relative(repoRoot, rushLockfilePath)} pins ${lockedVersion}. Regenerate it ` +
-      "(see the README next to it) before releasing.",
-    );
-  }
-}
-
 function rush(...args) {
-  assertRushLockfileMatches();
+  assertRushLockfileMatches(repoRoot);
   run(process.execPath, [path.join("common", "scripts", "install-run-rush.js"), ...args], {
     stdio: "inherit",
     env: { ...process.env, INSTALL_RUN_RUSH_LOCKFILE_PATH: rushLockfilePath },
@@ -76,21 +62,17 @@ function writeJson(filePath, value) {
 }
 
 function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace) {
-  try {
-    const contentRead = fs.readFileSync(filePath, { encoding: "utf-8" });
-    const contentToWrite = contentRead.replace(stringToSearch, stringToReplace);
-    fs.writeFileSync(filePath, contentToWrite, { encoding: "utf-8" });
-  } catch (err) {
-    // Non-fatal, rest of the release process can continue, just surface info for the user to update file manually
-    console.log(`::warning::Failed to edit "${filePath}"; this may need a manual follow-up. ${err}`);
-  }
+  const contentRead = fs.readFileSync(filePath, { encoding: "utf-8" });
+  // A matched replacement can equal the original text, so check via match(), not equality.
+  if (!contentRead.match(stringToSearch))
+    throw new Error(`${stringToSearch} was not found in "${filePath}"; nothing to replace.`);
+  fs.writeFileSync(filePath, contentRead.replace(stringToSearch, stringToReplace), { encoding: "utf-8" });
 }
 
 function findChangelogs(dir = repoRoot, found = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === ".git" ||
-          entry.name === targetPath || entry.name === incomingPath)
+      if (entry.name === "node_modules" || entry.name === ".git")
         continue;
       findChangelogs(path.join(dir, entry.name), found);
     } else if (entry.isFile() && entry.name === "CHANGELOG.json") {
@@ -100,17 +82,11 @@ function findChangelogs(dir = repoRoot, found = []) {
   return found;
 }
 
-// Flattens each changelog into `destDir` and returns flattened name -> real path.
-// The map is required because the flattened name is lossy: a package directory
-// containing an underscore cannot be reversed back into a path.
-function collectChangelogs(destDir) {
-  fs.mkdirSync(destDir, { recursive: true });
+// Reads every CHANGELOG.json into memory, keyed by path relative to repoRoot.
+function collectChangelogs() {
   const map = new Map();
-  for (const relPath of findChangelogs()) {
-    const flatName = relPath.split(path.sep).join("_");
-    fs.copyFileSync(path.join(repoRoot, relPath), path.join(destDir, flatName));
-    map.set(flatName, relPath);
-  }
+  for (const relPath of findChangelogs())
+    map.set(relPath, readJson(path.join(repoRoot, relPath)));
   return map;
 }
 
@@ -142,15 +118,11 @@ function findLargestVersion(versions) {
   });
 }
 
-function fixChangeLogs(files) {
-  for (const file of files) {
-    const currentJson = readJson(path.join(targetPath, file));
-    const incomingJson = readJson(path.join(incomingPath, file));
-    // Map drops duplicate versions, keeping the incoming entry.
-    const combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj.version, obj]);
-    currentJson.entries = sortByVersion(Array.from(new Map(combinedEntries).values()));
-    writeJson(path.join(targetPath, file), currentJson);
-  }
+// Newest first, dropping duplicate versions in favor of the incoming entry.
+function mergeChangelogEntries(targetJson, incomingJson) {
+  const combinedEntries = [...targetJson.entries, ...incomingJson.entries].map((obj) => [obj.version, obj]);
+  targetJson.entries = sortByVersion(Array.from(new Map(combinedEntries).values()));
+  return targetJson;
 }
 
 const branchVersions = git("branch", "-a", "--list", "origin/release/[0-9]*.[0-9]*.x")
@@ -171,6 +143,9 @@ commitMessage = commitMessage.replace(/\n/g, "").replace(" Changelogs", "");
 if (!currentBranch)
   throw new Error("Detached HEAD; expected the workflow to check out a named branch.");
 
+if (!/^release\/\d+\.\d+\.x$/.test(currentBranch))
+  throw new Error(`Expected to be on a release/X.Y.x branch, but current branch is "${currentBranch}".`);
+
 if (!/^\d+\.\d+\.\d+$/.test(commitMessage))
   throw new Error(`Could not determine the released version from git log (got "${commitMessage}").`);
 
@@ -185,14 +160,14 @@ if (targetBranch === `origin/${currentBranch}`) {
   console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`);
 }
 
-const incomingMap = collectChangelogs(incomingPath);
+const incomingMap = collectChangelogs();
 
 // Major or minor release: repoint gather-docs.yaml at the release branch. Must happen
 // before the target branch is checked out.
 if (commitMessage.endsWith(".0")) {
   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-  editFileInPlaceSynchronously(docsYamlPath, /master/g, currentBranch);
-  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
+  // File says "master" (never released a minor) or a prior release/X.Y.z; only one matches.
+  editFileInPlaceSynchronously(docsYamlPath, /master|release\/\d+\.\d+\.\w+/g, currentBranch);
   git("add", docsYamlPath);
   git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
   pushRef(`${currentBranch}:${currentBranch}`);
@@ -201,7 +176,7 @@ if (commitMessage.endsWith(".0")) {
 targetBranch = targetBranch.replace("origin/", "");
 git("checkout", targetBranch);
 
-const targetMap = collectChangelogs(targetPath);
+const targetMap = collectChangelogs();
 
 // Packages added after the release branch was cut have no incoming counterpart.
 const filesToMerge = [...targetMap.keys()].filter((file) => {
@@ -211,13 +186,8 @@ const filesToMerge = [...targetMap.keys()].filter((file) => {
   return false;
 });
 
-fixChangeLogs(filesToMerge);
-
 for (const file of filesToMerge)
-  fs.copyFileSync(path.join(targetPath, file), path.join(repoRoot, targetMap.get(file)));
-
-fs.rmSync(targetPath, { recursive: true, force: true });
-fs.rmSync(incomingPath, { recursive: true, force: true });
+  writeJson(path.join(repoRoot, file), mergeChangelogEntries(targetMap.get(file), incomingMap.get(file)));
 
 // Major or minor release: carry over the changehistory doc and link it.
 if (commitMessage.endsWith(".0")) {
