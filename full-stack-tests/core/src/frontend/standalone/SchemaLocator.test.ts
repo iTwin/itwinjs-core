@@ -35,16 +35,16 @@ describeChrome("Schema Locater Tests", () => {
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
     assert.isDefined(schema);
-    assert.strictEqual(schema!.schemaKey.name, "Gist");
-    assert.strictEqual(schema!.schemaKey.version.toString(), "01.00.00");
+    assert.strictEqual(schema.schemaKey.name, "Gist");
+    assert.strictEqual(schema.schemaKey.version.toString(), "01.00.00");
 
     // Check that the schema is cached in the context
     // Even though getSchemaSync is not supported for locating schemas over RPC/HTTP,
     // it will return the schema if it has already been cached by a previous async getSchema call.
     const schemaSync = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
     assert.isDefined(schemaSync);
-    assert.strictEqual(schemaSync!.schemaKey.name, "Gist");
-    assert.strictEqual(schemaSync!.schemaKey.version.toString(), "01.00.00");
+    assert.strictEqual(schemaSync.schemaKey.name, "Gist");
+    assert.strictEqual(schemaSync.schemaKey.version.toString(), "01.00.00");
   });
 
   it("locating a non-existent schema asynchronously should return undefined", async () => {

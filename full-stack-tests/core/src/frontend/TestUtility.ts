@@ -6,8 +6,6 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ElectronApp } from "@itwin/core-electron/renderer";
 import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
 import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -234,7 +232,7 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/renderer");
       return electronApp.startup({ iModelApp: iopts });
     }
 
@@ -258,7 +256,7 @@ export class TestUtility {
     await this.cleanupOpenIModels();
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/renderer");
       return electronApp.shutdown();
     }
 
