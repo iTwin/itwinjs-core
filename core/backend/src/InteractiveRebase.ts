@@ -13,7 +13,7 @@ import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@it
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef } from "./internal/RebaseInstanceStore";
+import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 import { ChangesetReader } from "./ChangesetReader";
 import { TxnIdString } from "./TxnManager";
@@ -263,13 +263,10 @@ interface DependencyNode {
   ownerId: Id64String | undefined;
   isElement: boolean;
   dependents: DependencyNode[];
-  /** This node's identity values (federationGuid/Code) and navigation-property references, extracted at
-   * capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderRoots]], which never needs
-   * to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
-  oldFederationGuid?: string;
-  newFederationGuid?: string;
-  oldCodeKey?: string;
-  newCodeKey?: string;
+  /** This node's schema-declared UNIQUE-constraint values and navigation-property references, extracted
+   * at capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderRoots]], which never
+   * needs to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
+  identityValues?: RebaseIdentityValue[];
   navigationRefs?: RebaseNavigationRef[];
 }
 
@@ -615,10 +612,7 @@ export class InteractiveRebase {
         ownerId: meta.ownerId,
         isElement: meta.isElement,
         dependents: [],
-        oldFederationGuid: meta.oldFederationGuid,
-        newFederationGuid: meta.newFederationGuid,
-        oldCodeKey: meta.oldCodeKey,
-        newCodeKey: meta.newCodeKey,
+        identityValues: meta.identityValues,
         navigationRefs: meta.navigationRefs,
       };
       this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
@@ -769,10 +763,12 @@ export class InteractiveRebase {
    *   must happen first, or the owner's delete would remove a row the dependent's (still-live) FK still
    *   points at.
    *
-   * Only `federationGuid` and the `Code` triple are considered for identity values, since (unlike a
-   * genuine UNIQUE constraint violation) there's no way to discover an arbitrary custom schema's own
-   * UNIQUE index short of actually attempting the write; such a case can still surface as a (harmlessly
-   * auto-fixed) UNIQUE constraint violation - see [[fixUniqueConstraintViolation]].
+   * Every schema-declared UNIQUE constraint (single-property or composite, declared on the class itself
+   * or any base class) is discovered and extracted at capture time - see
+   * [[RebaseInstanceStore.getIdentityGroups]] - so this is not limited to `federationGuid`/`code` the way
+   * it once was; only a custom schema's own UNIQUE index that isn't declared through the standard
+   * `ECDbMap:PropertyMap`/`ECDbMap:DbIndexList` custom attributes could still escape this and surface
+   * instead as a (harmlessly auto-fixed) UNIQUE constraint violation - see [[fixUniqueConstraintViolation]].
    *
    * When Kahn's algorithm stalls, the stalled nodes form a *self-contained* cycle - by construction,
    * every edge among them is satisfied by another stalled node, never by anything external to this
@@ -803,14 +799,13 @@ export class InteractiveRebase {
     }
     const edges: Edge[] = [];
 
-    // "kind|value" -> every root that frees/claims it, computed directly from each node's own
-    // capture-time-extracted identity fields (no store access needed).
+    // "group key|value" -> every root that frees/claims it, computed directly from each node's own
+    // capture-time-extracted `identityValues` (no store access needed). `identityValues` already carries
+    // which single property to defer (and with what kind of placeholder) if this group participates in a
+    // cycle - see [[RebaseInstanceStore.buildIdentityConstraintGroup]].
     const freedByValue = new Map<string, DependencyNode[]>();
     const claimedByValue = new Map<string, DependencyNode[]>();
-    const addIdentityValue = (map: Map<string, DependencyNode[]>, key: string, value: string | undefined, node: DependencyNode): void => {
-      if (value === undefined)
-        return;
-      const identityKey = `${key}|${value}`;
+    const addIdentityValue = (map: Map<string, DependencyNode[]>, identityKey: string, node: DependencyNode): void => {
       const nodes = map.get(identityKey);
       if (nodes === undefined)
         map.set(identityKey, [node]);
@@ -818,35 +813,33 @@ export class InteractiveRebase {
         nodes.push(node);
     };
     for (const node of roots) {
-      if (!node.isCaptured)
+      if (!node.isCaptured || node.identityValues === undefined)
         continue;
-      if (node.oldFederationGuid !== node.newFederationGuid) {
-        addIdentityValue(freedByValue, "federationGuid", node.oldFederationGuid, node);
-        addIdentityValue(claimedByValue, "federationGuid", node.newFederationGuid, node);
-      }
-      if (node.oldCodeKey !== node.newCodeKey) {
-        addIdentityValue(freedByValue, "code", node.oldCodeKey, node);
-        addIdentityValue(claimedByValue, "code", node.newCodeKey, node);
+      for (const identity of node.identityValues) {
+        if (identity.old === identity.new)
+          continue;
+        if (identity.old !== undefined)
+          addIdentityValue(freedByValue, `${identity.key}|${identity.old}`, node);
+        if (identity.new !== undefined)
+          addIdentityValue(claimedByValue, `${identity.key}|${identity.new}`, node);
       }
     }
-    for (const [identityKey, freers] of freedByValue) {
-      const claimers = claimedByValue.get(identityKey);
+    for (const [valueKey, freers] of freedByValue) {
+      const claimers = claimedByValue.get(valueKey);
       if (claimers === undefined)
         continue;
-      const separatorIndex = identityKey.indexOf("|");
-      const key = identityKey.slice(0, separatorIndex);
-      const accessString = key === "federationGuid" ? "federationGuid" : "code.value";
+      const groupKey = valueKey.slice(0, valueKey.indexOf("|"));
       for (const freer of freers) {
         for (const claimer of claimers) {
           if (claimer === freer)
             continue;
-          // `federationGuid` is stored raw; `code`'s composite key is `"${spec}|${scope}|${value}"` -
-          // `spec`/`scope` are both Id64 strings, which never contain "|", so the raw `code.value` is
-          // recoverable by taking everything after the *second* "|" without needing to reload `new`.
-          const realValue = key === "federationGuid" ? claimer.newFederationGuid : claimer.newCodeKey!.slice(claimer.newCodeKey!.indexOf("|", claimer.newCodeKey!.indexOf("|") + 1) + 1);
+          // The claimer's own entry for this group - not the freer's, or any other node's - since it's
+          // specifically the claimer's write that would need its real value deferred if this edge is
+          // part of a cycle (see [[breakCycle]]).
+          const identity = claimer.identityValues!.find((v) => v.key === groupKey)!;
           edges.push({
             from: freer, to: claimer,
-            deferrable: realValue === undefined ? undefined : { accessString, placeholderKind: key === "federationGuid" ? "guid" : "string", realValue },
+            deferrable: { accessString: identity.accessString, placeholderKind: identity.placeholderKind, realValue: identity.new },
           });
         }
       }

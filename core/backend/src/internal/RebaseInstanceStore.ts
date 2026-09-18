@@ -49,6 +49,22 @@ export interface RebaseInstanceChange {
 const tableName = "[InstanceChanges]";
 const theirsTableName = "[TheirsSnapshots]";
 
+/** One schema-declared UNIQUE constraint applicable to a class, as discovered by
+ * [[RebaseInstanceStore.getIdentityGroups]] - not exported; [[RebaseInstanceMetadata.identityValues]] is
+ * the per-instance result derived from this.
+ */
+interface IdentityConstraintGroup {
+  /** Stable identifier for this group - see [[RebaseIdentityValue.key]]. */
+  key: string;
+  /** The props access string (see [[Entity.toPropsAccessString]]) of each property in the group, in the
+   * same order the composite value is joined in. */
+  propsAccessStrings: string[];
+  /** See [[RebaseIdentityValue.accessString]]. */
+  deferAccessString: string;
+  /** See [[RebaseIdentityValue.placeholderKind]]. */
+  deferKind: "guid" | "string";
+}
+
 /** The metadata classified for a captured instance, without its (potentially large) `old`/`new`
  * snapshots - see [[RebaseInstanceStore.allMetadata]].
  * @internal
@@ -63,13 +79,10 @@ export interface RebaseInstanceMetadata {
   ownerId: Id64String | undefined;
   /** True if `classFullName` is `BisCore:Element` or a subclass of it. */
   isElement: boolean;
-  /** `old`/`new`'s `federationGuid`, if set - see [[RebaseInstanceStore.set]]. */
-  oldFederationGuid?: string;
-  newFederationGuid?: string;
-  /** `old`/`new`'s `Code` triple, as the same composite `"${spec}|${scope}|${value}"` key used for
-   * identity-value ordering - see [[RebaseInstanceStore.set]]. */
-  oldCodeKey?: string;
-  newCodeKey?: string;
+  /** One entry per schema-declared UNIQUE constraint applicable to `classFullName` (single-property or
+   * composite, declared on the class itself or any base class) that has a defined `old` and/or `new`
+   * composite value - see [[RebaseInstanceStore.set]]. */
+  identityValues?: RebaseIdentityValue[];
   /** One entry per navigation property declared on `classFullName` (undefined for a relationship
    * class, or a class with no navigation properties) - see [[RebaseInstanceStore.set]]. */
   navigationRefs?: RebaseNavigationRef[];
@@ -86,6 +99,31 @@ export interface RebaseNavigationRef {
   nullable: boolean;
   oldId?: Id64String;
   newId?: Id64String;
+}
+
+/** A single schema-declared UNIQUE constraint's old/new composite value, as extracted at capture time -
+ * see [[RebaseInstanceMetadata.identityValues]].
+ * @internal
+ */
+export interface RebaseIdentityValue {
+  /** A stable identifier for this constraint's group of properties (its sorted EC access-string list),
+   * shared by every instance of `classFullName` (and its subclasses) - used to key freed/claimed
+   * identity-value edges generically in [[InteractiveRebase.orderRoots]]. */
+  key: string;
+  /** The composite value (each property's value joined by `"|"`) `old` held, or undefined if any
+   * property in the group was unset - SQLite does not consider a `NULL`-containing row to collide with
+   * another under a UNIQUE index, so neither does this. */
+  old?: string;
+  /** Same as `old`, but for `new`. */
+  new?: string;
+  /** The props access string (e.g. `federationGuid`, `code.value`) of the one property within this
+   * group that [[InteractiveRebase.breakCycle]] substitutes a placeholder for when deferring this
+   * group as part of breaking a self-contained ordering cycle - changing any single property of a
+   * composite UNIQUE constraint is enough to break its collision, so only one need be deferred. */
+  accessString: string;
+  /** The placeholder kind to substitute in for `accessString` - see
+   * [[InteractiveRebase.createPlaceholderValue]]. */
+  placeholderKind: "guid" | "string";
 }
 
 /**
@@ -122,6 +160,13 @@ export class RebaseInstanceStore implements Disposable {
    */
   private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean }[]>();
 
+  /** classFullName -> its schema-declared UNIQUE constraint groups (one entry per constraint, single-
+   * property or composite, declared on the class itself or any base class) - see [[getIdentityGroups]].
+   * Cached the same way as [[_embeddingOwnerProperty]]/[[_navigationPropertiesByClass]], since a single
+   * ECSQL discovery per class is far cheaper than repeating it once per instance.
+   */
+  private _identityGroupsByClass = new Map<string, IdentityConstraintGroup[]>();
+
   private constructor(writable: boolean, sourceDb?: AnyDb, schemaView?: SchemaView) {
     this._writable = writable;
     this._sourceDb = sourceDb;
@@ -146,10 +191,7 @@ export class RebaseInstanceStore implements Disposable {
       [isIndirect] INTEGER NOT NULL,
       [ownerId] TEXT,
       [isElement] INTEGER NOT NULL,
-      [oldFederationGuid] TEXT,
-      [newFederationGuid] TEXT,
-      [oldCodeKey] TEXT,
-      [newCodeKey] TEXT,
+      [identityValues] TEXT,
       [navigationRefs] TEXT
     )`);
     store._db.executeSQL(`CREATE TABLE ${theirsTableName} ([instanceKey] TEXT PRIMARY KEY, [theirs] TEXT)`);
@@ -250,20 +292,18 @@ export class RebaseInstanceStore implements Disposable {
     // Computed fully from the final merged `old`/`new` (not recomputed incrementally per partial-table
     // merge), matching how `ownerId`/`isElement` are already handled above - see
     // [[InteractiveRebase.orderRoots]] for how these are consumed.
-    const oldIdentity = this.extractIdentityValues(change.old);
-    const newIdentity = this.extractIdentityValues(change.new);
+    const identityValues = this.extractIdentityValues(props.classFullName, change.old, change.new);
     const navigationRefs = this.getNavigationRefs(this._schemaView, props.classFullName, change.old, change.new);
 
     this._db.withPreparedSqliteStatement(
-      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [oldFederationGuid], [newFederationGuid], [oldCodeKey], [newCodeKey], [navigationRefs])
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [identityValues], [navigationRefs])
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT ([instanceKey])
        DO UPDATE SET
          [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties],
          [instanceId] = [excluded].[instanceId], [classFullName] = [excluded].[classFullName], [operation] = [excluded].[operation],
          [isIndirect] = [excluded].[isIndirect], [ownerId] = [excluded].[ownerId], [isElement] = [excluded].[isElement],
-         [oldFederationGuid] = [excluded].[oldFederationGuid], [newFederationGuid] = [excluded].[newFederationGuid],
-         [oldCodeKey] = [excluded].[oldCodeKey], [newCodeKey] = [excluded].[newCodeKey], [navigationRefs] = [excluded].[navigationRefs]`,
+         [identityValues] = [excluded].[identityValues], [navigationRefs] = [excluded].[navigationRefs]`,
       (stmt: SqliteStatement) => {
         stmt.bindString(1, change.instanceKey);
         stmt.maybeBindString(2, change.old ? JSON.stringify(change.old, Base64EncodedString.replacer) : undefined);
@@ -275,11 +315,8 @@ export class RebaseInstanceStore implements Disposable {
         stmt.bindInteger(8, isIndirect ? 1 : 0);
         stmt.maybeBindString(9, ownerId);
         stmt.bindInteger(10, isElement ? 1 : 0);
-        stmt.maybeBindString(11, oldIdentity.federationGuid);
-        stmt.maybeBindString(12, newIdentity.federationGuid);
-        stmt.maybeBindString(13, oldIdentity.codeKey);
-        stmt.maybeBindString(14, newIdentity.codeKey);
-        stmt.maybeBindString(15, navigationRefs ? JSON.stringify(navigationRefs) : undefined);
+        stmt.maybeBindString(11, identityValues ? JSON.stringify(identityValues) : undefined);
+        stmt.maybeBindString(12, navigationRefs ? JSON.stringify(navigationRefs) : undefined);
         stmt.step();
       },
     );
@@ -337,21 +374,198 @@ export class RebaseInstanceStore implements Disposable {
     return Id64.isValidId64(navId) ? navId : undefined;
   }
 
-  /** The `federationGuid` and `Code` triple (as a single composite `"${spec}|${scope}|${value}"` value,
-   * since all three columns together form the one UNIQUE index) values participating in a
-   * BisCore-declared UNIQUE constraint, or undefined for either if unset - see
-   * [[RebaseInstanceMetadata.oldFederationGuid]]/[[RebaseInstanceMetadata.oldCodeKey]]. Empty/unset
-   * values are omitted, since SQLite does not consider `NULL` columns to collide with one another under
-   * a UNIQUE index.
+  /** The composite old/new value of every schema-declared UNIQUE constraint applicable to
+   * `classFullName` (see [[getIdentityGroups]]) - values are omitted for a group where `old`/`new`
+   * doesn't set every one of the group's properties, since SQLite does not consider a `NULL`-containing
+   * row to collide with another under a UNIQUE index (confirmed via `DbIndexList`'s
+   * `"Where":"IndexedColumnsAreNotNull"`). Returns undefined if `classFullName` has no UNIQUE
+   * constraints, or none of them have a defined `old`/`new` value.
    */
-  private extractIdentityValues(props: ChangeInstance | undefined): { federationGuid?: string, codeKey?: string } {
+  private extractIdentityValues(classFullName: string, old: ChangeInstance | undefined, newInstance: ChangeInstance | undefined): RebaseIdentityValue[] | undefined {
+    const groups = this.getIdentityGroups(classFullName);
+    if (groups.length === 0)
+      return undefined;
+
+    const values: RebaseIdentityValue[] = [];
+    for (const group of groups) {
+      const oldValue = this.computeCompositeValue(group.propsAccessStrings, old);
+      const newValue = this.computeCompositeValue(group.propsAccessStrings, newInstance);
+      if (oldValue === undefined && newValue === undefined)
+        continue;
+      values.push({ key: group.key, old: oldValue, new: newValue, accessString: group.deferAccessString, placeholderKind: group.deferKind });
+    }
+    return values.length > 0 ? values : undefined;
+  }
+
+  /** Joins each of `propsAccessStrings`' values (read from `props`) with `"|"`, or undefined if `props`
+   * is undefined or any of them is unset (see [[extractIdentityValues]]).
+   */
+  private computeCompositeValue(propsAccessStrings: string[], props: ChangeInstance | undefined): string | undefined {
     if (props === undefined)
-      return {};
-    const federationGuid = typeof props.federationGuid === "string" && props.federationGuid.length > 0 ? props.federationGuid : undefined;
-    const codeValue = typeof props.code?.value === "string" && props.code.value.length > 0 ? props.code.value : undefined;
-    const codeKey = codeValue === undefined ? undefined
-      : `${typeof props.code.spec === "string" ? props.code.spec : ""}|${typeof props.code.scope === "string" ? props.code.scope : ""}|${codeValue}`;
-    return { federationGuid, codeKey };
+      return undefined;
+    const values: string[] = [];
+    for (const accessString of propsAccessStrings) {
+      const value = RebaseInstanceStore.getPropertyValue(props, accessString);
+      if (value === undefined || value === null || value === "")
+        return undefined;
+      values.push(String(value));
+    }
+    return values.join("|");
+  }
+
+  /** Reads the value identified by a (possibly dotted) access string, e.g. `code.value`. */
+  private static getPropertyValue(props: ChangeInstance, accessString: string): any {
+    let value: any = props;
+    for (const token of accessString.split(".")) {
+      if (value === undefined || value === null)
+        return undefined;
+      value = value[token];
+    }
+    return value;
+  }
+
+  /** Discovers every schema-declared UNIQUE constraint applicable to `classFullName` - declared either
+   * directly on it or on any base class - combining single-property (`ECDbMap:PropertyMap.IsUnique`) and
+   * composite (`ECDbMap:DbIndexList` entries with `IsUnique === true` - `DbIndexList.Indexes` also holds
+   * ordinary, non-unique indexes, which are filtered out here) declarations via ECSQL queries against the
+   * built-in `ECDbMeta` schema's `PropertyCustomAttribute`/`ClassCustomAttribute` view classes - see the
+   * `orderroots-topological-redesign` design notes for the queries this was verified against. Results are
+   * deduplicated by normalized (sorted) access-string set, since BisCore declares `FederationGuid`'s
+   * uniqueness via BOTH mechanisms simultaneously (its own `PropertyMap` AND a single-property entry in
+   * `Element`'s `DbIndexList`), which would otherwise produce two identical groups for the same
+   * constraint. Self-declared constraints are always found (an explicit `= classId` check, independent of
+   * whether `ClassHasAllBaseClasses` itself includes a self-row), in addition to every base class's.
+   * Queried once per class and cached.
+   */
+  private getIdentityGroups(classFullName: string): IdentityConstraintGroup[] {
+    const cached = this._identityGroupsByClass.get(classFullName);
+    if (cached !== undefined)
+      return cached;
+
+    assert(this._sourceDb !== undefined, "getIdentityGroups requires a store created via createNew");
+    const [schemaName, className] = classFullName.split(":");
+
+    const rawGroups: string[][] = [];
+    const seenKeys = new Set<string>();
+    const addRawGroup = (accessStrings: string[]): void => {
+      const key = [...accessStrings].sort().join(",");
+      if (seenKeys.has(key))
+        return;
+      seenKeys.add(key);
+      rawGroups.push(accessStrings);
+    };
+
+    const classIdSubquery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE c.Name = ? AND s.Name = ?`;
+    const baseClassIdsSubquery = `SELECT base.TargetECInstanceId FROM meta.ECClassDef derived JOIN meta.ECSchemaDef derivedSchema ON derived.Schema.Id = derivedSchema.ECInstanceId JOIN meta.ClassHasAllBaseClasses base ON base.SourceECInstanceId = derived.ECInstanceId WHERE derived.Name = ? AND derivedSchema.Name = ?`;
+
+    this._sourceDb.withPreparedStatement(
+      `SELECT p.Name propName, ca.Instance instanceJson FROM meta.PropertyCustomAttribute ca
+         JOIN meta.ECPropertyDef p ON ca.Property.Id = p.ECInstanceId
+         JOIN meta.ECClassDef caClass ON ca.CustomAttributeClass.Id = caClass.ECInstanceId
+       WHERE caClass.Name = 'PropertyMap' AND (p.Class.Id = (${classIdSubquery}) OR p.Class.Id IN (${baseClassIdsSubquery}))`,
+      (stmt) => {
+        stmt.bindString(1, className);
+        stmt.bindString(2, schemaName);
+        stmt.bindString(3, className);
+        stmt.bindString(4, schemaName);
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const row = stmt.getRow();
+          if (JSON.parse(row.instanceJson).PropertyMap?.IsUnique === true)
+            addRawGroup([row.propName]);
+        }
+      },
+    );
+
+    this._sourceDb.withPreparedStatement(
+      `SELECT ca.Instance instanceJson FROM meta.ClassCustomAttribute ca
+         JOIN meta.ECClassDef caClass ON ca.CustomAttributeClass.Id = caClass.ECInstanceId
+       WHERE caClass.Name = 'DbIndexList' AND (ca.Class.Id = (${classIdSubquery}) OR ca.Class.Id IN (${baseClassIdsSubquery}))`,
+      (stmt) => {
+        stmt.bindString(1, className);
+        stmt.bindString(2, schemaName);
+        stmt.bindString(3, className);
+        stmt.bindString(4, schemaName);
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const row = stmt.getRow();
+          const indexes = JSON.parse(row.instanceJson).DbIndexList?.Indexes ?? [];
+          for (const index of indexes) {
+            if (index.IsUnique === true && Array.isArray(index.Properties) && index.Properties.length > 0)
+              addRawGroup(index.Properties);
+          }
+        }
+      },
+    );
+
+    const groups = rawGroups.map((accessStrings) => this.buildIdentityConstraintGroup(classFullName, accessStrings));
+    this._identityGroupsByClass.set(classFullName, groups);
+    return groups;
+  }
+
+  /** Converts one discovered raw group of EC access strings (e.g. `["CodeSpec.Id", "CodeScope.Id",
+   * "CodeValue"]`) into an [[IdentityConstraintGroup]]: its stable `key`, each member's props access
+   * string, and which single member [[breakCycle]] should defer if this group participates in an
+   * ordering cycle - preferring a GUID-typed property (a fresh `Guid.createValue()` is always safe),
+   * falling back to the group's last property otherwise (matching the pre-generalization convention of
+   * deferring `code.value`, the last of the Code triple's three properties).
+   */
+  private buildIdentityConstraintGroup(classFullName: string, ecAccessStrings: string[]): IdentityConstraintGroup {
+    const key = [...ecAccessStrings].sort().join(",");
+    const propsAccessStrings = ecAccessStrings.map((accessString) => this.getPropsAccessString(classFullName, accessString));
+
+    let deferIndex = ecAccessStrings.length - 1;
+    let deferKind: "guid" | "string" = "string";
+    for (let i = 0; i < ecAccessStrings.length; i++) {
+      if (this.isGuidProperty(classFullName, ecAccessStrings[i])) {
+        deferIndex = i;
+        deferKind = "guid";
+        break;
+      }
+    }
+
+    return { key, propsAccessStrings, deferAccessString: propsAccessStrings[deferIndex], deferKind };
+  }
+
+  /** True if the schema property named by the first segment of `ecAccessString` (e.g. `FederationGuid`
+   * for `"FederationGuid"`, or `CodeSpec` for `"CodeSpec.Id"`) is a GUID-typed primitive
+   * (`ExtendedTypeName === "BeGuid"`) - used to pick a safe placeholder kind for [[breakCycle]].
+   */
+  private isGuidProperty(classFullName: string, ecAccessString: string): boolean {
+    const propName = ecAccessString.split(".")[0];
+    const prop = this._schemaView?.findClass(classFullName)?.getProperty(propName);
+    return prop !== undefined && prop.isPrimitive() && prop.extendedTypeName?.toLowerCase() === "beguid";
+  }
+
+  /** Translates a raw EC access string declared by a UNIQUE constraint (e.g. `"CodeSpec.Id"`, a
+   * composite index's literal reference to a navigation property's `Id` column, or plain property names
+   * like `"FederationGuid"`/`"CodeValue"`) into the access string identifying the same value in the
+   * `ChangeInstance`/props shape (e.g. `"code.spec"`, `"federationGuid"`, `"code.value"`) - via
+   * `ECJsNames.toJsName` (schema name -> ECSql instance access string) followed by
+   * [[Entity.toPropsAccessString]] (instance access string -> props access string), the same two-step
+   * translation [[InteractiveRebase.findBrokenRelationships]] already performs for navigation properties.
+   * A `<NavProperty>.Id` reference collapses to just the navigation property's own (lowered) name -
+   * that's how a navigation property's id is actually read off a `ChangeInstance`/props object (never
+   * nested under a `.id` member at this level), matching how `CodeSpec`/`CodeScope` (themselves
+   * navigation properties, not struct members of some `Code` struct) are handled elsewhere in this file.
+   */
+  private getPropsAccessString(classFullName: string, ecAccessString: string): string {
+    const tokens = ecAccessString.split(".");
+    let instanceAccessString: string;
+    if (tokens.length === 2 && tokens[1] === "Id" && this._schemaView?.findClass(classFullName)?.getProperty(tokens[0])?.isNavigation())
+      instanceAccessString = ECJsNames.toJsName(tokens[0]);
+    else
+      instanceAccessString = ECJsNames.toJsName(ecAccessString);
+
+    // Only an IModelDb (not a plain ECDb) has registered `Entity` subclasses to consult for a relocated
+    // props access string - an ECDb-backed store (never used in production, only conceivably in tests)
+    // falls back to the identity mapping, which is correct for any class with no such relocation anyway.
+    const sourceDb = this._sourceDb as { getJsClass?: (classFullName: string) => { toPropsAccessString(accessString: string): string } };
+    if (typeof sourceDb?.getJsClass !== "function")
+      return instanceAccessString;
+    try {
+      return sourceDb.getJsClass(classFullName).toPropsAccessString(instanceAccessString);
+    } catch {
+      return instanceAccessString;
+    }
   }
 
   /** Reads the id a navigation property (`jsName`) refers to, or undefined if unset/invalid - matching
@@ -428,7 +642,7 @@ export class RebaseInstanceStore implements Disposable {
    */
   public *allMetadata(): IterableIterator<RebaseInstanceMetadata> {
     using stmt = this._db.prepareSqliteStatement(
-      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [oldFederationGuid], [newFederationGuid], [oldCodeKey], [newCodeKey], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
+      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [identityValues], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
@@ -438,11 +652,8 @@ export class RebaseInstanceStore implements Disposable {
         isIndirect: stmt.getValueBoolean(4),
         ownerId: stmt.getValueStringMaybe(5),
         isElement: stmt.getValueBoolean(6),
-        oldFederationGuid: stmt.getValueStringMaybe(7),
-        newFederationGuid: stmt.getValueStringMaybe(8),
-        oldCodeKey: stmt.getValueStringMaybe(9),
-        newCodeKey: stmt.getValueStringMaybe(10),
-        navigationRefs: stmt.isValueNull(11) ? undefined : JSON.parse(stmt.getValueString(11)) as RebaseNavigationRef[],
+        identityValues: stmt.isValueNull(7) ? undefined : JSON.parse(stmt.getValueString(7)) as RebaseIdentityValue[],
+        navigationRefs: stmt.isValueNull(8) ? undefined : JSON.parse(stmt.getValueString(8)) as RebaseNavigationRef[],
       };
     }
   }

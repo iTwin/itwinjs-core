@@ -7,6 +7,7 @@ import * as chai from "chai";
 import { Guid } from "@itwin/core-bentley";
 import type { SchemaView } from "@itwin/ecschema-metadata";
 import { RebaseInstanceStore } from "../../internal/RebaseInstanceStore";
+import type { RebaseInstanceMetadata } from "../../internal/RebaseInstanceStore";
 import type { ChangeInstance, ChangeMeta } from "../../ChangesetReaderTypes";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -157,30 +158,47 @@ describe("RebaseInstanceStore", () => {
 
     const metas = new Map([...store.allMetadata()].map((m) => [m.instanceKey, m]));
 
+    // `identityValues` now covers every schema-declared UNIQUE constraint discovered via ECSQL
+    // (federationGuid and the Code triple both being BisCore:Element-declared ones), not just two
+    // hardcoded properties - look each one up by its `key` (the sorted, comma-joined *raw EC* access
+    // strings the constraint was declared with, e.g. `"FederationGuid"` or
+    // `"CodeScope.Id,CodeSpec.Id,CodeValue"` - a `<NavProperty>.Id` suffix for a composite index entry
+    // referencing a navigation property) rather than assuming a fixed shape.
+    const findIdentity = (meta: RebaseInstanceMetadata, ecAccessStrings: string[]) => {
+      const key = [...ecAccessStrings].sort().join(",");
+      return meta.identityValues?.find((v) => v.key === key);
+    };
+
     const insertMeta = metas.get("0x50-0x1")!;
-    chai.expect(insertMeta.oldFederationGuid).to.be.undefined;
-    chai.expect(insertMeta.newFederationGuid).to.equal(guidNew);
-    chai.expect(insertMeta.oldCodeKey).to.be.undefined;
-    chai.expect(insertMeta.newCodeKey).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
+    const insertGuid = findIdentity(insertMeta, ["FederationGuid"]);
+    chai.expect(insertGuid?.old).to.be.undefined;
+    chai.expect(insertGuid?.new).to.equal(guidNew);
+    const insertCode = findIdentity(insertMeta, ["CodeSpec.Id", "CodeScope.Id", "CodeValue"]);
+    chai.expect(insertCode?.old).to.be.undefined;
+    chai.expect(insertCode?.new).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
     const insertParentRef = insertMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
     chai.expect(insertParentRef).to.not.be.undefined;
     chai.expect(insertParentRef?.oldId).to.be.undefined;
     chai.expect(insertParentRef?.newId).to.equal(parentA.id);
 
     const updateMeta = metas.get("0x51-0x1")!;
-    chai.expect(updateMeta.oldFederationGuid).to.equal(guidOld);
-    chai.expect(updateMeta.newFederationGuid).to.equal(guidNew);
-    chai.expect(updateMeta.oldCodeKey).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
-    chai.expect(updateMeta.newCodeKey).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
+    const updateGuid = findIdentity(updateMeta, ["FederationGuid"]);
+    chai.expect(updateGuid?.old).to.equal(guidOld);
+    chai.expect(updateGuid?.new).to.equal(guidNew);
+    const updateCode = findIdentity(updateMeta, ["CodeSpec.Id", "CodeScope.Id", "CodeValue"]);
+    chai.expect(updateCode?.old).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
+    chai.expect(updateCode?.new).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
     const updateParentRef = updateMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
     chai.expect(updateParentRef?.oldId).to.equal(parentA.id);
     chai.expect(updateParentRef?.newId).to.equal(parentB.id);
 
     const deleteMeta = metas.get("0x52-0x1")!;
-    chai.expect(deleteMeta.oldFederationGuid).to.equal(guidOld);
-    chai.expect(deleteMeta.newFederationGuid).to.be.undefined;
-    chai.expect(deleteMeta.oldCodeKey).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
-    chai.expect(deleteMeta.newCodeKey).to.be.undefined;
+    const deleteGuid = findIdentity(deleteMeta, ["FederationGuid"]);
+    chai.expect(deleteGuid?.old).to.equal(guidOld);
+    chai.expect(deleteGuid?.new).to.be.undefined;
+    const deleteCode = findIdentity(deleteMeta, ["CodeSpec.Id", "CodeScope.Id", "CodeValue"]);
+    chai.expect(deleteCode?.old).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
+    chai.expect(deleteCode?.new).to.be.undefined;
     const deleteParentRef = deleteMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
     chai.expect(deleteParentRef?.oldId).to.equal(parentA.id);
     chai.expect(deleteParentRef?.newId).to.be.undefined;
