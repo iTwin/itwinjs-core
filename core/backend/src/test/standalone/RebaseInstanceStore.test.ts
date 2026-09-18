@@ -132,4 +132,60 @@ describe("RebaseInstanceStore", () => {
     replayStore.setTheirs("0x40-0x1", { id: "0x40", classFullName: "BisCore:PhysicalElement" });
     chai.expect(replayStore.getTheirs("0x40-0x1")?.id).to.equal("0x40");
   });
+
+  it("extracts identity values (federationGuid/code) and navigationRefs (parent) at capture time for Insert/Update/Delete", () => {
+    using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);
+    const parentA = { id: "0x10", relClassName: "BisCore:ElementOwnsChildElements" };
+    const parentB = { id: "0x11", relClassName: "BisCore:ElementOwnsChildElements" };
+    const guidOld = Guid.createValue();
+    const guidNew = Guid.createValue();
+    const codeOld = { spec: "0x1", scope: "0x1", value: "CodeOld" };
+    const codeNew = { spec: "0x1", scope: "0x1", value: "CodeNew" };
+
+    // Insert - only "new" identity/navigation values are populated.
+    store.set({ instanceKey: "0x50-0x1", new: makeInstance("0x50", "BisCore:PhysicalElement", { federationGuid: guidNew, code: codeNew, parent: parentA }) });
+    // Update - both "old" and "new" identity/navigation values are populated, and can differ.
+    store.set({
+      instanceKey: "0x51-0x1",
+      old: makeInstance("0x51", "BisCore:PhysicalElement", { federationGuid: guidOld, code: codeOld, parent: parentA }),
+      new: makeInstance("0x51", "BisCore:PhysicalElement", { federationGuid: guidNew, code: codeNew, parent: parentB }),
+    });
+    // Delete - only "old" identity/navigation values are populated.
+    store.set({ instanceKey: "0x52-0x1", old: makeInstance("0x52", "BisCore:PhysicalElement", { federationGuid: guidOld, code: codeOld, parent: parentA }) });
+    // A relationship (link-table) class must get no navigationRefs at all, regardless of its own nav properties.
+    store.set({ instanceKey: "0x53-0x1", new: makeInstance("0x53", "BisCore:ElementOwnsChildElements", { sourceECInstanceId: "0x10", targetECInstanceId: "0x50" }) });
+
+    const metas = new Map([...store.allMetadata()].map((m) => [m.instanceKey, m]));
+
+    const insertMeta = metas.get("0x50-0x1")!;
+    chai.expect(insertMeta.oldFederationGuid).to.be.undefined;
+    chai.expect(insertMeta.newFederationGuid).to.equal(guidNew);
+    chai.expect(insertMeta.oldCodeKey).to.be.undefined;
+    chai.expect(insertMeta.newCodeKey).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
+    const insertParentRef = insertMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
+    chai.expect(insertParentRef).to.not.be.undefined;
+    chai.expect(insertParentRef?.oldId).to.be.undefined;
+    chai.expect(insertParentRef?.newId).to.equal(parentA.id);
+
+    const updateMeta = metas.get("0x51-0x1")!;
+    chai.expect(updateMeta.oldFederationGuid).to.equal(guidOld);
+    chai.expect(updateMeta.newFederationGuid).to.equal(guidNew);
+    chai.expect(updateMeta.oldCodeKey).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
+    chai.expect(updateMeta.newCodeKey).to.equal(`${codeNew.spec}|${codeNew.scope}|${codeNew.value}`);
+    const updateParentRef = updateMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
+    chai.expect(updateParentRef?.oldId).to.equal(parentA.id);
+    chai.expect(updateParentRef?.newId).to.equal(parentB.id);
+
+    const deleteMeta = metas.get("0x52-0x1")!;
+    chai.expect(deleteMeta.oldFederationGuid).to.equal(guidOld);
+    chai.expect(deleteMeta.newFederationGuid).to.be.undefined;
+    chai.expect(deleteMeta.oldCodeKey).to.equal(`${codeOld.spec}|${codeOld.scope}|${codeOld.value}`);
+    chai.expect(deleteMeta.newCodeKey).to.be.undefined;
+    const deleteParentRef = deleteMeta.navigationRefs?.find((ref) => ref.jsName === "parent");
+    chai.expect(deleteParentRef?.oldId).to.equal(parentA.id);
+    chai.expect(deleteParentRef?.newId).to.be.undefined;
+
+    const relationshipMeta = metas.get("0x53-0x1")!;
+    chai.expect(relationshipMeta.navigationRefs).to.be.undefined;
+  });
 });

@@ -13,7 +13,7 @@ import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@it
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 import { ChangesetReader } from "./ChangesetReader";
 import { TxnIdString } from "./TxnManager";
@@ -263,6 +263,14 @@ interface DependencyNode {
   ownerId: Id64String | undefined;
   isElement: boolean;
   dependents: DependencyNode[];
+  /** This node's identity values (federationGuid/Code) and navigation-property references, extracted at
+   * capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderRoots]], which never needs
+   * to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
+  oldFederationGuid?: string;
+  newFederationGuid?: string;
+  oldCodeKey?: string;
+  newCodeKey?: string;
+  navigationRefs?: RebaseNavigationRef[];
 }
 
 export class InteractiveRebase {
@@ -292,12 +300,6 @@ export class InteractiveRebase {
    * relationship's owner side is an Element, so this is what `ownerId`s are resolved against.
    */
   private _ownersById = new Map<Id64String, DependencyNode>();
-
-  /** Navigation properties declared by a class (`props` access string, plus whether the property is
-   * nullable - see [[getNavigationProperties]]), cached per `classFullName` since [[orderRoots]] resolves
-   * this once per distinct class in a group rather than once per instance.
-   */
-  private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean }[]>();
 
   /** A placeholder value [[orderRoots]] is substituting in for a root's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
@@ -613,6 +615,11 @@ export class InteractiveRebase {
         ownerId: meta.ownerId,
         isElement: meta.isElement,
         dependents: [],
+        oldFederationGuid: meta.oldFederationGuid,
+        newFederationGuid: meta.newFederationGuid,
+        oldCodeKey: meta.oldCodeKey,
+        newCodeKey: meta.newCodeKey,
+        navigationRefs: meta.navigationRefs,
       };
       this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
       if (node.isElement)
@@ -733,30 +740,33 @@ export class InteractiveRebase {
    * just roots, despite the name kept for the rest of this method's doc comment/history) for replay by
    * a topological sort over three kinds of real dependency edges between them - there is no other
    * justification for preferring one node's replay order over another's, so nodes with no edges between
-   * them keep their original (stable) input order:
+   * them keep their original (stable) input order. Every edge is built directly from each node's own
+   * lightweight fields (identity values, `navigationRefs`, `ownerId`) - all extracted once at capture
+   * time by [[RebaseInstanceStore.set]] - so this never needs [[getChange]] to load a node's `old`/`new`
+   * snapshot, nor any schema/[[SchemaView]] lookup, just to compute its edges:
    *
    * - An identity-value edge: any node that frees up a `federationGuid` or `code` (by deleting the
-   *   instance, or updating it away - see [[getIdentityValueDelta]]) must be replayed before any other
-   *   node that claims that same value (by inserting it, or updating into it), or the claim would
-   *   collide with the not-yet-removed row.
+   *   instance, or updating it away) must be replayed before any other node that claims that same value
+   *   (by inserting it, or updating into it), or the claim would collide with the not-yet-removed row.
    * - A navigation-property existence edge: any node that starts existing as a result of this replay (an
    *   Insert) must be replayed before any other node whose write references it by a navigation property
    *   (Parent, TypeDefinition, an aspect's owning Element property, etc. - the same navigation-property
-   *   enumeration [[findBrokenRelationships]] uses, cached per class by [[getNavigationProperties]]), and
-   *   any node that stops referencing a value (an Update that changes a navigation property away, or a
-   *   Delete) must be replayed before any other node whose write removes that value (a Delete), or the
-   *   reference/removal would hit a FOREIGNKEY violation against a row that (respectively) doesn't exist
-   *   yet, or still has something pointing at it. This is also what gives owner/dependent pairs their
-   *   correct relative order for free - an owning navigation property (Element.Parent, an aspect's
-   *   Element property, etc.) is an ordinary FK-backed navigation property like any other, so a captured
-   *   dependent's edge to/from its owner falls out of this same scan with no extra logic. Relationship
-   *   (link-table) instances are skipped entirely - BIS deliberately gives them no real foreign key into
-   *   `bis_Element`, so no write order could ever make one throw FOREIGNKEY.
+   *   enumeration [[findBrokenRelationships]] uses, extracted per instance into `navigationRefs` by
+   *   [[RebaseInstanceStore.set]]), and any node that stops referencing a value (an Update that changes a
+   *   navigation property away, or a Delete) must be replayed before any other node whose write removes
+   *   that value (a Delete), or the reference/removal would hit a FOREIGNKEY violation against a row
+   *   that (respectively) doesn't exist yet, or still has something pointing at it. This is also what
+   *   gives owner/dependent pairs their correct relative order for free - an owning navigation property
+   *   (Element.Parent, an aspect's Element property, etc.) is an ordinary FK-backed navigation property
+   *   like any other, so a captured dependent's edge to/from its owner falls out of this same scan with
+   *   no extra logic. Relationship (link-table) instances need no special-casing here - BIS deliberately
+   *   gives them no real foreign key into `bis_Element`, so [[RebaseInstanceStore.set]] never populates
+   *   their `navigationRefs` in the first place.
    * - A discovered-dependent edge: a live-discovered (uncaptured) dependent (see
-   *   [[discoverUnknownDependents]]) has no store-backed change of its own for the navigation-property
-   *   scan above to read, so its synthesized delete needs a small edge sourced directly from its already
-   *   -known `ownerId` instead: if its owner is itself a captured Delete, the dependent's delete must
-   *   happen first, or the owner's delete would remove a row the dependent's (still-live) FK still
+   *   [[discoverUnknownDependents]]) has no store-backed change of its own for `navigationRefs` to have
+   *   been extracted from, so its synthesized delete needs a small edge sourced directly from its
+   *   already-known `ownerId` instead: if its owner is itself a captured Delete, the dependent's delete
+   *   must happen first, or the owner's delete would remove a row the dependent's (still-live) FK still
    *   points at.
    *
    * Only `federationGuid` and the `Code` triple are considered for identity values, since (unlike a
@@ -793,28 +803,30 @@ export class InteractiveRebase {
     }
     const edges: Edge[] = [];
 
-    // "kind|value" -> every root that frees/claims it, computed once per root (rather than comparing
-    // every root's freed values against every other root's claimed values, which is both O(roots^2) and
-    // reloads each root's change from the store once per comparison instead of once overall).
+    // "kind|value" -> every root that frees/claims it, computed directly from each node's own
+    // capture-time-extracted identity fields (no store access needed).
     const freedByValue = new Map<string, DependencyNode[]>();
     const claimedByValue = new Map<string, DependencyNode[]>();
+    const addIdentityValue = (map: Map<string, DependencyNode[]>, key: string, value: string | undefined, node: DependencyNode): void => {
+      if (value === undefined)
+        return;
+      const identityKey = `${key}|${value}`;
+      const nodes = map.get(identityKey);
+      if (nodes === undefined)
+        map.set(identityKey, [node]);
+      else
+        nodes.push(node);
+    };
     for (const node of roots) {
-      const { freed, claimed } = this.getIdentityValueDelta(node);
-      for (const [key, value] of freed) {
-        const identityKey = `${key}|${value}`;
-        const freers = freedByValue.get(identityKey);
-        if (freers === undefined)
-          freedByValue.set(identityKey, [node]);
-        else
-          freers.push(node);
+      if (!node.isCaptured)
+        continue;
+      if (node.oldFederationGuid !== node.newFederationGuid) {
+        addIdentityValue(freedByValue, "federationGuid", node.oldFederationGuid, node);
+        addIdentityValue(claimedByValue, "federationGuid", node.newFederationGuid, node);
       }
-      for (const [key, value] of claimed) {
-        const identityKey = `${key}|${value}`;
-        const claimers = claimedByValue.get(identityKey);
-        if (claimers === undefined)
-          claimedByValue.set(identityKey, [node]);
-        else
-          claimers.push(node);
+      if (node.oldCodeKey !== node.newCodeKey) {
+        addIdentityValue(freedByValue, "code", node.oldCodeKey, node);
+        addIdentityValue(claimedByValue, "code", node.newCodeKey, node);
       }
     }
     for (const [identityKey, freers] of freedByValue) {
@@ -828,8 +840,10 @@ export class InteractiveRebase {
         for (const claimer of claimers) {
           if (claimer === freer)
             continue;
-          const change = this.getChange(claimer);
-          const realValue = change.new !== undefined ? getPropertyValue(change.new, accessString) : undefined;
+          // `federationGuid` is stored raw; `code`'s composite key is `"${spec}|${scope}|${value}"` -
+          // `spec`/`scope` are both Id64 strings, which never contain "|", so the raw `code.value` is
+          // recoverable by taking everything after the *second* "|" without needing to reload `new`.
+          const realValue = key === "federationGuid" ? claimer.newFederationGuid : claimer.newCodeKey!.slice(claimer.newCodeKey!.indexOf("|", claimer.newCodeKey!.indexOf("|") + 1) + 1);
           edges.push({
             from: freer, to: claimer,
             deferrable: realValue === undefined ? undefined : { accessString, placeholderKind: key === "federationGuid" ? "guid" : "string", realValue },
@@ -839,10 +853,10 @@ export class InteractiveRebase {
     }
 
     // Navigation-property existence edges: an Insert "provides" its own id, a Delete "removes" its own
-    // id, and each captured root's navigation properties "require" (from `new`) or "free" (from `old`,
-    // no longer in `new`) whatever ids they reference - but only ids that belong to another root in this
-    // same batch (an id already existing untouched, or belonging to something outside this batch, needs
-    // no edge - ordering can't help or hurt it).
+    // id, and each captured root's `navigationRefs` "require" (`newId`) or "free" (`oldId`, no longer
+    // `newId`) whatever ids they reference - but only ids that belong to another root in this same batch
+    // (an id already existing untouched, or belonging to something outside this batch, needs no edge -
+    // ordering can't help or hurt it).
     const providesRoot = new Map<Id64String, DependencyNode>();
     const removesIds = new Set<Id64String>();
     for (const node of roots) {
@@ -855,50 +869,31 @@ export class InteractiveRebase {
     }
 
     for (const node of roots) {
-      if (!node.isCaptured)
+      if (!node.isCaptured || node.navigationRefs === undefined)
         continue;
-      const schemaClassDef = this._schemaView.findClass(node.classFullName);
-      if (schemaClassDef === undefined || schemaClassDef.isRelationship())
-        continue; // BIS link-table relationships have no real FK - no existence edges to compute.
-      const navProperties = this.getNavigationProperties(node.classFullName);
-      if (navProperties.length === 0)
-        continue;
-
-      const change = this.getChange(node);
-      const oldRefs = new Map<string, Id64String>();
-      const newRefs = new Map<string, Id64String>();
-      const newProps = change.new;
-      for (const { jsName, nullable } of navProperties) {
-        const oldId = change.old !== undefined ? getReferencedId(change.old, jsName) : undefined;
-        if (oldId !== undefined)
-          oldRefs.set(jsName, oldId);
-
-        const newId = newProps !== undefined ? getReferencedId(newProps, jsName) : undefined;
-        if (newId === undefined)
-          continue;
-        newRefs.set(jsName, newId);
-        const provider = rootsById.has(newId) ? providesRoot.get(newId) : undefined;
-        if (provider !== undefined && provider !== node) {
-          edges.push({
-            from: provider, to: node,
-            deferrable: nullable ? { accessString: jsName, placeholderKind: "navigation", realValue: getPropertyValue(newProps!, jsName) } : undefined,
-          });
+      for (const { jsName, nullable, oldId, newId } of node.navigationRefs) {
+        if (newId !== undefined) {
+          const provider = rootsById.has(newId) ? providesRoot.get(newId) : undefined;
+          if (provider !== undefined && provider !== node) {
+            edges.push({
+              from: provider, to: node,
+              deferrable: nullable ? { accessString: jsName, placeholderKind: "navigation", realValue: newId } : undefined,
+            });
+          }
         }
-      }
-      for (const [jsName, oldId] of oldRefs) {
-        if (newRefs.get(jsName) === oldId || !rootsById.has(oldId) || !removesIds.has(oldId))
-          continue;
-        const remover = rootsById.get(oldId);
-        if (remover !== undefined && remover !== node)
-          edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
+        if (oldId !== undefined && oldId !== newId && rootsById.has(oldId) && removesIds.has(oldId)) {
+          const remover = rootsById.get(oldId);
+          if (remover !== undefined && remover !== node)
+            edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
+        }
       }
     }
 
-    // A live-discovered (uncaptured) dependent has no store-backed change for the scan above to read
-    // its owning navigation property from, so give it a direct edge from its already-known `ownerId`
-    // instead: its synthesized delete must precede its owner's own Delete, or the owner's row would be
-    // removed while this dependent's (still-live) FK still points at it. Discovered nodes are always
-    // Deletes by construction (see [[discoverUnknownDependents]]), so no provides/requires case applies.
+    // A live-discovered (uncaptured) dependent has no store-backed change for `navigationRefs` to have
+    // been extracted from, so give it a direct edge from its already-known `ownerId` instead: its
+    // synthesized delete must precede its owner's own Delete, or the owner's row would be removed while
+    // this dependent's (still-live) FK still points at it. Discovered nodes are always Deletes by
+    // construction (see [[discoverUnknownDependents]]), so no provides/requires case applies.
     for (const node of roots) {
       if (node.isCaptured || node.ownerId === undefined)
         continue;
@@ -992,32 +987,6 @@ export class InteractiveRebase {
     }
   }
 
-  /** The navigation properties declared by `classFullName` (the same enumeration [[findBrokenRelationships]]
-   * uses), as the `props` access string each is read/written by plus whether it's nullable - i.e. whether
-   * the relationship's constraint on the *other* side (the side [[findBrokenRelationships]] queries for
-   * existence) has a multiplicity lower bound of 0. Cached per class since [[orderRoots]] otherwise
-   * re-resolves the same schema lookups once per root of that class.
-   */
-  private getNavigationProperties(classFullName: string): { jsName: string, nullable: boolean }[] {
-    const cached = this._navigationPropertiesByClass.get(classFullName);
-    if (cached !== undefined)
-      return cached;
-
-    const navProperties: { jsName: string, nullable: boolean }[] = [];
-    const schemaClassDef = this._schemaView.findClass(classFullName);
-    if (schemaClassDef !== undefined && !schemaClassDef.isRelationship()) {
-      for (const prop of schemaClassDef.getProperties()) {
-        if (!prop.isNavigation())
-          continue;
-        const jsName = ECJsNames.toJsName(prop.name);
-        const relConstraint = prop.direction === StrengthDirection.Backward ? prop.relationshipClass.source : prop.relationshipClass.target;
-        navProperties.push({ jsName, nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0 });
-      }
-    }
-    this._navigationPropertiesByClass.set(classFullName, navProperties);
-    return navProperties;
-  }
-
   /** After [[replayForest]] finishes, applies each identity-value/navigation-property write that
    * [[orderRoots]] deferred as a safe placeholder while breaking a self-contained ordering cycle. Grouped
    * per node, so a cycle involving several deferred properties on the same node produces a single
@@ -1059,51 +1028,6 @@ export class InteractiveRebase {
       this.applyOrRecordConstraintConflict(instanceKey, node.id, node.classFullName, oldProps, newProps, () =>
         nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
     }
-  }
-
-  /** The identity-like values of `props` that participate in a BisCore-declared UNIQUE constraint:
-   * `federationGuid`, and the `Code` triple (as a single composite value, since all three columns
-   * together form the one UNIQUE index). Empty/unset values are omitted, since SQLite does not consider
-   * `NULL` columns to collide with one another under a UNIQUE index.
-   */
-  private getUniqueIdentityValues(props: RebaseConflictProperties | undefined): Map<string, string> {
-    const values = new Map<string, string>();
-    if (props === undefined)
-      return values;
-    const federationGuid = getPropertyValue(props, "federationGuid");
-    if (typeof federationGuid === "string" && federationGuid.length > 0)
-      values.set("federationGuid", federationGuid);
-    const codeValue = getPropertyValue(props, "code.value");
-    if (typeof codeValue === "string" && codeValue.length > 0) {
-      const codeScope = getPropertyValue(props, "code.scope");
-      const codeSpec = getPropertyValue(props, "code.spec");
-      values.set("code", `${typeof codeSpec === "string" ? codeSpec : ""}|${typeof codeScope === "string" ? codeScope : ""}|${codeValue}`);
-    }
-    return values;
-  }
-
-  /** The subset of `node`'s old identity values (see [[getUniqueIdentityValues]]) that this replay is
-   * about to free up (a Delete, or an Update that changes the value away from it), and the subset of its
-   * new identity values that this replay is about to claim (an Insert, or an Update that changes the
-   * value to it) - computed together from a single [[getChange]] load, since [[orderRoots]] needs both.
-   */
-  private getIdentityValueDelta(node: DependencyNode): { freed: Map<string, string>, claimed: Map<string, string> } {
-    if (!node.isCaptured)
-      return { freed: new Map(), claimed: new Map() };
-    const change = this.getChange(node);
-    const oldValues = this.getUniqueIdentityValues(change.old);
-    const newValues = this.getUniqueIdentityValues(change.new);
-    const freed = new Map<string, string>();
-    for (const [key, value] of oldValues) {
-      if (newValues.get(key) !== value)
-        freed.set(key, value);
-    }
-    const claimed = new Map<string, string>();
-    for (const [key, value] of newValues) {
-      if (oldValues.get(key) !== value)
-        claimed.set(key, value);
-    }
-    return { freed, claimed };
   }
 
   /** Applies a single node's change, in the order [[orderRoots]] computed - see [[replayForest]]. No
@@ -1856,15 +1780,6 @@ function getPropertyValue(props: RebaseConflictProperties, accessString: string)
     value = value[token];
   }
   return value;
-}
-
-/** Reads the id a navigation property (`jsName`) refers to, or undefined if unset/invalid - matching
- * [[InteractiveRebase.findBrokenRelationships]]'s own navigation-value parsing.
- */
-function getReferencedId(props: RebaseConflictProperties, jsName: string): Id64String | undefined {
-  const navValue = getPropertyValue(props, jsName);
-  const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
-  return typeof navId === "string" && Id64.isValidId64(navId) ? navId : undefined;
 }
 
 function resolveSchemaViewProperty(schemaView: SchemaView, classFullName: string, accessString: string): SchemaView.Property | undefined {

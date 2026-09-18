@@ -63,6 +63,29 @@ export interface RebaseInstanceMetadata {
   ownerId: Id64String | undefined;
   /** True if `classFullName` is `BisCore:Element` or a subclass of it. */
   isElement: boolean;
+  /** `old`/`new`'s `federationGuid`, if set - see [[RebaseInstanceStore.set]]. */
+  oldFederationGuid?: string;
+  newFederationGuid?: string;
+  /** `old`/`new`'s `Code` triple, as the same composite `"${spec}|${scope}|${value}"` key used for
+   * identity-value ordering - see [[RebaseInstanceStore.set]]. */
+  oldCodeKey?: string;
+  newCodeKey?: string;
+  /** One entry per navigation property declared on `classFullName` (undefined for a relationship
+   * class, or a class with no navigation properties) - see [[RebaseInstanceStore.set]]. */
+  navigationRefs?: RebaseNavigationRef[];
+}
+
+/** A single navigation property's old/new referenced id, as extracted at capture time - see
+ * [[RebaseInstanceMetadata.navigationRefs]].
+ * @internal
+ */
+export interface RebaseNavigationRef {
+  jsName: string;
+  /** Whether the relationship's *other*-side constraint allows this property to be null - see
+   * [[RebaseInstanceStore.getNavigationProperties]]. */
+  nullable: boolean;
+  oldId?: Id64String;
+  newId?: Id64String;
 }
 
 /**
@@ -92,6 +115,13 @@ export class RebaseInstanceStore implements Disposable {
   /** classFullName -> access string of its embedding-owner nav property, or undefined if it has none. */
   private _embeddingOwnerProperty = new Map<string, string | undefined>();
 
+  /** classFullName -> its navigation properties (jsName + nullability), or an empty array for a
+   * relationship class - see [[getNavigationProperties]]. Cached the same way as
+   * [[_embeddingOwnerProperty]], since [[set]] otherwise re-resolves the same schema lookups once per
+   * instance of the same class.
+   */
+  private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean }[]>();
+
   private constructor(writable: boolean, sourceDb?: AnyDb, schemaView?: SchemaView) {
     this._writable = writable;
     this._sourceDb = sourceDb;
@@ -115,7 +145,12 @@ export class RebaseInstanceStore implements Disposable {
       [operation] TEXT NOT NULL,
       [isIndirect] INTEGER NOT NULL,
       [ownerId] TEXT,
-      [isElement] INTEGER NOT NULL
+      [isElement] INTEGER NOT NULL,
+      [oldFederationGuid] TEXT,
+      [newFederationGuid] TEXT,
+      [oldCodeKey] TEXT,
+      [newCodeKey] TEXT,
+      [navigationRefs] TEXT
     )`);
     store._db.executeSQL(`CREATE TABLE ${theirsTableName} ([instanceKey] TEXT PRIMARY KEY, [theirs] TEXT)`);
     return store;
@@ -212,14 +247,23 @@ export class RebaseInstanceStore implements Disposable {
     const ownerId = this.getOwnerId(this._schemaView, props.classFullName, props);
     const isElement = this.isElementOrSubclass(this._schemaView, props.classFullName);
 
+    // Computed fully from the final merged `old`/`new` (not recomputed incrementally per partial-table
+    // merge), matching how `ownerId`/`isElement` are already handled above - see
+    // [[InteractiveRebase.orderRoots]] for how these are consumed.
+    const oldIdentity = this.extractIdentityValues(change.old);
+    const newIdentity = this.extractIdentityValues(change.new);
+    const navigationRefs = this.getNavigationRefs(this._schemaView, props.classFullName, change.old, change.new);
+
     this._db.withPreparedSqliteStatement(
-      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement])
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [oldFederationGuid], [newFederationGuid], [oldCodeKey], [newCodeKey], [navigationRefs])
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT ([instanceKey])
        DO UPDATE SET
          [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties],
          [instanceId] = [excluded].[instanceId], [classFullName] = [excluded].[classFullName], [operation] = [excluded].[operation],
-         [isIndirect] = [excluded].[isIndirect], [ownerId] = [excluded].[ownerId], [isElement] = [excluded].[isElement]`,
+         [isIndirect] = [excluded].[isIndirect], [ownerId] = [excluded].[ownerId], [isElement] = [excluded].[isElement],
+         [oldFederationGuid] = [excluded].[oldFederationGuid], [newFederationGuid] = [excluded].[newFederationGuid],
+         [oldCodeKey] = [excluded].[oldCodeKey], [newCodeKey] = [excluded].[newCodeKey], [navigationRefs] = [excluded].[navigationRefs]`,
       (stmt: SqliteStatement) => {
         stmt.bindString(1, change.instanceKey);
         stmt.maybeBindString(2, change.old ? JSON.stringify(change.old, Base64EncodedString.replacer) : undefined);
@@ -231,6 +275,11 @@ export class RebaseInstanceStore implements Disposable {
         stmt.bindInteger(8, isIndirect ? 1 : 0);
         stmt.maybeBindString(9, ownerId);
         stmt.bindInteger(10, isElement ? 1 : 0);
+        stmt.maybeBindString(11, oldIdentity.federationGuid);
+        stmt.maybeBindString(12, newIdentity.federationGuid);
+        stmt.maybeBindString(13, oldIdentity.codeKey);
+        stmt.maybeBindString(14, newIdentity.codeKey);
+        stmt.maybeBindString(15, navigationRefs ? JSON.stringify(navigationRefs) : undefined);
         stmt.step();
       },
     );
@@ -288,6 +337,78 @@ export class RebaseInstanceStore implements Disposable {
     return Id64.isValidId64(navId) ? navId : undefined;
   }
 
+  /** The `federationGuid` and `Code` triple (as a single composite `"${spec}|${scope}|${value}"` value,
+   * since all three columns together form the one UNIQUE index) values participating in a
+   * BisCore-declared UNIQUE constraint, or undefined for either if unset - see
+   * [[RebaseInstanceMetadata.oldFederationGuid]]/[[RebaseInstanceMetadata.oldCodeKey]]. Empty/unset
+   * values are omitted, since SQLite does not consider `NULL` columns to collide with one another under
+   * a UNIQUE index.
+   */
+  private extractIdentityValues(props: ChangeInstance | undefined): { federationGuid?: string, codeKey?: string } {
+    if (props === undefined)
+      return {};
+    const federationGuid = typeof props.federationGuid === "string" && props.federationGuid.length > 0 ? props.federationGuid : undefined;
+    const codeValue = typeof props.code?.value === "string" && props.code.value.length > 0 ? props.code.value : undefined;
+    const codeKey = codeValue === undefined ? undefined
+      : `${typeof props.code.spec === "string" ? props.code.spec : ""}|${typeof props.code.scope === "string" ? props.code.scope : ""}|${codeValue}`;
+    return { federationGuid, codeKey };
+  }
+
+  /** Reads the id a navigation property (`jsName`) refers to, or undefined if unset/invalid - matching
+   * [[InteractiveRebase.findBrokenRelationships]]'s own navigation-value parsing.
+   */
+  private getReferencedId(props: ChangeInstance, jsName: string): Id64String | undefined {
+    const navValue = props[jsName];
+    const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
+    return typeof navId === "string" && Id64.isValidId64(navId) ? navId : undefined;
+  }
+
+  /** The navigation properties declared by `classFullName` (the same enumeration
+   * [[InteractiveRebase.findBrokenRelationships]] uses), as the `jsName` each is read/written by plus
+   * whether it's nullable - i.e. whether the relationship's constraint on the *other* side (the side
+   * [[InteractiveRebase.findBrokenRelationships]] queries for existence) has a multiplicity lower bound
+   * of 0. Empty for a relationship (link-table) class - BIS deliberately gives those no real foreign key
+   * into `bis_Element`, so no existence edge could ever be needed for one. Cached per class since [[set]]
+   * would otherwise re-resolve the same schema lookups once per instance of the same class.
+   */
+  private getNavigationProperties(schemaView: SchemaView, classFullName: string): { jsName: string, nullable: boolean }[] {
+    const cached = this._navigationPropertiesByClass.get(classFullName);
+    if (cached !== undefined)
+      return cached;
+
+    const navProperties: { jsName: string, nullable: boolean }[] = [];
+    const schemaClassDef = schemaView.findClass(classFullName);
+    if (schemaClassDef !== undefined && !schemaClassDef.isRelationship()) {
+      for (const prop of schemaClassDef.getProperties()) {
+        if (!prop.isNavigation())
+          continue;
+        const jsName = ECJsNames.toJsName(prop.name);
+        const relConstraint = prop.direction === StrengthDirection.Backward ? prop.relationshipClass.source : prop.relationshipClass.target;
+        navProperties.push({ jsName, nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0 });
+      }
+    }
+    this._navigationPropertiesByClass.set(classFullName, navProperties);
+    return navProperties;
+  }
+
+  /** One entry per navigation property declared on `classFullName` (see [[getNavigationProperties]]),
+   * with the id each of `old`/`new` references (if any) - or undefined if `classFullName` has no
+   * navigation properties (including every relationship class) - see
+   * [[RebaseInstanceMetadata.navigationRefs]].
+   */
+  private getNavigationRefs(schemaView: SchemaView, classFullName: string, old: ChangeInstance | undefined, newInstance: ChangeInstance | undefined): RebaseNavigationRef[] | undefined {
+    const navProperties = this.getNavigationProperties(schemaView, classFullName);
+    if (navProperties.length === 0)
+      return undefined;
+
+    return navProperties.map(({ jsName, nullable }) => ({
+      jsName,
+      nullable,
+      oldId: old !== undefined ? this.getReferencedId(old, jsName) : undefined,
+      newId: newInstance !== undefined ? this.getReferencedId(newInstance, jsName) : undefined,
+    }));
+  }
+
   /** Iterate over every captured instance's old/new snapshot pair. */
   public *all(): IterableIterator<RebaseInstanceChange> {
     using stmt = this._db.prepareSqliteStatement(`SELECT [instanceKey], [old], [new], [changedProperties] FROM ${tableName} ORDER BY [instanceKey]`);
@@ -307,7 +428,7 @@ export class RebaseInstanceStore implements Disposable {
    */
   public *allMetadata(): IterableIterator<RebaseInstanceMetadata> {
     using stmt = this._db.prepareSqliteStatement(
-      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement] FROM ${tableName} ORDER BY [instanceKey]`);
+      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [oldFederationGuid], [newFederationGuid], [oldCodeKey], [newCodeKey], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
@@ -317,6 +438,11 @@ export class RebaseInstanceStore implements Disposable {
         isIndirect: stmt.getValueBoolean(4),
         ownerId: stmt.getValueStringMaybe(5),
         isElement: stmt.getValueBoolean(6),
+        oldFederationGuid: stmt.getValueStringMaybe(7),
+        newFederationGuid: stmt.getValueStringMaybe(8),
+        oldCodeKey: stmt.getValueStringMaybe(9),
+        newCodeKey: stmt.getValueStringMaybe(10),
+        navigationRefs: stmt.isValueNull(11) ? undefined : JSON.parse(stmt.getValueString(11)) as RebaseNavigationRef[],
       };
     }
   }
