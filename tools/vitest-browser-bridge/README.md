@@ -9,7 +9,7 @@ The provider and browser callback exports are ESM-only. The backend callback exp
 
 ## Vitest 4 provider
 
-The consuming project must provide Vitest `^4.1.10` and an Electron version in the supported `>=35 <45` range. This package temporarily pins `@opentelemetry/api` 1.0.4 so its Vitest types resolve to the same peer instance as `@vitest/browser` in the current Rush graph; remove that pin when the repository aligns on Vitest's `^1.9.0` optional peer. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
+The consuming project must provide Vitest `^4.1.10` and an Electron version in the supported `>=35 <45` range. This package temporarily pins `@opentelemetry/api` 1.0.4 so its Vitest types resolve to the same peer instance as `@vitest/browser` in the current Rush graph; remove that pin when the repository aligns on Vitest's `^1.9.0` optional peer. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -36,6 +36,8 @@ The provider is registered through Vitest's `defineBrowserProvider` factory and 
 The optional backend initialization module is loaded once for its module-evaluation side effects; exported functions are not invoked as implicit initializers.
 
 The provider creates a `BrowserWindow` with `contextIsolation: true`, `nodeIntegration: false`, and `nodeIntegrationInSubFrames: true` so Vitest's tester iframe receives the consumer preload without gaining Node integration. A package-owned bridge preload is registered separately with Electron's session, so the bridge does not generate or impose a module format on the consumer preload. The provider navigates the window to the exact session URL supplied by Vitest.
+
+The provider deliberately sets `sandbox: false`. The unbundled CommonJS bridge preload requires a local protocol module, which Electron's sandboxed preload loader cannot load; consumer preloads can also use Node's module loader. This disables the renderer process sandbox. Context isolation and disabled page-world Node integration do not replace that protection. Use this provider only for trusted, repo-controlled test content and preloads, not untrusted pages or embedded frames. Enabling the sandbox requires revisiting preload loading and validating the consumer preloads.
 
 This foundation intentionally does not implement Vitest browser automation commands such as locators, screenshots, keyboard, or mouse input. Tests that need those APIs should use an appropriate provider until an Electron command adapter is designed and tested.
 
