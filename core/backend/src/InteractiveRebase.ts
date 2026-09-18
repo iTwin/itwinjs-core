@@ -515,11 +515,11 @@ export class InteractiveRebase {
    * against the current row (which already reflects the incoming "their" changes) instead of relying
    * on the native changeset-apply conflict callback.
    *
-   * Replay is ordered by the per-Txn embedding-ownership forest (an owner is always applied before its
-   * dependents - see [[buildDependencyForest]]) and conflict detection reads "theirs" from a snapshot
-   * taken before any of this replay writes anything (see [[captureTheirsSnapshot]]), rather than from
-   * a live read - both are necessary so a cascade-removed dependent's evidence survives long enough to
-   * be compared against, and so a dependent's insert/update never precedes its owner's.
+   * Replay is ordered by [[orderRoots]]'s topological sort over the per-Txn embedding-ownership forest
+   * (see [[buildDependencyForest]]) and conflict detection reads "theirs" from a snapshot taken before
+   * any of this replay writes anything (see [[captureTheirsSnapshot]]), rather than from a live read -
+   * both are necessary so a cascade-removed dependent's evidence survives long enough to be compared
+   * against, and so a dependent's insert/update never precedes its owner's.
    */
   private reinstateDataTxn(txnProps: TxnProps): void {
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
@@ -529,9 +529,9 @@ export class InteractiveRebase {
     this._store?.[Symbol.dispose]();
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._db, txnProps.id);
     this._store = RebaseInstanceStore.openForReplay(dbPath);
-    const roots = this.buildDependencyForest(this._store);
+    this.buildDependencyForest(this._store);
     this.captureTheirsSnapshot();
-    this.replayForest(roots);
+    this.replayForest();
     this.applyDeferredCorrections();
     this.linkConflictOwnership();
   }
@@ -582,9 +582,9 @@ export class InteractiveRebase {
    * Builds the current group's per-Txn embedding-ownership forest (design doc section 5) from a
    * metadata-only scan of the store (see [[RebaseInstanceStore.allMetadata]]) - `old`/`new` snapshots,
    * which can be large (e.g. geometry), are not parsed here and are loaded lazily per node only when
-   * actually needed (see [[getChange]]) - populating [[_dependencyNodesById]] and [[_ownersById]], and
-   * returning its root nodes (instances whose embedding owner either doesn't exist or wasn't captured by
-   * this Txn).
+   * actually needed (see [[getChange]]) - populating [[_dependencyNodesById]] and [[_ownersById]].
+   * [[replayForest]] operates over every node this populates (not just roots - see [[orderRoots]]), so
+   * this no longer needs to return anything itself.
    *
    * A node's `ownerId` was classified from its `new` snapshot when one exists (Insert/Update), falling
    * back to `old` only for a pure Delete - this is what makes reparenting correct, since a child moved
@@ -596,7 +596,7 @@ export class InteractiveRebase {
    * upstream inserted after our local edit), recursively, and adds them to the forest and to
    * [[_dependencyNodesById]] with `isCaptured: false` so they can still be reported and cascaded away.
    */
-  private buildDependencyForest(store: RebaseInstanceStore): DependencyNode[] {
+  private buildDependencyForest(store: RebaseInstanceStore): void {
     this._store = store;
     this._dependencyNodesByInstanceKey = new Map();
     this._ownersById = new Map();
@@ -619,14 +619,12 @@ export class InteractiveRebase {
         this._ownersById.set(node.id, node);
     }
 
-    // Link each node to its owner, if any, and collect root nodes (those without an owner).
-    const roots: DependencyNode[] = [];
+    // Link each node to its owner, if any (used for reporting/cascade - see [[DependencyNode.dependents]] -
+    // not for replay ordering, which [[orderRoots]] now derives from edges instead).
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       const owner = node.ownerId !== undefined ? this._ownersById.get(node.ownerId) : undefined;
       if (owner !== undefined)
         owner.dependents.push(node);
-      else
-        roots.push(node);
     }
 
     // Discover any not-yet-known dependents for captured element deletions.
@@ -638,8 +636,6 @@ export class InteractiveRebase {
         this.discoverUnknownDependents(node);
       }
     }
-
-    return roots;
   }
 
   /**
@@ -722,51 +718,56 @@ export class InteractiveRebase {
     return this._store?.getTheirs(instanceKey);
   }
 
-  /** Design doc section 8: replays the forest depth-first. Owners are applied before dependents for
-   * Insert/Update (a dependent's write must never precede its owner's), but dependents are applied
-   * before their owner for Delete - unlike aspects (a real SQL `ON DELETE CASCADE`), a child element's
-   * cascade-on-parent-delete is implemented by the Element API rather than a declared FK action (see
-   * the investigation notes), so a raw instance delete of the owner does not remove it, and would
-   * leave a dangling `ParentId` that violates the FK if the owner is deleted first.
-   *
-   * Two *independent* roots (neither linked to the other via `ownerId`, e.g. because one's resolved
-   * owner was never itself captured by this Txn - a reparent target that already existed, say) have no
-   * inherent ordering between them either, so [[orderRoots]] decides one for them.
+  /** Replays the whole dependency forest (owners and dependents, captured and live-discovered alike -
+   * see [[buildDependencyForest]]) in the order [[orderRoots]] computes, applying each node exactly once
+   * via [[applyNode]] - no recursion into `node.dependents` here; an owner/dependent pair's ordering is
+   * just another instance of an existence edge (see [[orderRoots]]) now, not a separate tree walk.
    */
-  private replayForest(roots: DependencyNode[]): void {
-    for (const root of this.orderRoots(roots))
-      this.replayNode(root);
+  private replayForest(): void {
+    for (const node of this.orderRoots([...this._dependencyNodesByInstanceKey.values()]))
+      this.applyNode(node);
   }
 
   /**
-   * Orders independent roots (see [[replayForest]]) for replay by a topological sort over two kinds of
-   * real dependency edges between them - there is no other justification for preferring one root's
-   * replay order over another's, so nodes with no edges between them keep their original (stable) input
-   * order:
+   * Orders every node of the current group's dependency forest (see [[buildDependencyForest]] - not
+   * just roots, despite the name kept for the rest of this method's doc comment/history) for replay by
+   * a topological sort over three kinds of real dependency edges between them - there is no other
+   * justification for preferring one node's replay order over another's, so nodes with no edges between
+   * them keep their original (stable) input order:
    *
-   * - An identity-value edge: any root that frees up a `federationGuid` or `code` (by deleting the
+   * - An identity-value edge: any node that frees up a `federationGuid` or `code` (by deleting the
    *   instance, or updating it away - see [[getIdentityValueDelta]]) must be replayed before any other
-   *   root that claims that same value (by inserting it, or updating into it), or the claim would
+   *   node that claims that same value (by inserting it, or updating into it), or the claim would
    *   collide with the not-yet-removed row.
-   * - A navigation-property existence edge: any root that starts existing as a result of this replay (an
-   *   Insert) must be replayed before any other root whose write references it by a navigation property
-   *   (Parent, TypeDefinition, etc. - the same navigation-property enumeration [[findBrokenRelationships]]
-   *   uses, cached per class by [[getNavigationProperties]]), and any root that stops referencing a value
-   *   (an Update that changes a navigation property away, or a Delete) must be replayed before any other
-   *   root whose write removes that value (a Delete), or the reference/removal would hit a FOREIGNKEY
-   *   violation against a row that (respectively) doesn't exist yet, or still has something pointing at
-   *   it. Relationship (link-table) instances are skipped entirely - BIS deliberately gives them no real
-   *   foreign key into `bis_Element`, so no write order could ever make one throw FOREIGNKEY.
+   * - A navigation-property existence edge: any node that starts existing as a result of this replay (an
+   *   Insert) must be replayed before any other node whose write references it by a navigation property
+   *   (Parent, TypeDefinition, an aspect's owning Element property, etc. - the same navigation-property
+   *   enumeration [[findBrokenRelationships]] uses, cached per class by [[getNavigationProperties]]), and
+   *   any node that stops referencing a value (an Update that changes a navigation property away, or a
+   *   Delete) must be replayed before any other node whose write removes that value (a Delete), or the
+   *   reference/removal would hit a FOREIGNKEY violation against a row that (respectively) doesn't exist
+   *   yet, or still has something pointing at it. This is also what gives owner/dependent pairs their
+   *   correct relative order for free - an owning navigation property (Element.Parent, an aspect's
+   *   Element property, etc.) is an ordinary FK-backed navigation property like any other, so a captured
+   *   dependent's edge to/from its owner falls out of this same scan with no extra logic. Relationship
+   *   (link-table) instances are skipped entirely - BIS deliberately gives them no real foreign key into
+   *   `bis_Element`, so no write order could ever make one throw FOREIGNKEY.
+   * - A discovered-dependent edge: a live-discovered (uncaptured) dependent (see
+   *   [[discoverUnknownDependents]]) has no store-backed change of its own for the navigation-property
+   *   scan above to read, so its synthesized delete needs a small edge sourced directly from its already
+   *   -known `ownerId` instead: if its owner is itself a captured Delete, the dependent's delete must
+   *   happen first, or the owner's delete would remove a row the dependent's (still-live) FK still
+   *   points at.
    *
    * Only `federationGuid` and the `Code` triple are considered for identity values, since (unlike a
    * genuine UNIQUE constraint violation) there's no way to discover an arbitrary custom schema's own
    * UNIQUE index short of actually attempting the write; such a case can still surface as a (harmlessly
    * auto-fixed) UNIQUE constraint violation - see [[fixUniqueConstraintViolation]].
    *
-   * When Kahn's algorithm stalls, the stalled roots form a *self-contained* cycle - by construction,
-   * every edge among them is satisfied by another stalled root, never by anything external to this
+   * When Kahn's algorithm stalls, the stalled nodes form a *self-contained* cycle - by construction,
+   * every edge among them is satisfied by another stalled node, never by anything external to this
    * batch - so it's always safe to break automatically, with no reported conflict: [[breakCycle]] defers
-   * one stalled root's specific claimed/required property (writing a safe placeholder now instead),
+   * one stalled node's specific claimed/required property (writing a safe placeholder now instead),
    * which [[applyDeferredCorrections]] corrects to the real value once the whole forest has been
    * replayed. A navigation property can only be deferred this way if it's nullable; if breaking the
    * cycle would require deferring a non-nullable one, that edge is simply left unresolved and the write
@@ -891,6 +892,19 @@ export class InteractiveRebase {
         if (remover !== undefined && remover !== node)
           edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
       }
+    }
+
+    // A live-discovered (uncaptured) dependent has no store-backed change for the scan above to read
+    // its owning navigation property from, so give it a direct edge from its already-known `ownerId`
+    // instead: its synthesized delete must precede its owner's own Delete, or the owner's row would be
+    // removed while this dependent's (still-live) FK still points at it. Discovered nodes are always
+    // Deletes by construction (see [[discoverUnknownDependents]]), so no provides/requires case applies.
+    for (const node of roots) {
+      if (node.isCaptured || node.ownerId === undefined)
+        continue;
+      const owner = this._ownersById.get(node.ownerId);
+      if (owner !== undefined && owner.operation === "Delete")
+        edges.push({ from: node, to: owner }); // Nothing to defer - a Delete has no property to null.
     }
 
     // Kahn's algorithm, breaking ties (including nodes with no edges at all) by stable input order.
@@ -1092,35 +1106,28 @@ export class InteractiveRebase {
     return { freed, claimed };
   }
 
-  private replayNode(node: DependencyNode): void {
-    const isDelete = node.operation === "Delete";
-
-    if (isDelete) {
-      for (const dependent of node.dependents)
-        this.replayNode(dependent);
-    }
-
+  /** Applies a single node's change, in the order [[orderRoots]] computed - see [[replayForest]]. No
+   * longer recurses into `node.dependents` itself; owner/dependent replay order is now just another
+   * consequence of the edges [[orderRoots]] builds.
+   */
+  private applyNode(node: DependencyNode): void {
     if (!node.isCaptured) {
       // Discovered live (section 6) - our Txn never captured a change for it, so nothing in the store
       // will ever apply or report it, yet replaying our own owner's delete cascades it away regardless.
       this.applyUpstreamDependentDelete(node);
-    } else {
-      const change = this.getChange(node);
-      if (node.isIndirect && !this.isCascadedDependentDelete(node)) {
-        // Indirect changes are derived side effects (e.g. a Model's GeometryGuid updated as a side
-        // effect of a GeometricElement change) rather than deliberate edits, so they are force-applied
-        // without conflict detection, matching the automatic semantic-rebase path's `applyInstanceChange`.
-        this._db.txns.withIndirectTxnMode(() => {
-          this.applyDirectInstanceChange(change);
-        });
-      } else {
-        this.applyInteractiveInstanceChange(change);
-      }
+      return;
     }
 
-    if (!isDelete) {
-      for (const dependent of node.dependents)
-        this.replayNode(dependent);
+    const change = this.getChange(node);
+    if (node.isIndirect && !this.isCascadedDependentDelete(node)) {
+      // Indirect changes are derived side effects (e.g. a Model's GeometryGuid updated as a side
+      // effect of a GeometricElement change) rather than deliberate edits, so they are force-applied
+      // without conflict detection, matching the automatic semantic-rebase path's `applyInstanceChange`.
+      this._db.txns.withIndirectTxnMode(() => {
+        this.applyDirectInstanceChange(change);
+      });
+    } else {
+      this.applyInteractiveInstanceChange(change);
     }
   }
 
@@ -1569,8 +1576,10 @@ export class InteractiveRebase {
 
     if (props === undefined) {
       const key = { id: conflict.id, classFullName: conflict.classFullName };
-      // Dependents must be removed before the owner itself - see [[replayNode]]'s comment on why a
-      // child element's cascade cannot be left to the DB the way an aspect's real FK cascade can.
+      // Dependents must be removed before the owner itself - unlike aspects (a real SQL
+      // `ON DELETE CASCADE`), a child element's cascade-on-parent-delete is implemented by the Element
+      // API rather than a declared FK action, so a raw instance delete of the owner does not remove it,
+      // and would leave a dangling `ParentId` that violates the FK if the owner is deleted first.
       if (isFullResolution)
         this.cascadeDeleteToDependents(conflictImpl);
       this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
