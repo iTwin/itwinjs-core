@@ -9,7 +9,7 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, ElementAspectProps, GeometricElement2dProps, IModel, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { Code, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
@@ -29,6 +29,7 @@ describe("InteractiveRebase", () => {
   interface SomeGraphicalElementProps extends GeometricElement2dProps {
     foo: string;
     somePoint: XYProps;
+    peer?: RelatedElementProps;
   }
 
   interface SomeUniqueAspectProps extends ElementAspectProps {
@@ -58,10 +59,19 @@ describe("InteractiveRebase", () => {
       <?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="InteractiveRebaseTest" alias="irt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECRelationshipClass typeName="SomeGraphicalElementRefersToPeer" strength="referencing" modifier="None">
+              <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+                  <Class class="SomeGraphicalElement"/>
+              </Source>
+              <Target multiplicity="(0..1)" roleLabel="is referred to by" polymorphic="true">
+                  <Class class="SomeGraphicalElement"/>
+              </Target>
+          </ECRelationshipClass>
           <ECEntityClass typeName="SomeGraphicalElement">
               <BaseClass>bis:GraphicalElement2d</BaseClass>
               <ECProperty propertyName="Foo" typeName="string" />
               <ECProperty propertyName="SomePoint" typeName="point2d" />
+              <ECNavigationProperty propertyName="Peer" relationshipName="SomeGraphicalElementRefersToPeer" direction="forward" />
           </ECEntityClass>
           <ECEntityClass typeName="SomeUniqueAspect">
             <BaseClass>bis:ElementUniqueAspect</BaseClass>
@@ -855,6 +865,165 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     conflict.acceptTheirs(["code.value"]);
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
+  });
+
+  it("resolves a two-root federationGuid swap with zero reported conflicts", async () => {
+    const guidA = Guid.createValue();
+    const guidB = Guid.createValue();
+
+    const [elA, elB] = await withEditTxn(briefcase1, async (txn) => {
+      const a = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "SwapA",
+        somePoint: new Point2d(10.0, 10.0),
+        federationGuid: guidA,
+      } as SomeGraphicalElementProps);
+      const b = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "SwapB",
+        somePoint: new Point2d(11.0, 11.0),
+        federationGuid: guidB,
+      } as SomeGraphicalElementProps);
+      return [a, b];
+    });
+    await briefcase1.pushChanges({ description: "Insert swap elements" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase2, async (txn) => {
+      // A true swap - each root claims the value the other one is simultaneously freeing. Constructed via
+      // a temporary third value: SQLite enforces the UNIQUE constraint immediately per statement, so
+      // writing elA straight to guidB here (while elB still holds it live) would fail on the spot, well
+      // before any of this reaches InteractiveRebase. The capture only records each element's *net*
+      // old/new for the whole Txn, so this intermediate step is invisible to replay - elA nets out to
+      // old=guidA/new=guidB and elB to old=guidB/new=guidA, exactly the swap this test means to exercise.
+      txn.updateElement<SomeGraphicalElementProps>({ id: elA, federationGuid: Guid.createValue() });
+      txn.updateElement<SomeGraphicalElementProps>({ id: elB, federationGuid: guidA });
+      txn.updateElement<SomeGraphicalElementProps>({ id: elA, federationGuid: guidB });
+      // Unrelated - just forces a genuine rebase instead of a fast-forward merge.
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // Only the forced conflict on `id` should surface - the swap is a self-contained ordering cycle,
+    // not a real external collision, so it must apply cleanly with no UniqueConstraintViolation.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(id);
+
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elA).federationGuid).to.equal(guidB);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elB).federationGuid).to.equal(guidA);
+  });
+
+  it("assigns a type definition onto a newly-inserted type in the same batch", async () => {
+    const childId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Untyped",
+        somePoint: new Point2d(12.0, 12.0),
+      } as SomeGraphicalElementProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert untyped element" });
+    await briefcase2.pullChanges();
+
+    const typeCode = Code.createEmpty();
+    typeCode.value = "NewBatchType";
+    const newTypeId = await withEditTxn(briefcase2, async (txn) => {
+      const insertedTypeId = txn.insertElement({
+        classFullName: GenericGraphicalType2d.classFullName,
+        model: IModel.dictionaryId,
+        code: typeCode,
+      } as TypeDefinitionElementProps);
+      // Referencing a same-batch Insert - previously failed spuriously because the old base order
+      // always replayed Inserts last, regardless of what referenced them.
+      txn.updateElement<SomeGraphicalElementProps>({
+        id: childId,
+        typeDefinition: { id: insertedTypeId, relClassName: "BisCore:GraphicalElement2dIsOfType" },
+      });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+      return insertedTypeId;
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(id);
+
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).typeDefinition?.id).to.equal(newTypeId);
+  });
+
+  it("resolves a mutual new-insert existence cycle via a nullable navigation property with zero reported conflicts", async () => {
+    const aId = "0xabc00a";
+    const bId = "0xabc00b";
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.insertElement({
+        id: aId,
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "CycleA",
+        somePoint: new Point2d(13.0, 13.0),
+        peer: { id: bId, relClassName: "irt:SomeGraphicalElementRefersToPeer" },
+      } as SomeGraphicalElementProps, { forceUseId: true });
+      txn.insertElement({
+        id: bId,
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "CycleB",
+        somePoint: new Point2d(14.0, 14.0),
+        peer: { id: aId, relClassName: "irt:SomeGraphicalElementRefersToPeer" },
+      } as SomeGraphicalElementProps, { forceUseId: true });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // Neither of the two mutually-referencing new inserts should be reported as a conflict - only the
+    // forced conflict on `id`.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(id);
+
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(aId).peer?.id).to.equal(bId);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(bId).peer?.id).to.equal(aId);
   });
 
   it("reports a foreign key constraint violation when we add an element to a parent they deleted", async () => {

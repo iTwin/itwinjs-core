@@ -293,6 +293,24 @@ export class InteractiveRebase {
    */
   private _ownersById = new Map<Id64String, DependencyNode>();
 
+  /** Navigation properties declared by a class (`props` access string, plus whether the property is
+   * nullable - see [[getNavigationProperties]]), cached per `classFullName` since [[orderRoots]] resolves
+   * this once per distinct class in a group rather than once per instance.
+   */
+  private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean }[]>();
+
+  /** A placeholder value [[orderRoots]] is substituting in for a root's real value of one of its own
+   * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
+   * [[getChange]] so that the substitution is transparent to the rest of replay, and drained by
+   * [[applyDeferredCorrections]] once the whole forest has been replayed.
+   */
+  private _pendingSubstitutions = new Map<string, { accessString: string, placeholderValue: any }[]>();
+
+  /** The real values [[orderRoots]] deferred while breaking a self-contained ordering cycle, to be
+   * applied for real by [[applyDeferredCorrections]] after the whole forest has been replayed.
+   */
+  private _deferredCorrections: { node: DependencyNode, accessString: string, realValue: any }[] = [];
+
   constructor(db: BriefcaseDb, txns: TxnProps[], schemaView: SchemaView) {
     this._db = db;
     this._schemaView = schemaView;
@@ -514,18 +532,33 @@ export class InteractiveRebase {
     const roots = this.buildDependencyForest(this._store);
     this.captureTheirsSnapshot();
     this.replayForest(roots);
+    this.applyDeferredCorrections();
     this.linkConflictOwnership();
   }
 
-  /** Loads a captured node's change from the store, or throws if `node` wasn't actually captured (a
-   * discovered node - see [[discoverUpstreamDependents]] - has no row to load).
+  /** Loads a captured node's change from the [[RebaseInstanceStore]], or throws if `node` wasn't actually captured (a
+   * discovered node - see [[discoverUnknownDependents]] - has no row to load).
+   *
+   * If [[orderRoots]] deferred one of `node`'s own properties as part of breaking a self-contained
+   * ordering cycle (see [[_pendingSubstitutions]]), the returned change's `new` side carries the
+   * placeholder value in place of the real one - transparently, so every other caller (including replay
+   * itself) just sees the value it's supposed to write right now. [[applyDeferredCorrections]] writes the
+   * real value once the whole forest has been replayed.
    */
   private getChange(node: DependencyNode): RebaseInstanceChange {
     assert(node.isCaptured, "getChange requires a captured node");
     assert(this._store !== undefined, "getChange requires an active replay (see reinstateDataTxn)");
     const change = this._store.get(node.instanceKey);
     assert(change !== undefined, "a captured node must have a row in the store");
-    return change;
+
+    const substitutions = this._pendingSubstitutions.get(node.instanceKey);
+    if (substitutions === undefined || change.new === undefined)
+      return change;
+
+    const substitutedNew = { ...change.new };
+    for (const { accessString, placeholderValue } of substitutions)
+      setPropertyValue(substitutedNew, accessString, placeholderValue);
+    return { ...change, new: substitutedNew };
   }
 
   /** True for a captured Delete on an instance whose class has an embedding owner - an aspect or child
@@ -538,7 +571,7 @@ export class InteractiveRebase {
 
   /** True if `classFullName` is `BisCore:Element` or a subclass of it - the owning (source) constraint
    * class of every embedding relationship relevant here. Only needed for a node discovered live (see
-   * [[discoverUpstreamDependents]]); a captured node's `isElement` is already classified by
+   * [[discoverUnknownDependents]]); a captured node's `isElement` is already classified by
    * [[RebaseInstanceStore]] at capture time.
    */
   private isElementOrSubclass(classFullName: string): boolean {
@@ -706,33 +739,58 @@ export class InteractiveRebase {
   }
 
   /**
-   * Orders independent roots (see [[replayForest]]) for replay by combining two heuristics:
+   * Orders independent roots (see [[replayForest]]) for replay by a topological sort over two kinds of
+   * real dependency edges between them - there is no other justification for preferring one root's
+   * replay order over another's, so nodes with no edges between them keep their original (stable) input
+   * order:
    *
-   * - A stable base order - Update, then Delete, then Insert - so a reparent-away Update on one root
-   *   clears a stale reference before some other, unrelated root's Delete is attempted, avoiding a
-   *   spurious FOREIGNKEY failure.
-   * - An identity-value override: any root that frees up a `federationGuid` or `code` (by deleting the
-   *   instance, or updating it away - see [[getFreedIdentityValues]]) is always replayed before any
-   *   other root that claims that same value (by inserting it, or updating into it - see
-   *   [[getClaimedIdentityValues]]), regardless of the base order, so reusing a value freed elsewhere in
-   *   the same Txn - whether the reuse comes from an Insert *or* an Update to some unrelated, pre-existing
-   *   instance - never spuriously collides with the not-yet-removed row.
+   * - An identity-value edge: any root that frees up a `federationGuid` or `code` (by deleting the
+   *   instance, or updating it away - see [[getIdentityValueDelta]]) must be replayed before any other
+   *   root that claims that same value (by inserting it, or updating into it), or the claim would
+   *   collide with the not-yet-removed row.
+   * - A navigation-property existence edge: any root that starts existing as a result of this replay (an
+   *   Insert) must be replayed before any other root whose write references it by a navigation property
+   *   (Parent, TypeDefinition, etc. - the same navigation-property enumeration [[findBrokenRelationships]]
+   *   uses, cached per class by [[getNavigationProperties]]), and any root that stops referencing a value
+   *   (an Update that changes a navigation property away, or a Delete) must be replayed before any other
+   *   root whose write removes that value (a Delete), or the reference/removal would hit a FOREIGNKEY
+   *   violation against a row that (respectively) doesn't exist yet, or still has something pointing at
+   *   it. Relationship (link-table) instances are skipped entirely - BIS deliberately gives them no real
+   *   foreign key into `bis_Element`, so no write order could ever make one throw FOREIGNKEY.
    *
-   * Only `federationGuid` and the `Code` triple are considered, since (unlike a genuine UNIQUE
-   * constraint violation) there's no way to discover an arbitrary custom schema's own UNIQUE index short
-   * of actually attempting the write; such a case can still surface as a (harmlessly auto-fixed) UNIQUE
-   * constraint violation - see [[fixUniqueConstraintViolation]]. Similarly, if the two heuristics disagree
-   * in a way that can't be satisfied together (a genuine cycle), the identity-value edges lose and the
-   * base order applies instead, again leaving the UNIQUE constraint machinery to handle the fallout.
+   * Only `federationGuid` and the `Code` triple are considered for identity values, since (unlike a
+   * genuine UNIQUE constraint violation) there's no way to discover an arbitrary custom schema's own
+   * UNIQUE index short of actually attempting the write; such a case can still surface as a (harmlessly
+   * auto-fixed) UNIQUE constraint violation - see [[fixUniqueConstraintViolation]].
+   *
+   * When Kahn's algorithm stalls, the stalled roots form a *self-contained* cycle - by construction,
+   * every edge among them is satisfied by another stalled root, never by anything external to this
+   * batch - so it's always safe to break automatically, with no reported conflict: [[breakCycle]] defers
+   * one stalled root's specific claimed/required property (writing a safe placeholder now instead),
+   * which [[applyDeferredCorrections]] corrects to the real value once the whole forest has been
+   * replayed. A navigation property can only be deferred this way if it's nullable; if breaking the
+   * cycle would require deferring a non-nullable one, that edge is simply left unresolved and the write
+   * proceeds anyway, falling through to the existing (already safe) FOREIGNKEY-conflict path - a cycle
+   * of non-nullable references could never have been created in the first place, so this is not a bug to
+   * chase.
    */
   private orderRoots(roots: DependencyNode[]): DependencyNode[] {
-    const category = (node: DependencyNode): number => {
-      if (node.operation === "Delete")
-        return 1; // Delete
-      return node.operation === "Insert" ? 2 : 0; // Insert : Update
-    };
-    const baseIndex = new Map<DependencyNode, number>();
-    roots.forEach((node, i) => baseIndex.set(node, category(node) * roots.length + i));
+    this._pendingSubstitutions = new Map();
+    this._deferredCorrections = [];
+
+    const inputIndex = new Map<DependencyNode, number>(roots.map((node, i) => [node, i]));
+    const rootsById = new Map<Id64String, DependencyNode>(roots.map((node) => [node.id, node]));
+
+    interface Edge {
+      from: DependencyNode;
+      to: DependencyNode;
+      /** Present only when this edge can be broken by deferring a specific write on `to` - see
+       * [[breakCycle]]. Absent for an edge whose `to` is a Delete (nothing on a delete to defer), or a
+       * non-nullable navigation-property requirement.
+       */
+      deferrable?: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any };
+    }
+    const edges: Edge[] = [];
 
     // "kind|value" -> every root that frees/claims it, computed once per root (rather than comparing
     // every root's freed values against every other root's claimed values, which is both O(roots^2) and
@@ -758,49 +816,235 @@ export class InteractiveRebase {
           claimers.push(node);
       }
     }
-
-    // from -> every root that must be replayed after `from`, because `from` frees a value that root claims.
-    const mustFollow = new Map<DependencyNode, Set<DependencyNode>>();
     for (const [identityKey, freers] of freedByValue) {
       const claimers = claimedByValue.get(identityKey);
       if (claimers === undefined)
         continue;
+      const separatorIndex = identityKey.indexOf("|");
+      const key = identityKey.slice(0, separatorIndex);
+      const accessString = key === "federationGuid" ? "federationGuid" : "code.value";
       for (const freer of freers) {
         for (const claimer of claimers) {
           if (claimer === freer)
             continue;
-          let followers = mustFollow.get(freer);
-          if (followers === undefined)
-            mustFollow.set(freer, followers = new Set());
-          followers.add(claimer);
+          const change = this.getChange(claimer);
+          const realValue = change.new !== undefined ? getPropertyValue(change.new, accessString) : undefined;
+          edges.push({
+            from: freer, to: claimer,
+            deferrable: realValue === undefined ? undefined : { accessString, placeholderKind: key === "federationGuid" ? "guid" : "string", realValue },
+          });
         }
       }
     }
 
-    // Kahn's algorithm, breaking ties (including nodes with no edges at all) by `baseIndex`.
+    // Navigation-property existence edges: an Insert "provides" its own id, a Delete "removes" its own
+    // id, and each captured root's navigation properties "require" (from `new`) or "free" (from `old`,
+    // no longer in `new`) whatever ids they reference - but only ids that belong to another root in this
+    // same batch (an id already existing untouched, or belonging to something outside this batch, needs
+    // no edge - ordering can't help or hurt it).
+    const providesRoot = new Map<Id64String, DependencyNode>();
+    const removesIds = new Set<Id64String>();
+    for (const node of roots) {
+      if (!node.isCaptured)
+        continue;
+      if (node.operation === "Insert")
+        providesRoot.set(node.id, node);
+      else if (node.operation === "Delete")
+        removesIds.add(node.id);
+    }
+
+    for (const node of roots) {
+      if (!node.isCaptured)
+        continue;
+      const schemaClassDef = this._schemaView.findClass(node.classFullName);
+      if (schemaClassDef === undefined || schemaClassDef.isRelationship())
+        continue; // BIS link-table relationships have no real FK - no existence edges to compute.
+      const navProperties = this.getNavigationProperties(node.classFullName);
+      if (navProperties.length === 0)
+        continue;
+
+      const change = this.getChange(node);
+      const oldRefs = new Map<string, Id64String>();
+      const newRefs = new Map<string, Id64String>();
+      const newProps = change.new;
+      for (const { jsName, nullable } of navProperties) {
+        const oldId = change.old !== undefined ? getReferencedId(change.old, jsName) : undefined;
+        if (oldId !== undefined)
+          oldRefs.set(jsName, oldId);
+
+        const newId = newProps !== undefined ? getReferencedId(newProps, jsName) : undefined;
+        if (newId === undefined)
+          continue;
+        newRefs.set(jsName, newId);
+        const provider = rootsById.has(newId) ? providesRoot.get(newId) : undefined;
+        if (provider !== undefined && provider !== node) {
+          edges.push({
+            from: provider, to: node,
+            deferrable: nullable ? { accessString: jsName, placeholderKind: "navigation", realValue: getPropertyValue(newProps!, jsName) } : undefined,
+          });
+        }
+      }
+      for (const [jsName, oldId] of oldRefs) {
+        if (newRefs.get(jsName) === oldId || !rootsById.has(oldId) || !removesIds.has(oldId))
+          continue;
+        const remover = rootsById.get(oldId);
+        if (remover !== undefined && remover !== node)
+          edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
+      }
+    }
+
+    // Kahn's algorithm, breaking ties (including nodes with no edges at all) by stable input order.
+    const mustFollow = new Map<DependencyNode, DependencyNode[]>();
+    const incomingEdges = new Map<DependencyNode, Edge[]>();
     const inDegree = new Map<DependencyNode, number>(roots.map((node) => [node, 0]));
-    for (const followers of mustFollow.values())
-      for (const follower of followers)
-        inDegree.set(follower, inDegree.get(follower)! + 1);
+    for (const edge of edges) {
+      let followers = mustFollow.get(edge.from);
+      if (followers === undefined)
+        mustFollow.set(edge.from, followers = []);
+      followers.push(edge.to);
+      inDegree.set(edge.to, inDegree.get(edge.to)! + 1);
+
+      let incoming = incomingEdges.get(edge.to);
+      if (incoming === undefined)
+        incomingEdges.set(edge.to, incoming = []);
+      incoming.push(edge);
+    }
 
     const ordered: DependencyNode[] = [];
     const remaining = new Set(roots);
     while (remaining.size > 0) {
       const ready = [...remaining].filter((node) => inDegree.get(node) === 0);
-      if (ready.length === 0) {
-        // A cycle between the identity-value edges - fall back to the base order for whatever's left.
-        ordered.push(...[...remaining].sort((a, b) => baseIndex.get(a)! - baseIndex.get(b)!));
-        break;
-      }
-      ready.sort((a, b) => baseIndex.get(a)! - baseIndex.get(b)!);
-      for (const node of ready) {
+      const place = (node: DependencyNode): void => {
         ordered.push(node);
         remaining.delete(node);
         for (const follower of mustFollow.get(node) ?? [])
           inDegree.set(follower, inDegree.get(follower)! - 1);
+      };
+      if (ready.length === 0) {
+        // Every remaining root is stalled on some other stalled root - a self-contained cycle. Break it
+        // by forcing one root through regardless of its unmet incoming edges (see [[breakCycle]]).
+        place(this.breakCycle(remaining, incomingEdges, inputIndex));
+        continue;
       }
+      ready.sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
+      for (const node of ready)
+        place(node);
     }
     return ordered;
+  }
+
+  /** Forces one root out of a stalled (self-contained cycle of) `remaining` roots through, deferring
+   * whichever of its own claimed/required properties are the reason it's stalled - see [[orderRoots]]'s
+   * cycle-breaking design and [[applyDeferredCorrections]]. Prefers (in stable input order) a root that
+   * has at least one deferrable incoming edge, so the cycle is actually broken open rather than merely
+   * papered over; if none exists (every stalled edge is either a non-deferrable navigation requirement
+   * or a Delete waiting on a free), the first root in stable order is forced through unresolved instead,
+   * leaving its write to fall through to the existing conflict-recording path if it genuinely fails.
+   */
+  private breakCycle(remaining: Set<DependencyNode>, incomingEdges: Map<DependencyNode, { from: DependencyNode, to: DependencyNode, deferrable?: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any } }[]>, inputIndex: Map<DependencyNode, number>): DependencyNode {
+    const stalled = [...remaining].sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
+
+    let chosen = stalled[0];
+    let deferrableIncoming: { deferrable: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any } }[] = [];
+    for (const node of stalled) {
+      const incoming = (incomingEdges.get(node) ?? [])
+        .filter((edge): edge is typeof edge & { deferrable: NonNullable<typeof edge.deferrable> } => remaining.has(edge.from) && edge.deferrable !== undefined);
+      if (incoming.length > 0) {
+        chosen = node;
+        deferrableIncoming = incoming;
+        break;
+      }
+    }
+
+    for (const { deferrable } of deferrableIncoming) {
+      let substitutions = this._pendingSubstitutions.get(chosen.instanceKey);
+      if (substitutions === undefined)
+        this._pendingSubstitutions.set(chosen.instanceKey, substitutions = []);
+      substitutions.push({ accessString: deferrable.accessString, placeholderValue: this.createPlaceholderValue(deferrable.placeholderKind) });
+      this._deferredCorrections.push({ node: chosen, accessString: deferrable.accessString, realValue: deferrable.realValue });
+    }
+    return chosen;
+  }
+
+  /** A safe temporary value to substitute in for a deferred property (see [[breakCycle]]) - one that is
+   * (virtually) guaranteed not to collide with any other row while the real value's own conflicting
+   * write is pending replay.
+   */
+  private createPlaceholderValue(kind: "guid" | "string" | "navigation"): any {
+    switch (kind) {
+      case "guid": return Guid.createValue();
+      case "string": return `RebasePlaceholder-${Guid.createValue()}`;
+      case "navigation": return null;
+    }
+  }
+
+  /** The navigation properties declared by `classFullName` (the same enumeration [[findBrokenRelationships]]
+   * uses), as the `props` access string each is read/written by plus whether it's nullable - i.e. whether
+   * the relationship's constraint on the *other* side (the side [[findBrokenRelationships]] queries for
+   * existence) has a multiplicity lower bound of 0. Cached per class since [[orderRoots]] otherwise
+   * re-resolves the same schema lookups once per root of that class.
+   */
+  private getNavigationProperties(classFullName: string): { jsName: string, nullable: boolean }[] {
+    const cached = this._navigationPropertiesByClass.get(classFullName);
+    if (cached !== undefined)
+      return cached;
+
+    const navProperties: { jsName: string, nullable: boolean }[] = [];
+    const schemaClassDef = this._schemaView.findClass(classFullName);
+    if (schemaClassDef !== undefined && !schemaClassDef.isRelationship()) {
+      for (const prop of schemaClassDef.getProperties()) {
+        if (!prop.isNavigation())
+          continue;
+        const jsName = ECJsNames.toJsName(prop.name);
+        const relConstraint = prop.direction === StrengthDirection.Backward ? prop.relationshipClass.source : prop.relationshipClass.target;
+        navProperties.push({ jsName, nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0 });
+      }
+    }
+    this._navigationPropertiesByClass.set(classFullName, navProperties);
+    return navProperties;
+  }
+
+  /** After [[replayForest]] finishes, applies each identity-value/navigation-property write that
+   * [[orderRoots]] deferred as a safe placeholder while breaking a self-contained ordering cycle. Grouped
+   * per node, so a cycle involving several deferred properties on the same node produces a single
+   * additional write. This should never collide - whatever the placeholder stood in for has, by
+   * construction, already been freed by the time this runs - but if it somehow still does (a genuine
+   * external conflict, independent of the cycle that was broken), it is reported and merged into this
+   * instance's existing conflict entry (if any) via the normal [[applyOrRecordConstraintConflict]] path,
+   * rather than inventing a new conflict shape for it.
+   */
+  private applyDeferredCorrections(): void {
+    if (this._deferredCorrections.length === 0)
+      return;
+
+    const byInstanceKey = new Map<string, { node: DependencyNode, accessString: string, realValue: any }[]>();
+    for (const correction of this._deferredCorrections) {
+      let corrections = byInstanceKey.get(correction.node.instanceKey);
+      if (corrections === undefined)
+        byInstanceKey.set(correction.node.instanceKey, corrections = []);
+      corrections.push(correction);
+    }
+    this._deferredCorrections = [];
+    this._pendingSubstitutions = new Map();
+
+    const nativeDb = this._db[_nativeDb];
+    for (const [instanceKey, corrections] of byInstanceKey) {
+      const node = corrections[0].node;
+      const change = this._store!.get(instanceKey);
+      if (change?.new === undefined)
+        continue; // The node that owned this deferral was always captured with a "new" side.
+      const { $meta: _meta, ...newProps } = change.new;
+
+      const propsToWrite: RebaseConflictProperties = { id: node.id, classFullName: node.classFullName };
+      for (const correction of corrections)
+        setPropertyValue(propsToWrite, correction.accessString, correction.realValue);
+
+      // Not an Insert (the placeholder-substituted row was already written during replay) - pass a
+      // defined `oldProps` so a UNIQUE violation isn't misclassified as a colliding primary-key insert.
+      const oldProps = change.old ?? { id: node.id, classFullName: node.classFullName };
+      this.applyOrRecordConstraintConflict(instanceKey, node.id, node.classFullName, oldProps, newProps, () =>
+        nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
+    }
   }
 
   /** The identity-like values of `props` that participate in a BisCore-declared UNIQUE constraint:
@@ -880,7 +1124,7 @@ export class InteractiveRebase {
     }
   }
 
-  /** Reports (and then removes) a dependent discovered via [[discoverUpstreamDependents]] - an instance
+  /** Reports (and then removes) a dependent discovered via [[discoverUnknownDependents]] - an instance
    * our local Txn never touched that would otherwise be silently cascaded away by our owner's delete.
    */
   private applyUpstreamDependentDelete(node: DependencyNode): void {
@@ -1603,6 +1847,15 @@ function getPropertyValue(props: RebaseConflictProperties, accessString: string)
     value = value[token];
   }
   return value;
+}
+
+/** Reads the id a navigation property (`jsName`) refers to, or undefined if unset/invalid - matching
+ * [[InteractiveRebase.findBrokenRelationships]]'s own navigation-value parsing.
+ */
+function getReferencedId(props: RebaseConflictProperties, jsName: string): Id64String | undefined {
+  const navValue = getPropertyValue(props, jsName);
+  const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
+  return typeof navId === "string" && Id64.isValidId64(navId) ? navId : undefined;
 }
 
 function resolveSchemaViewProperty(schemaView: SchemaView, classFullName: string, accessString: string): SchemaView.Property | undefined {
