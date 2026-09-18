@@ -61,6 +61,7 @@ These packages provide the following functions to support backend operations:
   - [Workspaces and Settings overview](./WorkspacesAndSettings.md)
   - [Settings](./Settings.md)
   - [Workspace resources](./Workspace.md)
+  - [Catalogs (CatalogDb)](./Catalogs.md)
 
 For services and app backends:
 
