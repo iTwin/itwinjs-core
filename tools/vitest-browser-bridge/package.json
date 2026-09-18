@@ -45,7 +45,7 @@
     "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts"
   },
   "dependencies": {
-    "@vitest/browser": "^4.1.10"
+    "@vitest/browser": "^4.1.11"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -56,11 +56,11 @@
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
     "electron": ">=35.0.0 <45.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "peerDependenciesMeta": {
     "electron": {
