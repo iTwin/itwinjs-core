@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-/** One schema in a {@link SchemaManifest}: its name, version, and the entries it directly references.
+/** One schema in a {@link SchemaManifest}: its name, version, alias, and the entries it directly references.
  * @internal
  */
 export interface SchemaManifestEntry {
@@ -14,11 +14,13 @@ export interface SchemaManifestEntry {
   readonly readVersion: number;
   readonly writeVersion: number;
   readonly minorVersion: number;
+  /** The schema's own alias. Absent only when the source could not supply one. */
+  readonly alias?: string;
   /** The schemas this schema directly references. */
   readonly references: readonly SchemaManifestEntry[];
 }
 
-/** One row of `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM
+/** One row of `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor, Alias FROM
  * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}.
  * @note `ecInstanceId` is a plain number, matching SchemaView's convention for schema-related rows:
  * `ec_` metadata rowids carry no briefcase prefix, so they are exactly representable. It is used
@@ -31,6 +33,7 @@ export interface SchemaManifestSchemaRow {
   readonly versionMajor: number;
   readonly versionWrite: number;
   readonly versionMinor: number;
+  readonly alias?: string;
 }
 
 /** One row of `SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences`,
@@ -42,9 +45,14 @@ export interface SchemaManifestReferenceRow {
   readonly targetECInstanceId: number;
 }
 
-/** The reference graph of every schema in one iModel - names, versions and reference edges, without
- * any schema data. A {@link (SchemaView:class)} husk loads it up front to answer which schemas exist
- * and which dependency-ordered set it must load to satisfy a request.
+/** The reference graph of every schema in one iModel - names, versions, aliases and reference
+ * edges, without any schema data. Two consumers share it, both of which need the same answer to
+ * "what schemas does this iModel have, and how do they depend on each other":
+ *
+ * - a {@link (SchemaView:class)} husk loads it up front to work out which dependency-ordered set of
+ *   schemas it must load to satisfy a request;
+ * - authoring schema discovery turns each entry into a schema-document header, so a resolver can
+ *   plan a load without reading any schema content.
  *
  * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link SchemaManifest.fromRows}.
  * The entries are a flat array with no iModel or platform dependency; even the largest iModels hold
@@ -83,6 +91,7 @@ export class SchemaManifest {
         readVersion: row.versionMajor,
         writeVersion: row.versionWrite,
         minorVersion: row.versionMinor,
+        alias: row.alias,
         references: [],
       };
       entries.push(entry);

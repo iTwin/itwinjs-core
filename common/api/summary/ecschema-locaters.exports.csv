@@ -10,5 +10,6 @@ preview;class;SchemaJsonFileLocater
 internal;namespace;SchemaXml
 public;class;SchemaXmlFileLocater
 preview;class;SchemaXmlFileLocater
+alpha;class;SchemaXmlFileSource
 beta;class;SchemaXmlStringLocater
 internal;class;StubSchemaXmlFileLocater
