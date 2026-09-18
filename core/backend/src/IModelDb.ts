@@ -4098,6 +4098,14 @@ export class BriefcaseDb extends IModelDb {
       }
     };
 
+    // sqlite_stat1 contains query-planner statistics, not iModel state. Its values can legitimately
+    // differ between briefcases and are safe to replace with the incoming values.
+    if (args.tableName === "sqlite_stat1" && (args.cause === DbConflictCause.Conflict || args.cause === DbConflictCause.Data)) {
+      Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on sqlite_stat1 - resolved by replacing the existing row with the incoming row`);
+      args.dump();
+      return DbConflictResolution.Replace;
+    }
+
     // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
     // created automatically as soon as the domain's schema is imported, so merging a changeset
     // that registers a domain inserts a row that was just created locally. Both rows describe the
