@@ -28,9 +28,6 @@
     "RefreshTiles": {
       "keyin": "dta refresh tiles"
     },
-    "ReproInvalidFramebuffer": {
-      "keyin": "dta repro invalid framebuffer"
-    },
     "CreateWindow": {
       "keyin": "win create"
     },
