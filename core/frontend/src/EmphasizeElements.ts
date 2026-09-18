@@ -22,6 +22,8 @@ interface EmphasizeElementsState {
   emphasizedAppearance: FeatureAppearance;
 }
 
+const g_defaultAppearance = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xe4, 0xe4, 0xe4), transparency: 0.8, nonLocatable: true });
+
 function addFeatureOverrides(overrides: FeatureSymbology.Overrides, ref: IModelDisplayReference, state: EmphasizeElementsState): void {
   if (undefined !== state.defaultAppearance)
     overrides.setDefaultOverrides(state.defaultAppearance);
@@ -326,7 +328,7 @@ function emphasizeElements(ids: Id64Arg, ref: IModelDisplayReference, state: Emp
     state.emphasizeIsolated = undefined;
   }
 
-  state.defaultAppearance = (undefined === defaultAppearance ? FeatureAppearance.fromJSON({ rgb: new RgbColor(0xe4, 0xe4, 0xe4), transparency: 0.8, nonLocatable: true }) : defaultAppearance);
+  state.defaultAppearance = defaultAppearance ?? g_defaultAppearance;
   return true;
 }
 
@@ -487,6 +489,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     emphasizedAppearance: FeatureAppearance.fromJSON({ emphasized: true }),
     wantEmphasis: false,
   };
+
+  public static get defaultAppearance() { return g_defaultAppearance; }
 
   /** If true, all overridden and emphasized elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [[Viewport.emphasisSettings]]. */
   public get wantEmphasis(): boolean { return this.#state.wantEmphasis; }
@@ -827,6 +831,8 @@ export class EmphasizeIModelElements implements FeatureSymbologyOverrider {
   private constructor(iModelRef: IModelDisplayReference) {
     this.#iModelRef = iModelRef;
   }
+
+  public static get defaultAppearance() { return g_defaultAppearance; }
 
   /** If true, all overridden and emphasized elements will also have the "emphasis" effect applied to them. */
   public get wantEmphasis(): boolean { return this.#state.wantEmphasis; }
