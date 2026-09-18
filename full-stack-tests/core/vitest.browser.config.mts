@@ -165,6 +165,7 @@ export default defineConfig({
     // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
     include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
     exclude: [
+      // These suites require Electron's native-app/IPC APIs and run in the Electron project.
       "**/app/NativeApp.test.ts",
       "**/standalone/BriefcaseConnection.test.ts",
       "**/standalone/CatalogConnection.test.ts",
@@ -184,6 +185,13 @@ export default defineConfig({
       ["junit", { outputFile: "lib/test/junit_results.xml" }],
     ],
     browser: {
+      commands: {
+        reportCoreChromeBackendFailure({ project }, message: string) {
+          project.vitest.state.catchError(new Error(message), "Core Chrome backend preflight");
+          void project.vitest.cancelCurrentRun("test-failure")
+            .catch((error) => project.vitest.state.catchError(error, "Core Chrome cancellation"));
+        },
+      },
       api: { host: "127.0.0.1", port: 3010, strictPort: true },
       enabled: true,
       provider: playwright({
