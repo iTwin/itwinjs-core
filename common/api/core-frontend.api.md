@@ -2265,6 +2265,7 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
+    direction: "geoToIModel" | "iModelToGeo";
     // (undocumented)
     isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
