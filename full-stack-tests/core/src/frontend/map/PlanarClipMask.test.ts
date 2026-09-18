@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -13,7 +13,8 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
-describe("Planar clip mask (#integration)", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -29,11 +30,11 @@ describe("Planar clip mask (#integration)", () => {
       mapLayerOptions: {
         BingMaps: { // eslint-disable-line
           key: "key",
-          value: process.env.TEST_BING_MAPS_KEY!, // will be caught in the assert above if undefined.
+          value: process.env.TEST_BING_MAPS_KEY, // will be caught in the assert above if undefined.
         },
         MapBoxImagery: { // eslint-disable-line
           key: "access_token",
-          value: process.env.TEST_MAPBOX_KEY!, // will be caught in the assert above if undefined.
+          value: process.env.TEST_MAPBOX_KEY, // will be caught in the assert above if undefined.
         },
       },
     });

@@ -186,7 +186,11 @@ if (ProcessDetector.isElectronAppFrontend) {
       await verifyInfo(v20dbReadonly, "2.0.0", people.harold, people.sarah);
       await verifyCategory(v20dbReadonly, cat1, "Category 1");
       await verifyCategory(v20dbReadonly, cat2, "Category 2");
-      await v20db.close();
+      await v20dbReadonly.close();
+
+      // Failed catalog-open requests can leave backend-owned catalog connections behind. Close
+      // any residual frontend connections before the shared Vitest leak check runs.
+      await TestUtility.cleanupOpenIModels();
     });
   });
 }
