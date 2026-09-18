@@ -37,6 +37,7 @@ export default defineConfig({
       provider: electron({
         backendInitModule: path.resolve(packageRoot, "lib/cjs/test/frontend/utils/backend.js"),
         preloadModule: path.resolve(packageRoot, "lib/cjs/backend/ElectronPreload.js"),
+        remoteDebuggingPort: process.env.VITEST_ELECTRON_DEBUG === "1" ? 9223 : undefined,
       }),
       instances: [{ browser: "electron" }],
       headless: true,
