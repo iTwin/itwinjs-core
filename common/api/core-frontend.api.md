@@ -10738,6 +10738,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
     // (undocumented)
+    get outputColorTexture(): TextureHandle | undefined;
+    // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
