@@ -15,7 +15,7 @@ import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../../SelectionSet";
 import { SceneContext } from "../../../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../../../Viewport";
+import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../../../Viewport";
 import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
 import { Decorations } from "../../../render/Decorations";
@@ -65,6 +65,7 @@ import { FrameStatsCollector } from "../FrameStatsCollector";
 import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../../common/internal/Symbols";
+import { IModelDisplayReference } from "../../../IModelDisplayReference";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -99,6 +100,13 @@ interface ReadPixelResources {
 }
 
 /** @internal */
+export interface FlashedElem {
+  id: Id64String;
+  idPair: Id64.Uint32Pair;
+  iModel: IModelConnection;
+}
+
+/** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
@@ -108,10 +116,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _currPickExclusions = new Id64.Uint32Set();
   private _swapPickExclusions = new Id64.Uint32Set();
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
-  private _hilites: Hilites = new EmptyHiliteSet();
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
-  private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
-  private _flashedId = Id64.invalid;
+  private _flashedElem?: FlashedElem;
   private _flashIntensity: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
@@ -192,13 +198,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get techniques(): Techniques { return this.renderSystem.techniques; }
 
-  public get hilites(): Hilites { return this._hilites; }
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
   public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
 
-  public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
-  public get flashedId(): Id64String { return this._flashedId; }
+  public get flashedElem(): FlashedElem | undefined { return this._flashedElem; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get analysisFraction(): number { return this._analysisFraction; }
@@ -207,6 +211,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
   }
+
   public override set animationBranches(branches: AnimationBranchStates | undefined) {
     this.disposeAnimationBranches();
     this._animationBranches = branches;
@@ -242,7 +247,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         shadows: false,
       });
 
-      this._worldDecorations = new WorldDecorations(vf);
+      const iModelRef = this.currentBranch.iModelRef;
+      assert(undefined !== iModelRef);
+      this._worldDecorations = new WorldDecorations(vf, iModelRef);
     }
 
     this._worldDecorations.init(decs);
@@ -373,7 +380,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public pushBatch(batch: Batch) {
-    this.uniforms.batch.setCurrentBatch(batch, this.currentBranch);
+    assert(undefined !== this.currentBranch.iModelRef);
+    this.uniforms.batch.setCurrentBatch(batch, this.currentBranch, this.currentBranch.iModelRef.iModel);
   }
   public popBatch() {
     this.uniforms.batch.clearCurrentBatch();
@@ -475,17 +483,23 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
-  public override setHiliteSet(hilite: HiliteSet): void {
-    this._hilites = hilite;
+  public override invalidateHilites(): void {
     desync(this._hiliteSyncTarget);
   }
-  public override setFlashed(id: Id64String, intensity: number) {
-    if (id !== this._flashedId) {
-      this._flashedId = id;
-      this._flashed = Id64.getUint32Pair(id);
-    }
-
+  public override setFlashed(flashed: IModelAndElementId, intensity: number) {
     this._flashIntensity = intensity;
+    if (flashed?.id === this._flashedElem?.id && flashed?.iModel === this._flashedElem?.iModel)
+      return;
+
+    if (flashed) {
+      this._flashedElem = {
+        id: flashed.id,
+        iModel: flashed.iModel,
+        idPair: Id64.getUint32Pair(flashed.id),
+      };
+    } else {
+      this._flashedElem = undefined;
+    }
   }
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
@@ -560,14 +574,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public override reset(_realityMapLayerChanged?: boolean): void {
+  public override reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void {
+    this.currentBranch.iModelRef = this.decorationsState.iModelRef = primaryIModelRef;
     this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
     // Ensure that only necessary classifiers are removed. If the reality map layer has not changed,
     // removing all classifiers would result in the loss of draping effects without triggering a refresh.
-    if (_realityMapLayerChanged) {
+    if (realityMapLayerChanged) {
       this.changePlanarClassifiers(undefined);
     } else if (this._planarClassifiers) {
         const filteredClassifiers = new Map(
@@ -905,6 +920,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
       contourLine: top.contourLine,
+      iModelRef: top.iModelRef,
     });
 
     this.pushState(state);

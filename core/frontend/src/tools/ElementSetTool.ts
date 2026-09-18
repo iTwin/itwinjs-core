@@ -585,7 +585,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
           continue;
 
         for (const subCategoryId of subcategories) {
-          const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+          const appearance = vp.primaryIModelRef.getSubCategoryAppearance(subCategoryId);
           if (undefined === appearance || (!appearance.invisible && !appearance.dontLocate))
             continue;
 
