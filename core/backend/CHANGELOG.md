@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 15 Sep 2026 20:26:48 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Sep 2026 15:12:40 GMT and should not be manually modified.
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+### Updates
+
+- Resolve sqlite_stat1 conflicts during changeset merge and local transaction rebase.
 
 ## 5.13.3
 Tue, 15 Sep 2026 20:25:28 GMT
