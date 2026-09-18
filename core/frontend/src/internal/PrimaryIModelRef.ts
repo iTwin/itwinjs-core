@@ -199,7 +199,10 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
     loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
+    this.viewedCategories.onChanged.addListener(async () => {
+      this.invalidateSymbologyOverrides();
+      loadViewedCategories(this);
+    });
 
     // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
     listenForSubCategoryChanges(this);
@@ -252,7 +255,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     });
 
     loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
+    this.viewedCategories.onChanged.addListener(async () => {
+      this.invalidateSymbologyOverrides();
+      loadViewedCategories(this);
+    });
 
     // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
     listenForSubCategoryChanges(this);

@@ -110,7 +110,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
     loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
+    this.viewedCategories.onChanged.addListener(async () => {
+      this.invalidateSymbologyOverrides();
+      loadViewedCategories(this);
+    });
 
     const updateViewFlags = () => {
       this.#resolvedViewFlags = view.viewFlags.override(this.overrides.viewFlags);
