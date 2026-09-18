@@ -9,7 +9,7 @@ import {
   dispatchBackendCallback,
   registerBackendCallback,
 } from "../callbacks/backend.js";
-import { createHttpBackendCallbackInvoker } from "../callbacks/http.js";
+import { createHttpBackendCallbackHandler, createHttpBackendCallbackInvoker } from "../callbacks/http.js";
 import { installElectronCallbackHandler } from "../callbacks/electron.js";
 import { unwrapCallbackResponse } from "../callbacks/protocol.js";
 
@@ -68,9 +68,33 @@ describe("callback transport", () => {
       .resolves.toEqual({ ok: false, error: { message: "Unknown callback error." } });
   });
 
-  it("rejects malformed callback responses at the renderer boundary", () => {
-    expect(() => unwrapCallbackResponse({ ok: true })).toThrow("Invalid callback response");
+  it("preserves a successful undefined callback result at the renderer boundary", () => {
+    expect(unwrapCallbackResponse({ ok: true })).toBeUndefined();
+    expect(() => unwrapCallbackResponse({ ok: "true" })).toThrow("Invalid callback response");
     expect(() => unwrapCallbackResponse({ ok: false, error: {} })).toThrow("Invalid callback response");
+  });
+
+  it("preserves an undefined callback result through the HTTP transport", async () => {
+    registerBackendCallback("void", () => undefined);
+    let serializedResponse: string | undefined;
+    const handler = createHttpBackendCallbackHandler();
+    await handler(
+      { body: request("void", []) },
+      {
+        status: (statusCode) => ({
+          json: (body) => {
+            expect(statusCode).toBe(200);
+            serializedResponse = JSON.stringify(body);
+          },
+        }),
+      },
+    );
+
+    const invoke = createHttpBackendCallbackInvoker({
+      url: "http://localhost/callback",
+      fetch: async () => new Response(serializedResponse, { status: 200 }),
+    });
+    await expect(invoke("void")).resolves.toBeUndefined();
   });
 
   it("invokes callbacks through an HTTP transport", async () => {

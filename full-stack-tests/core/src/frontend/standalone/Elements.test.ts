@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
 import { TestUtility } from "../TestUtility";
@@ -12,12 +12,12 @@ const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : d
 describeChrome("Elements", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -31,72 +31,72 @@ describeChrome("Elements", () => {
       };
 
       let byCode = await imodel.elements.loadProps(code) as GeometryPartProps;
-      expect(byCode).not.to.be.undefined;
-      expect(byCode.geom).to.be.undefined;
+      expect(byCode).not.toBeUndefined();
+      expect(byCode.geom).toBeUndefined();
 
       const id = byCode.id!;
       let byId = await imodel.elements.loadProps(id) as GeometryPartProps;
-      expect(byId).to.deep.equal(byCode);
+      expect(byId).toEqual(byCode);
 
       byCode = await imodel.elements.loadProps(code, { wantGeometry: false }) as GeometryPartProps;
-      expect(byCode).to.deep.equal(byId);
+      expect(byCode).toEqual(byId);
 
       byId = await imodel.elements.loadProps(id, { wantGeometry: true }) as GeometryPartProps;
       const geom = byId.geom!;
-      expect(geom).not.to.be.undefined;
-      expect(geom.length).to.equal(2);
-      expect(geom[0].header!.flags).to.equal(0);
-      expect(geom[1].box!.baseX).to.equal(i + 1);
-      expect(geom[1].box!.baseY).to.equal(i + 1);
+      expect(geom).not.toBeUndefined();
+      expect(geom.length).toBe(2);
+      expect(geom[0].header!.flags).toBe(0);
+      expect(geom[1].box!.baseX).toBe(i + 1);
+      expect(geom[1].box!.baseY).toBe(i + 1);
     }
   });
 
   it("queries placements", async () => {
     const ids2d = await imodel.elements.queryIds({ from: "bis.GeometricElement2d" });
-    expect(ids2d.size).to.equal(18);
+    expect(ids2d.size).toBe(18);
     const ids3d = await imodel.elements.queryIds({ from: "bis.GeometricElement3d" });
-    expect(ids3d.size).to.equal(6);
+    expect(ids3d.size).toBe(6);
 
     const ids = Array.from(ids2d).concat(Array.from(ids3d));
     const placements = await imodel.elements.getPlacements(ids);
-    expect(placements.length).to.equal(ids.length);
+    expect(placements.length).toBe(ids.length);
 
     for (const placement of placements) {
       const id = placement.elementId;
       if (ids2d.has(id)) {
-        expect(placement).instanceof(Placement2d);
+        expect(placement).toBeInstanceOf(Placement2d);
         const props = (await imodel.elements.getProps(id))[0] as GeometricElement2dProps;
         const actual = Placement2d.fromJSON(props.placement);
-        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).to.be.true;
+        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).toBe(true);
       } else {
-        expect(ids3d.has(id)).to.be.true;
-        expect(placement).instanceof(Placement3d);
+        expect(ids3d.has(id)).toBe(true);
+        expect(placement).toBeInstanceOf(Placement3d);
         const props = (await imodel.elements.getProps(id))[0] as GeometricElement3dProps;
         const actual = Placement3d.fromJSON(props.placement);
-        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).to.be.true;
+        expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).toBe(true);
       }
     }
 
     const placements2d = await imodel.elements.getPlacements(ids, { type: "2d" });
-    expect(placements2d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids2d).sort());
+    expect(placements2d.map((x) => x.elementId).sort()).toEqual(Array.from(ids2d).sort());
 
     const placements3d = await imodel.elements.getPlacements(ids, { type: "3d" });
-    expect(placements3d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids3d).sort());
+    expect(placements3d.map((x) => x.elementId).sort()).toEqual(Array.from(ids3d).sort());
   });
 
   it("queries individual placements", async () => {
     async function test(dim: "2d" | "3d"): Promise<void> {
       const ids = Array.from(await imodel.elements.queryIds({ from: `bis.GeometricElement${dim}`, limit: 1 }));
-      expect(ids.length).to.equal(1);
+      expect(ids.length).toBe(1);
 
       const placements = await imodel.elements.getPlacements(ids);
-      expect(placements.length).to.equal(1);
-      expect(placements[0].elementId).to.equal(ids[0]);
+      expect(placements.length).toBe(1);
+      expect(placements[0].elementId).toBe(ids[0]);
 
       if ("2d" === dim)
-        expect(placements[0]).instanceof(Placement2d);
+        expect(placements[0]).toBeInstanceOf(Placement2d);
       else
-        expect(placements[0]).instanceof(Placement3d);
+        expect(placements[0]).toBeInstanceOf(Placement3d);
     }
 
     await test("3d");
