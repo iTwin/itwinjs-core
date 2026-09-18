@@ -989,6 +989,21 @@ export class EmphasizeIModelElements implements FeatureSymbologyOverrider {
     return overrideElements(ids, this.#iModelRef, this.#state, color, override, replace);
   }
 
+  /** Set the currently selected elements to be always drawn exclusively. */
+  public isolateSelectedElements(ref: IModelDisplayReference, replace: boolean = true, clearSelection: boolean = true): boolean {
+    return isolateSelectedElements(ref, this.#state, replace, clearSelection);
+  }
+
+  /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance. */
+  public emphasizeSelectedElements(ref: IModelDisplayReference, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
+    return emphasizeSelectedElements(ref, this.#state, defaultAppearance, replace, clearSelection);
+  }
+
+  /** Set the currently selected elements to display with a color/transparency override. */
+  public overrideSelectedElements(ref: IModelDisplayReference, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
+    return overrideSelectedElements(ref, this.#state, color, override, replace, clearSelection);
+  }
+
   /** @return true if provider is currently overriding the display of any elements. */
   public get isActive(): boolean {
     return isActive(this.#iModelRef, this.#state);
