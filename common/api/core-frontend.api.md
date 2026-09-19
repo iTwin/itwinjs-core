@@ -3564,12 +3564,20 @@ export function formatAnimationBranchId(modelId: Id64String, branchId: number): 
 export class FormatsProviderManager implements FormatsProvider {
     constructor(_formatsProvider: FormatsProvider);
     // (undocumented)
+    applyFormatsProviderChange(change: FormatsProviderChange): boolean;
+    // (undocumented)
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
+    isCurrentFormatsProviderReload(provider: FormatsProvider, change?: FormatsProviderChange): boolean;
+    // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    // (undocumented)
+    onFormatsChangedInternal: BeEvent<(event: FormatsProviderManagerEvent) => void>;
+    restoreProviderChange(change: FormatsProviderChange): boolean;
+    setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void;
 }
 
 // @beta @deprecated
@@ -5111,6 +5119,8 @@ export class IModelApp {
     static resetFormatsProvider(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
+    // @beta
+    static setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void>;
     static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
@@ -8279,6 +8289,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
     // @internal
+    runAndWaitForReload(action: () => void): Promise<void>;
+    // @internal
     protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
@@ -9949,6 +9961,11 @@ export function setBasicAuthorization(headers: Headers, credentials: RequestBasi
 
 // @internal (undocumented)
 export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @beta
+export interface SetFormatsProviderOptions {
+    readonly unitSystem?: UnitSystemKey;
+}
 
 // @internal
 export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
