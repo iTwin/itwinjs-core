@@ -24,6 +24,10 @@ import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./Navi
 import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onReservedElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
+}
+
 /** Argument for the `Element.onXxx` static methods
  * @beta
  */
@@ -659,13 +663,13 @@ export class Element extends Entity {
   public getToolTipMessage(): string[] {
     const addKey = (key: string) => `<b>%{iModelJs:Element.${key}}:</b> `; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.
     const msg: string[] = [];
-    const display = this.getDisplayLabel();
+    const display = escapeHtml(this.getDisplayLabel());
     msg.push(display ? display : `${addKey("Id") + this.id}, ${addKey("Type")}${this.className}`);
 
     if (this instanceof GeometricElement)
-      msg.push(addKey("Category") + this.iModel.elements.getElement(this.category).getDisplayLabel());
+      msg.push(addKey("Category") + escapeHtml(this.iModel.elements.getElement(this.category).getDisplayLabel()));
 
-    msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
+    msg.push(addKey("Model") + escapeHtml(this.iModel.elements.getElement(this.model).getDisplayLabel()));
     return msg;
   }
 
