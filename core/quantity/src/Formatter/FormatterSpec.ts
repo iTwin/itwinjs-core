@@ -92,7 +92,7 @@ export class FormatterSpec {
       name: `${numeratorUnit.name}_per_${denominatorUnit.name}`,
       label: "",
       system: numeratorUnit.system,
-      conversion: { factor: ratioScaleFactor, offset: 0.0 },
+      conversion: createRatioConversionProps(ratioScaleFactor, denominatorToNumerator),
     };
     conversions.push(ratioConversionSpec);
 
@@ -188,7 +188,7 @@ export class FormatterSpec {
       name: `${numeratorUnit.name}_per_${denominatorUnit.name}`,
       label: "",
       system: numeratorUnit.system,
-      conversion: { factor: ratioScaleFactor, offset: 0.0 },
+      conversion: createRatioConversionProps(ratioScaleFactor, denominatorToNumerator),
     });
     conversions.push({
       name: numeratorUnit.name,
@@ -319,4 +319,10 @@ export class FormatterSpec {
   public applyFormatting(magnitude: number): string {
     return Formatter.formatQuantity(magnitude, this);
   }
+}
+
+function createRatioConversionProps(ratioScaleFactor: number, sourceConversion: UnitConversionProps): UnitConversionProps {
+  return sourceConversion.error
+    ? { factor: ratioScaleFactor, offset: 0.0, error: true }
+    : { factor: ratioScaleFactor, offset: 0.0 };
 }

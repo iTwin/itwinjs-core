@@ -21,6 +21,8 @@ publish: false
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
+  - [@itwin/core-quantity](#itwincore-quantity)
+    - [Synchronous quantity formatting](#synchronous-quantity-formatting)
   - [@itwin/core-electron](#itwincore-electron)
     - [Electron 44 support](#electron-44-support)
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
@@ -231,6 +233,12 @@ See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--
 ### Rank support for DefinitionSet
 
 [BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
+
+## @itwin/core-quantity
+
+### Synchronous quantity formatting
+
+`@itwin/core-quantity` now provides beta synchronous quantity-formatting capabilities through [SyncUnitsProvider]($quantity), [SyncFormatsProvider]($quantity), [Format.createFromJSONSync]($quantity), and [FormatterSpec.createSync]($quantity). Use these APIs only when the required format and unit data are already available locally; they do not load schemas or perform asynchronous I/O. Missing synchronous unit data is reported through `BadUnit` or an identity conversion with `error: true`, while missing synchronous formats are reported as `undefined`. Use the existing asynchronous construction path or a plain-value fallback when the required data is not local. Providers that delegate a format lookup can forward its optional context to preserve cycle detection; omit the context only for an independent lookup.
 
 ## @itwin/core-electron
 
