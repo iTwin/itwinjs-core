@@ -8,9 +8,12 @@ publish: false
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
+    - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
+    - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
+      - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
     - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
     - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
@@ -79,11 +82,71 @@ A change that would move or destroy existing data is now refused with `BE_SQLITE
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
 
+### Experimental `Relations()` table valued function
+
+ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. Its native traversal generates SQL from property maps and reads relationship storage directly, avoiding ECSQL preparation for each candidate relationship class. The outer query still goes through ECSQL preparation.
+
+```sql
+ECVLib.Relations(<ECInstanceId>, <ECClassId>[, <direction>])
+```
+
+The `ECInstanceId` and `ECClassId` arguments are mandatory; a query that omits either is rejected rather than silently returning no rows. The optional third argument is the traversal direction — `'forward'`, `'backward'` or `'both'` (the default, also used when the argument is `NULL`). The comparison is case insensitive; any other value is an error. The function may also be written unqualified as `Relations(...)`.
+
+Each row describes one traversed relationship:
+
+| Column                     | Description                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `RelatedECInstanceId`      | `ECInstanceId` of the related instance.                                                                                          |
+| `RelatedECClassId`         | `ECClassId` of the related instance.                                                                                             |
+| `Direction`                | `forward` when the seed is the source of the relationship, `backward` when it is the target.                                      |
+| `RelationshipECClassId`    | `ECClassId` of the relationship that was traversed.                                                                              |
+| `RelationshipECInstanceId` | `ECInstanceId` of the relationship instance, which distinguishes two link table rows connecting the same pair of instances.       |
+| `NavPropertyName`          | Name of the navigation property holding the relationship for end table (foreign key) relationships; `NULL` for link tables.       |
+
+Because `Relations()` is experimental it is disabled by default. Enable it with `PRAGMA experimental_features_enabled=true` or per query with `ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`.
+
+**Example** — find the model that contains an element, without knowing that `BisCore:ModelContainsElements` is stored in the `Model` navigation property:
+
+```sql
+SELECT r.RelatedECInstanceId
+FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'backward') r
+  JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId
+WHERE e.ECInstanceId = :elementId AND rc.Name = 'ModelContainsElements'
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+Only instances of the primary (`main`) table space are traversed, and the ECSQL version was bumped to `2.0.4.1`.
+
+See the [Relations virtual table reference](../learning/ECSqlReference/Relations.md) for more details.
+
+### Import CSV data into ECDb
+
+CSV data can be imported into an ECClass from in-memory string rows or streamed from a file. Both beta APIs return the number of inserted rows:
+
+```ts
+const options = {
+  className: "Example.Person",
+  mapping: [
+    { columnIndex: 0, propertyName: "Name" },
+    { columnIndex: 1, propertyName: "Age" },
+  ],
+};
+
+ecdb.importCSVData([["Alice", "42"], ["Bob", "37"]], options);
+ecdb.importCSVFile(csvFilePath, { ...options, hasHeader: true });
+```
+
+[ECDb.importCSVData]($backend) uses V8 serialization to cross the JavaScript-to-native boundary once. [ECDb.importCSVFile]($backend) reads and parses the file in native code; its path must be accessible to the backend process. Both reuse one ECSQL statement, convert each CSV string according to its mapped EC property type, ignore unmapped columns, and roll back the complete import if parsing, conversion, or insertion fails.
+
 ### ChangesetReader changes
 
 #### ChangesetReader row options
 
 The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
+
+#### SQLite changeset schema sources
+
+The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
 
 ### Quantity formatting for text annotation fields
 

@@ -2016,6 +2016,24 @@ export interface CreateTerminatorGeometryArgs {
 }
 
 // @beta
+export interface CSVColumnMapping {
+    columnIndex: number;
+    propertyName: string;
+}
+
+// @beta
+export interface CSVFileImportOptions extends CSVImportOptions {
+    hasHeader?: boolean;
+}
+
+// @beta
+export interface CSVImportOptions {
+    className: string;
+    mapping: readonly CSVColumnMapping[];
+    nullValue?: string;
+}
+
+// @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
@@ -2457,6 +2475,10 @@ export class ECDb implements Disposable {
     // @internal
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    importCSVData(rows: readonly (readonly string[])[], options: CSVImportOptions): number;
+    // @beta
+    importCSVFile(csvFilePath: string, options: CSVFileImportOptions): number;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -7094,14 +7116,14 @@ export interface SqliteChange {
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
-export class SqliteChangesetReader implements Disposable {
+export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> implements Disposable {
     [Symbol.dispose](): void;
     protected constructor(
-    db: AnyDb);
+    db: TDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db: AnyDb;
+    readonly db: TDb;
     get disableSchemaCheck(): boolean;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
     getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
@@ -7120,9 +7142,9 @@ export class SqliteChangesetReader implements Disposable {
     isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
     get isIndirect(): boolean;
     get op(): SqliteChangeOp;
-    static openFile(args: {
+    static openFile<TDb extends SqliteChangesetReaderDb>(args: {
         readonly fileName: string;
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb>;
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
@@ -7147,11 +7169,14 @@ export class SqliteChangesetReader implements Disposable {
 }
 
 // @beta
-export interface SqliteChangesetReaderArgs {
-    readonly db: AnyDb;
+export interface SqliteChangesetReaderArgs<TDb extends SqliteChangesetReaderDb = AnyDb> {
+    readonly db: TDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }
+
+// @beta
+export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
 
 // @public
 export class SQLiteDb {

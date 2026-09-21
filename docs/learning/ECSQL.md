@@ -359,6 +359,23 @@ Return the Model for a specific light fixture element (navigation property only,
 SELECT Model FROM bis.Element WHERE ECInstanceId=?
 ```
 
+## Discovering relationships with Relations()
+
+Joins and navigation properties both require you to know *which* relationship to traverse. Sometimes you do not — for example when building a generic "what is this element connected to?" view, or when following a chain of relationships whose classes vary from element to element.
+
+The experimental [`Relations()` table valued function](./ECSqlReference/Relations.md) answers that question: given the `ECInstanceId` and `ECClassId` of a seed instance, it returns every directly related instance, regardless of which relationship connects them and regardless of whether that relationship is stored in a navigation property or a link table. It can also be combined with a [recursive CTE](#common-table-expressions) to walk the graph to an arbitrary depth.
+
+```sql
+SELECT rc.Name RelationshipName, r.Direction, COUNT(*) Cnt
+FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId) r
+  JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId
+WHERE e.ECInstanceId = ?
+GROUP BY rc.Name, r.Direction
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+See the [Relations virtual table reference](./ECSqlReference/Relations.md) for the syntax, the returned columns and further BisCore examples.
+
 ## Polymorphic Queries
 
 By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its subclasses are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.

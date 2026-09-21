@@ -2265,6 +2265,7 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
+    direction: "geoToIModel" | "iModelToGeo";
     // (undocumented)
     isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
@@ -10736,6 +10737,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
+    // (undocumented)
+    get outputColorTexture(): TextureHandle | undefined;
     // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
