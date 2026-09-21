@@ -187,10 +187,12 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
-export class BasicUnitsProvider implements UnitsProvider {
+export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
+    findUnitByNameSync(unitName: string): UnitProps;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
@@ -273,6 +275,7 @@ export class Format extends BaseFormat {
     // (undocumented)
     static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
+    static createFromJSONSync(name: string, unitsProvider: SyncUnitsProvider, formatProps: FormatProps): Format;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
@@ -387,6 +390,7 @@ export class FormatterSpec {
     // (undocumented)
     protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
+    static createSync(name: string, format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): FormatterSpec;
     // (undocumented)
     get format(): Format;
     // (undocumented)
@@ -981,6 +985,17 @@ export enum ShowSignOption {
 
 // @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
+
+// @beta
+export interface SyncFormatsProvider {
+    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
+}
+
+// @beta
+export interface SyncUnitsProvider {
+    findUnitByNameSync(unitName: string): UnitProps;
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
+}
 
 // @internal
 export class UnitConversion {

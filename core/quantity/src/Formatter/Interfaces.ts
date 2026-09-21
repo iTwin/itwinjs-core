@@ -223,6 +223,16 @@ export interface FormatsProvider {
   onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
+/**
+ * Optional synchronous capability for format providers that can resolve already-loaded local data.
+ * Implementations must not load schemas or perform asynchronous I/O from this method.
+ * @beta
+ */
+export interface SyncFormatsProvider {
+  /** Return a format definition from synchronously available data, or `undefined` when unavailable. */
+  getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
+}
+
 /** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.
  * @beta
  */

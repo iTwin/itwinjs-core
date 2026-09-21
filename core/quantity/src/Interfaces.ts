@@ -121,6 +121,21 @@ export interface UnitsProvider {
 }
 
 /**
+ * Optional synchronous capability for providers that can resolve units and conversions from local data.
+ * Implementations must not load schemas or perform asynchronous I/O from these methods.
+ * @beta
+ */
+export interface SyncUnitsProvider {
+  /** Find a unit by its fully-qualified name using synchronously available data. */
+  findUnitByNameSync(unitName: string): UnitProps;
+  /**
+   * Compute conversion factors using synchronously available data.
+   * On failure, implementations MUST return `{ factor: 1.0, offset: 0.0, error: true }`.
+   */
+  getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
+}
+
+/**
  * Identifies a user-facing unit system preference group.
  *
  * A `UnitSystemKey` does **not** map one-to-one to an EC `UnitSystem` element. Instead, each key

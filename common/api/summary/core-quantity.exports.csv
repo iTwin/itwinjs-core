@@ -89,6 +89,8 @@ internal;interface;SerializedUnitSystem
 beta;enum;ShowSignOption
 beta;function;showSignOptionToString
 deprecated;function;showSignOptionToString
+beta;interface;SyncFormatsProvider
+beta;interface;SyncUnitsProvider
 internal;class;UnitConversion
 internal;class;UnitConversionGraph
 beta;enum;UnitConversionInvert

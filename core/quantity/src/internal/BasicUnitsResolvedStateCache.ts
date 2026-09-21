@@ -33,6 +33,13 @@ export async function resolveBasicUnitsData(loadSchema: () => Promise<Serialized
   return _resolvePromise;
 }
 
+/** Returns the shared resolved data for the built-in basic units, building it synchronously if needed.
+ * @internal
+ */
+export function resolveBasicUnitsDataSync(schema: SerializedUnitSchema): ResolvedBasicUnitsData {
+  return _resolvedData ??= buildResolvedBasicUnitsData(schema);
+}
+
 /** @internal — test use only. Resets the shared module-level lazy cache.
  * This stays in source rather than under a test folder because the public test seam
  * `BasicUnitsProvider._testResetUnitsCache()` lives in source and delegates here.

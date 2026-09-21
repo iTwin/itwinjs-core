@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
