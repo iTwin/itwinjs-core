@@ -1,6 +1,6 @@
 # Full-stack core test matrix
 
-This matrix records which `full-stack-tests/core` tests run in each Certa runtime during the staged Vitest migration. The source bundle is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
+This matrix records which `full-stack-tests/core` tests run in Chrome and Electron. Chrome uses Certa; Electron normal, integration, and performance runs use Vitest, with explicit Electron Certa fallback commands retained. The test source is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
 
 ## Runner commands
 
@@ -12,9 +12,9 @@ This matrix records which `full-stack-tests/core` tests run in each Certa runtim
 
 Normal commands exclude `#integration` and `#performance`. Integration and performance commands select those tags explicitly. Electron performance collects only `standalone/QueryExtents.test.ts`, the owner of all nine performance tests, instead of creating tester frames for unrelated skipped suites. Update that file selection if performance coverage moves or expands to other files. Azurite is started by the surrounding package scripts where required.
 
-## 5a decisions
+## Chrome-only suite decisions
 
-The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the Chrome bundle and are reported as skipped by Certa in Electron through the framework-neutral `describe.skip` conditional.
+The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the Chrome bundle and are reported as skipped by the Electron runner through the framework-neutral `describe.skip` conditional.
 
 - `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering.
 - `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering.
@@ -47,7 +47,7 @@ These files already guard their tests with `ProcessDetector.isElectronAppFronten
 These files contain tests or setup that differ by runtime. File-level counts must not be used to classify them.
 
 - `src/frontend/_Setup.test.ts` — initializes Bentley Cloud RPC and the backend health test only for Chrome; cleanup hooks apply to both runtimes.
-- `src/frontend/hub/HyperModeling.test.ts` — the key-in marker-display test skips Electron because the Certa Electron path cannot locate its JSON key-in file.
+- `src/frontend/hub/HyperModeling.test.ts` — the key-in marker-display test retains its existing Electron skip.
 - `src/frontend/hub/IModelConnection.test.ts` — the repeated-open test is Chrome-only because the behavior is not valid over Electron IPC.
 - `src/frontend/standalone/ECSqlQuery.test.ts` — the frontend-restart test skips the browser and therefore runs in Electron.
 - `src/frontend/standalone/tile/TileIO.test.ts` — worker decoding and Electron frontend startup/shutdown are conditional.
@@ -81,9 +81,9 @@ The `isMobileAppFrontend` guards in `BriefcaseTxns`, `EditTool`, `GraphicalEditi
 
 The 44 files not listed in the exception sections are currently shared by Chrome and Electron. Existing skipped tests remain unchanged, including the four parser skips in `ECSqlAst`, the skipped `GraphicalEditingScope` test, and the flaky skipped `RenderTarget` test.
 
-## Migration requirements
+## Runner requirements
 
-- Preserve these mode decisions while moving Electron to Vitest in 5b and Chrome to Vitest in 5c.
-- Reconcile Certa and Vitest test names/counts against this matrix before removing Certa.
-- Keep Electron execution serial initially; do not add PR #9094's sharding/retry runner to the migration PR.
+- Preserve these mode decisions: Chrome remains on Certa; Electron normal, integration, and performance runs use Vitest, with the explicit Electron Certa fallback commands retained.
+- Keep Certa and Vitest test names and counts aligned with this matrix.
+- Keep Electron execution serial; do not add PR #9094's sharding/retry runner.
 - Revisit any Chrome-only decision if Vitest exposes a meaningful transport or renderer difference.

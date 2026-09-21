@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ipcMain } from "electron";
 import { ElectronHost } from "@itwin/core-electron/main";
 
 interface FrameAwareWebContents {
@@ -17,12 +18,6 @@ interface IpcEvent {
 
 /** Route main-process responses to the Vitest tester iframe that initiated the request. */
 function installFrameRouting(): void {
-  const ipcMain = ElectronHost.ipcMain as typeof ElectronHost.ipcMain & {
-    handle(channel: string, listener: (event: IpcEvent, ...args: any[]) => unknown): void;
-  } | undefined;
-  if (ipcMain === undefined)
-    return;
-
   const installed = ipcMain as typeof ipcMain & { vitestFrameRoutingInstalled?: boolean };
   if (installed.vitestFrameRoutingInstalled)
     return;
@@ -72,12 +67,4 @@ installFrameRouting();
 // Select the bridge callback registry before loading the shared backend initializer.
 process.env.VITEST_CORE_RUNNER = "vitest";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const backendInitialization = require("./backend") as Promise<(() => Promise<void>) | undefined>;
-
-async function init() {
-  const shutdown = await backendInitialization;
-  installFrameRouting();
-  return shutdown;
-}
-
-module.exports = init();
+module.exports = require("./backend") as Promise<(() => Promise<void>) | undefined>;

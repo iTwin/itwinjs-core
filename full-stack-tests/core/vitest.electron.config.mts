@@ -23,6 +23,7 @@ if (existsSync(envFile)) {
 const rendererEnv = Object.fromEntries(Object.entries(process.env)
   .filter(([key, value]) => key.startsWith("IMJS_") && value !== undefined)
   .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]));
+const isDebug = process.env.VITEST_CORE_DEBUG === "1";
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
 const invert = process.env.VITEST_CORE_GREP_INVERT !== "false";
 const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
@@ -30,6 +31,7 @@ const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
 export default defineConfig({
   define: {
     ...rendererEnv,
+    "process.env.ITWINJS_FRONTEND_INTEGRATION_TEST_LOG_TO_CONSOLE": JSON.stringify(process.env.ITWINJS_FRONTEND_INTEGRATION_TEST_LOG_TO_CONSOLE) ?? "undefined",
     "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
   },
   resolve: {
@@ -117,8 +119,8 @@ export default defineConfig({
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,
     testNamePattern,
-    testTimeout: 240000,
-    hookTimeout: 240000,
+    testTimeout: isDebug ? 0 : 240000,
+    hookTimeout: isDebug ? 0 : 240000,
     fileParallelism: false,
     reporters: [
       "default",
@@ -129,9 +131,10 @@ export default defineConfig({
       provider: electron({
         backendInitModule: path.resolve(packageRoot, "lib/backend/vitest-electron.js"),
         preloadModule: path.resolve(packageRoot, "../../core/electron/lib/cjs/backend/ElectronPreload.js"),
+        remoteDebuggingPort: isDebug ? 9223 : undefined,
       }),
       instances: [{ browser: "electron" }],
-      headless: true,
+      headless: !isDebug,
       screenshotFailures: false,
     },
   },
