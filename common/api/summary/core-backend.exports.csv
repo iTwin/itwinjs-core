@@ -218,6 +218,7 @@ beta;interface;EditableWorkspaceDb
 beta;class;EditTxn
 public;class;ElementAspect
 preview;class;ElementAspect
+beta;interface;ElementAspectMutationContext
 beta;class;ElementDrivesElement
 beta;interface;ElementDrivesElementProps
 beta;class;ElementDrivesTextAnnotation

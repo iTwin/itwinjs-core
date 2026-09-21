@@ -2838,6 +2838,8 @@ export class EditTxn {
     updateRelationship(props: RelationshipProps): void;
     // (undocumented)
     verifyWriteable(): void;
+    withElementAspectMutations<T>(ownerId: Id64String, fn: (context: ElementAspectMutationContext) => T): T;
+    withElementAspectMutations<T>(ownerId: Id64String, fn: (context: ElementAspectMutationContext) => Promise<T>): Promise<T>;
 }
 
 // @public @preview
@@ -2971,6 +2973,13 @@ export class ElementAspect extends Entity {
     protected static onUpdated(_arg: OnAspectPropsArg): void;
     // (undocumented)
     toJSON(): ElementAspectProps;
+}
+
+// @beta
+export interface ElementAspectMutationContext {
+    deleteAspect(aspectInstanceId: Id64String): void;
+    insertAspect<T extends ElementAspectProps>(aspectProps: T): Id64String;
+    updateAspect<T extends ElementAspectProps>(aspectProps: T): void;
 }
 
 // @beta

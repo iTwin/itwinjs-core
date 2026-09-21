@@ -5,16 +5,35 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { EditTxnError, ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory, Subject,
 } from "../../core-backend";
+import { _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementAspect", () => {
 
   let iModel: SnapshotDb;
+
+  function stubNativeAspectMutations() {
+    const reserve = sinon.stub();
+    const apply = sinon.stub();
+    Object.defineProperties(iModel[_nativeDb], {
+      reserveElementAspectInsert: { configurable: true, value: reserve },
+      applyElementAspectMutations: { configurable: true, value: apply },
+    });
+
+    return {
+      reserve,
+      apply,
+      restore: () => {
+        Reflect.deleteProperty(iModel[_nativeDb], "reserveElementAspectInsert");
+        Reflect.deleteProperty(iModel[_nativeDb], "applyElementAspectMutations");
+      },
+    };
+  }
 
   before(() => {
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
@@ -357,6 +376,202 @@ describe("ElementAspect", () => {
       }
     } finally {
       testDb.close();
+    }
+  });
+
+  it("applies ordered owner-scoped aspect mutations through one native batch", () => {
+    const ownerId = "0x17";
+    const multiClassName = "DgnPlatformTest:TestMultiAspectNoHandler";
+    const uniqueClassName = "DgnPlatformTest:TestUniqueAspectNoHandler";
+    const native = stubNativeAspectMutations();
+    native.reserve.onFirstCall().returns({ id: "0x100", isMulti: true, classFullName: multiClassName });
+    native.reserve.onSecondCall().returns({ id: "0x6", isMulti: false, classFullName: uniqueClassName });
+    native.apply.returns(["0x100", "0x6", "0x6"]);
+    const txn = new EditTxn(iModel, "batch aspect mutations");
+    txn.start();
+
+    try {
+      const updatedProps = {
+        classFullName: multiClassName,
+        id: "0x4",
+        element: { id: ownerId },
+        testMultiAspectProperty: "batched update",
+      };
+      const insertedProps = {
+        classFullName: multiClassName,
+        element: { id: ownerId },
+        testMultiAspectProperty: "batched insert",
+      };
+
+      const result = txn.withElementAspectMutations(ownerId, (mutations) => {
+        const multiId = mutations.insertAspect(insertedProps);
+        mutations.updateAspect(updatedProps);
+        mutations.deleteAspect("0x5");
+        const firstUniqueId = mutations.insertAspect({
+          classFullName: uniqueClassName,
+          element: { id: ownerId },
+          testUniqueAspectProperty: "first replacement",
+        });
+        const secondUniqueId = mutations.insertAspect({
+          classFullName: uniqueClassName.replace(":", "."),
+          element: { id: ownerId },
+          testUniqueAspectProperty: "second replacement",
+        });
+
+        return { multiId, firstUniqueId, secondUniqueId };
+      });
+
+      expect(result.firstUniqueId).to.equal(result.secondUniqueId);
+      expect(native.reserve.callCount).to.equal(2);
+      expect(native.apply.calledOnce).to.be.true;
+      expect(native.apply.firstCall.args[0]).to.equal(ownerId);
+      expect(native.apply.firstCall.args[1]).to.deep.equal([
+        { type: "insert", props: { ...insertedProps, id: "0x100", classFullName: multiClassName } },
+        { type: "update", props: updatedProps },
+        { type: "delete", id: "0x5" },
+        {
+          type: "insert",
+          props: {
+            classFullName: uniqueClassName,
+            id: "0x6",
+            element: { id: ownerId },
+            testUniqueAspectProperty: "first replacement",
+          },
+        },
+        {
+          type: "insert",
+          props: {
+            classFullName: uniqueClassName,
+            id: "0x6",
+            element: { id: ownerId },
+            testUniqueAspectProperty: "second replacement",
+          },
+        },
+      ]);
+    } finally {
+      if (txn.isActive)
+        txn.end("abandon");
+
+      native.restore();
+    }
+  });
+
+  it("waits for async owner-scoped aspect mutations and skips apply on rejection", async () => {
+    const ownerId = "0x17";
+    const classFullName = "DgnPlatformTest:TestMultiAspectNoHandler";
+    const native = stubNativeAspectMutations();
+    native.reserve.onFirstCall().returns({ id: "0x100", isMulti: true, classFullName });
+    native.reserve.onSecondCall().returns({ id: "0x101", isMulti: true, classFullName });
+    native.apply.returns(["0x100"]);
+    const txn = new EditTxn(iModel, "async batch aspect mutations");
+    txn.start();
+
+    try {
+      const props = {
+        classFullName,
+        element: { id: ownerId },
+        testMultiAspectProperty: "value when staged",
+      };
+      let insertedId = Id64.invalid;
+      const resultPromise = txn.withElementAspectMutations(ownerId, async (mutations) => {
+        insertedId = mutations.insertAspect(props);
+        props.testMultiAspectProperty = "value after staging";
+        await Promise.resolve();
+        expect(native.apply.notCalled).to.be.true;
+        return "callback result";
+      });
+
+      expect(native.apply.notCalled).to.be.true;
+      expect(await resultPromise).to.equal("callback result");
+      expect(native.apply.calledOnce).to.be.true;
+      expect(native.apply.firstCall.args[1][0]).to.deep.equal({
+        type: "insert",
+        props: {
+          classFullName,
+          id: insertedId,
+          element: { id: ownerId },
+          testMultiAspectProperty: "value when staged",
+        },
+      });
+
+      native.apply.resetHistory();
+      const callbackError = new Error("reject staged mutations");
+      try {
+        await txn.withElementAspectMutations(ownerId, async (mutations) => {
+          mutations.insertAspect({
+            classFullName,
+            element: { id: ownerId },
+            testMultiAspectProperty: "must not be applied",
+          });
+          await Promise.resolve();
+          throw callbackError;
+        });
+        expect.fail("Expected owner-scoped mutation callback to reject");
+      } catch (error) {
+        expect(error).to.equal(callbackError);
+      }
+
+      expect(native.apply.notCalled).to.be.true;
+    } finally {
+      if (txn.isActive)
+        txn.end("abandon");
+
+      native.restore();
+    }
+  });
+
+  it("propagates native owner-scope failures without retrying", () => {
+    const ownerId = "0x17";
+    const classFullName = "DgnPlatformTest:TestMultiAspectNoHandler";
+    const native = stubNativeAspectMutations();
+    native.reserve.returns({ id: "0x100", isMulti: true, classFullName });
+    const nativeError = new Error("aspect belongs to a different owner");
+    native.apply.throws(nativeError);
+    const txn = new EditTxn(iModel, "invalid batch aspect mutations");
+    txn.start();
+
+    try {
+      expect(() => txn.withElementAspectMutations(ownerId, (mutations) =>
+        mutations.insertAspect({
+          classFullName,
+          element: { id: IModel.rootSubjectId },
+          testMultiAspectProperty: "wrong owner",
+        }))).to.throw(nativeError);
+      expect(native.apply.calledOnce).to.be.true;
+    } finally {
+      if (txn.isActive)
+        txn.end("abandon");
+
+      native.restore();
+    }
+  });
+
+  it("rejects nested and inactive owner-scoped aspect mutation contexts", () => {
+    const inactiveTxn = new EditTxn(iModel, "inactive aspect mutations");
+    expect(() => inactiveTxn.withElementAspectMutations("0x17", () => undefined)).to.throw().that.satisfies(
+      (error: unknown) => EditTxnError.isError(error, "not-active"),
+    );
+
+    const activeTxn = new EditTxn(iModel, "nested aspect mutations");
+    activeTxn.start();
+    try {
+      expect(() => activeTxn.withElementAspectMutations("0x17", () =>
+        activeTxn.withElementAspectMutations("0x17", () => undefined))).to.throw("Nested ElementAspect mutation scopes are not supported");
+    } finally {
+      activeTxn.end("abandon");
+    }
+  });
+
+  it("skips the native boundary for an empty owner-scoped aspect mutation context", () => {
+    const native = stubNativeAspectMutations();
+    const txn = new EditTxn(iModel, "empty aspect mutations");
+    txn.start();
+    try {
+      expect(txn.withElementAspectMutations("0x17", () => "empty")).to.equal("empty");
+      expect(native.apply.notCalled).to.be.true;
+    } finally {
+      txn.end("abandon");
+      native.restore();
     }
   });
 

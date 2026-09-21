@@ -64,6 +64,85 @@ export enum BulkDeleteElementsStatus {
   DeletionFailed = 2,
 }
 
+/** Operations for mutating aspects owned by one element.
+ * @beta
+ */
+export interface ElementAspectMutationContext {
+  /** Stage an aspect insertion and return its final Id.
+   * @param aspectProps The properties of the aspect. Its `element.id` must match the owner supplied to [[EditTxn.withElementAspectMutations]].
+   */
+  insertAspect<T extends ElementAspectProps>(aspectProps: T): Id64String;
+  /** Stage an aspect update.
+   * @param aspectProps The properties of the aspect. Its `element.id` must match the owner supplied to [[EditTxn.withElementAspectMutations]].
+   */
+  updateAspect<T extends ElementAspectProps>(aspectProps: T): void;
+  /** Stage an aspect deletion.
+   * @param aspectInstanceId The Id of an aspect owned by the element supplied to [[EditTxn.withElementAspectMutations]].
+   */
+  deleteAspect(aspectInstanceId: Id64String): void;
+}
+
+type ElementAspectMutation =
+  { type: "insert", props: ElementAspectProps } |
+  { type: "update", props: ElementAspectProps } |
+  { type: "delete", id: Id64String };
+
+class ElementAspectMutationContextImpl implements ElementAspectMutationContext {
+  private readonly _operations: ElementAspectMutation[] = [];
+  private readonly _uniqueInsertReservations = new Map<string, { id: Id64String, classFullName: string }>();
+  private _isOpen = true;
+
+  public constructor(private readonly _txn: EditTxn, private readonly _ownerId: Id64String) { }
+
+  public insertAspect<T extends ElementAspectProps>(aspectProps: T): Id64String {
+    this.verifyOpen();
+    const classNameKey = aspectProps.classFullName.toLowerCase().replace(".", ":");
+    let reservation = this._uniqueInsertReservations.get(classNameKey);
+    if (undefined === reservation) {
+      const { id, isMulti, classFullName } = this._txn.iModel[_nativeDb].reserveElementAspectInsert(this._ownerId, aspectProps.classFullName);
+      reservation = { id, classFullName };
+      if (!isMulti)
+        this._uniqueInsertReservations.set(classFullName.toLowerCase().replace(".", ":"), reservation);
+    }
+
+    this._operations.push({ type: "insert", props: structuredClone({ ...aspectProps, id: reservation.id, classFullName: reservation.classFullName }) });
+    return reservation.id;
+  }
+
+  public updateAspect<T extends ElementAspectProps>(aspectProps: T): void {
+    this.verifyOpen();
+    this._operations.push({ type: "update", props: structuredClone(aspectProps) });
+  }
+
+  public deleteAspect(aspectInstanceId: Id64String): void {
+    this.verifyOpen();
+    this._operations.push({ type: "delete", id: aspectInstanceId });
+  }
+
+  public apply(): void {
+    this.verifyContextOpen();
+    this._isOpen = false;
+    this._txn.verifyWriteable();
+    if (this._operations.length > 0)
+      this._txn.iModel[_nativeDb].applyElementAspectMutations(this._ownerId, this._operations);
+  }
+
+  public close(): void {
+    this._isOpen = false;
+    this._operations.length = 0;
+  }
+
+  private verifyOpen(): void {
+    this.verifyContextOpen();
+    this._txn.verifyWriteable();
+  }
+
+  private verifyContextOpen(): void {
+    if (!this._isOpen)
+      throw new Error("ElementAspectMutationContext is no longer active");
+  }
+}
+
 /**
  * Represents an explicit editing transaction for an iModel.
  *
@@ -82,6 +161,8 @@ export enum BulkDeleteElementsStatus {
  * @beta
  */
 export class EditTxn {
+  private _hasActiveElementAspectMutationScope = false;
+
   /** Controls how writes through the implicit transaction are handled.
    *
    * This does not relax activation requirements for explicit transactions: explicit EditTxn writes
@@ -513,6 +594,71 @@ export class EditTxn {
         throw error;
       }
     });
+  }
+
+  /** Stage and atomically apply an ordered set of aspect mutations for one owner element.
+   *
+   * Insertions return their final aspect Ids synchronously. The native mutations are applied only
+   * after `fn` returns successfully. If `fn` throws, no staged mutations are applied.
+   *
+   * @param ownerId The Id of the element that owns every aspect in this scope.
+   * @param fn A callback that stages aspect insertions, updates, and deletions.
+   * @returns The value returned by `fn`.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if an aspect does not belong to `ownerId` or a mutation fails.
+   * @beta
+   */
+  public withElementAspectMutations<T>(ownerId: Id64String, fn: (context: ElementAspectMutationContext) => T): T;
+  /** Stage and atomically apply an ordered set of aspect mutations for one owner element.
+   *
+   * The native mutations are applied only after the Promise returned by `fn` resolves. If the
+   * Promise rejects, no staged mutations are applied.
+   *
+   * @param ownerId The Id of the element that owns every aspect in this scope.
+   * @param fn An async callback that stages aspect insertions, updates, and deletions.
+   * @returns A Promise that resolves to the value returned by `fn`.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if an aspect does not belong to `ownerId` or a mutation fails.
+   * @beta
+   */
+  public withElementAspectMutations<T>(ownerId: Id64String, fn: (context: ElementAspectMutationContext) => Promise<T>): Promise<T>;
+  public withElementAspectMutations<T>(ownerId: Id64String, fn: (context: ElementAspectMutationContext) => T | Promise<T>): T | Promise<T> {
+    this.verifyWriteable();
+    if (this._hasActiveElementAspectMutationScope)
+      throw new Error("Nested ElementAspect mutation scopes are not supported");
+
+    const context = new ElementAspectMutationContextImpl(this, ownerId);
+    this._hasActiveElementAspectMutationScope = true;
+    const apply = (): void => {
+      try {
+        context.apply();
+      } finally {
+        this._hasActiveElementAspectMutationScope = false;
+      }
+    };
+    const close = (): void => {
+      context.close();
+      this._hasActiveElementAspectMutationScope = false;
+    };
+
+    try {
+      const result = fn(context);
+      if (result instanceof Promise) {
+        return result.then((value) => {
+          apply();
+          return value;
+        }, (err) => {
+          close();
+          throw err;
+        });
+      }
+
+      apply();
+      return result;
+    } catch (err) {
+      close();
+      throw err;
+    }
   }
 
   /** Delete definition elements from the iModel when they are not referenced.

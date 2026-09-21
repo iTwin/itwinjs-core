@@ -18,6 +18,7 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+    - [Mutate element aspects by owner](#mutate-element-aspects-by-owner)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
@@ -202,6 +203,21 @@ The deprecated methods remain functional so existing file resources can be read,
 ### Stream element aspects for multiple elements
 
 Use [IModelDb.Elements.queryAspects]($backend) to read the [ElementAspect]($backend) instances owned by a set of elements. The method queries all supplied element Ids together and returns an async iterator, so callers can process each aspect without buffering the complete result set.
+
+### Mutate element aspects by owner
+
+Use [EditTxn.withElementAspectMutations]($backend) to stage ordered insert, update, and delete operations for aspects owned by one element. The callback may be synchronous or asynchronous, and each insertion immediately returns its final aspect Id. After the callback succeeds, the mutations are applied atomically while the owner element is persisted once:
+
+```ts
+await txn.withElementAspectMutations(ownerId, async (mutations) => {
+  const aspectId = mutations.insertAspect(aspectProps);
+  await recordAspectMapping(aspectId);
+  mutations.updateAspect(otherAspectProps);
+  mutations.deleteAspect(obsoleteAspectId);
+});
+```
+
+If the callback throws or rejects, no staged mutations are applied. Each inserted or updated aspect must identify `ownerId` as its owner, each deleted aspect must be owned by `ownerId`, and nested mutation scopes on the same `EditTxn` are rejected. Existing single-aspect APIs are unchanged.
 
 Use this method for batch processing, such as exporters and transformers, where calling [IModelDb.Elements.getAspects]($backend) once per element would issue many separate queries. Continue to use `getAspects` when reading a small result from one element and a synchronous array is more convenient.
 
