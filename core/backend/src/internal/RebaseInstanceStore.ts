@@ -108,7 +108,7 @@ export interface RebaseNavigationRef {
 export interface RebaseIdentityValue {
   /** A stable identifier for this constraint's group of properties (its sorted EC access-string list),
    * shared by every instance of `classFullName` (and its subclasses) - used to key freed/claimed
-   * identity-value edges generically in [[InteractiveRebase.orderRoots]]. */
+   * identity-value edges generically in [[InteractiveRebase.orderNodes]]. */
   key: string;
   /** The composite value (each property's value joined by `"|"`) `old` held, or undefined if any
    * property in the group was unset - SQLite does not consider a `NULL`-containing row to collide with
@@ -291,7 +291,7 @@ export class RebaseInstanceStore implements Disposable {
 
     // Computed fully from the final merged `old`/`new` (not recomputed incrementally per partial-table
     // merge), matching how `ownerId`/`isElement` are already handled above - see
-    // [[InteractiveRebase.orderRoots]] for how these are consumed.
+    // [[InteractiveRebase.orderNodes]] for how these are consumed.
     const identityValues = this.extractIdentityValues(props.classFullName, change.old, change.new);
     const navigationRefs = this.getNavigationRefs(this._schemaView, props.classFullName, change.old, change.new);
 

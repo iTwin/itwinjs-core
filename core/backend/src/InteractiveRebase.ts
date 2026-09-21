@@ -242,6 +242,28 @@ export interface TxnRebaseGroup {
 
 const MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS = 10;
 
+/** A deferred write that [[breakCycle]] substitutes with a placeholder value and corrects later via
+ * [[applyDeferredCorrections]] when breaking a self-contained ordering cycle.
+ */
+interface DeferredWrite {
+  accessString: string;
+  placeholderKind: "guid" | "string" | "navigation";
+  realValue: any;
+}
+
+/** An edge in the per-Txn dependency graph built by [[orderNodes]], representing a constraint between
+ * two nodes that determines replay order.
+ */
+interface ReplayEdge {
+  from: DependencyNode;
+  to: DependencyNode;
+  /** Present only when this edge can be broken by deferring a specific write on `to` - see
+   * [[breakCycle]]. Absent for an edge whose `to` is a Delete (nothing on a delete to defer), or a
+   * non-nullable navigation-property requirement.
+   */
+  deferrable?: DeferredWrite;
+}
+
 /** A node in the per-Txn embedding-ownership forest built by [[InteractiveRebase.buildDependencyForest]].
  * Carries only lightweight metadata (never the potentially large `old`/`new` snapshots) - see
  * [[InteractiveRebase.getChange]] for loading a captured node's change on demand.
@@ -264,7 +286,7 @@ interface DependencyNode {
   isElement: boolean;
   dependents: DependencyNode[];
   /** This node's schema-declared UNIQUE-constraint values and navigation-property references, extracted
-   * at capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderRoots]], which never
+   * at capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderNodes]], which never
    * needs to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
   identityValues?: RebaseIdentityValue[];
   navigationRefs?: RebaseNavigationRef[];
@@ -298,14 +320,14 @@ export class InteractiveRebase {
    */
   private _ownersById = new Map<Id64String, DependencyNode>();
 
-  /** A placeholder value [[orderRoots]] is substituting in for a root's real value of one of its own
+  /** A placeholder value [[orderNodes]] is substituting in for a node's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
    * [[getChange]] so that the substitution is transparent to the rest of replay, and drained by
    * [[applyDeferredCorrections]] once the whole forest has been replayed.
    */
   private _pendingSubstitutions = new Map<string, { accessString: string, placeholderValue: any }[]>();
 
-  /** The real values [[orderRoots]] deferred while breaking a self-contained ordering cycle, to be
+  /** The real values [[orderNodes]] deferred while breaking a self-contained ordering cycle, to be
    * applied for real by [[applyDeferredCorrections]] after the whole forest has been replayed.
    */
   private _deferredCorrections: { node: DependencyNode, accessString: string, realValue: any }[] = [];
@@ -514,7 +536,7 @@ export class InteractiveRebase {
    * against the current row (which already reflects the incoming "their" changes) instead of relying
    * on the native changeset-apply conflict callback.
    *
-   * Replay is ordered by [[orderRoots]]'s topological sort over the per-Txn embedding-ownership forest
+   * Replay is ordered by [[orderNodes]]'s topological sort over the per-Txn embedding-ownership forest
    * (see [[buildDependencyForest]]) and conflict detection reads "theirs" from a snapshot taken before
    * any of this replay writes anything (see [[captureTheirsSnapshot]]), rather than from a live read -
    * both are necessary so a cascade-removed dependent's evidence survives long enough to be compared
@@ -530,7 +552,7 @@ export class InteractiveRebase {
     this._store = RebaseInstanceStore.openForReplay(dbPath);
     this.buildDependencyForest(this._store);
     this.captureTheirsSnapshot();
-    this.replayForest();
+    this.replayNodes();
     this.applyDeferredCorrections();
     this.linkConflictOwnership();
   }
@@ -538,7 +560,7 @@ export class InteractiveRebase {
   /** Loads a captured node's change from the [[RebaseInstanceStore]], or throws if `node` wasn't actually captured (a
    * discovered node - see [[discoverUnknownDependents]] - has no row to load).
    *
-   * If [[orderRoots]] deferred one of `node`'s own properties as part of breaking a self-contained
+   * If [[orderNodes]] deferred one of `node`'s own properties as part of breaking a self-contained
    * ordering cycle (see [[_pendingSubstitutions]]), the returned change's `new` side carries the
    * placeholder value in place of the real one - transparently, so every other caller (including replay
    * itself) just sees the value it's supposed to write right now. [[applyDeferredCorrections]] writes the
@@ -582,7 +604,7 @@ export class InteractiveRebase {
    * metadata-only scan of the store (see [[RebaseInstanceStore.allMetadata]]) - `old`/`new` snapshots,
    * which can be large (e.g. geometry), are not parsed here and are loaded lazily per node only when
    * actually needed (see [[getChange]]) - populating [[_dependencyNodesById]] and [[_ownersById]].
-   * [[replayForest]] operates over every node this populates (not just roots - see [[orderRoots]]), so
+   * [[replayNodes]] operates over every node this populates - see [[orderNodes]], so
    * this no longer needs to return anything itself.
    *
    * A node's `ownerId` was classified from its `new` snapshot when one exists (Insert/Update), falling
@@ -593,7 +615,7 @@ export class InteractiveRebase {
    * Also performs the design doc section 6 live discovery: for every captured pure-Delete on an Element
    * (or subclass) instance, queries the live DB for dependents our Txn never touched (e.g. an aspect
    * upstream inserted after our local edit), recursively, and adds them to the forest and to
-   * [[_dependencyNodesById]] with `isCaptured: false` so they can still be reported and cascaded away.
+   * [[_dependencyNodesByInstanceKey]] with `isCaptured: false` so they can still be reported and cascaded away.
    */
   private buildDependencyForest(store: RebaseInstanceStore): void {
     this._store = store;
@@ -621,7 +643,7 @@ export class InteractiveRebase {
     }
 
     // Link each node to its owner, if any (used for reporting/cascade - see [[DependencyNode.dependents]] -
-    // not for replay ordering, which [[orderRoots]] now derives from edges instead).
+    // not for replay ordering, which [[orderNodes]] now derives from edges instead).
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       const owner = node.ownerId !== undefined ? this._ownersById.get(node.ownerId) : undefined;
       if (owner !== undefined)
@@ -720,18 +742,17 @@ export class InteractiveRebase {
   }
 
   /** Replays the whole dependency forest (owners and dependents, captured and live-discovered alike -
-   * see [[buildDependencyForest]]) in the order [[orderRoots]] computes, applying each node exactly once
+   * see [[buildDependencyForest]]) in the order [[orderNodes]] computes, applying each node exactly once
    * via [[applyNode]] - no recursion into `node.dependents` here; an owner/dependent pair's ordering is
-   * just another instance of an existence edge (see [[orderRoots]]) now, not a separate tree walk.
+   * just another instance of an existence edge (see [[orderNodes]]) now, not a separate tree walk.
    */
-  private replayForest(): void {
-    for (const node of this.orderRoots([...this._dependencyNodesByInstanceKey.values()]))
+  private replayNodes(): void {
+    for (const node of this.orderNodes([...this._dependencyNodesByInstanceKey.values()]))
       this.applyNode(node);
   }
 
   /**
-   * Orders every node of the current group's dependency forest (see [[buildDependencyForest]] - not
-   * just roots, despite the name kept for the rest of this method's doc comment/history) for replay by
+   * Orders every node of the current group's dependency forest (see [[buildDependencyForest]]) for replay by
    * a topological sort over three kinds of real dependency edges between them - there is no other
    * justification for preferring one node's replay order over another's, so nodes with no edges between
    * them keep their original (stable) input order. Every edge is built directly from each node's own
@@ -781,62 +802,51 @@ export class InteractiveRebase {
    * of non-nullable references could never have been created in the first place, so this is not a bug to
    * chase.
    */
-  private orderRoots(roots: DependencyNode[]): DependencyNode[] {
+  private orderNodes(nodes: DependencyNode[]): DependencyNode[] {
     this._pendingSubstitutions = new Map();
     this._deferredCorrections = [];
 
-    const inputIndex = new Map<DependencyNode, number>(roots.map((node, i) => [node, i]));
-    const rootsById = new Map<Id64String, DependencyNode>(roots.map((node) => [node.id, node]));
+    const inputIndex = new Map<DependencyNode, number>(nodes.map((node, i) => [node, i]));
 
-    interface Edge {
-      from: DependencyNode;
-      to: DependencyNode;
-      /** Present only when this edge can be broken by deferring a specific write on `to` - see
-       * [[breakCycle]]. Absent for an edge whose `to` is a Delete (nothing on a delete to defer), or a
-       * non-nullable navigation-property requirement.
-       */
-      deferrable?: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any };
-    }
-    const edges: Edge[] = [];
+    const edges: ReplayEdge[] = [];
 
-    // "group key|value" -> every root that frees/claims it, computed directly from each node's own
+    // "group key|value" -> every node that frees/claims it, computed directly from each node's own
     // capture-time-extracted `identityValues` (no store access needed). `identityValues` already carries
     // which single property to defer (and with what kind of placeholder) if this group participates in a
     // cycle - see [[RebaseInstanceStore.buildIdentityConstraintGroup]].
-    const freedByValue = new Map<string, DependencyNode[]>();
-    const claimedByValue = new Map<string, DependencyNode[]>();
-    const addIdentityValue = (map: Map<string, DependencyNode[]>, identityKey: string, node: DependencyNode): void => {
-      const nodes = map.get(identityKey);
-      if (nodes === undefined)
-        map.set(identityKey, [node]);
+    type IdentityEntry = { node: DependencyNode, identity: RebaseIdentityValue };
+    const freedByValue = new Map<string, IdentityEntry[]>();
+    const claimedByValue = new Map<string, IdentityEntry[]>();
+    const addIdentityValue = (map: Map<string, IdentityEntry[]>, identityKey: string, node: DependencyNode, identity: RebaseIdentityValue): void => {
+      const entries = map.get(identityKey);
+      if (entries === undefined)
+        map.set(identityKey, [{ node, identity }]);
       else
-        nodes.push(node);
+        entries.push({ node, identity });
     };
-    for (const node of roots) {
+    for (const node of nodes) {
       if (!node.isCaptured || node.identityValues === undefined)
         continue;
       for (const identity of node.identityValues) {
         if (identity.old === identity.new)
           continue;
         if (identity.old !== undefined)
-          addIdentityValue(freedByValue, `${identity.key}|${identity.old}`, node);
+          addIdentityValue(freedByValue, `${identity.key}|${identity.old}`, node, identity);
         if (identity.new !== undefined)
-          addIdentityValue(claimedByValue, `${identity.key}|${identity.new}`, node);
+          addIdentityValue(claimedByValue, `${identity.key}|${identity.new}`, node, identity);
       }
     }
-    for (const [valueKey, freers] of freedByValue) {
-      const claimers = claimedByValue.get(valueKey);
-      if (claimers === undefined)
+    for (const [valueKey, freerEntries] of freedByValue) {
+      const claimerEntries = claimedByValue.get(valueKey);
+      if (claimerEntries === undefined)
         continue;
-      const groupKey = valueKey.slice(0, valueKey.indexOf("|"));
-      for (const freer of freers) {
-        for (const claimer of claimers) {
+      for (const { node: freer } of freerEntries) {
+        for (const { node: claimer, identity } of claimerEntries) {
           if (claimer === freer)
             continue;
           // The claimer's own entry for this group - not the freer's, or any other node's - since it's
           // specifically the claimer's write that would need its real value deferred if this edge is
           // part of a cycle (see [[breakCycle]]).
-          const identity = claimer.identityValues!.find((v) => v.key === groupKey)!;
           edges.push({
             from: freer, to: claimer,
             deferrable: { accessString: identity.accessString, placeholderKind: identity.placeholderKind, realValue: identity.new },
@@ -846,27 +856,29 @@ export class InteractiveRebase {
     }
 
     // Navigation-property existence edges: an Insert "provides" its own id, a Delete "removes" its own
-    // id, and each captured root's `navigationRefs` "require" (`newId`) or "free" (`oldId`, no longer
-    // `newId`) whatever ids they reference - but only ids that belong to another root in this same batch
+    // id, and each captured node's `navigationRefs` "require" (`newId`) or "free" (`oldId`, no longer
+    // `newId`) whatever ids they reference - but only ids that belong to another node in this same batch
     // (an id already existing untouched, or belonging to something outside this batch, needs no edge -
     // ordering can't help or hurt it).
-    const providesRoot = new Map<Id64String, DependencyNode>();
-    const removesIds = new Set<Id64String>();
-    for (const node of roots) {
+    // NOTE: These maps are keyed by ECInstanceId; a Model and its modeled Element share the same id, so one can shadow the other.
+    // And arbitrary element IDs may collide with arbitrary aspect IDs.
+    const providesNode = new Map<Id64String, DependencyNode>();
+    const removesById = new Map<Id64String, DependencyNode>();
+    for (const node of nodes) {
       if (!node.isCaptured)
         continue;
       if (node.operation === "Insert")
-        providesRoot.set(node.id, node);
+        providesNode.set(node.id, node);
       else if (node.operation === "Delete")
-        removesIds.add(node.id);
+        removesById.set(node.id, node);
     }
 
-    for (const node of roots) {
+    for (const node of nodes) {
       if (!node.isCaptured || node.navigationRefs === undefined)
         continue;
       for (const { jsName, nullable, oldId, newId } of node.navigationRefs) {
         if (newId !== undefined) {
-          const provider = rootsById.has(newId) ? providesRoot.get(newId) : undefined;
+          const provider = providesNode.get(newId);
           if (provider !== undefined && provider !== node) {
             edges.push({
               from: provider, to: node,
@@ -874,8 +886,8 @@ export class InteractiveRebase {
             });
           }
         }
-        if (oldId !== undefined && oldId !== newId && rootsById.has(oldId) && removesIds.has(oldId)) {
-          const remover = rootsById.get(oldId);
+        if (oldId !== undefined && oldId !== newId) {
+          const remover = removesById.get(oldId);
           if (remover !== undefined && remover !== node)
             edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
         }
@@ -887,7 +899,7 @@ export class InteractiveRebase {
     // synthesized delete must precede its owner's own Delete, or the owner's row would be removed while
     // this dependent's (still-live) FK still points at it. Discovered nodes are always Deletes by
     // construction (see [[discoverUnknownDependents]]), so no provides/requires case applies.
-    for (const node of roots) {
+    for (const node of nodes) {
       if (node.isCaptured || node.ownerId === undefined)
         continue;
       const owner = this._ownersById.get(node.ownerId);
@@ -897,8 +909,8 @@ export class InteractiveRebase {
 
     // Kahn's algorithm, breaking ties (including nodes with no edges at all) by stable input order.
     const mustFollow = new Map<DependencyNode, DependencyNode[]>();
-    const incomingEdges = new Map<DependencyNode, Edge[]>();
-    const inDegree = new Map<DependencyNode, number>(roots.map((node) => [node, 0]));
+    const incomingEdges = new Map<DependencyNode, ReplayEdge[]>();
+    const inDegree = new Map<DependencyNode, number>(nodes.map((node) => [node, 0]));
     for (const edge of edges) {
       let followers = mustFollow.get(edge.from);
       if (followers === undefined)
@@ -913,41 +925,50 @@ export class InteractiveRebase {
     }
 
     const ordered: DependencyNode[] = [];
-    const remaining = new Set(roots);
+    const remaining = new Set(nodes);
+    // Nodes freed by the batch currently being placed; they become ready only once it is fully placed,
+    // so a node never jumps ahead of an already-ready node with a later input index.
+    let nextLevel: DependencyNode[] = [];
+    const place = (node: DependencyNode): void => {
+      ordered.push(node);
+      remaining.delete(node);
+      for (const follower of mustFollow.get(node) ?? []) {
+        inDegree.set(follower, inDegree.get(follower)! - 1);
+        if (inDegree.get(follower) === 0 && remaining.has(follower))
+          nextLevel.push(follower);
+      }
+    };
+
+    let currentLevel = nodes.filter((node) => inDegree.get(node) === 0);
     while (remaining.size > 0) {
-      const ready = [...remaining].filter((node) => inDegree.get(node) === 0);
-      const place = (node: DependencyNode): void => {
-        ordered.push(node);
-        remaining.delete(node);
-        for (const follower of mustFollow.get(node) ?? [])
-          inDegree.set(follower, inDegree.get(follower)! - 1);
-      };
-      if (ready.length === 0) {
+      if (currentLevel.length === 0) {
         // Every remaining root is stalled on some other stalled root - a self-contained cycle. Break it
         // by forcing one root through regardless of its unmet incoming edges (see [[breakCycle]]).
         place(this.breakCycle(remaining, incomingEdges, inputIndex));
-        continue;
+      } else {
+        currentLevel.sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
+        for (const node of currentLevel)
+          place(node);
       }
-      ready.sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
-      for (const node of ready)
-        place(node);
+      currentLevel = nextLevel;
+      nextLevel = [];
     }
     return ordered;
   }
 
-  /** Forces one root out of a stalled (self-contained cycle of) `remaining` roots through, deferring
-   * whichever of its own claimed/required properties are the reason it's stalled - see [[orderRoots]]'s
-   * cycle-breaking design and [[applyDeferredCorrections]]. Prefers (in stable input order) a root that
+  /** Forces one node out of a stalled (self-contained cycle of) `remaining` nodes through, deferring
+   * whichever of its own claimed/required properties are the reason it's stalled - see [[orderNodes]]'s
+   * cycle-breaking design and [[applyDeferredCorrections]]. Prefers (in stable input order) a node that
    * has at least one deferrable incoming edge, so the cycle is actually broken open rather than merely
    * papered over; if none exists (every stalled edge is either a non-deferrable navigation requirement
-   * or a Delete waiting on a free), the first root in stable order is forced through unresolved instead,
+   * or a Delete waiting on a free), the first node in stable order is forced through unresolved instead,
    * leaving its write to fall through to the existing conflict-recording path if it genuinely fails.
    */
-  private breakCycle(remaining: Set<DependencyNode>, incomingEdges: Map<DependencyNode, { from: DependencyNode, to: DependencyNode, deferrable?: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any } }[]>, inputIndex: Map<DependencyNode, number>): DependencyNode {
+  private breakCycle(remaining: Set<DependencyNode>, incomingEdges: Map<DependencyNode, ReplayEdge[]>, inputIndex: Map<DependencyNode, number>): DependencyNode {
     const stalled = [...remaining].sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
 
     let chosen = stalled[0];
-    let deferrableIncoming: { deferrable: { accessString: string, placeholderKind: "guid" | "string" | "navigation", realValue: any } }[] = [];
+    let deferrableIncoming: { deferrable: DeferredWrite }[] = [];
     for (const node of stalled) {
       const incoming = (incomingEdges.get(node) ?? [])
         .filter((edge): edge is typeof edge & { deferrable: NonNullable<typeof edge.deferrable> } => remaining.has(edge.from) && edge.deferrable !== undefined);
@@ -972,7 +993,7 @@ export class InteractiveRebase {
    * (virtually) guaranteed not to collide with any other row while the real value's own conflicting
    * write is pending replay.
    */
-  private createPlaceholderValue(kind: "guid" | "string" | "navigation"): any {
+  private createPlaceholderValue(kind: DeferredWrite["placeholderKind"]): any {
     switch (kind) {
       case "guid": return Guid.createValue();
       case "string": return `RebasePlaceholder-${Guid.createValue()}`;
@@ -980,8 +1001,8 @@ export class InteractiveRebase {
     }
   }
 
-  /** After [[replayForest]] finishes, applies each identity-value/navigation-property write that
-   * [[orderRoots]] deferred as a safe placeholder while breaking a self-contained ordering cycle. Grouped
+  /** After [[replayNodes]] finishes, applies each identity-value/navigation-property write that
+   * [[orderNodes]] deferred as a safe placeholder while breaking a self-contained ordering cycle. Grouped
    * per node, so a cycle involving several deferred properties on the same node produces a single
    * additional write. This should never collide - whatever the placeholder stood in for has, by
    * construction, already been freed by the time this runs - but if it somehow still does (a genuine
@@ -1023,9 +1044,9 @@ export class InteractiveRebase {
     }
   }
 
-  /** Applies a single node's change, in the order [[orderRoots]] computed - see [[replayForest]]. No
+  /** Applies a single node's change, in the order [[orderNodes]] computed - see [[replayNodes]]. No
    * longer recurses into `node.dependents` itself; owner/dependent replay order is now just another
-   * consequence of the edges [[orderRoots]] builds.
+   * consequence of the edges [[orderNodes]] builds.
    */
   private applyNode(node: DependencyNode): void {
     if (!node.isCaptured) {
@@ -1067,14 +1088,24 @@ export class InteractiveRebase {
    * conflicts where one instance is the other's `ownerId`, once every conflict for this group is known.
    */
   private linkConflictOwnership(): void {
+    if (this._conflicts.length === 0)
+      return;
+
+    // First conflict wins, should an instance somehow have recorded more than one.
+    const conflictByInstanceKey = new Map<string, RebaseConflictImpl>();
+    for (const conflict of this._conflicts) {
+      if (!conflictByInstanceKey.has(conflict.instanceKey))
+        conflictByInstanceKey.set(conflict.instanceKey, conflict as RebaseConflictImpl);
+    }
+
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       if (node.ownerId === undefined)
         continue;
-      const dependentConflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
+      const dependentConflict = conflictByInstanceKey.get(node.instanceKey);
       const ownerNode = this._ownersById.get(node.ownerId);
       const ownerConflict = ownerNode === undefined
         ? undefined
-        : this._conflicts.find((conflict) => conflict.instanceKey === ownerNode.instanceKey) as RebaseConflictImpl | undefined;
+        : conflictByInstanceKey.get(ownerNode.instanceKey);
       if (dependentConflict !== undefined && ownerConflict !== undefined) {
         dependentConflict.ownerConflict = ownerConflict;
         ownerConflict.dependentConflicts.push(dependentConflict);
