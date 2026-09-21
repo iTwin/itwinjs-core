@@ -8,7 +8,7 @@ import { FieldValue, formatFieldValue as fmtFldVal, FormatMagnitude } from "../.
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
 function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
-  return fmtFldVal({ value, type }, options);
+  return fmtFldVal({ value: { value, type }, options });
 }
 
 //cspell:ignore WUZZY Freitag Jumat Juni петак
@@ -207,7 +207,7 @@ describe("magnitude callback", () => {
   const millimeters: FormatMagnitude = (magnitude) => `${magnitude * 1000} mm`;
 
   function format(value: FieldValue, options?: FieldFormatOptions, formatMagnitude?: FormatMagnitude): string | undefined {
-    return fmtFldVal(value, options, formatMagnitude);
+    return fmtFldVal({ value, options, formatMagnitude });
   }
 
   describe("quantity", () => {

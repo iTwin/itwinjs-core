@@ -118,6 +118,18 @@ function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude):
   return `(${magnitudes.map((m) => formatMagnitude ? formatMagnitude(m) : `${m}`).join(", ")})`;
 }
 
+/** Arguments supplied to [[formatFieldValue]].
+ * @internal
+ */
+export interface FormatFieldValueArgs {
+  /** The resolved field value to render. */
+  value: FieldValue;
+  /** Prefix, suffix, case, and per-type options applied to the rendered string. */
+  options?: FieldFormatOptions;
+  /** Consulted only by the `"quantity"` and `"coordinate"` branches. */
+  formatMagnitude?: FormatMagnitude;
+}
+
 /** Formats `value` through the per-type entry in [[formatters]], wrapping the result with
  * prefix/suffix/case.
  *
@@ -125,7 +137,7 @@ function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude):
  * it falls those values back to `value.toString()`.
  * @internal
  */
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined {
+export function formatFieldValue({ value, options, formatMagnitude }: FormatFieldValueArgs): string | undefined {
   const formatter = formatters[value.type];
   return formatter ? formatter(value.value, options, formatMagnitude) : undefined;
 }
