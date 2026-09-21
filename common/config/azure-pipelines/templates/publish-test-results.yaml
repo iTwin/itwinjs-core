@@ -118,7 +118,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Core Full Stack Test Results"
     inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/core/lib/test/*_junit_results.xml"
       testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.nodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()

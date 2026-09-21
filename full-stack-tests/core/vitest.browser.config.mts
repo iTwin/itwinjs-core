@@ -181,7 +181,7 @@ export default defineConfig({
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/junit_results.xml" }],
+      ["junit", { outputFile: "lib/test/chrome_junit_results.xml" }],
     ],
     browser: {
       api: { host: "127.0.0.1", port: 3010, strictPort: true },

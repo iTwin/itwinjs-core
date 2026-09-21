@@ -144,7 +144,7 @@ export default defineConfig({
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/junit_results.xml" }],
+      ["junit", { outputFile: "lib/test/electron_junit_results.xml" }],
     ],
     browser: {
       enabled: true,

@@ -271,7 +271,7 @@ async function init() {
   const iModelHost: IModelHostOptions = { implicitWriteEnforcement: "throw" };
   const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+  iModelHost.cacheDir = process.env.VITEST_BACKEND_CACHE_DIR ?? path.join(__dirname, ".cache");
 
   let shutdown: undefined | (() => Promise<void>);
 
