@@ -9,11 +9,11 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { Code, ElementAspectProps, GeometricElement2dProps, IModel, QueryBinder, QueryRowFormat, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
-import type { RebaseConflict } from "../../InteractiveRebase";
+import type { InteractiveRebase, RebaseConflict } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
-import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
 
@@ -790,7 +790,7 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
 
     // Both the data conflict (on "foo") and the UNIQUE constraint violation (on "code") are reported
-    // against the same instance, so they're merged into a single RebaseConflict2 entry.
+    // against the same instance, so they're merged into a single RebaseConflict entry.
     chai.expect(interactive.conflicts.length).to.equal(1);
     const conflict = interactive.conflicts[0];
     chai.expect(conflict.id).to.equal(id);
@@ -867,7 +867,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
   });
 
-  it("resolves a two-root federationGuid swap with zero reported conflicts", async () => {
+  it("resolves a two-change federationGuid swap with zero reported conflicts", async () => {
     const guidA = Guid.createValue();
     const guidB = Guid.createValue();
 
@@ -927,6 +927,68 @@ describe("InteractiveRebase", () => {
 
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elA).federationGuid).to.equal(guidB);
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elB).federationGuid).to.equal(guidA);
+  });
+
+  it("resolves a large federationGuid cycle with zero reported conflicts", async () => {
+    const numberOfElements = 100;
+    const guids = Array.from({ length: numberOfElements }, () => Guid.createValue());
+    const elementIds: Id64String[] = [];
+
+    const id = await withEditTxn(briefcase1, async (txn) => {
+      guids.forEach(guid => {
+        elementIds.push(txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          foo: "SwapA",
+          somePoint: new Point2d(10.0, 10.0),
+          federationGuid: guid,
+        } as SomeGraphicalElementProps));
+      });
+
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "SwapA",
+        somePoint: new Point2d(10.0, 10.0),
+      } as SomeGraphicalElementProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert elements" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase2, async (txn) => {
+      // Cycle each federationGuid to the next element.
+      for (let i = 0; i < numberOfElements; ++i) {
+        txn.updateElement<SomeGraphicalElementProps>({ id: elementIds[i], federationGuid: Guid.createValue() });
+      }
+      for (let i = 0; i < numberOfElements; ++i) {
+        const elementId = elementIds[i];
+        const guid = guids[(i + 1) % numberOfElements];
+        txn.updateElement<SomeGraphicalElementProps>({ id: elementId, federationGuid: guid });
+      }
+
+      // Unrelated - just forces a genuine rebase instead of a fast-forward merge.
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // Only the forced conflict on `id` should surface - the swap is a self-contained ordering cycle,
+    // not a real external collision, so it must apply cleanly with no UniqueConstraintViolation.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(id);
   });
 
   it("assigns a type definition onto a newly-inserted type in the same batch", async () => {

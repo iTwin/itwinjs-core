@@ -652,15 +652,19 @@ export class BriefcaseManager {
 
     db.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
 
-    const reversedTxns = nativeDb.pullMergeRebaseBegin();
-    const reversedTxnProps = reversedTxns.map((_) => db.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+    if (rebaseChangesets.length > 0) {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => db.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
 
-    if (interactiveRebase) {
-      interactiveRebase.initializeTxns(reversedTxnProps);
-      return interactiveRebase;
+      if (interactiveRebase) {
+        interactiveRebase.initializeTxns(reversedTxnProps);
+        return interactiveRebase;
+      }
+
+      return new InteractiveRebase(db, reversedTxnProps, await db.getSchemaView());
+    } else {
+      return undefined;
     }
-
-    return new InteractiveRebase(db, reversedTxnProps, await db.getSchemaView());
 
     // if (rebaseChangesets.length > 0) {
     //   db.txns.rebaser.addConflictHandler({
@@ -764,40 +768,7 @@ export class BriefcaseManager {
       Logger.logInfo(loggerCategory, `Using semantic rebase (incoming schema change: ${hasIncomingSchemaChange}, local schema txn: ${hasLocalSchemaTxn})`);
     }
 
-    let rebaseChangesets = changesets;
-
-    if (isPullMerge) {
-      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
-
-      // Attempt a "fast-forward" merge where we apply the incoming changesets directly on top of the
-      // briefcase without reversing any local changes first. Any conflicts - including in indirect
-      // changes - will cause this process to fail, and a rebase will be required.
-      rebaseChangesets = await briefcaseDb.withFastForwardOnlyMerge(async () => {
-        for (const changeset of changesets) {
-          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-          Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
-          try {
-            await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
-            nativeDb.saveChanges(`Fast-forward merge changeset with id ${changeset.id}.`);
-            Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-          } catch (err: any) {
-            // A failure to fast-forward means we need to rebase, starting with the failed changeset.
-            Logger.logInfo(loggerCategory, `Fast-forward failed for changeset with id ${stopwatch.description}, starting rebase`);
-            nativeDb.abandonChanges();
-
-            // Return the remaining changesets starting from the failed one. These are the changesets that will need to
-            // be applied after reversing local changes.
-            return changesets.slice(changesets.indexOf(changeset));
-          }
-        }
-
-        // All changesets have been successfully fast-forwarded. No rebase is required.
-        return [];
-      });
-    }
-
-    // If we need to rebase, reverse the local changes first.
-    if (rebaseChangesets.length > 0 && !reverse) {
+    if (!reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
@@ -812,8 +783,12 @@ export class BriefcaseManager {
       }
     }
 
-    // Apply the incoming changesets that weren't successfully fast-forwarded. This should now succeed because we reversed all local changes first.
-    for (const changeset of rebaseChangesets) {
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
+    }
+
+    // apply incoming changes
+    for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       try {
@@ -823,7 +798,7 @@ export class BriefcaseManager {
         if (err instanceof Error) {
           Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
         }
-        nativeDb.abandonChanges();
+        db[_nativeDb].abandonChanges();
         throw err;
       }
     }
@@ -831,26 +806,24 @@ export class BriefcaseManager {
       briefcaseDb.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
     }
     if (!reverse) {
-      if (rebaseChangesets.length > 0) {
-        if (briefcaseDb) {
-          if (useSemanticRebase)
-            await briefcaseDb.txns.rebaser.resumeSemantic();
-          else
-            await briefcaseDb.txns.rebaser.resume();
-        } else {
-          // Only Briefcase has change management. Following is
-          // for test related to standalone db with txn enabled.
-          nativeDb.pullMergeRebaseBegin();
-          let txnId = nativeDb.pullMergeRebaseNext();
-          while (txnId) {
-            nativeDb.pullMergeRebaseReinstateTxn();
-            nativeDb.pullMergeRebaseUpdateTxn();
-            txnId = nativeDb.pullMergeRebaseNext();
-          }
-          nativeDb.pullMergeRebaseEnd();
-          if (!nativeDb.isReadonly) {
-            nativeDb.saveChanges("Merge.");
-          }
+      if (briefcaseDb) {
+        if (useSemanticRebase)
+          await briefcaseDb.txns.rebaser.resumeSemantic();
+        else
+          await briefcaseDb.txns.rebaser.resume();
+      } else {
+        // Only Briefcase has change management. Following is
+        // for test related to standalone db with txn enabled.
+        nativeDb.pullMergeRebaseBegin();
+        let txnId = nativeDb.pullMergeRebaseNext();
+        while (txnId) {
+          nativeDb.pullMergeRebaseReinstateTxn();
+          nativeDb.pullMergeRebaseUpdateTxn();
+          txnId = nativeDb.pullMergeRebaseNext();
+        }
+        nativeDb.pullMergeRebaseEnd();
+        if (!nativeDb.isReadonly) {
+          nativeDb.saveChanges("Merge.");
         }
       }
 
