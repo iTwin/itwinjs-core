@@ -11,7 +11,8 @@
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "",
-    "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
+    "test": "npm run -s test:unit && npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
+    "test:unit": "vitest run --config vitest.node.config.mts",
     "test:chrome": "cross-env VITEST_RPC_ENVIRONMENT=http vitest run --config vitest.browser.config.mts",
     "test:chrome-websocket": "cross-env VITEST_RPC_ENVIRONMENT=websocket vitest run --config vitest.browser.config.mts",
     "test:electron": "vitest run --config vitest.electron.config.mts"

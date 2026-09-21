@@ -8,6 +8,7 @@ const packageRoot = path.dirname(fileURLToPath(import.meta.url));
 const environment = process.env.VITEST_RPC_ENVIRONMENT;
 if (environment !== "http" && environment !== "websocket")
   throw new Error(`Expected VITEST_RPC_ENVIRONMENT to be "http" or "websocket", got "${environment ?? "undefined"}".`);
+const isDebug = process.env.VITEST_RPC_DEBUG === "1";
 
 export default defineConfig({
   define: { "process.env.VITEST_RPC_ENVIRONMENT": JSON.stringify(environment) },
@@ -44,21 +45,27 @@ export default defineConfig({
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.browser.setup.ts")],
     globalSetup: path.resolve(packageRoot, "src/browser-global-setup.ts"),
     globals: true,
-    testTimeout: 120000,
-    hookTimeout: 120000,
+    testTimeout: isDebug ? 0 : 120000,
+    hookTimeout: isDebug ? 0 : 120000,
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/junit_results.xml" }],
+      ["junit", { outputFile: `lib/test/${environment}_junit_results.xml` }],
     ],
     browser: {
       api: { host: "127.0.0.1", port: 3020, strictPort: true },
       enabled: true,
       provider: playwright({
-        launchOptions: { args: ["--disable-web-security", "--no-sandbox"] },
+        launchOptions: {
+          args: [
+            "--disable-web-security",
+            "--no-sandbox",
+            ...(isDebug ? ["--remote-debugging-port=9223"] : []),
+          ],
+        },
       }),
       instances: [{ browser: "chromium" }],
-      headless: true,
+      headless: !isDebug,
       screenshotFailures: false,
     },
   },

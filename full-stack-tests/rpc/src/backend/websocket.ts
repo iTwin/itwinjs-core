@@ -11,6 +11,7 @@ import { BackendTestCallbacks, browserBackendCallbackPath } from "../common/Side
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { setupIpcTest } from "./ipc";
+import { notifyReady, rpcBackendIdentityHeader } from "./notifyReady";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 
 async function init() {
@@ -31,7 +32,8 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
-  setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket, registerBackendCallback); // eslint-disable-line @typescript-eslint/no-floating-promises
+  await setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket, registerBackendCallback);
+  notifyReady("websocket");
 
   return () => {
     httpServer.close();
@@ -41,6 +43,10 @@ async function init() {
 class TestWebEditServer extends WebEditServer {
   protected override _configureHeaders() {
     super._configureHeaders();
+    this._app.use((_request, response, next) => {
+      response.setHeader(rpcBackendIdentityHeader, process.env.VITEST_RPC_BACKEND_ID ?? "");
+      next();
+    });
     this._app.post(browserBackendCallbackPath, createHttpBackendCallbackHandler());
   }
 }

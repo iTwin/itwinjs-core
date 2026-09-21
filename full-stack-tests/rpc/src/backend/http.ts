@@ -9,6 +9,7 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { initializeMockMobileTest, setupMockMobileTest } from "./mockmobile";
+import { notifyReady } from "./notifyReady";
 import { initializeWebRoutingTest } from "./routing";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
@@ -37,6 +38,7 @@ async function init() {
 
   // eslint-disable-next-line no-console
   console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
+  notifyReady("http");
   return () => {
     httpServer.close();
     MobileHost.onWillTerminate.raiseEvent();

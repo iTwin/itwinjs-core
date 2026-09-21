@@ -65,8 +65,21 @@ import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/br
 const result = await invokeBackendCallback("example:add", 2, 5);
 ```
 
+HTTP callbacks accept JSON arguments and results: `null`, booleans, finite numbers, strings, arrays, and plain objects containing those values. A top-level `undefined` result is also supported. Unsupported values, including `undefined` arguments or object fields, are rejected rather than silently converted or omitted. The Electron transport is unchanged.
+
+The consuming backend must mount the HTTP handler. The bridge does not create a server or choose a route. For cross-origin tests, the server must also allow the test origin through CORS. For example, an Express backend can register the endpoint before starting its server:
+
 ```ts
-// Chromium test with a package-owned HTTP endpoint
+import express from "express";
+import { createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
+
+const app = express();
+app.post("/test-callback", express.text(), createHttpBackendCallbackHandler());
+app.listen(5020, "127.0.0.1");
+```
+
+```ts
+// Chromium test using the endpoint mounted above
 import { createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
 
 const invokeBackendCallback = createHttpBackendCallbackInvoker({ url: "http://localhost:5020/test-callback" });

@@ -29,23 +29,37 @@ export interface HttpBackendCallbackResponse {
   };
 }
 
+function assertJsonValue(value: unknown, ancestors = new Set<object>()): void {
+  if (value === null || typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)))
+    return;
+
+  if (typeof value !== "object" || ancestors.has(value)
+    || (!Array.isArray(value) && Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
+    || Object.getOwnPropertySymbols(value).length > 0)
+    throw new TypeError("HTTP backend callback arguments and defined results must contain only JSON values.");
+
+  ancestors.add(value);
+  for (const item of Array.isArray(value) ? value : Object.values(value))
+    assertJsonValue(item, ancestors);
+  ancestors.delete(value);
+}
+
 /** Create a framework-neutral handler for an HTTP backend callback endpoint.
  * @internal
  */
 export function createHttpBackendCallbackHandler() {
   return async (request: HttpBackendCallbackRequest, response: HttpBackendCallbackResponse): Promise<void> => {
-    let payload: unknown;
     try {
-      const body = typeof request.body === "string" ? request.body : JSON.stringify(request.body);
-      payload = JSON.parse(body);
+      const payload: unknown = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+      assertJsonValue(payload);
+      const result = await dispatchBackendCallback(payload);
+      if (result.ok && result.value !== undefined)
+        assertJsonValue(result.value);
+      response.status(result.ok ? 200 : 500).json(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       response.status(500).json({ ok: false, error: { message } });
-      return;
     }
-
-    const result = await dispatchBackendCallback(payload);
-    response.status(result.ok ? 200 : 500).json(result);
   };
 }
 
@@ -60,6 +74,7 @@ export function createHttpBackendCallbackInvoker(options: HttpBackendCallbackInv
   return async (name, ...args) => {
     const url = typeof options.url === "function" ? options.url() : options.url;
     const request: CallbackRequest = { name, args };
+    assertJsonValue(request);
 
     let response: Response;
     try {

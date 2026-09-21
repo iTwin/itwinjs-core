@@ -181,7 +181,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish RPC Full Stack Test Results"
     inputs:
-      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/rpc/lib/test/*_junit_results.xml"
       testRunTitle: "RPC Full Stack - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()
 
