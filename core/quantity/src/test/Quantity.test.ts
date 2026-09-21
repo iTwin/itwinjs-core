@@ -191,7 +191,7 @@ describe("Quantity", () => {
     _testResetResolvedBasicUnitsDataCache();
   });
 
-  it("generated basic conversion data matches provider-backed conversions for every bundled same-phenomenon unit pair", async () => {
+  it("synchronous and asynchronous provider conversions match generated data for every bundled same-phenomenon unit pair", async () => {
     const provider = new BasicUnitsProvider();
     const resolvedUnits = new Map<string, Awaited<ReturnType<BasicUnitsProvider["findUnitByName"]>>>();
     const unitsByPhenomenon = new Map<string, string[]>();
@@ -210,7 +210,9 @@ describe("Quantity", () => {
       for (const fromName of unitNames as UnitName[]) {
         for (const toName of unitNames as UnitName[]) {
           const actual = UnitConversions.getConversion(fromName, toName);
+          const sync = provider.getConversionSync(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
           const expected = await provider.getConversion(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
+          expect(sync).toEqual(actual);
           expect(actual.inversion).toBe(expected.inversion);
           expect(actual.error).toBe(expected.error);
           // The generated built-in conversions are canonicalized for deterministic cross-Node output.

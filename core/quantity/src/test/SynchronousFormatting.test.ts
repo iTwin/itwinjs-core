@@ -18,6 +18,9 @@ describe("synchronous quantity formatting", () => {
     expect(syncConversion.offset).toBeCloseTo(asyncConversion.offset, 12);
     expect(syncConversion.error).toBe(asyncConversion.error);
 
+    const seconds = provider.findUnitByNameSync("Units.S");
+    expect(provider.getConversionSync(meter, seconds)).toEqual({ factor: 1.0, offset: 0.0, error: true });
+
     const customUnit: UnitProps = {
       name: "Custom.M",
       label: "custom m",
