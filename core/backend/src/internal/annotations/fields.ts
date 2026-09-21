@@ -417,7 +417,11 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      newContent = formatFieldValue(propValue, field.formatOptions, resolveFormatMagnitude(propValue, field, context));
+      newContent = formatFieldValue({
+        value: propValue,
+        options: field.formatOptions,
+        formatMagnitude: resolveFormatMagnitude(propValue, field, context),
+      });
     }
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);

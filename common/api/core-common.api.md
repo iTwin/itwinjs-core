@@ -3867,7 +3867,14 @@ export enum FontType {
 }
 
 // @internal
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined;
+export function formatFieldValue(input: FormatFieldValueArgs): string | undefined;
+
+// @internal
+export interface FormatFieldValueArgs {
+    formatMagnitude?: FormatMagnitude;
+    options?: FieldFormatOptions;
+    value: FieldValue;
+}
 
 // @internal
 export type FormatMagnitude = (magnitude: number) => string;
