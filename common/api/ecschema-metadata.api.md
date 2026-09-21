@@ -11,6 +11,7 @@ import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatsProviderContext } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -915,8 +916,8 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
     });
     addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
-    getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
-    getFormatSync(input: string, system?: UnitSystemKey): FormatDefinition | undefined;
+    getFormat(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
+    getFormatSync(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     removeFormat(name: string): Promise<void>;
