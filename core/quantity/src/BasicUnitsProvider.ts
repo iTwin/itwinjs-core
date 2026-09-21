@@ -42,8 +42,6 @@ export function _testResetUnitsCache(): void {
  */
 export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
 
-  // ── Synchronous capability ────────────────────────────────────────────
-
   /** Find a canonical built-in unit by its fully-qualified name without awaiting a provider. */
   public findUnitByNameSync(unitName: string): UnitProps {
     const state = resolveStateSync();

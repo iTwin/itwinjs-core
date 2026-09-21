@@ -122,7 +122,7 @@ export interface UnitsProvider {
 
 /**
  * Optional synchronous capability for providers that can resolve units and conversions from local data.
- * Implementations must not load schemas or perform asynchronous I/O from these methods.
+ * @note Implementations should resolve from already-loaded local data and avoid schema loading or asynchronous I/O from these methods.
  * @beta
  */
 export interface SyncUnitsProvider {

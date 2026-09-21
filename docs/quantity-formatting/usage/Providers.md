@@ -42,6 +42,23 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 > **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
 
+#### Synchronous local-data capabilities
+
+When a code path must construct a formatter without awaiting a provider, use the optional [SyncUnitsProvider]($quantity) capability. [BasicUnitsProvider]($quantity) implements this capability for the bundled canonical BIS units.
+
+```ts
+import { BasicUnitsProvider, Units } from "@itwin/core-quantity";
+
+const unitsProvider = new BasicUnitsProvider();
+const meters = unitsProvider.findUnitByNameSync(Units.LENGTH.M);
+const feet = unitsProvider.findUnitByNameSync(Units.LENGTH.FT);
+const conversion = unitsProvider.getConversionSync(meters, feet);
+```
+
+Synchronous unit methods only use data that is already available locally. An unknown unit returns an invalid `UnitProps`, and an unavailable or incompatible conversion returns an identity conversion with `error: true`; callers should use the existing plain-value fallback instead of loading a schema or awaiting inside the synchronous path.
+
+A format provider can expose the optional [SyncFormatsProvider]($quantity) capability when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous.
+
 #### createUnitsProvider
 
 [createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `bisUnitsPolicy: "preferBundled"` to invert precedence so the bundled BIS units win instead.
@@ -96,6 +113,8 @@ A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity
 #### SchemaFormatsProvider
 
 [SchemaFormatsProvider]($ecschema-metadata) retrieves formats from EC schemas using a [SchemaContext]($ecschema-metadata). It requires a [UnitSystemKey]($quantity) to filter formats according to the current unit system.
+
+A schema-backed provider may expose [SyncFormatsProvider]($quantity) only for format definitions that are already loaded. Callers should treat an `undefined` result as a synchronous cache miss and use the asynchronous provider path when loading is acceptable.
 
 **Characteristics:**
 

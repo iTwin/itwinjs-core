@@ -31,6 +31,26 @@ const formattedString = formatterSpec.applyFormatting(magnitude);
 // Result: "4'-11 1/16"" (if format is feet-inches)
 ```
 
+### Synchronous formatter construction
+
+When the format and unit data are already available locally, [Format]($quantity) and [FormatterSpec]($quantity) provide synchronous factories for code paths that cannot await a provider. `Format.createFromJSONSync()` resolves the unit names through a [SyncUnitsProvider]($quantity), and `FormatterSpec.createSync()` builds the conversion specifications without returning a promise.
+
+```ts
+import { BasicUnitsProvider, Format, FormatterSpec, Units } from "@itwin/core-quantity";
+
+const unitsProvider = new BasicUnitsProvider();
+const format = Format.createFromJSONSync("Length", unitsProvider, {
+  type: "Decimal",
+  precision: 2,
+  composite: { units: [{ name: Units.LENGTH.M }] },
+});
+const persistenceUnit = unitsProvider.findUnitByNameSync(Units.LENGTH.M);
+const formatterSpec = FormatterSpec.createSync("Length", format, unitsProvider, persistenceUnit);
+const formattedString = formatterSpec.applyFormatting(12.5);
+```
+
+This path does not load schemas or await unavailable metadata. If a required format or unit cannot be resolved synchronously, callers should use the existing plain-value fallback or asynchronous construction path.
+
 ### ParserSpec
 
 [ParserSpec]($quantity) is the runtime object used to parse formatted strings back into numeric values. It contains:

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "",
+      "comment": "Add synchronous unit and format APIs to @itwin/core-quantity.",
       "type": "none"
     }
   ],

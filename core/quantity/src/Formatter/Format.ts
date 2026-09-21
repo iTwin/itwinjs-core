@@ -529,144 +529,69 @@ export class Format extends BaseFormat {
   }
 }
 
-async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+function validateCompositeUnitInput(name: string, label?: string): void {
   if (typeof name !== "string" || (undefined !== label && typeof label !== "string")) {
     throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
   }
+}
 
-  const unit = await provider.findUnitByName(name);
+function validateResolvedUnit(unit: UnitProps | undefined, errorMessage: string): UnitProps {
   if (!unit || !unit.isValid) {
-    throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
+    throw new QuantityError(QuantityStatus.InvalidJson, errorMessage);
   }
 
   return unit;
 }
 
-async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+function getAzimuthBearingUnitName(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit"): string | undefined {
   const unitName = jsonObj[key];
-  if (undefined !== unitName) {
-    if (typeof unitName !== "string") {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
-    }
-
-    const unit = await provider.findUnitByName(unitName);
-    if (!unit || !unit.isValid) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`);
-    }
-
-    return unit;
+  if (undefined !== unitName && typeof unitName !== "string") {
+    throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
   }
 
-  return undefined;
+  return unitName;
 }
 
-async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
-  let units: ResolvedFormatUnitSpec[] | undefined;
-  if (undefined !== jsonObj.composite?.units) {
-    units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
-      const unit = await resolveCompositeUnit(unitsProvider, entry.name);
-      return { unit, label: entry.label };
-    }));
-
-    // For Ratio formats with 2 units: validate both units have the same phenomenon
-    const formatType = parseFormatType(jsonObj.type, formatName);
-    if (formatType === FormatType.Ratio && units.length === 2) {
-      const phenomenon1 = units[0].unit.phenomenon;
-      const phenomenon2 = units[1].unit.phenomenon;
-      if (phenomenon1 !== phenomenon2) {
-        throw new QuantityError(
-          QuantityStatus.InvalidJson,
-          `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
-        );
-      }
-    }
-  }
-
-  let azimuthBaseUnit, revolutionUnit;
-  const type = parseFormatType(jsonObj.type, formatName);
-  if (type === FormatType.Azimuth || type === FormatType.Bearing) {
-    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
-    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
-
-    if (!revolutionUnit) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
-    }
-
-    if (jsonObj.azimuthBase !== undefined && !azimuthBaseUnit) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
-    }
-  }
-
-  return {
-    ...jsonObj,
-    azimuthBaseUnit,
-    revolutionUnit,
-    composite: units ? {
-      ...jsonObj.composite,
-      units,
-    } : undefined,
-  };
+async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+  validateCompositeUnitInput(name, label);
+  return validateResolvedUnit(await provider.findUnitByName(name), `Invalid unit name '${name}'.`);
 }
 
 function resolveCompositeUnitSync(provider: SyncUnitsProvider, name: string, label?: string): UnitProps {
-  if (typeof name !== "string" || (undefined !== label && typeof label !== "string")) {
-    throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-  }
+  validateCompositeUnitInput(name, label);
+  return validateResolvedUnit(provider.findUnitByNameSync(name), `Invalid unit name '${name}'.`);
+}
 
-  const unit = provider.findUnitByNameSync(name);
-  if (!unit || !unit.isValid) {
-    throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
-  }
-
-  return unit;
+async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+  const unitName = getAzimuthBearingUnitName(formatName, jsonObj, key);
+  return undefined === unitName ? undefined : validateResolvedUnit(
+    await provider.findUnitByName(unitName),
+    `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`,
+  );
 }
 
 function resolveAzimuthBearingUnitSync(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: SyncUnitsProvider): UnitProps | undefined {
-  const unitName = jsonObj[key];
-  if (undefined !== unitName) {
-    if (typeof unitName !== "string") {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
-    }
-
-    const unit = provider.findUnitByNameSync(unitName);
-    if (!unit || !unit.isValid) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`);
-    }
-
-    return unit;
-  }
-
-  return undefined;
+  const unitName = getAzimuthBearingUnitName(formatName, jsonObj, key);
+  return undefined === unitName ? undefined : validateResolvedUnit(
+    provider.findUnitByNameSync(unitName),
+    `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`,
+  );
 }
 
-function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProvider, jsonObj: FormatProps): ResolvedFormatProps {
-  let units: ResolvedFormatUnitSpec[] | undefined;
-  if (undefined !== jsonObj.composite?.units) {
-    units = jsonObj.composite.units.map((entry) => {
-      const unit = resolveCompositeUnitSync(unitsProvider, entry.name);
-      return { unit, label: entry.label };
-    });
-
-    // For Ratio formats with 2 units: validate both units have the same phenomenon
-    const formatType = parseFormatType(jsonObj.type, formatName);
-    if (formatType === FormatType.Ratio && units.length === 2) {
-      const phenomenon1 = units[0].unit.phenomenon;
-      const phenomenon2 = units[1].unit.phenomenon;
-      if (phenomenon1 !== phenomenon2) {
-        throw new QuantityError(
-          QuantityStatus.InvalidJson,
-          `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
-        );
-      }
+function validateResolvedFormatProps(formatName: string, jsonObj: FormatProps, units: ResolvedFormatUnitSpec[] | undefined, azimuthBaseUnit: UnitProps | undefined, revolutionUnit: UnitProps | undefined): void {
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Ratio && units?.length === 2) {
+    const phenomenon1 = units[0].unit.phenomenon;
+    const phenomenon2 = units[1].unit.phenomenon;
+    if (phenomenon1 !== phenomenon2) {
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
+      );
     }
   }
 
-  let azimuthBaseUnit, revolutionUnit;
-  const type = parseFormatType(jsonObj.type, formatName);
-  if (type === FormatType.Azimuth || type === FormatType.Bearing) {
-    azimuthBaseUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
-    revolutionUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "revolutionUnit", unitsProvider);
-
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
     if (!revolutionUnit) {
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
     }
@@ -675,7 +600,9 @@ function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProv
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
     }
   }
+}
 
+function createResolvedFormatProps(jsonObj: FormatProps, units: ResolvedFormatUnitSpec[] | undefined, azimuthBaseUnit: UnitProps | undefined, revolutionUnit: UnitProps | undefined): ResolvedFormatProps {
   return {
     ...jsonObj,
     azimuthBaseUnit,
@@ -685,4 +612,40 @@ function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProv
       units,
     } : undefined,
   };
+}
+
+async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+  const units = undefined === jsonObj.composite?.units ? undefined : await Promise.all(jsonObj.composite.units.map(async (entry) => ({
+    unit: await resolveCompositeUnit(unitsProvider, entry.name, entry.label),
+    label: entry.label,
+  })));
+
+  let azimuthBaseUnit: UnitProps | undefined;
+  let revolutionUnit: UnitProps | undefined;
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
+    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
+  }
+
+  validateResolvedFormatProps(formatName, jsonObj, units, azimuthBaseUnit, revolutionUnit);
+  return createResolvedFormatProps(jsonObj, units, azimuthBaseUnit, revolutionUnit);
+}
+
+function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProvider, jsonObj: FormatProps): ResolvedFormatProps {
+  const units = undefined === jsonObj.composite?.units ? undefined : jsonObj.composite.units.map((entry) => ({
+    unit: resolveCompositeUnitSync(unitsProvider, entry.name, entry.label),
+    label: entry.label,
+  }));
+
+  let azimuthBaseUnit: UnitProps | undefined;
+  let revolutionUnit: UnitProps | undefined;
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
+    azimuthBaseUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "revolutionUnit", unitsProvider);
+  }
+
+  validateResolvedFormatProps(formatName, jsonObj, units, azimuthBaseUnit, revolutionUnit);
+  return createResolvedFormatProps(jsonObj, units, azimuthBaseUnit, revolutionUnit);
 }

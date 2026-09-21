@@ -225,7 +225,7 @@ export interface FormatsProvider {
 
 /**
  * Optional synchronous capability for format providers that can resolve already-loaded local data.
- * Implementations must not load schemas or perform asynchronous I/O from this method.
+ * @note Implementations should resolve from already-loaded local data and avoid schema loading or asynchronous I/O from this method.
  * @beta
  */
 export interface SyncFormatsProvider {
