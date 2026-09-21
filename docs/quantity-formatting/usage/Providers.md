@@ -48,7 +48,7 @@ Use the optional [SyncUnitsProvider]($quantity) capability when a caller must co
 
 These methods use local data only. `BasicUnitsProvider` returns `BadUnit` for an unknown name. It returns an identity conversion with `error: true` when a unit is unavailable or the units are incompatible. Treat either result as a miss and use the plain-value fallback instead of loading a schema or awaiting.
 
-A format provider can implement [SyncFormatsProvider]($quantity) when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous.
+A format provider can implement [SyncFormatsProvider]($quantity) when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous. A provider that delegates the current lookup to another provider should forward the optional lookup context unchanged; omit it only when starting an independent lookup.
 
 #### createUnitsProvider
 

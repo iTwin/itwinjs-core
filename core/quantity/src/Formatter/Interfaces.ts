@@ -207,14 +207,24 @@ export interface FormatsChangedArgs {
   impliedUnitSystem?: UnitSystemKey;
 }
 
+/**
+ * Context passed through a chain of providers while resolving one format request.
+ * A provider that delegates the current request must forward this context unchanged; omit it only when starting an independent request.
+ * @beta
+ */
+export interface FormatsProviderContext {
+  readonly providerChain: ReadonlySet<FormatsProvider>;
+}
+
 /** This interface is implemented by a class that would provide formats for use in formatting quantities.
  * @beta
  */
 export interface FormatsProvider {
   /**
    * @param name The full name of the Format or KindOfQuantity.
+   * @param context Optional context to forward when delegating the current lookup through another provider.
    */
-  getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+  getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
 
   /**
    * Fired when formats are added, removed, or changed.
@@ -230,7 +240,7 @@ export interface FormatsProvider {
  */
 export interface SyncFormatsProvider {
   /** Return a locally available format definition, or `undefined` when unavailable. */
-  getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
+  getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
 }
 
 /** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.

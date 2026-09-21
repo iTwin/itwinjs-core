@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { BasicUnitsProvider, Format, type FormatProps, FormatterSpec, type UnitProps } from "../core-quantity";
 
+class ErroringConversionProvider extends BasicUnitsProvider {
+  public override async getConversion() {
+    return { factor: 1.0, offset: 0.0, error: true };
+  }
+
+  public override getConversionSync() {
+    return { factor: 1.0, offset: 0.0, error: true };
+  }
+}
+
 describe("synchronous quantity formatting", () => {
   const provider = new BasicUnitsProvider();
 
@@ -119,6 +129,25 @@ describe("synchronous quantity formatting", () => {
       const asyncSpec = await FormatterSpec.create(testCase.name, asyncFormat, provider, inputUnit);
       expect(syncSpec.applyFormatting(testCase.value)).toBe(asyncSpec.applyFormatting(testCase.value));
     }
+  });
+
+  it("preserves ratio conversion errors in synchronous and asynchronous specs", async () => {
+    const erroringProvider = new ErroringConversionProvider();
+    const props: FormatProps = {
+      type: "Ratio",
+      ratioType: "NToOne",
+      composite: { units: [{ name: "Units.FT" }, { name: "Units.IN" }] },
+    };
+    const syncFormat = Format.createFromJSONSync("Ratio", erroringProvider, props);
+    const asyncFormat = await Format.createFromJSON("Ratio", erroringProvider, props);
+    const syncInputUnit = erroringProvider.findUnitByNameSync("Units.FT");
+    const asyncInputUnit = await erroringProvider.findUnitByName("Units.FT");
+
+    const syncSpec = FormatterSpec.createSync("Ratio", syncFormat, erroringProvider, syncInputUnit);
+    const asyncSpec = await FormatterSpec.create("Ratio", asyncFormat, erroringProvider, asyncInputUnit);
+
+    expect(syncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
+    expect(asyncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
   });
 
   it("rejects unavailable units without awaiting", () => {

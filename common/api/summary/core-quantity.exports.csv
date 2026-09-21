@@ -24,6 +24,7 @@ beta;interface;FormatsChangedArgs
 beta;class;FormatSpecHandle
 beta;interface;FormatSpecHandleArgs
 beta;interface;FormatsProvider
+beta;interface;FormatsProviderContext
 internal;const;formatStringRgx
 beta;class;Formatter
 beta;class;FormatterSpec

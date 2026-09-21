@@ -365,8 +365,14 @@ export interface FormatSpecHandleArgs extends FormattingSpecArgs {
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+}
+
+// @beta
+export interface FormatsProviderContext {
+    // (undocumented)
+    readonly providerChain: ReadonlySet<FormatsProvider>;
 }
 
 // @internal
@@ -988,7 +994,7 @@ export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta
 export interface SyncFormatsProvider {
-    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
+    getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
 }
 
 // @beta
