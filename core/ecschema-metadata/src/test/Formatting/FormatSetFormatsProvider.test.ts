@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
 import { BeEvent } from "@itwin/core-bentley";
-import { FormatDefinition, FormatsProvider } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsProvider, SyncFormatsProvider } from "@itwin/core-quantity";
 import { FormatSetFormatsProvider } from "../../Formatting/FormatSetFormatsProvider";
 import { FormatSet } from "../../Deserialization/JsonProps";
 
@@ -248,6 +248,67 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       await expect(providerWithFallback.getFormat("TestFormat2")).rejects.toThrow("Fallback provider error");
+    });
+  });
+
+  describe("getFormatSync", () => {
+    it("returns local formats and normalizes colon-separated names", () => {
+      formatSet.formats = { "Schema.KindOfQuantity": anotherFormat };
+      provider = new FormatSetFormatsProvider({ formatSet });
+
+      expect(provider.getFormatSync("Schema:KindOfQuantity")).toEqual(anotherFormat);
+    });
+
+    it("resolves local reference chains without awaiting", () => {
+      formatSet.formats = {
+        alias: "Schema.KindOfQuantity",
+        "Schema.KindOfQuantity": anotherFormat,
+      };
+      provider = new FormatSetFormatsProvider({ formatSet });
+
+      expect(provider.getFormatSync("alias")).toEqual(anotherFormat);
+    });
+
+    it("returns undefined for circular references", () => {
+      formatSet.formats = { first: "second", second: "first" };
+      provider = new FormatSetFormatsProvider({ formatSet });
+
+      expect(provider.getFormatSync("first")).toBeUndefined();
+    });
+
+    it("resolves a reference through a synchronous fallback", () => {
+      const fallbackFormatSet: FormatSet = {
+        name: "FallbackFormatSet",
+        label: "Fallback Format Set",
+        unitSystem: "metric",
+        formats: { "Schema.KindOfQuantity": anotherFormat },
+      };
+      const fallbackProvider = new FormatSetFormatsProvider({ formatSet: fallbackFormatSet });
+      formatSet.formats = { alias: "Schema.KindOfQuantity" };
+      provider = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
+
+      expect(provider.getFormatSync("alias")).toEqual(anotherFormat);
+    });
+
+    it("uses a synchronous fallback when one is available", () => {
+      const fallbackProvider: FormatsProvider & SyncFormatsProvider = {
+        getFormat: async () => undefined,
+        getFormatSync: (name: string) => name === "FallbackFormat" ? anotherFormat : undefined,
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
+
+      expect(providerWithFallback.getFormatSync("FallbackFormat")).toEqual(anotherFormat);
+    });
+
+    it("does not use an asynchronous-only fallback", () => {
+      const fallbackProvider: FormatsProvider = {
+        getFormat: async () => anotherFormat,
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
+
+      expect(providerWithFallback.getFormatSync("FallbackFormat")).toBeUndefined();
     });
   });
 

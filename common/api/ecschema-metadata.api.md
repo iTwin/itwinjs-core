@@ -17,6 +17,7 @@ import { FractionalPrecision } from '@itwin/core-quantity';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
+import { SyncFormatsProvider } from '@itwin/core-quantity';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
@@ -907,7 +908,7 @@ export interface FormatSet {
 }
 
 // @beta
-export class FormatSetFormatsProvider implements MutableFormatsProvider {
+export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFormatsProvider {
     constructor(props: {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
@@ -915,6 +916,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
     getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormatSync(input: string, system?: UnitSystemKey): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     removeFormat(name: string): Promise<void>;
@@ -2236,11 +2238,12 @@ export interface SchemaData {
 }
 
 // @beta
-export class SchemaFormatsProvider implements FormatsProvider {
+export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
