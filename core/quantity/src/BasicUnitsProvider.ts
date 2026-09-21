@@ -49,9 +49,8 @@ export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
     return entry ? entry.props : new BadUnit();
   }
 
-  /** Compute a conversion between built-in units using local data. */
+  /** Compute a conversion between canonical built-in units using generated local data. */
   public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps) {
-    resolveStateSync();
     if (!isUnitName(fromUnit.name) || !isUnitName(toUnit.name)) {
       return { factor: 1.0, offset: 0.0, error: true };
     }
