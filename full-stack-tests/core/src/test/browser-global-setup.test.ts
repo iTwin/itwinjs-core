@@ -3,30 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EventEmitter } from "node:events";
-import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import setup from "../browser-global-setup";
 import { chromeBackendStartupTimeout } from "../common/ChromeTestBackend";
 
 const mocks = vi.hoisted(() => ({
   spawn: vi.fn(),
-  files: new Map<string | number, string>(),
 }));
 vi.mock("node:child_process", () => ({ spawn: mocks.spawn }));
-vi.mock("node:fs", () => ({
-  mkdirSync: vi.fn(),
-  rmSync: vi.fn((file: string) => mocks.files.delete(file)),
-  existsSync: (file: string) => mocks.files.has(file),
-  readFileSync: (file: string) => mocks.files.get(file),
-  writeFileSync: (file: string | number, contents: string) => mocks.files.set(file, contents),
-  openSync: (file: string) => {
-    if (mocks.files.has(file))
-      throw Object.assign(new Error("File exists"), { code: "EEXIST" });
-    mocks.files.set(file, "");
-    return 1;
-  },
-  closeSync: vi.fn(),
-}));
+vi.mock("node:fs", () => ({ rmSync: vi.fn() }));
 
 class BackendProcess extends EventEmitter {
   public pid: number | undefined = 12345;
@@ -80,7 +65,6 @@ let backend: BackendProcess;
 
 beforeEach(() => {
   backend = new BackendProcess();
-  mocks.files.clear();
   mocks.spawn.mockReset().mockReturnValue(backend);
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
 });
@@ -109,21 +93,12 @@ describe("core Chrome backend ownership", () => {
     void opening.then(resolved, () => undefined);
     await flush();
     expect(resolved).not.toHaveBeenCalled();
+    expect(mocks.spawn).toHaveBeenCalledOnce();
     backend.ready();
     const teardown = await opening;
     expect(root.provide).toHaveBeenCalledWith("coreChromeBackendId", expect.any(String));
     expect(fetch).not.toHaveBeenCalled();
     await teardown?.();
-  });
-
-  it("does not reuse a stale PID file or a different process answering on the backend port", async () => {
-    mocks.files.set(path.resolve("lib/backend/.vitest/chrome.json"), JSON.stringify({ pid: 99999 }));
-    const { root } = createProjects();
-    const opening = start(root);
-    void opening.catch(() => undefined);
-    expect(mocks.spawn).toHaveBeenCalledOnce();
-    backend.ready();
-    await (await opening)?.();
   });
 
   it("rejects a readiness message belonging to another backend", async () => {
