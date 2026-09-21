@@ -238,6 +238,40 @@ describe("FormatSetFormatsProvider", () => {
       expect(format).toBeUndefined();
     });
 
+    it("stops cycles through a custom fallback provider", async () => {
+      let calls = 0;
+      let providerWithFallback: FormatSetFormatsProvider;
+      const fallbackProvider: FormatsProvider = {
+        getFormat: async (name, system, context) => {
+          calls++;
+          if (calls > 1)
+            return undefined;
+          return providerWithFallback.getFormat(name, system, context);
+        },
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+
+      await expect(providerWithFallback.getFormat("FallbackFormat")).resolves.toBeUndefined();
+      expect(calls).toBe(1);
+    });
+
+    it("does not share cycle context across concurrent lookups", async () => {
+      const fallbackProvider: FormatsProvider = {
+        getFormat: async (name) => {
+          await Promise.resolve();
+          return name === "First" ? sampleFormat : anotherFormat;
+        },
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+
+      await expect(Promise.all([
+        providerWithFallback.getFormat("First"),
+        providerWithFallback.getFormat("Second"),
+      ])).resolves.toEqual([sampleFormat, anotherFormat]);
+    });
+
     it("should propagate error from fallback provider", async () => {
       const fallbackProvider: FormatsProvider = {
         getFormat: async () => {
@@ -309,6 +343,25 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       expect(providerWithFallback.getFormatSync("FallbackFormat")).toBeUndefined();
+    });
+
+    it("stops cycles through a custom synchronous fallback provider", () => {
+      let calls = 0;
+      let providerWithFallback: FormatSetFormatsProvider;
+      const fallbackProvider: FormatsProvider & SyncFormatsProvider = {
+        getFormat: async () => undefined,
+        getFormatSync: (name, system, context) => {
+          calls++;
+          if (calls > 1)
+            return undefined;
+          return providerWithFallback.getFormatSync(name, system, context);
+        },
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+
+      expect(providerWithFallback.getFormatSync("FallbackFormat")).toBeUndefined();
+      expect(calls).toBe(1);
     });
   });
 
