@@ -164,7 +164,7 @@ export class FormatterSpec {
     return conversions;
   }
 
-  /** Build conversion specs for ratio format with 2 composite units using synchronously available unit data. */
+  /** Build conversion specs for a two-unit ratio format using local unit data. */
   private static getRatioUnitConversionsSync(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: SyncUnitsProvider, persistenceUnit: UnitProps): UnitConversionSpec[] {
     const conversions: UnitConversionSpec[] = [];
 
@@ -206,7 +206,7 @@ export class FormatterSpec {
     return conversions;
   }
 
-  /** Get conversion specs using synchronously available unit data. */
+  /** Build conversion specs using local unit data. */
   private static getUnitConversionsSync(format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): UnitConversionSpec[] {
     const conversions: UnitConversionSpec[] = [];
     let persistenceUnit = inputUnit;
@@ -286,7 +286,7 @@ export class FormatterSpec {
     return new FormatterSpec(name, format, conversions, inputUnit, azimuthBaseConversion, revolutionConversion);
   }
 
-  /** Create a FormatterSpec using synchronously available unit data. */
+  /** Create a `FormatterSpec` using a synchronous unit provider. */
   public static createSync(name: string, format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): FormatterSpec {
     const conversions = FormatterSpec.getUnitConversionsSync(format, unitsProvider, inputUnit);
     let azimuthBaseConversion: UnitConversionProps | undefined;

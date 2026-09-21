@@ -33,7 +33,7 @@ export async function resolveBasicUnitsData(loadSchema: () => Promise<Serialized
   return _resolvePromise;
 }
 
-/** Returns the shared resolved data for the built-in basic units, building it synchronously if needed.
+/** Return shared resolved data for built-in units, building it synchronously on first use.
  * @internal
  */
 export function resolveBasicUnitsDataSync(schema: SerializedUnitSchema): ResolvedBasicUnitsData {

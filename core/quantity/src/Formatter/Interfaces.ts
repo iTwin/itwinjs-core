@@ -224,12 +224,12 @@ export interface FormatsProvider {
 }
 
 /**
- * Optional synchronous capability for format providers that can resolve already-loaded local data.
- * @note Implementations should resolve from already-loaded local data and avoid schema loading or asynchronous I/O from this method.
+ * Optional capability for providers that can resolve format definitions from local data without awaiting.
+ * @note Implementations should use already-loaded local data and avoid schema loading or asynchronous I/O from this method.
  * @beta
  */
 export interface SyncFormatsProvider {
-  /** Return a format definition from synchronously available data, or `undefined` when unavailable. */
+  /** Return a locally available format definition, or `undefined` when unavailable. */
   getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
 }
 

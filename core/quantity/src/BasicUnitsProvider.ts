@@ -28,11 +28,11 @@ export function _testResetUnitsCache(): void {
 /**
  * A `UnitsProvider` backed by the full BIS `Units.ecschema.json` bundled as a JSON asset.
  *
- * The bundled JSON is included statically, while its immutable lookup indexes are built lazily
- * on the first provider call and cached at module scope. Multiple instances share the same indexes.
+ * The bundled data is available locally. The provider builds its immutable lookup indexes on the
+ * first call and caches them at module scope, so multiple instances share the same indexes.
  *
- * If an initial schema load fails, later provider calls will retry the load instead of pinning the
- * provider into a permanently failed module-level state.
+ * If resolving the bundled data fails, the next provider call retries instead of retaining a failed
+ * module-level state.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.
@@ -42,14 +42,14 @@ export function _testResetUnitsCache(): void {
  */
 export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
 
-  /** Find a canonical built-in unit by its fully-qualified name without awaiting a provider. */
+  /** Find a built-in unit by fully qualified name using local data. */
   public findUnitByNameSync(unitName: string): UnitProps {
     const state = resolveStateSync();
     const entry = state.nameMap.get(unitName);
     return entry ? entry.props : new BadUnit();
   }
 
-  /** Compute a conversion between canonical built-in units without awaiting a provider. */
+  /** Compute a conversion between built-in units using local data. */
   public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps) {
     resolveStateSync();
     if (!isUnitName(fromUnit.name) || !isUnitName(toUnit.name)) {

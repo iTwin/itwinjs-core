@@ -28,7 +28,7 @@ describe("synchronous quantity formatting", () => {
     expect(provider.getConversionSync(customUnit, meter)).toEqual({ factor: 1.0, offset: 0.0, error: true });
   });
 
-  it("creates the same format and formatter spec as the asynchronous path", async () => {
+  it("matches asynchronous format and FormatterSpec construction", async () => {
     const cases: Array<{ name: string; props: FormatProps; inputUnit: string; value: number }> = [
       {
         name: "Decimal",

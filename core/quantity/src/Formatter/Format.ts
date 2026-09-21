@@ -449,7 +449,7 @@ export class Format extends BaseFormat {
     return actualFormat;
   }
 
-  /** Create a Format from FormatProps using synchronously available unit data. */
+  /** Create a `Format` from `FormatProps` using a synchronous unit provider. */
   public static createFromJSONSync(name: string, unitsProvider: SyncUnitsProvider, formatProps: FormatProps): Format {
     const actualFormat = new Format(name);
     actualFormat.fromFullyResolvedJSON(resolveFormatPropsSync(name, unitsProvider, formatProps));
