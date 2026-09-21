@@ -8,13 +8,16 @@
 
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { SchemaMatchType } from "../ECObjects";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Format } from "../Metadata/Format";
+import { getFormatProps, OverrideFormat } from "../Metadata/OverrideFormat";
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { getFormatProps } from "../Metadata/OverrideFormat";
-import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, SyncFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { type LazyLoadedFormat, type LazyLoadedInvertedUnit, type LazyLoadedUnit } from "../Interfaces";
 import { Unit } from "../Metadata/Unit";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { Schema } from "../Metadata/Schema";
@@ -24,7 +27,7 @@ const loggerCategory = "SchemaFormatsProvider";
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
  * @beta
  */
-export class SchemaFormatsProvider implements FormatsProvider {
+export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvider {
   private _context: SchemaContext;
   private _unitSystem?: UnitSystemKey;
   private _formatsRetrieved: Set<string> = new Set();
@@ -86,61 +89,58 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
 
-    if (!kindOfQuantity) {
+    if (!kindOfQuantity)
       return undefined;
-    }
 
-    // If a unit system is provided, find the first presentation format that matches it.
-    const effectiveSystem = systemOverride ?? this._unitSystem;
-    if (effectiveSystem) {
-      const unitSystemMatchers = getUnitSystemGroupMatchers(effectiveSystem);
-      const presentationFormats = kindOfQuantity.presentationFormats;
-      for (const matcher of unitSystemMatchers) {
-        for (const lazyFormat of presentationFormats) {
-          const format = await lazyFormat;
-          const unit = await (format.units && format.units[0][0]);
-          if (!unit) {
-            continue;
-          }
-          const currentUnitSystem = await unit.unitSystem;
-          if (currentUnitSystem && matcher(currentUnitSystem)) {
-            this._formatsRetrieved.add(itemKey.fullName);
-            const props = getFormatProps(format);
-            return this.convertToFormatDefinition(props, kindOfQuantity);
-          }
-        }
+    const props = await this.getKindOfQuantityFormatProps(kindOfQuantity, systemOverride);
+    if (!props)
+      return undefined;
+
+    this._formatsRetrieved.add(itemKey.fullName);
+    return this.convertToFormatDefinition(props, kindOfQuantity);
+  }
+
+  private async getKindOfQuantityFormatProps(kindOfQuantity: KindOfQuantity, systemOverride?: UnitSystemKey): Promise<FormatProps | undefined> {
+    // Cache each lazy format and unit once per lookup because matchers may revisit them.
+    const formatCache = new Map<FormatReference, Promise<ResolvedFormat>>();
+    const unitCache = new Map<UnitReference, Promise<ResolvedUnit>>();
+    const getFormat = async (format: FormatReference): Promise<ResolvedFormat> => {
+      let resolved = formatCache.get(format);
+      if (!resolved) {
+        resolved = Promise.resolve(format);
+        formatCache.set(format, resolved);
       }
+      return resolved;
+    };
+    const getUnit = (unit: UnitReference | undefined): Promise<ResolvedUnit> | undefined => {
+      if (!unit)
+        return undefined;
 
-      // If no matching presentation format was found, fall back to persistence unit format
-      // only if it matches the requested unit system.
-      const persistenceUnit = await kindOfQuantity.persistenceUnit;
-      const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-      if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
-        this._formatsRetrieved.add(itemKey.fullName);
-        const props = getPersistenceUnitFormatProps(persistenceUnit);
-        return this.convertToFormatDefinition(props, kindOfQuantity);
+      let resolved = unitCache.get(unit);
+      if (!resolved) {
+        resolved = resolveUnitAsync(unit);
+        unitCache.set(unit, resolved);
       }
-    }
+      return resolved;
+    };
 
-    // If no unit system was provided, or no matching format was found, use the default presentation format.
-    // Unit conversion from persistence unit to presentation unit will be handled by FormatterSpec.
-    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
-    if (defaultFormat) {
-      this._formatsRetrieved.add(itemKey.fullName);
-      const defaultProps = getFormatProps(await defaultFormat);
-      return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
+    for (const candidate of getFormatSelectionCandidates(kindOfQuantity, systemOverride ?? this._unitSystem)) {
+      const format = candidate.type === "persistence" ? undefined : await getFormat(candidate.format);
+      const unit = candidate.type === "default" ? undefined : await getUnit(candidate.type === "persistence" ? candidate.unit : format?.units?.[0]?.[0]);
+      const props = getFormatPropsForCandidate(candidate, format, unit);
+      if (props)
+        return props;
     }
 
     return undefined;
   }
 
-
   /**
-   * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
-   * If no presentation format matches the current unit system, the persistence unit format will be retrieved if it matches the current unit system.
-   * Else, the default presentation format will be retrieved.
+   * Retrieves a format definition from the schema context.
+   *
+   * For a KindOfQuantity with a unit system, matching presentation formats are checked first, followed by the persistence unit and then the default presentation format. Without a unit system, the default presentation format is used.
    * @param name The full name of the Format or KindOfQuantity.
-   * @returns
+   * @param system Optional unit system used to select a KindOfQuantity format.
    */
   public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
@@ -172,12 +172,162 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
     return this.getKindOfQuantityFormatFromSchema(itemKey, system);
   }
+
+  /**
+   * Retrieves a format definition using only schema metadata already loaded in the context.
+   * It follows the same selection order as `getFormat` but never asks a locater to load a schema. Returns `undefined` when required metadata is not cached.
+   */
+  public getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined {
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
+    const schemaKey = new SchemaKey(schemaName);
+    const schema = getCachedSchemaSync(this._context, schemaKey);
+    if (!schema)
+      return undefined;
+
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+    if (schema.name === "Formats") {
+      const format = schema.getItemSync(itemKey.name, Format);
+      return format?.toJSON(true);
+    }
+
+    return this.getKindOfQuantityFormatFromSchemaSync(itemKey, system);
+  }
+
+  private getKindOfQuantityFormatFromSchemaSync(itemKey: SchemaItemKey, systemOverride?: UnitSystemKey): FormatDefinition | undefined {
+    const schema = getCachedSchemaSync(this._context, itemKey.schemaKey);
+    const kindOfQuantity = schema?.getItemSync(itemKey.name, KindOfQuantity);
+    if (!kindOfQuantity)
+      return undefined;
+
+    const props = this.getKindOfQuantityFormatPropsSync(kindOfQuantity, systemOverride);
+    if (!props)
+      return undefined;
+
+    this._formatsRetrieved.add(itemKey.fullName);
+    return this.convertToFormatDefinition(props, kindOfQuantity);
+  }
+
+  private getKindOfQuantityFormatPropsSync(kindOfQuantity: KindOfQuantity, systemOverride?: UnitSystemKey): FormatProps | undefined {
+    const formatCache = new Map<FormatReference, ResolvedFormat | undefined>();
+    const unitCache = new Map<UnitReference, ResolvedUnit | undefined>();
+    const getFormat = (format: FormatReference): ResolvedFormat | undefined => {
+      if (!formatCache.has(format))
+        formatCache.set(format, resolveFormatSync(this._context, format));
+      return formatCache.get(format);
+    };
+    const getUnit = (unit: UnitReference | undefined): ResolvedUnit | undefined => {
+      if (!unit)
+        return undefined;
+      if (!unitCache.has(unit))
+        unitCache.set(unit, resolveUnitSync(this._context, unit));
+      return unitCache.get(unit);
+    };
+
+    for (const candidate of getFormatSelectionCandidates(kindOfQuantity, systemOverride ?? this._unitSystem)) {
+      const format = candidate.type === "persistence" ? undefined : getFormat(candidate.format);
+      const unit = candidate.type === "default" ? undefined : getUnit(candidate.type === "persistence" ? candidate.unit : format?.units?.[0]?.[0]);
+      const props = getFormatPropsForCandidate(candidate, format, unit);
+      if (props)
+        return props;
+    }
+
+    return undefined;
+  }
 }
 
-function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey) {
-  function createMatcher(name: string | string[]) {
+type FormatReference = LazyLoadedFormat | OverrideFormat;
+type UnitReference = LazyLoadedUnit | LazyLoadedInvertedUnit;
+type ResolvedFormat = Format | OverrideFormat;
+type UnitSystemMatcher = (unitSystemName: string) => boolean;
+
+interface ResolvedUnit {
+  unit: Unit | InvertedUnit;
+  unitSystemName?: string;
+}
+
+type FormatSelectionCandidate =
+  | { type: "presentation", format: FormatReference, matcher: UnitSystemMatcher }
+  | { type: "persistence", unit: UnitReference | undefined, matchers: UnitSystemMatcher[] }
+  | { type: "default", format: FormatReference };
+
+/**
+ * Produces candidates in lookup order: presentation formats by unit-system priority, then the persistence unit,
+ * then the default presentation format. The generator defers each candidate until the lookup reaches it.
+ */
+function* getFormatSelectionCandidates(kindOfQuantity: KindOfQuantity, effectiveSystem?: UnitSystemKey): Iterable<FormatSelectionCandidate> {
+  if (effectiveSystem) {
+    const matchers = getUnitSystemGroupMatchers(effectiveSystem);
+    for (const matcher of matchers) {
+      for (const format of kindOfQuantity.presentationFormats)
+        yield { type: "presentation", format, matcher };
+    }
+    yield { type: "persistence", unit: kindOfQuantity.persistenceUnit, matchers };
+  }
+
+  const defaultFormat = kindOfQuantity.defaultPresentationFormat;
+  if (defaultFormat)
+    yield { type: "default", format: defaultFormat };
+}
+
+function getFormatPropsForCandidate(candidate: FormatSelectionCandidate, format: ResolvedFormat | undefined, unit: ResolvedUnit | undefined): FormatProps | undefined {
+  const unitSystemName = unit?.unitSystemName;
+  switch (candidate.type) {
+    case "presentation":
+      return format && unitSystemName && candidate.matcher(unitSystemName) ? getFormatProps(format) : undefined;
+    case "persistence":
+      return unit && unitSystemName && candidate.matchers.some((matcher) => matcher(unitSystemName)) ? getPersistenceUnitFormatProps(unit.unit) : undefined;
+    case "default":
+      return format ? getFormatProps(format) : undefined;
+  }
+}
+
+function resolveFormatSync(context: SchemaContext, format: FormatReference): ResolvedFormat | undefined {
+  if (OverrideFormat.isOverrideFormat(format))
+    return format;
+
+  const schema = getCachedSchemaSync(context, format.schemaKey);
+  return schema?.getItemSync(format.name, Format);
+}
+
+async function resolveUnitAsync(unit: UnitReference): Promise<ResolvedUnit> {
+  const resolvedUnit = await unit;
+  const unitSystem = await resolvedUnit.unitSystem;
+  return { unit: resolvedUnit, unitSystemName: unitSystem?.name };
+}
+
+function resolveUnitSync(context: SchemaContext, unit: UnitReference): ResolvedUnit | undefined {
+  const resolvedUnit = getLoadedUnitSync(context, unit);
+  if (!resolvedUnit)
+    return undefined;
+
+  const unitSystem = resolvedUnit.unitSystem;
+  if (!unitSystem)
+    return { unit: resolvedUnit };
+
+  const schema = getCachedSchemaSync(context, unitSystem.schemaKey);
+  return { unit: resolvedUnit, unitSystemName: schema?.getItemSync(unitSystem.name, UnitSystem)?.name };
+}
+
+function getCachedSchemaSync(context: SchemaContext, schemaKey: SchemaKey): Schema | undefined {
+  try {
+    return context.getCachedSchemaSync(schemaKey, SchemaMatchType.Latest);
+  } catch (error) {
+    if (error instanceof ECSchemaError && error.errorNumber === ECSchemaStatus.UnableToLoadSchema)
+      return undefined;
+    throw error;
+  }
+}
+
+function getLoadedUnitSync(context: SchemaContext, unit: UnitReference): Unit | InvertedUnit | undefined {
+  const schema = getCachedSchemaSync(context, unit.schemaKey);
+  const item = schema?.getItemSync(unit.name);
+  return Unit.isUnit(item) || InvertedUnit.isInvertedUnit(item) ? item : undefined;
+}
+
+function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey): UnitSystemMatcher[] {
+  function createMatcher(name: string | string[]): UnitSystemMatcher {
     const names = Array.isArray(name) ? name : [name];
-    return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
+    return (unitSystemName: string) => names.some((n) => n === unitSystemName.toUpperCase());
   }
   switch (groupKey) {
     case "imperial":

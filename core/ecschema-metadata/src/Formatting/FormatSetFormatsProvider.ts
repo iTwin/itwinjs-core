@@ -1,5 +1,5 @@
 import { BeEvent } from "@itwin/core-bentley";
-import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider, SyncFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { FormatSet } from "../Deserialization/JsonProps";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
@@ -8,7 +8,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
  * When formats are added or removed, the underlying format set is automatically updated.
  * @beta
  */
-export class FormatSetFormatsProvider implements MutableFormatsProvider {
+export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFormatsProvider {
   public onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void> = new BeEvent<(args: FormatsChangedArgs) => void>();
 
   private _formatSet: FormatSet;
@@ -58,26 +58,81 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
   }
 
   /**
-   * Retrieves a format definition by its name from the format set. If not found, it checks the fallback provider to find the format, else returns undefined.
-   * If the format is a string reference to another format, it resolves the reference and returns the FormatDefinition.
+   * Retrieves a format definition from the format set, resolving string references and consulting the fallback provider when needed.
    */
   public async getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
-    // Normalizes any schemaItem names coming from node addon 'schemaName:schemaItemName' -> 'schemaName.schemaItemName'
-    const [schemaName, itemName] = SchemaItem.parseFullName(input);
+    return this.getFormatInternal(input, system, new Set());
+  }
 
-    const name = (schemaName === "") ? itemName : `${schemaName}.${itemName}`;
-    const format = this._formatSet.formats[name];
+  private async getFormatInternal(input: string, system: UnitSystemKey | undefined, providerChain: FormatSetProviderChain): Promise<FormatDefinition | undefined> {
+    if (providerChain.has(this))
+      return undefined;
+    providerChain.add(this);
 
-    if (format !== undefined) {
-      // If format is a string reference, resolve it
-      if (typeof format === "string") {
-        return this.resolveReference(format, undefined, system);
+    try {
+      const name = normalizeFormatName(input);
+      const format = this._formatSet.formats[name];
+
+      if (format !== undefined) {
+        if (typeof format === "string") {
+          const resolvedReference = await this.resolveReference(format, undefined, system, providerChain);
+          return resolvedReference;
+        }
+        return format;
       }
-      return format;
-    }
 
-    if (this._fallbackProvider) return this._fallbackProvider.getFormat(name, system);
-    return undefined;
+      const resolvedFallback = await this.getFormatFromFallback(name, system, providerChain);
+      return resolvedFallback;
+    } finally {
+      providerChain.delete(this);
+    }
+  }
+
+  private async getFormatFromFallback(name: string, system: UnitSystemKey | undefined, providerChain: FormatSetProviderChain): Promise<FormatDefinition | undefined> {
+    const fallbackProvider = this._fallbackProvider;
+    if (!fallbackProvider)
+      return undefined;
+    if (fallbackProvider instanceof FormatSetFormatsProvider)
+      return fallbackProvider.getFormatInternal(name, system, providerChain);
+    return fallbackProvider.getFormat(name, system);
+  }
+
+  /**
+   * Retrieves a format definition from the format set without awaiting a provider. String references are resolved
+   * locally; a fallback is used only when it implements `SyncFormatsProvider`.
+   */
+  public getFormatSync(input: string, system?: UnitSystemKey): FormatDefinition | undefined {
+    return this.getFormatSyncInternal(input, system, new Set());
+  }
+
+  private getFormatSyncInternal(input: string, system: UnitSystemKey | undefined, providerChain: FormatSetProviderChain): FormatDefinition | undefined {
+    if (providerChain.has(this))
+      return undefined;
+    providerChain.add(this);
+
+    try {
+      const name = normalizeFormatName(input);
+      const format = this._formatSet.formats[name];
+
+      if (format !== undefined) {
+        if (typeof format === "string")
+          return this.resolveReferenceSync(format, undefined, system, providerChain);
+        return format;
+      }
+
+      return this.getFormatSyncFromFallback(name, system, providerChain);
+    } finally {
+      providerChain.delete(this);
+    }
+  }
+
+  private getFormatSyncFromFallback(name: string, system: UnitSystemKey | undefined, providerChain: FormatSetProviderChain): FormatDefinition | undefined {
+    const fallbackProvider = this._fallbackProvider;
+    if (!isSyncFormatsProvider(fallbackProvider))
+      return undefined;
+    if (fallbackProvider instanceof FormatSetFormatsProvider)
+      return fallbackProvider.getFormatSyncInternal(name, system, providerChain);
+    return fallbackProvider.getFormatSync(name, system);
   }
 
   /**
@@ -86,7 +141,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
    * @param visited Set of visited references to detect circular references
    * @param system Optional unit system override
    */
-  private async resolveReference(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+  private async resolveReference(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey, providerChain: FormatSetProviderChain = new Set()): Promise<FormatDefinition | undefined> {
     // Prevent infinite loops from circular references
     if (visited.has(reference)) {
       return undefined;
@@ -96,16 +151,29 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     const format = this._formatSet.formats[reference];
 
     if (format === undefined) {
-      if (this._fallbackProvider) {
-        return this._fallbackProvider.getFormat(reference, system);
-      }
-      return undefined;
+      return this.getFormatFromFallback(reference, system, providerChain);
     }
 
-    // If we found another string reference, resolve it recursively
     if (typeof format === "string") {
-      return this.resolveReference(format, visited, system);
+      return this.resolveReference(format, visited, system, providerChain);
     }
+
+    return format;
+  }
+
+  private resolveReferenceSync(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey, providerChain: FormatSetProviderChain = new Set()): FormatDefinition | undefined {
+    // Prevent infinite loops from circular references
+    if (visited.has(reference)) {
+      return undefined;
+    }
+    visited.add(reference);
+
+    const format = this._formatSet.formats[reference];
+    if (format === undefined)
+      return this.getFormatSyncFromFallback(reference, system, providerChain);
+
+    if (typeof format === "string")
+      return this.resolveReferenceSync(format, visited, system, providerChain);
 
     return format;
   }
@@ -147,4 +215,17 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
     return referencingFormats;
   }
+}
+
+// FormatSet instances are identified by object identity in the fallback chain.
+type FormatSetProviderChain = Set<FormatSetFormatsProvider>;
+
+function normalizeFormatName(input: string): string {
+  // Convert node-addon names from `schemaName:schemaItemName` to the dot-separated key used by FormatSet.
+  const [schemaName, itemName] = SchemaItem.parseFullName(input);
+  return schemaName === "" ? itemName : `${schemaName}.${itemName}`;
+}
+
+function isSyncFormatsProvider(provider: FormatsProvider | undefined): provider is FormatsProvider & SyncFormatsProvider {
+  return provider !== undefined && "getFormatSync" in provider && typeof provider.getFormatSync === "function";
 }
