@@ -240,17 +240,18 @@ describe("FormatSetFormatsProvider", () => {
 
     it("stops cycles through a custom fallback provider", async () => {
       let calls = 0;
-      let providerWithFallback: FormatSetFormatsProvider;
+      const providerRef: { current?: FormatSetFormatsProvider } = {};
       const fallbackProvider: FormatsProvider = {
         getFormat: async (name, system, context) => {
           calls++;
           if (calls > 1)
             return undefined;
-          return providerWithFallback.getFormat(name, system, context);
+          return providerRef.current!.getFormat(name, system, context);
         },
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+      providerRef.current = providerWithFallback;
 
       await expect(providerWithFallback.getFormat("FallbackFormat")).resolves.toBeUndefined();
       expect(calls).toBe(1);
@@ -347,18 +348,19 @@ describe("FormatSetFormatsProvider", () => {
 
     it("stops cycles through a custom synchronous fallback provider", () => {
       let calls = 0;
-      let providerWithFallback: FormatSetFormatsProvider;
+      const providerRef: { current?: FormatSetFormatsProvider } = {};
       const fallbackProvider: FormatsProvider & SyncFormatsProvider = {
         getFormat: async () => undefined,
         getFormatSync: (name, system, context) => {
           calls++;
           if (calls > 1)
             return undefined;
-          return providerWithFallback.getFormatSync(name, system, context);
+          return providerRef.current!.getFormatSync(name, system, context);
         },
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: {} }, fallbackProvider });
+      providerRef.current = providerWithFallback;
 
       expect(providerWithFallback.getFormatSync("FallbackFormat")).toBeUndefined();
       expect(calls).toBe(1);
