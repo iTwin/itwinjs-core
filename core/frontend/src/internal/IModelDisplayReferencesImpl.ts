@@ -85,6 +85,10 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
   }
 
   public link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
+    for (const existingRef of this)
+      if (existingRef.iModel === args.iModel)
+        throw new Error("IModelDisplayReference.link does not support linking the same iModel multiple times");
+
     const ref = createLinkedSpatialIModelDisplayReference(this, args);
     this.linked.push(ref);
     this.#iModels.add(ref.iModel);

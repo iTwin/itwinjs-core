@@ -94,7 +94,9 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   /** Event dispatched just after `ref` is [[unlink]]ed from the view. */
   readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
 
-  /** Add an iModel reference to the view. */
+  /** Add an iModel reference to the view.
+   * @throws Error if the specified iModel is already referenced by the view.
+   */
   link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
   /** Remove a previously-[[link]]ed iModel reference from the view. */
   unlink(ref: IModelDisplayReference): void;
