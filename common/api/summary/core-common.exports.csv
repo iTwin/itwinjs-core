@@ -350,6 +350,7 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;interface;FormatFieldValueArgs
 internal;type;FormatMagnitude
 internal;interface;FormDataCommon
 beta;class;FractionRun
