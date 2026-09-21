@@ -213,6 +213,7 @@ export interface FormatsChangedArgs {
  * @beta
  */
 export interface FormatsProviderContext {
+  /** Providers already visited while resolving the current format request. */
   readonly providerChain: ReadonlySet<FormatsProvider>;
 }
 
@@ -239,7 +240,10 @@ export interface FormatsProvider {
  * @beta
  */
 export interface SyncFormatsProvider {
-  /** Return a locally available format definition, or `undefined` when unavailable. */
+  /**
+   * Return a locally available format definition, or `undefined` when unavailable.
+   * @param context Optional context to forward when delegating the current lookup through another provider.
+   */
   getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
 }
 
