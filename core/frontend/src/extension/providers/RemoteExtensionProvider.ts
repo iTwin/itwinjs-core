@@ -27,11 +27,11 @@ export interface RemoteExtensionProviderProps {
  * @alpha
  */
 export class RemoteExtensionProvider implements ExtensionProvider {
-  /** The name of the server where the extension is hosted. */
+  /** The hostname of the server where the extension is hosted. */
   public readonly hostname: string;
 
   constructor(private readonly _props: RemoteExtensionProviderProps) {
-    this.hostname = new URL(this._props.jsUrl).hostname.replace("www", "");
+    this.hostname = new URL(this._props.jsUrl).hostname;
   }
 
   /**
