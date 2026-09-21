@@ -121,16 +121,16 @@ export interface UnitsProvider {
 }
 
 /**
- * Optional synchronous capability for providers that can resolve units and conversions from local data.
- * @note Implementations should resolve from already-loaded local data and avoid schema loading or asynchronous I/O from these methods.
+ * Optional capability for providers that can resolve units and conversions from local data without awaiting.
+ * @note Implementations should use already-loaded local data and avoid schema loading or asynchronous I/O from these methods.
  * @beta
  */
 export interface SyncUnitsProvider {
-  /** Find a unit by its fully-qualified name using synchronously available data. */
+  /** Find a unit by fully qualified name using local data. */
   findUnitByNameSync(unitName: string): UnitProps;
   /**
-   * Compute conversion factors using synchronously available data.
-   * On failure, implementations MUST return `{ factor: 1.0, offset: 0.0, error: true }`.
+   * Compute conversion factors using local data.
+   * @note On failure, implementations should return `{ factor: 1.0, offset: 0.0, error: true }`.
    */
   getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
 }

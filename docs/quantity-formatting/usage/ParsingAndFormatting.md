@@ -33,23 +33,13 @@ const formattedString = formatterSpec.applyFormatting(magnitude);
 
 ### Synchronous formatter construction
 
-When the format and unit data are already available locally, [Format]($quantity) and [FormatterSpec]($quantity) provide synchronous factories for code paths that cannot await a provider. `Format.createFromJSONSync()` resolves the unit names through a [SyncUnitsProvider]($quantity), and `FormatterSpec.createSync()` builds the conversion specifications without returning a promise.
+Use these factories when the format and unit data are already available locally. `Format.createFromJSONSync()` resolves unit names through a [SyncUnitsProvider]($quantity). `FormatterSpec.createSync()` then builds the conversion specifications without awaiting a provider.
 
 ```ts
-import { BasicUnitsProvider, Format, FormatterSpec, Units } from "@itwin/core-quantity";
-
-const unitsProvider = new BasicUnitsProvider();
-const format = Format.createFromJSONSync("Length", unitsProvider, {
-  type: "Decimal",
-  precision: 2,
-  composite: { units: [{ name: Units.LENGTH.M }] },
-});
-const persistenceUnit = unitsProvider.findUnitByNameSync(Units.LENGTH.M);
-const formatterSpec = FormatterSpec.createSync("Length", format, unitsProvider, persistenceUnit);
-const formattedString = formatterSpec.applyFormatting(12.5);
+[[include:Quantity_Formatting.Synchronous_Formatter]]
 ```
 
-This path does not load schemas or await unavailable metadata. If a required format or unit cannot be resolved synchronously, callers should use the existing plain-value fallback or asynchronous construction path.
+If a required format or unit is unavailable, use the plain-value fallback or the asynchronous construction path.
 
 ### ParserSpec
 

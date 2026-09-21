@@ -42,22 +42,13 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 > **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
 
-#### Synchronous local-data capabilities
+#### Synchronous local data
 
-When a code path must construct a formatter without awaiting a provider, use the optional [SyncUnitsProvider]($quantity) capability. [BasicUnitsProvider]($quantity) implements this capability for the bundled canonical BIS units.
+Use the optional [SyncUnitsProvider]($quantity) capability when a caller must construct a formatter without awaiting a provider. [BasicUnitsProvider]($quantity) implements it for the bundled canonical BIS units.
 
-```ts
-import { BasicUnitsProvider, Units } from "@itwin/core-quantity";
+These methods use local data only. `BasicUnitsProvider` returns `BadUnit` for an unknown name. It returns an identity conversion with `error: true` when a unit is unavailable or the units are incompatible. Treat either result as a miss and use the plain-value fallback instead of loading a schema or awaiting.
 
-const unitsProvider = new BasicUnitsProvider();
-const meters = unitsProvider.findUnitByNameSync(Units.LENGTH.M);
-const feet = unitsProvider.findUnitByNameSync(Units.LENGTH.FT);
-const conversion = unitsProvider.getConversionSync(meters, feet);
-```
-
-Synchronous unit methods only use data that is already available locally. An unknown unit returns an invalid `UnitProps`, and an unavailable or incompatible conversion returns an identity conversion with `error: true`; callers should use the existing plain-value fallback instead of loading a schema or awaiting inside the synchronous path.
-
-A format provider can expose the optional [SyncFormatsProvider]($quantity) capability when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous.
+A format provider can implement [SyncFormatsProvider]($quantity) when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous.
 
 #### createUnitsProvider
 
@@ -114,7 +105,7 @@ A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity
 
 [SchemaFormatsProvider]($ecschema-metadata) retrieves formats from EC schemas using a [SchemaContext]($ecschema-metadata). It requires a [UnitSystemKey]($quantity) to filter formats according to the current unit system.
 
-A schema-backed provider may expose [SyncFormatsProvider]($quantity) only for format definitions that are already loaded. Callers should treat an `undefined` result as a synchronous cache miss and use the asynchronous provider path when loading is acceptable.
+A schema-backed provider can implement [SyncFormatsProvider]($quantity) for definitions that are already loaded. Treat an `undefined` result as a synchronous cache miss and use the asynchronous provider path when loading is acceptable.
 
 **Characteristics:**
 
