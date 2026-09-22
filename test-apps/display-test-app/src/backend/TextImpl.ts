@@ -2,7 +2,7 @@ import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { FormatSet } from "@itwin/ecschema-metadata";
-import { registerFieldFormattingProviderFor } from "./FieldFormattingDemo";
+import { registerFieldFormattingFor } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -124,8 +124,8 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 }
 
 /** Re-registers the field formatting provider for the specified iModel, or unregisters when both are absent. */
-export function registerFieldFormattingProviderForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
-  registerFieldFormattingProviderFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
+export function registerFieldFormattingForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
+  registerFieldFormattingFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
 }
 
 /**

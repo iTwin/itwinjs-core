@@ -115,8 +115,6 @@ import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
 import { FormatSet } from '@itwin/ecschema-metadata';
-import { FormatterSpec } from '@itwin/core-quantity';
-import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -3005,19 +3003,17 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
     static evaluateFields(args: EvaluateFieldsArgs): number;
-    static getFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
-    static readonly onFieldFormattingProviderChanged: BeEvent<(args: {
+    static readonly onFieldFormattingChanged: BeEvent<(args: {
         iModel: IModelDb;
-        provider: FieldFormattingSpecProvider;
     }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
-    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): FieldFormattingSpecProvider;
+    static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
-    static unregisterFieldFormattingProvider(iModel: IModelDb): void;
+    static unregisterFieldFormatting(iModel: IModelDb): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
@@ -3567,21 +3563,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 }
 
 // @beta
-export class FieldFormattingSpecProvider {
-    constructor(args: FieldFormattingSpecProviderArgs);
-    clearMisses(): void;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
-    getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
-    // @internal
-    getProviderFor(formatSet: string | undefined): FieldSpecProvider;
-    get misses(): UnresolvedFieldFormat[];
-    // @internal
-    recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void;
-    readonly unitSystem: UnitSystemKey;
-}
-
-// @beta
-export interface FieldFormattingSpecProviderArgs {
+export interface FieldFormattingArgs {
     formatSet?: FormatSet;
     formatSets?: ReadonlyArray<{
         id: string;
@@ -7987,11 +7969,6 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     recipe?: RelatedElement;
-}
-
-// @beta
-export interface UnresolvedFieldFormat extends FormattingSpecArgs {
-    formatSet?: string;
 }
 
 // @public

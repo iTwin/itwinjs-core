@@ -19,10 +19,10 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
- * @note `"quantity"` and `"coordinate"` values format through the quantity pipeline only when a
- * [FieldFormattingSpecProvider]($backend) is registered for the iModel and has already built a
- * [Format]($core-quantity) for the field. Otherwise they render as `value.toString()` — a bare
- * number, or `(x, y[, z])` for a coordinate.
+ * @note `"quantity"` and `"coordinate"` values format through the quantity pipeline when a
+ * [Format]($core-quantity) resolves for the field, from the FormatSets configured via
+ * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend) or from the iModel's schemas.
+ * Otherwise they render as `value.toString()` — a bare number, or `(x, y[, z])` for a coordinate.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
@@ -114,7 +114,7 @@ export interface QuantityFieldFormatOptions {
    * mix presentations such as metric and imperial callouts.
    *
    * Application-chosen, and matched against the ids supplied to
-   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); iTwin.js does not
+   * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend); iTwin.js does not
    * resolve it against anything persisted in the iModel. A field naming an id that was never
    * supplied falls through to the iModel's schema presentation format.
    */

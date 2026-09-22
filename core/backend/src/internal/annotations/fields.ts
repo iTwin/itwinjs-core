@@ -9,9 +9,8 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
-import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { lookupFieldSpec } from "./fieldSpecs";
+import { FieldFormatting, lookupFieldSpec } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -60,13 +59,12 @@ export interface UpdateFieldsContext {
    */
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Resolves `"quantity"` and `"coordinate"` values through already-built
-   * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the formats of the
-   * FormatSet named by [QuantityFieldFormatOptions.formatSet]($common); anything un-built falls
-   * back to `value.toString()` and is recorded in
-   * [FieldFormattingSpecProvider.misses]($backend).
+  /** The formats `"quantity"` and `"coordinate"` values resolve through. [[updateField]] builds
+   * a [FormatterSpec]($core-quantity) per field from the FormatSet named by
+   * [QuantityFieldFormatOptions.formatSet]($common), falling back to the adopted FormatSet and
+   * the schemas; a value none of them can format falls back to `value.toString()`.
    */
-  readonly formattingSpecProvider?: FieldFormattingSpecProvider;
+  readonly formatting?: FieldFormatting;
 }
 
 // Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
@@ -365,37 +363,43 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  formattingSpecProvider?: FieldFormattingSpecProvider,
+  formatting?: FieldFormatting,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formattingSpecProvider,
+    formatting,
   };
 }
 
 /** Resolves the [FormatterSpec]($core-quantity) this field should render its magnitudes through,
- * returning a callback bound to it, or `undefined` when not a quantity or coordinate, no provider is
- * registered, or no format was built for any of the (KindOfQuantity, persistence unit) pairs the
- * field may resolve through. In that last case the unresolved pairs are recorded on the provider.
+ * returning a callback bound to it, or `undefined` when not a quantity or coordinate, no formats
+ * were supplied, or no format resolves for any of the (KindOfQuantity, persistence unit) pairs the
+ * field may format through. In that last case the shortfall is logged: a persistence unit or
+ * format unit outside the bundled BIS set, a KindOfQuantity with no presentation format, or a
+ * format whose units belong to a different phenomenon than the persisted value.
  */
 function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
-  const specProvider = context.formattingSpecProvider;
-  if (!specProvider || (value.type !== "quantity" && value.type !== "coordinate")) {
+  const formatting = context.formatting;
+  if (!formatting || (value.type !== "quantity" && value.type !== "coordinate")) {
     return undefined;
   }
 
-  const formatSet = field.formatOptions?.quantity?.formatSet;
-  const bucket = specProvider.getProviderFor(formatSet);
-  const { spec, candidates } = lookupFieldSpec(field.formatOptions?.quantity, value, bucket);
+  const quantityOptions = field.formatOptions?.quantity;
+  const { spec, candidates } = lookupFieldSpec(quantityOptions, value, formatting);
   if (!spec) {
     if (candidates.length > 0) {
-      specProvider.recordMisses(candidates, formatSet);
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "No format resolved for text annotation field; rendering raw value", () => ({
+        elementId: field.propertyHost.elementId,
+        propertyName: field.propertyPath.propertyName,
+        formatSet: quantityOptions?.formatSet,
+        tried: candidates.map((c) => `${c.name} in ${c.persistenceUnitName}`),
+      }));
     }
     return undefined;
   }
 
-  return (magnitude) => bucket.formatQuantity(magnitude, spec);
+  return (magnitude) => spec.applyFormatting(magnitude);
 }
 
 /** Recomputes a single field's cached display string synchronously. Returns true iff
@@ -447,12 +451,12 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formattingSpecProvider: FieldFormattingSpecProvider | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formatting: FieldFormatting | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, formattingSpecProvider);
+      const context = createUpdateContext(sourceId, iModel, deleted, formatting);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -474,14 +478,14 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
  * change (`deleted=false`) or delete (`deleted=true`). Invoked from
  * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
  */
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formattingSpecProvider?: FieldFormattingSpecProvider): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formattingSpecProvider);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formatting?: FieldFormatting): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formatting);
 }
 
 /** Re-evaluates every field of the given annotation element against its current property
  * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
  * establishing / refreshing relationships.
  */
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProvider?: FieldFormattingSpecProvider): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProvider);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formatting?: FieldFormatting): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, formatting);
 }

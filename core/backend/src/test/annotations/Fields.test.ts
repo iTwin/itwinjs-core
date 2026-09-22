@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatDefinition, FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
+import { FormatDefinition } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
-import { FieldSpecProvider } from "../../internal/annotations/fieldSpecs";
-import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
-import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
+import { createFieldFormatting } from "../../internal/annotations/fieldSpecs";
+import { DbResult, Id64, Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -581,17 +581,17 @@ describe("Field evaluation", () => {
   });
 
   describe("evaluateFields (quantity formatting)", () => {
-    // Registers a provider for `imodel` whose adopted FormatSet is `formats`. The app supplies
-    // FormatSets at registration time; evaluation resolves specs synchronously on first use.
-    function register(formats: Record<string, FormatDefinition> = {}): FieldFormattingSpecProvider {
-      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    // Configures `imodel` with `formats` as its adopted FormatSet. The app supplies FormatSets at
+    // registration time; evaluation builds each spec synchronously as it goes.
+    function register(formats: Record<string, FormatDefinition> = {}): void {
+      ElementDrivesTextAnnotation.registerFieldFormatting({
         iModel: imodel,
         formatSet: toFormatSet("TestSet", formats),
       });
     }
 
     afterEach(() => {
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
     });
 
     it("preserves non-quantity field formatting", async () => {
@@ -664,19 +664,18 @@ describe("Field evaluation", () => {
     });
   });
 
-  /** Drives the production format path for a hand-built [[FieldValue]]: `updateField` resolves a
-   * [FormatterSpec]($core-quantity) from `provider` and hands `formatFieldValue` a magnitude
-   * callback bound to it. Returns the resulting cached content.
+  /** Drives the production format path for a hand-built [[FieldValue]]: `updateField` builds a
+   * [FormatterSpec]($core-quantity) from the iModel's schema formats and hands `formatFieldValue`
+   * a magnitude callback bound to it. Returns the resulting cached content.
    *
-   * Going through `updateField` rather than reimplementing the composition here is the point —
+   * Going through `updateField` rather than reimplementing the composition here is the point --
    * these tests pin how the backend wires spec lookup to formatting, so a change to that wiring
    * fails them. `onMiss` fires when the field produced candidates but none resolved.
    */
-  function formatThroughProvider(
+  function formatThroughSchema(
     value: FieldValue,
     options: FieldFormatOptions | undefined,
-    provider: FieldSpecProvider,
-    onMiss?: (candidates: FormattingSpecArgs[]) => void,
+    onMiss?: () => void,
   ): string | undefined {
     const field = FieldRun.create({
       propertyHost: { elementId: "0x1", schemaName: "Fields", className: "TestElement" },
@@ -687,13 +686,18 @@ describe("Field evaluation", () => {
     const context: UpdateFieldsContext = {
       hostElementId: undefined,
       getProperty: () => value,
-      formattingSpecProvider: {
-        getProviderFor: () => provider,
-        recordMisses: (candidates: FormattingSpecArgs[]) => onMiss?.(candidates),
-      } as unknown as FieldFormattingSpecProvider,
+      formatting: createFieldFormatting({ iModel: imodel }),
     };
 
-    updateField(field, context);
+    const logWarning = sinon.stub(Logger, "logWarning").callsFake((_category, message) => {
+      if (message.startsWith("No format resolved for text annotation field"))
+        onMiss?.();
+    });
+    try {
+      updateField(field, context);
+    } finally {
+      logWarning.restore();
+    }
     return field.cachedContent;
   }
 
@@ -790,33 +794,28 @@ describe("Field evaluation", () => {
 
     it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
       // The user-visible half of the contract: "quantity" with no resolvable (KoQ, unit) pair is
-      // indistinguishable from the plain string rendering, and records no miss.
-      const provider: FieldSpecProvider = {
-        getFormatterSpec: () => undefined,
-        formatQuantity: (m) => `FORMATTED:${m}`,
-      };
-
+      // indistinguishable from the plain string rendering, and logs no warning.
       let missed = false;
-      for (const quantity of [undefined, { kindOfQuantity: "AecUnits.LENGTH" }, { persistenceUnit: "Units.M" }]) {
+      for (const quantity of [undefined, { kindOfQuantity: "Fields.LENGTH" }, { persistenceUnit: "Units.M" }]) {
         const options = quantity ? { quantity } : undefined;
         const value = evaluateJson(["lengthMeters"], options);
         expect(value?.type).to.equal("quantity");
-        expect(formatThroughProvider(value!, options, provider, () => { missed = true; })).to.equal("2.5");
+        expect(formatThroughSchema(value!, options, () => { missed = true; })).to.equal("2.5");
       }
 
       expect(missed, "an unformattable JSON leaf is not an unresolved requirement").to.be.false;
     });
   });
 
-  describe("registerFieldFormattingProvider (sync path)", () => {
+  describe("registerFieldFormatting", () => {
     // Id referenced by fields via formatOptions.quantity.formatSet and supplied through the
     // `formatSets` array at registration time. Multi-FormatSet routing is covered by
     // FieldFormat.test.ts.
     const PRIMARY_FORMAT_SET = "0x111";
 
-    // Registers a provider for `imodel` with the given per-field FormatSets.
-    function registerSets(formatSets: ReadonlyArray<{ id: string, formats: Record<string, FormatDefinition> }>): FieldFormattingSpecProvider {
-      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    // Configures `imodel` with the given per-field FormatSets.
+    function registerSets(formatSets: ReadonlyArray<{ id: string, formats: Record<string, FormatDefinition> }>): void {
+      ElementDrivesTextAnnotation.registerFieldFormatting({
         iModel: imodel,
         formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet("TestSet", formats) })),
       });
@@ -828,7 +827,7 @@ describe("Field evaluation", () => {
     }
 
     afterEach(() => {
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
       // Clean up any TextAnnotation3d elements produced below so we don't leak state (and their
       // ElementDrivesTextAnnotation relationships) into later describe blocks. No longer relied
       // on for correctness -- every relationship-count assertion is scoped to its own target --
@@ -843,30 +842,28 @@ describe("Field evaluation", () => {
         withEditTxn(imodel, (txn) => { for (const id of ids) txn.deleteElement(id); });
     });
 
-    it("raises onFieldFormattingProviderChanged on register and unregister only", () => {
-      const events: FieldFormattingSpecProvider[] = [];
-      const drop = ElementDrivesTextAnnotation.onFieldFormattingProviderChanged.addListener((args) => {
+    it("raises onFieldFormattingChanged on register and unregister only", () => {
+      let events = 0;
+      const drop = ElementDrivesTextAnnotation.onFieldFormattingChanged.addListener((args) => {
         expect(args.iModel).to.equal(imodel);
-        events.push(args.provider);
+        ++events;
       });
 
       try {
-        const first = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-        const second = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-        ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+        registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+        registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
         // Unregistering reverts to the schema default and reports it.
-        const fallback = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel);
+        ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
         // Nothing registered: no event.
-        ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+        ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
 
-        expect(events).to.deep.equal([first, second, fallback]);
-        expect(fallback).not.to.equal(second);
+        expect(events).to.equal(3);
       } finally {
         drop();
       }
     });
 
-    it("routes evaluateFields quantity formatting through a registered provider", async () => {
+    it("routes evaluateFields quantity formatting through a registered FormatSet", async () => {
       registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const textBlock = TextBlock.create();
@@ -885,50 +882,7 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2500 mm");
     });
 
-    it("routes quantity formatting through provider.formatQuantity, not spec.applyFormatting", () => {
-      // Regression: the sync path must render magnitudes via `provider.formatQuantity(magnitude,
-      // spec)` rather than calling `spec.applyFormatting` itself, so that applying a spec stays
-      // the provider's job and an implementation is free to do more than pass through. Exercised
-      // directly against the internal helper with a hand-rolled provider whose two entry points
-      // return observably different strings.
-      const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      const provider: FieldSpecProvider = {
-        getFormatterSpec(args) {
-          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-            return fakeSpec;
-          }
-          return undefined;
-        },
-        formatQuantity: (m) => `PROVIDER:${m}`,
-      };
-
-      const value: FieldValue = { value: 2.5, type: "quantity", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
-      const result = formatThroughProvider(value, undefined, provider);
-
-      expect(result).to.equal("PROVIDER:2.5");
-    });
-
-    it("routes coordinate formatting through provider.formatQuantity for each component", () => {
-      // Same as above but for coordinate values — every component should render via
-      // `provider.formatQuantity`, not `spec.applyFormatting`.
-      const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      const provider: FieldSpecProvider = {
-        getFormatterSpec(args) {
-          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-            return fakeSpec;
-          }
-          return undefined;
-        },
-        formatQuantity: (m) => `PROVIDER:${m}`,
-      };
-
-      const value: FieldValue = { value: { x: 1, y: 2, z: 3 }, type: "coordinate", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
-      const result = formatThroughProvider(value, undefined, provider);
-
-      expect(result).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
-    });
-
-    it("formats through the schema's presentation format when no provider is registered", () => {
+    it("formats through the schema's presentation format when nothing is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -943,7 +897,7 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2.5 m");
     });
 
-    it("renders a coordinate raw when its property has no KindOfQuantity and no provider is registered", () => {
+    it("renders a coordinate raw when its property has no KindOfQuantity and nothing is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -958,7 +912,7 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(1, 2, 3)");
     });
 
-    it("formats through the schema default on the txn callback path when no provider is registered", () => {
+    it("formats through the schema default on the txn callback path when nothing is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         styleOverrides: { font: { name: "Karla" } },
@@ -987,18 +941,7 @@ describe("Field evaluation", () => {
       expect(reloadedField!.cachedContent).to.equal("2.5 m");
     });
 
-    it("registers and unregisters the provider for an iModel", async () => {
-      const registered = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.equal(registered);
-
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-      const fallback = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel);
-      expect(fallback).not.to.equal(registered);
-      // The default is created once and then reused.
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.equal(fallback);
-    });
-
-    it("resolves a requirement on first evaluation and records a miss only for one it cannot", () => {
+    it("resolves a requirement on first evaluation and logs a warning only for one it cannot", () => {
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -1014,22 +957,29 @@ describe("Field evaluation", () => {
       });
       block.appendRun(unresolvable);
 
-      const provider = ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+      ElementDrivesTextAnnotation.registerFieldFormatting({
         iModel: imodel,
         formatSet: toFormatSet("TestSet", { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
       });
 
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-      expect(updated).to.equal(2);
-      expect(field.cachedContent).to.equal("2500 mm");
-      expect(unresolvable.cachedContent).to.equal("2.5");
+      const logWarning = sinon.spy(Logger, "logWarning");
+      try {
+        const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+        expect(updated).to.equal(2);
+        expect(field.cachedContent).to.equal("2500 mm");
+        expect(unresolvable.cachedContent).to.equal("2.5");
 
-      const misses = provider.misses;
-      expect(misses).to.have.length(1);
-      expect(misses[0]).to.deep.equal({ name: "Fields.LENGTH", persistenceUnitName: "Units.NOT_A_UNIT", formatSet: undefined });
-
-      provider.clearMisses();
-      expect(provider.misses).to.be.empty;
+        const warnings = logWarning.getCalls().filter((call) => typeof call.args[1] === "string" && call.args[1].startsWith("No format resolved for text annotation field"));
+        expect(warnings).to.have.length(1);
+        expect((warnings[0].args[2] as () => object)()).to.deep.equal({
+          elementId: sourceElementId,
+          propertyName: "lengthProp",
+          formatSet: undefined,
+          tried: ["Fields.LENGTH in Units.NOT_A_UNIT"],
+        });
+      } finally {
+        logWarning.restore();
+      }
     });
 
     function readFieldCachedContent(block: TextBlock): string | undefined {
@@ -1065,7 +1015,7 @@ describe("Field evaluation", () => {
       return annotationElementId;
     }
 
-    it("routes txn-driven field updates through the registered provider", async () => {
+    it("routes txn-driven field updates through the registered FormatSet", async () => {
       registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const annotationElementId = insertAnnotationWithLengthField(sourceElementId);
@@ -1073,7 +1023,7 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
     });
 
-    it("documents the provider-lifecycle contract for persisted cachedContent", async () => {
+    it("documents the registration-lifecycle contract for persisted cachedContent", async () => {
       // Deliberately one narrative test rather than one per step: this is documentation of an
       // accepted contract, not a bug under guard. The contract is that neither registering nor
       // unregistering walks existing annotations, so persisted cachedContent changes only on the
@@ -1099,11 +1049,11 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
       // 4. Unregistering is likewise not retroactive...
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
       // ...but the following edit falls back to the schema default and overwrites the FormatSet's
-      // millimeters with the schema's meters. This is why unregisterFieldFormattingProvider's docs
+      // millimeters with the schema's meters. This is why unregisterFieldFormatting's docs
       // tell hosts to swap FormatSets by re-registering rather than by unregistering first.
       const reloadedSource = imodel.elements.getElement<TestElement>(sourceId);
       reloadedSource.lengthProp = 3.5;
