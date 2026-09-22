@@ -25,6 +25,8 @@ export interface ElectronProviderOptions {
   readonly preloadModule?: string;
   /** Enable the Electron renderer's loopback debugging endpoint on this port. Disabled by default. */
   readonly remoteDebuggingPort?: number;
+  /** Milliseconds to wait for the provider session to become ready. Use 0 to disable the timeout. */
+  readonly startupTimeout?: number;
 }
 
 interface ElectronProject {
@@ -342,8 +344,7 @@ export function createElectronBrowserProviderOption(
     options,
     providerFactory: (project) => new ElectronBrowserProvider(project, options, sessionEntryPath, {
       electronArgs: options.remoteDebuggingPort === undefined ? [] : [`--remote-debugging-port=${options.remoteDebuggingPort}`],
-      // A breakpoint in backend initialization or page loading must not time out startup.
-      startupTimeout: options.remoteDebuggingPort === undefined ? undefined : 0,
+      startupTimeout: options.startupTimeout,
     }),
   });
 }

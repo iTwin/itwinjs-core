@@ -9,6 +9,7 @@ import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
 import { defineConfig } from "vitest/config";
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+const debug = process.env.VITEST_ELECTRON_DEBUG === "1";
 
 export default defineConfig({
   esbuild: { target: "esnext" },
@@ -37,7 +38,9 @@ export default defineConfig({
       provider: electron({
         backendInitModule: path.resolve(packageRoot, "lib/cjs/test/frontend/utils/backend.js"),
         preloadModule: path.resolve(packageRoot, "lib/cjs/backend/ElectronPreload.js"),
-        remoteDebuggingPort: process.env.VITEST_ELECTRON_DEBUG === "1" ? 9223 : undefined,
+        remoteDebuggingPort: debug ? 9223 : undefined,
+        // A breakpoint in backend initialization or page loading must not time out startup.
+        startupTimeout: debug ? 0 : undefined,
       }),
       instances: [{ browser: "electron" }],
       headless: true,

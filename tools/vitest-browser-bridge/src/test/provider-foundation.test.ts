@@ -21,7 +21,7 @@ const fakeProject = {
   },
 };
 
-function createProvider(electronArgs: string[], startupTimeout = 2_000): ElectronBrowserProvider {
+function createProvider(electronArgs: string[], startupTimeout = 2_000, closeTimeout = 2_000): ElectronBrowserProvider {
   return new ElectronBrowserProvider(
     fakeProject,
     {},
@@ -30,7 +30,7 @@ function createProvider(electronArgs: string[], startupTimeout = 2_000): Electro
       electronBinary: process.execPath,
       electronArgs,
       startupTimeout,
-      closeTimeout: 2_000,
+      closeTimeout,
     },
   );
 }
