@@ -203,7 +203,7 @@ describe("batch aspect field selection", () => {
   }
 
   it("uses one ordered interval per class-name batch, including gaps", async () => {
-    const test = setup([], undefined, "elementIds", ["0x1", "0x3", "0x9"]);
+    const test = setup([], undefined, "classNames", ["0x1", "0x3", "0x9"]);
     await test.getContentItems();
     expect(test.reader).to.have.been.calledWith("SELECT IdToHex(ECInstanceId) id FROM ONLY [TestSchema].[TestClass] ORDER BY ECInstanceId");
     expect(test.contentGetter.firstCall.args[0].descriptor.instanceFilter.expression).to.equal("this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x3");
