@@ -361,16 +361,25 @@ export class OrbitGtTileTree extends TileTree {
 }
 
 /** Computes the vertical shift, in meters along geodetic up, to correctly place a point cloud whose CRS does not
- * define a vertical datum, assuming its heights are orthometric (relative to the geoid).
+ * say whether its heights are ellipsoidal or orthometric. We assume they use the same convention as the iModel.
  *
- * The shift is the difference between converting the point cloud's origin with its height treated as orthometric
- * versus ellipsoidal (`heightAsEllipsoidalDbZ`, already computed by the caller). Returns zero if the shift cannot
- * be computed or the iModel's converter makes no distinction between the two.
+ * The caller has already placed the cloud treating its heights as ellipsoidal (`heightAsEllipsoidalDbZ`). If the
+ * iModel is geoid-based, the shift is the difference between treating the origin's height as orthometric versus
+ * ellipsoidal. If the iModel is ellipsoidal, or the shift cannot be computed, returns zero.
  * Exported strictly for tests.
  * @internal
  */
-export async function computeOrthometricVerticalShift(geoOrigin: Point3d, heightAsEllipsoidalDbZ: number, iModel: IModelConnection): Promise<number> {
-  const geoidConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter({ horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } });
+export async function computeVerticalDatumShift(geoOrigin: Point3d, heightAsEllipsoidalDbZ: number, iModel: IModelConnection): Promise<number> {
+  if (iModel.noGcsDefined)
+    return 0;
+
+  // The backend always resolves the vertical datum id; anything not geoid-based is ellipsoidal.
+  const verticalDatum = iModel.geographicCoordinateSystem?.verticalCRS?.id;
+  const isGeoidBased = "GEOID" === verticalDatum || "NAVD88" === verticalDatum || "NGVD29" === verticalDatum;
+  if (!isGeoidBased)
+    return 0;
+
+  const geoidConverter = iModel.geoServices.getConverter({ horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } });
   if (undefined === geoidConverter)
     return 0;
 
@@ -502,11 +511,11 @@ export namespace OrbitGtTileTree {
           if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
             const dbOriginFromGcs = Point3d.fromJSON(response.iModelCoords[0].p);
 
-            // A projected CRS defines no vertical datum, so the point cloud's heights are conventionally orthometric -
-            // but pointCloudToEcef above treated them as ellipsoidal. Correct the placement by the difference.
+            // A projected CRS doesn't say whether heights are ellipsoidal or orthometric, so assume they match the iModel.
+            // pointCloudToEcef above treated them as ellipsoidal; shift by the difference if the iModel is geoid-based.
             // (A compound CRS also takes this path; that stays correct unless orbitgt gains a geoid model.)
             if (CRSManager.ENGINE.isProjectedCRS(pointCloudCRS)) {
-              const verticalShift = await computeOrthometricVerticalShift(geoOrigin, dbOriginFromGcs.z, iModel);
+              const verticalShift = await computeVerticalDatumShift(geoOrigin, dbOriginFromGcs.z, iModel);
               if (0 !== verticalShift) {
                 const upVector = Vector3d.createStartEnd(
                   cartographicOrigin.toEcef(),
