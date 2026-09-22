@@ -53,6 +53,8 @@ export default defineConfig({
         backendInitModule: path.resolve(packageRoot, "lib/backend/vitest-electron.js"),
         preloadModule: path.resolve(packageRoot, "../../core/electron/lib/cjs/backend/ElectronPreload.js"),
         remoteDebuggingPort: isDebug ? 9223 : undefined,
+        // A breakpoint in backend initialization or page loading must not time out startup.
+        startupTimeout: isDebug ? 0 : undefined,
       }),
       instances: [{ browser: "electron" }],
       headless: !isDebug,
