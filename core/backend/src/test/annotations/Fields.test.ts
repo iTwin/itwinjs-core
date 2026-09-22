@@ -844,7 +844,7 @@ describe("Field evaluation", () => {
     });
 
     it("raises onFieldFormattingProviderChanged on register and unregister only", () => {
-      const events: Array<FieldFormattingSpecProvider | undefined> = [];
+      const events: FieldFormattingSpecProvider[] = [];
       const drop = ElementDrivesTextAnnotation.onFieldFormattingProviderChanged.addListener((args) => {
         expect(args.iModel).to.equal(imodel);
         events.push(args.provider);
@@ -854,10 +854,13 @@ describe("Field evaluation", () => {
         const first = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
         const second = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
         ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+        // Unregistering reverts to the schema default and reports it.
+        const fallback = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel);
         // Nothing registered: no event.
         ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
 
-        expect(events).to.deep.equal([first, second, undefined]);
+        expect(events).to.deep.equal([first, second, fallback]);
+        expect(fallback).not.to.equal(second);
       } finally {
         drop();
       }
@@ -925,8 +928,7 @@ describe("Field evaluation", () => {
       expect(result).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
     });
 
-    it("preserves prior behavior when no provider is registered", () => {
-      // Sanity check: no provider registered -> raw string formatting as before.
+    it("formats through the schema's presentation format when no provider is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -938,10 +940,10 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
-    it("preserves prior coordinate behavior when no provider is registered", () => {
+    it("renders a coordinate raw when its property has no KindOfQuantity and no provider is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -956,7 +958,7 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(1, 2, 3)");
     });
 
-    it("preserves prior behavior on the txn callback path when no provider is registered", () => {
+    it("formats through the schema default on the txn callback path when no provider is registered", () => {
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         styleOverrides: { font: { name: "Karla" } },
@@ -982,15 +984,18 @@ describe("Field evaluation", () => {
         }
       }
       expect(reloadedField).to.not.be.undefined;
-      expect(reloadedField!.cachedContent).to.equal("2.5");
+      expect(reloadedField!.cachedContent).to.equal("2.5 m");
     });
 
     it("registers and unregisters the provider for an iModel", async () => {
-      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
+      const registered = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.equal(registered);
 
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
+      const fallback = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel);
+      expect(fallback).not.to.equal(registered);
+      // The default is created once and then reused.
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.equal(fallback);
     });
 
     it("resolves a requirement on first evaluation and records a miss only for one it cannot", () => {
@@ -1072,17 +1077,17 @@ describe("Field evaluation", () => {
       // Deliberately one narrative test rather than one per step: this is documentation of an
       // accepted contract, not a bug under guard. The contract is that neither registering nor
       // unregistering walks existing annotations, so persisted cachedContent changes only on the
-      // next source-element edit -- which formats, or de-formats, according to whatever happens
-      // to be registered at that moment.
+      // next source-element edit -- which formats according to whatever happens to be registered
+      // at that moment.
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
 
-      // 1. No provider registered: insert persists the raw fallback.
+      // 1. No provider registered: insert persists the schema's presentation format.
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5 m");
 
       // 2. Registering is not retroactive; persisted content is untouched.
       registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5 m");
 
       // 3. The next source edit fires the txn callback, which routes through the provider.
       const source = imodel.elements.getElement<TestElement>(sourceId);
@@ -1097,17 +1102,16 @@ describe("Field evaluation", () => {
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
-      // ...but the following edit finds no provider and overwrites the formatted value with the
-      // raw one. This downgrade is the accepted cost of a provider gap, and is why
-      // unregisterFieldFormattingProvider's docs tell hosts to swap FormatSets by re-registering
-      // rather than by unregistering first.
+      // ...but the following edit falls back to the schema default and overwrites the FormatSet's
+      // millimeters with the schema's meters. This is why unregisterFieldFormattingProvider's docs
+      // tell hosts to swap FormatSets by re-registering rather than by unregistering first.
       const reloadedSource = imodel.elements.getElement<TestElement>(sourceId);
       reloadedSource.lengthProp = 3.5;
       withEditTxn(imodel, "source update after unregister", (txn) => {
         reloadedSource.update(txn);
         txn.saveChanges("source update after unregister");
       });
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5");
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5 m");
     });
 
     it("evaluateFields mutates the in-memory TextBlock but does not persist to the element on its own", async () => {
@@ -1116,7 +1120,7 @@ describe("Field evaluation", () => {
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
       const persistedBefore = readFieldCachedContentById(annotationElementId);
-      expect(persistedBefore).to.equal("2.5");
+      expect(persistedBefore).to.equal("2.5 m");
 
       registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 

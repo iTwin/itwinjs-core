@@ -76,12 +76,28 @@ describe("Text annotation field formatting", () => {
   });
 
   after(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
     iModel.close();
   });
 
   afterEach(() => {
     ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
+  });
+
+  it("formats a field through the schema default with no registration", async () => {
+    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.SchemaDefault
+    // Nothing registered: the field is presented using the format `Snippets.LENGTH` declares.
+    const fieldRun = FieldRun.create({
+      propertyHost: { elementId, schemaName: "Snippets", className: "Widget" },
+      propertyPath: { propertyName: "length" },
+    });
+    const block = TextBlock.create();
+    block.appendRun(fieldRun);
+
+    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+    const formattedContent = fieldRun.cachedContent; // "2.5 m"
+    // __PUBLISH_EXTRACT_END__
+
+    expect(formattedContent).to.equal("2.5 m");
   });
 
   it("formats a field from an adopted FormatSet", async () => {
@@ -106,7 +122,6 @@ describe("Text annotation field formatting", () => {
     // Adopt it for the iModel. Registration is synchronous; each FormatterSpec is built the
     // first time a field asks for it and reused thereafter.
     ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
-    iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
 
     // A field displaying the `length` property of a widget that is 2.5 meters long.
     const fieldRun = FieldRun.create({
@@ -154,7 +169,6 @@ describe("Text annotation field formatting", () => {
 
     // __PUBLISH_EXTRACT_START__ TextAnnotationFields.AdoptFormatSet
     const provider = ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
-    iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
     // __PUBLISH_EXTRACT_END__
 
     expect(provider).not.to.be.undefined;

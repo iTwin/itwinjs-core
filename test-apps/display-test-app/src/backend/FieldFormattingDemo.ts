@@ -17,12 +17,9 @@ import { FormatSet } from "@itwin/ecschema-metadata";
  */
 const imported = new Map<string, { defaultSet?: FormatSet, sets: { id: string, formatSet: FormatSet }[] }>();
 
-/** Teardown for the `onBeforeClose` listener installed per iModel. */
-const closeUnsubscribers = new Map<string, () => void>();
-
 /** Re-registers the provider for `iModel` from `defaultSet`, `sets`, and everything previously
  * imported for it. `defaultSet` applies to FieldRuns naming no set; each `sets` entry is
- * addressable by its `id`. Supplying neither unregisters. Torn down when `iModel` closes.
+ * addressable by its `id`. Supplying neither unregisters, reverting to the schema defaults.
  */
 export function registerFieldFormattingProviderFor(iModel: IModelDb, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
   if (undefined === defaultSet && (undefined === sets || 0 === sets.length)) {
@@ -46,23 +43,17 @@ export function registerFieldFormattingProviderFor(iModel: IModelDb, defaultSet?
     formatSets: mergedSets,
   });
 
-  imported.set(iModel.key, { defaultSet: mergedDefault, sets: mergedSets });
+  // Core releases its provider with the IModelDb; only the routing table needs tearing down.
+  if (!imported.has(iModel.key))
+    iModel.onBeforeClose.addOnce(() => imported.delete(iModel.key));
 
-  // Only subscribe once per iModel.
-  if (!closeUnsubscribers.has(iModel.key))
-    closeUnsubscribers.set(iModel.key, iModel.onBeforeClose.addOnce(() => unregister(iModel)));
+  imported.set(iModel.key, { defaultSet: mergedDefault, sets: mergedSets });
 }
 
 /** Unregisters the provider for `iModel` and discards its imported FormatSets. Safe to call when
  * nothing is registered.
  */
 function unregister(iModel: IModelDb): void {
-  const unsubscribe = closeUnsubscribers.get(iModel.key);
-  if (unsubscribe) {
-    unsubscribe();
-    closeUnsubscribers.delete(iModel.key);
-  }
-
   imported.delete(iModel.key);
   ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
 }

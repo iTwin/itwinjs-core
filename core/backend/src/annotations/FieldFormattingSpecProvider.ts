@@ -189,8 +189,10 @@ export interface FieldFormattingSpecProviderArgs {
  * persistence unit, or whose format's units, are defined solely by the iModel's own schemas
  * falls to step 4.
  *
- * @see [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) to construct and
- * register one in a single call -- normally when the iModel opens.
+ * Every iModel has one: [ElementDrivesTextAnnotation.getFieldFormattingProvider]($backend)
+ * creates a schema-only default on first request, and
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) replaces it with one
+ * that layers application FormatSets over the schemas -- normally when the iModel opens.
  * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
  * @beta
  */

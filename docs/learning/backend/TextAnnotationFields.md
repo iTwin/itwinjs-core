@@ -8,7 +8,11 @@ Formatting stays on the backend, because text layout is a backend concern. For t
 
 ## Format one field
 
-An application adopts a [FormatSet]($ecschema-metadata) for an iModel, then evaluates the blocks that need it:
+Out of the box, a quantity field is presented using the format its KindOfQuantity declares in the iModel's schemas, in the metric unit system:
+
+[[include:TextAnnotationFields.SchemaDefault]]
+
+An application that wants something else adopts a [FormatSet]($ecschema-metadata) for the iModel, then evaluates the blocks that need it:
 
 [[include:TextAnnotationFields.HappyPath]]
 
@@ -49,11 +53,11 @@ The first pair whose format-props lookup **and** persistence-unit lookup both su
 
 ## Registering a provider
 
-Register the FormatSet your application has adopted for an iModel **when the iModel opens**:
+Registration is optional. Every iModel has a [FieldFormattingSpecProvider]($backend) whether or not the application asked for one: the first field evaluation creates a default that resolves each KindOfQuantity to the presentation format its schema declares. Register only to layer your own FormatSets over those defaults, or to choose a different unit system:
 
 [[include:TextAnnotationFields.AdoptFormatSet]]
 
-Registering at open matters because field evaluation fires from `TxnManager` callbacks on any source-element edit. An edit that lands before registration formats without the provider and persists a raw string, and — since registering does not walk existing annotations — that field is not revisited until the next edit to the same source.
+Do so **when the iModel opens**. Field evaluation fires from `TxnManager` callbacks on any source-element edit, and an edit that lands before registration formats through the schema default and persists that string. Since registering does not walk existing annotations, that field is not revisited until the next edit to the same source.
 
 Core performs **no discovery of its own**: it never walks the iModel looking for annotations, and it does not need to. The first evaluation of a given (KindOfQuantity, persistence unit) pair builds and caches its spec, so the cost of formatting is proportional to the number of *distinct* pairs the fields actually use, not to the size of the iModel.
 
@@ -81,15 +85,11 @@ This is still a **single** registration. One [FieldFormattingSpecProvider]($back
 
 ### Provider lifetime
 
-Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never removes them automatically, so unregister when the iModel closes. Provider lifetime is deliberately the application's to manage.
+A provider — registered or default — lives exactly as long as its [IModelDb]($backend) object. Core holds it through a weak reference to the iModel, so closing the iModel releases the provider and there is nothing to unregister on close.
 
-Forgetting to unregister keeps the iModel's [SchemaContext]($ecschema-metadata), and the closed `IModelDb` behind it, in memory for the lifetime of the process. And although [IModel.key]($common) is a fresh GUID on each open by default, an application that supplies its own stable `key` when opening will find the stale registration again on reopen and format against a closed schema context.
+Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. [ElementDrivesTextAnnotation.onFieldFormattingProviderChanged]($backend) fires on every registration and unregistration, and is the natural place to trigger that refresh — since specs are built on demand, it is the only moment at which an iModel's field formatting can change.
 
-Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. [ElementDrivesTextAnnotation.onFieldFormattingProviderChanged]($backend) fires on every registration and unregistration, and is the natural place to trigger that refresh — since specs are built on demand, it is the only moment at which an iModel's field formatting can change. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to overwrite their formatted `cachedContent` with the raw string representation.
-
-Keep a provider registered for as long as the annotations depending on it are editable. Note that this is only a concern when *no* provider is registered: a registered provider whose FormatSet lacks an entry for a field's KindOfQuantity still falls back to that KoQ's presentation format from the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`.
-
-Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one, so there is no window in which the iModel has no provider. Unregistering first would create one.
+[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]($backend) discards the application's FormatSets and reverts the iModel to the schema default. It does not turn formatting off: the next source-element edit re-renders a field that was `"2500 mm"` under the FormatSet as `"2.5 m"` under the schema. Changing the adopted FormatSet therefore needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one — rather than an unregister followed by a register.
 
 ## Advanced
 
