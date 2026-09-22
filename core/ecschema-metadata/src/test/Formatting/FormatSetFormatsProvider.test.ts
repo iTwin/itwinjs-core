@@ -273,6 +273,20 @@ describe("FormatSetFormatsProvider", () => {
       ])).resolves.toEqual([sampleFormat, anotherFormat]);
     });
 
+    it("delegates to a FormatSetFormatsProvider subclass's public overrides", async () => {
+      class OverridingProvider extends FormatSetFormatsProvider {
+        public override async getFormat(): Promise<FormatDefinition | undefined> { return anotherFormat; }
+        public override getFormatSync(): FormatDefinition | undefined { return anotherFormat; }
+      }
+      const fallbackProvider = new OverridingProvider({ formatSet: { ...formatSet, formats: {} } });
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet: { ...formatSet, formats: { alias: "Missing" } }, fallbackProvider });
+
+      await expect(providerWithFallback.getFormat("FallbackFormat")).resolves.toEqual(anotherFormat);
+      await expect(providerWithFallback.getFormat("alias")).resolves.toEqual(anotherFormat);
+      expect(providerWithFallback.getFormatSync("FallbackFormat")).toEqual(anotherFormat);
+      expect(providerWithFallback.getFormatSync("alias")).toEqual(anotherFormat);
+    });
+
     it("should propagate error from fallback provider", async () => {
       const fallbackProvider: FormatsProvider = {
         getFormat: async () => {

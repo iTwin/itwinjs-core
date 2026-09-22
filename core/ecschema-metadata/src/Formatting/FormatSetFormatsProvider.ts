@@ -85,8 +85,6 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
     const fallbackProvider = this._fallbackProvider;
     if (!fallbackProvider)
       return undefined;
-    if (fallbackProvider instanceof FormatSetFormatsProvider)
-      return fallbackProvider.getFormatInternal(name, system, context);
     return fallbackProvider.getFormat(name, system, context);
   }
 
@@ -119,8 +117,6 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
     const fallbackProvider = this._fallbackProvider;
     if (!isSyncFormatsProvider(fallbackProvider))
       return undefined;
-    if (fallbackProvider instanceof FormatSetFormatsProvider)
-      return fallbackProvider.getFormatSyncInternal(name, system, context);
     return fallbackProvider.getFormatSync(name, system, context);
   }
 
