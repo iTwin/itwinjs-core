@@ -12,6 +12,7 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
+import { InteractiveRebaseError } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
@@ -145,8 +146,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(0);
   });
 
@@ -177,8 +177,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     chai.expect(interactive.conflicts.length).to.equal(1);
     const conflict = interactive.conflicts[0];
@@ -267,7 +266,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -303,8 +302,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -361,8 +359,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -440,8 +437,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -527,8 +523,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -600,8 +595,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -713,8 +707,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
     const conflict = interactive.conflicts[0];
@@ -786,8 +779,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Both the data conflict (on "foo") and the UNIQUE constraint violation (on "code") are reported
     // against the same instance, so they're merged into a single RebaseConflict entry.
@@ -918,7 +910,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Only the forced conflict on `id` should surface - the swap is a self-contained ordering cycle,
     // not a real external collision, so it must apply cleanly with no UniqueConstraintViolation.
@@ -983,7 +975,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Only the forced conflict on `id` should surface - the swap is a self-contained ordering cycle,
     // not a real external collision, so it must apply cleanly with no UniqueConstraintViolation.
@@ -1032,7 +1024,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     chai.expect(interactive.conflicts.length).to.equal(1);
     chai.expect(interactive.conflicts[0].id).to.equal(id);
@@ -1077,7 +1069,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Neither of the two mutually-referencing new inserts should be reported as a conflict - only the
     // forced conflict on `id`.
@@ -1112,8 +1104,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     chai.expect(interactive.conflicts.length).to.equal(1);
     const conflict = interactive.conflicts[0];
@@ -1154,7 +1145,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     // The aspect's real conflict gives its owning element a synthetic conflict too - not because the
     // element's own properties conflict (they don't), but because InteractiveRebase always makes an
     // embedding owner resolvable whenever one of its dependents conflicts - see
@@ -1225,7 +1216,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(interactive.conflicts.length).to.equal(0);
 
     const aspect = getUniqueAspect(briefcase2, id);
@@ -1262,7 +1253,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
     // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
     chai.expect(interactive.conflicts.length).to.equal(2);
@@ -1310,7 +1301,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
     // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
     chai.expect(interactive.conflicts.length).to.equal(2);
@@ -1357,7 +1348,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
@@ -1424,7 +1415,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
@@ -1481,7 +1472,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
@@ -1545,7 +1536,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // The SET NULL is applied to the referencing element as an ordinary property update, so it
     // merges property-wise and is never surfaced as a conflict or a broken relationship.
@@ -1589,7 +1580,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
@@ -1654,7 +1645,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(aspectConflict).to.not.be.undefined;
@@ -1724,7 +1715,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Only the forced conflict on `otherId` should be reported - the reparent+delete of A must not
     // produce any conflict, since `childC` was correctly linked to its *new* owner (B), not A.
@@ -1774,7 +1765,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     const conflict = interactive.conflicts.find((c) => c.id === childC);
     chai.expect(conflict).to.not.be.undefined;
@@ -1821,7 +1812,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // The forced conflict on `id` is expected; the new element+aspect insert must replay cleanly.
     chai.expect(interactive.conflicts.some((c) => c.id === elementId)).to.be.false;
@@ -1925,7 +1916,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
     const elementConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeGraphicalElement" && c.id === id);
     const aspectConflict = interactive.conflicts.find((c) => c.id === aspectXId);
     chai.expect(elementConflict).to.not.be.undefined;
@@ -1965,7 +1956,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(aspectConflict).to.not.be.undefined;
@@ -2001,7 +1992,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // There should only be the one UPDATE-DELETE conflict.
     // The new element reuses the deleted element's federationGuid, but that is not a conflict.
@@ -2047,7 +2038,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     chai.expect(interactive.conflicts.length).to.equal(1);
     const conflict = interactive.conflicts[0];
@@ -2095,7 +2086,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
-    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.nextGroup()).to.be.true;
 
     // Only the forced conflict should surface - all `count` unrelated local edits must replay cleanly.
     chai.expect(interactive.conflicts.length).to.equal(1);
@@ -2106,4 +2097,146 @@ describe("InteractiveRebase", () => {
       chai.expect(props.foo).to.equal(`Local${elId}`);
     }
   });
+
+  // Two separate ungrouped local Txns (each defaults to its own TxnRebaseGroup) touching different
+  // properties of `id`, with a non-conflicting upstream change, used by the group-navigation tests below.
+  const setUpTwoGroups = async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, userLabel: "UpstreamLabel" });
+    });
+    await briefcase1.pushChanges({ description: "Upstream label" });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "Local1" });
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, somePoint: new Point2d(9, 9) });
+    });
+
+    const interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    return interactive!;
+  };
+
+  it("moves forward through ungrouped groups one Txn at a time via nextGroup", async () => {
+    using interactive = await setUpTwoGroups();
+
+    chai.expect(interactive.groups.length).to.equal(2);
+    chai.expect(interactive.currentGroup).to.be.undefined;
+    chai.expect(interactive.isComplete).to.be.false;
+
+    const first = interactive.nextGroup();
+    chai.expect(first).to.be.true;
+    chai.expect(interactive.currentGroup).to.equal(interactive.groups[0]);
+    chai.expect(interactive.isComplete).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(0);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("Local1");
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.currentGroup).to.equal(interactive.groups[1]);
+    chai.expect(interactive.isComplete).to.be.false;
+
+    const finalProps = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(finalProps.foo).to.equal("Local1");
+    chai.expect(Point2d.fromJSON(finalProps.somePoint).isExactEqual(new Point2d(9, 9))).to.be.true;
+    chai.expect(finalProps.userLabel).to.equal("UpstreamLabel");
+
+    // No groups remain - this call signals completion rather than moving anywhere.
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.isComplete).to.be.true;
+  });
+
+  it("throws when calling nextGroup past the last group", async () => {
+    using interactive = await setUpTwoGroups();
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.isComplete).to.be.true;
+
+    chai.expect(() => interactive.nextGroup()).to.throw();
+    chai.expect(InteractiveRebaseError.isError(
+      (() => { try { interactive.nextGroup(); } catch (err) { return err; } return undefined; })(),
+      "already-past-last-group",
+    )).to.be.true;
+  });
+
+  it("throws when calling previousGroup before the first group", async () => {
+    using interactive = await setUpTwoGroups();
+
+    chai.expect(() => interactive.previousGroup()).to.throw();
+    chai.expect(InteractiveRebaseError.isError(
+      (() => { try { interactive.previousGroup(); } catch (err) { return err; } return undefined; })(),
+      "already-past-first-group",
+    )).to.be.true;
+  });
+
+  it("previousGroup reverts the current group's replay and moves back to the previous group", async () => {
+    using interactive = await setUpTwoGroups();
+
+    interactive.nextGroup(); // group 0: foo -> "Local1"
+    interactive.nextGroup(); // group 1: somePoint -> (9, 9)
+
+    interactive.previousGroup();
+    chai.expect(interactive.currentGroup).to.equal(interactive.groups[0]);
+    chai.expect(interactive.isComplete).to.be.false;
+
+    // Group 1's replay should have been undone, leaving only group 0's committed change in place.
+    const propsAfterBackingUp = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(propsAfterBackingUp.foo).to.equal("Local1");
+    chai.expect(Point2d.fromJSON(propsAfterBackingUp.somePoint).isExactEqual(new Point2d(1.23, 4.56))).to.be.true;
+  });
+
+  /*
+  it("restartGroup discards conflict resolutions and redoes the current group's replay", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    interactive.nextGroup();
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User2");
+
+    interactive.conflicts[0].acceptTheirs();
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User1");
+
+    interactive.restartGroup();
+
+    // Restarting the group should redo its replay from scratch, so the conflict should be freshly
+    // reported and "ours" should be selected again, as if acceptTheirs() had never been called.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User2");
+  });
+
+  it("restartAll returns to the beginning and reverts every committed group", async () => {
+    using interactive = await setUpTwoGroups();
+
+    interactive.nextGroup(); // group 0: foo -> "Local1"
+    interactive.nextGroup(); // group 1: somePoint -> (9, 9)
+
+    interactive.restartAll();
+    chai.expect(interactive.currentGroup).to.be.undefined;
+    chai.expect(interactive.isComplete).to.be.false;
+
+    // Both groups' replays should have been undone, leaving only the upstream (already-merged) change.
+    const propsAfterRestart = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(propsAfterRestart.foo).to.equal("Original");
+    chai.expect(Point2d.fromJSON(propsAfterRestart.somePoint).isExactEqual(new Point2d(1.23, 4.56))).to.be.true;
+    chai.expect(propsAfterRestart.userLabel).to.equal("UpstreamLabel");
+
+    // Advancing again from the beginning should replay group 0 the same way it did the first time.
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("Local1");
+  });
+  */
 });

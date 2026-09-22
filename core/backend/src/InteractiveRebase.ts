@@ -11,7 +11,7 @@ import { EditTxn } from "./EditTxn";
 import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
 import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@itwin/core-common";
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
-import { _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
@@ -392,6 +392,20 @@ export class InteractiveRebase {
   }
 
   /**
+   * Commits the current group's [[EditTxn]] by folding its changes back into the local Txn being
+   * rebased, using the same native primitive ([[TxnManager.resume]]/`resumeSemantic`) the
+   * non-interactive rebase paths use. A plain `EditTxn.end("save")` is rejected by native code
+   * ("Saving changes are not allowed when rebasing local changes") because a native pull-merge rebase
+   * is in progress for the whole lifetime of this `InteractiveRebase`, not just while replay is running.
+   */
+  private commitEditTxn(): void {
+    assert(this._editTxn !== undefined && this._editTxn.isActive, "commitEditTxn requires an active EditTxn");
+    this._db[_nativeDb].pullMergeRebaseUpdateTxn();
+    this._db[_activeTxn] = undefined;
+    this._editTxn = undefined;
+  }
+
+  /**
    * Gets the EditTxn for making arbitrary edits to the iModel during the rebase process for the current group.
    *
    * @throws InteractiveRebaseError if the rebase process is already complete.
@@ -507,7 +521,8 @@ export class InteractiveRebase {
   /**
    * Save the current Txn group and move to the next group.
    *
-   * @returns True if there is another group to rebase, false if the rebase process is complete.
+   * @returns True if a group was found and reinstated. False once every group has already been
+   * processed, meaning the rebase process is now complete - see {@link isComplete}.
    */
   public nextGroup(): boolean {
     if (this._currentGroupIndex >= this._groups.length) {
@@ -515,8 +530,7 @@ export class InteractiveRebase {
     }
 
     if (this._editTxn) {
-      this._editTxn.end("abandon");
-      this._editTxn = undefined;
+      this.commitEditTxn();
     }
 
     this._editTxn = new EditTxn(this._db, "Interactive Rebase");
@@ -540,7 +554,7 @@ export class InteractiveRebase {
     assert(group.txns[0].type === "Data", "Interactive rebase only supports Data txns");
     this.reinstateDataTxn(group.txns[0]);
 
-    return this._currentGroupIndex < this._groups.length - 1;
+    return true;
   }
 
   /**
@@ -568,6 +582,7 @@ export class InteractiveRebase {
     this.applyDeferredCorrections();
     this.createImplicitOwnerConflicts();
     this.linkConflictOwnership();
+    this._db.clearCaches({ instanceCachesOnly: true });
   }
 
   /** Loads a captured node's change from the [[RebaseInstanceStore]], or throws if `node` wasn't actually captured (a
@@ -1754,7 +1769,8 @@ export class InteractiveRebase {
   }
 
   /**
-   * Abandon all conflict resolutions and edits in the current Txn group and move back to the previous one.
+   * Abandon all conflict resolutions and edits in the current Txn group and move back to the previous one,
+   * reverting the previous group's committed changes and redoing its replay from scratch.
    */
   public previousGroup(): void {
     if (this._currentGroupIndex < 0) {
@@ -1766,9 +1782,24 @@ export class InteractiveRebase {
       this._editTxn = undefined;
     }
 
-    // TODO: revert already committed changes, too.
-
     --this._currentGroupIndex;
+    const group = this.currentGroup;
+    if (group === undefined) {
+      return;
+    }
+
+    // Reverses the previous group's already-committed Txn at the native/row level (see
+    // TxnManager::PullMergeRebasePrevious) instead of trying to reconstruct its conflicts from anything
+    // kept in memory - a large changeset makes an in-memory record of every group's conflicts unaffordable.
+    const nativeDb = this._db[_nativeDb];
+    const txnId = nativeDb.pullMergeRebasePrevious();
+    assert(txnId === group.txns[0].id, "Unexpected txn id");
+
+    this._editTxn = new EditTxn(this._db, "Interactive Rebase");
+    this._editTxn.start();
+
+    this._conflicts = [];
+    this.reinstateDataTxn(group.txns[0]);
   }
 
   /**
