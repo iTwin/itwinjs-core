@@ -9,10 +9,9 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
-import { FormattingSpecArgs } from "@itwin/core-quantity";
 import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { collectFieldQuantityPairs, lookupFieldSpec, specKey } from "./fieldSpecs";
+import { lookupFieldSpec } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -208,9 +207,6 @@ function enterProperty(prop: Property, containingClass: AnyClass): SchemaCursor 
 
 /** Advances a schema cursor by one [FieldPropertyPath]($common) accessor, or returns `undefined`
  * when the accessor doesn't apply to the current property.
- *
- * Shared by [[getFieldPropertyValue]], which reads values, and [[resolveFieldTerminalProperty]],
- * which reads metadata, so the two cannot disagree about which paths are legal.
  */
 function advanceSchemaCursor(cursor: SchemaCursor, accessor: string | number): SchemaCursor | undefined {
   const { ecProp, ecClass } = cursor;
@@ -488,125 +484,4 @@ export function updateElementFields(props: RelationshipProps, txn: EditTxn, dele
  */
 export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProvider?: FieldFormattingSpecProvider): void {
   doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProvider);
-}
-
-/** Sentinel returned by [[resolveFieldTerminalProperty]] for a path that dives into a
- * JSON-in-string property. Such a path has no terminal [Property]($ecschema-metadata) — and so
- * no schema-side [KindOfQuantity]($ecschema-metadata) — but the field may still supply a
- * complete formatting key of its own.
- */
-const jsonInStringTerminal = "json-in-string";
-
-type FieldTerminal = Property | typeof jsonInStringTerminal;
-
-/** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
- * using schema metadata only (no ECSQL, no element values). Returns `undefined` when the path
- * cannot be followed, or [[jsonInStringTerminal]] when it dives into a JSON-in-string leaf.
- *
- * Walks with the same [[advanceSchemaCursor]] the value path uses, so the two agree on which
- * paths are legal. It cannot know whether the stored string actually parses as JSON, so a
- * JSON-in-string path may build a spec that evaluation never consults — harmless, where a
- * missing one is not.
- */
-function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldTerminal | undefined {
-  const host = field.propertyHost;
-  const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
-  if (!EntityClass.isEntityClass(schemaItem)) {
-    return undefined;
-  }
-
-  const { propertyName, accessors } = field.propertyPath;
-  const rootProp = schemaItem.getPropertySync(propertyName);
-  if (!rootProp) {
-    return undefined;
-  }
-
-  if (!accessors || accessors.length === 0) {
-    return rootProp;
-  }
-
-  // Mirrors getFieldPropertyValue: accessors applied to a non-array String property index into
-  // deserialized JSON, so the schema walk stops here.
-  if (rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.String) {
-    return jsonInStringTerminal;
-  }
-
-  let cursor = enterProperty(rootProp, schemaItem);
-  for (const accessor of accessors) {
-    const advanced = advanceSchemaCursor(cursor, accessor);
-    if (!advanced) {
-      return undefined;
-    }
-
-    cursor = advanced;
-  }
-
-  return cursor.ecProp;
-}
-
-/** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at formatting
- * time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
- * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
- * overrides. See [[QuantityFieldFormatOptions]] for the priority contract.
- *
- * Pre-warm and evaluation must enumerate identical pairs: a requirement that differs from the
- * pair the runtime resolves does not merely fail to format, it lets the runtime pick a
- * *different* pair and convert the value by the wrong factor. Both paths therefore share
- * [[collectFieldQuantityPairs]], and this metadata walk shares [[advanceSchemaCursor]] with the
- * runtime value walk.
- * @internal
- */
-export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
-  const quantityOptions = field.formatOptions?.quantity;
-
-  const terminal = resolveFieldTerminalProperty(field, iModel);
-  if (!terminal) {
-    return [];
-  }
-
-  if (terminal === jsonInStringTerminal) {
-    // A JSON leaf has no property-side pair to fall back to, so only the field's own overrides
-    // can name a format. `collectFieldQuantityPairs` drops an incomplete pair, which matches the
-    // runtime falling through to `value.toString()`.
-    return collectFieldQuantityPairs({
-      overrideName: quantityOptions?.kindOfQuantity,
-      overridePersistence: quantityOptions?.persistenceUnit,
-    });
-  }
-
-  const propertyType = determineFieldPropertyType(terminal);
-  if (propertyType !== "quantity" && propertyType !== "coordinate") {
-    return [];
-  }
-
-  const koq = terminal.kindOfQuantity ? terminal.getKindOfQuantitySync() : undefined;
-  return collectFieldQuantityPairs({
-    overrideName: quantityOptions?.kindOfQuantity,
-    overridePersistence: quantityOptions?.persistenceUnit,
-    propertyName: koq?.fullName,
-    propertyPersistence: koq?.persistenceUnit?.fullName,
-  });
-}
-
-/** Walks `textBlock` and returns the deduplicated [FormattingSpecArgs]($core-quantity) needed
- * to format its `"quantity"` and `"coordinate"` [FieldRun]($common)s. See
- * [[ElementDrivesTextAnnotation.collectFieldFormattingRequirements]] for the public contract
- * and the pre-warm workflow.
- * @internal
- */
-export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
-  const seen = new Map<string, FormattingSpecArgs>();
-  for (const { child } of traverseTextBlockComponent(textBlock)) {
-    if (child.type !== "field") {
-      continue;
-    }
-    for (const args of collectFieldRequirements(child, iModel)) {
-      const key = specKey(args);
-      if (!seen.has(key)) {
-        seen.set(key, args);
-      }
-    }
-  }
-
-  return Array.from(seen.values());
 }

@@ -6,23 +6,23 @@
 import { FieldValue, QuantityFieldFormatOptions } from "@itwin/core-common";
 import { FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
 
-/** The provider capability synchronous field evaluation needs: look up an already-built
- * [FormatterSpec]($core-quantity), and format a magnitude through it.
+/** The provider capability synchronous field evaluation needs: resolve the
+ * [FormatterSpec]($core-quantity) for a requirement, and format a magnitude through it.
  *
  * Narrower than [FormattingSpecProvider]($core-quantity), which also produces a
  * [ParserSpec]($core-quantity). Nothing on this path parses.
  * @internal
  */
 export interface FieldSpecProvider {
-  /** Returns the spec already built for `args`, or `undefined` if no spec was found. */
+  /** Returns the spec for `args`, or `undefined` if none can be resolved. */
   getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
   /** Applies `formatSpec` to `magnitude`. */
   formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
 }
 
-/** Cache key for one [FormattingSpecArgs]($core-quantity). Must name everything that changes the
- * resulting spec: if two distinct requirements share a key, only the first is built and the
- * second silently formats through it, converting from the wrong unit.
+/** Memo key for one [FormattingSpecArgs]($core-quantity). Must name everything that changes the
+ * resulting spec: if two distinct requirements shared a key, the second would silently format
+ * through the first's spec, converting from the wrong unit.
  * @internal
  */
 export function specKey(args: FormattingSpecArgs): string {
@@ -30,9 +30,7 @@ export function specKey(args: FormattingSpecArgs): string {
 }
 
 /** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate FieldValue may
- * format through, in the priority order documented on [[QuantityFieldFormatOptions]]. Used by
- * both [[lookupFieldSpec]] and `collectFieldRequirements`, so pre-warm enumerates exactly what
- * evaluation iterates.
+ * format through, in the priority order documented on [[QuantityFieldFormatOptions]].
  *
  * A pair needs both halves, so a property with no [KindOfQuantity]($ecschema-metadata)
  * contributes none. The property-side pair is also withheld when `overridePersistence` names a
@@ -69,7 +67,7 @@ export function collectFieldQuantityPairs(args: {
   return pairs;
 }
 
-/** Returns the first [FormatterSpec]($core-quantity) `provider` already holds for `value`, along
+/** Returns the first [FormatterSpec]($core-quantity) `provider` resolves for `value`, along
  * with the pairs that were tried, so the caller can record a miss when none resolved.
  * @internal
  */
