@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.13.5",
+      "tag": "@itwin/core-frontend_v5.13.5",
+      "date": "Tue, 22 Sep 2026 22:38:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed GL_INVALID_FRAMEBUFFER_OPERATION that could occur when reading pixels right after a second viewport was closed"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.13.4",
       "tag": "@itwin/core-frontend_v5.13.4",
       "date": "Fri, 18 Sep 2026 15:11:19 GMT",
