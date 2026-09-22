@@ -15,6 +15,7 @@ publish: false
       - [ChangesetReader row options](#changesetreader-row-options)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
       - [ChangesetReader identifiers filter](#changesetreader-identifiers-filter)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
   - [Geometry](#geometry)
     - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
   - [Quantity](#quantity)
@@ -127,6 +128,17 @@ The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteD
 #### ChangesetReader identifiers filter
 
 The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value are now rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. An application adopts a [FormatSet]($ecschema-metadata) for an iModel via the new [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), and individual fields can override the KindOfQuantity, persistence unit, or FormatSet used to format them.
+
+Two changes need attention when upgrading:
+
+- An `int` or `long` property carrying a KindOfQuantity previously rendered as a bare number and now renders as a formatted quantity: one persisting 2500 mm under a KindOfQuantity presenting meters changes from `2500` to `2.5 m`.
+- `@itwin/core-quantity` is now a **peer dependency** of `@itwin/core-backend`. Most applications already list it, since packages such as `@itwin/core-frontend` and `@itwin/core-ecschema-metadata` depend on it too. If yours does not, add it at the same version as the rest of your iTwin.js core packages.
+
+See [Quantity formatting for text annotation fields](../learning/backend/TextAnnotationFields.md) for a walkthrough covering format resolution, choosing what to pre-warm, provider lifetime, and evaluating fields.
 
 ## Geometry
 
