@@ -104,20 +104,31 @@ steps:
     displayName: "Setup AppArmor profile for Electron"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  # macOS agents default to a 256 file-descriptor soft limit (ulimit -n), which the
-  # container-heavy SchemaSync suites appear to exhaust ~70 tests in, failing every
-  # subsequent cloud-container attach/upload with BE_SQLITE_ERROR (itwinjs-backlog#2423).
-  # Log the limits for diagnosis and raise the soft limit before running.
+  # Diagnostics for itwinjs-backlog#2423: the SchemaSync suites fail on these agents at a
+  # deterministic point mid-suite (fd limits already ruled out: agents run with ulimit -n
+  # 1048575). First run the failing lifecycle suite in isolation - if it passes alone, the
+  # failure is cross-suite state accumulation; if it fails alone, it is intrinsic to the
+  # agent environment (e.g., path-length limits under the deep work-dir prefix).
   - script: |
-      echo "=== ulimit before ==="
-      ulimit -a
-      ulimit -n 4096
-      echo "=== ulimit -n after: $(ulimit -n) ==="
-      npm run test:integration
+      npx run-p -r azurite:setup "test:integration:core -- --grep Schema.synchronization.lifecycle"
     workingDirectory: "full-stack-tests/backend"
     env:
       NODE_ENV: development
-    displayName: "Run Backend Tests (macOS, raised fd limit)"
+      ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE: 1
+      ITWINJS_BACKEND_INTEGRATION_TEST_CLOUDSQLITE_TRACE: 1
+    displayName: "[diag] SchemaSync lifecycle suite in isolation (macOS)"
+    continueOnError: true
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+
+  # Full run with CloudSqlite native trace logging to expose the underlying error behind
+  # the BE_SQLITE_ERROR upload/attach failures.
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/backend"
+    env:
+      NODE_ENV: development
+      ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE: 1
+      ITWINJS_BACKEND_INTEGRATION_TEST_CLOUDSQLITE_TRACE: 1
+    displayName: "Run Backend Tests (macOS, CloudSqlite trace)"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run test:integration

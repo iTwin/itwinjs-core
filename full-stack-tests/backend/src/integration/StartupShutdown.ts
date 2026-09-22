@@ -40,6 +40,12 @@ export function setupIntegrationLogging() {
     Logger.initialize();
 
   Logger.setLevelDefault(LogLevel.Error);
+
+  // Diagnostic aid: raises the CloudSqlite category to Trace, which also causes every new
+  // CloudCache to enable full native (bcv) logging (see CloudSqlite.CloudCaches.makeCache).
+  // Used to expose the underlying cause of BE_SQLITE_ERROR upload/attach failures in CI.
+  if (process.env.ITWINJS_BACKEND_INTEGRATION_TEST_CLOUDSQLITE_TRACE === "1")
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
 }
 
 export async function startupForIntegration(cfg?: IModelHostOptions) {
