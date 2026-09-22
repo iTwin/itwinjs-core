@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
@@ -241,8 +241,20 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): FieldFormattingSpecProvider {
     const provider = new FieldFormattingSpecProvider(args);
     fieldFormattingProviders.set(args.iModel.key, provider);
+    this.onFieldFormattingProviderChanged.raiseEvent({ iModel: args.iModel, provider });
     return provider;
   }
+
+  /** Raised after [[registerFieldFormattingProvider]] installs a provider for an iModel, or
+   * [[unregisterFieldFormattingProvider]] removes one. Because every [FormatterSpec]($core-quantity)
+   * is built on demand, this is the only moment at which the formatting an iModel's fields
+   * receive can change; applications that cache formatted output, or that want to re-evaluate
+   * existing annotations against a newly adopted FormatSet, should listen here.
+   *
+   * `provider` is `undefined` when the registration was removed.
+   * @beta
+   */
+  public static readonly onFieldFormattingProviderChanged = new BeEvent<(args: { iModel: IModelDb, provider: FieldFormattingSpecProvider | undefined }) => void>();
 
   /** Removes the registration created by [[registerFieldFormattingProvider]] for `iModel`, if
    * any. Typically called from an [IModelDb.onBeforeClose]($backend) listener.
@@ -254,7 +266,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static unregisterFieldFormattingProvider(iModel: IModelDb): void {
-    fieldFormattingProviders.delete(iModel.key);
+    if (fieldFormattingProviders.delete(iModel.key)) {
+      this.onFieldFormattingProviderChanged.raiseEvent({ iModel, provider: undefined });
+    }
   }
 
   /** Returns the [[FieldFormattingSpecProvider]] previously registered for `iModel` via
