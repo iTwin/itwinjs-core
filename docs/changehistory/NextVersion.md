@@ -159,7 +159,7 @@ Two changes need attention when upgrading:
 - An `int` or `long` property carrying a KindOfQuantity previously rendered as a bare number and now renders as a formatted quantity: one persisting 2500 mm under a KindOfQuantity presenting meters changes from `2500` to `2.5 m`.
 - `@itwin/core-quantity` is now a **peer dependency** of `@itwin/core-backend`. Most applications already list it, since packages such as `@itwin/core-frontend` and `@itwin/core-ecschema-metadata` depend on it too. If yours does not, add it at the same version as the rest of your iTwin.js core packages.
 
-See [Quantity formatting for text annotation fields](../learning/backend/TextAnnotationFields.md) for a walkthrough covering format resolution, choosing what to pre-warm, provider lifetime, and evaluating fields.
+See [Quantity formatting for text annotation fields](../learning/backend/TextAnnotationFields.md) for a walkthrough covering format resolution, provider lifetime, and evaluating fields.
 
 ### Reserving elements for concurrent creation
 
