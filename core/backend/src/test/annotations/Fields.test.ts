@@ -581,14 +581,12 @@ describe("Field evaluation", () => {
   });
 
   describe("evaluateFields (quantity formatting)", () => {
-    // Registers a provider for `imodel` whose adopted FormatSet is `formats`, pre-warmed with
-    // exactly what `block`'s fields require. Mirrors the documented collect -> warm -> evaluate
-    // workflow: the app supplies FormatSets at registration time and evaluation is synchronous.
-    async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
+    // Registers a provider for `imodel` whose adopted FormatSet is `formats`. The app supplies
+    // FormatSets at registration time; evaluation resolves specs synchronously on first use.
+    function register(formats: Record<string, FormatDefinition> = {}): FieldFormattingSpecProvider {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
         formatSet: toFormatSet("TestSet", formats),
-        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
     }
 
@@ -606,7 +604,7 @@ describe("Field evaluation", () => {
       });
       textBlock.appendRun(stringField);
 
-      await register(textBlock);
+      register();
       const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updatedCount).to.equal(1);
@@ -621,7 +619,7 @@ describe("Field evaluation", () => {
     async function runEvaluate(field: FieldRun, formats: Record<string, FormatDefinition> = {}): Promise<{ updatedCount: number, content: string }> {
       const textBlock = TextBlock.create();
       textBlock.appendRun(field);
-      await register(textBlock, formats);
+      register(formats);
       const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
       return { updatedCount, content: field.cachedContent };
     }
@@ -672,7 +670,7 @@ describe("Field evaluation", () => {
    *
    * Going through `updateField` rather than reimplementing the composition here is the point —
    * these tests pin how the backend wires spec lookup to formatting, so a change to that wiring
-   * fails them. `onMiss` fires when the field produced candidates but none were pre-warmed.
+   * fails them. `onMiss` fires when the field produced candidates but none resolved.
    */
   function formatThroughProvider(
     value: FieldValue,
@@ -792,7 +790,7 @@ describe("Field evaluation", () => {
 
     it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
       // The user-visible half of the contract: "quantity" with no resolvable (KoQ, unit) pair is
-      // indistinguishable from the plain string rendering, and records no pre-warm miss.
+      // indistinguishable from the plain string rendering, and records no miss.
       const provider: FieldSpecProvider = {
         getFormatterSpec: () => undefined,
         formatQuantity: (m) => `FORMATTED:${m}`,
@@ -806,122 +804,7 @@ describe("Field evaluation", () => {
         expect(formatThroughProvider(value!, options, provider, () => { missed = true; })).to.equal("2.5");
       }
 
-      expect(missed, "an unformattable JSON leaf is not an under-warmed requirement").to.be.false;
-    });
-  });
-
-  describe("collectFieldFormattingRequirements", () => {
-    function makeField(propertyPath: FieldPropertyPath, formatOptions?: FieldRun["formatOptions"]): FieldRun {
-      return FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath,
-        formatOptions,
-      });
-    }
-
-    function makeBlock(...fields: FieldRun[]): TextBlock {
-      const block = TextBlock.create();
-      for (const f of fields) {
-        block.appendRun(f);
-      }
-      return block;
-    }
-
-    it("returns the property's KoQ + persistence unit for a quantity field", () => {
-      const block = makeBlock(makeField({ propertyName: "lengthProp" }));
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(1);
-      expect(reqs[0].name).to.equal("Fields.LENGTH");
-      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
-    });
-
-    it("uses kindOfQuantity and persistenceUnit overrides when supplied", () => {
-      const block = makeBlock(makeField(
-        { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
-        { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
-      ));
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(1);
-      expect(reqs[0].name).to.equal("AecUnits.LENGTH");
-      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
-    });
-
-    it("prefers kindOfQuantity override but also emits the property KoQ as a fallback pre-warm", () => {
-      // Fields with a kindOfQuantity override should emit both the effective pair (override
-      // KoQ + property persistence unit) and the property-side pair. That way apps pre-warming
-      // via this API cover the formatter's runtime fallback if the override name isn't in the
-      // active FormatSet.
-      const block = makeBlock(makeField(
-        { propertyName: "lengthProp" },
-        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
-      ));
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(2);
-      const sorted = [...reqs].sort((a, b) => a.name.localeCompare(b.name));
-      expect(sorted[0]).to.deep.equal({ name: "AecUnits.LENGTH", persistenceUnitName: "Units.M" });
-      expect(sorted[1]).to.deep.equal({ name: "Fields.LENGTH", persistenceUnitName: "Units.M" });
-    });
-
-    it("skips non-quantity fields", () => {
-      const block = makeBlock(
-        makeField({ propertyName: "intProp" }),
-        makeField({ propertyName: "strings", accessors: [0] }),
-        makeField({ propertyName: "datetime" }),
-      );
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(0);
-    });
-
-    it("skips quantity/coordinate fields whose property has no KoQ and no override", () => {
-      const block = makeBlock(
-        // point3d property has no KoQ.
-        makeField({ propertyName: "point" }),
-        // struct-array leaf double has no KoQ.
-        makeField({ propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] }),
-      );
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(0);
-    });
-
-    it("deduplicates identical requirements", () => {
-      const block = makeBlock(
-        makeField({ propertyName: "lengthProp" }),
-        makeField({ propertyName: "lengthProp" }),
-        makeField({ propertyName: "lengthProp" }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
-        makeField({ propertyName: "lengthProp" }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
-      );
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(2);
-      expect(reqs.map((r) => r.name).sort()).to.deep.equal(["AecUnits.LENGTH", "Fields.LENGTH"]);
-    });
-
-    it("returns nothing for a block with no fields", () => {
-      const block = makeBlock();
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(0);
-    });
-
-    it("skips a JSON-in-string field whose quantity key is incomplete", () => {
-      // A JSON leaf has no property-side pair, so a half-specified key yields no requirement —
-      // matching the runtime, which falls through to the raw representation.
-      const block = makeBlock(
-        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }),
-        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
-        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }, { quantity: { persistenceUnit: "Units.M" } }),
-      );
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(0);
-    });
-
-    it("emits the field-supplied pair for a JSON-in-string field with both overrides", () => {
-      // The evaluation path types this leaf "quantity", so pre-warm has to cover it or the
-      // synchronous txn callback would persist a raw value.
-      const block = makeBlock(makeField(
-        { propertyName: "JsonProperties", accessors: ["lengthMeters"] },
-        { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
-      ));
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.deep.equal([{ name: "AecUnits.LENGTH", persistenceUnitName: "Units.M" }]);
+      expect(missed, "an unformattable JSON leaf is not an unresolved requirement").to.be.false;
     });
   });
 
@@ -931,13 +814,11 @@ describe("Field evaluation", () => {
     // FieldFormat.test.ts.
     const PRIMARY_FORMAT_SET = "0x111";
 
-    // Registers a provider for `imodel` with the given per-field FormatSets, pre-warmed for the
-    // single (Fields.LENGTH, Units.M) requirement the length-field tests use.
-    async function registerSets(formatSets: ReadonlyArray<{ id: string, formats: Record<string, FormatDefinition> }>): Promise<FieldFormattingSpecProvider> {
+    // Registers a provider for `imodel` with the given per-field FormatSets.
+    function registerSets(formatSets: ReadonlyArray<{ id: string, formats: Record<string, FormatDefinition> }>): FieldFormattingSpecProvider {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
         formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet("TestSet", formats) })),
-        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
       });
     }
 
@@ -963,7 +844,7 @@ describe("Field evaluation", () => {
     });
 
     it("routes evaluateFields quantity formatting through a registered provider", async () => {
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
@@ -1085,14 +966,14 @@ describe("Field evaluation", () => {
     });
 
     it("registers and unregisters the provider for an iModel", async () => {
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
       expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
 
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
       expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
     });
 
-    it("records a miss when a field's requirement was never pre-warmed, then formats after warmUp", async () => {
+    it("resolves a requirement on first evaluation and records a miss only for one it cannot", () => {
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -1100,61 +981,30 @@ describe("Field evaluation", () => {
         cachedContent: "old",
       });
       block.appendRun(field);
+      const unresolvable = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { persistenceUnit: "Units.NOT_A_UNIT" } },
+        cachedContent: "old",
+      });
+      block.appendRun(unresolvable);
 
-      // requirements: [] skips the sweep, so nothing is pre-warmed.
-      const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+      const provider = ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
         formatSet: toFormatSet("TestSet", { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
-        requirements: [],
       });
 
-      let updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-      expect(updated).to.equal(1);
-      // No spec pre-warmed -> raw fallback, and a miss recorded.
-      expect(field.cachedContent).to.equal("2.5");
-      const misses = Array.from(provider.misses);
-      expect(misses.some((m) => m.name === "Fields.LENGTH" && m.persistenceUnitName === "Units.M")).to.be.true;
-
-      // Warm the missing requirement and re-evaluate; it now formats.
-      await provider.warmUp([{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }]);
-      updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-      expect(updated).to.equal(1);
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+      expect(updated).to.equal(2);
       expect(field.cachedContent).to.equal("2500 mm");
-    });
+      expect(unresolvable.cachedContent).to.equal("2.5");
 
-    it("getFieldFormattingRequirements returns the property's (KindOfQuantity, persistence unit) pair for one field", () => {
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-      });
+      const misses = provider.misses;
+      expect(misses).to.have.length(1);
+      expect(misses[0]).to.deep.equal({ name: "Fields.LENGTH", persistenceUnitName: "Units.NOT_A_UNIT", formatSet: undefined });
 
-      const reqs = ElementDrivesTextAnnotation.getFieldFormattingRequirements(field, imodel);
-
-      expect(reqs).to.deep.equal([{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }]);
-    });
-
-    it("collectSchemaFormattingRequirements enumerates schema-declared pairs but not field-supplied ones", () => {
-      const schemaReqs = FieldFormattingSpecProvider.collectSchemaFormattingRequirements(imodel);
-      const has = (name: string, unit: string) => schemaReqs.some((r) => r.name === name && r.persistenceUnitName === unit);
-
-      // The floor: lengthProp declares Fields.LENGTH, persisted in Units.M, so a schema-driven
-      // warm-up finds it without anyone naming an annotation.
-      expect(has("Fields.LENGTH", "Units.M")).to.be.true;
-
-      // The ceiling: a field may override the persistence unit to one no property declares.
-      // Nothing in the schema records that, so the schema sweep cannot see it — this is the
-      // documented gap that makes supplementing with field-derived requirements mandatory.
-      const overriding = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { persistenceUnit: "Units.FT" } },
-        cachedContent: "old",
-      });
-      const fieldReqs = ElementDrivesTextAnnotation.getFieldFormattingRequirements(overriding, imodel);
-
-      expect(fieldReqs.some((r) => r.name === "Fields.LENGTH" && r.persistenceUnitName === "Units.FT")).to.be.true;
-      expect(has("Fields.LENGTH", "Units.FT")).to.be.false;
+      provider.clearMisses();
+      expect(provider.misses).to.be.empty;
     });
 
     function readFieldCachedContent(block: TextBlock): string | undefined {
@@ -1191,7 +1041,7 @@ describe("Field evaluation", () => {
     }
 
     it("routes txn-driven field updates through the registered provider", async () => {
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const annotationElementId = insertAnnotationWithLengthField(sourceElementId);
 
@@ -1211,7 +1061,7 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
 
       // 2. Registering is not retroactive; persisted content is untouched.
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
 
       // 3. The next source edit fires the txn callback, which routes through the provider.
@@ -1248,7 +1098,7 @@ describe("Field evaluation", () => {
       const persistedBefore = readFieldCachedContentById(annotationElementId);
       expect(persistedBefore).to.equal("2.5");
 
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
       const annotation = reloaded.getAnnotation()!;

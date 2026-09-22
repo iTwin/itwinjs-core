@@ -18,7 +18,6 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
-import { BeUnorderedUiEvent } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseConnectionProps } from '@itwin/core-common';
@@ -3005,16 +3004,14 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
-    static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static getFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider | undefined;
-    static getFieldFormattingRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[];
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
-    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
+    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): FieldFormattingSpecProvider;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static unregisterFieldFormattingProvider(iModel: IModelDb): void;
     // @deprecated
@@ -3567,19 +3564,16 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 
 // @beta
 export class FieldFormattingSpecProvider {
+    constructor(args: FieldFormattingSpecProviderArgs);
     clearMisses(): void;
-    static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
-    static create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
     // @internal
     getProviderFor(formatSet: string | undefined): FieldSpecProvider;
     get misses(): UnresolvedFieldFormat[];
-    readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
     recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void;
     readonly unitSystem: UnitSystemKey;
-    warmUp(requirements: FormattingSpecArgs[]): Promise<void>;
 }
 
 // @beta
@@ -3590,7 +3584,6 @@ export interface FieldFormattingSpecProviderArgs {
         formatSet: FormatSet;
     }>;
     iModel: IModelDb;
-    requirements: FormattingSpecArgs[];
     unitSystem?: UnitSystemKey;
 }
 
