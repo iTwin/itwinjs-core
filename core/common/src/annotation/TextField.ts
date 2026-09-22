@@ -14,30 +14,33 @@ import { Id64String } from "@itwin/core-bentley";
  * The following types are currently recognized:
  *  - "quantity": an often-unitized scalar value like a distance or area, formatted using a quantity [Format]($core-quantity).
  *  - "coordinate": a 2- or 3-dimensional point, with each component formatted as a "quantity".
- *  - "boolean": a true or false value.
+ *  - "boolean": a true or false value; currently converted via `toString()` (localized formatting not yet implemented).
  *  - "datetime": an ECMAScript [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date).
- *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
- *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
+ *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
+ *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
- * @note Currently, only formatting of "string" and "datetime" types is implemented. Other types are converted to and formatted as "string".
+ * @note `"quantity"` and `"coordinate"` values format through the quantity pipeline when a
+ * [Format]($core-quantity) resolves for the field, from the FormatSets configured via
+ * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend) or from the iModel's schemas.
+ * Otherwise they render as `value.toString()` — a bare number, or `(x, y[, z])` for a coordinate.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
-   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
-   * a primitive property.
-   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
-   * Some examples:
-   * ```
-   * | Access String | propertyName | accessors |
-   * | ------------- | ------------ | --------- |
-   * | name          | "name"       | undefined |
-   * | spouse.name   | "spouse"     | [name]    |
-   * | colors[2]     | "colors"     | [2]       |
-   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
-   * ```
+ * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
+ * a primitive property.
+ * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
+ * Some examples:
+ * ```
+ * | Access String | propertyName | accessors |
+ * | ------------- | ------------ | --------- |
+ * | name          | "name"       | undefined |
+ * | spouse.name   | "spouse"     | [name]    |
+ * | colors[2]     | "colors"     | [2]       |
+ * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
+ * ```
  * @beta
  */
 export interface FieldPropertyPath {
@@ -64,7 +67,7 @@ export interface FieldPropertyHost {
   className: string;
 }
 
-/** As part of [[FieldFormatOptions]], specifies how to modify the case of the display string.
+/** As part of a [[FieldFormatOptions]], specifies how to modify the case of the display string.
  * "as-is" leaves it unmodified. "upper" and "lower" convert it to all upper-case or all lower-case, respectively.
  * @beta
  */
@@ -82,6 +85,42 @@ export interface DateTimeFieldFormatOptions {
   formatOptions?: Intl.DateTimeFormatOptions;
 }
 
+/** As part of a [[FieldFormatOptions]], specifies how to format [[FieldPropertyType]]
+ * `"quantity"` or `"coordinate"` values.
+ *
+ * [[kindOfQuantity]] and [[persistenceUnit]] are independent overrides: setting one falls
+ * through to the property for the other. A field that resolves no format renders its raw value.
+ *
+ * These property names are also the persisted form — a [[FieldRun]] serializes them verbatim
+ * into its element's `TextAnnotationData` — so applications can query for annotations carrying
+ * quantity overrides by the literal strings `"kindOfQuantity"` and `"persistenceUnit"`.
+ * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
+ * for the full resolution order.
+ * @beta
+ */
+export interface QuantityFieldFormatOptions {
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) a
+   * magnitude is expressed in, overriding the property's persistence unit.
+   *
+   * Because this states what the value *means* rather than how it looks, it does not fall back
+   * to the property's own unit when the two disagree — the field renders raw instead.
+   */
+  persistenceUnit?: string;
+  /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to format
+   * through, overriding the property's own.
+   */
+  kindOfQuantity?: string;
+  /** Identifier of a FormatSet whose formats take precedence for this field, letting one iModel
+   * mix presentations such as metric and imperial callouts.
+   *
+   * Application-chosen, and matched against the ids supplied to
+   * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend); iTwin.js does not
+   * resolve it against anything persisted in the iModel. A field naming an id that was never
+   * supplied falls through to the iModel's schema presentation format.
+   */
+  formatSet?: string;
+}
+
 /** Customizes how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
  * The exact options used depend upon the [[FieldPropertyType]].
  * @beta
@@ -95,4 +134,6 @@ export interface FieldFormatOptions {
   case?: FieldCase;
   /** Formatting options for [[FieldPropertyType]] "datetime". */
   dateTime?: DateTimeFieldFormatOptions;
+  /** Formatting options for [[FieldPropertyType]] `"quantity"` and `"coordinate"`. */
+  quantity?: QuantityFieldFormatOptions;
 }

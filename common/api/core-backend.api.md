@@ -114,6 +114,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatSet } from '@itwin/ecschema-metadata';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -302,6 +303,7 @@ import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -3004,9 +3006,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    static readonly onFieldFormattingChanged: BeEvent<(args: {
+        iModel: IModelDb;
+    }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
+    static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
+    static unregisterFieldFormatting(iModel: IModelDb): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
@@ -3553,6 +3560,17 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export interface FieldFormattingArgs {
+    formatSet?: FormatSet;
+    formatSets?: ReadonlyArray<{
+        id: string;
+        formatSet: FormatSet;
+    }>;
+    iModel: IModelDb;
+    unitSystem?: UnitSystemKey;
 }
 
 // @public @deprecated
