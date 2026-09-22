@@ -15,8 +15,8 @@ An application adopts a [FormatSet]($ecschema-metadata) for an iModel, then eval
 Three things have to line up:
 
 - **A FormatSet** naming the KindOfQuantity to present and the units to present it in.
-- **A registration**, which pre-warms a [FormatterSpec]($quantity) for every requirement it is given. This is the only asynchronous step.
-- **An evaluation**, which formats the fields in a block using the warmed specs.
+- **A registration**, which adopts the FormatSet for the iModel. It is synchronous and does no work up front.
+- **An evaluation**, which formats the fields in a block. Each [FormatterSpec]($quantity) is built the first time a field asks for it and reused for every field that asks afterwards.
 
 ## Evaluating fields
 
@@ -26,7 +26,7 @@ Three things have to line up:
 
 It mutates the in-memory `TextBlock`; **it does not persist**. Callers that want the formatted output to survive the session must assign the updated block back to the owning element (for example via [TextAnnotation2d.setAnnotation]($backend) / [TextAnnotation3d.setAnnotation]($backend)) and call `element.update()` inside a transaction.
 
-The same evaluation runs automatically from the `TxnManager` field-update callbacks when a source element changes. Those callbacks are synchronous, which is why evaluation is too — and why every asynchronous step (resolving formats, loading units, building specs) happens up front, at registration.
+The same evaluation runs automatically from the `TxnManager` field-update callbacks when a source element changes. Those callbacks are synchronous, which is why evaluation is too. Resolving a format, looking up its units and building the spec are all synchronous on the backend — the iModel's [SchemaContext]($ecschema-metadata) loads schemas synchronously, and the bundled BIS units need no loading at all — so nothing has to be prepared ahead of time.
 
 ## Overrides and format resolution
 
@@ -47,41 +47,27 @@ Skipping the property-side pair when the units disagree is deliberate. `kindOfQu
 
 The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
 
-## Managing warm-up
+## Registering a provider
 
 Register the FormatSet your application has adopted for an iModel **when the iModel opens**:
 
 [[include:TextAnnotationFields.AdoptFormatSet]]
 
-Registering at open matters because field evaluation fires from `TxnManager` callbacks on any source-element edit. An edit that lands before registration completes formats without the provider and persists a raw string, and — since registering does not walk existing annotations — that field is not revisited until the next edit to the same source.
+Registering at open matters because field evaluation fires from `TxnManager` callbacks on any source-element edit. An edit that lands before registration formats without the provider and persists a raw string, and — since registering does not walk existing annotations — that field is not revisited until the next edit to the same source.
 
-### Deciding what to warm
+Core performs **no discovery of its own**: it never walks the iModel looking for annotations, and it does not need to. The first evaluation of a given (KindOfQuantity, persistence unit) pair builds and caches its spec, so the cost of formatting is proportional to the number of *distinct* pairs the fields actually use, not to the size of the iModel.
 
-`requirements` is mandatory, and Core performs **no discovery of its own** — it never walks the iModel looking for annotations to warm. That decision belongs to the application, which already owns the FormatSets and knows which drawing, sheet or view is in scope in a way Core cannot.
+### Units
 
-Three sources compose:
+Unit lookup uses the units bundled with `@itwin/core-quantity` — the `Units` schema that BIS-based iModels share. A persistence unit or format unit defined only by a custom schema in the iModel is not recognized; a field depending on one renders raw and is recorded as a miss (below).
 
-| Source | Answers | Cost |
-| --- | --- | --- |
-| [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend) | every KindOfQuantity the iModel's schemas declare | two metadata queries; independent of model size |
-| [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) | one `TextBlock`, deduplicated | proportional to that block |
-| [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) | one `FieldRun` | negligible |
+### Diagnosing unformatted fields
 
-`collectSchemaFormattingRequirements` is a sensible floor because its cost is bounded by the schemas rather than by the data. It enumerates every KindOfQuantity the schemas declare — referenced by a property or not — each paired with its own persistence unit.
-
-What it cannot see are any `persistenceUnit`/`kindOfQuantity` pairs overridden by **fields** inside annotation elements. The schema has no knowledge of these. Any annotations that contain pairs not declared by the schema will fall back to their raw string representations. Applications that allow such overrides should gather requirements from the annotations themselves as well — see [Advanced](#advanced) below for a query that finds them.
-
-A block authored later in the session may need a spec the initial warm-up never saw. Warm it before writing the annotation:
-
-[[include:TextAnnotationFields.WarmBeforeWrite]]
-
-### Repairing a gap
-
-If a field needs a spec that was never warmed, it renders as `value.toString()` and the unresolved requirement is recorded on the provider. Applications can detect this, warm the missing requirements, and re-evaluate:
+If a field needs a spec the provider cannot build — its KindOfQuantity is defined by neither a registered FormatSet nor the iModel's schemas, or one of its units is not a bundled unit — it renders as `value.toString()` and the request is recorded on the provider. Applications can inspect and clear these:
 
 [[include:TextAnnotationFields.HandleMisses]]
 
-Because Core never discovers requirements on its own, [FieldFormattingSpecProvider.misses]($backend) is the check that a requirement set is complete — treat it as an expected part of an incremental workflow rather than an error report.
+A pair that failed once is remembered as failing, so the misses list does not grow on every re-evaluation of the same field. Treat [FieldFormattingSpecProvider.misses]($backend) as a diagnostic for FormatSets or annotations that are out of step with each other rather than as an error report.
 
 ## Multiple FormatSets and provider lifetime
 
@@ -103,7 +89,7 @@ Registering a provider does **not** reformat existing annotations; applications 
 
 Keep a provider registered for as long as the annotations depending on it are editable. Note that this is only a concern when *no* provider is registered: a registered provider whose FormatSet lacks an entry for a field's KindOfQuantity still falls back to that KoQ's presentation format from the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`.
 
-Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one after its pre-warm completes, so there is no window in which the iModel has no provider. Unregistering first would create one.
+Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one, so there is no window in which the iModel has no provider. Unregistering first would create one.
 
 ## Advanced
 
@@ -113,20 +99,5 @@ Changing the adopted FormatSet needs only a second `registerFieldFormattingProvi
 Core does not carry a built-in coordinate format: how coordinates are formatted is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity require the caller to declare **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` for an override to take effect — Core does not synthesize a persistence unit from the [BIS geometry meters convention](../../bis/guide/other-topics/units.md). Callers that want that convention should pass `Units.LENGTH.M` (from `@itwin/core-quantity`) explicitly.
 
 The same rule applies to a field that indexes into a string property holding serialized JSON (for example `JsonProperties`). A numeric leaf is treated as a `"quantity"`, but it has no EC property behind it and therefore no property-side pair to fall through to — so declare **both** `kindOfQuantity` and `persistenceUnit` to have it formatted. Declaring one or neither is harmless: the field renders its raw value, exactly as it would have without a quantity type. A JSON `null` resolves to no value at all, so the field displays its invalid-content indicator rather than a stringified null.
-
-</details>
-
-<details>
-<summary><strong>Finding annotations that override their property's units</strong></summary>
-
-Because field overrides are persisted under their public property names, a targeted query finds the annotations that need attention without loading every annotation:
-
-[[include:TextAnnotationFields.QueryOverridingAnnotations]]
-
-Note that `BisCore.ITextAnnotation` is a mixin and does **not** carry `TextAnnotationData`, so it cannot be filtered this way. Applications with their own `ITextAnnotation` implementations need a second pass over those classes, excluding the two built-ins already covered.
-
-For each matched element, walk its blocks and accumulate:
-
-[[include:TextAnnotationFields.CollectBlockRequirements]]
 
 </details>
