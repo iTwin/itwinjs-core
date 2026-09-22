@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
-import { BeDuration, BeEvent } from "@itwin/core-bentley";
-import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { BeDuration, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
+import { GeoCoordStatus, GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
 describe("GeoServices", () => {
+  afterEach(() => vi.restoreAllMocks());
+
   function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
     return new GeoServices({
       isIModelClosed: opts.isIModelClosed ?? (() => false),
@@ -153,6 +155,37 @@ describe("GeoServices", () => {
     expect(cv2).toBeDefined();
     expect(cv2).not.toEqual(cv);
   });
+
+  for (const direction of ["geoToIModel", "iModelToGeo"] as const) {
+    for (const message of ["Server error (-1): Server connection error", "Server error (401): Unknown server response code"]) {
+      it(`logs safe per-batch context and retains the original error for ${direction}: ${message}`, async () => {
+        const error = new Error(message);
+        const logError = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+        const requestPoints = vi.fn(async () => { throw error; });
+        const gs = makeGeoServices({
+          toIModelCoords: requestPoints,
+          fromIModelCoords: requestPoints,
+        });
+        // A CRS may include user-supplied text and transforms; none of it belongs in diagnostic metadata.
+        const cv = gs.getConverter({ horizontalCRS: { description: "private coordinate system" } })!;
+        const inputs = Array.from({ length: 301 }, (_, x) => ({ x, y: 1, z: 2 }));
+        inputs.push(inputs[0]);
+        const results = direction === "geoToIModel" ? await cv.convertToIModelCoords(inputs) : await cv.convertFromIModelCoords(inputs);
+
+        expect(results).toEqual(inputs.map((p) => ({ p, s: GeoCoordStatus.CSMapError })));
+        expect(requestPoints).toHaveBeenCalledTimes(2);
+        expect(logError).toHaveBeenCalledTimes(2);
+        for (const [index, [category, loggedError, metadata]] of logError.mock.calls.entries()) {
+          expect(category).toEqual("core-frontend.geoservices");
+          expect(loggedError).toBe(error);
+          expect(BentleyError.getMetaData(metadata)).toEqual({
+            direction,
+            pointCount: index === 0 ? 300 : 1,
+          });
+        }
+      });
+    }
+  }
 
   it("retains converter in cache if no requests are received", async () => {
     const gs = makeGeoServices();

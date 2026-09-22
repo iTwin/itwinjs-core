@@ -269,8 +269,8 @@ class FrameBuffers implements WebGLDisposable {
   public idsAndAltZComposite?: FrameBuffer;
   public edlDrawCol?: FrameBuffer;
 
-  public init(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined): boolean {
-    if (!this.initPotentialMSFbos(textures, depth, depthMS))
+  public init(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined, boundColor: TextureHandle): boolean {
+    if (!this.initPotentialMSFbos(textures, depth, depthMS, boundColor))
       return false;
 
     this.depthAndOrder = FrameBuffer.create([expectDefined(textures.depthAndOrder)], depth);
@@ -282,7 +282,7 @@ class FrameBuffers implements WebGLDisposable {
 
     assert(undefined === this.opaqueAll);
 
-    if (!this.initPotentialMSMRTFbos(textures, depth, depthMS))
+    if (!this.initPotentialMSMRTFbos(textures, depth, depthMS, boundColor))
       return false;
 
     assert(undefined !== textures.accumulation && undefined !== textures.revealage);
@@ -303,9 +303,8 @@ class FrameBuffers implements WebGLDisposable {
       && undefined !== this.pingPong;
   }
 
-  private initPotentialMSFbos(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined): boolean {
-    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
-    assert(undefined !== boundColor && undefined !== textures.color);
+  private initPotentialMSFbos(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined, boundColor: TextureHandle): boolean {
+    assert(undefined !== textures.color);
     if (undefined === depthMS) {
       this.opaqueColor = FrameBuffer.create([boundColor], depth);
       this.opaqueAndCompositeColor = FrameBuffer.create([textures.color], depth);
@@ -318,10 +317,8 @@ class FrameBuffers implements WebGLDisposable {
       && undefined !== this.opaqueAndCompositeColor;
   }
 
-  private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
-    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
+  private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined, boundColor: TextureHandle): boolean {
     assert(
-      undefined !== boundColor &&
       undefined !== textures.color &&
       undefined !== textures.featureId &&
       undefined !== textures.depthAndOrder &&
@@ -449,26 +446,26 @@ class FrameBuffers implements WebGLDisposable {
     }
   }
 
-  public enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer): boolean {
+  public enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer, boundColor: TextureHandle): boolean {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
-    let rVal = this.initPotentialMSFbos(textures, depth, depthMS);
+    let rVal = this.initPotentialMSFbos(textures, depth, depthMS, boundColor);
 
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
-    rVal = this.initPotentialMSMRTFbos(textures, depth, depthMS);
+    rVal = this.initPotentialMSMRTFbos(textures, depth, depthMS, boundColor);
     return rVal;
   }
 
-  public disableMultiSampling(textures: Textures, depth: DepthBuffer): boolean {
+  public disableMultiSampling(textures: Textures, depth: DepthBuffer, boundColor: TextureHandle): boolean {
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
-    if (!this.initPotentialMSMRTFbos(textures, depth, undefined))
+    if (!this.initPotentialMSMRTFbos(textures, depth, undefined, boundColor))
       return false;
 
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
-    return this.initPotentialMSFbos(textures, depth, undefined);
+    return this.initPotentialMSFbos(textures, depth, undefined, boundColor);
   }
 
   public get isDisposed(): boolean {
@@ -1695,7 +1692,7 @@ class Compositor extends SceneCompositor {
       this._depthMS = undefined;
     if (this._depth !== undefined) {
       return this._textures.init(this._width, this._height, this._antialiasSamples)
-        && this._fbos.init(this._textures, this._depth, this._depthMS)
+        && this._fbos.init(this._textures, this._depth, this._depthMS, expectDefined(this.target.outputColorTexture))
         && this._geom.init(this._textures)
         && this.eyeDomeLighting.init(this._width, this._height, this._depth);
     }
@@ -1713,12 +1710,12 @@ class Compositor extends SceneCompositor {
       return false;
 
     assert(undefined !== this._depth && undefined !== this._depthMS);
-    return this._fbos.enableMultiSampling(this._textures, this._depth, this._depthMS);
+    return this._fbos.enableMultiSampling(this._textures, this._depth, this._depthMS, expectDefined(this.target.outputColorTexture));
   }
 
   protected disableMultiSampling(): boolean {
     assert(undefined !== this._depth);
-    if (!this._fbos.disableMultiSampling(this._textures, this._depth))
+    if (!this._fbos.disableMultiSampling(this._textures, this._depth, expectDefined(this.target.outputColorTexture)))
       return false;
 
     // Want to disable multisampling without deleting & reallocating other stuff.
