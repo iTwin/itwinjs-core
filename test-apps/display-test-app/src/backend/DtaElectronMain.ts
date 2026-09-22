@@ -13,7 +13,7 @@ import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, insertText, insertTextStyle, registerFieldFormattingProviderForIModel, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { deleteText, deleteTextStyle, insertText, insertTextStyle, registerFieldFormattingForIModel, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 import { FormatSet } from "@itwin/ecschema-metadata";
 
 const mainWindowName = "mainWindow";
@@ -74,8 +74,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return setScaleFactor(iModelKey, modelId, scaleFactor);
   }
 
-  public async registerFieldFormattingProvider(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void> {
-    return registerFieldFormattingProviderForIModel(iModelKey, defaultSet, sets);
+  public async registerFieldFormatting(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void> {
+    return registerFieldFormattingForIModel(iModelKey, defaultSet, sets);
   }
 
   public async readTextFile(filePath: string): Promise<string> {

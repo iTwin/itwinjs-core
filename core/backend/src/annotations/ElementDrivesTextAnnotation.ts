@@ -8,32 +8,60 @@
 
 import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { ECVersion } from "@itwin/ecschema-metadata";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { ECVersion, FormatSet } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { createFieldFormatting, FieldFormatting } from "../internal/annotations/fieldSpecs";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
-import { FieldFormattingSpecProvider, FieldFormattingSpecProviderArgs } from "./FieldFormattingSpecProvider";
 
-/** The [[FieldFormattingSpecProvider]] serving each open [[IModelDb]], and whether an application
- * installed it via [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]] or it is the
- * schema-only default created the first time one of the iModel's fields was evaluated. Weakly
- * keyed so a closed iModel takes its provider with it.
+/** Configures how `"quantity"` and `"coordinate"` [FieldRun]($common)s in an iModel are
+ * formatted. Passed to [[ElementDrivesTextAnnotation.registerFieldFormatting]].
+ * @beta
  */
-const fieldFormattingProviders = new WeakMap<IModelDb, { provider: FieldFormattingSpecProvider, registered: boolean }>();
+export interface FieldFormattingArgs {
+  /** The iModel whose annotations this configuration formats. Its `schemaContext` supplies the
+   * KindOfQuantity presentation formats that every FormatSet falls back to.
+   */
+  iModel: IModelDb;
+  /** The FormatSet adopted for this iModel. It applies to every [FieldRun]($common) that does
+   * not name a different one via [QuantityFieldFormatOptions.formatSet]($common), and takes
+   * precedence over the schema's own presentation formats.
+   */
+  formatSet?: FormatSet;
+  /** Additional FormatSets addressable per-field, each paired with the id that
+   * [FieldRun]($common)s reference via [QuantityFieldFormatOptions.formatSet]($common).
+   * The id must be unique; if two entries share an id the last one wins. A field naming an id
+   * absent from this list falls back to [[formatSet]].
+   */
+  formatSets?: ReadonlyArray<{ id: string, formatSet: FormatSet }>;
+  /** Unit system used to pick a KindOfQuantity's presentation format when the schema offers
+   * several. Defaults to [[formatSet]]'s own `unitSystem`, or `"metric"` when no FormatSet is
+   * adopted.
+   */
+  unitSystem?: UnitSystemKey;
+}
 
-/** Returns the provider for `iModel`, creating the schema-only default on first use. */
-function getOrCreateFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider {
-  let entry = fieldFormattingProviders.get(iModel);
+/** The formats serving each open [[IModelDb]], and whether an application configured them via
+ * [[ElementDrivesTextAnnotation.registerFieldFormatting]] or they are the schema-only default
+ * created the first time one of the iModel's fields was evaluated. Weakly keyed so a closed
+ * iModel takes its entry with it.
+ */
+const fieldFormattings = new WeakMap<IModelDb, { formatting: FieldFormatting, registered: boolean }>();
+
+/** Returns the formats for `iModel`, creating the schema-only default on first use. */
+function getOrCreateFieldFormatting(iModel: IModelDb): FieldFormatting {
+  let entry = fieldFormattings.get(iModel);
   if (!entry) {
-    entry = { provider: new FieldFormattingSpecProvider({ iModel }), registered: false };
-    fieldFormattingProviders.set(iModel, entry);
+    entry = { formatting: createFieldFormatting({ iModel }), registered: false };
+    fieldFormattings.set(iModel, entry);
   }
 
-  return entry.provider;
+  return entry.formatting;
 }
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
@@ -129,7 +157,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, txn, getOrCreateFieldFormattingProvider(iModel));
+      updateAllFields(annotationElementId, txn, getOrCreateFieldFormatting(iModel));
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -167,12 +195,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChangedArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, false, getOrCreateFieldFormattingProvider(arg.indirectEditTxn.iModel));
+    updateElementFields(arg.props, arg.indirectEditTxn, false, getOrCreateFieldFormatting(arg.indirectEditTxn.iModel));
   }
 
   /** @internal */
   public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, true, getOrCreateFieldFormattingProvider(arg.indirectEditTxn.iModel));
+    updateElementFields(arg.props, arg.indirectEditTxn, true, getOrCreateFieldFormatting(arg.indirectEditTxn.iModel));
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
@@ -204,20 +232,18 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
    *
-   * `"quantity"` and `"coordinate"` fields are formatted through the
-   * [[FieldFormattingSpecProvider]] for `args.iModel` -- the one installed by
-   * [[registerFieldFormattingProvider]], or otherwise a default that presents each
-   * KindOfQuantity using the format its schema declares.
+   * `"quantity"` and `"coordinate"` fields are formatted through the FormatSets configured for
+   * `args.iModel` by [[registerFieldFormatting]], or otherwise through the format each
+   * KindOfQuantity's schema declares.
    *
-   * A field whose format cannot be resolved falls back to `value.toString()` and is recorded in
-   * [FieldFormattingSpecProvider.misses]($backend). A field whose property cannot be resolved,
-   * or whose format throws, is logged and rendered as
+   * A field whose format cannot be resolved falls back to `value.toString()` and is logged. A
+   * field whose property cannot be resolved, or whose format throws, is logged and rendered as
    * [FieldRun.invalidContentIndicator]($common); one bad field does not abandon the rest of the
    * block.
    * @returns the number of fields whose display strings were modified.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getOrCreateFieldFormattingProvider(args.iModel)));
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getOrCreateFieldFormatting(args.iModel)));
   }
 
   /** Configures how `"quantity"` and `"coordinate"` [FieldRun]($common)s in `args.iModel` are
@@ -226,14 +252,23 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * Calling this is optional. An iModel with no registration formats every field using the
    * presentation format its schema declares for the KindOfQuantity, in the metric unit system.
    * Register to layer application [FormatSet]($ecschema-metadata)s over those schema defaults,
-   * or to select a different unit system.
+   * or to select a different unit system. Formats resolve in this order:
    *
-   * One provider serves all of an iModel's FormatSets: pass the iModel-wide default as
-   * `formatSet` and any per-field alternatives as `formatSets`, keyed by the id that
-   * [FieldRun]($common)s name via [QuantityFieldFormatOptions.formatSet]($common):
+   *  1. The FormatSet named by the field's [QuantityFieldFormatOptions.formatSet]($common).
+   *  2. The FormatSet adopted for the iModel ([[FieldFormattingArgs.formatSet]]).
+   *  3. The KindOfQuantity's presentation format for [[FieldFormattingArgs.unitSystem]].
+   *  4. `value.toString()`, with the unresolved requirement logged.
+   *
+   * Units resolve through the bundled BIS [BasicUnitsProvider]($core-quantity) only. A field
+   * whose persistence unit, or whose format's units, are defined solely by the iModel's own
+   * schemas falls to step 4.
+   *
+   * Pass the iModel-wide default as `formatSet` and any per-field alternatives as `formatSets`,
+   * keyed by the id that [FieldRun]($common)s name via
+   * [QuantityFieldFormatOptions.formatSet]($common):
    *
    * ```ts
-   * ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+   * ElementDrivesTextAnnotation.registerFieldFormatting({
    *   iModel,
    *   formatSet: metricFormatSet,
    *   formatSets: [{ id: imperialFormatSetId, formatSet: imperial }],
@@ -241,51 +276,39 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * ```
    *
    * Each call replaces any prior registration for the same iModel. Registering does not
-   * re-evaluate existing annotations; listen to [[onFieldFormattingProviderChanged]] to do so.
-   * The registration lives as long as the `IModelDb` object and is released with it.
-   * @returns the registered provider.
+   * re-evaluate existing annotations; listen to [[onFieldFormattingChanged]] to do so. The
+   * registration lives as long as the `IModelDb` object and is released with it.
+   * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
    * @beta
    */
-  public static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): FieldFormattingSpecProvider {
-    const provider = new FieldFormattingSpecProvider(args);
-    fieldFormattingProviders.set(args.iModel, { provider, registered: true });
-    this.onFieldFormattingProviderChanged.raiseEvent({ iModel: args.iModel, provider });
-    return provider;
+  public static registerFieldFormatting(args: FieldFormattingArgs): void {
+    fieldFormattings.set(args.iModel, { formatting: createFieldFormatting(args), registered: true });
+    this.onFieldFormattingChanged.raiseEvent({ iModel: args.iModel });
   }
 
-  /** Raised after [[registerFieldFormattingProvider]] installs a provider for an iModel, or
-   * [[unregisterFieldFormattingProvider]] reverts one to the schema default. Because every
+  /** Raised after [[registerFieldFormatting]] configures an iModel's formats, or
+   * [[unregisterFieldFormatting]] reverts them to the schema default. Because every
    * [FormatterSpec]($core-quantity) is built on demand, this is the only moment at which the
    * formatting an iModel's fields receive can change; applications that cache formatted output,
    * or that want to re-evaluate existing annotations against a newly adopted FormatSet, should
    * listen here.
    * @beta
    */
-  public static readonly onFieldFormattingProviderChanged = new BeEvent<(args: { iModel: IModelDb, provider: FieldFormattingSpecProvider }) => void>();
+  public static readonly onFieldFormattingChanged = new BeEvent<(args: { iModel: IModelDb }) => void>();
 
-  /** Discards the registration created by [[registerFieldFormattingProvider]] for `iModel`, if
-   * any, so that its fields once again format through the schema-declared defaults. Does
-   * nothing when no registration exists.
+  /** Discards the registration created by [[registerFieldFormatting]] for `iModel`, if any, so
+   * that its fields once again format through the schema-declared defaults. Does nothing when
+   * no registration exists.
    *
    * Existing [FieldRun.cachedContent]($common) is unchanged until the next evaluation. To swap
-   * FormatSets, call [[registerFieldFormattingProvider]] again rather than unregistering in
-   * between.
+   * FormatSets, call [[registerFieldFormatting]] again rather than unregistering in between.
    * @beta
    */
-  public static unregisterFieldFormattingProvider(iModel: IModelDb): void {
-    if (fieldFormattingProviders.get(iModel)?.registered) {
-      fieldFormattingProviders.delete(iModel);
-      this.onFieldFormattingProviderChanged.raiseEvent({ iModel, provider: getOrCreateFieldFormattingProvider(iModel) });
+  public static unregisterFieldFormatting(iModel: IModelDb): void {
+    if (fieldFormattings.get(iModel)?.registered) {
+      fieldFormattings.delete(iModel);
+      this.onFieldFormattingChanged.raiseEvent({ iModel });
     }
-  }
-
-  /** Returns the [[FieldFormattingSpecProvider]] serving `iModel`: the one installed by
-   * [[registerFieldFormattingProvider]], or otherwise the schema-only default, created on first
-   * request. Useful for inspecting [FieldFormattingSpecProvider.misses]($backend).
-   * @beta
-   */
-  public static getFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider {
-    return getOrCreateFieldFormattingProvider(iModel);
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element

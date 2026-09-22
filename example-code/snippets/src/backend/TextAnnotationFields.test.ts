@@ -80,7 +80,7 @@ describe("Text annotation field formatting", () => {
   });
 
   afterEach(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
+    ElementDrivesTextAnnotation.unregisterFieldFormatting(iModel);
   });
 
   it("formats a field through the schema default with no registration", async () => {
@@ -121,7 +121,7 @@ describe("Text annotation field formatting", () => {
 
     // Adopt it for the iModel. Registration is synchronous; each FormatterSpec is built the
     // first time a field asks for it and reused thereafter.
-    ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel, formatSet });
 
     // A field displaying the `length` property of a widget that is 2.5 meters long.
     const fieldRun = FieldRun.create({
@@ -168,10 +168,8 @@ describe("Text annotation field formatting", () => {
     const formatSet = millimeterFormatSet;
 
     // __PUBLISH_EXTRACT_START__ TextAnnotationFields.AdoptFormatSet
-    const provider = ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel, formatSet });
     // __PUBLISH_EXTRACT_END__
-
-    expect(provider).not.to.be.undefined;
 
     const { block, field } = blockWithLengthField();
 
@@ -203,7 +201,7 @@ describe("Text annotation field formatting", () => {
       },
     };
 
-    ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    ElementDrivesTextAnnotation.registerFieldFormatting({
       iModel,
       formatSet: millimeterFormatSet,                 // applies to every field that names no other
       formatSets: [{ id: imperialFormatSetId, formatSet: imperialFormatSet }],
@@ -229,37 +227,5 @@ describe("Text annotation field formatting", () => {
     const metric = blockWithLengthField();
     ElementDrivesTextAnnotation.evaluateFields({ iModel, block: metric.block });
     expect(metric.field.cachedContent).to.equal("2500 mm");
-  });
-
-  it("reports fields it could not format", async () => {
-    const provider = ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel,
-      formatSet: millimeterFormatSet,
-    });
-
-    // A field overriding both the KindOfQuantity and the persistence unit with values that
-    // neither the FormatSet nor the iModel's schemas define. Because the override contradicts
-    // the property's own unit, the property's KindOfQuantity is not consulted as a fallback.
-    const fieldRun = FieldRun.create({
-      propertyHost: { elementId, schemaName: "Snippets", className: "Widget" },
-      propertyPath: { propertyName: "length" },
-      formatOptions: { quantity: { kindOfQuantity: "Snippets.NOT_A_KOQ", persistenceUnit: "Units.KG" } },
-    });
-    const block = TextBlock.create();
-    block.appendRun(fieldRun);
-
-    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.HandleMisses
-    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
-
-    // Any field whose FormatterSpec could not be built rendered its raw value; the provider
-    // records what it asked for so the application can report or repair the gap.
-    for (const miss of provider.misses)
-      console.log(`No format for ${miss.name} in ${miss.persistenceUnitName} (FormatSet ${miss.formatSet ?? "default"})`); // eslint-disable-line no-console
-
-    provider.clearMisses();
-    // __PUBLISH_EXTRACT_END__
-
-    expect(fieldRun.cachedContent).to.equal("2.5");
-    expect(provider.misses).to.deep.equal([]);
   });
 });

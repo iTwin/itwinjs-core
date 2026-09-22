@@ -283,8 +283,7 @@ beta;class;ExternalSourceGroup
 beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
-beta;class;FieldFormattingSpecProvider
-beta;interface;FieldFormattingSpecProviderArgs
+beta;interface;FieldFormattingArgs
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
 internal;type;FindFontId
@@ -692,7 +691,6 @@ preview;class;TxnManager
 alpha;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
-beta;interface;UnresolvedFieldFormat
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 alpha;interface;UpgradeSchemasArgs
