@@ -23,6 +23,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
+import { prepareFieldFormattingFor } from "./FieldFormattingDemo";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -198,6 +199,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+
+    await prepareFieldFormattingFor(iModel, textBlock);
     ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
 
     let scaleFactor = 1;
