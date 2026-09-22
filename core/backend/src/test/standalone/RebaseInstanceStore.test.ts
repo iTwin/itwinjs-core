@@ -104,21 +104,6 @@ describe("RebaseInstanceStore", () => {
     chai.expect(all[0].instanceKey).to.equal("0x25-0x1");
   });
 
-  it("setTheirs/getTheirs round-trip a value, an absence, and an overwrite", () => {
-    using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);
-
-    chai.expect(store.getTheirs("0x30-0x1")).to.be.undefined;
-
-    store.setTheirs("0x30-0x1", { id: "0x30", classFullName: "BisCore:PhysicalElement", userLabel: "theirs" });
-    chai.expect(store.getTheirs("0x30-0x1")?.userLabel).to.equal("theirs");
-
-    store.setTheirs("0x31-0x1", undefined);
-    chai.expect(store.getTheirs("0x31-0x1")).to.be.undefined;
-
-    store.setTheirs("0x30-0x1", { id: "0x30", classFullName: "BisCore:PhysicalElement", userLabel: "updated" });
-    chai.expect(store.getTheirs("0x30-0x1")?.userLabel).to.equal("updated");
-  });
-
   it("openExisting can read a store created via createNew; openForReplay can write to the same file", () => {
     const dbPath = newStorePath();
     using createStore = RebaseInstanceStore.createNew(dbPath, iModel, schemaView);
@@ -130,8 +115,7 @@ describe("RebaseInstanceStore", () => {
     readOnlyStore[Symbol.dispose]();
 
     using replayStore = RebaseInstanceStore.openForReplay(dbPath);
-    replayStore.setTheirs("0x40-0x1", { id: "0x40", classFullName: "BisCore:PhysicalElement" });
-    chai.expect(replayStore.getTheirs("0x40-0x1")?.id).to.equal("0x40");
+    chai.expect(replayStore.get("0x40-0x1")?.new?.id).to.equal("0x40");
   });
 
   it("extracts identity values (federationGuid/code) and navigationRefs (parent) at capture time for Insert/Update/Delete", () => {

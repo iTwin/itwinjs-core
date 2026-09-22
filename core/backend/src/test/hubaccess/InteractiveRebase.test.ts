@@ -9,11 +9,11 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, ElementAspectProps, GeometricElement2dProps, IModel, QueryBinder, QueryRowFormat, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { Code, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
-import type { InteractiveRebase, RebaseConflict } from "../../InteractiveRebase";
+import type { RebaseConflict } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
-import { DbResult, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
 
@@ -1155,9 +1155,14 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    chai.expect(interactive.conflicts.length).to.equal(1);
+    // The aspect's real conflict gives its owning element a synthetic conflict too - not because the
+    // element's own properties conflict (they don't), but because InteractiveRebase always makes an
+    // embedding owner resolvable whenever one of its dependents conflicts - see
+    // [[InteractiveRebase.createImplicitOwnerConflicts]].
+    chai.expect(interactive.conflicts.length).to.equal(2);
 
-    const conflict = interactive.conflicts[0];
+    const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
+    chai.expect(conflict).to.not.be.undefined;
     chai.expect(conflict.conflictingProperties).to.include("aspectValue");
     chai.expect(conflict.original).to.not.be.undefined;
     chai.expect(conflict.ours).to.not.be.undefined;
@@ -1166,6 +1171,17 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.original!.aspectValue).to.equal("Initial");
     chai.expect(conflict.ours!.aspectValue).to.equal("User2");
     chai.expect(conflict.theirs!.aspectValue).to.equal("User1");
+
+    chai.expect(conflict.ownerConflict).to.not.be.undefined;
+    chai.expect(interactive.conflicts).to.include(conflict.ownerConflict);
+    chai.expect(conflict.ownerConflict?.id).to.equal(id);
+    chai.expect(conflict.ownerConflict?.brokenRelationships.length).to.equal(0);
+    chai.expect(conflict.ownerConflict?.conflictingProperties.length).to.equal(0);
+    chai.expect(conflict.ownerConflict?.differentProperties.length).to.equal(0);
+    chai.expect(conflict.ownerConflict?.ourModifiedProperties.length).to.equal(0);
+    chai.expect(conflict.ownerConflict?.theirModifiedProperties.length).to.equal(0);
+    chai.expect(conflict.ownerConflict?.dependentConflicts.length).to.equal(1);
+    chai.expect(conflict.ownerConflict?.dependentConflicts[0]).to.equal(conflict);
 
     let aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User2");
@@ -1247,9 +1263,12 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    chai.expect(interactive.conflicts.length).to.equal(1);
+    // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
+    // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
+    chai.expect(interactive.conflicts.length).to.equal(2);
 
-    const conflict = interactive.conflicts[0];
+    const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
+    chai.expect(conflict).to.not.be.undefined;
     chai.expect(conflict.original).to.not.be.undefined;
     chai.expect(conflict.theirs).to.be.undefined;
     chai.expect(conflict.ours).to.not.be.undefined;
@@ -1292,9 +1311,12 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    chai.expect(interactive.conflicts.length).to.equal(1);
+    // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
+    // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
+    chai.expect(interactive.conflicts.length).to.equal(2);
 
-    const conflict = interactive.conflicts[0];
+    const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
+    chai.expect(conflict).to.not.be.undefined;
     chai.expect(conflict.original).to.not.be.undefined;
     chai.expect(conflict.theirs).to.not.be.undefined;
     chai.expect(conflict.ours).to.be.undefined;
@@ -1345,9 +1367,32 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours).to.be.undefined;
     chai.expect(conflict.theirModifiedProperties).to.include("aspectValue");
 
-    conflict.acceptTheirs();
+    // Our own delete of the owning element applied cleanly (theirs never touched it), so it only has
+    // an implicit owner conflict (see [[InteractiveRebase.createImplicitOwnerConflicts]]) - resolve it
+    // first, since the aspect can't be restored without its owner.
+    const ownerConflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
+    chai.expect(ownerConflict).to.not.be.undefined;
+
+    // If we attempt to acceptTheirs on the aspect while its owner does not exist,
+    // an exception is thrown.
+    chai.expect(() => conflict.acceptTheirs()).to.throw("Resolve the ownerConflict first");
+
+    // acceptTheirs on the owner also implies acceptTheirs on the dependent.
+    ownerConflict?.acceptTheirs();
     const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
     chai.expect(element).to.not.be.undefined;
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+
+    // We can call acceptTheirs on the aspect's conflict now, but it won't do anything new.
+    conflict.acceptTheirs();
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+
+    // If we call acceptOurs on the aspect's conflict, the aspect will be deleted.
+    conflict.acceptOurs();
+    chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.be.empty;
+
+    // acceptTheirs will bring it back again.
+    conflict.acceptTheirs();
     chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
   });
 
@@ -1388,6 +1433,14 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirs).to.be.undefined;
     chai.expect(conflict.ours).to.not.be.undefined;
     chai.expect(conflict.ourModifiedProperties).to.include("aspectValue");
+
+    // Our own local aspect update also touched the (later upstream-deleted) element's own captured
+    // row, and that too applied cleanly - giving it an implicit owner conflict of its own (see
+    // [[InteractiveRebase.createImplicitOwnerConflicts]]). Resolve it first, since the aspect can't be
+    // restored without its owner.
+    const ownerConflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
+    chai.expect(ownerConflict).to.not.be.undefined;
+    ownerConflict?.acceptOurs();
 
     conflict.acceptOurs();
     const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
@@ -1609,10 +1662,13 @@ describe("InteractiveRebase", () => {
     chai.expect(aspectConflict?.ours).to.be.undefined;
 
     // `parent` and `grandparent` were never touched by upstream (only cascaded away by our own
-    // delete), so neither gets a conflict of its own - only the aspect (their update vs our
-    // cascade-delete) and the forced conflict on `otherId`.
-    chai.expect(interactive.conflicts.length).to.equal(2);
-    chai.expect(interactive.conflicts.some((c) => c.id === grandparent)).to.be.false;
+    // delete), so applying their own captured deletes was uncontested - but the aspect's real conflict
+    // still gives each of them an implicit owner conflict of their own, all the way up the embedding
+    // chain (see [[InteractiveRebase.createImplicitOwnerConflicts]]), alongside the forced conflict on
+    // `otherId`.
+    chai.expect(interactive.conflicts.length).to.equal(4);
+    chai.expect(interactive.conflicts.some((c) => c.id === grandparent)).to.be.true;
+    chai.expect(interactive.conflicts.some((c) => c.id === parent)).to.be.true;
     chai.expect(interactive.conflicts.some((c) => c.id === otherId)).to.be.true;
   });
 

@@ -47,7 +47,6 @@ export interface RebaseInstanceChange {
 }
 
 const tableName = "[InstanceChanges]";
-const theirsTableName = "[TheirsSnapshots]";
 
 /** One schema-declared UNIQUE constraint applicable to a class, as discovered by
  * [[RebaseInstanceStore.getIdentityGroups]] - not exported; [[RebaseInstanceMetadata.identityValues]] is
@@ -194,7 +193,6 @@ export class RebaseInstanceStore implements Disposable {
       [identityValues] TEXT,
       [navigationRefs] TEXT
     )`);
-    store._db.executeSQL(`CREATE TABLE ${theirsTableName} ([instanceKey] TEXT PRIMARY KEY, [theirs] TEXT)`);
     return store;
   }
 
@@ -205,10 +203,11 @@ export class RebaseInstanceStore implements Disposable {
     return store;
   }
 
-  /** Opens an existing store at `path` for reading *and* writing. Used by [[InteractiveRebase]], which -
-   * unlike the automatic "semantic rebase" replay via [[openExisting]] - persists each node's pre-replay
-   * "theirs" state (see [[setTheirs]]) so it doesn't have to be held in memory for the group's whole
-   * lifetime (conflict resolution needs it well after replay itself has finished).
+  /** Opens an existing store at `path` for reading *and* writing. Used by [[InteractiveRebase]] - unlike
+   * the automatic "semantic rebase" replay via [[openExisting]], it needs to load a node's captured
+   * `old`/`new` change on demand well after replay itself has finished (interactive conflict resolution
+   * can happen an arbitrary amount of time later), so the store is kept open for that whole lifetime
+   * rather than just for the initial replay.
    */
   public static openForReplay(path: string): RebaseInstanceStore {
     const store = new RebaseInstanceStore(true);
@@ -656,41 +655,6 @@ export class RebaseInstanceStore implements Disposable {
         navigationRefs: stmt.isValueNull(8) ? undefined : JSON.parse(stmt.getValueString(8)) as RebaseNavigationRef[],
       };
     }
-  }
-
-  /**
-   * Persists `props` (a raw native-read instance row, or undefined if the instance doesn't exist) as
-   * `instanceKey`'s pre-replay "theirs" snapshot - see [[getTheirs]]. Requires a store opened via
-   * [[openForReplay]].
-   */
-  public setTheirs(instanceKey: string, props: ECSqlRow | undefined): void {
-    this._db.withPreparedSqliteStatement(
-      `INSERT INTO ${theirsTableName} ([instanceKey], [theirs])
-       VALUES (?, ?)
-       ON CONFLICT ([instanceKey])
-       DO UPDATE SET [theirs] = [excluded].[theirs]`,
-      (stmt: SqliteStatement) => {
-        stmt.bindString(1, instanceKey);
-        stmt.maybeBindString(2, props ? JSON.stringify(props, Base64EncodedString.replacer) : undefined);
-        stmt.step();
-      },
-    );
-  }
-
-  /** Reads `instanceKey`'s pre-replay "theirs" snapshot captured by [[setTheirs]], or undefined if it
-   * doesn't exist (either it was never captured, or the instance didn't exist upstream - both cases are
-   * indistinguishable, matching the in-memory `Map` this replaced).
-   */
-  public getTheirs(instanceKey: string): ECSqlRow | undefined {
-    return this._db.withPreparedSqliteStatement(
-      `SELECT [theirs] FROM ${theirsTableName} WHERE [instanceKey]=?`,
-      (stmt: SqliteStatement) => {
-        stmt.bindString(1, instanceKey);
-        if (stmt.step() === DbResult.BE_SQLITE_ROW && !stmt.isValueNull(0))
-          return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as Record<string, any>;
-        return undefined;
-      },
-    );
   }
 
   /**
