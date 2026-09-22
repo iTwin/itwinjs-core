@@ -3009,6 +3009,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    static readonly onFieldFormattingProviderChanged: BeEvent<(args: {
+        iModel: IModelDb;
+        provider: FieldFormattingSpecProvider | undefined;
+    }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
     static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): FieldFormattingSpecProvider;

@@ -843,6 +843,26 @@ describe("Field evaluation", () => {
         withEditTxn(imodel, (txn) => { for (const id of ids) txn.deleteElement(id); });
     });
 
+    it("raises onFieldFormattingProviderChanged on register and unregister only", () => {
+      const events: Array<FieldFormattingSpecProvider | undefined> = [];
+      const drop = ElementDrivesTextAnnotation.onFieldFormattingProviderChanged.addListener((args) => {
+        expect(args.iModel).to.equal(imodel);
+        events.push(args.provider);
+      });
+
+      try {
+        const first = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+        const second = registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+        ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+        // Nothing registered: no event.
+        ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+
+        expect(events).to.deep.equal([first, second, undefined]);
+      } finally {
+        drop();
+      }
+    });
+
     it("routes evaluateFields quantity formatting through a registered provider", async () => {
       registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
