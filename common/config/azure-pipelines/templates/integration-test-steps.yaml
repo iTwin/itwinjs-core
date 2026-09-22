@@ -104,12 +104,28 @@ steps:
     displayName: "Setup AppArmor profile for Electron"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
+  # macOS agents default to a 256 file-descriptor soft limit (ulimit -n), which the
+  # container-heavy SchemaSync suites appear to exhaust ~70 tests in, failing every
+  # subsequent cloud-container attach/upload with BE_SQLITE_ERROR (itwinjs-backlog#2423).
+  # Log the limits for diagnosis and raise the soft limit before running.
+  - script: |
+      echo "=== ulimit before ==="
+      ulimit -a
+      ulimit -n 4096
+      echo "=== ulimit -n after: $(ulimit -n) ==="
+      npm run test:integration
+    workingDirectory: "full-stack-tests/backend"
+    env:
+      NODE_ENV: development
+    displayName: "Run Backend Tests (macOS, raised fd limit)"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/backend"
     env:
       NODE_ENV: development
     displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Darwin'))
 
   - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
       # Linux agents do not have a real display so use the virtual framebuffer
