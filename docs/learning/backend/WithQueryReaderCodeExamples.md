@@ -21,6 +21,13 @@ The synchronous options do not include `usePrimaryConn`: this reader already use
 
 ## Iterating Over Query Results
 
+The examples below use an open `IModelDb` or `ECDb` named `iModel`, with these imports:
+
+```ts
+import { Id64String } from "@itwin/core-bentley";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+```
+
 ### Synchronous iterator
 
 Use `for...of` to step through the result. Each iteration exposes a [QueryRowProxy]($common):

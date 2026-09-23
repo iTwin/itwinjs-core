@@ -87,6 +87,7 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
       const className: string = row.className;
       const parent: NavigationValue | undefined = row.parent;
       const lastMod: string = row.lastMod;
+      console.log({ id, className, parent, lastMod });
     }
     // __PUBLISH_EXTRACT_END__
   }

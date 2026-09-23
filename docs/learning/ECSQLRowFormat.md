@@ -63,7 +63,7 @@ The `convertClassIdsToClassNames` reader option also requests class-name convers
 | ECSQL value | JavaScript representation |
 | --- | --- |
 | Boolean | `boolean` |
-| Blob | `Uint8Array` |
+| Blob | `Uint8Array` by default; a byte-count string when `abbreviateBlobs` is `true` |
 | Blob with BeGuid extended type | [GuidString]($bentley) |
 | Double, Integer, Int64 | `number`; account for JavaScript integer precision limits |
 | DateTime | ISO 8601 date-time string |
@@ -75,6 +75,8 @@ The `convertClassIdsToClassNames` reader option also requests class-name convers
 | Navigation | `{ Id, RelECClassId }` or [NavigationValue]($common), depending on format |
 | Struct | Object containing the struct's members |
 | Array | Array of property values |
+
+With `abbreviateBlobs: true`, ordinary blobs are returned as strings such as `'{"bytes":123}'`, describing their byte count instead of returning their contents. The option defaults to `false`.
 
 Read-value support does not imply that the same value can be bound as a query parameter. See [ECSQL parameter types](./ECSQLParameterTypes.md).
 

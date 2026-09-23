@@ -42,7 +42,7 @@ export interface QueryStats {
  * There are three primary ways to interact with and read the results:
  * - Stream them using ECSqlReader as an asynchronous iterator.
  * - Iterator over them manually using [[ECSqlReader.step]].
- * - Capture all of the results at once in an array using [[QueryRowProxy.toArray]].
+ * - Capture all of the results at once in an array using [[ECSqlReader.toArray]].
  *
  * @see
  * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)

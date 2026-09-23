@@ -39,7 +39,7 @@ For a reader query filtering by the related instance, use `WHERE Parent.Id=?` an
 
 ### Struct properties
 
-Legacy statements can bind a whole struct:
+Legacy statements can bind a whole struct. This example uses the sample schema in [Structs](../ECSQL.md#structs):
 
 ```ts
 [[include:ExecuteECSql_Binding_Struct_ByParameter]]
@@ -49,7 +49,7 @@ For reader queries, parameterize the [individual struct members](../ECSQLCodeExa
 
 ### Array properties
 
-Legacy statements can bind an ECSQL array property:
+Legacy statements can bind an ECSQL array property. This example uses the sample schema in [Arrays](../ECSQL.md#arrays):
 
 ```ts
 [[include:ExecuteECSql_Binding_Array_ByParameter]]

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { SnapshotDb } from "@itwin/core-backend";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { ECDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -77,6 +77,36 @@ describe("ECSQL reader examples", () => {
     assert.equal(row.className, "BisCore.Subject");
     assert.equal(row.model.id, "0x1");
     assert.equal(row.model.relClassName, "BisCore.ModelContainsElements");
+  });
+
+  it("formats blob results", async () => {
+    using ecdb = new ECDb();
+    ecdb.createDb(IModelTestUtils.prepareOutputFile("ecsql-reader-blobs.ecdb"));
+    const schemaPath = IModelTestUtils.prepareOutputFile("ecsql-reader-blobs.ecschema.xml");
+    IModelJsFs.writeFileSync(schemaPath, `<?xml version="1.0" encoding="utf-8"?>
+      <ECSchema schemaName="MySchema" alias="myschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="BlobExample">
+          <ECProperty propertyName="Data" typeName="binary" />
+        </ECEntityClass>
+      </ECSchema>`);
+    ecdb.importSchema(schemaPath);
+
+    const blob = new Uint8Array([1, 2, 3]);
+    const insertStatus = ecdb.withWriteStatement("INSERT INTO myschema.BlobExample(Data) VALUES(?)", (stmt) => {
+      stmt.bindBlob(1, blob);
+      return stmt.step();
+    });
+    assert.equal(insertStatus, DbResult.BE_SQLITE_DONE);
+    ecdb.saveChanges();
+
+    for (const abbreviateBlobs of [undefined, false, true]) {
+      const query = "SELECT Data FROM myschema.BlobExample";
+      const expected = abbreviateBlobs ? '{"bytes":3}' : blob;
+      const asyncRows = await ecdb.createQueryReader(query, undefined, { abbreviateBlobs }).toArray();
+      const syncRows = ecdb.withQueryReader(query, (reader) => reader.toArray(), undefined, { abbreviateBlobs });
+      assert.deepEqual(asyncRows, [[expected]]);
+      assert.deepEqual(syncRows, [[expected]]);
+    }
   });
 
   it("preserves row formats and bindings", async () => {

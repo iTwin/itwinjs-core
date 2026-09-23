@@ -254,8 +254,6 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
    *
    * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iTwin.js types to be used for the different ECSQL parameter types.
-   *
-   * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -671,8 +669,6 @@ export class ECSqlWriteStatement {
    *
    * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
    * iTwin.js types to be used for the different ECSQL parameter types.
-   *
-   * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
    */
   public bindValues(values: any[] | object): void {
     this._stmt.bindValues(values);
