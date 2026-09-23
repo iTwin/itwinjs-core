@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { BasicUnitsProvider, Format, type FormatProps, FormatterSpec, type UnitProps } from "../core-quantity";
+import { Logger } from "@itwin/core-bentley";
+import { describe, expect, it, vi } from "vitest";
+import { BasicUnitsProvider, Format, type FormatProps, FormatterSpec, QuantityLoggerCategory, type UnitProps } from "../core-quantity";
 
 class ErroringConversionProvider extends BasicUnitsProvider {
   public override async getConversion() {
@@ -143,11 +144,18 @@ describe("synchronous quantity formatting", () => {
     const syncInputUnit = erroringProvider.findUnitByNameSync("Units.FT");
     const asyncInputUnit = await erroringProvider.findUnitByName("Units.FT");
 
-    const syncSpec = FormatterSpec.createSync("Ratio", syncFormat, erroringProvider, syncInputUnit);
-    const asyncSpec = await FormatterSpec.create("Ratio", asyncFormat, erroringProvider, asyncInputUnit);
+    const warnings = vi.spyOn(Logger, "logWarning");
+    try {
+      const syncSpec = FormatterSpec.createSync("Ratio", syncFormat, erroringProvider, syncInputUnit);
+      const asyncSpec = await FormatterSpec.create("Ratio", asyncFormat, erroringProvider, asyncInputUnit);
 
-    expect(syncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
-    expect(asyncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
+      expect(syncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
+      expect(asyncSpec.unitConversions[0].conversion).toEqual({ factor: 1.0, offset: 0.0, error: true });
+      const warning = [QuantityLoggerCategory.Formatting, `Unit conversion from "Units.IN" to "Units.FT" could not be resolved.`];
+      expect(warnings.mock.calls).toEqual([warning, warning]);
+    } finally {
+      warnings.mockRestore();
+    }
   });
 
   it("rejects unavailable units without awaiting", () => {

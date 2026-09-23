@@ -64,17 +64,14 @@ export class FormatterSpec {
   public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
   /** Build conversion specs for ratio format with 2 composite units (numerator/denominator). */
-  private static async getRatioUnitConversions(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<UnitConversionSpec[]> {
+  private static *buildRatioUnitConversions(units: ReadonlyArray<[UnitProps, string | undefined]>, persistenceUnit: UnitProps): ConversionBuilder<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
 
     const [numeratorUnit, numeratorLabel] = units[0];
     const [denominatorUnit, denominatorLabel] = units[1];
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
-    const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
-    if (denominatorToNumerator.error) {
-      Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
-    }
+    const denominatorToNumerator = yield* requestConversion(denominatorUnit, numeratorUnit);
     const displayRatioScale = denominatorToNumerator.factor;
 
     // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
@@ -119,6 +116,10 @@ export class FormatterSpec {
 
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
   public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
+    return runAsync(FormatterSpec.buildUnitConversions(format, inputUnit), unitsProvider);
+  }
+
+  private static *buildUnitConversions(format: Format, inputUnit?: UnitProps): ConversionBuilder<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
     let persistenceUnit = inputUnit;
     if (!persistenceUnit) {
@@ -132,7 +133,7 @@ export class FormatterSpec {
 
     // Handle 2-unit composite for ratio formats (scale factors)
     if (format.type === FormatType.Ratio && format.units && format.units.length === 2) {
-      return FormatterSpec.getRatioUnitConversions(format.units, unitsProvider, persistenceUnit);
+      return yield* FormatterSpec.buildRatioUnitConversions(format.units, persistenceUnit);
     }
 
     if (format.units) {
@@ -140,10 +141,7 @@ export class FormatterSpec {
       for (const unit of format.units) {
         let unitConversion: UnitConversionProps;
         if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
-          if (unitConversion.error) {
-            Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${convertFromUnit.name}" to "${unit[0].name}" could not be resolved.`);
-          }
+          unitConversion = yield* requestConversion(convertFromUnit, unit[0]);
         } else {
           unitConversion = { factor: 1.0, offset: 0.0 };
         }
@@ -164,90 +162,6 @@ export class FormatterSpec {
     return conversions;
   }
 
-  /** Build conversion specs for a two-unit ratio format using local unit data. */
-  private static getRatioUnitConversionsSync(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: SyncUnitsProvider, persistenceUnit: UnitProps): UnitConversionSpec[] {
-    const conversions: UnitConversionSpec[] = [];
-
-    const [numeratorUnit, numeratorLabel] = units[0];
-    const [denominatorUnit, denominatorLabel] = units[1];
-
-    const denominatorToNumerator = unitsProvider.getConversionSync(denominatorUnit, numeratorUnit);
-    if (denominatorToNumerator.error) {
-      Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
-    }
-    const displayRatioScale = denominatorToNumerator.factor;
-
-    const persistenceName = persistenceUnit.name.toUpperCase();
-    const numName = numeratorUnit.name.toUpperCase().split(".").pop() ?? "";
-    const denName = denominatorUnit.name.toUpperCase().split(".").pop() ?? "";
-    const persistenceTokens = persistenceName.split(/[._]/);
-    const isPersistenceMatchingRatio = persistenceTokens.includes(numName) && persistenceTokens.includes(denName);
-    const ratioScaleFactor = isPersistenceMatchingRatio ? 1.0 : displayRatioScale;
-
-    conversions.push({
-      name: `${numeratorUnit.name}_per_${denominatorUnit.name}`,
-      label: "",
-      system: numeratorUnit.system,
-      conversion: createRatioConversionProps(ratioScaleFactor, denominatorToNumerator),
-    });
-    conversions.push({
-      name: numeratorUnit.name,
-      label: numeratorLabel?.length ? numeratorLabel : numeratorUnit.label,
-      system: numeratorUnit.system,
-      conversion: { factor: 1.0, offset: 0.0 },
-    });
-    conversions.push({
-      name: denominatorUnit.name,
-      label: denominatorLabel?.length ? denominatorLabel : denominatorUnit.label,
-      system: denominatorUnit.system,
-      conversion: { factor: 1.0, offset: 0.0 },
-    });
-
-    return conversions;
-  }
-
-  /** Build conversion specs using local unit data. */
-  private static getUnitConversionsSync(format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): UnitConversionSpec[] {
-    const conversions: UnitConversionSpec[] = [];
-    let persistenceUnit = inputUnit;
-    if (!persistenceUnit) {
-      if (format.units) {
-        const [props] = format.units[0];
-        persistenceUnit = props;
-      } else {
-        throw new Error("Formatter Spec needs persistence unit to be specified");
-      }
-    }
-
-    if (format.type === FormatType.Ratio && format.units && format.units.length === 2) {
-      return FormatterSpec.getRatioUnitConversionsSync(format.units, unitsProvider, persistenceUnit);
-    }
-
-    if (format.units) {
-      let convertFromUnit = inputUnit;
-      for (const unit of format.units) {
-        let unitConversion: UnitConversionProps;
-        if (convertFromUnit) {
-          unitConversion = unitsProvider.getConversionSync(convertFromUnit, unit[0]);
-          if (unitConversion.error) {
-            Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${convertFromUnit.name}" to "${unit[0].name}" could not be resolved.`);
-          }
-        } else {
-          unitConversion = { factor: 1.0, offset: 0.0 };
-        }
-        const unitLabel = (unit[1] && unit[1].length > 0) ? unit[1] : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
-
-        conversions.push(spec);
-        convertFromUnit = unit[0];
-      }
-    } else if (inputUnit) {
-      conversions.push({ name: inputUnit.name, label: inputUnit.label, system: inputUnit.system, conversion: { factor: 1.0, offset: 0.0 } });
-    }
-
-    return conversions;
-  }
-
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
@@ -259,43 +173,20 @@ export class FormatterSpec {
    *  @see BaseFormat.revolutionUnit
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
-    let azimuthBaseConversion: UnitConversionProps | undefined;
-    if (format.azimuthBaseUnit !== undefined) {
-      if (inputUnit !== undefined) {
-        azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, inputUnit);
-        if (azimuthBaseConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
-      } else {
-        azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
-      }
-    }
-    let revolutionConversion: UnitConversionProps | undefined;
-    if (format.revolutionUnit !== undefined) {
-      if (inputUnit !== undefined) {
-        revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
-        if (revolutionConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.revolutionUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
-      } else {
-        revolutionConversion = { factor: 1.0, offset: 0.0 };
-      }
-    }
-
-    return new FormatterSpec(name, format, conversions, inputUnit, azimuthBaseConversion, revolutionConversion);
+    return runAsync(FormatterSpec.buildFormatterSpec(name, format, inputUnit), unitsProvider);
   }
 
   /** Create a `FormatterSpec` using a synchronous unit provider. */
   public static createSync(name: string, format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): FormatterSpec {
-    const conversions = FormatterSpec.getUnitConversionsSync(format, unitsProvider, inputUnit);
+    return runSync(FormatterSpec.buildFormatterSpec(name, format, inputUnit), unitsProvider);
+  }
+
+  private static *buildFormatterSpec(name: string, format: Format, inputUnit?: UnitProps): ConversionBuilder<FormatterSpec> {
+    const conversions: UnitConversionSpec[] = yield* FormatterSpec.buildUnitConversions(format, inputUnit);
     let azimuthBaseConversion: UnitConversionProps | undefined;
     if (format.azimuthBaseUnit !== undefined) {
       if (inputUnit !== undefined) {
-        azimuthBaseConversion = unitsProvider.getConversionSync(format.azimuthBaseUnit, inputUnit);
-        if (azimuthBaseConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
+        azimuthBaseConversion = yield* requestConversion(format.azimuthBaseUnit, inputUnit);
       } else {
         azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
       }
@@ -303,10 +194,7 @@ export class FormatterSpec {
     let revolutionConversion: UnitConversionProps | undefined;
     if (format.revolutionUnit !== undefined) {
       if (inputUnit !== undefined) {
-        revolutionConversion = unitsProvider.getConversionSync(format.revolutionUnit, inputUnit);
-        if (revolutionConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.revolutionUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
+        revolutionConversion = yield* requestConversion(format.revolutionUnit, inputUnit);
       } else {
         revolutionConversion = { factor: 1.0, offset: 0.0 };
       }
@@ -319,6 +207,31 @@ export class FormatterSpec {
   public applyFormatting(magnitude: number): string {
     return Formatter.formatQuantity(magnitude, this);
   }
+}
+
+/** Builds a value while yielding each unit conversion it needs, so the async and sync factories share one implementation. */
+type ConversionBuilder<T> = Generator<[fromUnit: UnitProps, toUnit: UnitProps], T, UnitConversionProps>;
+
+function* requestConversion(fromUnit: UnitProps, toUnit: UnitProps): ConversionBuilder<UnitConversionProps> {
+  const conversion = yield [fromUnit, toUnit];
+  if (conversion.error) {
+    Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${fromUnit.name}" to "${toUnit.name}" could not be resolved.`);
+  }
+  return conversion;
+}
+
+async function runAsync<T>(builder: ConversionBuilder<T>, unitsProvider: UnitsProvider): Promise<T> {
+  let step = builder.next();
+  while (!step.done)
+    step = builder.next(await unitsProvider.getConversion(...step.value));
+  return step.value;
+}
+
+function runSync<T>(builder: ConversionBuilder<T>, unitsProvider: SyncUnitsProvider): T {
+  let step = builder.next();
+  while (!step.done)
+    step = builder.next(unitsProvider.getConversionSync(...step.value));
+  return step.value;
 }
 
 function createRatioConversionProps(ratioScaleFactor: number, sourceConversion: UnitConversionProps): UnitConversionProps {
