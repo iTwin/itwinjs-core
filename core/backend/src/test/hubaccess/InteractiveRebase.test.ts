@@ -1113,6 +1113,11 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships.length).to.equal(1);
     chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
     chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
+
+    // The new element should still exist, but it should have no parent.
+    const child = briefcase2.elements.tryGetElementProps(childId);
+    chai.expect(child).to.not.be.undefined;
+    chai.expect((child as any).parent).to.be.undefined;
   });
 
   it("should report an aspect conflict when both users update the same aspect property", async () => {

@@ -248,6 +248,11 @@ interface UniqueConstraintFix {
   value: string;
 }
 
+interface BrokenRelationshipDetail extends BrokenRelationship {
+  jsName: string;
+  nullable: boolean;
+}
+
 export interface TxnRebaseGroup {
   txns: TxnProps[];
 }
@@ -1424,6 +1429,16 @@ export class InteractiveRebase {
         const isInsert = oldProps === undefined;
         const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
         RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
+
+        const fallbackProps = newProps === undefined ? undefined : this.clearNullableBrokenNavigationProperties(newProps, brokenRelationships);
+        if (fallbackProps !== undefined) {
+          this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fallbackProps, () => {
+            if (isInsert)
+              this._db[_nativeDb].insertInstance(fallbackProps, { forceUseId: true, useJsNames: true });
+            else
+              this._db[_nativeDb].updateInstance(fallbackProps, { useJsNames: true });
+          });
+        }
         return undefined;
       }
       if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
@@ -1591,7 +1606,7 @@ export class InteractiveRebase {
     }
   }
 
-  private findBrokenRelationships(props: RebaseConflictProperties): BrokenRelationship[] {
+  private findBrokenRelationships(props: RebaseConflictProperties): BrokenRelationshipDetail[] {
     const classFullName = props.classFullName;
     if (typeof classFullName !== "string")
       return [];
@@ -1607,7 +1622,7 @@ export class InteractiveRebase {
       // Ignore if class is not registered in JS
     }
 
-    const broken: BrokenRelationship[] = [];
+    const broken: BrokenRelationshipDetail[] = [];
     for (const prop of schemaClassDef.getProperties()) {
       if (!prop.isNavigation())
         continue;
@@ -1653,10 +1668,24 @@ export class InteractiveRebase {
         broken.push({
           relationshipClass: prop.relationshipClass,
           navigationProperty: propsAccessString,
+          jsName,
+          nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0,
         });
       }
     }
     return broken;
+  }
+
+  private clearNullableBrokenNavigationProperties(props: RebaseConflictProperties, brokenRelationships: BrokenRelationshipDetail[]): RebaseConflictProperties | undefined {
+    const nullableRelationships = brokenRelationships.filter((relationship) => relationship.nullable);
+    if (nullableRelationships.length === 0)
+      return undefined;
+
+    const fallbackProps = { ...props };
+    for (const relationship of nullableRelationships)
+      setPropertyValue(fallbackProps, relationship.jsName, null);
+
+    return fallbackProps;
   }
 
   /**
@@ -1841,16 +1870,6 @@ export class InteractiveRebase {
       this.writeConflictResolution(conflict, fix.props, fullReplace, attempt + 1);
     }
   }
-
-  // List of local txns to be rebased
-  // Grouping of those txns
-  // Current txn/group being rebased
-  // Conflicts in current txn/group being rebased
-  // Option to resolve those conflicts in prescriptive ways
-  // EditTxn for making additional arbitrary changes
-  // Finalize current txn/group, move to the next
-  // Abort current txn/group (reverting all conflict resolutions and edits), move back to the previous
-
 }
 
 /** Computes which of `baseline`'s properties (excluding identity properties) differ in `compare`.
@@ -2172,7 +2191,10 @@ class RebaseConflictImpl implements RebaseConflict {
 
     for (const broken of brokenRelationships) {
       if (!conflict.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass === broken.relationshipClass)) {
-        conflict.brokenRelationships.push(broken);
+        conflict.brokenRelationships.push({
+          navigationProperty: broken.navigationProperty,
+          relationshipClass: broken.relationshipClass,
+        });
       }
     }
 
