@@ -150,7 +150,7 @@ The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteD
 
 #### ChangesetReader identifiers filter
 
-The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. Along with `ECInstanceId` and `ECClassId`, it returns a fixed set of identifiers read only from the changeset: the owning `Element` of an aspect and, for deleted rows, an element's `FederationGuid`, a link-table relationship's `SourceECInstanceId` and `TargetECInstanceId`, and an `ExternalSourceAspect`'s `Scope`, `Kind`, and `Identifier`. Because these values are never read from the current iModel, the filter works when a changeset is read after its instances were deleted. Navigation values contain only `Id`.
+The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
 
 ### Reserving elements for concurrent creation
 

@@ -208,7 +208,7 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 | `All` (default) | All EC properties mapped to changed tables |
 | `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
-| `InstanceKeyAndIdentifiers` | `ECInstanceId` and `ECClassId`, plus identifiers read only from the changeset: the owning `Element` of an aspect and, for deleted rows, an element's `FederationGuid`, a link-table relationship's `SourceECInstanceId` and `TargetECInstanceId`, and an `ExternalSourceAspect`'s `Scope`, `Kind`, and `Identifier`. Identifiers missing from the changeset are omitted, and navigation values contain only `Id`. |
+| `InstanceKeyAndIdentifiers` | `ECInstanceId` and `ECClassId`, plus the identifiers listed [below](#identifiers-returned-by-instancekeyandidentifiers) |
 
 ```ts
 [[include:ChangesetReader.ModeInstanceKey]]
@@ -219,6 +219,19 @@ The active filter is stored as a `PropertyFilter` enum value in `instance.$meta.
 ```ts
 assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 ```
+
+### Identifiers returned by `InstanceKeyAndIdentifiers`
+
+Along with `ECInstanceId` and `ECClassId`, `InstanceKeyAndIdentifiers` returns these properties:
+
+| Row | Properties |
+|---|---|
+| Any `BisCore:ElementAspect` | `Element` |
+| Deleted `BisCore:Element` | `FederationGuid` |
+| Deleted link-table relationship | `SourceECInstanceId`, `TargetECInstanceId` |
+| Deleted `BisCore:ExternalSourceAspect` | `Scope`, `Kind`, `Identifier` |
+
+The reader takes these properties only from the changeset, so reading still works after the rows were deleted from the iModel. A property the changeset does not contain is omitted, and navigation values contain only `Id`. `ECClassId` is resolved as for `InstanceKey`: when the changeset lacks it, the reader looks it up in the iModel, and for an instance that no longer exists it falls back to the table's base class (see [Deleted instance — class identity lost](#1-deleted-instance--class-identity-lost)).
 
 ---
 

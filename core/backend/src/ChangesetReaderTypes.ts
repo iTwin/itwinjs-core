@@ -25,18 +25,8 @@ export enum PropertyFilter {
   BisCoreElement = 1,
   /** Only `ECInstanceId` and `ECClassId`. */
   InstanceKey = 2,
-  /**
-   * `ECInstanceId` and `ECClassId`, as for [[PropertyFilter.InstanceKey]], plus these identifiers:
-   * - the owning `Element` of a `BisCore:ElementAspect`, for any operation;
-   * - for deleted rows: `FederationGuid` of a `BisCore:Element`; `SourceECInstanceId` and
-   *   `TargetECInstanceId` of a link-table relationship; and `Scope`, `Kind`, and `Identifier`
-   *   of a `BisCore:ExternalSourceAspect`.
-   *
-   * These identifiers are read only from the changeset and are omitted when the changeset does not
-   * contain them. Navigation values contain only `Id`. `ECClassId` is resolved as for
-   * [[PropertyFilter.InstanceKey]]: if the changeset lacks it, it is read from the current iModel,
-   * falling back to the table's root class when the instance no longer exists.
-   */
+  /** `ECInstanceId` and `ECClassId`, plus identifiers read only from the changeset, such as an aspect's owning `Element`.
+   * See [the full list]($docs/learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers). */
   InstanceKeyAndIdentifiers = 3,
 }
 
