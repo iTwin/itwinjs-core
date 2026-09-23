@@ -286,8 +286,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   }
 
   public get planProjectionSettings() {
-    // ###TODO return this._view.displayStyle.settings.planProjectionSettings;
-    return new ObservableMap<string, PlanProjectionSettings>();
+    return this._view.displayStyle.settings.planProjectionSettings;
   }
 
   public get modelClipGroups() {
