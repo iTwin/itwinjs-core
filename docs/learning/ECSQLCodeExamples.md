@@ -1,14 +1,13 @@
-# ECSQL in iTwin.js Code Examples
+# Asynchronous ECSQL Queries with `createQueryReader`
 
-This page contains generic example code that can be used across the [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend) classes. In the examples, the identifier `iModel` is used as an object that could be any of those classes.
+Use `createQueryReader` for asynchronous ECSQL queries on an [IModelDb]($backend), [ECDb]($backend), or frontend [IModelConnection]($frontend). In these examples, `iModel` can be any of those objects.
 
-For more info and examples specific to running in the frontend and backend, check out:
+`createQueryReader` returns an [ECSqlReader]($common) immediately. Query execution starts when you consume the reader with asynchronous iteration, `step()`, or `toArray()`. The reader fetches and buffers batches of rows.
 
-- [Executing ECSQL in the Frontend](./frontend/ExecutingECSQL.md)
-  - [Frontend ECSQL Code Examples](./frontend/ECSQLCodeExamples.md)
-- [Executing ECSQL in the Backend](./backend/ExecutingECSQL.md)
-  - [Backend ECSQL Code Examples](./backend/ECSQLCodeExamples.md)
-  - [Backend `withQueryReader` Code Examples](./backend/WithQueryReaderCodeExamples.md) — synchronous, backend-only alternative to `createQueryReader`
+For synchronous backend execution, use [withQueryReader](./backend/WithQueryReaderCodeExamples.md). It supplies a callback-scoped reader that steps one row at a time. See [Choosing a query reader](./backend/ExecutingECSQL.md#choosing-a-query-reader) for differences in execution, connection selection, buffering, options, and lifetime.
+
+- [Executing ECSQL in the frontend](./frontend/ExecutingECSQL.md) covers network-round-trip considerations.
+- [Backend migration guidance](./backend/ECSQLCodeExamples.md) covers replacing `withPreparedStatement`.
 
 See also:
 
@@ -31,7 +30,7 @@ Here is the TypeScript method signature for `createQueryReader`:
 createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader
 ```
 
-- The `ecsql` string is the ECSQL statement that will be executed on the iModel. ***This is where you provide an ECSQL statement to query an iModel.*** E.g.,
+- The `ecsql` string is the query to execute, for example:
 
   ```sql
   SELECT ECInstanceId, ECClassId FROM BisCore.Element
@@ -42,7 +41,8 @@ createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): E
 - The `config` argument of type [QueryOptions]($common) is for additional options for how the query will be executed. Some examples are:
   - `rowFormat` for determining how query results will look. For an explanation of the available formats, see [ECSQL Row Formats](./ECSQLRowFormat.md).
   - `limit` for specifying how many rows can be returned at most.
-  - `restartToken` for canceling the execution of a previous query and starting a new one.
+  - `restartToken` for canceling a previous query with the same token and starting a new one.
+  - `usePrimaryConn` for queries that need to see unsaved changes on the owning backend connection. By default, concurrent queries use separate worker connections. This option does not remove result buffering.
 
 ## Iterating Over Query Results
 
@@ -64,19 +64,19 @@ Results are [QueryRowProxy]($common) objects. See [Handling a Row of Query Resul
 
 Results are [QueryRowProxy]($common) objects. See [Handling a Row of Query Results](#handling-a-row-of-query-results) for how to handle the results.
 
-3\. Capture all of the results at once in an array using [QueryRowProxy.toArray]($common).
+3\. Collect all remaining results using [ECSqlReader.toArray]($common).
 
 ```ts
 [[include:ExecuteECSql_ECSqlReaderIteration_ToArray]]
 ```
 
-Results are JavaScript literals. See [Working with Rows as JavaScript Literals](#working-with-rows-as-javascript-literals) for how to handle the results.
+Each result is an array by default, or an object when a named row format is selected. Collecting all rows uses memory proportional to the result size; prefer iteration for large results.
 
 ## Handling a Row of Query Results
 
-The format of the query results is dependent on the provided `rowFormat` in the `config` parameter. **[Click here to read about ECSQL Row Formats in detail.](./ECSQLRowFormat.md)**
+Iteration and `step()` expose a [QueryRowProxy]($common) for the current row. Access values by column index or by name. The proxy follows the reader's current row; materialize a row before retaining it across reader advances.
 
-When iterating over each row one at a time (as an asynchronous iterator or with `step`), each row will be a [QueryRowProxy]($common) object. The rows value can then be accessed by column index or by name.
+The `rowFormat` option controls materialized row shape and some value conversions. See [ECSQL Row Formats](./ECSQLRowFormat.md).
 
 ### Accessing Row Values By Index
 
@@ -92,7 +92,7 @@ When iterating with `step`:
 [[include:ExecuteECSql_HandlingRows_StepAccessByIndex]]
 ```
 
-> The `rowFormat` used does *not* matter when accessing by index; only the order of the selected columns does. The two queries below will return the ECInstanceId and ECClassId values as indexes 0,1 and 1,0 respectively.
+> Column indexes follow SELECT-column order in every row format. The queries below place ECInstanceId and ECClassId at indexes 0,1 and 1,0 respectively. The value representation can still depend on the format; for example, JS formatting converts unaliased class IDs to class names.
 >
 > ```sql
 > SELECT ECInstanceId, ECClassId FROM bis.Element
@@ -115,7 +115,7 @@ When iterating with `step`:
 
 ### Using Types with the Row Results
 
-Each ECSQL value has a corresponding TypeScript type which is described in [ECSQL Parameter Types](./ECSQLParameterTypes.md).
+See [property value types](./ECSQLRowFormat.md#property-value-types) for result types. Properties can be absent when their value is null, as with `Parent` in this example:
 
 ```ts
 [[include:ExecuteECSql_HandlingRows_Types]]
@@ -123,9 +123,9 @@ Each ECSQL value has a corresponding TypeScript type which is described in [ECSQ
 
 ### Working with Rows as JavaScript Literals
 
-Call `.toRow()` on the row to convert it from a `QueryRowProxy` object to a JavaScript literal. The format of the literal is dependent on the provided `rowFormat` in the `config` parameter. Check out [ECSQL Row Formats](./ECSQLRowFormat.md) for more details.
+Call `row.toRow()` to materialize the current row as a plain object. It uses ECSQL names unless `UseJsPropertyNames` was selected, including when the reader uses the default index format. Store these objects rather than the reusable row proxy.
 
-> Note: With the deprecation of `.query` in 3.7 and the switch to using ECSqlReader to handle query results, rows were changed from being JavaScript literals to `QueryRowProxy`s. Using `.toRow()` may fix any issues that emerged due to this change.
+`row.toArray()` returns only the current row's raw values. `reader.toArray()` collects all remaining rows, using the selected row format. See [ECSQL Row Formats](./ECSQLRowFormat.md) for the distinctions.
 
 When iterating with a for loop:
 
@@ -139,7 +139,7 @@ When iterating with `step`:
 [[include:ExecuteECSql_HandlingRows_StepJsLiteral]]
 ```
 
-When using `toArray`:
+Select an object format when collecting all rows with `reader.toArray()`:
 
 ```ts
 [[include:ExecuteECSql_HandlingRows_ToArrayJsLiteral]]
@@ -147,13 +147,11 @@ When using `toArray`:
 
 ### Specifying Row Formats
 
-The format of of a row is dependent on the provided `rowFormat` in the `config` parameter of `createQueryReader`. The row formats are specified by supplying a [QueryRowProxy]($common) enum.
-
-Check out [ECSQL Row Formats](./ECSQLRowFormat.md) for more details.
+Set `config.rowFormat` to a [QueryRowFormat]($common) value. These examples show the three formats; [ECSQL Row Formats](./ECSQLRowFormat.md) defines naming, class-ID conversion, and null handling.
 
 #### QueryRowFormat.UseECSqlPropertyIndexes
 
-**This is the default format** when no `rowFormat` is specified. Column values should refered to by an index which is ordered by the columns specified in the SELECT statement.
+This is the default format. `reader.toArray()` produces arrays of values in SELECT-column order.
 
 ```ts
 [[include:ExecuteECSql_QueryRowFormat_UseECSqlPropertyIndexes]]
@@ -171,24 +169,23 @@ Here is an example using `.toArray`:
 ```json
 [
   [
-    '0x17',
-    '0x8d',
+    "0x17",
+    "0x8d",
     null,
-    '2017-07-25T20:44:59.711Z'
+    "2017-07-25T20:44:59.711Z"
   ],
   [
-    '0x18',
-    '0x67',
-    { Id: '0x17', RelECClassId: '0x66' },
-    '2017-07-25T20:44:59.711Z'
-  ],
-  ...
+    "0x18",
+    "0x67",
+    { "Id": "0x17", "RelECClassId": "0x66" },
+    "2017-07-25T20:44:59.711Z"
+  ]
 ]
 ```
 
 #### QueryRowFormat.UseECSqlPropertyNames
 
-Column values should refered to by their ECSQL property names.
+`reader.toArray()` produces objects keyed by ECSQL column names or aliases.
 
 ```ts
 [[include:ExecuteECSql_QueryRowFormat_UseECSqlPropertyNames]]
@@ -204,28 +201,26 @@ Here is an example using `.toArray`:
 
 ```json
 [
-   {
-    ECInstanceId: '0x17',
-    ECClassId: '0x8d',
-    LastMod: '2017-07-25T20:44:59.711Z'
+  {
+    "ECInstanceId": "0x17",
+    "ECClassId": "0x8d",
+    "LastMod": "2017-07-25T20:44:59.711Z"
   },
   {
-    ECInstanceId: '0x18',
-    ECClassId: '0x67',
-    Parent:
-    {
-      Id: '0x17',
-      RelECClassId: '0x66'
+    "ECInstanceId": "0x18",
+    "ECClassId": "0x67",
+    "Parent": {
+      "Id": "0x17",
+      "RelECClassId": "0x66"
     },
-    LastMod: '2017-07-25T20:44:59.711Z'
-  },
-  ...
+    "LastMod": "2017-07-25T20:44:59.711Z"
+  }
 ]
 ```
 
 #### QueryRowFormat.UseJsPropertyNames
 
-Column values should be refered to by their JavaScript property names. The mapping from ECSQL property names to JavaScript property names is described in [ECSQL Row Formats](./ECSQLRowFormat.md).
+Use this format when callers need JS-shaped results, such as `id`, `className`, and navigation `relClassName`. It converts unaliased class-ID values to class names as well as mapping property keys. See [ECSQL Row Formats](./ECSQLRowFormat.md#property-names).
 
 ```ts
 [[include:ExecuteECSql_QueryRowFormat_UseJsPropertyNames]]
@@ -242,25 +237,23 @@ Here is an example using `.toArray`:
 ```json
 [
   {
-    id: '0x17',
-    className: 'BisCore.SpatialCategory',
-    lastMod: '2017-07-25T20:44:59.711Z'
+    "id": "0x17",
+    "className": "BisCore.SpatialCategory",
+    "lastMod": "2017-07-25T20:44:59.711Z"
   },
   {
-    id: '0x18',
-    className: 'BisCore.SubCategory',
-    parent:
-    {
-      id: '0x17',
-      relClassName: 'BisCore.CategoryOwnsSubCategories'
+    "id": "0x18",
+    "className": "BisCore.SubCategory",
+    "parent": {
+      "id": "0x17",
+      "relClassName": "BisCore.CategoryOwnsSubCategories"
     },
-    lastMod: '2017-07-25T20:44:59.711Z'
-  },
-  ...
+    "lastMod": "2017-07-25T20:44:59.711Z"
+  }
 ]
 ```
 
-> Notice how the keys in the above JSON are converted from ECProperty names to names that conform to JavaScript standards as described in [ECSQL Row Formats](./ECSQLRowFormat.md). For example, "ECInstanceId" is mapped to "id".
+> `ECInstanceId` becomes `id`, and `ECClassId` becomes `className` with a qualified class-name value.
 
 ## Parameter Bindings
 
@@ -280,15 +273,7 @@ Here is an example using `.toArray`:
 
 ### Navigation properties
 
-[Navigation properties](./ECSQL#navigation-properties) are structs made up of the Id of the related instance and the backing
-[ECRelationshipClass](../bis/ec/ec-relationship-class.md). The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
-
-```ts
-[[include:ExecuteECSql_Binding_Navigation]]
-```
-
-Because of the struct nature of navigation properties, you can also use its members in the ECSQL. The following example illustrates
-this by specifying the **Id** member of a navigation property.
+Filter [navigation properties](./ECSQL.md#navigation-properties) by their members. For example, bind the related instance ID to a predicate on `Parent.Id`. Whole navigation-value bindings are not supported by the query readers.
 
 ```ts
 [[include:ExecuteECSql_Binding_NavigationId]]
@@ -296,30 +281,20 @@ this by specifying the **Id** member of a navigation property.
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parameterize individual members of the struct. See [Struct properties in ECSQL](./ECSQL#structs) for the ECSQL background.
-
-> The ECSQL examples used in this section refer to the sample ECSchema in [Struct properties in ECSQL](./ECSQL#structs).
-
-#### Binding structs as a whole
-
-```ts
-[[include:ExecuteECSql_Binding_Struct]]
-```
-
-#### Binding to individual struct members
+Parameterize individual struct members. Whole-struct bindings are not supported by the query readers. This example uses the sample schema in [Struct properties in ECSQL](./ECSQL.md#structs).
 
 ```ts
 [[include:ExecuteECSql_Binding_StructMembers]]
 ```
 
-> The two ECSQL examples used in this section amount to the same results.
+### ID sets
+
+Use `QueryBinder.bindIdSet` to bind a set of Id64 values for `InVirtualSet`:
+
+```ts
+[[include:ExecuteECSql_Binding_IdSet]]
+```
 
 ### Array properties
 
-See [Array properties in ECSQL](./ECSQL#arrays) for the ECSQL background.
-
-> The ECSQL examples used in this section refer to the sample ECSchema in [Array properties in ECSQL](./ECSQL#arrays).
-
-```ts
-[[include:ExecuteECSql_Binding_Array]]
-```
+The query readers do not support arbitrary ECSQL array-property parameters. ID-set bindings are a separate facility. See [parameter support](./ECSQLParameterTypes.md#navigation-struct-and-array-parameters) and [legacy statement bindings](./backend/ECSQLCodeExamples.md#legacy-statement-bindings).

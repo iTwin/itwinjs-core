@@ -1,319 +1,90 @@
-# Backend `withQueryReader` Code Examples
+# Synchronous Backend ECSQL Queries with `withQueryReader`
 
-This page documents the use of `withQueryReader` — a **synchronous**, backend-only method available on both [IModelDb]($backend) and [ECDb]($backend).
+Use [IModelDb.withQueryReader]($backend) or [ECDb.withQueryReader]($backend) when backend code requires synchronous query execution. These APIs are currently beta.
 
-`withQueryReader` is the synchronous counterpart of [IModelDb.createQueryReader]($backend). Instead of returning an async [ECSqlReader]($common), it prepares the statement, invokes a callback with an [ECSqlSyncReader]($backend).
+`withQueryReader` prepares a query, invokes a callback with an [ECSqlSyncReader]($backend), and returns the callback's result. The reader steps synchronously on the owning database connection, one row at a time, without buffering result batches. Query execution blocks the calling JavaScript thread.
 
-Unlike `createQueryReader`, which pages results through the async concurrent-query infrastructure, `withQueryReader` performs **true row-by-row stepping** directly against the underlying prepared statement. Each call to `step()` executes exactly one step — no rows are buffered, prefetched, or cached internally. This makes `withQueryReader` well-suited for scenarios where synchronous execution and live data fetching are important.
-
-> **Note:** `withQueryReader` is only available on the backend. For frontend usage, use [IModelConnection.createQueryReader]($frontend).
-
-See also:
-
-- [General ECSQL Code Examples](../ECSQLCodeExamples.md) — `createQueryReader` usage that applies to both frontend and backend
-- [Backend ECSQL Code Examples](./ECSQLCodeExamples.md) — `withPreparedStatement` usage
-- [Executing ECSQL in the Backend](./ExecutingECSQL.md)
-- [ECSQL Row Formats](../ECSQLRowFormat.md)
-
----
+For asynchronous queries on either the frontend or backend, use [createQueryReader](../ECSQLCodeExamples.md). Its reader is consumed asynchronously and buffers batches of results. See [Choosing a query reader](./ExecutingECSQL.md#choosing-a-query-reader) for the differences in execution, connection selection, options, and lifetime.
 
 ## The `withQueryReader` Function
-
-Here is the TypeScript method signature for `withQueryReader`:
 
 ```ts
 withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T
 ```
 
-- The `ecsql` string is the ECSQL statement to execute.
-- The `callback` receives an [ECSqlSyncReader]($backend) scoped to the call. **Do not keep a reference to the reader outside the callback** — attempting to `step` it after the callback returns will throw an error.
-- The `params` argument of type [QueryBinder]($common) contains any [bindings](../ECSQL.md#ecsql-parameters) for the ECSQL statement.
-- The `config` argument of type `SynchronousQueryOptions` controls how results are formatted. The available options are a subset of [QueryOptions]($common):
-  - `rowFormat` — how result rows are structured. See [ECSQL Row Formats](../ECSQLRowFormat.md).
-  - `abbreviateBlobs` — when `true`, binary values are abbreviated rather than fully serialized.
-  - `convertClassIdsToClassNames` — when `true`, ECClassId values are returned as fully-qualified class names.
+- `ecsql` is the ECSQL query to execute.
+- `callback` consumes the reader and can return materialized rows or a computed value. Finish using the reader before the callback completes.
+- `params` is a [QueryBinder]($common) containing any parameter bindings.
+- `config` is a [SynchronousQueryOptions]($backend) object. It supports `rowFormat`, `abbreviateBlobs`, and `convertClassIdsToClassNames`. See [ECSQL Row Formats](../ECSQLRowFormat.md) for result formatting and class-name conversion.
 
----
+The synchronous options do not include `usePrimaryConn`: this reader already uses the owning connection and can read its unsaved changes. They also omit concurrent-query controls such as `priority`, `restartToken`, and `quota`. To limit the result count, use an ECSQL `LIMIT` clause; the async reader's `config.limit` option is not available here.
 
 ## Iterating Over Query Results
 
-There are three primary ways to consume results from `withQueryReader`:
+### Synchronous iterator
 
-### 1. Synchronous Iterator (for...of)
-
-Use `ECSqlSyncReader` as a synchronous iterator with a `for...of` loop:
+Use `for...of` to step through the result. Each iteration exposes a [QueryRowProxy]($common):
 
 ```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  for (const row of reader) {
-    const id = row[0];
-    const classId = row[1];
-    // process row...
-  }
-});
+[[include:ExecuteECSql_Sync_Iteration]]
 ```
 
-Each iterated value is a [QueryRowProxy]($common). See [Handling a Row of Query Results](#handling-a-row-of-query-results) below.
+### Manual stepping
 
-### 2. Manual Stepping with `step()`
-
-Step through rows one at a time using [ECSqlSyncReader.step]($backend):
+`step()` returns `true` when a row is available through `reader.current`, or `false` when the result is exhausted:
 
 ```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  while (reader.step()) {
-    const id = reader.current[0];
-    const classId = reader.current[1];
-    // process row...
-  }
-});
+[[include:ExecuteECSql_Sync_Step]]
 ```
 
-`step()` returns `true` if there are rows left to be stepped through, and `false` when all rows have been consumed.
+### Collecting rows and returning a value
 
-### 3. Capture All Results with `toArray()`
-
-Collect all remaining rows at once into an array:
+`reader.toArray()` collects all remaining rows. By default, each row is an array of values in SELECT-column order. Select `UseECSqlPropertyNames` to collect objects:
 
 ```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  const rows = reader.toArray();
-  // rows is a plain JavaScript array
-});
+[[include:ExecuteECSql_Sync_ToArray]]
 ```
 
-Each element of the returned array is a JavaScript literal whose shape is determined by the `rowFormat` option. See [ECSQL Row Formats](../ECSQLRowFormat.md) for details.
+Materialized rows can be used after the callback completes. Collecting all rows uses memory proportional to the result size; prefer iteration for large results.
 
----
+## Handling Row Values
 
-## Handling a Row of Query Results
+The async and sync readers share the same [row formats and materialization methods](../ECSQLRowFormat.md):
 
-When using the iterator or `step()`, each row is a [QueryRowProxy]($common). Values can be accessed by index or by name.
+- Use `row[index]` or `row.propertyName` to read the current row.
+- Use `row.toRow()` to retain a plain object. It uses ECSQL names unless `UseJsPropertyNames` was selected.
+- Use `row.toArray()` for the current row's raw values, or `reader.toArray()` for all remaining rows.
 
-### Accessing Row Values By Index
+The proxy follows the reader's current row. Materialize a row before retaining it across calls to `step()` or iterator advances.
 
-Default behavior — column values are ordered by their position in the `SELECT` clause:
+### JavaScript property names
+
+Use `QueryRowFormat.UseJsPropertyNames` when results need JS property names and class-name values, such as `id`, `className`, and navigation `relClassName`:
 
 ```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  while (reader.step()) {
-    const id: string = reader.current[0];
-    const classId: string = reader.current[1];
-  }
-});
+[[include:ExecuteECSql_Sync_JsRow]]
 ```
 
-> The row format does **not** affect index-based access; only the order of columns in the SELECT statement matters.
-
-### Accessing Row Values By Name
-
-Use ECSQL property names as keys:
-
-```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  while (reader.step()) {
-    const id: string = reader.current.ECInstanceId;
-    const classId: string = reader.current.ECClassId;
-  }
-});
-```
-
-### Converting a Row to a JavaScript Literal
-
-Call `.toRow()` on the [QueryRowProxy]($common) to convert it to a plain JavaScript object. The structure of the object depends on the `rowFormat` in `config`:
-
-```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  while (reader.step()) {
-    const row = reader.current.toRow();
-    // row is now a plain JavaScript object
-    console.log(JSON.stringify(row));
-  }
-});
-```
-
----
-
-## Row Formats
-
-The row format is controlled by `rowFormat` in the `config` parameter and mirrors the behavior of [QueryOptions]($common) used with `createQueryReader`. See [ECSQL Row Formats](../ECSQLRowFormat.md) for full details.
-
-### `QueryRowFormat.UseECSqlPropertyIndexes` (default)
-
-Values are accessed by the zero-based index of the column in the SELECT clause. Rows returned from `toArray()` are plain arrays:
-
-```ts
-import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-
-const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseECSqlPropertyIndexes).getOptions();
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  const rows = reader.toArray();
-  // rows[0] => ['0x17', '0x8d']
-}, undefined, config);
-```
-
-### `QueryRowFormat.UseECSqlPropertyNames`
-
-Values are keyed by their ECSQL property names. Rows from `toArray()` are objects:
-
-```ts
-import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-
-const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseECSqlPropertyNames).getOptions();
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  const rows = reader.toArray();
-  // rows[0] => { ECInstanceId: '0x17', ECClassId: '0x8d' }
-}, undefined, config);
-```
-
-### `QueryRowFormat.UseJsPropertyNames`
-
-Values are keyed by JavaScript-style property names (e.g., `ECInstanceId` → `id`, `ECClassId` → `className`):
-
-```ts
-import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-
-const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM BisCore.Element", (reader) => {
-  const rows = reader.toArray();
-  // rows[0] => { id: '0x17', className: 'BisCore.SpatialCategory' }
-}, undefined, config);
-```
-
----
+See [property names and values](../ECSQLRowFormat.md#property-names) for the conversion rules and alias behavior.
 
 ## Parameter Bindings
 
-Parameters are supplied as a [QueryBinder]($common) instance. See [ECSQL Parameter Types](../ECSQLParameterTypes.md) for type information.
-
-### Positional Parameters
+Supply a [QueryBinder]($common) before execution. This example binds a class name and converts it to a class ID in the query with `ec_classid()`:
 
 ```ts
-import { QueryBinder } from "@itwin/core-common";
-
-const params = new QueryBinder();
-params.bindString(1, "BisCore.Category");
-
-iModel.withQueryReader(
-  "SELECT ECInstanceId FROM BisCore.Element WHERE ECClassId=?",
-  (reader) => {
-    while (reader.step()) {
-      console.log(reader.current[0]);
-    }
-  },
-  params,
-);
+[[include:ExecuteECSql_Sync_Binding]]
 ```
 
-### Named Parameters
-
-```ts
-import { QueryBinder } from "@itwin/core-common";
-
-const params = new QueryBinder();
-params.bindString("className", "BisCore.Category");
-
-iModel.withQueryReader(
-  "SELECT ECInstanceId FROM BisCore.Element WHERE ECClassId=:className",
-  (reader) => {
-    while (reader.step()) {
-      console.log(reader.current[0]);
-    }
-  },
-  params,
-);
-```
-
-### Navigation Properties
-
-[Navigation properties](../ECSQL.md#navigation-properties) require a [NavigationBindingValue]($common):
-
-```ts
-import { NavigationBindingValue, QueryBinder } from "@itwin/core-common";
-
-const params = new QueryBinder();
-params.bindNavigation(1, { id: "0x1" } as NavigationBindingValue);
-
-iModel.withQueryReader(
-  "SELECT ECInstanceId FROM BisCore.Element WHERE Parent=?",
-  (reader) => {
-    while (reader.step()) {
-      console.log(reader.current[0]);
-    }
-  },
-  params,
-);
-```
-
-### Id Set Parameters
-
-Bind a set of [Id64String]($bentley) values for use with `InVirtualSet`:
-
-```ts
-import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-
-const params = new QueryBinder();
-params.bindIdSet(1, ["0x1", "0x2", "0x3"]);
-
-const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
-iModel.withQueryReader(
-  "SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)",
-  (reader) => {
-    const rows = reader.toArray();
-    // rows => [{ id: '0x1', name: '...' }, ...]
-  },
-  params,
-  config,
-);
-```
-
----
+The [shared binding examples](../ECSQLCodeExamples.md#parameter-bindings) also apply to this API. Pass the binder as the third argument to `withQueryReader`. Bind navigation and struct members individually; whole navigation/struct values and arbitrary ECSQL array parameters are not supported by the readers. See [ECSQL parameter types](../ECSQLParameterTypes.md).
 
 ## Getting Column Metadata
 
-Use [ECSqlSyncReader.getMetaData]($backend) to retrieve metadata about the result columns. This is available before or after calling `step()`:
+[ECSqlSyncReader.getMetaData]($backend) returns metadata for the selected columns and can be called inside the callback before or after stepping. The synchronous call returns the metadata directly; the async reader's `getMetaData()` returns a promise.
 
-```ts
-iModel.withQueryReader("SELECT ECInstanceId, ECClassId, LastMod FROM BisCore.Element", (reader) => {
-  const metadata = reader.getMetaData();
-  for (const col of metadata) {
-    console.log(col.accessString, col.typeName);
-  }
-  while (reader.step()) {
-    // process rows...
-  }
-});
-```
+## Reader Lifetime
 
----
+Keep the reader inside its callback. Return materialized rows or computed results rather than the reader or its current-row proxy. If the callback returns a `Promise`, the reader remains valid until that promise settles; each reader operation is still synchronous. After the callback completes, its statement is released and may be reused from the statement cache. Statement reuse does not buffer query results.
 
-## Returning a Value from the Callback
+Do not close the database or call `clearCaches()` while using the reader; these actions invalidate its statement.
 
-`withQueryReader` returns whatever value the callback returns, making it easy to compute and return an aggregated result:
-
-```ts
-const count = iModel.withQueryReader("SELECT ECInstanceId FROM BisCore.Element", (reader) => {
-  let n = 0;
-  while (reader.step()) {
-    n++;
-  }
-  return n;
-});
-console.log(`Element count: ${count}`);
-```
-
----
-
-## Important Constraints
-
-- **Do not use the reader outside the callback.** The underlying statement is disposed when the callback returns. Calling `step()` on a reader that has escaped its callback will throw an error:
-
-  ```ts
-  // ❌ This will throw when step() is called
-  const escaped = iModel.withQueryReader("SELECT * FROM BisCore.Element", (reader) => reader);
-  escaped.step(); // throws: "Statement is not prepared"
-  ```
-
-- **Do not call `clearCaches()` or close the database during iteration.** Either action invalidates the prepared statement and causes a subsequent `step()` call to throw.
-
-- **`SynchronousQueryOptions` is a restricted subset of `QueryOptions`.** Options that only apply to the async concurrent-query infrastructure — such as `limit`, `priority`, `restartToken`, `delay`, `usePrimaryConn`, and `quota` — are not available in `withQueryReader`.
+For migration from `withPreparedStatement`, see [Backend ECSQL Code Examples](./ECSQLCodeExamples.md#migrating-from-withpreparedstatement).

@@ -1,186 +1,66 @@
 # Backend ECSQL Code Examples
 
-For working directly with an iModel from the frontend, an [IModelDb]($backend) or [ECDb]($backend) object is used.
+Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) for asynchronous queries. Use [IModelDb.withQueryReader]($backend) or [ECDb.withQueryReader]($backend) when backend code requires synchronous execution.
 
-This page contains example code that can be used for working with both the [IModelDb]($backend) and [ECDb]($backend) classes. In the examples, the identifier `iModel` is used as an object that could be either of those classes.
+- [Asynchronous query examples](../ECSQLCodeExamples.md) apply to both backend classes and to frontend [IModelConnection]($frontend) objects.
+- [Synchronous query examples](./WithQueryReaderCodeExamples.md) show callback-scoped, row-by-row execution on the backend.
+- [Choosing a query reader](./ExecutingECSQL.md#choosing-a-query-reader) compares execution, buffering, connection selection, options, and lifetime.
+- [Frequently used ECSQL queries](./ECSQL-queries.md) contains recipes for common application tasks.
 
-The examples below focus on the use of the `withPreparedStatment` method which works identically in both [IModelDb]($backend) and [ECDb]($backend). Both classes have a method `withPreparedStatment` method.
+## Migrating from `withPreparedStatement`
 
-**Also see the [general ECSQL Code Examples](../ECSQLCodeExamples.md)** for more and different examples that use the `createQueryReader` method. All of the references to an `iModel` object in those examples can be considered an [IModelDb]($backend) or [ECDb]($backend) object.
+`withPreparedStatement` and [ECSqlStatement]($backend) are deprecated. For SELECT queries, choose the asynchronous or synchronous reader according to the needs of the calling code. Account for these differences when migrating:
 
-Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the some specific ECSQL queries that app backends and services often run.
+| Existing statement code | Reader equivalent or consideration |
+| --- | --- |
+| Bind parameters inside the callback | Build a [QueryBinder]($common) and pass it to the reader API. See [parameter bindings](../ECSQLCodeExamples.md#parameter-bindings). |
+| `stmt.step() === DbResult.BE_SQLITE_ROW` | `await reader.step()` for the async reader; `reader.step()` for the sync reader. Both return a boolean. |
+| `stmt.getRow()` | `reader.current` is a reusable row proxy. Call `reader.current.toRow()` to retain an object for that row. |
+| Default JS-shaped results from `stmt.getRow()` | Select `rowFormat: QueryRowFormat.UseJsPropertyNames` to retain JS property names and class-name values. The readers otherwise default to indexed rows for `reader.toArray()`. |
+| Read class IDs with `stmt.getValue(index).getId()` | Use index access or ECSQL-name access with the default options, which preserve class IDs. See [row formats](../ECSQLRowFormat.md). |
+| Read unsaved edits on the owning database connection | `withQueryReader` uses that connection. With `createQueryReader`, specify `usePrimaryConn: true` when required. Async results are still buffered. |
+| `bindNavigation`, `bindStruct`, or `bindArray` | See the binding limitations below; these do not have equivalent working reader bindings for whole navigation, struct, or arbitrary array values. |
 
-## Parameter Bindings
+For ECDb INSERT, UPDATE, or DELETE statements, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend). iModel data modification uses the iModel APIs.
 
-### Binding per parameter
+## Legacy statement bindings
 
-#### Positional parameters
-
-```ts
-[[include:ExecuteECSql_Binding_ByParameter_Positional]]
-```
-
-#### Named parameters
-
-```ts
-[[include:ExecuteECSql_Binding_ByParameter_Named]]
-```
-
-### Binding to all parameters at once
-
-See [ECSQL parameter types in iTwin.js](../ECSQLParameterTypes.md) to learn which types to use for the parameters when binding all parameters at once.
-
-#### Positional parameters
-
-```ts
-[[include:ExecuteECSql_BindValues_Positional]]
-```
-
-#### Named parameters
-
-```ts
-[[include:ExecuteECSql_BindValues_Named]]
-```
+The following examples describe existing code using the deprecated statement API. For reader queries, bind navigation and struct members individually. Arbitrary ECSQL array parameters are not supported by `QueryBinder`; [ID-set bindings](../ECSQLCodeExamples.md#id-sets) are a separate facility.
 
 ### Navigation properties
 
-[Navigation properties](../ECSQL.md#navigation-properties) are structs made up of the Id of the related instance and the backing
-[ECRelationshipClass](../../bis/ec/ec-relationship-class.md). The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
+Legacy statements accept a [NavigationBindingValue]($common):
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation_ByParameter]]
 ```
 
-```ts
-[[include:ExecuteECSql_BindValues_Navigation]]
-```
-
-Because of the struct nature of navigation properties, you can also use its members in the ECSQL. The two following examples illustrate
-this by specifying the **Id** member of a navigation property.
-
-```ts
-[[include:ExecuteECSql_Binding_NavigationId_ByParameter]]
-```
-
-```ts
-[[include:ExecuteECSql_BindValues_NavigationId]]
-```
+For a reader query filtering by the related instance, use `WHERE Parent.Id=?` and [QueryBinder.bindId]($common). See the [navigation-property example](../ECSQLCodeExamples.md#navigation-properties).
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parameterize individual members of the struct. See [Struct properties in ECSQL](../ECSQL.md#structs) for the ECSQL background.
-
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL.md#structs)".
-
-#### Binding structs as a whole
+Legacy statements can bind a whole struct:
 
 ```ts
 [[include:ExecuteECSql_Binding_Struct_ByParameter]]
 ```
 
-```ts
-[[include:ExecuteECSql_BindValues_Struct]]
-```
-
-#### Binding to individual struct members
-
-```ts
-[[include:ExecuteECSql_Binding_StructMembers_ByParameter]]
-```
-
-```ts
-[[include:ExecuteECSql_BindValues_StructMembers]]
-```
-
-> The two ECSQL examples used in this section amount to the same results.
+For reader queries, parameterize the [individual struct members](../ECSQLCodeExamples.md#struct-properties). Whole-struct reader bindings are not supported.
 
 ### Array properties
 
-See [Array properties in ECSQL](../ECSQL.md#arrays) for the ECSQL background.
-
-> The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../ECSQL.md#arrays)".
+Legacy statements can bind an ECSQL array property:
 
 ```ts
 [[include:ExecuteECSql_Binding_Array_ByParameter]]
 ```
 
-```ts
-[[include:ExecuteECSql_BindValues_Array]]
-```
+An ID set passed to `InVirtualSet` is not a replacement for an arbitrary array-property parameter. See [ECSQL parameter types](../ECSQLParameterTypes.md) for the reader's supported bindings.
 
 ## Working with the query result
 
-The current row of the query result can be retrieved in two ways:
-
-- as a whole as JavaScript literal (adhering to the [ECSQL row format](../ECSQLRowFormat.md))
-- column by column (using the [ECSqlValue]($backend) API as returned from [ECSqlStatement.getValue]($backend))
-
-> The column by column approach is more low-level, but gives you more flexible access to the data in the row. For example,
-> [ECClassIds](../ECSQL.md#ECInstanceId-and-ECClassId) are turned into class names in the [ECSQL row format](../ECSQLRowFormat.md).
-> Using the [ECSqlValue]($backend) API allows you to retrieve ECClassIds as Id64s.
-
-### Rows as a whole
-
-The following example is intended to illustrate the [ECSQL row format](../ECSQLRowFormat.md):
-
-```ts
-[[include:ExecuteECSql_GetRow_IllustrateRowFormat]]
-```
-
-#### Output
-
-```json
-{id: "0x312", className: "StructuralPhysical.Slab", parent: {id: "0x433", relClassName: "BisCore.PhysicalElementAssemblesElements"}, lastMod: "2018-02-03T13:43:22Z"}
-
-{id: "0x313", className: "StructuralPhysical.Slab", parent: {id: "0x5873", relClassName: "BisCore.PhysicalElementAssemblesElements"}, lastMod: "2017-11-24T08:21:01Z"}
-
-...
-```
-
-> Note how the ECProperties used in the ECSQL are converted to members of the JavaScript literal and how their names are
-> transformed according to the rules described in the [ECSQL row format](../ECSQLRowFormat.md#property-names).
-
-The following example illustrates how to work with the ECSQL row JavaScript literal:
-
-```ts
-[[include:ExecuteECSql_GetRow]]
-```
-
-#### Output
-
-ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
---- | --- | --- | --- | ---
-0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-... | | | |
+Both readers expose a [QueryRowProxy]($common). Use column indexes or names to read values, and materialize rows before retaining them. See [handling query results](../ECSQLCodeExamples.md#handling-a-row-of-query-results).
 
 ### Column by column
 
-```ts
-[[include:ExecuteECSql_GetValue]]
-```
-
-#### Output
-
-ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod
---- | --- | --- | --- | ---
-0x312 | StructuralPhysical.Slab | 0x433 | BisCore.PhysicalElementAssemblesElements | 2018-02-03T13:43:22Z
-0x313 | StructuralPhysical.Slab | 0x5873 | BisCore.PhysicalElementAssemblesElements | 2017-11-24T08:21:01Z
-... | | | |
-
-> The sample is code is intentionally verbose to better illustrate the semantics of the API.
-
-The following example illustrates the flexibility of the column by column approach by preserving the [ECClassId](../ECSQL.md#ECInstanceId-and-ECClassId)
-as id instead of having it converted to a class name.
-
-```ts
-[[include:ExecuteECSql_GetValue_PreserveClassIds]]
-```
-
-#### Output
-
-ECClassId | Parent RelECClassId
---- | ---
-0x120 | 0x154
-0x120 | 0x154
-... |
+Legacy code can use [ECSqlStatement.getValue]($backend) and the typed [ECSqlValue]($backend) accessors. The readers expose JavaScript values rather than `ECSqlValue` objects. Check each typed accessor's purpose when migrating; ordinary ID and class-name queries are covered by the [row-format reference](../ECSQLRowFormat.md).
