@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 18 Sep 2026 15:12:40 GMT and should not be manually modified.
+This log was last generated on Tue, 22 Sep 2026 22:39:30 GMT and should not be manually modified.
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+### Updates
+
+- Fixed GL_INVALID_FRAMEBUFFER_OPERATION that could occur when reading pixels right after a second viewport was closed
 
 ## 5.13.4
 Fri, 18 Sep 2026 15:11:19 GMT
