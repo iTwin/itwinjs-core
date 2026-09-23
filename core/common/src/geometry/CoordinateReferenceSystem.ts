@@ -292,20 +292,21 @@ export class HorizontalCRS implements HorizontalCRSProps {
  * @extensions
  */
 export interface VerticalCRSProps {
-  /** Legacy key — preserved for backwards compatibility
+  /** Legacy key - preserved for backwards compatibility
    * @note You must continue to use one of the supported keys for backward compatibility so that new models can
    * still be opened with older versions of itwin.js.
    */
   id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
-  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id when set.
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over [[epsg]] and [[id]] when set.
    * @beta */
   crsName?: string;
+  /** EPSG code identifying the vertical CRS. Takes precedence over [[id]] when [[crsName]] is not set.
+   * @beta */
+  epsg?: number;
 }
 /** Vertical Coordinate reference System implementation.
- *  The VerticalCRS contains currently a single identifier property of string type. Although
- *  we currently only support five distinct key values "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID"
- *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
- *  which will require additional parameters to be added.
+ *  A VerticalCRS can identify a predefined system by dictionary name or EPSG code while retaining
+ *  one of the five legacy keys for backward compatibility.
  *  @public
 */
 export class VerticalCRS implements VerticalCRSProps {
@@ -320,15 +321,19 @@ export class VerticalCRS implements VerticalCRSProps {
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
   */
   public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
-  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over id when set.
+  /** Dictionary CRS name, e.g. "EGM96 height". Takes precedence over [[epsg]] and [[id]] when set.
    * @beta */
   public readonly crsName?: string;
+  /** EPSG code identifying the vertical CRS. Takes precedence over [[id]] when [[crsName]] is not set.
+   * @beta */
+  public readonly epsg?: number;
 
   public constructor(data?: VerticalCRSProps) {
     this.id = "GEOID";
     if (data) {
       this.id = data.id;
       this.crsName = data.crsName;
+      this.epsg = data.epsg;
     }
   }
 
@@ -341,13 +346,26 @@ export class VerticalCRS implements VerticalCRSProps {
   /** Creates a JSON from the Vertical CRS definition
    * @public */
   public toJSON(): VerticalCRSProps {
-    return { id: this.id, crsName: this.crsName };
+    const data: VerticalCRSProps = { id: this.id };
+    if (this.crsName !== undefined)
+      data.crsName = this.crsName;
+
+    if (this.epsg !== undefined)
+      data.epsg = this.epsg;
+
+    return data;
   }
 
   /** Compares two vertical CRS.
    *  @public */
   public equals(other: VerticalCRS): boolean {
-    return (this.id === other.id);
+    if (this.crsName !== undefined || other.crsName !== undefined)
+      return this.crsName === other.crsName;
+
+    if (this.epsg !== undefined || other.epsg !== undefined)
+      return this.epsg === other.epsg;
+
+    return this.id === other.id;
   }
 }
 

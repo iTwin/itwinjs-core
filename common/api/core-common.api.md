@@ -11532,6 +11532,10 @@ export interface VersionedJSON<T> {
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
+    // @beta
+    readonly crsName?: string;
+    // @beta
+    readonly epsg?: number;
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
     readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
@@ -11540,6 +11544,10 @@ export class VerticalCRS implements VerticalCRSProps {
 
 // @public
 export interface VerticalCRSProps {
+    // @beta
+    crsName?: string;
+    // @beta
+    epsg?: number;
     id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 

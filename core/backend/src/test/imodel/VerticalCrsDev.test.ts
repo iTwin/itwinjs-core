@@ -9,6 +9,7 @@ import { Guid } from "@itwin/core-bentley";
 import { GeoCoordStatus, GeographicCRSProps, IModelProps } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
+import { getAvailableVerticalCoordinateReferenceSystems } from "../../GeographicCRSServices";
 import { IModelHost } from "../../IModelHost";
 import { IModelNative } from "../../internal/NativePlatform";
 import { _nativeDb } from "../../internal/Symbols";
@@ -84,19 +85,20 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
       definitions: Array<{ verticalCRS: { crsName: string } }>;
     };
     const expectedNames = dictionary.definitions.map((entry) => entry.verticalCRS.crsName).sort();
-    const actualNames = IModelNative.platform.GeoServices.getListOfVerticalCRS().map((entry) => entry.crsName).sort();
+    const actualNames = (await getAvailableVerticalCoordinateReferenceSystems()).map((entry) => entry.crsName).sort();
 
     expect(actualNames).to.deep.equal(expectedNames);
   });
 
   it("enumerates and converts EGM96 using DEV resources", async () => {
-    const verticalSystems = IModelNative.platform.GeoServices.getListOfVerticalCRS({
+    const verticalSystems = await getAvailableVerticalCoordinateReferenceSystems({
       point: { longitude: 23.700523, latitude: 37.944210 },
     });
     const egm96 = verticalSystems.find((entry) => entry.crsName === "EGM96 height");
 
     expect(egm96).not.to.be.undefined;
     expect(egm96!.id).to.equal("GEOID");
+    expect(egm96!.epsg).to.equal(5773);
     expect(egm96!.unit).to.equal("meter");
 
     const modelCrs = {

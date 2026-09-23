@@ -55,6 +55,42 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
   unit?: string;
 }
 
+/** Describes a vertical coordinate reference system produced by [[getAvailableVerticalCoordinateReferenceSystems]].
+ * @beta
+ */
+export interface AvailableVerticalCoordinateReferenceSystemProps {
+  /** Name in the Bentley Vertical Datum dictionary. */
+  crsName: string;
+  /** Backward-compatible approximation used by older readers. */
+  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+  /** EPSG code identifying the vertical coordinate reference system, when one is defined. */
+  epsg?: number;
+  /** Description of the vertical coordinate reference system. */
+  description: string;
+  /** Whether the vertical coordinate reference system is deprecated. */
+  deprecated: boolean;
+  /** The vertical coordinate reference system type. */
+  type: string;
+  /** The name of the linear unit used by the vertical coordinate reference system. */
+  unit: string;
+  /** The geographic extent where the vertical coordinate reference system applies. */
+  extent: Range2dProps;
+}
+
+/** Arguments supplied to [[getAvailableVerticalCoordinateReferenceSystems]].
+ * @beta
+ */
+export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
+  /** If provided, only return vertical coordinate reference systems applicable at this longitude and latitude. */
+  point?: { longitude: number, latitude: number };
+  /** If provided, only return vertical coordinate reference systems whose extent contains this extent. */
+  extent?: Range2dProps;
+  /** If true, include vertical coordinate reference systems whose extent intersects, but does not contain, [[extent]].
+   * @default false
+   */
+  includeIntersecting?: boolean;
+}
+
 /** Get a list of Geographic Coordinate Reference Systems.
  * @param options Specifies the parameters to filter the returned list.
  * @returns The list of Geographic Coordinate Reference Systems, according to the supplied parameters.
@@ -69,6 +105,18 @@ export async function getAvailableCoordinateReferenceSystems(
     args.includeWorld,
     args.unit
   );
+}
+
+/** Get a list of Vertical Coordinate Reference Systems.
+ * @param args Specifies the parameters used to filter the returned list. Point and extent filters are mutually exclusive.
+ * @returns The list of Vertical Coordinate Reference Systems according to the supplied parameters.
+ * @beta
+ */
+export async function getAvailableVerticalCoordinateReferenceSystems(
+  args: GetAvailableVerticalCoordinateReferenceSystemsArgs = {}
+): Promise<AvailableVerticalCoordinateReferenceSystemProps[]> {
+  GeoCoordConfig.loadDefaultDatabases();
+  return IModelNative.platform.GeoServices.getListOfVerticalCRS(args);
 }
 
 /** Get a list of units used by Geographic Coordinate Reference Systems in iTwin.js.

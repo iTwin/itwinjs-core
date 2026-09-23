@@ -439,6 +439,18 @@ export interface AvailableCoordinateReferenceSystemProps {
     unit?: string;
 }
 
+// @beta
+export interface AvailableVerticalCoordinateReferenceSystemProps {
+    crsName: string;
+    deprecated: boolean;
+    description: string;
+    epsg?: number;
+    extent: Range2dProps;
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    type: string;
+    unit: string;
+}
+
 // @beta (undocumented)
 export interface AzureBlobStorageCredentials {
     // (undocumented)
@@ -3912,6 +3924,19 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export function getAvailableCRSUnits(): string[];
+
+// @beta
+export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): Promise<AvailableVerticalCoordinateReferenceSystemProps[]>;
+
+// @beta
+export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+    includeIntersecting?: boolean;
+    point?: {
+        longitude: number;
+        latitude: number;
+    };
+}
 
 // @beta
 export interface GetResolvedSettingDefOptions {
