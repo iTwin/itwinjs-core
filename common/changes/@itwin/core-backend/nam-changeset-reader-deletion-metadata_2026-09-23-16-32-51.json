@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add `PropertyFilter.InstanceKeyAndIdentifiers` to read fixed identifiers from a changeset without querying the current iModel.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

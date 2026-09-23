@@ -29,7 +29,7 @@ interface ChangeMeta {
   tables: string[];          // SQLite tables that contributed rows
   changeIndexes: number[];   // stream positions of those rows
   instanceKey: string;       // ECInstanceId-ECClassId key used for merging
-  propFilter: PropertyFilter; // PropertyFilter.All | PropertyFilter.BisCoreElement | PropertyFilter.InstanceKey
+  propFilter: PropertyFilter; // PropertyFilter.All | PropertyFilter.BisCoreElement | PropertyFilter.InstanceKey | PropertyFilter.InstanceKeyAndIdentifiers
   changeFetchedPropNames: string[]; // property names actually read from the change binary
   rowOptions?: RowFormatOptions; // the rowOptions passed when opening the reader
   isIndirectChange: boolean; // true when the change was applied indirectly
@@ -208,6 +208,7 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 | `All` (default) | All EC properties mapped to changed tables |
 | `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
+| `InstanceKeyAndIdentifiers` | `ECInstanceId` and `ECClassId`, plus identifiers read only from the changeset: the owning `Element` of an aspect and, for deleted rows, an element's `FederationGuid`, a link-table relationship's `SourceECInstanceId` and `TargetECInstanceId`, and an `ExternalSourceAspect`'s `Scope`, `Kind`, and `Identifier`. Identifiers missing from the changeset are omitted, and navigation values contain only `Id`. |
 
 ```ts
 [[include:ChangesetReader.ModeInstanceKey]]
@@ -354,7 +355,7 @@ reader.disableStrictMode();
 
 | Active configuration | Default |
 |---|---|
-| `propFilter: InstanceKey` | 100 |
+| `propFilter: InstanceKey` or `InstanceKeyAndIdentifiers` | 100 |
 | `propFilter: BisCoreElement` | 20 |
 | `propFilter: All`, `abbreviateBlobs: false` | 5 |
 | `propFilter: All` (blobs abbreviated or unset) | 10 |
@@ -461,3 +462,4 @@ This risk is not specific to changesets — it arises any time the iModel's stat
 |---|---|---|
 | Reading a changeset after entity is deleted | `ECClassId` resolves to the per-table base class; rows are not merged into the leaf domain class | Read changesets before the entity is deleted from the live iModel |
 | Reading a historical transaction after new transactions have been saved | Property values not recorded in that txn's changeset reflect the current live state, not the historical state | Filter trustworthy properties using `$meta.changeFetchedPropNames` |
+| Reading identifiers, such as an aspect's owning element, after the entity is deleted | Missing components of navigation values cannot be fetched, so reading can fail | Use `PropertyFilter.InstanceKeyAndIdentifiers`, which reads its identifiers only from the changeset |
