@@ -1113,6 +1113,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships.length).to.equal(1);
     chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
     chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
+    chai.expect(conflict.brokenRelationships[0].appliedFix).to.deep.equal({ property: "parent", value: null });
 
     // The new element should still exist, but it should have no parent.
     const child = briefcase2.elements.tryGetElementProps(childId);

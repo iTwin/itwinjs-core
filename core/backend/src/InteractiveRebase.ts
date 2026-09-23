@@ -190,6 +190,14 @@ export interface RebaseConflictProperties {
   [propertyName: string]: any;
 }
 
+/** A substitution automatically applied so a conflicting change can be written. */
+export interface AppliedFix {
+  /** The property whose value was substituted, as an access string into the affected instance. */
+  property: string;
+  /** The value assigned to {@link property} in place of the conflicting value. */
+  value: any;
+}
+
 export interface UniqueConstraintViolation {
   /**
    * The properties that are part of the UNIQUE constraint that is violated, as access strings into
@@ -209,12 +217,7 @@ export interface UniqueConstraintViolation {
    *
    * This is `undefined` if no substitution could be found, in which case our change was not applied at all.
    */
-  appliedFix?: {
-    /** The property whose value was substituted, as an access string into {@link conflictingInstance}, e.g. `code.value`. */
-    property: string;
-    /** The value assigned to {@link property} in place of the value that collided. */
-    value: any;
-  };
+  appliedFix?: AppliedFix;
 }
 
 export interface BrokenRelationship {
@@ -227,6 +230,12 @@ export interface BrokenRelationship {
    * The navigation property on the instance that is broken, as an access string into {@link ours}, e.g., `parent`.
    */
   navigationProperty: string;
+
+  /**
+   * The substitution that was automatically applied to the broken navigation property so that our change
+   * could be applied anyway.
+   */
+  appliedFix?: AppliedFix;
 }
 
 /** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
@@ -1428,16 +1437,20 @@ export class InteractiveRebase {
         const brokenRelationships = targetProps !== undefined ? this.findBrokenRelationships(targetProps) : [];
         const isInsert = oldProps === undefined;
         const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
-        RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
+        const conflict = RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
 
         const fallbackProps = newProps === undefined ? undefined : this.clearNullableBrokenNavigationProperties(newProps, brokenRelationships);
         if (fallbackProps !== undefined) {
+          let fallbackApplied = false;
           this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fallbackProps, () => {
-            if (isInsert)
-              this._db[_nativeDb].insertInstance(fallbackProps, { forceUseId: true, useJsNames: true });
-            else
-              this._db[_nativeDb].updateInstance(fallbackProps, { useJsNames: true });
+            const result = isInsert
+              ? this._db[_nativeDb].insertInstance(fallbackProps, { forceUseId: true, useJsNames: true })
+              : this._db[_nativeDb].updateInstance(fallbackProps, { useJsNames: true });
+            fallbackApplied = true;
+            return result;
           });
+          if (fallbackApplied)
+            conflict.recordBrokenRelationshipFix(brokenRelationships);
         }
         return undefined;
       }
@@ -2201,6 +2214,18 @@ class RebaseConflictImpl implements RebaseConflict {
     return conflict;
   }
 
+  /** Records the nullable-navigation substitutions that were successfully written while replaying this conflict. */
+  public recordBrokenRelationshipFix(brokenRelationships: BrokenRelationshipDetail[]): void {
+    for (const broken of brokenRelationships) {
+      if (!broken.nullable)
+        continue;
+      const relationship = this.brokenRelationships.find((candidate) =>
+        candidate.navigationProperty === broken.navigationProperty && candidate.relationshipClass === broken.relationshipClass);
+      if (relationship !== undefined)
+        relationship.appliedFix = { property: broken.navigationProperty, value: null };
+    }
+  }
+
   /** Returns the entry describing `detail`'s constraint, creating it if this is the first time that constraint has
    * been violated for this instance. Re-violating an already-recorded constraint refreshes the existing entry
    * rather than appending, since {@link uniqueConstraintViolations} describes the instance's current state.
@@ -2263,7 +2288,7 @@ class RebaseConflictImpl implements RebaseConflict {
  */
 class UniqueConstraintViolationImpl implements UniqueConstraintViolation {
   public readonly uniqueConstraintProperties: string[];
-  public appliedFix?: { property: string, value: any };
+  public appliedFix?: AppliedFix;
   private _conflictingInstance: RebaseConflictProperties;
 
   public constructor(private readonly _rebase: InteractiveRebase, private readonly _classFullName: string, uniqueConstraintProperties: string[], conflictingInstance: RebaseConflictProperties) {
