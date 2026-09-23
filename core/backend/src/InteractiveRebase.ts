@@ -1443,11 +1443,8 @@ export class InteractiveRebase {
         if (fallbackProps !== undefined) {
           let fallbackApplied = false;
           this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fallbackProps, () => {
-            const result = isInsert
-              ? this._db[_nativeDb].insertInstance(fallbackProps, { forceUseId: true, useJsNames: true })
-              : this._db[_nativeDb].updateInstance(fallbackProps, { useJsNames: true });
+            this.writeConstraintRetry(oldProps, fallbackProps);
             fallbackApplied = true;
-            return result;
           });
           if (fallbackApplied)
             conflict.recordBrokenRelationshipFix(brokenRelationships);
@@ -1485,16 +1482,20 @@ export class InteractiveRebase {
             value: fix.value,
           };
           this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fix.props, () => {
-            if (oldProps === undefined) {
-              this._db[_nativeDb].insertInstance(fix.props, { forceUseId: true, useJsNames: true });
-            } else {
-              this._db[_nativeDb].updateInstance(fix.props, { useJsNames: true });
-            }
+            this.writeConstraintRetry(oldProps, fix.props);
           });
         }
       }
       return undefined;
     }
+  }
+
+  /** Writes a constraint-retry row using the operation represented by its captured old side. */
+  private writeConstraintRetry(oldProps: RebaseConflictProperties | undefined, props: RebaseConflictProperties): void {
+    if (oldProps === undefined)
+      this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
+    else
+      this._db[_nativeDb].updateInstance(props, { useJsNames: true });
   }
 
   /** Finds a value for one of `uniqueConstraintProperties` that doesn't collide with any existing row, returning
