@@ -61,12 +61,8 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
    * Retrieves a format definition from the format set, resolving string references and consulting the fallback provider when needed.
    */
   public async getFormat(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
-    return this.getFormatInternal(input, system, context);
-  }
-
-  private async getFormatInternal(input: string, system: UnitSystemKey | undefined, providerContext?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
-    const context = extendProviderContext(providerContext, this);
-    if (!context)
+    const lookupContext = extendProviderContext(context, this);
+    if (!lookupContext)
       return undefined;
 
     const name = normalizeFormatName(input);
@@ -74,11 +70,11 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
 
     if (format !== undefined) {
       if (typeof format === "string")
-        return this.resolveReference(format, undefined, system, context);
+        return this.resolveReference(format, new Set(), system, lookupContext);
       return format;
     }
 
-    return this.getFormatFromFallback(name, system, context);
+    return this.getFormatFromFallback(name, system, lookupContext);
   }
 
   private async getFormatFromFallback(name: string, system: UnitSystemKey | undefined, context: FormatsProviderContext): Promise<FormatDefinition | undefined> {
@@ -93,12 +89,8 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
    * locally; a fallback is used only when it implements `SyncFormatsProvider`.
    */
   public getFormatSync(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined {
-    return this.getFormatSyncInternal(input, system, context);
-  }
-
-  private getFormatSyncInternal(input: string, system: UnitSystemKey | undefined, providerContext?: FormatsProviderContext): FormatDefinition | undefined {
-    const context = extendProviderContext(providerContext, this);
-    if (!context)
+    const lookupContext = extendProviderContext(context, this);
+    if (!lookupContext)
       return undefined;
 
     const name = normalizeFormatName(input);
@@ -106,11 +98,11 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
 
     if (format !== undefined) {
       if (typeof format === "string")
-        return this.resolveReferenceSync(format, undefined, system, context);
+        return this.resolveReferenceSync(format, new Set(), system, lookupContext);
       return format;
     }
 
-    return this.getFormatSyncFromFallback(name, system, context);
+    return this.getFormatSyncFromFallback(name, system, lookupContext);
   }
 
   private getFormatSyncFromFallback(name: string, system: UnitSystemKey | undefined, context: FormatsProviderContext): FormatDefinition | undefined {
@@ -125,8 +117,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
    * @param reference The string reference to resolve
    * @param visited Set of visited references to detect circular references
    * @param system Optional unit system override
+   * @param context Lookup context to forward to the fallback provider
    */
-  private async resolveReference(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
+  private async resolveReference(reference: string, visited: Set<string>, system: UnitSystemKey | undefined, context: FormatsProviderContext): Promise<FormatDefinition | undefined> {
     // Prevent infinite loops from circular references
     if (visited.has(reference)) {
       return undefined;
@@ -136,7 +129,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
     const format = this._formatSet.formats[reference];
 
     if (format === undefined)
-      return context ? this.getFormatFromFallback(reference, system, context) : undefined;
+      return this.getFormatFromFallback(reference, system, context);
 
     if (typeof format === "string")
       return this.resolveReference(format, visited, system, context);
@@ -144,7 +137,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
     return format;
   }
 
-  private resolveReferenceSync(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined {
+  private resolveReferenceSync(reference: string, visited: Set<string>, system: UnitSystemKey | undefined, context: FormatsProviderContext): FormatDefinition | undefined {
     // Prevent infinite loops from circular references
     if (visited.has(reference)) {
       return undefined;
@@ -153,7 +146,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
 
     const format = this._formatSet.formats[reference];
     if (format === undefined)
-      return context ? this.getFormatSyncFromFallback(reference, system, context) : undefined;
+      return this.getFormatSyncFromFallback(reference, system, context);
 
     if (typeof format === "string")
       return this.resolveReferenceSync(format, visited, system, context);
