@@ -371,7 +371,6 @@ export interface FormatsProvider {
 
 // @beta
 export interface FormatsProviderContext {
-    // (undocumented)
     readonly providerChain: ReadonlySet<FormatsProvider>;
 }
 
