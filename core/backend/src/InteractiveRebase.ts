@@ -1179,7 +1179,7 @@ export class InteractiveRebase {
       // effect of a GeometricElement change) rather than deliberate edits, so they are force-applied
       // without conflict detection, matching the automatic semantic-rebase path's `applyInstanceChange`.
       this._db.txns.withIndirectTxnMode(() => {
-        this.applyDirectInstanceChange(change);
+        this.applyIndirectInstanceChange(change);
       });
     } else {
       this.applyInteractiveInstanceChange(change);
@@ -1286,7 +1286,7 @@ export class InteractiveRebase {
    * from which of "old"/"new" were captured), without any conflict detection. Used for indirect/derived
    * changes, which should not participate in user-facing conflict resolution.
    */
-  private applyDirectInstanceChange(change: RebaseInstanceChange): void {
+  private applyIndirectInstanceChange(change: RebaseInstanceChange): void {
     const nativeDb = this._db[_nativeDb];
     if (change.new) {
       const { $meta: _newMeta, ...newProps } = change.new;
@@ -1840,11 +1840,9 @@ export class InteractiveRebase {
    * machinery [[writeConflictResolution]] provides for a real conflict.
    */
   private writeRestoredInstance(props: RebaseConflictProperties): void {
-    try {
-      this._db[_nativeDb].updateInstance(props, { useJsNames: true });
-    } catch (err: any) {
-      if (err.errorNumber !== DbResult.BE_SQLITE_NOTFOUND)
-        throw err;
+    const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true });
+    if (result === false || result !== true && !result.updated) {
+      // Row does not exist - try inserting it.
       this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
     }
   }
@@ -1856,11 +1854,8 @@ export class InteractiveRebase {
    */
   private writeConflictResolution(conflict: RebaseConflictImpl, props: RebaseConflictProperties, fullReplace: boolean, attempt: number): void {
     try {
-      try {
-        this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
-      } catch (err: any) {
-        if (err.errorNumber !== DbResult.BE_SQLITE_NOTFOUND)
-          throw err;
+      const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
+      if (result === false || result !== true && !result.updated) {
         // Row does not exist - try inserting it.
         this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
       }

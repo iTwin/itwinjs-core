@@ -1121,6 +1121,51 @@ describe("InteractiveRebase", () => {
     chai.expect((child as any).parent).to.be.undefined;
   });
 
+  it("reports a foreign key constraint violation when we add an element to a model they deleted", async () => {
+    const deletedModelId = await withEditTxn(briefcase1, async (txn) => {
+      const code = Code.createEmpty();
+      code.value = "DeletedModel";
+      return IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, code, true)[1];
+    });
+    await briefcase1.pushChanges({ description: "Create model" });
+    await briefcase2.pullChanges();
+
+    const childId = await withEditTxn(briefcase2, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: deletedModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(5.0, 6.0),
+      } as SomeGraphicalElementProps);
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteModel(deletedModelId);
+    });
+    await briefcase1.pushChanges({ description: "Delete model" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(childId);
+
+    // Because the model was deleted and the model property is not nullable, this change is not applied at all.
+    chai.expect(conflict.brokenRelationships.length).to.equal(1);
+    chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("model");
+    chai.expect(conflict.brokenRelationships[0].appliedFix).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+
+    // TODO: There should be a way to apply this change by supplying a new model.
+    // Doing so should also apply further changes that were dependent on this one.
+  });
+
   it("should report an aspect conflict when both users update the same aspect property", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
