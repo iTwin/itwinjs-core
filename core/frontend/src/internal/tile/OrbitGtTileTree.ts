@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint, compareStringsOrUndefined, expectDefined, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
+  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, GeographicCRSProps, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
@@ -364,8 +364,8 @@ export class OrbitGtTileTree extends TileTree {
  * say whether its heights are ellipsoidal or orthometric. We assume they use the same convention as the iModel.
  *
  * The caller has already placed the cloud treating its heights as ellipsoidal (`heightAsEllipsoidalDbZ`). If the
- * iModel is geoid-based, the shift is the difference between treating the origin's height as orthometric versus
- * ellipsoidal. If the iModel is ellipsoidal, or the shift cannot be computed, returns zero.
+ * iModel is geoid-based, the shift is the difference between treating the origin's height as relative to the iModel's
+ * vertical datum versus ellipsoidal. If the iModel is ellipsoidal, or the shift cannot be computed, returns zero.
  * Exported strictly for tests.
  * @internal
  */
@@ -373,18 +373,28 @@ export async function computeVerticalDatumShift(geoOrigin: Point3d, heightAsElli
   if (iModel.noGcsDefined)
     return 0;
 
-  // The backend always resolves the vertical datum id; anything not geoid-based is ellipsoidal.
+  // The backend always resolves the vertical datum id. Convert against the iModel's own datum; NAVD88 and NGVD29
+  // require a NAD83-based horizontal CRS.
+  let source: GeographicCRSProps;
   const verticalDatum = iModel.geographicCoordinateSystem?.verticalCRS?.id;
-  const isGeoidBased = "GEOID" === verticalDatum || "NAVD88" === verticalDatum || "NGVD29" === verticalDatum;
-  if (!isGeoidBased)
-    return 0;
+  switch (verticalDatum) {
+    case "GEOID":
+      source = { horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } };
+      break;
+    case "NAVD88":
+    case "NGVD29":
+      source = { horizontalCRS: { epsg: 4269 }, verticalCRS: { id: verticalDatum } };
+      break;
+    default:
+      return 0;
+  }
 
-  const geoidConverter = iModel.geoServices.getConverter({ horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } });
-  if (undefined === geoidConverter)
+  const converter = iModel.geoServices.getConverter(source);
+  if (undefined === converter)
     return 0;
 
   try {
-    const response = await geoidConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
+    const response = await converter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
     if (response.iModelCoords[0].s !== GeoCoordStatus.Success) {
       Logger.logWarning(FrontendLoggerCategory.RealityData, `Failed to compute orthometric height correction for point cloud (status ${response.iModelCoords[0].s}); heights will be treated as ellipsoidal`);
       return 0;

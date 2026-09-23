@@ -75,10 +75,17 @@ describe("computeVerticalDatumShift", () => {
     }
   });
 
-  it("requests a converter with a geoid-based vertical CRS", async () => {
-    const { iModel, getConverter } = createFakeConnection({ geoidZ: 0 });
-    await computeVerticalDatumShift(geoOrigin, 0, iModel);
-    expect(getConverter).toHaveBeenCalledWith({ horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } });
+  it("converts against the iModel's own vertical datum", async () => {
+    const expected = [
+      ["GEOID", { horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } }],
+      ["NAVD88", { horizontalCRS: { epsg: 4269 }, verticalCRS: { id: "NAVD88" } }],
+      ["NGVD29", { horizontalCRS: { epsg: 4269 }, verticalCRS: { id: "NGVD29" } }],
+    ] as const;
+    for (const [verticalDatum, source] of expected) {
+      const { iModel, getConverter } = createFakeConnection({ verticalDatum, geoidZ: 0 });
+      await computeVerticalDatumShift(geoOrigin, 0, iModel);
+      expect(getConverter).toHaveBeenCalledWith(source);
+    }
   });
 
   it("returns zero when the iModel has no GCS", async () => {
