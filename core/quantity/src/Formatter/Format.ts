@@ -616,7 +616,8 @@ function createResolvedFormatProps(jsonObj: FormatProps, units: ResolvedFormatUn
 
 async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
   const units = undefined === jsonObj.composite?.units ? undefined : await Promise.all(jsonObj.composite.units.map(async (entry) => ({
-    unit: await resolveCompositeUnit(unitsProvider, entry.name, entry.label),
+    // Label is intentionally not validated, matching master: existing JSON may carry a non-string label (e.g. null).
+    unit: await resolveCompositeUnit(unitsProvider, entry.name),
     label: entry.label,
   })));
 
@@ -634,7 +635,8 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
 
 function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProvider, jsonObj: FormatProps): ResolvedFormatProps {
   const units = undefined === jsonObj.composite?.units ? undefined : jsonObj.composite.units.map((entry) => ({
-    unit: resolveCompositeUnitSync(unitsProvider, entry.name, entry.label),
+    // Keep in sync with resolveFormatProps: label is intentionally not validated.
+    unit: resolveCompositeUnitSync(unitsProvider, entry.name),
     label: entry.label,
   }));
 

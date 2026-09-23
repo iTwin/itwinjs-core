@@ -164,4 +164,10 @@ describe("synchronous quantity formatting", () => {
       composite: { units: [{ name: "Custom.M" }] },
     })).toThrow("Invalid unit name 'Custom.M'.");
   });
+
+  it("accepts a non-string composite unit label in both factories, matching master", async () => {
+    const props = JSON.parse(`{"type":"Decimal","composite":{"units":[{"name":"Units.M","label":null}]}}`) as FormatProps;
+    await expect(Format.createFromJSON("NullLabel", provider, props)).resolves.toBeInstanceOf(Format);
+    expect(Format.createFromJSONSync("NullLabel", provider, props)).toBeInstanceOf(Format);
+  });
 });
