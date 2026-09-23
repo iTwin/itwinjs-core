@@ -536,8 +536,6 @@ export class InteractiveRebase {
     this._editTxn = new EditTxn(this._db, "Interactive Rebase");
     this._editTxn.start();
 
-    // TODO: revert already committed changes, too.
-
     ++this._currentGroupIndex;
     const group = this.currentGroup;
     if (group === undefined) {
@@ -555,6 +553,82 @@ export class InteractiveRebase {
     this.reinstateDataTxn(group.txns[0]);
 
     return true;
+  }
+
+  /**
+   * Abandon all conflict resolutions and edits in the current Txn group and move back to the previous one,
+   * reverting the previous group's committed changes and redoing its replay from scratch.
+   */
+  public previousGroup(): void {
+    if (this._currentGroupIndex < 0) {
+      InteractiveRebaseError.throwError("already-past-first-group", "The rebase process has already moved past the first group");
+    }
+
+    if (this._editTxn) {
+      this._editTxn.end("abandon");
+      this._editTxn = undefined;
+    }
+
+    --this._currentGroupIndex;
+    const group = this.currentGroup;
+    if (group === undefined) {
+      return;
+    }
+
+    // Reverses the previous group's already-committed Txn at the native/row level (see
+    // TxnManager::PullMergeRebasePrevious) instead of trying to reconstruct its conflicts from anything
+    // kept in memory - a large changeset makes an in-memory record of every group's conflicts unaffordable.
+    const nativeDb = this._db[_nativeDb];
+    const txnId = nativeDb.pullMergeRebasePrevious();
+    assert(txnId === group.txns[0].id, "Unexpected txn id");
+
+    this._editTxn = new EditTxn(this._db, "Interactive Rebase");
+    this._editTxn.start();
+
+    this._conflicts = [];
+    this.reinstateDataTxn(group.txns[0]);
+  }
+
+  /**
+   * Abandon all edits in the current Txn group and restart the group's rebase process from the beginning.
+   */
+  public restartGroup(): void {
+    if (this.currentGroup === undefined) {
+      if (this._currentGroupIndex >= this.groups.length)
+        InteractiveRebaseError.throwError("already-past-last-group", "There is no current group to restart because the rebase process has already moved past the last group");
+      else
+        InteractiveRebaseError.throwError("already-past-first-group", "There is no current group to restart because the rebase process has not yet begun the first group");
+    }
+
+    if (this._editTxn) {
+      this._editTxn.end("abandon");
+      this._editTxn = undefined;
+    }
+
+    this._editTxn = new EditTxn(this._db, "Interactive Rebase");
+    this._editTxn.start();
+
+    this._conflicts = [];
+    this.reinstateDataTxn(this.currentGroup.txns[0]);
+  }
+
+  /**
+   * Completely abandons the current rebase process and restarts it from the beginning.
+   * After this call, the [[currentGroup]] will be undefined because the cursor will be before the
+   * first group. Call [[nextGroup]] to begin rebasing the first group.
+   */
+  public restartAll(): void {
+    if (this._editTxn) {
+      this._editTxn.end("abandon");
+      this._editTxn = undefined;
+    }
+
+    const nativeDb = this._db[_nativeDb];
+    while (this._currentGroupIndex >= 0) {
+      nativeDb.pullMergeRebasePrevious();
+      --this._currentGroupIndex;
+    }
+    this._currentGroupIndex = -1;
   }
 
   /**
@@ -1766,64 +1840,6 @@ export class InteractiveRebase {
       };
       this.writeConflictResolution(conflict, fix.props, fullReplace, attempt + 1);
     }
-  }
-
-  /**
-   * Abandon all conflict resolutions and edits in the current Txn group and move back to the previous one,
-   * reverting the previous group's committed changes and redoing its replay from scratch.
-   */
-  public previousGroup(): void {
-    if (this._currentGroupIndex < 0) {
-      InteractiveRebaseError.throwError("already-past-first-group", "The rebase process has already moved past the first group");
-    }
-
-    if (this._editTxn) {
-      this._editTxn.end("abandon");
-      this._editTxn = undefined;
-    }
-
-    --this._currentGroupIndex;
-    const group = this.currentGroup;
-    if (group === undefined) {
-      return;
-    }
-
-    // Reverses the previous group's already-committed Txn at the native/row level (see
-    // TxnManager::PullMergeRebasePrevious) instead of trying to reconstruct its conflicts from anything
-    // kept in memory - a large changeset makes an in-memory record of every group's conflicts unaffordable.
-    const nativeDb = this._db[_nativeDb];
-    const txnId = nativeDb.pullMergeRebasePrevious();
-    assert(txnId === group.txns[0].id, "Unexpected txn id");
-
-    this._editTxn = new EditTxn(this._db, "Interactive Rebase");
-    this._editTxn.start();
-
-    this._conflicts = [];
-    this.reinstateDataTxn(group.txns[0]);
-  }
-
-  /**
-   * Abandon all edits in the current Txn group and restart the group's rebase process from the beginning.
-   */
-  public restartGroup(): void {
-    if (this._editTxn) {
-      this._editTxn.end("abandon");
-      this._editTxn = undefined;
-    }
-  }
-
-  /**
-   * Completely abandons the current rebase process and restarts it from the beginning.
-   */
-  public restartAll(): void {
-    if (this._editTxn) {
-      this._editTxn.end("abandon");
-      this._editTxn = undefined;
-    }
-
-    // TODO: revert previous txn changes, too.
-
-    this._currentGroupIndex = -1;
   }
 
   // List of local txns to be rebased

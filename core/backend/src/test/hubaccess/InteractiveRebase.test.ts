@@ -2187,7 +2187,6 @@ describe("InteractiveRebase", () => {
     chai.expect(Point2d.fromJSON(propsAfterBackingUp.somePoint).isExactEqual(new Point2d(1.23, 4.56))).to.be.true;
   });
 
-  /*
   it("restartGroup discards conflict resolutions and redoes the current group's replay", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
@@ -2238,5 +2237,4 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("Local1");
   });
-  */
 });
