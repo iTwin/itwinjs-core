@@ -384,9 +384,11 @@ export async function computeVerticalDatumShift(geoOrigin: Point3d, heightAsElli
   let source: GeographicCRSProps;
   const verticalDatum = iModel.geographicCoordinateSystem?.verticalCRS?.id;
   switch (verticalDatum) {
+    // GEOID heights are defined relative to WGS84 (EPSG:4326).
     case "GEOID":
       source = { horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } };
       break;
+    // NAVD88 and NGVD29 are only defined in conjunction with a NAD83-based horizontal datum (EPSG:4269).
     case "NAVD88":
     case "NGVD29":
       source = { horizontalCRS: { epsg: 4269 }, verticalCRS: { id: verticalDatum } };
