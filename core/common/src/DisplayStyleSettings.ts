@@ -370,6 +370,9 @@ class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Ov
   }
 
   protected override _clear(): void {
+    for (const [id, _ovr] of this)
+      this._event.raiseEvent(id, undefined);
+
     this._json[this._arrayKey] = undefined;
     super._clear();
   }
