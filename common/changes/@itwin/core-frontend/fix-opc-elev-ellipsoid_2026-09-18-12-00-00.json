@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "OPC point clouds whose CRS does not specify a height convention now assume the same one as the iModel they are displayed in, instead of being displaced by the geoid-ellipsoid separation when the guess was wrong.",
+      "comment": "OPC point clouds whose CRS does not specify a height convention now assume the same one as the iModel they are displayed in.",
       "type": "none"
     }
   ],
