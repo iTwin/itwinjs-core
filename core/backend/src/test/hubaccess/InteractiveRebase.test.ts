@@ -9,7 +9,7 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { Code, CodeScopeSpec, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
 import { InteractiveRebaseError } from "../../InteractiveRebase";
@@ -1174,6 +1174,76 @@ describe("InteractiveRebase", () => {
     const childProps = briefcase2.elements.tryGetElementProps(childId);
     chai.expect(childProps).not.to.be.undefined;
     chai.expect(childProps!.model).to.equal(newModelId);
+  });
+
+  it("requires resolving model and code.spec relationships before inserting an element", async () => {
+    const [deletedModelId, deletedCodeSpecId] = await withEditTxn(briefcase1, async (txn) => {
+      const code = Code.createEmpty();
+      code.value = "DeletedModel";
+      const modelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, code, true)[1];
+      const codeSpecId = briefcase1.codeSpecs.insert(txn, "DeletedCodeSpec", CodeScopeSpec.Type.Repository);
+      return [modelId, codeSpecId];
+    });
+    await briefcase1.pushChanges({ description: "Create model and code spec" });
+    await briefcase2.pullChanges();
+
+    const childId = await withEditTxn(briefcase2, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: deletedModelId,
+        category: drawingCategoryId,
+        code: new Code({ spec: deletedCodeSpecId, scope: IModel.rootSubjectId, value: "Child" }),
+        foo: "Child",
+        somePoint: new Point2d(5.0, 6.0),
+      } as SomeGraphicalElementProps);
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteModel(deletedModelId);
+      txn.iModel.withSqliteStatement("DELETE FROM bis_CodeSpec WHERE Id=?", (statement) => {
+        statement.bindId(1, deletedCodeSpecId);
+        statement.step();
+      });
+    });
+    await briefcase1.pushChanges({ description: "Delete model and code spec" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(childId);
+    chai.expect(conflict.brokenRelationships.map((relationship) => relationship.navigationProperty)).to.have.members(["model", "code.spec"]);
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+
+    const modelRelationship = conflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "model");
+    const codeSpecRelationship = conflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "code.spec");
+    chai.expect(modelRelationship).to.not.be.undefined;
+    chai.expect(codeSpecRelationship).to.not.be.undefined;
+    if (!modelRelationship || !codeSpecRelationship) return;
+
+    const modelCode = Code.createEmpty();
+    modelCode.value = "ReplacementModel";
+    const replacementModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(interactive.editTxn, modelCode, true)[1];
+    conflict.resolveBrokenRelationship(modelRelationship, replacementModelId);
+
+    chai.expect(modelRelationship.appliedValue).to.be.undefined;
+    chai.expect(modelRelationship.stagedValue).to.equal(replacementModelId);
+    chai.expect(codeSpecRelationship.appliedValue).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+
+    const replacementCodeSpecId = briefcase2.codeSpecs.insert(interactive.editTxn, "ReplacementCodeSpec", CodeScopeSpec.Type.Repository);
+    conflict.resolveBrokenRelationship(codeSpecRelationship, replacementCodeSpecId);
+
+    chai.expect(modelRelationship.appliedValue).to.equal(replacementModelId);
+    chai.expect(codeSpecRelationship.appliedValue).to.equal(replacementCodeSpecId);
+    const childProps = briefcase2.elements.tryGetElementProps(childId);
+    chai.expect(childProps).to.not.be.undefined;
+    chai.expect(childProps!.model).to.equal(replacementModelId);
+    chai.expect(childProps!.code.spec).to.equal(replacementCodeSpecId);
   });
 
   it("should report an aspect conflict when both users update the same aspect property", async () => {
