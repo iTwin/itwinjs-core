@@ -2374,6 +2374,7 @@ class RebaseConflictImpl implements RebaseConflict {
     }
     setPropertyValue(writeProps, instanceAccessString, value);
 
+    let inserted = false;
     try {
       if (current === undefined) {
         this._rebase.iModel[_nativeDb].insertInstance(writeProps, { forceUseId: true, useJsNames: true });
@@ -2382,6 +2383,7 @@ class RebaseConflictImpl implements RebaseConflict {
           candidate.appliedValue = getPropertyValue(writeProps, candidateInstanceAccessString);
           candidate.stagedValue = undefined;
         }
+        inserted = true;
       } else {
         const result = this._rebase.iModel[_nativeDb].updateInstance(writeProps, { useJsNames: true });
         if (result === false || result !== true && !result.updated)
@@ -2399,7 +2401,32 @@ class RebaseConflictImpl implements RebaseConflict {
       }
     }
 
+    if (inserted)
+      this.restoreResolvedDependentRelationships();
+
     this._rebase.iModel.clearCaches({ instanceCachesOnly: true });
+  }
+
+  private restoreResolvedDependentRelationships(): void {
+    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
+    for (const dependent of this.dependentConflicts) {
+      for (const relationship of dependent.brokenRelationships) {
+        const dependentProps = dependent.ours;
+        if (dependentProps === undefined)
+          continue;
+
+        const dependentRelationship = getPropertyValue(dependentProps, relationship.navigationProperty);
+        const dependentRelationshipId = typeof dependentRelationship === "string"
+          ? dependentRelationship
+          : dependentRelationship?.id;
+        if (dependentRelationshipId !== this.id)
+          continue;
+        if (dependentRelationshipId === relationship.appliedValue)
+          continue;
+
+        dependent.resolveBrokenRelationship(relationship, this.id);
+      }
+    }
   }
 }
 

@@ -1246,6 +1246,72 @@ describe("InteractiveRebase", () => {
     chai.expect(childProps!.code.spec).to.equal(replacementCodeSpecId);
   });
 
+  it("restores nullable parent relationships after resolving a non-nullable relationship on the parent", async () => {
+    const [scopeId, codeSpecId] = await withEditTxn(briefcase1, async (txn) => {
+      const scope = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Scope",
+        somePoint: new Point2d(1.0, 1.0),
+      } as SomeGraphicalElementProps);
+      const spec = briefcase1.codeSpecs.insert(txn, "RelatedElementCodeSpec", CodeScopeSpec.Type.RelatedElement);
+      return [scope, spec];
+    });
+    await briefcase1.pushChanges({ description: "Create code scope" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(scopeId);
+    });
+
+    const [parentId, childId] = await withEditTxn(briefcase2, async (txn) => {
+      const parent = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: new Code({ spec: codeSpecId, scope: scopeId, value: "Parent" }),
+        foo: "Parent",
+        somePoint: new Point2d(2.0, 2.0),
+      } as SomeGraphicalElementProps);
+      const child = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(3.0, 3.0),
+        parent: new ElementOwnsChildElements(parent),
+      } as SomeGraphicalElementProps);
+      return [parent, child];
+    });
+
+    await briefcase1.pushChanges({ description: "Delete code scope" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    const parentConflict = interactive.conflicts.find((conflict) => conflict.id === parentId);
+    chai.expect(parentConflict).to.not.be.undefined;
+    if (!parentConflict) return;
+    chai.expect(parentConflict.dependentConflicts.some((conflict) => conflict.id === childId)).to.be.true;
+
+    const codeScopeRelationship = parentConflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "code.scope");
+    chai.expect(codeScopeRelationship).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(parentId)).to.be.undefined;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent).to.be.undefined;
+    if (!codeScopeRelationship) return;
+
+    parentConflict.resolveBrokenRelationship(codeScopeRelationship, IModel.rootSubjectId);
+
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(parentId).code.scope).to.equal(IModel.rootSubjectId);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent?.id).to.equal(parentId);
+  });
+
   it("should report an aspect conflict when both users update the same aspect property", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
