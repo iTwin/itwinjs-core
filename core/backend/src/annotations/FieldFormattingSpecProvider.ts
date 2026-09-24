@@ -1,0 +1,372 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module ElementGeometry
+ */
+
+import { BeUnorderedUiEvent } from "@itwin/core-bentley";
+import {
+  createUnitsProvider, Format, FormatsProvider, FormatterSpec, FormattingSpecArgs,
+  UnitProps,
+  UnitsProvider, UnitSystemKey,
+} from "@itwin/core-quantity";
+import { FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider, SchemaItem, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { IModelDb } from "../IModelDb";
+import { FieldSpecProvider, specKey } from "../internal/annotations/fieldSpecs";
+
+/** Describes a [FormatterSpec]($core-quantity) that a [FieldRun]($common) asked for but which
+ * [[FieldFormattingSpecProvider]] had not built, recorded by
+ * [[FieldFormattingSpecProvider.misses]].
+ * @beta
+ */
+export interface UnresolvedFieldFormat extends FormattingSpecArgs {
+  /** The [QuantityFieldFormatOptions.formatSet]($common) key of the field that missed. */
+  formatSet?: string;
+}
+
+/** Maps the `"alias:UnitName"` form that `meta.KindOfQuantityDef.PersistenceUnit` stores — and
+ * the bare `"UnitName"` form — to the `"SchemaName.UnitName"` full name that
+ * [FormattingSpecArgs]($core-quantity) expects. The bare form is ambiguous, so it is registered
+ * only for the first schema declaring a unit of that name.
+ * See `docs/learning/ECSqlReference/MetaQueries.md`.
+ */
+function readUnitFullNames(iModel: IModelDb): Map<string, string> {
+  const map = new Map<string, string>();
+  iModel.withQueryReader(
+    "SELECT schemaDef.Alias, schemaDef.Name, unitDef.Name FROM meta.UnitDef unitDef JOIN meta.ECSchemaDef schemaDef ON unitDef.Schema.Id = schemaDef.ECInstanceId",
+    (reader) => {
+      for (const row of reader) {
+        const [alias, schemaName, unitName] = [row[0] as string, row[1] as string, row[2] as string];
+        const fullName = `${schemaName}.${unitName}`;
+        map.set(`${alias}:${unitName}`, fullName);
+        if (!map.has(unitName)) {
+          map.set(unitName, fullName);
+        }
+      }
+    });
+
+  return map;
+}
+
+/** Builds the [FormatterSpec]($core-quantity) for one requirement, or `undefined` when the
+ * format fails to resolve, the persistence unit fails to resolve, or the two cannot be converted
+ * between — leaving the caller on the same fallback as any other unresolved override.
+ *
+ * Only a formatter is built, never the matching [ParserSpec]($core-quantity): field evaluation
+ * only ever formats, so parsing every warmed requirement would spend roughly half the warm-up on
+ * a path that does not exist.
+ */
+async function buildSpec(
+  args: FormattingSpecArgs,
+  formatsProvider: FormatsProvider,
+  unitsProvider: UnitsProvider,
+): Promise<FormatterSpec | undefined> {
+  const formatProps = await formatsProvider.getFormat(args.name, args.system);
+  if (!formatProps) {
+    return undefined;
+  }
+
+  let persistenceUnit: UnitProps | undefined;
+  try {
+    // The [BasicUnitsProvider]($core-quantity) built in the constructor (via [createUnitsProvider]($core-quantity))
+    // reports an unknown unit as an invalid BadUnit rather than throwing, so `isValid` below is
+    // what actually rejects. The catch is defensive: nothing in the UnitsProvider contract forbids throwing.
+    persistenceUnit = await unitsProvider.findUnitByName(args.persistenceUnitName);
+  } catch {
+    return undefined;
+  }
+  if (!persistenceUnit?.isValid) {
+    return undefined;
+  }
+
+  const format = await Format.createFromJSON("fieldFormat", unitsProvider, formatProps);
+  const formatterSpec = await FormatterSpec.create("fieldFormat", format, unitsProvider, persistenceUnit);
+
+  // Reject a format whose units belong to a different phenomenon than the persisted value.
+  // UnitsProvider.getConversion reports this by returning the identity conversion tagged
+  // `error: true`, and its contract requires callers to check that flag before applying the
+  // result. FormatterSpec.getUnitConversions only logs a warning and keeps the identity
+  // conversion, so without this check a length persisted in meters would render through an
+  // angle format as "2.5 deg" -- relabelled rather than converted.
+  if (formatterSpec.unitConversions.some((conversion) => conversion.conversion.error)) {
+    return undefined;
+  }
+
+  return formatterSpec;
+}
+
+/** The pre-warmed specs backing a single FormatSet, or — for the default bucket — the iModel's
+ * schema formats alone. Buckets other than the default fall through to it on a miss, so a field
+ * naming a FormatSet that lacks an entry for its KindOfQuantity still resolves the schema
+ * presentation format rather than dropping to the raw string.
+ */
+class FieldSpecBucket implements FieldSpecProvider {
+  private readonly _specs = new Map<string, FormatterSpec>();
+
+  public constructor(
+    private readonly _formatsProvider: FormatsProvider,
+    private readonly _fallback: FieldSpecBucket | undefined,
+    /** The FormatSet backing this bucket, when it has one. Only consulted to decide whether this
+     * bucket or its fallback should build a given requirement — see [[warmUp]].
+     */
+    private readonly _formatSet: FormatSet | undefined = undefined,
+  ) { }
+
+  public getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined {
+    return this._specs.get(specKey(args)) ?? this._fallback?.getFormatterSpec(args);
+  }
+
+  public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
+    return formatSpec.applyFormatting(magnitude);
+  }
+
+  /** Whether this bucket's own FormatSet supplies `name`, applying the same normalization
+   * [FormatSetFormatsProvider]($ecschema-metadata) applies before its lookup. */
+  private definesOwnFormat(name: string): boolean {
+    if (!this._formatSet) {
+      return false;
+    }
+
+    const [schemaName, itemName] = SchemaItem.parseFullName(name);
+    return undefined !== this._formatSet.formats[schemaName === "" ? itemName : `${schemaName}.${itemName}`];
+  }
+
+  /** Resolves and caches every requirement not already cached. Requirements that resolve no
+   * format or no persistence unit are skipped, leaving the field on the raw-string fallback.
+   *
+   * A requirement this bucket's FormatSet does not define is skipped outright: it would resolve
+   * through the fallback bucket to a spec that bucket already caches, so building it here would
+   * only duplicate the entry.
+   */
+  public async warmUp(requirements: FormattingSpecArgs[], unitsProvider: UnitsProvider): Promise<void> {
+    for (const args of requirements) {
+      if (this._fallback && !this.definesOwnFormat(args.name)) {
+        continue;
+      }
+
+      const key = specKey(args);
+      if (this._specs.has(key)) {
+        continue;
+      }
+
+      const spec = await buildSpec(args, this._formatsProvider, unitsProvider);
+      if (spec) {
+        this._specs.set(key, spec);
+      }
+    }
+  }
+}
+
+/** Arguments supplied to [FieldFormattingSpecProvider.create]($backend) and to
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
+ * @beta
+ */
+export interface FieldFormattingSpecProviderArgs {
+  /** The iModel whose annotations this provider formats. Its `schemaContext` supplies the
+   * fallback [SchemaFormatsProvider]($ecschema-metadata) and [SchemaUnitProvider]($ecschema-metadata).
+   */
+  iModel: IModelDb;
+  /** The FormatSet adopted for this iModel. It applies to every [FieldRun]($common) that does
+   * not name a different one via [QuantityFieldFormatOptions.formatSet]($common), and takes
+   * precedence over the schema's own presentation formats.
+   */
+  formatSet?: FormatSet;
+  /** Additional FormatSets addressable per-field, each paired with the id that
+   * [FieldRun]($common)s reference via [QuantityFieldFormatOptions.formatSet]($common).
+   * The id must be unique; if two entries share an id the last one wins. A field naming an id
+   * absent from this list falls back to [[formatSet]].
+   */
+  formatSets?: ReadonlyArray<{ id: string, formatSet: FormatSet }>;
+  /** Unit system used to pick a KindOfQuantity's presentation format when the schema offers
+   * several. Defaults to [[formatSet]]'s own `unitSystem`, or `"metric"` when no FormatSet is
+   * adopted.
+   */
+  unitSystem?: UnitSystemKey;
+  /** The specs to build up front, so that the synchronous evaluation can format fields.
+   * Each entry names a [KindOfQuantity]($ecschema-metadata) and the persistence unit its
+   * values are stored in; together they identify one [Format]($core-quantity) to build.
+   *
+   * Required — iTwin.js does not discover requirements on its own. Compose it from
+   * [[FieldFormattingSpecProvider.collectSchemaFormattingRequirements]],
+   * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) and/or
+   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend). Duplicates are
+   * harmless, and an empty array yields a provider that formats nothing until
+   * [[FieldFormattingSpecProvider.warmUp]] is called.
+   */
+  requirements: FormattingSpecArgs[];
+}
+
+/** A per-[IModelDb]($backend) cache of [FormatterSpec]($core-quantity)s that resolves
+ * [FieldRun]($common) quantity formats **synchronously**, so that
+ * [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update
+ * callbacks — neither of which can await — format as asynchronous code would. All asynchronous
+ * work happens in [[warmUp]]; evaluation afterwards is a map lookup.
+ *
+ * One provider holds every FormatSet an iModel uses, caching each FormatSet's formats separately.
+ * Formats resolve in this order:
+ *
+ *  1. The FormatSet named by the field's [QuantityFieldFormatOptions.formatSet]($common).
+ *  2. The FormatSet adopted for the iModel ([[FieldFormattingSpecProviderArgs.formatSet]]).
+ *  3. The KindOfQuantity's presentation format for [[FieldFormattingSpecProviderArgs.unitSystem]].
+ *  4. `value.toString()`, with the unresolved requirement recorded in [[misses]].
+ *
+ * Steps 1-3 resolve during [[warmUp]], not at lookup time, so a requirement whose format was
+ * never built falls straight to step 4.
+ *
+ * @see [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) to construct, warm
+ * and register one in a single call — normally when the iModel opens.
+ * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
+ * @beta
+ */
+export class FieldFormattingSpecProvider {
+  /** Raised after each [[warmUp]] completes. */
+  public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
+  /** The unit system used to select presentation formats from the iModel's schemas. */
+  public readonly unitSystem: UnitSystemKey;
+
+  private readonly _unitsProvider: UnitsProvider;
+  private readonly _default: FieldSpecBucket;
+  private readonly _buckets = new Map<string, FieldSpecBucket>();
+  private readonly _misses = new Map<string, UnresolvedFieldFormat>();
+
+  private constructor(args: FieldFormattingSpecProviderArgs) {
+    // An adopted FormatSet declares the unit system it was authored for; honor it unless the
+    // caller says otherwise.
+    this.unitSystem = args.unitSystem ?? args.formatSet?.unitSystem ?? "metric";
+
+    // Bundled BIS units answer first; the iModel's schemas are consulted only for units the
+    // bundled set doesn't define.
+    this._unitsProvider = createUnitsProvider({
+      primary: new SchemaUnitProvider(args.iModel.schemaContext),
+      bisUnitsPolicy: "preferBundled",
+    });
+
+    const schemaFormats = new SchemaFormatsProvider(args.iModel.schemaContext, this.unitSystem);
+    // The adopted FormatSet (if any) layered over the iModel's own presentation formats. Every
+    // per-field FormatSet falls through to this same chain, so a field naming a FormatSet that
+    // has no entry for its KindOfQuantity still sees the adopted presentation before the
+    // schema's, matching the documented resolution order.
+    const defaultFormats = args.formatSet ? new FormatSetFormatsProvider({ formatSet: args.formatSet, fallbackProvider: schemaFormats }) : schemaFormats;
+    this._default = new FieldSpecBucket(defaultFormats, undefined);
+    for (const { id, formatSet } of args.formatSets ?? []) {
+      this._buckets.set(id, new FieldSpecBucket(new FormatSetFormatsProvider({ formatSet, fallbackProvider: defaultFormats }), this._default, formatSet));
+    }
+  }
+
+  /** Creates a provider and pre-warms it with [[FieldFormattingSpecProviderArgs.requirements]],
+   * so the returned provider is ready for synchronous evaluation. Requirements
+   * discovered later are added incrementally with [[warmUp]].
+   *
+   * @note Applications registering the provider for an iModel should call
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) instead, which
+   * creates, warms and registers in one step.
+   * @beta
+   */
+  public static async create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider> {
+    const provider = new FieldFormattingSpecProvider(args);
+    await provider.warmUp(args.requirements);
+    return provider;
+  }
+
+  /** Enumerates one [FormattingSpecArgs]($core-quantity) per [KindOfQuantity]($ecschema-metadata)
+   * declared by `iModel`'s schemas whose persistence unit resolves — a schema-derived starting
+   * set to pass to [[warmUp]] or to
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
+   *
+   * Two metadata queries, bounded by the schemas rather than by the data, so it is safe to call
+   * on open. In exchange it warms every declared KindOfQuantity, whether any field uses it or
+   * not. This method cannot see a KindOfQuantity that only a field's overrides name — use
+   * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) or
+   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) for those.
+   * @beta
+   */
+  public static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[] {
+    const units = readUnitFullNames(iModel);
+    const requirements: FormattingSpecArgs[] = [];
+    iModel.withQueryReader(
+      "SELECT s.Name, koq.Name, koq.PersistenceUnit FROM meta.KindOfQuantityDef koq JOIN meta.ECSchemaDef s ON koq.Schema.Id = s.ECInstanceId",
+      (reader) => {
+        for (const row of reader) {
+          const persistenceUnitName = units.get(row[2] as string);
+          if (persistenceUnitName) {
+            requirements.push({ name: `${row[0] as string}.${row[1] as string}`, persistenceUnitName });
+          }
+        }
+      });
+
+    return requirements;
+  }
+
+  /** Requirements that were requested during evaluation but had no pre-warmed spec — typically
+   * a [FieldRun]($common) added, or re-targeted at a different property, after the last
+   * [[warmUp]]. Such fields fall back to `value.toString()`.
+   *
+   * Misses accumulate rather than raising an event, because they are recorded from inside
+   * synchronous `TxnManager` callbacks where re-entrant work is unsafe. Poll this after an edit,
+   * then [[warmUp]] with the missing requirements and re-evaluate the affected annotations.
+   */
+  public get misses(): UnresolvedFieldFormat[] {
+    return [...this._misses.values()];
+  }
+
+  /** Discards the accumulated [[misses]]. */
+  public clearMisses(): void {
+    this._misses.clear();
+  }
+
+  /** Records requirements that evaluation asked for but found no pre-warmed spec for. Called
+   * only when a field resolved *none* of its candidates, so a miss here is always actionable.
+   * @internal
+   */
+  public recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void {
+    for (const args of candidates) {
+      const key = `${formatSet ?? ""}|${specKey(args)}`;
+      if (!this._misses.has(key)) {
+        this._misses.set(key, { ...args, formatSet });
+      }
+    }
+  }
+
+  /** Returns the formats to use for fields declaring `formatSet`. Fields with no `formatSet`, or
+   * naming one this provider wasn't given, resolve against the iModel's schema formats.
+   * @internal
+   */
+  public getProviderFor(formatSet: string | undefined): FieldSpecProvider {
+    return (formatSet ? this._buckets.get(formatSet) : undefined) ?? this._default;
+  }
+
+  /** Looks up a spec among the iModel's schema formats and the adopted
+   * [[FieldFormattingSpecProviderArgs.formatSet]]. Fields naming a different FormatSet resolve
+   * against that FormatSet's own formats instead.
+   */
+  public getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined {
+    return this._default.getFormatterSpec(args);
+  }
+
+  /** Applies `formatSpec` to `magnitude`. */
+  public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
+    return this._default.formatQuantity(magnitude, formatSpec);
+  }
+
+  /** Resolves and caches the [FormatterSpec]($core-quantity)s needed to format `requirements`,
+   * so that later synchronous evaluation is a cache hit. Requirements already cached are
+   * skipped, making repeated calls cheap.
+   *
+   * @param requirements the specs to pre-build. Accumulate them with
+   * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend),
+   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) and/or
+   * [[collectSchemaFormattingRequirements]]. There is no default: this provider never discovers
+   * requirements by walking the iModel.
+   */
+  public async warmUp(requirements: FormattingSpecArgs[]): Promise<void> {
+    // Warm the default bucket first so the cache is populated in resolution order. The order does
+    // not affect the result: no bucket reads another's cache while warming.
+    for (const bucket of [this._default, ...this._buckets.values()]) {
+      await bucket.warmUp(requirements, this._unitsProvider);
+    }
+
+    this.onFormattingReady.raiseEvent();
+  }
+}
