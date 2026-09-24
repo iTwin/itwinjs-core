@@ -1113,7 +1113,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships.length).to.equal(1);
     chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
     chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
-    chai.expect(conflict.brokenRelationships[0].appliedFix).to.deep.equal({ property: "parent", value: null });
+    chai.expect(conflict.brokenRelationships[0].appliedValue).to.be.null;
 
     // The new element should still exist, but it should have no parent.
     const child = briefcase2.elements.tryGetElementProps(childId);
@@ -1159,7 +1159,7 @@ describe("InteractiveRebase", () => {
     // Because the model was deleted and the model property is not nullable, this change is not applied at all.
     chai.expect(conflict.brokenRelationships.length).to.equal(1);
     chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("model");
-    chai.expect(conflict.brokenRelationships[0].appliedFix).to.be.undefined;
+    chai.expect(conflict.brokenRelationships[0].appliedValue).to.be.undefined;
     chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
 
     // TODO: There should be a way to apply this change by supplying a new model.

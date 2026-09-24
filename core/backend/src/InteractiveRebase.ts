@@ -156,6 +156,11 @@ export interface RebaseConflict {
    */
   dependentConflicts: ReadonlyArray<RebaseConflict>;
 
+  // TODO: I think we need an explicit property indicating whether "ours" was applied (with caveats
+  // described in uniqueConstraintViolations and brokenRelationships), or whether it couldn't be
+  // applied at all (for instance, it's an insert with a non-nullable, broken navigation property).
+  // Can also indicate whether acceptOurs or acceptTheirs was last called.
+
   /**
    * Accepts the local (our) vesion of the instance.
    *
@@ -179,6 +184,33 @@ export interface RebaseConflict {
    * {@link ownerConflict} first.
    */
   acceptTheirs(properties?: string[]): void;
+
+  /**
+   * Resolves a broken relationship by supplying a new value for the navigation property.
+   *
+   * If this entity already exists in the iModel, its navigation property will be updated with the
+   * supplied new value. If the update succeeds, the [[BrokenRelationship]]'s
+   * [[BrokenRelationship.appliedValue]] will be set to the new value and
+   * [[BrokenRelationship.stagedValue]] will be set to undefined. If it fails, the
+   * [[BrokenRelationship.appliedValue]] will be set to the current value in the iModel, and
+   * [[BrokenRelationship.stagedValue]] will be set to the new value.
+   *
+   * If this entity does not exist in the iModel, i.e., because it couldn't be inserted due to a
+   * broken non-nullable navigation property, then the insert will be attempted again with the
+   * newly-supplied navigation property value. If the insert succeeds, [BrokenRelationship.appliedValue]]
+   * will be set to the new value and [BrokenRelationship.stagedValue]] will be set to undefined.
+   * If it fails, whether because the supplied navigation property value is invalid, because some
+   * _other_ non-nullable navigation property is also broken, or for any other reason, then
+   * the [[BrokenRelationship.stagedValue]] will be set to the new value, and
+   * [[BrokenRelationship.appliedValue]] will be set to undefined.
+   *
+   * You can call this method multiple times to fix multiple broken navigation properties.
+   *
+   * @param brokenRelationship The broken relationship to resolve. The relationship can be specified either
+   * as an entry in [[brokenRelationships]] or as the access string for the navigation property, e.g., `"model"`.
+   * @param value The new value to assign to the navigation property.
+   */
+  resolveBrokenRelationship(brokenRelationship: BrokenRelationship | string, value: Id64String): void;
 }
 
 /**
@@ -220,6 +252,17 @@ export interface UniqueConstraintViolation {
   appliedFix?: AppliedFix;
 }
 
+/**
+ * The details of a relationship that is broken due to a rebase conflict.
+ *
+ * An instance of this interface is created and added to [[RebaseConflict.brokenRelationships]] when the
+ * value that [[InteractiveRebase]] is attempting to set for a particular navigation property is not valid.
+ * Usually this happens because the target of the navigation property has been deleted from the iModel.
+ *
+ * Despite the broken relationship, [[InteractiveRebase]] will make a best-effort attempt to apply the
+ * change anyway, without violating any database constraints, by using a different value for the navigation
+ * property. The [[appliedValue]] property records the value that was used.
+ */
 export interface BrokenRelationship {
   /**
    * The class of the relationship that is broken.
@@ -232,10 +275,31 @@ export interface BrokenRelationship {
   navigationProperty: string;
 
   /**
-   * The substitution that was automatically applied to the broken navigation property so that our change
-   * could be applied anyway.
+   * The value that was applied to the broken navigation property so that the change could be applied.
+   *
+   * If the entity already exists in the iModel, this will simply by the entity's pre-existing value for
+   * the navigation property.
+   *
+   * If the entity doesn't exist yet in the iModel (i.e., this change is an INSERT), and the navigation property
+   * is nullable, then this will be set to `null`.
+   *
+   * If the property is not nullable, then this will be undefined, indicating that this broken relationship
+   * prevented the change from being applied at all. Use [[RebaseConflict.resolveBrokenRelationship]] to supply
+   * a new value for the navigation property and reattempt to apply the change.
+   *
+   * After a successful call to [[RebaseConflict.resolveBrokenRelationship]], this property will reflect the
+   * newly-applied value. If the call was not successful, this property will remain unchanged, and the
+   * supplied value will be stored in [[stagedValue]] instead.
    */
-  appliedFix?: AppliedFix;
+  appliedValue?: any;
+
+  /**
+   * The value for this navigation property that was supplied to [[RebaseConflict.resolveBrokenRelationship]]
+   * but that has not yet become the [[appliedValue]]. A value will be staged and not applied if it is invalid
+   * (i.e., it violates a database constraint) or if it is valid but the entity cannot be created in the iModel
+   * yet due to _other_ broken relationships.
+   */
+  stagedValue?: any;
 }
 
 /** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
@@ -2218,7 +2282,7 @@ class RebaseConflictImpl implements RebaseConflict {
       const relationship = this.brokenRelationships.find((candidate) =>
         candidate.navigationProperty === broken.navigationProperty && candidate.relationshipClass === broken.relationshipClass);
       if (relationship !== undefined)
-        relationship.appliedFix = { property: broken.navigationProperty, value: null };
+        relationship.appliedValue = null;
     }
   }
 
@@ -2276,6 +2340,10 @@ class RebaseConflictImpl implements RebaseConflict {
     if (properties === undefined || properties.length === 0)
       this._selectedSide = "theirs";
     applyResolution(this._rebase, this, "theirs", properties);
+  }
+
+  public resolveBrokenRelationship(_brokenRelationship: BrokenRelationship | string, _value: Id64String): void {
+    // TODO
   }
 }
 
