@@ -1162,8 +1162,18 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships[0].appliedValue).to.be.undefined;
     chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
 
-    // TODO: There should be a way to apply this change by supplying a new model.
-    // Doing so should also apply further changes that were dependent on this one.
+    // We can resolve the broken relationship by supplying a model, at which point the child element will be inserted.
+    const code = Code.createEmpty();
+    code.value = "NewModel";
+    const newModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(interactive.editTxn, code, true)[1];
+    conflict.resolveBrokenRelationship(conflict.brokenRelationships[0], newModelId);
+
+    chai.expect(conflict.brokenRelationships[0].appliedValue).to.equal(newModelId);
+    chai.expect(conflict.brokenRelationships[0].stagedValue).to.be.undefined;
+
+    const childProps = briefcase2.elements.tryGetElementProps(childId);
+    chai.expect(childProps).not.to.be.undefined;
+    chai.expect(childProps!.model).to.equal(newModelId);
   });
 
   it("should report an aspect conflict when both users update the same aspect property", async () => {

@@ -1797,7 +1797,7 @@ export class InteractiveRebase {
         this.cascadeDeleteToDependents(conflictImpl);
       this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
       conflictImpl.clearSupersededUniqueConstraintViolations(undefined);
-      this._db.clearCaches();
+      this._db.clearCaches({ instanceCachesOnly: true });
       return;
     }
 
@@ -1810,8 +1810,7 @@ export class InteractiveRebase {
     if (isFullResolution)
       this.restoreDependentClosure(conflictImpl, side);
 
-    // TODO: too heavy-handed?
-    this._db.clearCaches();
+    this._db.clearCaches({ instanceCachesOnly: true });
   }
 
   /**
@@ -2342,8 +2341,65 @@ class RebaseConflictImpl implements RebaseConflict {
     applyResolution(this._rebase, this, "theirs", properties);
   }
 
-  public resolveBrokenRelationship(_brokenRelationship: BrokenRelationship | string, _value: Id64String): void {
-    // TODO
+  public resolveBrokenRelationship(brokenRelationship: BrokenRelationship | string, value: Id64String): void {
+    const relationship = typeof brokenRelationship === "string"
+      ? this.brokenRelationships.find((candidate) => candidate.navigationProperty === brokenRelationship)
+      : this.brokenRelationships.find((candidate) => candidate === brokenRelationship);
+    if (relationship === undefined) {
+      InteractiveRebaseError.throwError(
+        "not-conflicting-property",
+        `The navigation property ${typeof brokenRelationship === "string" ? brokenRelationship : brokenRelationship.navigationProperty} is not a broken relationship for this conflict`);
+    }
+
+    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
+    const instanceAccessString = classDef.toInstanceAccessString(relationship.navigationProperty);
+    let current: RebaseConflictProperties | undefined;
+    try {
+      current = this._rebase.iModel[_nativeDb].readInstance({ id: this.id, classFullName: this.classFullName }, { useJsNames: true }) as RebaseConflictProperties;
+    } catch {
+      current = undefined;
+    }
+    const writeProps: RebaseConflictProperties = current === undefined
+      ? { ...(this._ours ?? {}) }
+      : { id: this.id, classFullName: this.classFullName };
+
+    if (current === undefined) {
+      for (const candidate of this.brokenRelationships) {
+        const candidateInstanceAccessString = classDef.toInstanceAccessString(candidate.navigationProperty);
+        if (candidate.stagedValue !== undefined)
+          setPropertyValue(writeProps, candidateInstanceAccessString, candidate.stagedValue);
+        else if (candidate.appliedValue !== undefined)
+          setPropertyValue(writeProps, candidateInstanceAccessString, candidate.appliedValue);
+      }
+    }
+    setPropertyValue(writeProps, instanceAccessString, value);
+
+    try {
+      if (current === undefined) {
+        this._rebase.iModel[_nativeDb].insertInstance(writeProps, { forceUseId: true, useJsNames: true });
+        for (const candidate of this.brokenRelationships) {
+          const candidateInstanceAccessString = classDef.toInstanceAccessString(candidate.navigationProperty);
+          candidate.appliedValue = getPropertyValue(writeProps, candidateInstanceAccessString);
+          candidate.stagedValue = undefined;
+        }
+      } else {
+        const result = this._rebase.iModel[_nativeDb].updateInstance(writeProps, { useJsNames: true });
+        if (result === false || result !== true && !result.updated)
+          throw new IModelError(IModelStatus.BadRequest, "Failed to update instance while resolving a broken relationship");
+        relationship.appliedValue = value;
+        relationship.stagedValue = undefined;
+      }
+    } catch {
+      if (current === undefined) {
+        relationship.appliedValue = undefined;
+        relationship.stagedValue = value;
+      } else {
+        relationship.appliedValue = getPropertyValue(current, instanceAccessString);
+        relationship.stagedValue = value;
+      }
+    }
+
+    this._rebase.iModel.clearCaches({ instanceCachesOnly: true });
   }
 }
 
