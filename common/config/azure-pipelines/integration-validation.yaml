@@ -58,6 +58,14 @@ jobs:
   # Renderer + architecture lanes: full integration suite (including the
   # graphics-heavy Core full-stack tests) on the latest supported Node.
   - job: Integration_Renderer_Lanes
+    # The hosted Windows renderer lane needs ~70 minutes: ~11m install/build, ~13m backend
+    # integration tests, ~34-40m Core full-stack tests, plus the ~8m extended Core Backend
+    # suite. It finished in 55-59m until 2026-09-06, when the Schema Sync v2 suites
+    # (itwinjs-core#9604) added ~10m to the backend tests and pushed every Windows job past the
+    # default 60m job timeout (master included). Until the graphics-heavy tests move to a GPU
+    # rendering lane (itwinjs-backlog#2355), allow the single Windows pass to finish. Lanes that
+    # finish under 60m are unaffected.
+    timeoutInMinutes: 90
     strategy:
       matrix:
         Renderer_Linux_x64_node_24_x:
