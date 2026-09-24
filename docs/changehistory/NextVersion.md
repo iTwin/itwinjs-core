@@ -13,7 +13,6 @@ publish: false
     - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
-      - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
   - [@itwin/core-electron](#itwincore-electron)
     - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
