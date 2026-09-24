@@ -361,7 +361,7 @@ export class OrbitGtTileTree extends TileTree {
 }
 
 /** Computes the vertical shift, in meters along geodetic up, to correctly place a point cloud whose CRS does not
- * say whether its heights are ellipsoidal or orthometric. We assume they use the same convention as the iModel.
+ * say whether its heights are ellipsoidal or orthometric. We assume they use the same vertical datum as the iModel.
  *
  * The caller has already placed the cloud treating its heights as ellipsoidal (`heightAsEllipsoidalDbZ`). If the
  * iModel is geoid-based, the shift is the difference between treating the origin's height as relative to the iModel's
