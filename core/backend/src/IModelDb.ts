@@ -1068,7 +1068,7 @@ export abstract class IModelDb extends IModel {
    * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
-   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.

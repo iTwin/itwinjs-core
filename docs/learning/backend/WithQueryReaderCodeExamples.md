@@ -94,4 +94,4 @@ Keep the reader inside its callback. Return materialized rows or computed result
 
 Do not close the database or call `clearCaches()` while using the reader; these actions invalidate its statement.
 
-For migration from `withPreparedStatement`, see [Backend ECSQL Code Examples](./ECSQLCodeExamples.md#migrating-from-withpreparedstatement).
+See [Migrating backend ECSQL code](./ECSQLCodeExamples.md#migrating-from-withpreparedstatement) for guidance on replacing `withPreparedStatement`.

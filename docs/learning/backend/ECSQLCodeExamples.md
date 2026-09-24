@@ -1,4 +1,4 @@
-# Backend ECSQL Code Examples
+# Migrating Backend ECSQL Code
 
 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) for asynchronous queries. Use [IModelDb.withQueryReader]($backend) or [ECDb.withQueryReader]($backend) when backend code requires synchronous execution.
 

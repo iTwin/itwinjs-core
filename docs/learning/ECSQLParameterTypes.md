@@ -26,7 +26,7 @@ To bind a GUID represented as a string, use a string parameter with `strToGuid(?
 
 ## Navigation, struct, and array parameters
 
-The query readers do not support binding whole navigation or struct values. Bind individual members, for example `WHERE Parent.Id=?` or `WHERE Location.Street=? AND Location.Zip=?`. Although `QueryBinder` exposes `bindStruct`, whole-struct bindings are not supported by the query execution path.
+The query readers do not support binding whole navigation values. Although `QueryBinder.bindStruct` is public, both the asynchronous and synchronous query reader APIs currently reject whole-struct parameters. Bind individual members instead, for example `WHERE Parent.Id=?` or `WHERE Location.Street=? AND Location.Zip=?`.
 
 Arbitrary ECSQL array-property parameters are also unsupported. An array passed as one value to `QueryBinder.from` is recognized as an ID set only when it is empty or contains valid Id64 strings. It is not a general array binding. The outer array in `QueryBinder.from([value1, value2])` supplies two positional parameters.
 
