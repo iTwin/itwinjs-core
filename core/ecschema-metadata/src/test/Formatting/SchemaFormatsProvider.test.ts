@@ -8,8 +8,11 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaFormatsProvider } from "../../Formatting/SchemaFormatsProvider";
 import { ECSchemaError, ECSchemaStatus } from "../../Exception";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { Schema } from "../../Metadata/Schema";
+import { createSchemaJsonWithItems, deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
@@ -237,6 +240,36 @@ describe("SchemaFormatsProvider", () => {
       } finally {
         cacheLookup.mockRestore();
       }
+    });
+
+    it("treats a referenced schema version missing from the cache as a synchronous cache miss", async () => {
+      const createReferencedSchema = (version: string, precision: number) => createSchemaJsonWithItems({
+        LENGTH: { schemaItemType: "Phenomenon", definition: "LENGTH" },
+        SI: { schemaItemType: "UnitSystem" },
+        M: { schemaItemType: "Unit", phenomenon: "RefSchema.LENGTH", unitSystem: "RefSchema.SI", definition: "M" },
+        LengthFormat: { schemaItemType: "Format", type: "Decimal", precision },
+      }, { name: "RefSchema", version, alias: "ref" });
+
+      // The KindOfQuantity resolves its references against RefSchema 1.0.1 from another context.
+      const referencedContext = new SchemaContext();
+      Schema.fromJsonSync(createReferencedSchema("1.0.1", 4), referencedContext);
+      const koqSchema = Schema.fromJsonSync(createSchemaJsonWithItems({
+        LENGTH: {
+          schemaItemType: "KindOfQuantity",
+          relativeError: 0.001,
+          persistenceUnit: "RefSchema.M",
+          presentationUnits: ["RefSchema.LengthFormat"],
+        },
+      }, { name: "KoqSchema", version: "1.0.0", alias: "koq", references: [{ name: "RefSchema", version: "1.0.1", alias: "ref" }] }), referencedContext);
+
+      // The provider's context caches the KindOfQuantity schema next to RefSchema 1.0.0.
+      const cacheContext = new SchemaContext();
+      Schema.fromJsonSync(createReferencedSchema("1.0.0", 2), cacheContext);
+      cacheContext.addSchemaSync(koqSchema);
+
+      const provider = new SchemaFormatsProvider(cacheContext);
+      expect((await provider.getFormat("KoqSchema.LENGTH"))?.precision).toBe(4);
+      expect(provider.getFormatSync("KoqSchema.LENGTH")).toBeUndefined();
     });
 
     it("propagates unexpected cache errors", () => {

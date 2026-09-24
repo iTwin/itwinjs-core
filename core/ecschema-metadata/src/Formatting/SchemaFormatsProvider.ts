@@ -180,7 +180,7 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
   public getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
-    const schema = getCachedSchemaSync(this._context, schemaKey);
+    const schema = getCachedSchemaSync(this._context, schemaKey, SchemaMatchType.Latest);
     if (!schema)
       return undefined;
 
@@ -194,7 +194,7 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
   }
 
   private getKindOfQuantityFormatFromSchemaSync(itemKey: SchemaItemKey, systemOverride?: UnitSystemKey): FormatDefinition | undefined {
-    const schema = getCachedSchemaSync(this._context, itemKey.schemaKey);
+    const schema = getCachedSchemaSync(this._context, itemKey.schemaKey, SchemaMatchType.Latest);
     const kindOfQuantity = schema?.getItemSync(itemKey.name, KindOfQuantity);
     if (!kindOfQuantity)
       return undefined;
@@ -285,7 +285,7 @@ function resolveFormatSync(context: SchemaContext, format: FormatReference): Res
   if (OverrideFormat.isOverrideFormat(format))
     return format;
 
-  const schema = getCachedSchemaSync(context, format.schemaKey);
+  const schema = getCachedSchemaSync(context, format.schemaKey, SchemaMatchType.Exact);
   return schema?.getItemSync(format.name, Format);
 }
 
@@ -304,13 +304,17 @@ function resolveUnitSync(context: SchemaContext, unit: UnitReference): ResolvedU
   if (!unitSystem)
     return { unit: resolvedUnit };
 
-  const schema = getCachedSchemaSync(context, unitSystem.schemaKey);
+  const schema = getCachedSchemaSync(context, unitSystem.schemaKey, SchemaMatchType.Exact);
   return { unit: resolvedUnit, unitSystemName: schema?.getItemSync(unitSystem.name, UnitSystem)?.name };
 }
 
-function getCachedSchemaSync(context: SchemaContext, schemaKey: SchemaKey): Schema | undefined {
+/**
+ * Name-only lookups use `SchemaMatchType.Latest`. References use `SchemaMatchType.Exact` because they carry the version
+ * the loaded item resolved; matching by name alone could return an item from a different cached version.
+ */
+function getCachedSchemaSync(context: SchemaContext, schemaKey: SchemaKey, matchType: SchemaMatchType): Schema | undefined {
   try {
-    return context.getCachedSchemaSync(schemaKey, SchemaMatchType.Latest);
+    return context.getCachedSchemaSync(schemaKey, matchType);
   } catch (error) {
     if (error instanceof ECSchemaError && error.errorNumber === ECSchemaStatus.UnableToLoadSchema)
       return undefined;
@@ -319,7 +323,7 @@ function getCachedSchemaSync(context: SchemaContext, schemaKey: SchemaKey): Sche
 }
 
 function getLoadedUnitSync(context: SchemaContext, unit: UnitReference): Unit | InvertedUnit | undefined {
-  const schema = getCachedSchemaSync(context, unit.schemaKey);
+  const schema = getCachedSchemaSync(context, unit.schemaKey, SchemaMatchType.Exact);
   const item = schema?.getItemSync(unit.name);
   return Unit.isUnit(item) || InvertedUnit.isInvertedUnit(item) ? item : undefined;
 }
