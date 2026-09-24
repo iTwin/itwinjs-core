@@ -14,6 +14,7 @@ publish: false
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
+      - [ChangesetReader identifiers filter](#changesetreader-identifiers-filter)
     - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
@@ -146,6 +147,10 @@ The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` use
 #### SQLite changeset schema sources
 
 The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
+
+#### ChangesetReader identifiers filter
+
+The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
 
 ### Reserving elements for concurrent creation
 
