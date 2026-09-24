@@ -530,7 +530,7 @@ export namespace OrbitGtTileTree {
 
             // A projected CRS doesn't say whether heights are ellipsoidal or orthometric, so assume they match the iModel.
             // pointCloudToEcef above treated them as ellipsoidal; shift by the difference if the iModel is geoid-based.
-            // (A compound CRS also takes this path; that stays correct unless orbitgt gains a geoid model.)
+            // Compound CRSs can't currently be loaded, so they don't get here. If that changes, their heights are orthometric and need separate handling.
             if (CRSManager.ENGINE.isProjectedCRS(pointCloudCRS)) {
               const verticalShift = await computeVerticalDatumShift(geoOrigin, dbOriginFromGcs.z, iModel);
               if (0 !== verticalShift) {
