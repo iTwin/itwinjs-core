@@ -390,6 +390,7 @@ export class InteractiveRebase {
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
   private _conflicts: RebaseConflict[] = [];
+  private _conflictsByInstanceKey = new Map<string, RebaseConflict>();
 
   /** The store backing the current group's replay - kept open for the whole group's lifetime (not just
    * during [[reinstateDataTxn]]) because conflict resolution loads a node's captured `old`/`new` change
@@ -410,6 +411,9 @@ export class InteractiveRebase {
    * relationship's owner side is an Element, so this is what `ownerId`s are resolved against.
    */
   private _ownersById = new Map<Id64String, DependencyNode>();
+
+  /** Captured nodes that reference each provider through a navigation property, keyed by provider instance key. */
+  private _referenceDependents = new Map<string, DependencyNode[]>();
 
   /** A placeholder value [[orderNodes]] is substituting in for a node's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
@@ -545,6 +549,15 @@ export class InteractiveRebase {
    */
   public get conflicts(): ReadonlyArray<RebaseConflict> {
     return this._conflicts;
+  }
+
+  /** @internal */
+  /** Gets conflicts for captured nodes that reference the supplied provider through a navigation property. */
+  public getReferenceDependentConflicts(providerInstanceKey: string): RebaseConflict[] {
+    const dependents = this._referenceDependents.get(providerInstanceKey) ?? [];
+    return dependents
+      .map((node) => this._conflictsByInstanceKey.get(node.instanceKey))
+      .filter((conflict): conflict is RebaseConflict => conflict !== undefined);
   }
 
   /**
@@ -986,6 +999,7 @@ export class InteractiveRebase {
   private orderNodes(nodes: DependencyNode[]): DependencyNode[] {
     this._pendingSubstitutions = new Map();
     this._deferredCorrections = [];
+    this._referenceDependents = new Map();
 
     const inputIndex = new Map<DependencyNode, number>(nodes.map((node, i) => [node, i]));
 
@@ -1065,6 +1079,11 @@ export class InteractiveRebase {
               from: provider, to: node,
               deferrable: nullable ? { accessString: jsName, placeholderKind: "navigation", realValue: newId } : undefined,
             });
+            let dependents = this._referenceDependents.get(provider.instanceKey);
+            if (dependents === undefined)
+              this._referenceDependents.set(provider.instanceKey, dependents = []);
+            if (!dependents.includes(node))
+              dependents.push(node);
           }
         }
         if (oldId !== undefined && oldId !== newId) {
@@ -1321,15 +1340,16 @@ export class InteractiveRebase {
    * (including the implicit ones [[createImplicitOwnerConflicts]] just added).
    */
   private linkConflictOwnership(): void {
-    if (this._conflicts.length === 0)
-      return;
-
     // First conflict wins, should an instance somehow have recorded more than one.
     const conflictByInstanceKey = new Map<string, RebaseConflictImpl>();
     for (const conflict of this._conflicts) {
       if (!conflictByInstanceKey.has(conflict.instanceKey))
         conflictByInstanceKey.set(conflict.instanceKey, conflict as RebaseConflictImpl);
     }
+    this._conflictsByInstanceKey = conflictByInstanceKey;
+
+    if (this._conflicts.length === 0)
+      return;
 
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       if (node.ownerId === undefined)
@@ -2408,8 +2428,7 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   private restoreResolvedDependentRelationships(): void {
-    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
-    for (const dependent of this.dependentConflicts) {
+    for (const dependent of this._rebase.getReferenceDependentConflicts(this.instanceKey)) {
       for (const relationship of dependent.brokenRelationships) {
         const dependentProps = dependent.ours;
         if (dependentProps === undefined)
