@@ -99,7 +99,7 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
     expect(egm96).not.to.be.undefined;
     expect(egm96!.id).to.equal("GEOID");
     expect(egm96!.epsg).to.equal(5773);
-    expect(egm96!.unit).to.equal("meter");
+    expect(egm96!.unit).to.equal("Meter");
 
     const modelCrs = {
       horizontalCRS: { id: "LL84" },
@@ -120,5 +120,12 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
     expect(result.x).to.be.closeTo(23.700523, 0.000001);
     expect(result.y).to.be.closeTo(37.944210, 0.000001);
     expect(result.z).to.be.closeTo(38.3, 0.5);
+  });
+
+  it("filters by canonical unit name case-insensitively", async () => {
+    const verticalSystems = await getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
+
+    expect(verticalSystems).not.to.be.empty;
+    expect(verticalSystems.every((entry) => entry.unit === "Meter")).to.be.true;
   });
 });

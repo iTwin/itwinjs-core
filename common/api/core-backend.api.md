@@ -3936,6 +3936,7 @@ export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
         longitude: number;
         latitude: number;
     };
+    unit?: string;
 }
 
 // @beta

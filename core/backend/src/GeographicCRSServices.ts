@@ -71,7 +71,9 @@ export interface AvailableVerticalCoordinateReferenceSystemProps {
   deprecated: boolean;
   /** The vertical coordinate reference system type. */
   type: string;
-  /** The name of the linear unit used by the vertical coordinate reference system. */
+  /** The name of the linear unit used by the vertical coordinate reference system.
+   * The value uses the canonical casing returned by [[getAvailableCRSUnits]].
+   */
   unit: string;
   /** The geographic extent where the vertical coordinate reference system applies. */
   extent: Range2dProps;
@@ -89,6 +91,10 @@ export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
    * @default false
    */
   includeIntersecting?: boolean;
+  /** If provided, filter vertical coordinate reference systems by unit name.
+   * Matching is case-insensitive. Use [[getAvailableCRSUnits]] to get a list of canonical unit names.
+   */
+  unit?: string;
 }
 
 /** Get a list of Geographic Coordinate Reference Systems.
@@ -119,7 +125,7 @@ export async function getAvailableVerticalCoordinateReferenceSystems(
   return IModelNative.platform.GeoServices.getListOfVerticalCRS(args);
 }
 
-/** Get a list of units used by Geographic Coordinate Reference Systems in iTwin.js.
+/** Get a list of units used by horizontal and vertical coordinate reference systems in iTwin.js.
  * @returns An array of canonical unit names.
  * @beta
  */
