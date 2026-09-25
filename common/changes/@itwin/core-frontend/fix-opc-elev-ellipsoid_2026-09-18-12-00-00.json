@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "OPC point clouds whose CRS does not specify a height convention now assume the same one as the iModel they are displayed in.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

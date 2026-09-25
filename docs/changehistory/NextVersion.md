@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
+    - [OPC point clouds without a vertical datum use the iModel's vertical datum](#opc-point-clouds-without-a-vertical-datum-use-the-imodels-vertical-datum)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
     - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
@@ -35,6 +36,10 @@ await briefcase.pushChanges("my changes", {
 ```
 
 Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
+
+### OPC point clouds without a vertical datum use the iModel's vertical datum
+
+When an OPC point cloud's CRS does not say whether its heights are ellipsoidal or orthometric (relative to the geoid), the point cloud is now assumed to use the same height convention as the iModel it is displayed in. Previously a fixed assumption was made, displacing the point cloud by the local geoid-ellipsoid separation whenever it did not match the iModel. If you applied a manual vertical offset to compensate, remove it.
 
 ## @itwin/core-backend
 
