@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add optional dictionary name and EPSG identifiers to VerticalCRS.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
