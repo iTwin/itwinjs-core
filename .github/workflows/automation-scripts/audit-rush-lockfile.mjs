@@ -46,7 +46,14 @@ function auditLockfile() {
         throw error;
     }
 
-    return JSON.parse(stdout);
+    const report = JSON.parse(stdout);
+    // Fail closed on registry/API failures instead of reporting a clean audit.
+    if (report.error) {
+      throw new Error(
+        `npm audit could not run: ${report.error.summary ?? report.error.code ?? JSON.stringify(report.error)}`,
+      );
+    }
+    return report;
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
