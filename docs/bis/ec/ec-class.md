@@ -17,7 +17,7 @@ All classes support inheritance within their own class type. Therefore, an ECEnt
 **modifier** identifies the class as abstract or sealed.
 - Valid options are:
 
-  - None (default) – normal, instantiable class. Not valid for ECRelationshipClass type.
+  - None (default) – normal, instantiable class that can be used as a base class. Valid for ECRelationshipClass too.
   - Abstract – abstract class, cannot be instantiated.
   - Sealed – normal, instantiable class but cannot be used as a base class or have children
 
