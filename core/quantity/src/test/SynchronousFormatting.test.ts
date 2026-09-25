@@ -23,11 +23,7 @@ describe("synchronous quantity formatting", () => {
     expect(meter.label).toBe("m");
     expect(provider.findUnitByNameSync("Units.NOT_A_UNIT").isValid).toBe(false);
 
-    const syncConversion = provider.getConversionSync(meter, foot);
-    const asyncConversion = await provider.getConversion(meter, foot);
-    expect(syncConversion.factor).toBeCloseTo(asyncConversion.factor, 12);
-    expect(syncConversion.offset).toBeCloseTo(asyncConversion.offset, 12);
-    expect(syncConversion.error).toBe(asyncConversion.error);
+    expect(provider.getConversionSync(meter, foot)).toEqual(await provider.getConversion(meter, foot));
 
     const seconds = provider.findUnitByNameSync("Units.S");
     expect(provider.getConversionSync(meter, seconds)).toEqual({ factor: 1.0, offset: 0.0, error: true });
