@@ -1176,6 +1176,62 @@ describe("InteractiveRebase", () => {
     chai.expect(childProps!.model).to.equal(newModelId);
   });
 
+  it("resolves broken model relationships for a new element hierarchy in any order", async () => {
+    const deletedModelId = await withEditTxn(briefcase1, async (txn) => {
+      const code = Code.createEmpty();
+      code.value = "DeletedHierarchyModel";
+      return IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, code, true)[1];
+    });
+    await briefcase1.pushChanges({ description: "Create hierarchy model" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteModel(deletedModelId);
+    });
+
+    const [parentId, childId, grandchildId] = await withEditTxn(briefcase2, async (txn) => {
+      const insert = (foo: string, parentId?: Id64String) => txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: deletedModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo,
+        somePoint: new Point2d(5.0, 6.0),
+        parent: parentId === undefined ? undefined : new ElementOwnsChildElements(parentId),
+      } as SomeGraphicalElementProps);
+
+      const parent = insert("Parent");
+      const child = insert("Child", parent);
+      const grandchild = insert("Grandchild", child);
+      return [parent, child, grandchild];
+    });
+
+    await briefcase1.pushChanges({ description: "Delete hierarchy model" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.conflicts).to.have.length(3);
+
+    const conflicts = [parentId, childId, grandchildId].map((elementId) => {
+      const conflict = interactive.conflicts.find((candidate) => candidate.id === elementId);
+      chai.expect(conflict).to.not.be.undefined;
+      chai.expect(conflict?.brokenRelationships.some((relationship) => relationship.navigationProperty === "model")).to.be.true;
+      chai.expect(briefcase2.elements.tryGetElementProps(elementId)).to.be.undefined;
+      return conflict!;
+    });
+
+    // Resolve in reverse hierarchy order to verify that resolution does not require owners first.
+    for (const conflict of conflicts.toReversed()) {
+      conflict.resolveBrokenRelationship("model", drawingModelId);
+    }
+
+    for (const elementId of [parentId, childId, grandchildId])
+      chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elementId).model).to.equal(drawingModelId);
+  });
+
   it("requires resolving model and code.spec relationships before inserting an element", async () => {
     const [deletedModelId, deletedCodeSpecId] = await withEditTxn(briefcase1, async (txn) => {
       const code = Code.createEmpty();
