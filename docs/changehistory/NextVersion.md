@@ -86,9 +86,17 @@ WHERE e.ECInstanceId = :elementId AND rc.Name = 'ModelContainsElements'
 ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
-Only instances of the primary (`main`) table space are traversed, and the ECSQL version was bumped to `2.0.4.1`.
+Only instances of the primary (`main`) table space are traversed.
 
 See the [Relations virtual table reference](../learning/ECSqlReference/Relations.md) for more details.
+
+### Opt-in fallback for missing navigation relationship class ids
+
+Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties that contain an `Id` but no `RelECClassId`. When enabled, end-table relationship queries and `ECVLib.Relations()` report the relationship declared by the navigation property. Existing behavior is unchanged when the option is omitted, and directly selecting the navigation property's `RelECClassId` still returns its stored `NULL` value.
+
+The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
+
+The ECSQL version was bumped to `2.0.4.2`.
 
 ### Import CSV data into ECDb
 
