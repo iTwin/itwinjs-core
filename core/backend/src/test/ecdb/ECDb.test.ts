@@ -21,6 +21,135 @@ describe("ECDb", () => {
     assert.isTrue(ecdb.isOpen);
   });
 
+  it("supports opt-in fallback for a missing navigation relationship class id", () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "nav-rel-class-id-fallback.ecdb", `
+      <ECSchema schemaName="NavFallback" alias="nf" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Hub" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Spoke" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+          <ECNavigationProperty propertyName="Owner" relationshipName="HubOwnsSpokes" direction="Backward"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="HubOwnsSpokes" strength="Referencing" modifier="Abstract">
+          <Source multiplicity="(0..1)" polymorphic="False" roleLabel="owns">
+            <Class class="Hub"/>
+          </Source>
+          <Target multiplicity="(0..*)" polymorphic="True" roleLabel="is owned by">
+            <Class class="Spoke"/>
+          </Target>
+        </ECRelationshipClass>
+        <ECRelationshipClass typeName="HubOwnsSpoke" strength="Referencing" modifier="Sealed">
+          <BaseClass>HubOwnsSpokes</BaseClass>
+          <Source multiplicity="(0..1)" polymorphic="False" roleLabel="owns">
+            <Class class="Hub"/>
+          </Source>
+          <Target multiplicity="(0..*)" polymorphic="True" roleLabel="is owned by">
+            <Class class="Spoke"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`);
+
+    const insert = (ecsql: string, bind?: (statement: ECSqlWriteStatement) => void): Id64String =>
+      ecdb.withCachedWriteStatement(ecsql, (statement) => {
+        bind?.(statement);
+        const result = statement.stepForInsert();
+        assert.equal(result.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(result.id);
+        return result.id!;
+      });
+
+    const queryClassId = (className: string): Id64String => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      return ecdb.withPreparedStatement(
+        "SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE s.Name='NavFallback' AND c.Name=?",
+        (statement) => {
+          statement.bindString(1, className);
+          assert.equal(statement.step(), DbResult.BE_SQLITE_ROW);
+          return statement.getValue(0).getId();
+        },
+      );
+    };
+
+    const hubClassId = queryClassId("Hub");
+    const rootRelationshipClassId = queryClassId("HubOwnsSpokes");
+    const derivedRelationshipClassId = queryClassId("HubOwnsSpoke");
+    const hubId = insert("INSERT INTO nf.Hub(Name) VALUES('hub')");
+    const legacySpokeId = insert(
+      "INSERT INTO nf.Spoke(Name, Owner.Id, Owner.RelECClassId) VALUES('legacy', ?, NULL)",
+      (statement) => statement.bindId(1, hubId),
+    );
+    const normalSpokeId = insert(
+      "INSERT INTO nf.Spoke(Name, Owner.Id, Owner.RelECClassId) VALUES('normal', ?, ?)",
+      (statement) => {
+        statement.bindId(1, hubId);
+        statement.bindId(2, derivedRelationshipClassId);
+      },
+    );
+    ecdb.saveChanges();
+
+    const queryCount = (ecsql: string, ids: readonly Id64String[] = []): number => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      return ecdb.withPreparedStatement(ecsql, (statement) => {
+        ids.forEach((id, index) => statement.bindId(index + 1, id));
+        assert.equal(statement.step(), DbResult.BE_SQLITE_ROW);
+        return statement.getValue(0).getInteger();
+      });
+    };
+
+    assert.equal(queryCount("SELECT COUNT(*) FROM nf.HubOwnsSpokes"), 1);
+    assert.equal(queryCount("SELECT COUNT(*) FROM nf.HubOwnsSpokes ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK"), 2);
+    assert.equal(queryCount("SELECT COUNT(*) FROM nf.HubOwnsSpoke"), 1);
+    assert.equal(queryCount("SELECT COUNT(*) FROM nf.HubOwnsSpoke ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK"), 1);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    ecdb.withPreparedStatement(
+      "SELECT ECClassId, SourceECInstanceId, TargetECInstanceId FROM nf.HubOwnsSpokes WHERE TargetECInstanceId=? ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK",
+      (statement) => {
+        statement.bindId(1, legacySpokeId);
+        assert.equal(statement.step(), DbResult.BE_SQLITE_ROW);
+        assert.equal(statement.getValue(0).getId(), rootRelationshipClassId);
+        assert.equal(statement.getValue(1).getId(), hubId);
+        assert.equal(statement.getValue(2).getId(), legacySpokeId);
+        assert.equal(statement.step(), DbResult.BE_SQLITE_DONE);
+      },
+    );
+
+    const relationsCountSql = `SELECT COUNT(*) FROM ECVLib.Relations(?, ?, 'forward')
+      ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`;
+    assert.equal(queryCount(relationsCountSql, [hubId, hubClassId]), 1);
+    assert.equal(queryCount(`${relationsCountSql} NAV_REL_CLASSID_FALLBACK`, [hubId, hubClassId]), 2);
+    assert.equal(queryCount(relationsCountSql, [hubId, hubClassId]), 1);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    ecdb.withPreparedStatement(
+      `SELECT RelatedECInstanceId, RelationshipECClassId, RelationshipECInstanceId, NavPropertyName
+       FROM ECVLib.Relations(?, ?, 'forward') WHERE RelatedECInstanceId=?
+       ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES NAV_REL_CLASSID_FALLBACK`,
+      (statement) => {
+        statement.bindId(1, hubId);
+        statement.bindId(2, hubClassId);
+        statement.bindId(3, legacySpokeId);
+        assert.equal(statement.step(), DbResult.BE_SQLITE_ROW);
+        assert.equal(statement.getValue(0).getId(), legacySpokeId);
+        assert.equal(statement.getValue(1).getId(), rootRelationshipClassId);
+        assert.equal(statement.getValue(2).getId(), legacySpokeId);
+        assert.equal(statement.getValue(3).getString(), "Owner");
+        assert.equal(statement.step(), DbResult.BE_SQLITE_DONE);
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    ecdb.withPreparedStatement(`SELECT Owner.RelECClassId FROM nf.Spoke WHERE ECInstanceId=?
+      ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK`, (statement) => {
+      statement.bindId(1, legacySpokeId);
+      assert.equal(statement.step(), DbResult.BE_SQLITE_ROW);
+      assert.isTrue(statement.getValue(0).isNull);
+    });
+
+    assert.equal(queryCount("SELECT COUNT(*) FROM nf.HubOwnsSpoke WHERE TargetECInstanceId=?", [normalSpokeId]), 1);
+  });
+
   it("should be able to close an ECDb", () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "close.ecdb");
     assert.isTrue(ecdb.isOpen);
