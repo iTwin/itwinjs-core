@@ -25,7 +25,7 @@ SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE (rt.ECInstanceId MATCH
 The caller would bind the `bbox` parameter in this example to an [iModel_bbox](./GeometrySqlFuncs.md#iModel_bbox) value. For example:
 
 ``` ts
-[[include:ECSqlStatement.spatialQuery]]
+[[include:ECSqlReader.spatialQuery]]
 ```
 
 This example shows how to find all elements with ranges that (may) overlap the range of some seed element. Note how the bbox parameter is bound to the range of the seed element. The additional test in the WHERE filters out the seed element, so that only other overlapping elements are found.

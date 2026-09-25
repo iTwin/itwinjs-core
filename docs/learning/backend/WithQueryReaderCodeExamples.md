@@ -15,7 +15,7 @@ withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, para
 - `ecsql` is the ECSQL query to execute.
 - `callback` consumes the reader and can return materialized rows or a computed value. Finish using the reader before the callback completes.
 - `params` is a [QueryBinder]($common) containing any parameter bindings.
-- `config` is a [SynchronousQueryOptions]($backend) object. It supports `rowFormat`, `abbreviateBlobs`, and `convertClassIdsToClassNames`. See [ECSQL Row Formats](../ECSQLRowFormat.md) for result formatting and class-name conversion.
+- `config` is a [SynchronousQueryOptions]($backend) object. Use `rowFormat` and `abbreviateBlobs` to control result formatting. The inherited `convertClassIdsToClassNames` option is deprecated; project class names explicitly with `ec_classname()`. See [ECSQL Row Formats](../ECSQLRowFormat.md).
 
 The synchronous options do not include `usePrimaryConn`: this reader already uses the owning connection and can read its unsaved changes. They also omit concurrent-query controls such as `priority`, `restartToken`, and `quota`. To limit the result count, use an ECSQL `LIMIT` clause; the async reader's `config.limit` option is not available here.
 
@@ -59,20 +59,20 @@ Materialized rows can be used after the callback completes. Collecting all rows 
 The async and sync readers share the same [row formats and materialization methods](../ECSQLRowFormat.md):
 
 - Use `row[index]` or `row.propertyName` to read the current row.
-- Use `row.toRow()` to retain a plain object. It uses ECSQL names unless `UseJsPropertyNames` was selected.
+- Use `row.toRow()` to retain a plain object. It uses ECSQL names unless the deprecated `UseJsPropertyNames` format was selected.
 - Use `row.toArray()` for the current row's raw values, or `reader.toArray()` for all remaining rows.
 
 The proxy follows the reader's current row. Materialize a row before retaining it across calls to `step()` or iterator advances.
 
-### JavaScript property names
+### JavaScript-friendly property names
 
-Use `QueryRowFormat.UseJsPropertyNames` when results need JS property names and class-name values, such as `id`, `className`, and navigation `relClassName`:
+Use aliases with `QueryRowFormat.UseECSqlPropertyNames`, and project class names with `ec_classname()`:
 
 ```ts
 [[include:ExecuteECSql_Sync_JsRow]]
 ```
 
-See [property names and values](../ECSQLRowFormat.md#property-names) for the conversion rules and alias behavior.
+This avoids the deprecated `UseJsPropertyNames` format while producing an explicit, stable result contract. See [property names and values](../ECSQLRowFormat.md#property-names).
 
 ## Parameter Bindings
 

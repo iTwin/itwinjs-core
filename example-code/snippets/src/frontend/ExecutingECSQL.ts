@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { NavigationValue, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
@@ -81,13 +81,16 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_HandlingRows_Types
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of iModel.createQueryReader(
+      "SELECT ECInstanceId AS id, ec_classname(ECClassId, 's.c') AS className, Parent.Id AS parentId, LastMod AS lastMod FROM bis.Element WHERE Model.Id=?",
+      QueryBinder.from(["0x10"]),
+      { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
+    )) {
       const id: Id64String = row.id;
       const className: string = row.className;
-      const parent: NavigationValue | undefined = row.parent;
+      const parentId: Id64String | undefined = row.parentId;
       const lastMod: string = row.lastMod;
-      console.log({ id, className, parent, lastMod });
+      console.log({ id, className, parentId, lastMod });
     }
     // __PUBLISH_EXTRACT_END__
   }

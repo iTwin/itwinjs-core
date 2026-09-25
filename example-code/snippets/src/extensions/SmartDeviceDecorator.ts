@@ -10,7 +10,6 @@ import {
   Decorator,
   IModelConnection,
   Marker,
-  QueryRowFormat,
   ScreenViewport,
 } from "@itwin/core-extension";
 import { SmartDeviceMarker } from "./SmartDeviceMarker";
@@ -27,18 +26,17 @@ export class SmartDeviceDecorator implements Decorator {
 
   private async getSmartDeviceData() {
     const query = `
-      SELECT  SmartDeviceId,
-              SmartDeviceType,
-              ECInstanceId,
-              Origin
+      SELECT  SmartDeviceId AS smartDeviceId,
+              SmartDeviceType AS smartDeviceType,
+              ECInstanceId AS id,
+              Origin.X AS originX,
+              Origin.Y AS originY,
+              Origin.Z AS originZ
               FROM DgnCustomItemTypes_HouseSchema.SmartDevice
               WHERE Origin IS NOT NULL
     `;
 
-    const results = this.iModel.createQueryReader(query, undefined, {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      rowFormat: QueryRowFormat.UseJsPropertyNames,
-    });
+    const results = this.iModel.createQueryReader(query);
 
     const values = [];
     for await (const row of results) {
@@ -52,7 +50,7 @@ export class SmartDeviceDecorator implements Decorator {
 
     values.forEach((value) => {
       const smartDeviceMarker = new SmartDeviceMarker(
-        { x: value.origin.x, y: value.origin.y, z: value.origin.z },
+        { x: value.originX, y: value.originY, z: value.originZ },
         { x: 40, y: 40 },
         value.smartDeviceId,
         value.smartDeviceType,

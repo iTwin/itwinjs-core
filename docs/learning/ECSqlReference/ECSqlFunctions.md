@@ -36,7 +36,7 @@ For the specified ecClassId, returns the class name as a string formatted accord
 
 className as specified by format, or `NULL` if it was unable to resolve `ECClassId`, or if the format specifier was not recognized.
 
-Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERROR` if the incorrect number of arguments was passed in.
+Query execution fails with `BE_SQLITE_ERROR` if an incorrect number of arguments is passed.
 
 ### Example
 
@@ -74,7 +74,7 @@ Can take either one or two parameters:
 
 An integer `ECClassId` or `NULL` if the name could not be resolved.
 
-Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERROR` if the incorrect number of arguments was passed in.
+Query execution fails with `BE_SQLITE_ERROR` if an incorrect number of arguments is passed.
 
 ### Example
 

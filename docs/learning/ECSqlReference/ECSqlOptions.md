@@ -10,7 +10,7 @@ Supported options include:
 1. `DO_NOT_TRUNCATE_BLOB` returns the full blob instead of truncating it when using the instance accessor.
 1. `ENABLE_EXPERIMENTAL_FEATURES` enables experimental features.
 
-`USE_JS_PROP_NAMES` controls the JSON produced by the `$` instance accessor. The reader option `QueryRowFormat.UseJsPropertyNames` controls the surrounding query-row representation. See [ECSQL row formats](../ECSQLRowFormat.md#instance-json-and-options-use_js_prop_names).
+`USE_JS_PROP_NAMES` controls the JSON produced by the `$` instance accessor and is distinct from reader formatting. The similarly named reader option `QueryRowFormat.UseJsPropertyNames`, which controls the surrounding query-row representation, is deprecated. See [ECSQL row formats](../ECSQLRowFormat.md#instance-json-and-options-use_js_prop_names).
 
 Get an instance as JSON with iTwin.js property names:
 

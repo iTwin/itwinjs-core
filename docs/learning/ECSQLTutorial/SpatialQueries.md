@@ -38,16 +38,16 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 > const spaceElement = iModelDb.elements.getElement("0x1000000001f") as SpatialElement;
 > const params = new QueryBinder().bindRange3d(1, spaceElement.placement.calculateRange());
 > const reader = iModelDb.createQueryReader(
->   "SELECT e.ECInstanceId, e.ECClassId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x1000000000a",
+>   "SELECT e.ECInstanceId AS id, ec_classname(e.ECClassId, 's.c') AS className, e.CodeValue AS codeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x1000000000a",
 >   params,
->   { rowFormat: QueryRowFormat.UseJsPropertyNames },
+>   { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
 > );
 > for await (const row of reader) {
 >   console.log(row.toRow());
 > }
 > ```
 >
-> `UseJsPropertyNames` produces the property names and class-name values shown below. See [ECSQL row formats](../ECSQLRowFormat.md).
+> The aliases and `ec_classname()` projection produce the property names and class-name values shown below without relying on deprecated row formatting. See [ECSQL row formats](../ECSQLRowFormat.md).
 >
 > _Result_
 >
