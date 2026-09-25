@@ -16,7 +16,7 @@ Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
 | Bind parameters inside the callback | Build a [QueryBinder]($common) and pass it to the reader API. See [parameter bindings](../ECSQLCodeExamples.md#parameter-bindings). |
 | `stmt.step() === DbResult.BE_SQLITE_ROW` | `await reader.step()` for the async reader; `reader.step()` for the sync reader. Both return a boolean. |
 | `stmt.getRow()` | `reader.current` is a reusable row proxy. Call `reader.current.toRow()` to retain an object for that row. |
-| Default JS-shaped results from `stmt.getRow()` | Select `rowFormat: QueryRowFormat.UseJsPropertyNames` to retain JS property names and class-name values. The readers otherwise default to indexed rows for `reader.toArray()`. |
+| Default JS-shaped results from `stmt.getRow()` | Prefer `UseECSqlPropertyNames` with explicit aliases and `ec_classname()` projections. If an existing caller requires the exact legacy shape, deprecated `UseJsPropertyNames` can preserve it temporarily. The readers otherwise default to indexed rows for `reader.toArray()`. |
 | Read class IDs with `stmt.getValue(index).getId()` | Use index access or ECSQL-name access with the default options, which preserve class IDs. See [row formats](../ECSQLRowFormat.md). |
 | Read unsaved edits on the owning database connection | `withQueryReader` uses that connection. With `createQueryReader`, specify `usePrimaryConn: true` when required. Async results are still buffered. |
 | `bindNavigation`, `bindStruct`, or `bindArray` | See the binding limitations below; these do not have equivalent working reader bindings for whole navigation, struct, or arbitrary array values. |
