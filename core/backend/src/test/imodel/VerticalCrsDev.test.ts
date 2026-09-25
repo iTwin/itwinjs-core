@@ -92,7 +92,7 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
 
   it("enumerates and converts EGM96 using DEV resources", async () => {
     const verticalSystems = await getAvailableVerticalCoordinateReferenceSystems({
-      point: { longitude: 23.700523, latitude: 37.944210 },
+      point: { x: 23.700523, y: 37.944210 },
     });
     const egm96 = verticalSystems.find((entry) => entry.crsName === "EGM96 height");
 

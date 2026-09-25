@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { Range2dProps } from "@itwin/core-geometry";
+import { Range2dProps, XAndY } from "@itwin/core-geometry";
 import { IModelNative } from "./internal/NativePlatform";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 
@@ -83,8 +83,10 @@ export interface AvailableVerticalCoordinateReferenceSystemProps {
  * @beta
  */
 export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
-  /** If provided, only return vertical coordinate reference systems applicable at this longitude and latitude. */
-  point?: { longitude: number, latitude: number };
+  /** If provided, only return vertical coordinate reference systems applicable at this geographic point in degrees.
+   * The x coordinate is longitude and the y coordinate is latitude.
+   */
+  point?: XAndY;
   /** If provided, only return vertical coordinate reference systems whose extent contains this extent. */
   extent?: Range2dProps;
   /** If true, include vertical coordinate reference systems whose extent intersects, but does not contain, [[extent]].

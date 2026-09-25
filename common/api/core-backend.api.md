@@ -3932,10 +3932,7 @@ export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailab
 export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
     includeIntersecting?: boolean;
-    point?: {
-        longitude: number;
-        latitude: number;
-    };
+    point?: XAndY;
     unit?: string;
 }
 
