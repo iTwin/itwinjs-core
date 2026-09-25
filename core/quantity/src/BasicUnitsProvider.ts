@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import type { SyncUnitsProvider, UnitProps, UnitsProvider } from "./Interfaces";
 import type { SerializedUnitSchema } from "./SerializedUnitSchema";
-import { isUnitName, UnitConversions } from "./UnitConversions";
 import { BadUnit } from "./Unit";
 import { getBasicUnitConversion } from "./internal/BasicUnitConversionData";
 import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData, resolveBasicUnitsDataSync } from "./internal/BasicUnitsResolvedStateCache";
@@ -49,13 +48,9 @@ export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
     return entry ? entry.props : new BadUnit();
   }
 
-  /** Compute a conversion between canonical built-in units using generated local data. */
+  /** Compute a conversion between built-in units using the same bundled data as [[getConversion]]. */
   public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps) {
-    if (!isUnitName(fromUnit.name) || !isUnitName(toUnit.name)) {
-      return { factor: 1.0, offset: 0.0, error: true };
-    }
-
-    return UnitConversions.getConversion(fromUnit.name, toUnit.name);
+    return getBasicUnitConversion(resolveStateSync(), fromUnit, toUnit);
   }
 
   // ── UnitsProvider implementation ─────────────────────────────────────
