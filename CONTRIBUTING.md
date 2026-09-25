@@ -51,7 +51,7 @@ Published packages use lockstep versioning. `rush change` creates entries with `
 - Use an empty `comment` for test-only changes, development-dependency updates, linting fixes, and internal refactoring that does not change consumer behavior.
 - Changes only to non-published packages, such as display-test-app, do not need a change entry.
 
-For breaking API or behavior changes, and significant features, add migration guidance to `docs/changehistory/NextVersion.md`. A runtime or logical change can be breaking even when existing consumer code still compiles.
+For breaking API or behavior changes, and significant features, add migration guidance to `docs/changehistory/NextVersion.md`. A runtime or logical change can be breaking even when existing consumer code still compiles. Entries go under a fixed set of sections: list them with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`, and run the script without arguments to check the file.
 
 ### Documentation examples
 
