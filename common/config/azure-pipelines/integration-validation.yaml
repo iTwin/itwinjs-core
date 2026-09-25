@@ -1,7 +1,41 @@
 # iTwin.js Core Integration Validation Build
 #
-# This integration test job currently runs on all supported operating systems and node versions of iTwin.js.
-# Runs against master on a weekly schedule, in the future this should be a required check before bumping versions.
+# Runs against master on a weekly schedule; in the future this should be a required check before bumping versions.
+#
+# Rather than running every integration test on the full Cartesian product of
+# OS x architecture x Node version, coverage is separated into targeted lanes:
+#
+# | Lane                  | Pool / image           | Node | Core full-stack suites        | Owns coverage for                            |
+# | --------------------- | ---------------------- | ---- | ----------------------------- | -------------------------------------------- |
+# | Renderer_Linux_x64    | imodelNative-Debian12  | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Linux x64     |
+# | Renderer_Windows_x64  | windows-latest         | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Windows x64   |
+# | Renderer_MacOS_arm64  | iModelTechMacArm       | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on macOS arm64   |
+# | Arch_Linux_arm64      | Platform-Debian12-ARM  | 24.x | full (Chrome + Electron)      | Linux arm64 architecture (incl. rendering)   |
+# | NodeCompat_20         | imodelNative-Debian12  | 20.x | Chrome only, no #graphics     | Node 20 backend/RPC/cross-layer compat       |
+# | NodeCompat_22         | imodelNative-Debian12  | 22.x | Chrome only, no #graphics     | Node 22 backend/RPC/cross-layer compat       |
+#
+# Linux x64 lanes use the self-hosted 16-core imodelNative-Debian12 pool: hosted
+# ubuntu-latest agents have 2 cores, which fails ConcurrentQuery config tests
+# (itwinjs-backlog#2422) and slows builds. Hosted-Ubuntu renderer coverage is still
+# exercised on every PR by integration-pr-validation.yaml.
+#
+# Rationale:
+# - Renderer behavior varies by OS, GPU stack, and architecture.
+# - Node-version compatibility is validated on a single representative OS (Linux
+#   x64). Certa's Chrome runner hosts the test backend in the selected Node
+#   process, so the NodeCompat lanes keep the Chrome integration suite (remote
+#   iModel connections, RPC, briefcase, tile/element-graphics requests) and
+#   exclude only #graphics-tagged suites (coreFullStackTests: node-compat).
+#   Electron is omitted there because it bundles its own Node runtime.
+#   Known limitation: Node-version behavior rarely CAN differ by platform. Node 20 tests
+#   failed on Linux ARM64 (the only known instance), and the support matrix was
+#   updated to exclude Node 20 on Linux ARM64 rather than cover that combination
+#   here. If another platform-specific Node issue arises, add a targeted lane for
+#   that specific combination instead of reverting to the full Cartesian product.
+# - Architecture coverage (arm64) runs on the latest supported Node.
+#
+# The PR integration pipeline (integration-pr-validation.yaml) additionally runs
+# the full suite on Linux x64 with the latest Node for every pull request.
 
 trigger: none
 pr: none
@@ -16,53 +50,38 @@ schedules:
 variables:
   - group: iTwin.js non-secret config variables
   - group: iTwin.js Integration Test Users
+  - group: Rush Build Cache SAS Token
   - name: ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS
     value: "1"
 
 jobs:
-  - job: Integration_Tests_Full
+  # Renderer + architecture lanes: full integration suite (including the
+  # graphics-heavy Core full-stack tests) on the latest supported Node.
+  - job: Integration_Renderer_Lanes
+    # The hosted Windows renderer lane needs ~70 minutes: ~11m install/build, ~13m backend
+    # integration tests, ~34-40m Core full-stack tests, plus the ~8m extended Core Backend
+    # suite. It finished in 55-59m until 2026-09-06, when the Schema Sync v2 suites
+    # (itwinjs-core#9604) added ~10m to the backend tests and pushed every Windows job past the
+    # default 60m job timeout (master included). Until the graphics-heavy tests move to a GPU
+    # rendering lane (itwinjs-backlog#2355), allow the single Windows pass to finish. Lanes that
+    # finish under 60m are unaffected.
+    timeoutInMinutes: 90
     strategy:
       matrix:
-        Linux_node_20_x:
-          imageName: ubuntu-latest
-          poolName:
-          nodeVersion: 20.x
-        Windows_node_20_x:
-          imageName: windows-latest
-          poolName:
-          nodeVersion: 20.x
-        MacOS_node_20_x:
-          imageName: macos-latest
-          poolName: "iModelTechMacArm"
-          nodeVersion: 20.x
-        Linux_node_22_x:
-          imageName: ubuntu-latest
-          poolName:
-          nodeVersion: 22.x
-        Windows_node_22_x:
-          imageName: windows-latest
-          poolName:
-          nodeVersion: 22.x
-        MacOS_node_22_x:
-          imageName: macos-latest
-          poolName: "iModelTechMacArm"
-          nodeVersion: 22.x
-        LinuxARM64_node_22_x:
-          poolName: "Platform-Debian12-ARM"
-          nodeVersion: 22.x
-        LinuxX64_node_24_x:
-          imageName: ubuntu-latest
-          poolName:
+        Renderer_Linux_x64_node_24_x:
+          imageName:
+          poolName: "imodelNative-Debian12"
           nodeVersion: 24.x
-        Windows_node_24_x:
+        Renderer_Windows_x64_node_24_x:
           imageName: windows-latest
           poolName:
           nodeVersion: 24.x
-        MacOS_node_24_x:
+        Renderer_MacOS_arm64_node_24_x:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
           nodeVersion: 24.x
-        LinuxARM64_node_24_x:
+        Arch_Linux_arm64_node_24_x:
+          imageName:
           poolName: "Platform-Debian12-ARM"
           nodeVersion: 24.x
     pool:
@@ -76,6 +95,47 @@ jobs:
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: $(nodeVersion)
+          coreFullStackTests: full
+
+      - script: npm test
+        workingDirectory: "core/backend"
+        env:
+          ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS: "1"
+        displayName: "Run Core Backend Tests"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Core Backend Test Results"
+        inputs:
+          testResultsFiles: "core/backend/lib/test/junit_results.xml"
+          testRunTitle: "Core Backend - Tests - $(nodeVersion)"
+        condition: succeededOrFailed()
+
+  # Node-compatibility lanes: backend/RPC integration suites on older supported
+  # Node versions, on one representative OS, skipping the renderer suites.
+  - job: Integration_Node_Compat_Lanes
+    strategy:
+      matrix:
+        NodeCompat_Linux_x64_node_20_x:
+          nodeVersion: 20.x
+        NodeCompat_Linux_x64_node_22_x:
+          nodeVersion: 22.x
+    # Self-hosted 16-core pool: hosted ubuntu-latest agents have 2 cores, which fails the
+    # ConcurrentQuery config tests and slows builds/tests.
+    pool: "imodelNative-Debian12"
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - template: templates/integration-test-steps.yaml
+        parameters:
+          nodeVersion: $(nodeVersion)
+          coreFullStackTests: node-compat
+          # Cache entries are keyed [os]-[arch]-[hash] without the Node version, so a
+          # cache hit here would restore lib output built under Node 24 and this lane
+          # would no longer prove that the packages build under Node 20/22.
+          rushBuildCacheEnabled: 0
 
       - script: npm test
         workingDirectory: "core/backend"

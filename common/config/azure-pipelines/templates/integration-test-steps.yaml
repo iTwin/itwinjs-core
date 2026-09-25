@@ -2,6 +2,29 @@ parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
 
+  # Controls which Core full-stack integration suites run:
+  #   full        - Chrome and Electron suites, including graphics-heavy (#graphics) tests.
+  #   node-compat - Chrome suite only, excluding #graphics-tagged suites. Retains the
+  #                 cross-layer contracts that exercise the host Node backend (remote iModel
+  #                 connections, RPC, briefcase, tile/element-graphics requests) while
+  #                 skipping shader-compilation-bound rendering tests. Electron is omitted
+  #                 because it bundles its own Node runtime, so the host Node version does
+  #                 not affect it.
+  - name: coreFullStackTests
+    type: string
+    default: full
+    values:
+      - full
+      - node-compat
+
+  # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
+  # Node-version contribution, so lanes that exist to prove a specific Node version
+  # can build the packages must pass 0 to avoid restoring output built under a
+  # different Node version.
+  - name: rushBuildCacheEnabled
+    type: number
+    default: 1
+
 steps:
   - template: setup-integration-users.yaml
 
@@ -19,20 +42,26 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
-  - script: |
-      # full-stack-tests/backend/package.json
-      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
-      # full-stack-tests/core/package.json
-      node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
-      # full-stack-tests/ecschema-rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
-      # full-stack-tests/rpc/package.json
-      node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
-      # full-stack-tests/rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
-
-      node ./common/scripts/install-run-rush webpack:test -v
+  # Build every package needed by the integration test suites in a single Rush
+  # invocation. Each frontend test package (and @itwin/core-electron) already runs
+  # webpack:test as part of its normal build script, so no separate webpack pass is needed.
+  #
+  # The build cache is READ-ONLY here (RUSH_BUILD_CACHE_WRITE_ALLOWED: 0): these
+  # pipelines can be queued manually against arbitrary refs, so they must never
+  # publish to the shared cache. Cache entries are written only by trusted
+  # master/release CI builds (see core-build.yaml).
+  - script: >
+      node ./common/scripts/install-run-rush build -v
+      --to backend-integration-tests
+      --to core-full-stack-tests
+      --to @itwin/ecschema-rpcinterface-tests
+      --to rpc-full-stack-tests
+      --to rpcinterface-full-stack-tests
     displayName: "Rush build"
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
   # Ensure the binary is present before configuring the AppArmor profile.
@@ -82,21 +111,40 @@ steps:
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
-  # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+  - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
+      # Linux agents do not have a real display so use the virtual framebuffer
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  # Node-compat: Chrome suite only (Certa's backend runs in the host Node process, so
+  # these tests exercise the selected Node version); #graphics-tagged suites excluded.
+  # Electron is omitted because it bundles its own Node runtime.
+  - ${{ if eq(parameters.coreFullStackTests, 'node-compat') }}:
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:chrome:no-graphics
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (Chrome, no #graphics)"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+      - script: npm run test:integration:chrome:no-graphics
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (Chrome, no #graphics)"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
@@ -164,12 +212,21 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
+  # Chrome results are produced by both 'full' and 'node-compat' modes.
   - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results"
+    displayName: "Publish Core Integration Test Results (Chrome)"
     inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.nodeVersion }}"
+      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+      testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()
+
+  - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Electron)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
+          testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish ECSchema Rpc Interface Integration Test Results"
