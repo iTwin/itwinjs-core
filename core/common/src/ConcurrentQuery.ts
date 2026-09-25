@@ -382,7 +382,7 @@ export enum QueryParamType {
  * @see
  * - [ECSQL Parameters]($docs/learning/ECSQL.md#ecsql-parameters)
  * - [ECSQL Parameter Types]($docs/learning/ECSQLParameterTypes)
- * - [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples#parameter-bindings)
+ * - [ECSQL Code Examples]($docs/learning/ECSQLCodeExamples#parameter-bindings)
  *
  * @public
  */

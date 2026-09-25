@@ -1,16 +1,18 @@
 # ECSQLOPTIONS or OPTIONS clause
 
-`ECSQLOPTIONS` (or `OPTIONS` for short) are used to specify flags thats will effect processing of the ECSQL statement.
+`ECSQLOPTIONS` (or `OPTIONS` for short) specifies flags that affect processing of the ECSQL statement.
 
 Syntax: `<select-stmt> OPTIONS option[=val] [,...]`
 
-Here is list of supported options
+Supported options include:
 
-1. `USE_JS_PROP_NAMES` returns json from instance accessor, compilable with iTwin.js typescript.
-1. `DO_NOT_TRUNCATE_BLOB` return full blob instead of truncating it when using instance accessor.
-1. `ENABLE_EXPERIMENTAL_FEATURES` enable experimental features.
+1. `USE_JS_PROP_NAMES` formats JSON from the instance accessor using JavaScript property names and class-name values.
+1. `DO_NOT_TRUNCATE_BLOB` returns the full blob instead of truncating it when using the instance accessor.
+1. `ENABLE_EXPERIMENTAL_FEATURES` enables experimental features.
 
-Get instance as json which is compatible with itwin.js.
+`USE_JS_PROP_NAMES` controls the JSON produced by the `$` instance accessor. The reader option `QueryRowFormat.UseJsPropertyNames` controls the surrounding query-row representation. See [ECSQL row formats](../ECSQLRowFormat.md#instance-json-and-options-use_js_prop_names).
+
+Get an instance as JSON with iTwin.js property names:
 
 ```sql
 SELECT $ FROM [BisCore].[Element] OPTIONS USE_JS_PROP_NAMES
