@@ -62,10 +62,10 @@ export class LocateOptions {
   public maxHits = 20;
   /** The [[HitSource]] identifying the caller. */
   public hitSource = HitSource.DataPoint;
-  /** If true, also test graphics from an IModelConnection other than the one associated with the Viewport. This can occur if, e.g., a
-   * [[TiledGraphicsProvider]] is used to display graphics from a different iModel into the [[Viewport]].
-   * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other IModelConnections.
-   * @see [[HitDetail.iModel]] and [[HitDetail.isExternalIModelHit]]
+  /** If true, also test graphics from linked [[IModelDisplayReference]]s in addition to the Viewport's primary
+   * IModelDisplayReference.
+   * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other iModels.
+   * @see [[HitDetail.iModelRef]] to determine from which reference the hit originated.
    */
   public allowExternalIModels = false;
   /** If true, then the world point of a hit on a model will preserve any transforms applied to the model at display time,

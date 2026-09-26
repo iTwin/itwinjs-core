@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, SpatialIModelDisplayReference, SpatialTileTreeReferences } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs.js";
 import { queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "./GraphicsProvider/GraphicRepresentationProvider.js";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider.js";
@@ -212,5 +212,5 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     })
   );
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);
+  SpatialTileTreeReferences.create = (ref: SpatialIModelDisplayReference) => createBatchedSpatialTileTreeReferences(ref, computeUrl, options.nopFallback ?? false);
 }

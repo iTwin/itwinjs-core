@@ -12,7 +12,7 @@ import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../Viewport";
+import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
@@ -32,6 +32,7 @@ import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTargetDebugControl } from "../internal/render/RenderTargetDebugControl";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 
 /** Connects a [[Viewport]] to a graphics renderer such as a [WebGLRenderingContext](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext)
  * to enable the viewport's contents to be rendered to the screen or to an off-screen buffer.
@@ -104,7 +105,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public [Symbol.dispose](): void { }
   /** @internal */
-  public reset(_realityMapLayerChanged?: boolean): void { }
+  public reset(_realityMapLayerChanged?: boolean, _primaryIModelRef?: IModelDisplayReference): void { }
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */
@@ -118,9 +119,9 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   /** @internal */
-  public setHiliteSet(_hilited: HiliteSet): void { }
+  public invalidateHilites(): void { }
   /** @internal */
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public setFlashed(_element: IModelAndElementId | undefined, _intensity: number): void { }
   /** @internal */
   public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
   /** @internal */

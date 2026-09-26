@@ -52,6 +52,7 @@ import { Matrix4dProps } from '@itwin/core-geometry';
 import { Mutable } from '@itwin/core-bentley';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
+import { ObservableMap } from '@itwin/core-bentley';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -2566,11 +2567,14 @@ export class DisplayStyleSettings {
     // @beta
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
-    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
+    get modelAppearanceOverrides(): ObservableMap<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    readonly onAfterClipStyleChanged: BeEvent<() => void>;
+    readonly onAfterHiddenLineSettingsChanged: BeEvent<() => void>;
+    readonly onAfterViewFlagsChanged: BeEvent<() => void>;
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
@@ -2603,14 +2607,16 @@ export class DisplayStyleSettings {
     readonly onWhiteOnWhiteReversalChanged: BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
+    get planarClipMasks(): ObservableMap<Id64String, PlanarClipMaskSettings>;
+    // @beta
+    get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings>;
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
     get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
     set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
     // @beta
     setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void;
-    get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
+    get subCategoryOverrides(): ObservableMap<Id64String, SubCategoryOverride>;
     // @internal
     synchMapImagery(): void;
     get timePoint(): number | undefined;
@@ -3529,6 +3535,11 @@ export class Feature {
     readonly subCategoryId: Id64String;
 }
 
+// @public (undocumented)
+export namespace Feature {
+    export function compare(lhs: FeatureProps, rhs: FeatureProps): number;
+}
+
 // @public
 export class FeatureAppearance {
     protected constructor(props: FeatureAppearanceProps);
@@ -3674,6 +3685,13 @@ export enum FeatureOverrideType {
     AlphaOnly = 1,
     ColorAndAlpha = 2,
     ColorOnly = 0
+}
+
+// @public
+export interface FeatureProps {
+    elementId: Id64String;
+    geometryClass: GeometryClass;
+    subCategoryId: Id64String;
 }
 
 // @public
@@ -6401,19 +6419,14 @@ export interface ModelExtentsProps {
 }
 
 // @public
-export interface ModelFeature {
-    // (undocumented)
-    elementId: Id64String;
-    // (undocumented)
-    geometryClass: GeometryClass;
+export interface ModelFeature extends FeatureProps {
     // (undocumented)
     modelId: Id64String;
-    // (undocumented)
-    subCategoryId: Id64String;
 }
 
 // @public (undocumented)
 export namespace ModelFeature {
+    export function compare(lhs: ModelFeature, rhs: ModelFeature): number;
     export function create(): ModelFeature;
     export function isDefined(feature: ModelFeature): boolean;
     // @alpha (undocumented)
@@ -11644,6 +11657,7 @@ export class ViewDetails3d extends ViewDetails {
     getJSON(): Readonly<ViewDetails3dProps>;
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
+    readonly onAfterModelClipGroupsChanged: BeEvent<() => void>;
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 

@@ -43,6 +43,8 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
+import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
 /** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
  * display metadata such as its name and description.
@@ -245,56 +247,35 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
-  private _categorySelector: CategorySelectorState;
-  private _displayStyle: DisplayStyleState;
+  private readonly _categorySelector: CategorySelectorState;
+  private readonly _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
+  public abstract get iModelRefs(): IModelDisplayReferences;
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
-
-  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
-   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
-   */
-  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
    * @beta
    */
   public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
+  /** Event raised just after assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onAfterModelDisplayTransformProviderChanged = new BeEvent<() => void>();
 
   /** Selects the categories that are display by this ViewState. */
   public get categorySelector(): CategorySelectorState {
     return this._categorySelector;
   }
 
-  public set categorySelector(selector: CategorySelectorState) {
-    if (selector === this._categorySelector)
-      return;
-
-    const isAttached = this.isAttachedToViewport;
-    this.unregisterCategorySelectorListeners();
-
-    this._categorySelector = selector;
-
-    if (isAttached) {
-      this.registerCategorySelectorListeners();
-      this.onViewedCategoriesChanged.raiseEvent();
-    }
-  }
-
   /** The style that controls how the contents of the view are displayed. */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
-  }
-
-  public set displayStyle(style: DisplayStyleState) {
-    if (style === this.displayStyle)
-      return;
-
-    if (this.isAttachedToViewport)
-      this.onDisplayStyleChanged.raiseEvent(style);
-
-    this._displayStyle = style;
   }
 
   /** @internal */
@@ -420,6 +401,23 @@ export abstract class ViewState extends ElementState {
     await Promise.all(promises);
   }
 
+  /** Create a copy of this view with a different display style. */
+  public async cloneWithDisplayStyle(style: DisplayStyleState): Promise<this> {
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
+
+    const props = this.toProps();
+    props.displayStyleProps = style.toJSON();
+    const view = await this.iModel.views.convertViewStatePropsToViewState(props);
+    assert(view.classFullName === this.classFullName);
+    return view as this;
+  }
+
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
@@ -430,11 +428,13 @@ export abstract class ViewState extends ElementState {
    * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
-    for (const ref of this.getTileTreeRefs()) {
-      if (!ref.isLoadingComplete) {
+    for (const ref of this.displayStyle.getTileTreeRefs())
+      if (!ref.isLoadingComplete)
         return false;
-      }
-    }
+
+    for (const iModelRef of this.iModelRefs)
+      if (!iModelRef.isLoadingComplete)
+        return false;
 
     return true;
   }
@@ -633,9 +633,8 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    for (const ref of this.getTileTreeRefs()) {
+    for (const ref of this.getTileTreeRefs())
       ref.addToScene(context);
-    }
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -860,8 +859,6 @@ export abstract class ViewState extends ElementState {
    */
   public abstract get defaultExtentLimits(): ExtentLimits;
 
-  public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
@@ -932,9 +929,6 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
     this.setOrigin(origin);
   }
-
-  /** Set the CategorySelector for this view. */
-  public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
@@ -1349,6 +1343,8 @@ export abstract class ViewState extends ElementState {
       this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
 
     this._modelDisplayTransformProvider = provider;
+    if (this.isAttachedToViewport)
+      this.onAfterModelDisplayTransformProviderChanged.raiseEvent();
   }
 
   /** Compute the transform applied to a model or element at display time, if any.
@@ -1845,11 +1841,6 @@ export abstract class ViewState3d extends ViewState {
   /** The style that controls how the contents of the view are displayed. */
   public override get displayStyle(): DisplayStyle3dState {
     return this.getDisplayStyle3d();
-  }
-
-  public override set displayStyle(style: DisplayStyle3dState) {
-    assert(style instanceof DisplayStyle3dState);
-    super.displayStyle = style;
   }
 
   /** The style that controls how the contents of the view are displayed.
@@ -2383,12 +2374,17 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
+  public readonly iModelRefs: IModelDisplayReferences2d;
+
   /** @internal */
   protected get _tileTreeRef(): TileTreeReference | undefined {
     if (undefined === this._treeRef) {
       const model = this.getViewedModel();
       if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this);
+        this._treeRef = model.createTileTreeReference(this.iModelRefs.primary); // ###TODO move this to the IModelDisplayReference object
     }
 
     return this._treeRef;
@@ -2404,6 +2400,8 @@ export abstract class ViewState2d extends ViewState {
     this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
 
     this._details = new ViewDetails(this.jsonProperties);
+
+    this.iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {

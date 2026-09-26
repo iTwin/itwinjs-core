@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableMap, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -313,7 +313,7 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "real
  *  - JSON representation kept in sync with changes to map; and
  *  - Events dispatched when map contents change.
  */
-class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
+class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
   public override get [Symbol.toStringTag]() { return "OverridesMap"; }
 
@@ -332,9 +332,9 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     this.populate();
   }
 
-  public override set(id: Id64String, override: Override): this {
+  protected override _set(id: Id64String, override: Override): this {
     this._event.raiseEvent(id, override);
-    super.set(id, override);
+    super._set(id, override);
 
     const index = this.findOrAllocateIndex(id);
     const array = this._array;
@@ -344,9 +344,9 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     return this;
   }
 
-  public override delete(id: Id64String): boolean {
+  protected override _delete(id: Id64String): boolean {
     this._event.raiseEvent(id, undefined);
-    if (!super.delete(id))
+    if (!super._delete(id))
       return false;
 
     const array = this._array;
@@ -369,11 +369,12 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     return true;
   }
 
-  public override clear(): void {
-    for (const id of this.keys())
-      this.delete(id);
+  protected override _clear(): void {
+    for (const [id, _ovr] of this)
+      this._event.raiseEvent(id, undefined);
 
     this._json[this._arrayKey] = undefined;
+    super._clear();
   }
 
   public populate(): void {
@@ -412,6 +413,70 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     const newIndex = ovrs.length;
     this.#indexById.set(id, newIndex);
     return newIndex;
+  }
+}
+
+class PlanProjectionSettingsMap extends ObservableMap<Id64String, PlanProjectionSettings> {
+  readonly #container: DisplayStyle3dSettingsProps;
+
+  get #json() { return this.#container.planProjections; }
+  
+  #obtainJSON() {
+    return this.#json || (this.#container.planProjections = { });
+  }
+
+  #deleteJSON() {
+    if (this.#json)
+      delete this.#container.planProjections;
+
+  }
+
+  protected override _delete(modelId: Id64String) {
+    const json = this.#json;
+    if (json && super._delete(modelId)) {
+      delete this.#obtainJSON()[modelId];
+      if (this.size === 0)
+        this.#deleteJSON();
+
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  protected override _set(modelId: Id64String, settings: PlanProjectionSettings) {
+    this.#obtainJSON()[modelId] = settings.toJSON();
+    return super._set(modelId, settings);
+  }
+
+  protected override _clear() {
+    this.#deleteJSON();
+    super._clear();
+  }
+
+  public constructor(container: DisplayStyle3dSettingsProps) {
+    super();
+    this.#container = container;
+    this.populate();
+  }
+
+  // Callers other than the constructor must `clear()` first then set container.planProjections.
+  public populate(): void {
+    const json = this.#json;
+    if (!json)
+      return;
+
+    const entries = new Map<Id64String, PlanProjectionSettings>();
+    for (const key of Object.keys(json)) {
+      const id = Id64.fromJSON(key);
+      const settings = Id64.isValidId64(id) ? PlanProjectionSettings.fromJSON(json[key]) : undefined;
+      if (settings)
+        entries.set(id, settings);
+      else
+        delete json[key];
+    }
+
+    this.setAll(entries);
   }
 }
 
@@ -459,7 +524,7 @@ export class DisplayStyleSettings {
   /** Planar clip masks to be applied to persistent reality models (@see [SpatialModelState.isRealityModel]($frontend).
    * The key for each entry is the Id of the model to which the mask settings apply.
    */
-  public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
+  public get planarClipMasks(): ObservableMap<Id64String, PlanarClipMaskSettings> {
     return this._planarClipMasks;
   }
 
@@ -474,6 +539,8 @@ export class DisplayStyleSettings {
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
+  /** Event raised just after assignment to the [[viewFlags]] property. */
+  public readonly onAfterViewFlagsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
   public readonly onBackgroundColorChanged = new BeEvent<(newColor: ColorDef) => void>();
   /** Event raised just prior to assignment to the [[monochromeColor]] property. */
@@ -503,6 +570,8 @@ export class DisplayStyleSettings {
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
+  /** Event raised just after assignment to the [[clipStyle]] property. */
+  public readonly onAfterClipStyleChanged = new BeEvent<() => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
@@ -517,6 +586,8 @@ export class DisplayStyleSettings {
   public readonly onContoursChanged = new BeEvent<(newContours: ContourDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
+  /** Event raised just after assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
+  public readonly onAfterHiddenLineSettingsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
@@ -611,6 +682,7 @@ export class DisplayStyleSettings {
     this.onViewFlagsChanged.raiseEvent(flags);
     this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
+    this.onAfterViewFlagsChanged.raiseEvent();
   }
 
   /** The color displayed in the view background - by default, [[ColorDef.black]]. */
@@ -786,7 +858,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> {
+  public get subCategoryOverrides(): ObservableMap<Id64String, SubCategoryOverride> {
     return this._subCategoryOverrides;
   }
 
@@ -823,7 +895,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
+  public get modelAppearanceOverrides(): ObservableMap<Id64String, FeatureAppearance> {
     return this._modelAppearanceOverrides;
   }
 
@@ -861,6 +933,14 @@ export class DisplayStyleSettings {
       this._realityModelDisplaySettings.set(modelId, settings);
     else
       this._realityModelDisplaySettings.delete(modelId);
+  }
+
+  /** Maps the Id of a persistent reality model (@see [SpatialModelState.isRealityModel]($frontend) to
+   * a description of how to customize its display.
+   * @beta
+   */
+  public get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings> {
+    return this._realityModelDisplaySettings;
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -914,6 +994,8 @@ export class DisplayStyleSettings {
       delete this._json.clipStyle;
     else
       this._json.clipStyle = style.toJSON();
+
+    this.onAfterClipStyleChanged.raiseEvent();
   }
 
   /** Convert these settings to their JSON representation. */
@@ -1089,7 +1171,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _solarShadows: SolarShadowSettings;
   private _lights: LightSettings;
   private _environment: Environment;
-  private _planProjections?: Map<string, PlanProjectionSettings>;
+  private _planProjections: PlanProjectionSettingsMap;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json; }
 
@@ -1115,32 +1197,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
-    this.populatePlanProjectionsFromJSON();
-  }
-
-  private populatePlanProjectionsFromJSON(): void {
-    this._planProjections = undefined;
-    const projections = this._json3d.planProjections;
-    if (undefined !== projections) {
-      for (const key of Object.keys(projections)) {
-        const id = Id64.fromJSON(key);
-        if (!Id64.isValidId64(id)) {
-          delete projections[key];
-          continue;
-        }
-
-        const settings = PlanProjectionSettings.fromJSON(projections[key]);
-        if (undefined === settings) {
-          delete projections[key];
-          continue;
-        }
-
-        if (undefined === this._planProjections)
-          this._planProjections = new Map<string, PlanProjectionSettings>();
-
-        this._planProjections.set(id, settings);
-      }
-    }
+    this._planProjections = new PlanProjectionSettingsMap(this._json3d);
   }
 
   /** Convert these settings to their JSON representation. */
@@ -1203,8 +1260,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this.lights = LightSettings.fromJSON(overrides.lights);
 
     if (overrides.planProjections) {
+      this._planProjections.clear();
       this._json3d.planProjections = { ...overrides.planProjections };
-      this.populatePlanProjectionsFromJSON();
+      this._planProjections.populate();
     }
 
     if (overrides.thematic)
@@ -1247,6 +1305,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onHiddenLineSettingsChanged.raiseEvent(hline);
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
+    this.onAfterHiddenLineSettingsChanged.raiseEvent();
   }
 
   /** The settings that control how ambient occlusion is displayed. */
@@ -1376,40 +1435,20 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   /** Get the plan projection settings associated with the specified model, if defined. */
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
-    return undefined !== this._planProjections ? this._planProjections.get(modelId) : undefined;
+    return this._planProjections.get(modelId);
   }
 
   /** Set or clear the plan projection settings associated with the specified model. */
   public setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void {
     this.onPlanProjectionSettingsChanged.raiseEvent(modelId, settings);
-
-    if (undefined === settings) {
-      if (undefined !== this._planProjections) {
-        assert(undefined !== this._json3d.planProjections);
-
-        this._planProjections.delete(modelId);
-        delete this._json3d.planProjections[modelId];
-
-        if (0 === this._planProjections.size) {
-          this._planProjections = undefined;
-          delete this._json3d.planProjections;
-        }
-      }
-
-      return;
-    }
-
-    if (undefined === this._planProjections) {
-      this._planProjections = new Map<string, PlanProjectionSettings>();
-      this._json3d.planProjections = {};
-    }
-
-    this._planProjections.set(modelId, settings);
-    expectDefined(this._json3d.planProjections)[modelId] = settings.toJSON();
+    if (settings)
+      this._planProjections.set(modelId, settings);
+    else
+      this._planProjections.delete(modelId);
   }
 
-  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object. */
-  public get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined {
-    return undefined !== this._planProjections ? this._planProjections.entries() : undefined;
+  /** Returns the mapping of plan projection model Id to the settings used to display that model. */
+  public get planProjectionSettings(): ObservableMap<Id64String, PlanProjectionSettings> {
+    return this._planProjections;
   }
 }

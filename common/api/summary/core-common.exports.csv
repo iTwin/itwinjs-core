@@ -315,6 +315,7 @@ beta;interface;ExternalSourceAttachmentProps
 beta;enum;ExternalSourceAttachmentRole
 beta;interface;ExternalSourceProps
 public;class;Feature
+public;namespace;Feature
 public;class;FeatureAppearance
 public;interface;FeatureAppearanceProps
 public;interface;FeatureAppearanceProvider
@@ -324,6 +325,7 @@ public;class;FeatureIndex
 public;enum;FeatureIndexType
 public;class;FeatureOverrides
 public;enum;FeatureOverrideType
+public;interface;FeatureProps
 public;class;FeatureTable
 internal;class;FeatureTableHeader
 beta;type;FieldCase

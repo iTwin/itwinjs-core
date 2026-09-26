@@ -11,7 +11,6 @@ import {
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
-import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
@@ -26,27 +25,6 @@ import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
-
-  describe("subcategory reload category collection", () => {
-    it("includes per-model override categories outside the category selector", () => {
-      const viewport = {
-        view: {
-          categorySelector: {
-            categories: new Set(["0x1", "0x2"]),
-          },
-        },
-        perModelCategoryVisibility: {
-          *[Symbol.iterator]() {
-            yield { modelId: "0xa", categoryId: "0x3", visible: true };
-            yield { modelId: "0xb", categoryId: "0x2", visible: false };
-          },
-        },
-      };
-
-      const categoryIds = (Viewport.prototype as any).getSubCategoryReloadCategoryIds.call(viewport) as Set<string>;
-      expect([...categoryIds]).toEqual(["0x1", "0x2", "0x3"]);
-    });
-  });
 
   describe("constructor", () => {
     it("invokes initialize method", () => {
@@ -134,7 +112,7 @@ describe("Viewport", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -148,7 +126,6 @@ describe("Viewport", () => {
           expect(viewport.onChangeView.numberOfListeners).toEqual(expectedNum);
 
           // The viewport registers its own listener for each of these.
-          expect(viewport.view.onDisplayStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
           expect(viewport.displayStyle.settings.onAnalysisStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
         }
 
@@ -182,9 +159,7 @@ describe("Viewport", () => {
 
         const b = AnalysisStyle.fromJSON({ normalChannelName: "b" });
         expectChangedEvent(b, () => {
-          const style = viewport.displayStyle.clone();
-          style.settings.analysisStyle = b;
-          viewport.displayStyle = style;
+          viewport.displayStyle.settings.analysisStyle = b;
         });
 
         const c = AnalysisStyle.fromJSON({ normalChannelName: "c" });
@@ -223,29 +198,21 @@ describe("Viewport", () => {
     });
 
     afterEach(() => {
-      viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
-      expectBackgroundMap(false);
-      expectTerrain(false);
       viewport[Symbol.dispose]();
     });
 
     it("updates when display style is assigned to", () => {
-      let style = viewport.displayStyle.clone();
-      style.viewFlags = style.viewFlags.with("backgroundMap", false);
-      viewport.displayStyle = style;
+      viewport.viewFlags = viewport.viewFlags.with("backgroundMap", false);
       expectBackgroundMap(false);
       expectTerrain(false);
 
-      style = style.clone();
+      const style = viewport.displayStyle;
       style.viewFlags = style.viewFlags.with("backgroundMap", true);
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: true } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(true);
 
-      style = style.clone();
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: false } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(false);
     });
