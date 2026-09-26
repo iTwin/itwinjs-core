@@ -9,7 +9,7 @@
 import { BeEvent, BentleyError, BeUiEvent, BeUnorderedUiEvent, Logger } from "@itwin/core-bentley";
 import {
   AddFormattingSpecArgs, AlternateUnitLabelsProvider, BasicUnitsProvider, Format, FormatDefinition, FormatProps,
-  FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatterSpec, FormattingReadyCollector,
+  FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector,
   FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParseError, ParserSpec,
   QuantityParseResult, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
@@ -365,8 +365,8 @@ export class FormatsProviderManager implements FormatsProvider {
     });
   }
 
-  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
-    return this._formatsProvider.getFormat(name, system);
+  public async getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
+    return this._formatsProvider.getFormat(name, system, context);
   }
 
   public get formatsProvider(): FormatsProvider { return this; }

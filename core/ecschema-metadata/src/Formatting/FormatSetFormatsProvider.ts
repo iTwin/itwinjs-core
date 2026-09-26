@@ -1,5 +1,5 @@
 import { BeEvent } from "@itwin/core-bentley";
-import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, MutableFormatsProvider, SyncFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { FormatSet } from "../Deserialization/JsonProps";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
@@ -8,7 +8,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
  * When formats are added or removed, the underlying format set is automatically updated.
  * @beta
  */
-export class FormatSetFormatsProvider implements MutableFormatsProvider {
+export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFormatsProvider {
   public onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void> = new BeEvent<(args: FormatsChangedArgs) => void>();
 
   private _formatSet: FormatSet;
@@ -58,26 +58,58 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
   }
 
   /**
-   * Retrieves a format definition by its name from the format set. If not found, it checks the fallback provider to find the format, else returns undefined.
-   * If the format is a string reference to another format, it resolves the reference and returns the FormatDefinition.
+   * Retrieves a format definition from the format set, resolving string references and consulting the fallback provider when needed.
    */
-  public async getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
-    // Normalizes any schemaItem names coming from node addon 'schemaName:schemaItemName' -> 'schemaName.schemaItemName'
-    const [schemaName, itemName] = SchemaItem.parseFullName(input);
+  public async getFormat(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
+    const lookupContext = extendProviderContext(context, this);
+    if (!lookupContext)
+      return undefined;
 
-    const name = (schemaName === "") ? itemName : `${schemaName}.${itemName}`;
+    const name = normalizeFormatName(input);
     const format = this._formatSet.formats[name];
 
     if (format !== undefined) {
-      // If format is a string reference, resolve it
-      if (typeof format === "string") {
-        return this.resolveReference(format, undefined, system);
-      }
+      if (typeof format === "string")
+        return this.resolveReference(format, new Set(), system, lookupContext);
       return format;
     }
 
-    if (this._fallbackProvider) return this._fallbackProvider.getFormat(name, system);
-    return undefined;
+    return this.getFormatFromFallback(name, system, lookupContext);
+  }
+
+  private async getFormatFromFallback(name: string, system: UnitSystemKey | undefined, context: FormatsProviderContext): Promise<FormatDefinition | undefined> {
+    const fallbackProvider = this._fallbackProvider;
+    if (!fallbackProvider)
+      return undefined;
+    return fallbackProvider.getFormat(name, system, context);
+  }
+
+  /**
+   * Retrieves a format definition from the format set without awaiting a provider. String references are resolved
+   * locally; a fallback is used only when it implements `SyncFormatsProvider`.
+   */
+  public getFormatSync(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined {
+    const lookupContext = extendProviderContext(context, this);
+    if (!lookupContext)
+      return undefined;
+
+    const name = normalizeFormatName(input);
+    const format = this._formatSet.formats[name];
+
+    if (format !== undefined) {
+      if (typeof format === "string")
+        return this.resolveReferenceSync(format, new Set(), system, lookupContext);
+      return format;
+    }
+
+    return this.getFormatSyncFromFallback(name, system, lookupContext);
+  }
+
+  private getFormatSyncFromFallback(name: string, system: UnitSystemKey | undefined, context: FormatsProviderContext): FormatDefinition | undefined {
+    const fallbackProvider = this._fallbackProvider;
+    if (!isSyncFormatsProvider(fallbackProvider))
+      return undefined;
+    return fallbackProvider.getFormatSync(name, system, context);
   }
 
   /**
@@ -85,8 +117,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
    * @param reference The string reference to resolve
    * @param visited Set of visited references to detect circular references
    * @param system Optional unit system override
+   * @param context Lookup context to forward to the fallback provider
    */
-  private async resolveReference(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+  private async resolveReference(reference: string, visited: Set<string>, system: UnitSystemKey | undefined, context: FormatsProviderContext): Promise<FormatDefinition | undefined> {
     // Prevent infinite loops from circular references
     if (visited.has(reference)) {
       return undefined;
@@ -95,17 +128,28 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
     const format = this._formatSet.formats[reference];
 
-    if (format === undefined) {
-      if (this._fallbackProvider) {
-        return this._fallbackProvider.getFormat(reference, system);
-      }
+    if (format === undefined)
+      return this.getFormatFromFallback(reference, system, context);
+
+    if (typeof format === "string")
+      return this.resolveReference(format, visited, system, context);
+
+    return format;
+  }
+
+  private resolveReferenceSync(reference: string, visited: Set<string>, system: UnitSystemKey | undefined, context: FormatsProviderContext): FormatDefinition | undefined {
+    // Prevent infinite loops from circular references
+    if (visited.has(reference)) {
       return undefined;
     }
+    visited.add(reference);
 
-    // If we found another string reference, resolve it recursively
-    if (typeof format === "string") {
-      return this.resolveReference(format, visited, system);
-    }
+    const format = this._formatSet.formats[reference];
+    if (format === undefined)
+      return this.getFormatSyncFromFallback(reference, system, context);
+
+    if (typeof format === "string")
+      return this.resolveReferenceSync(format, visited, system, context);
 
     return format;
   }
@@ -147,4 +191,23 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
     return referencingFormats;
   }
+}
+
+function extendProviderContext(context: FormatsProviderContext | undefined, provider: FormatsProvider): FormatsProviderContext | undefined {
+  const providerChain = new Set(context?.providerChain);
+  if (providerChain.has(provider))
+    return undefined;
+
+  providerChain.add(provider);
+  return { providerChain };
+}
+
+function normalizeFormatName(input: string): string {
+  // Convert node-addon names from `schemaName:schemaItemName` to the dot-separated key used by FormatSet.
+  const [schemaName, itemName] = SchemaItem.parseFullName(input);
+  return schemaName === "" ? itemName : `${schemaName}.${itemName}`;
+}
+
+function isSyncFormatsProvider(provider: FormatsProvider | undefined): provider is FormatsProvider & SyncFormatsProvider {
+  return provider !== undefined && "getFormatSync" in provider && typeof provider.getFormatSync === "function";
 }

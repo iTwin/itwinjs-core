@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { SchemaContext } from "../../Context";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaFormatsProvider } from "../../Formatting/SchemaFormatsProvider";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaError, ECSchemaStatus } from "../../Exception";
+import { Schema } from "../../Metadata/Schema";
+import { createSchemaJsonWithItems, deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
@@ -79,6 +83,24 @@ describe("SchemaFormatsProvider", () => {
     const format = await formatsProvider.getFormat("Formats.AmerI");
     expect(format).not.toBeUndefined();
     expect(format?.label).toBe("Inches");
+  });
+
+  it("returns undefined when the schema is unavailable synchronously", () => {
+    const provider = new SchemaFormatsProvider(new SchemaContext(), "metric");
+    expect(provider.getFormatSync("AecUnits.LENGTH")).toBeUndefined();
+  });
+
+  it("does not ask a locater to load a schema synchronously", () => {
+    const locater: ISchemaLocater = {
+      getSchema: async () => undefined,
+      getSchemaInfo: async () => undefined,
+      getSchemaSync: () => {
+        throw new Error("synchronous schema loading is not allowed");
+      },
+    };
+    const provider = new SchemaFormatsProvider(locater, "metric");
+
+    expect(provider.getFormatSync("AecUnits.LENGTH")).toBeUndefined();
   });
 
   it("retrieve different default presentation formats from a KoQ based on different unit systems", async () => {
@@ -183,5 +205,84 @@ describe("SchemaFormatsProvider", () => {
     expect(formatProps?.composite?.units).toBeDefined();
     expect(formatProps?.composite?.units?.length).toBeGreaterThan(0);
     expect(formatProps?.composite?.units[0].name).toBe("USUnits.SQ_YRD");
+  });
+
+  describe("synchronous lookup parity", () => {
+    const parityCases = [
+      { name: "Formats.AmerI", providerSystem: "metric", requestedSystem: undefined },
+      { name: "AecUnits.LENGTH_SHORT", providerSystem: "metric", requestedSystem: undefined },
+      { name: "AecUnits.LENGTH_LONG", providerSystem: "metric", requestedSystem: "imperial" },
+      { name: "AecUnits.AREA", providerSystem: "usCustomary", requestedSystem: undefined },
+      { name: "RoadRailUnits.LENGTH", providerSystem: "usSurvey", requestedSystem: undefined },
+      { name: "CifUnits.CURRENCY", providerSystem: "metric", requestedSystem: undefined },
+      { name: "AecUnits.LENGTH", providerSystem: "imperial", requestedSystem: undefined },
+      { name: "TestFormats.AREA_CROSS_SYSTEM", providerSystem: "imperial", requestedSystem: undefined },
+      { name: "TestFormats.AREA_CROSS_SYSTEM", providerSystem: undefined, requestedSystem: undefined },
+    ] as const;
+
+    for (const testCase of parityCases) {
+      it(`matches asynchronous lookup for ${testCase.name}`, async () => {
+        const provider = new SchemaFormatsProvider(context, testCase.providerSystem);
+        const expected = await provider.getFormat(testCase.name, testCase.requestedSystem);
+        expect(expected).toBeDefined();
+        expect(provider.getFormatSync(testCase.name, testCase.requestedSystem)).toEqual(expected);
+      });
+    }
+
+    it("treats partially loaded schemas as synchronous cache misses", () => {
+      const provider = new SchemaFormatsProvider(new SchemaContext(), "metric");
+      const cacheLookup = vi.spyOn(provider.context, "getCachedSchemaSync").mockImplementation(() => {
+        throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema);
+      });
+
+      try {
+        expect(provider.getFormatSync("AecUnits.LENGTH")).toBeUndefined();
+      } finally {
+        cacheLookup.mockRestore();
+      }
+    });
+
+    it("treats a referenced schema version missing from the cache as a synchronous cache miss", async () => {
+      const createReferencedSchema = (version: string, precision: number) => createSchemaJsonWithItems({
+        LENGTH: { schemaItemType: "Phenomenon", definition: "LENGTH" },
+        SI: { schemaItemType: "UnitSystem" },
+        M: { schemaItemType: "Unit", phenomenon: "RefSchema.LENGTH", unitSystem: "RefSchema.SI", definition: "M" },
+        LengthFormat: { schemaItemType: "Format", type: "Decimal", precision },
+      }, { name: "RefSchema", version, alias: "ref" });
+
+      // The KindOfQuantity resolves its references against RefSchema 1.0.1 from another context.
+      const referencedContext = new SchemaContext();
+      Schema.fromJsonSync(createReferencedSchema("1.0.1", 4), referencedContext);
+      const koqSchema = Schema.fromJsonSync(createSchemaJsonWithItems({
+        LENGTH: {
+          schemaItemType: "KindOfQuantity",
+          relativeError: 0.001,
+          persistenceUnit: "RefSchema.M",
+          presentationUnits: ["RefSchema.LengthFormat"],
+        },
+      }, { name: "KoqSchema", version: "1.0.0", alias: "koq", references: [{ name: "RefSchema", version: "1.0.1", alias: "ref" }] }), referencedContext);
+
+      // The provider's context caches the KindOfQuantity schema next to RefSchema 1.0.0.
+      const cacheContext = new SchemaContext();
+      Schema.fromJsonSync(createReferencedSchema("1.0.0", 2), cacheContext);
+      cacheContext.addSchemaSync(koqSchema);
+
+      const provider = new SchemaFormatsProvider(cacheContext);
+      expect((await provider.getFormat("KoqSchema.LENGTH"))?.precision).toBe(4);
+      expect(provider.getFormatSync("KoqSchema.LENGTH")).toBeUndefined();
+    });
+
+    it("propagates unexpected cache errors", () => {
+      const provider = new SchemaFormatsProvider(new SchemaContext(), "metric");
+      const cacheLookup = vi.spyOn(provider.context, "getCachedSchemaSync").mockImplementation(() => {
+        throw new Error("unexpected cache error");
+      });
+
+      try {
+        expect(() => provider.getFormatSync("AecUnits.LENGTH")).toThrow("unexpected cache error");
+      } finally {
+        cacheLookup.mockRestore();
+      }
+    });
   });
 });

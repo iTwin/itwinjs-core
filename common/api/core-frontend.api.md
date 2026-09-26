@@ -114,6 +114,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatSpecHandle } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatsProviderContext } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { FormattingReadyCollector } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
@@ -3567,7 +3568,7 @@ export class FormatsProviderManager implements FormatsProvider {
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
-    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }

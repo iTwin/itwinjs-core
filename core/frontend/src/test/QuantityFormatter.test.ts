@@ -7,11 +7,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormatDefinition, FormatsChangedArgs, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
+import { FormatsProviderManager, OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -734,6 +734,28 @@ describe("Quantity formatter", async () => {
       expect(imperialFormat).toBeDefined();
       // Before the fix, the requested system was ignored and both returned the active-system format.
       expect(metricFormat).not.toEqual(imperialFormat);
+    });
+
+    it("should forward format lookup context to the underlying provider", async () => {
+      const context: FormatsProviderContext = { providerChain: new Set<FormatsProvider>() };
+      let receivedName: string | undefined;
+      let receivedSystem: UnitSystemKey | undefined;
+      let receivedContext: FormatsProviderContext | undefined;
+      const provider: FormatsProvider = {
+        async getFormat(name, system, lookupContext) {
+          receivedName = name;
+          receivedSystem = system;
+          receivedContext = lookupContext;
+          return undefined;
+        },
+        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+      };
+      const manager = new FormatsProviderManager(provider);
+
+      await expect(manager.getFormat("TestFormat", "metric", context)).resolves.toBeUndefined();
+      expect(receivedName).toBe("TestFormat");
+      expect(receivedSystem).toBe("metric");
+      expect(receivedContext).toBe(context);
     });
 
     it("should not leak listeners when formatsProvider is replaced multiple times", () => {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Preserve format provider lookup context across frontend provider delegation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
