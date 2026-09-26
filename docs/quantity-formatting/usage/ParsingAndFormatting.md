@@ -31,6 +31,16 @@ const formattedString = formatterSpec.applyFormatting(magnitude);
 // Result: "4'-11 1/16"" (if format is feet-inches)
 ```
 
+### Synchronous formatter construction
+
+Use these factories when the format and unit data are already available locally. `Format.createFromJSONSync()` resolves unit names through a [SyncUnitsProvider]($quantity). `FormatterSpec.createSync()` then builds the conversion specifications without awaiting a provider.
+
+```ts
+[[include:Quantity_Formatting.Synchronous_Formatter]]
+```
+
+If a required format or unit is unavailable, use the plain-value fallback or the asynchronous construction path.
+
 ### ParserSpec
 
 [ParserSpec]($quantity) is the runtime object used to parse formatted strings back into numeric values. It contains:

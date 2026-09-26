@@ -2,19 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { UnitProps, UnitsProvider } from "./Interfaces";
+import type { SyncUnitsProvider, UnitProps, UnitsProvider } from "./Interfaces";
 import type { SerializedUnitSchema } from "./SerializedUnitSchema";
 import { BadUnit } from "./Unit";
 import { getBasicUnitConversion } from "./internal/BasicUnitConversionData";
-import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData } from "./internal/BasicUnitsResolvedStateCache";
+import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData, resolveBasicUnitsDataSync } from "./internal/BasicUnitsResolvedStateCache";
+import bundledUnitsSchema from "./assets/Units.json";
+
+const bundledSchema = bundledUnitsSchema as SerializedUnitSchema;
 
 async function resolveState() {
-  return resolveBasicUnitsData(async () => {
-    // First caller pays the dynamic-import + schema-index build cost.
-    // Concurrent callers await the same promise, and later callers reuse the resolved state.
-    const { default: schema } = await import("./assets/Units.json");
-    return schema as SerializedUnitSchema;
-  });
+  return resolveBasicUnitsData(async () => bundledSchema);
+}
+
+function resolveStateSync() {
+  return resolveBasicUnitsDataSync(bundledSchema);
 }
 
 /** @internal — test use only. Resets the shared module-level lazy cache. */
@@ -25,12 +27,11 @@ export function _testResetUnitsCache(): void {
 /**
  * A `UnitsProvider` backed by the full BIS `Units.ecschema.json` bundled as a JSON asset.
  *
- * The bundled JSON is loaded lazily via dynamic `import()` on the first provider call and cached
- * at module scope — construction is essentially free, and multiple instances
- * share the same immutable lookup indexes.
+ * The bundled data is available locally. The provider builds its immutable lookup indexes on the
+ * first call and caches them at module scope, so multiple instances share the same indexes.
  *
- * If an initial schema load fails, later provider calls will retry the load instead of pinning the
- * provider into a permanently failed module-level state.
+ * If resolving the bundled data fails, the next provider call retries instead of retaining a failed
+ * module-level state.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.
@@ -38,7 +39,19 @@ export function _testResetUnitsCache(): void {
  * @see createUnitsProvider for layering schema-defined units on top of basic BIS units.
  * @beta
  */
-export class BasicUnitsProvider implements UnitsProvider {
+export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
+
+  /** Find a built-in unit by fully qualified name using local data. */
+  public findUnitByNameSync(unitName: string): UnitProps {
+    const state = resolveStateSync();
+    const entry = state.nameMap.get(unitName);
+    return entry ? entry.props : new BadUnit();
+  }
+
+  /** Compute a conversion between built-in units using the same bundled data as [[getConversion]]. */
+  public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps) {
+    return getBasicUnitConversion(resolveStateSync(), fromUnit, toUnit);
+  }
 
   // ── UnitsProvider implementation ─────────────────────────────────────
 
