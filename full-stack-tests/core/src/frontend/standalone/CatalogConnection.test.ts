@@ -180,13 +180,13 @@ if (ProcessDetector.isElectronAppFrontend) {
       await verifyInfo(v101dbReadonly, "1.0.1", people.harold, people.bill);
       await verifyCategory(v101dbReadonly, cat1, "Category 1");
       await verifyCategory(v101dbReadonly, cat2);
-      await v101db.close();
+      await v101dbReadonly.close();
 
       // v2.0.0 was edited by Sarah. The manifest was not changed, so it should still have Harold as the contact. It has both SpatialCategories
       await verifyInfo(v20dbReadonly, "2.0.0", people.harold, people.sarah);
       await verifyCategory(v20dbReadonly, cat1, "Category 1");
       await verifyCategory(v20dbReadonly, cat2, "Category 2");
-      await v20db.close();
+      await v20dbReadonly.close();
     });
   });
 }

@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Elements", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("Elements", () => {
   let imodel: TestSnapshotConnection;
 
   before(async () => {
