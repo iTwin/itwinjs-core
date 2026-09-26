@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add @beta ChangeUnifier, which merges the rows of ChangesetReaders into EC instances in native code with bounded memory.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

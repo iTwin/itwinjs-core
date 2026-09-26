@@ -14,6 +14,7 @@ publish: false
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
+      - [Native ChangeUnifier](#native-changeunifier)
   - [@itwin/core-electron](#itwincore-electron)
     - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -118,6 +119,20 @@ The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` use
 #### SQLite changeset schema sources
 
 The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
+
+#### Native ChangeUnifier
+
+The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of one or more [ChangesetReader]($backend)s into complete EC instances in native code. Rows no longer cross into JavaScript one at a time, and memory stays bounded: merged data beyond a memory budget is spilled to temporary files. Use `propNames` to keep only the properties you need.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname, propFilter: PropertyFilter.BisCoreElement });
+using unifier = ChangeUnifier.fromReader(reader, { propNames: ["FederationGuid", "Model"] });
+for (const instance of unifier.instances()) {
+  // ...
+}
+```
+
+Unlike [PartialChangeUnifier]($backend), instances are sorted by (root ECClassId, ECInstanceId, stage), `$meta.op` comes from the row of the main table (`"Updated"` if only overflow tables changed), and each reader is consumed when the unifier is created. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory).
 
 ## @itwin/core-electron
 

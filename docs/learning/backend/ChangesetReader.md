@@ -8,7 +8,7 @@
 
 A single EC entity may typically map to multiple tables or a single table.
 
-[ChangesetReader]($backend) reads these raw table-row changes and emits one [ChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [PartialChangeUnifier]($backend).
+[ChangesetReader]($backend) reads these raw table-row changes and emits one [ChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [PartialChangeUnifier]($backend), or into [ChangeUnifier]($backend), which merges the rows in native code with bounded memory (see [ChangeUnifier — native merging with bounded memory](#changeunifier--native-merging-with-bounded-memory)).
 
 ### The reader–unifier pipeline
 
@@ -376,6 +376,50 @@ By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For
 ```ts
 [[include:ChangesetReader.CacheStrategies]]
 ```
+
+---
+
+## ChangeUnifier — native merging with bounded memory
+
+The `@beta` [ChangeUnifier]($backend) merges the rows of one or more readers into complete EC instances, like [PartialChangeUnifier]($backend), but in native code. Rows do not cross into JavaScript one at a time: each reader is drained natively when the unifier is created, and merged data beyond a memory budget is spilled to sorted temporary files. Peak memory therefore stays bounded without the cost of the SQLite-backed cache. Each instance satisfies the same [ChangeInstance]($backend) shape, with `$meta.propFilter` and `$meta.rowOptions` taken from the reader.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname, propFilter: PropertyFilter.BisCoreElement });
+using unifier = ChangeUnifier.fromReader(reader, { propNames: ["FederationGuid", "Model", "Source", "Target"] });
+for (const instance of unifier.instances()) {
+  // ...
+}
+```
+
+To merge several changesets into one set of instances, use [ChangeUnifier.fromReaders]($backend). Readers are requested one at a time, so a generator can open each reader when it is needed and dispose it once it has been drained. Where property values conflict, rows of later readers win. All readers must be opened with the same `propFilter` and `rowOptions`.
+
+```ts
+function* openReaders(db: IModelDb, fileNames: string[]): Generator<ChangesetReader> {
+  for (const fileName of fileNames) {
+    using reader = ChangesetReader.openFile({ db, fileName, propFilter: PropertyFilter.BisCoreElement });
+    yield reader;
+  }
+}
+
+using unifier = ChangeUnifier.fromReaders(openReaders(db, fileNames));
+```
+
+[ChangeUnifierArgs]($backend):
+
+| Option | Default | Meaning |
+|---|---|---|
+| `propNames` | all properties | Properties to keep. `ECInstanceId` and `ECClassId` are always kept. Dropping properties reduces memory use and spilling. |
+| `memoryBudgetBytes` | 64 MiB | Bytes of merged data held in memory before sorted runs are spilled to temporary files. `0` means never spill. |
+| `batchSize` | 1000 | Instances fetched from native code at a time while iterating `instances()`. |
+
+Differences from [PartialChangeUnifier]($backend):
+
+- **Sort order:** `instances()` yields instances sorted numerically by (root ECClassId, ECInstanceId, stage), with `"Old"` before `"New"`.
+- **`$meta.op` and `$meta.isIndirectChange`:** taken from the row of the main (non-overflow) table of the class family. If only overflow tables changed, `op` is `"Updated"` and `isIndirectChange` comes from the first row. [PartialChangeUnifier]($backend) takes both from the first row appended.
+- **Readers are consumed:** a reader must not have been stepped before it is passed to the unifier. Open it with the row options you need and configure filters and strict mode first; they are honored. Afterward the reader can no longer be configured, [ChangesetReader.step]($backend) returns `false`, and the reader can be disposed.
+- **Single pass:** each instance is returned once. Calling `instances()` again continues after the last instance returned.
+
+Like the reader, a [ChangeUnifier]($backend) holds native resources, including its temporary spill files, and must be disposed — preferably with `using`.
 
 ---
 

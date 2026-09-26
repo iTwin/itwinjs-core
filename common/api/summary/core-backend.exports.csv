@@ -63,6 +63,8 @@ beta;interface;ChangesetReaderArgs
 beta;interface;ChangeSource
 beta;interface;ChangeSummary
 beta;class;ChangeSummaryManager
+beta;class;ChangeUnifier
+beta;interface;ChangeUnifierArgs
 beta;namespace;ChangeUnifierCache
 beta;interface;ChannelControl
 beta;namespace;ChannelControl
