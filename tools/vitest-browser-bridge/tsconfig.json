@@ -1,0 +1,15 @@
+{
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/callbacks/backend.ts",
+    "src/electron/bridge-preload.ts",
+    "src/electron/provider-session.ts",
+    "src/test/fixtures/**/*.ts"
+  ]
+}

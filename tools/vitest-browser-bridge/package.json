@@ -1,0 +1,70 @@
+{
+  "name": "@itwin/vitest-browser-bridge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal Vitest BrowserProvider and callback transport for Electron renderer tests",
+  "exports": {
+    "./electron-provider": {
+      "import": {
+        "types": "./lib/esm/electron-provider.d.ts",
+        "default": "./lib/esm/electron-provider.js"
+      }
+    },
+    "./callbacks/backend": {
+      "import": {
+        "types": "./lib/esm/callbacks/backend.d.ts",
+        "default": "./lib/esm/callbacks/backend.js"
+      },
+      "require": {
+        "types": "./lib/cjs/callbacks/backend.d.ts",
+        "default": "./lib/cjs/callbacks/backend.js"
+      }
+    },
+    "./callbacks/browser": {
+      "import": {
+        "types": "./lib/esm/callbacks/browser.d.ts",
+        "default": "./lib/esm/callbacks/browser.js"
+      }
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/vitest-browser-bridge"
+  },
+  "scripts": {
+    "build": "rimraf lib && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
+    "clean": "rimraf lib",
+    "cover": "npm run -s test",
+    "docs": "",
+    "lint": "tsc -p tsconfig.eslint.json && eslint \"./src/**/*.{ts,mts}\"",
+    "test": "npm run -s build && npm run -s test:unit && npm run -s test:electron-provider:built",
+    "test:unit": "vitest run --config src/test/vitest.config.mts",
+    "test:electron-provider": "npm run -s build && npm run -s test:electron-provider:built",
+    "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts"
+  },
+  "dependencies": {
+    "@vitest/browser": "^4.1.10"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "^6.0.0",
+    "@opentelemetry/api": "1.0.4",
+    "@types/node": "~20.17.0",
+    "electron": "^44.0.0",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.6.2",
+    "vitest": "^4.1.10"
+  },
+  "peerDependencies": {
+    "electron": ">=35.0.0 <45.0.0",
+    "vitest": "^4.1.10"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
+  }
+}
