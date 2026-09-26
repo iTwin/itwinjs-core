@@ -7,6 +7,18 @@ import { IpcWebSocketFrontend } from "@itwin/core-common";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { before } from "./testHooks";
+
+interface ElectronIpcApi {
+  invoke(channel: string, ...args: any[]): Promise<any>;
+}
+
+function getElectronIpc(): ElectronIpcApi {
+  const api = (window as Window & { itwinjs?: ElectronIpcApi }).itwinjs;
+  if (api === undefined)
+    throw new Error("The Electron preload API is not available.");
+  return api;
+}
 
 function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }) {
   async function onResponse(request: Promise<any>, responses: string[]) {
@@ -19,9 +31,9 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
     const responses: string[] = [];
 
-    const a = socket.invoke("a", "a");
-    const b = socket.invoke("b", "b");
-    const c = socket.invoke("c", "c");
+    const a = socket.invoke("itwin.rpc-test-a", "a");
+    const b = socket.invoke("itwin.rpc-test-b", "b");
+    const c = socket.invoke("itwin.rpc-test-c", "c");
 
     onResponse(a, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
     onResponse(b, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -34,7 +46,7 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("ElectronIpc", () => {
-    orderTest(it, () => require("electron").ipcRenderer); // eslint-disable-line @typescript-eslint/no-require-imports
+    orderTest(it, getElectronIpc);
   });
 } else {
   describe("IpcWebSocket", () => {

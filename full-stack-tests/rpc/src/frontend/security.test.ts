@@ -5,7 +5,7 @@
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 
 // cspell:ignore csrf
 
