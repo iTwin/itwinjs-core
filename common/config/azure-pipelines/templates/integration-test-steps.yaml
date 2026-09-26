@@ -167,7 +167,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Core Integration Test Results"
     inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/core/lib/test/*_junit_results.xml"
       testRunTitle: "Core - Integration Tests - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()
 

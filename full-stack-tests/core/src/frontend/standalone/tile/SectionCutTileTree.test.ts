@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ClipStyle } from "@itwin/core-common";
 import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
@@ -19,7 +19,7 @@ function countTileTrees(view: ViewState): number {
 }
 
 function expectNumTreesPerModel(numTreesPerModel: number, view: SpatialViewState): void {
-  expect(countTileTrees(view)).to.equal(view.modelSelector.models.size * numTreesPerModel);
+  expect(countTileTrees(view)).toBe(view.modelSelector.models.size * numTreesPerModel);
 }
 
 describe("Section-cut tile tree", () => {
@@ -30,14 +30,14 @@ describe("Section-cut tile tree", () => {
 
   const testCases: TestCase[] = [];
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     const imodels = await Promise.all([TestSnapshotConnection.openFile("mirukuru.ibim"), TestSnapshotConnection.openFile("planprojection.bim")]);
     testCases.push({ imodel: imodels[0], viewId: "0x24" });
     testCases.push({ imodel: imodels[1], viewId: "0x29" });
   });
 
-  after(async () => {
+  afterAll(async () => {
     await Promise.all(testCases.map(async (x) => x.imodel.close()));
     testCases.length = 0;
     await TestUtility.shutdownFrontend();
@@ -46,7 +46,7 @@ describe("Section-cut tile tree", () => {
   async function test(setup: (view: SpatialViewState) => void, verify: (view: SpatialViewState) => void): Promise<void> {
     for (const testCase of testCases) {
       const view = await testCase.imodel.views.load(testCase.viewId) as SpatialViewState;
-      expect(view instanceof SpatialViewState).to.be.true;
+      expect(view instanceof SpatialViewState).toBe(true);
       if (setup)
         setup(view);
 
@@ -122,8 +122,8 @@ describe("Section-cut tile tree", () => {
 
       view.modelSelector.models.clear();
     }, (view) => {
-      expect(view.modelSelector.models.size).to.equal(0);
-      expect(countTileTrees(view)).to.equal(0);
+      expect(view.modelSelector.models.size).toBe(0);
+      expect(countTileTrees(view)).toBe(0);
 
       view.modelSelector.addModels(modelIds);
       view.markModelSelectorChanged();
@@ -136,14 +136,14 @@ describe("Section-cut tile tree", () => {
       enableClip(view, true, defaultClip);
       for (const modelId of view.modelSelector.models) {
         const model = view.iModel.models.getLoaded(modelId)!;
-        expect(model).not.to.be.undefined;
+        expect(model).not.toBeUndefined();
         model.jsonProperties.viewFlagOverrides = { clipVolume: false };
         break;
       }
     }, (view) => {
       // We overrode one model to ignore clip volume.
       const expectedCount = 1 + 2 * (view.modelSelector.models.size - 1);
-      expect(countTileTrees(view)).to.equal(expectedCount);
+      expect(countTileTrees(view)).toBe(expectedCount);
     });
   });
 

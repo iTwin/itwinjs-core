@@ -10,6 +10,16 @@
         "default": "./lib/esm/electron-provider.js"
       }
     },
+    "./electron/frame-routing": {
+      "import": {
+        "types": "./lib/esm/electron/frame-routing.d.ts",
+        "default": "./lib/esm/electron/frame-routing.js"
+      },
+      "require": {
+        "types": "./lib/cjs/electron/frame-routing.d.ts",
+        "default": "./lib/cjs/electron/frame-routing.js"
+      }
+    },
     "./callbacks/backend": {
       "import": {
         "types": "./lib/esm/callbacks/backend.d.ts",
