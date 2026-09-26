@@ -23,6 +23,10 @@ export interface ElectronProviderOptions {
   readonly backendInitModule?: string;
   /** Absolute path to an optional consumer preload module. */
   readonly preloadModule?: string;
+  /** Enable the Electron renderer's loopback debugging endpoint on this port. Disabled by default. */
+  readonly remoteDebuggingPort?: number;
+  /** Milliseconds to wait for the provider session to become ready. Use 0 to disable the timeout. */
+  readonly startupTimeout?: number;
 }
 
 interface ElectronProject {
@@ -155,9 +159,11 @@ class ElectronSession {
           throw new Error(`Electron provider session ${this._configuration.sessionId} exited before ready: code=${code ?? "none"}, signal=${signal ?? "none"}`);
         }),
         new Promise<never>((_resolve, reject) => {
-          timeout = setTimeout(() => reject(new Error(
-            `Timed out after ${timeoutMs}ms waiting for Electron provider session ${this._configuration.sessionId} to load ${this._configuration.url}`,
-          )), timeoutMs);
+          if (timeoutMs > 0) {
+            timeout = setTimeout(() => reject(new Error(
+              `Timed out after ${timeoutMs}ms waiting for Electron provider session ${this._configuration.sessionId} to load ${this._configuration.url}`,
+            )), timeoutMs);
+          }
         }),
       ]);
     } finally {
@@ -336,6 +342,9 @@ export function createElectronBrowserProviderOption(
     name: "electron",
     supportedBrowser: ["electron"],
     options,
-    providerFactory: (project) => new ElectronBrowserProvider(project, options, sessionEntryPath),
+    providerFactory: (project) => new ElectronBrowserProvider(project, options, sessionEntryPath, {
+      electronArgs: options.remoteDebuggingPort === undefined ? [] : [`--remote-debugging-port=${options.remoteDebuggingPort}`],
+      startupTimeout: options.startupTimeout,
+    }),
   });
 }
