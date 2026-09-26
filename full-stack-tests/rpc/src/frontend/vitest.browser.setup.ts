@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { afterAll, beforeAll } from "vitest";
 import { setupFrontend, teardownFrontend } from "./testSetup";
 
-before(setupFrontend);
-after(teardownFrontend);
+beforeAll(async () => {
+  await setupFrontend();
+});
+afterAll(async () => {
+  await teardownFrontend();
+});

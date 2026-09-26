@@ -3,10 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelJsExpressServer } from "@itwin/express-server";
+import { createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { browserBackendCallbackPath } from "../common/SideChannels";
+import { rpcBackendIdentityHeader } from "./notifyReady";
 
 export class TestServer extends IModelJsExpressServer {
   protected override _configureHeaders() {
     super._configureHeaders();
+    this._app.use((_request, response, next) => {
+      response.setHeader(rpcBackendIdentityHeader, process.env.VITEST_RPC_BACKEND_ID ?? "");
+      next();
+    });
+    this._app.post(browserBackendCallbackPath, createHttpBackendCallbackHandler());
 
     this._app.all("/**", (req, res, next) => {
       if (req.path.indexOf("-startCSRFTest") !== -1) {
