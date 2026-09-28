@@ -61,6 +61,9 @@ export let currentEnvironment: string;
 
 export async function setupFrontend(electronStartup?: () => Promise<void>) {
   currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
+  // Test skips use the configured environment, so it must match the backend that actually started.
+  if (currentEnvironment !== configuredEnvironment)
+    throw new Error(`RPC test environment mismatch: configured "${configuredEnvironment}", but the backend reported "${currentEnvironment}".`);
   switch (currentEnvironment) {
     case "http":
       return initializeCloud("http");

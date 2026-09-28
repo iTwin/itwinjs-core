@@ -80,8 +80,9 @@ describe("callback transport", () => {
       .resolves.toEqual({ ok: false, error: { message: "Unknown callback error." } });
   });
 
-  it("preserves a successful undefined callback result at the renderer boundary", () => {
-    expect(unwrapCallbackResponse({ ok: true })).toBeUndefined();
+  it("requires an explicit value in successful responses at the renderer boundary", () => {
+    expect(unwrapCallbackResponse({ ok: true, value: undefined })).toBeUndefined();
+    expect(() => unwrapCallbackResponse({ ok: true })).toThrow("Invalid callback response");
     expect(() => unwrapCallbackResponse({ ok: "true" })).toThrow("Invalid callback response");
     expect(() => unwrapCallbackResponse({ ok: false, error: {} })).toThrow("Invalid callback response");
   });
@@ -93,6 +94,7 @@ describe("callback transport", () => {
       fetch: async (_url, init) => {
         const response = await httpResponse(init?.body);
         expect(response.status).toBe(200);
+        expect(await response.clone().json()).toEqual({ ok: true, undefined: true });
         return response;
       },
     });
@@ -152,6 +154,16 @@ describe("callback transport", () => {
       method: "POST",
       body: JSON.stringify({ name: "add", args: [2, 5] }),
     }]);
+  });
+
+  it("names the HTTP endpoint in malformed-response errors", async () => {
+    for (const body of [{ ok: "true" }, { ok: true }, { ok: true, undefined: false }]) {
+      const invoke = createHttpBackendCallbackInvoker({
+        url: "http://localhost/callback",
+        fetch: async () => new Response(JSON.stringify(body)),
+      });
+      await expect(invoke("malformed")).rejects.toThrow(/^Invalid callback response from the HTTP backend callback endpoint\.$/);
+    }
   });
 
   it("unwraps callback failures through an HTTP transport", async () => {
