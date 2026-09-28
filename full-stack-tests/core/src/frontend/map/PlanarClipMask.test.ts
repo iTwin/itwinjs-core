@@ -13,8 +13,10 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
+// #graphics: tags this suite as graphics-heavy (shader compilation + pixel readback can take
+// minutes per test on software renderers). Node-compatibility CI lanes exclude #graphics suites.
 const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
-describeChrome("Planar clip mask (#integration)", () => {
+describeChrome("Planar clip mask (#integration #graphics)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
