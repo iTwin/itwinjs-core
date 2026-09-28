@@ -182,7 +182,7 @@ export default defineConfig({
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/chrome_junit_results.xml" }],
+      ["junit", { outputFile: "lib/test/junit_results_chrome.xml" }],
     ],
     browser: {
       commands: {

@@ -5902,7 +5902,8 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
 export enum PropertyFilter {
     All = 0,
     BisCoreElement = 1,
-    InstanceKey = 2
+    InstanceKey = 2,
+    InstanceKeyAndIdentifiers = 3
 }
 
 // @public @preview
