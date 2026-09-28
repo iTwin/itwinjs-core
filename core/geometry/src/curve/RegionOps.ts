@@ -243,13 +243,11 @@ export class RegionOps {
       return undefined;
     const normal = localToWorld.matrix.columnZ(result?.direction);
     const regionIsXY = normal.isParallelTo(Vector3d.unitZ(), true);
-    let regionXY: AnyRegion | undefined = region;
+    let regionXY = region;
     if (!regionIsXY) { // rotate the region to be parallel to the xy-plane
       const worldToLocal = localToWorld.inverse();
       assert(worldToLocal !== undefined, "FrameBuilder's transform is invertible");
-      regionXY = region.cloneTransformed(worldToLocal) as AnyRegion | undefined;
-      if (!regionXY)
-        return undefined;
+      regionXY = region.cloneTransformed(worldToLocal);
     }
     const momentData = RegionOps.computeXYAreaMoments(regionXY);
     if (!momentData)

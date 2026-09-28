@@ -10,9 +10,9 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, IModelStatus, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BriefcaseConnectionProps,
-  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, getPullChangesIpcChannel, getPushChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, PushChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
   StandaloneOpenOptions, TileTreeContentIds, TxnNotifications, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
@@ -248,7 +248,10 @@ export abstract class IpcHandler {
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return ipcAppChannels.functions; }
 
+  /** Tracks cancellation of the changeset download initiated by [[pullChanges]]. */
   private _iModelKeyToPullStatus = new Map<string, ProgressStatus>();
+  /** Tracks cancellation of the changeset download that [[pushChanges]] performs before uploading. */
+  private _iModelKeyToPushStatus = new Map<string, ProgressStatus>();
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     switch (level) {
@@ -318,27 +321,56 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
+  /** Creates the [[ProgressFunction]] used to relay changeset download progress to the frontend over `channel`, and to observe
+   * cancellation requests recorded in `statusMap`. Shared by [[pullChanges]] and the merge that [[pushChanges]] performs before uploading.
+   * @returns the progress function, and a function to stop tracking the operation.
+   */
+  private createDownloadProgressHandler(args: {
+    key: string,
+    channel: string,
+    statusMap: Map<string, ProgressStatus>,
+    reportProgress?: boolean,
+    progressInterval?: number,
+    enableCancellation?: boolean,
+  }): { onDownloadProgress?: ProgressFunction, done: () => void } {
+    const { key, channel, statusMap, reportProgress, progressInterval, enableCancellation } = args;
+
+    statusMap.set(key, ProgressStatus.Continue);
+    const checkAbort = () => statusMap.get(key) ?? ProgressStatus.Continue;
+    const done = () => statusMap.delete(key);
+
+    if (reportProgress) {
+      const progressCallback: ProgressFunction = (loaded, total) => {
+        IpcHost.send(channel, { loaded, total });
+        return checkAbort();
+      };
+      const throttledProgressCallback = throttleProgressCallback(progressCallback, checkAbort, progressInterval);
+
+      return { onDownloadProgress: throttledProgressCallback, done };
+    }
+
+    if (enableCancellation)
+      return { onDownloadProgress: checkAbort, done };
+
+    return { onDownloadProgress: undefined, done };
+  }
+
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
 
-    this._iModelKeyToPullStatus.set(key, ProgressStatus.Continue);
-    const checkAbort = () => this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
-
-    let onProgress: ProgressFunction | undefined;
-    if (options?.reportProgress) {
-      const progressCallback: ProgressFunction = (loaded, total) => {
-        IpcHost.send(getPullChangesIpcChannel(iModelDb.iModelId), { loaded, total });
-        return checkAbort();
-      };
-      onProgress = throttleProgressCallback(progressCallback, checkAbort, options?.progressInterval);
-    } else if (options?.enableCancellation) {
-      onProgress = checkAbort;
-    }
+    const { onDownloadProgress, done } = this.createDownloadProgressHandler({
+      key,
+      channel: getPullChangesIpcChannel(key),
+      statusMap: this._iModelKeyToPullStatus,
+      reportProgress: options?.reportProgress,
+      progressInterval: options?.progressInterval,
+      enableCancellation: options?.enableCancellation,
+    });
 
     try {
-      await iModelDb.pullChanges({ toIndex, onProgress });
+      await iModelDb.pullChanges({ toIndex, onProgress: onDownloadProgress });
     } finally {
-      this._iModelKeyToPullStatus.delete(key);
+      done();
     }
 
     return iModelDb.changeset as ChangesetIndexAndId;
@@ -347,10 +379,28 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     this._iModelKeyToPullStatus.set(key, ProgressStatus.Abort);
   }
 
-  public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
+  public async pushChanges(key: string, description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    await iModelDb.pushChanges({ description });
+
+    const { onDownloadProgress, done } = this.createDownloadProgressHandler({
+      key,
+      channel: getPushChangesIpcChannel(key),
+      statusMap: this._iModelKeyToPushStatus,
+      reportProgress: options?.reportDownloadProgress,
+      progressInterval: options?.downloadProgressInterval,
+      enableCancellation: options?.enableCancellation,
+    });
+
+    try {
+      await iModelDb.pushChanges({ description, onDownloadProgress });
+    } finally {
+      done();
+    }
+
     return iModelDb.changeset as ChangesetIndexAndId;
+  }
+  public async cancelPushChangesRequest(key: string): Promise<void> {
+    this._iModelKeyToPushStatus.set(key, ProgressStatus.Abort);
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
@@ -404,7 +454,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction {
   const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
   let nextTime = Date.now() + interval;
-  const progressCallback: ProgressFunction = (loaded, total) => {
+
+  return (loaded, total) => {
     const now = Date.now();
     if (loaded >= total || now >= nextTime) {
       nextTime = now + interval;
@@ -412,6 +463,4 @@ export function throttleProgressCallback(func: ProgressFunction, checkAbort: () 
     }
     return checkAbort();
   };
-
-  return progressCallback;
 }

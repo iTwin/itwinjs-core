@@ -476,7 +476,7 @@ describe("RegionBoolean", () => {
       const transform = Transform.createFixedPointAndMatrix(Point3d.create(ax1, 0, 0),
         Matrix3d.createScale(-1, 1.4, 1));
       for (let i = 0; i < n; i++)
-        allLines.push(allLines[i].cloneTransformed(transform) as CurvePrimitive);
+        allLines.push(allLines[i].cloneTransformed(transform));
 
       const regions = RegionOps.constructAllXYRegionLoops(allLines);
       saveShiftedLoops(allGeometry, regions, xOut, yOut0, 10.5 * dy);
@@ -1734,7 +1734,7 @@ describe("GeneralSweepBooleans", () => {
       manyRoundedRectangles.push(CurveFactory.createRectangleXY(a, a, a + 4, a + 1.75, 0, 0.5));
     }
     const splitterB0 = CurveFactory.createRectangleXY(0.5, 0.4, 6, 2.1, 0, 0);
-    const splitterB1 = splitterB0.cloneTransformed(Transform.createFixedPointAndMatrix({ x: 1, y: 2, z: 0 }, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(40)))) as Loop;
+    const splitterB1 = splitterB0.cloneTransformed(Transform.createFixedPointAndMatrix({ x: 1, y: 2, z: 0 }, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(40))));
     const splitterB = [splitterB0, splitterB1];
     const unionB = RegionOps.regionBooleanXY(manyRoundedRectangles, splitterB, RegionBinaryOpType.Union);
     const intersectionB = RegionOps.regionBooleanXY(manyRoundedRectangles, splitterB, RegionBinaryOpType.Intersection);

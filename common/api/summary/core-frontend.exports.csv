@@ -501,6 +501,7 @@ public;class;PrimitiveTool
 internal;enum;PrimitiveVisibility
 alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
+beta;interface;PushChangesOptions
 public;class;QuadId
 public;interface;QuadIdProps
 public;interface;QuantityFormatOverridesChangedArgs

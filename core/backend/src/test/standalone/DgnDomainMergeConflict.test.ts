@@ -59,6 +59,16 @@ describe("dgn_Domain merge conflict", () => {
     return names;
   }
 
+  function queryBeLocalStat(db: BriefcaseDb): string {
+    return db.withPreparedSqliteStatement(
+      "SELECT stat FROM sqlite_stat1 WHERE tbl='be_Local' AND idx='sqlite_autoindex_be_Local_1'",
+      (stmt) => {
+        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+        return stmt.getValueString(0);
+      },
+    );
+  }
+
   /**
    * Creates an iModel whose timeline holds two changesets that each INSERT the same
    * `dgn_Domain` row, and leaves both authoring briefcases closed.
@@ -190,6 +200,46 @@ describe("dgn_Domain merge conflict", () => {
     }
   });
 
+  it("pulls sqlite_stat1 changes after ANALYZE runs independently in two briefcases", async () => {
+    const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Super);
+    const iModelId = await HubMock.createNewIModel({
+      accessToken: accessToken1,
+      iTwinId,
+      iModelName: "SqliteStat1ConcurrentAnalyze",
+      description: "sqlite_stat1 concurrent ANALYZE",
+      noLocks: true,
+    });
+
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId, noLock: true });
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId, noLock: true });
+    try {
+      const pushedStat = withEditTxn(b1, "ANALYZE in first briefcase", () => {
+        b1[_nativeDb].saveLocalValue("sqlite-stat1-b1", "1");
+        expect(b1[_nativeDb].executeSql("ANALYZE be_Local")).to.equal(DbResult.BE_SQLITE_OK);
+        return queryBeLocalStat(b1);
+      });
+
+      const localStat = withEditTxn(b2, "ANALYZE in second briefcase", () => {
+        b2[_nativeDb].saveLocalValue("sqlite-stat1-b2-1", "1");
+        b2[_nativeDb].saveLocalValue("sqlite-stat1-b2-2", "1");
+        expect(b2[_nativeDb].executeSql("ANALYZE be_Local")).to.equal(DbResult.BE_SQLITE_OK);
+        return queryBeLocalStat(b2);
+      });
+      expect(localStat).not.to.equal(pushedStat);
+
+      await b1.pushChanges({ accessToken: accessToken1, description: "ANALYZE in first briefcase" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      expect(b2.changeset.index).to.equal(1);
+      expect(b2.txns.hasPendingTxns).to.be.true;
+      expect(queryBeLocalStat(b2)).to.equal(localStat);
+    } finally {
+      b1.close();
+      b2.close();
+    }
+  });
+
   describe("conflict handler guards", () => {
     let b2: BriefcaseDb;
 
@@ -235,6 +285,26 @@ describe("dgn_Domain merge conflict", () => {
       const args = makeConflictArgs({ tableName: "dgn_Domain", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert });
       expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Skip);
     });
+
+    for (const conflict of [
+      { name: "insert conflict", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert },
+      { name: "data mismatch", cause: DbConflictCause.Data, opcode: DbOpcode.Update },
+    ]) {
+      it(`replaces a sqlite_stat1 ${conflict.name} while local transactions are pending`, () => {
+        const args = makeConflictArgs({ tableName: "sqlite_stat1", cause: conflict.cause, opcode: conflict.opcode });
+        const pending = sinon.stub(b2.txns, "hasPendingTxns").get(() => true);
+        try {
+          expect(onMergeConflict(args)).to.equal(DbConflictResolution.Replace);
+        } finally {
+          pending.restore();
+        }
+      });
+
+      it(`replaces a sqlite_stat1 ${conflict.name} while rebasing`, () => {
+        const args = makeConflictArgs({ tableName: "sqlite_stat1", cause: conflict.cause, opcode: conflict.opcode });
+        expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Replace);
+      });
+    }
 
     // A `Data` conflict means an UPDATE or DELETE whose "before" values do not match the row in
     // the briefcase, i.e. the two rows really do differ. Resolving those automatically would

@@ -1762,6 +1762,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // @beta
+    pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
     // @deprecated
@@ -2263,6 +2265,7 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
+    direction: "geoToIModel" | "iModelToGeo";
     // (undocumented)
     isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
@@ -8141,6 +8144,13 @@ export interface PullChangesOptions {
     progressInterval?: number;
 }
 
+// @beta
+export interface PushChangesOptions {
+    abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    downloadProgressInterval?: number;
+}
+
 // @public
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -10727,6 +10737,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
+    // (undocumented)
+    get outputColorTexture(): TextureHandle | undefined;
     // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)

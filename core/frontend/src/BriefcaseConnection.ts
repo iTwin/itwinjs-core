@@ -8,8 +8,8 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64Set, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseConnectionProps, ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelError,
-  PullChangesOptions as IpcAppPullChangesOptions, LockState, OpenBriefcaseProps, StandaloneOpenOptions,
+  BriefcaseConnectionProps, ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, getPushChangesIpcChannel, IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions, PushChangesOptions as IpcAppPushChangesOptions, LockState, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -59,6 +59,22 @@ export interface PullChangesOptions {
   progressInterval?: number;
   /** Signal for cancelling the download.
    * @beta
+   */
+  abortSignal?: GenericAbortSignal;
+}
+
+/**
+ * Options for pushing iModel changes.
+ * @beta
+ */
+export interface PushChangesOptions {
+  /** Function called regularly to report progress of the download of the changes that must be merged before pushing. */
+  downloadProgressCallback?: OnDownloadProgress;
+  /** Interval for calling [[downloadProgressCallback]] (in milliseconds). */
+  downloadProgressInterval?: number;
+  /** Signal for cancelling the push.
+   * @note Currently this only cancels the download of the changes that must be merged before pushing - it has no effect once the local
+   * changeset is being uploaded.
    */
   abortSignal?: GenericAbortSignal;
 }
@@ -382,43 +398,56 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.appFunctionIpc.abandonChanges(this.key); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
+  /** Subscribes to changeset download progress events on `channel` and wires `abortSignal` to `cancel`.
+   * @returns a function that removes every listener that was added.
+   */
+  private listenForChangesetDownloadProgress(args: {
+    channel: string,
+    cancel: () => Promise<void>,
+    downloadProgressCallback?: OnDownloadProgress,
+    abortSignal?: GenericAbortSignal,
+  }): VoidFunction {
+    const { channel, cancel, downloadProgressCallback, abortSignal } = args;
+    const removeListeners: VoidFunction[] = [];
+
+    if (downloadProgressCallback) {
+      const handleProgress = (_evt: Event, data: DownloadProgressInfo) => downloadProgressCallback(data);
+      removeListeners.push(IpcApp.addListener(channel, handleProgress));
+    }
+
+    if (abortSignal) {
+      const abort = () => void cancel();
+      abortSignal.addEventListener("abort", abort);
+      removeListeners.push(() => abortSignal.removeEventListener("abort", abort));
+    }
+
+    return () => removeListeners.forEach((remove) => remove());
+  }
+
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @param options Options for pulling changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
-    const removeListeners: VoidFunction[] = [];
-    const shouldReportProgress = !!options?.downloadProgressCallback;
-
-    if (shouldReportProgress) {
-      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        options?.downloadProgressCallback?.(data);
-      };
-
-      const removeProgressListener = IpcApp.addListener(
-        getPullChangesIpcChannel(this.iModelId),
-        handleProgress,
-      );
-      removeListeners.push(removeProgressListener);
-    }
-
-    if (options?.abortSignal) {
-      const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
-      options?.abortSignal.addEventListener("abort", abort);
-      removeListeners.push(() => options?.abortSignal?.removeEventListener("abort", abort));
-    }
-
     this.requireTimeline();
+
+    const removeListeners = this.listenForChangesetDownloadProgress({
+      channel: getPullChangesIpcChannel(this.key),
+      cancel: async () => IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key),
+      downloadProgressCallback: options?.downloadProgressCallback,
+      abortSignal: options?.abortSignal,
+    });
+
     const ipcAppOptions: IpcAppPullChangesOptions = {
-      reportProgress: shouldReportProgress,
+      reportProgress: !!options?.downloadProgressCallback,
       progressInterval: options?.progressInterval,
       enableCancellation: !!options?.abortSignal,
     };
     try {
       this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
     } finally {
-      removeListeners.forEach((remove) => remove());
+      removeListeners();
     }
     await this.invalidateSchemaViewIfChanged();
   }
@@ -426,11 +455,42 @@ export class BriefcaseConnection extends IModelConnection {
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
    * @param description The description for the changeset
    * @returns the changesetId of the pushed changes
+   * @note Any changes made by other users are first pulled, applied, and merged with the local Txns. Only then is the resulting changeset
+   * uploaded.
    * @see [[BriefcaseTxns.onChangesPushed]] for the event dispatched after changes are pushed.
+   * @public
    */
-  public async pushChanges(description: string): Promise<ChangesetIndexAndId> {
+  public pushChanges(description: string): Promise<ChangesetIndexAndId>;
+  /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
+   * @param description The description for the changeset
+   * @param options Options reporting the progress of - and optionally cancelling - the download of the changes that are pulled before pushing.
+   * @returns the changesetId of the pushed changes
+   * @note Any changes made by other users are first pulled, applied, and merged with the local Txns. Only then is the resulting changeset
+   * uploaded.
+   * @see [[BriefcaseTxns.onChangesPushed]] for the event dispatched after changes are pushed.
+   * @beta
+   */
+  public pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
+  public async pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
-    return this.changeset = await IpcApp.appFunctionIpc.pushChanges(this.key, description);
+
+    const removeListeners = this.listenForChangesetDownloadProgress({
+      channel: getPushChangesIpcChannel(this.key),
+      cancel: async () => IpcApp.appFunctionIpc.cancelPushChangesRequest(this.key),
+      downloadProgressCallback: options?.downloadProgressCallback,
+      abortSignal: options?.abortSignal,
+    });
+
+    const ipcAppOptions: IpcAppPushChangesOptions = {
+      reportDownloadProgress: !!options?.downloadProgressCallback,
+      downloadProgressInterval: options?.downloadProgressInterval,
+      enableCancellation: !!options?.abortSignal,
+    };
+    try {
+      return this.changeset = await IpcApp.appFunctionIpc.pushChanges(this.key, description, ipcAppOptions);
+    } finally {
+      removeListeners();
+    }
   }
 
   /** The current graphical editing scope, if one is in progress.

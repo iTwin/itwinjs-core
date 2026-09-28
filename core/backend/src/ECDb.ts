@@ -8,6 +8,7 @@
 import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
+import { serialize } from "node:v8";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
@@ -18,6 +19,54 @@ import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
+
+/** Maps a zero-based CSV column to an EC property.
+ * @beta
+ */
+export interface CSVColumnMapping {
+  /** Zero-based index of the source CSV column. */
+  columnIndex: number;
+  /** EC property access string to receive the column value. */
+  propertyName: string;
+}
+
+/** Common options for importing CSV data into an ECClass.
+ * @beta
+ */
+export interface CSVImportOptions {
+  /** Full name or ECSQL name of the ECClass to insert. */
+  className: string;
+  /** Source-column to EC-property mappings. Unmapped source columns are ignored. */
+  mapping: readonly CSVColumnMapping[];
+  /** Exact CSV value to bind as null. By default, every field is treated as a value. */
+  nullValue?: string;
+}
+
+/** Options for [[ECDb.importCSVFile]].
+ * @beta
+ */
+export interface CSVFileImportOptions extends CSVImportOptions {
+  /** Whether the first CSV row is a header to skip. Defaults to false. */
+  hasHeader?: boolean;
+}
+
+function validateCSVMapping(mapping: readonly CSVColumnMapping[]): void {
+  if (0 === mapping.length)
+    throw new TypeError("mapping must not be empty");
+
+  const columnIndexes = new Set<number>();
+  for (const entry of mapping) {
+    if (undefined === entry || null === entry || "object" !== typeof entry)
+      throw new TypeError("mapping must contain only objects");
+    if (!Number.isSafeInteger(entry.columnIndex) || entry.columnIndex < 0 || entry.columnIndex >= 0xffff_ffff)
+      throw new TypeError("mapping columnIndex values must be non-negative safe integers");
+    if ("string" !== typeof entry.propertyName || 0 === entry.propertyName.length)
+      throw new TypeError("mapping propertyName values must not be empty");
+    if (columnIndexes.has(entry.columnIndex))
+      throw new TypeError("mapping must not contain duplicate columnIndex values");
+    columnIndexes.add(entry.columnIndex);
+  }
+}
 
 /** Modes for how to open [ECDb]($backend) files.
  * @public
@@ -215,6 +264,42 @@ export class ECDb implements Disposable {
    */
   public getSchemaProps(name: string): ECSchemaProps {
     return this[_nativeDb].getSchemaProps(name);
+  }
+
+  /** Import in-memory CSV rows into an ECClass.
+   *
+   * The rows are V8-serialized and processed in one native call. Values are converted from
+   * their CSV string representation according to the mapped EC property type. One ECSQL
+   * statement is reused for all rows. Every row must have the same number of columns.
+   * Boolean fields accept `true`, `false`, `1`, or `0`. Integer fields must contain a
+   * base-10 value in the signed 32-bit range. Boolean, double, integer, and string EC
+   * properties are supported. The import is all-or-nothing and callers must call
+   * [[saveChanges]] to commit it to disk.
+   * @returns The number of imported rows.
+   * @beta
+   */
+  public importCSVData(rows: readonly (readonly string[])[], options: CSVImportOptions): number {
+    validateCSVMapping(options.mapping);
+    return this[_nativeDb].importCSVData(options.className, serialize(rows), options.mapping, { nullValue: options.nullValue });
+  }
+
+  /** Stream a CSV file into an ECClass.
+   *
+   * The file must be UTF-8 encoded; an optional UTF-8 byte-order mark is accepted. It is read
+   * and parsed in native code, and one ECSQL statement is reused for all rows. Every record must
+   * have the same number of columns; blank records are not skipped. Boolean fields accept
+   * `true`, `false`, `1`, or `0`. Integer fields must contain a base-10 value in the signed
+   * 32-bit range. Boolean, double, integer, and string EC properties are supported. The import
+   * is all-or-nothing and callers must call [[saveChanges]] to commit it to disk.
+   * @returns The number of imported rows, excluding an optional header.
+   * @beta
+   */
+  public importCSVFile(csvFilePath: string, options: CSVFileImportOptions): number {
+    validateCSVMapping(options.mapping);
+    return this[_nativeDb].importCSVFile(options.className, csvFilePath, options.mapping, {
+      hasHeader: options.hasHeader,
+      nullValue: options.nullValue,
+    });
   }
 
   /**

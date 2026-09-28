@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Include conversion direction and per-request point count in coordinate-conversion error diagnostics.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "47185728+jjbeckman13@users.noreply.github.com"
+}

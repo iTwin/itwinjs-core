@@ -92,7 +92,7 @@ describe("FrameGeometry", () => {
         const rotatedFrame = computeFrame({ frame: shape, range: defaultRange, transform });
         const unRotatedFrame = computeFrame({ frame: shape, range: defaultRange, transform: defaultTransform });
 
-        const control = unRotatedFrame.cloneTransformed(transform)!; // This transform is something I made up for this test. It should exist.
+        const control = unRotatedFrame.cloneTransformed(transform);
         expect(rotatedFrame.isAlmostEqual(control), `Rotated frame for shape ${shape} should match control`).to.be.true;
       }
     });

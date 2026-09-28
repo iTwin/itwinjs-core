@@ -1,24 +1,100 @@
-#!/usr/bin/env zx
-
-"use strict";
-
-import 'zx/globals'
-
+// Cherry-picks changelogs from a just-released branch onto the next target branch
+// (the latest release branch, or master), then commits the result.
+//
+// Uses only Node built-ins and the Rush version pinned in rush.json (via ./rush-lockfile,
+// so `npm ci` runs; see check-rush-lockfile.yaml). Never pushes or receives the admin
+// push token — only commits locally and prints/emits the refspecs still needing a push.
+//
 /****************************************************************
 * To run manually:
-* install zx package
-* git checkout target branch (master or latest release); git pull
-* git checkout release/X.X.x; git pull (this is the branch that was just patched)
-* uncomment git checkout -b cmd and fix branch name
-* run this file using `zx --install .github/workflows/automation-scripts/update-changelogs.mjs`
-* open PR into target branch
+* 1. git checkout <target branch> (master, or the newest release branch); git pull
+* 2. git checkout release/X.X.x; git pull   (the branch that was just released)
+* 3. Uncomment both lines in the MANUAL RUN BLOCK at the bottom of this file and
+*    replace X.X.X in each with the released version. Uncommenting only the checkout
+*    leaves the final push aimed at the protected target branch.
+* 4. node .github/workflows/automation-scripts/update-changelogs.mjs
+* 5. Run the `git push --atomic origin ...` command it prints.
+* 6. Open a PR from finalize-release-X.X.X into the target branch.
 *****************************************************************/
 
-// Sort entries based on version numbers formatted as 'major.minor.patch'
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { assertRushLockfileMatches } from "./check-rush-lockfile.mjs";
+
+const repoRoot = process.cwd();
+const rushLockfilePath = path.join(repoRoot, ".github", "workflows", "automation-scripts", "rush-lockfile", "package-lock.json");
+
+// No shell is spawned, so arguments are not subject to word splitting or expansion.
+function run(command, args, options = {}) {
+  return execFileSync(command, args, {
+    cwd: repoRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+    ...options,
+  });
+}
+
+function git(...args) {
+  return run("git", args).trim();
+}
+
+const pendingPushRefs = [];
+
+function pushRef(refspec) {
+  pendingPushRefs.push(refspec);
+}
+
+function rush(...args) {
+  assertRushLockfileMatches(repoRoot);
+  run(process.execPath, [path.join("common", "scripts", "install-run-rush.js"), ...args], {
+    stdio: "inherit",
+    env: { ...process.env, INSTALL_RUN_RUSH_LOCKFILE_PATH: rushLockfilePath },
+  });
+}
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
+
+function writeJson(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace) {
+  const contentRead = fs.readFileSync(filePath, { encoding: "utf-8" });
+  // A matched replacement can equal the original text, so check via match(), not equality.
+  if (!contentRead.match(stringToSearch))
+    throw new Error(`${stringToSearch} was not found in "${filePath}"; nothing to replace.`);
+  fs.writeFileSync(filePath, contentRead.replace(stringToSearch, stringToReplace), { encoding: "utf-8" });
+}
+
+function findChangelogs(dir = repoRoot, found = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === ".git")
+        continue;
+      findChangelogs(path.join(dir, entry.name), found);
+    } else if (entry.isFile() && entry.name === "CHANGELOG.json") {
+      found.push(path.relative(repoRoot, path.join(dir, entry.name)));
+    }
+  }
+  return found;
+}
+
+// Reads every CHANGELOG.json into memory, keyed by path relative to repoRoot.
+function collectChangelogs() {
+  const map = new Map();
+  for (const relPath of findChangelogs())
+    map.set(relPath, readJson(path.join(repoRoot, relPath)));
+  return map;
+}
+
+// Newest first, by major.minor.patch.
 function sortByVersion(entries) {
   return entries.sort((a, b) => {
-    const versionA = a.version.split('.').map(Number);
-    const versionB = b.version.split('.').map(Number);
+    const versionA = a.version.split(".").map(Number);
+    const versionB = b.version.split(".").map(Number);
 
     for (let i = 0; i < 3; i++) {
       if (versionA[i] < versionB[i]) return 1;
@@ -29,153 +105,122 @@ function sortByVersion(entries) {
   });
 }
 
-function fixChangeLogs(files) {
-  const numFiles = files.length;
-  for (let i = 0; i < numFiles; i++) {
-    const currentJson = fs.readJsonSync(`temp-target-changelogs/${files[i]}`);
-    const incomingJson = fs.readJsonSync(`temp-incoming-changelogs/${files[i]}`);
-    // .map creates an array of [changelog version string, changelog entry] tuples, which is passed into Map and creates a key value pair of the two elements.
-    let combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]);
-    // Map objects do not allow duplicate keys, so this will remove duplicate version numbers
-    let completeEntries = new Map(combinedEntries);
-    // convert entries back into an array and sort by version number
-    completeEntries = sortByVersion(Array.from(completeEntries.values()));
-    currentJson.entries = completeEntries;
-
-    fs.writeJsonSync(`temp-target-changelogs/${files[i]}`, currentJson, { spaces: 2 });
-  }
-}
-
-function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace) {
-  try {
-    const contentRead = fs.readFileSync(filePath, { encoding: 'utf-8' });
-    const contentToWrite = contentRead.replace(stringToSearch, stringToReplace);
-    fs.writeFileSync(filePath, contentToWrite, { encoding: 'utf-8' });
-  }
-  catch (err) {
-    console.log(`Error while reading or writing to "${filePath}": ${err}`)
-  }
-}
-
-// Finds the largest version number in an array of version strings formatted "major.minor.x"
+// Expects versions formatted "major.minor.x".
 function findLargestVersion(versions) {
   return versions.reduce((largest, current) => {
-    const [largestMajor, largestMinor] = largest.split('.').map(Number);
-    const [currentMajor, currentMinor] = current.split('.').map(Number);
+    const [largestMajor, largestMinor] = largest.split(".").map(Number);
+    const [currentMajor, currentMinor] = current.split(".").map(Number);
 
-    if (currentMajor > largestMajor || (currentMajor === largestMajor && currentMinor > largestMinor)) { //if current major is largest, set as largest, if equal major, check minor
+    if (currentMajor > largestMajor || (currentMajor === largestMajor && currentMinor > largestMinor))
       return current;
-    }
+
     return largest;
   });
 }
 
-const targetPath = "./temp-target-changelogs"
-const incomingPath = "./temp-incoming-changelogs"
-
-// To run shell commands using zx use "await $`cmd`"
-await $`mkdir ${targetPath}`
-await $`mkdir ${incomingPath}`
-
-// find the latest release branch, and make that the target for the changelogs
-let branchVersions = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | sed "s/  remotes\\/origin\\/release\\///"`;
-branchVersions = String(branchVersions).split("\n");
-let targetBranch = findLargestVersion(branchVersions);
-targetBranch = `origin/release/${targetBranch}`;
-let currentBranch = await $`git branch --show-current`;
-// the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
-let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
-
-// remove extra null and new line characters from git cmds
-targetBranch = String(targetBranch).replace(/\n/g, '');
-currentBranch = String(currentBranch).replace(/\n/g, '');
-commitMessage = String(commitMessage).replace(/\n/g, '');
-const substring = " Changelogs";
-if (commitMessage.includes(substring)) {
-  commitMessage = commitMessage.replace(substring, '');
+// Newest first, dropping duplicate versions in favor of the incoming entry.
+function mergeChangelogEntries(targetJson, incomingJson) {
+  const combinedEntries = [...targetJson.entries, ...incomingJson.entries].map((obj) => [obj.version, obj]);
+  targetJson.entries = sortByVersion(Array.from(new Map(combinedEntries).values()));
+  return targetJson;
 }
+
+const branchVersions = git("branch", "-a", "--list", "origin/release/[0-9]*.[0-9]*.x")
+  .split("\n")
+  .map((line) => line.replace(/^[*+]?\s*remotes\/origin\/release\//, "").trim())
+  .filter((version) => /^\d+\.\d+\.x$/.test(version));
+
+if (branchVersions.length === 0)
+  throw new Error("No origin/release/X.Y.x branches found. Was the repo cloned with fetch-depth: 0?");
+
+let targetBranch = `origin/release/${findLargestVersion(branchVersions)}`;
+const currentBranch = git("branch", "--show-current");
+
+// Latest commit whose subject is exactly "X.X.X ...", excluding X.X.X-dev.X.
+let commitMessage = git("log", "--grep=^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$", "-n", "1", "--pretty=format:%s");
+commitMessage = commitMessage.replace(/\n/g, "").replace(" Changelogs", "");
+
+if (!currentBranch)
+  throw new Error("Detached HEAD; expected the workflow to check out a named branch.");
+
+if (!/^release\/\d+\.\d+\.x$/.test(currentBranch))
+  throw new Error(`Expected to be on a release/X.Y.x branch, but current branch is "${currentBranch}".`);
+
+if (!/^\d+\.\d+\.\d+$/.test(commitMessage))
+  throw new Error(`Could not determine the released version from git log (got "${commitMessage}").`);
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
 console.log(`commit msg: ${commitMessage}`);
 
 if (targetBranch === `origin/${currentBranch}`) {
-  console.log("The current branch is the latest release, so the target will be master branch")
-  targetBranch = 'master'
+  console.log("The current branch is the latest release, so the target will be master branch");
+  targetBranch = "master";
 } else {
-  console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
+  console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`);
 }
-// copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
-await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-// before checking out to target branch
-// if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
+const incomingMap = collectChangelogs();
+
+// Major or minor release: repoint gather-docs.yaml at the release branch. Must happen
+// before the target branch is checked out.
 if (commitMessage.endsWith(".0")) {
   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-  editFileInPlaceSynchronously(docsYamlPath, /master/g, currentBranch);
-  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
-  // commit these changes to our release branch
-  await $`git add ${docsYamlPath}`;
-  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
-  await $`git push origin HEAD:${currentBranch}`;
+  // File says "master" (never released a minor) or a prior release/X.Y.z; only one matches.
+  editFileInPlaceSynchronously(docsYamlPath, /master|release\/\d+\.\d+\.\w+/g, currentBranch);
+  git("add", docsYamlPath);
+  git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
+  pushRef(`${currentBranch}:${currentBranch}`);
 }
 
 targetBranch = targetBranch.replace("origin/", "");
-await $`git checkout ${targetBranch}`;
-// copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
-await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
+git("checkout", targetBranch);
 
-const allTargetFiles = fs.readdirSync(targetPath);
-const incomingFiles = fs.readdirSync(incomingPath);
-// Only include packages from Current branch if they DO exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
-const targetFiles = allTargetFiles.filter((file) => {
-  if (incomingFiles.includes(file)) {
-    return file;
-  }
-  else {
-    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
-  }
-})
+const targetMap = collectChangelogs();
 
-fixChangeLogs(targetFiles);
+// Packages added after the release branch was cut have no incoming counterpart.
+const filesToMerge = [...targetMap.keys()].filter((file) => {
+  if (incomingMap.has(file))
+    return true;
+  console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+  return false;
+});
 
-// copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
-// delete temps
-await $`rm -r ${targetPath}`;
-await $`rm -r ${incomingPath}`;
-// after already checking out to target branch
-// copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
+for (const file of filesToMerge)
+  writeJson(path.join(repoRoot, file), mergeChangelogEntries(targetMap.get(file), incomingMap.get(file)));
+
+// Major or minor release: carry over the changehistory doc and link it.
 if (commitMessage.endsWith(".0")) {
-  await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
+  git("checkout", currentBranch, `docs/changehistory/${commitMessage}.md`);
 
-  // also need to add reference to this new md in leftNav.md
   const leftNavMdPath = "docs/changehistory/leftNav.md";
-  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`);
+  editFileInPlaceSynchronously(
+    leftNavMdPath,
+    "### Versions\n",
+    `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`,
+  );
 }
-// # regen CHANGELOG.md
-await $`rush publish --regenerate-changelogs`;
-/*********************************************************************
-* Uncomment For Manual runs and fix branch name to appropriate version
-* the version should match your incoming branch
-*********************************************************************/
-// await $`git checkout -b finalize-release-X.X.X`;
-// targetBranch = "finalize-release-X.X.X"
-await $`git add .`;
-await $`git commit -m "${commitMessage} Changelogs"`;
-await $`rush change --bulk --message "" --bump-type none`;
-await $`git add .`;
-await $`git commit --amend --no-edit`;
-await $`git push origin HEAD:${targetBranch}`;
 
+rush("publish", "--regenerate-changelogs");
 
-// Tests:
-function testFindLargestVersion() {
-  let versions = ["1.0.x", "1.0.x", "1.1.x", "1.1.x", "2.0.x", "2.0.x", "2.1.x", "2.10.x", "2.1.x"]; // check minor double digits
-  let largest = findLargestVersion(versions);
-  console.assert(largest === "2.10.x", `Expected 2.10.x, got ${largest}`);
-  versions = ["1.0.x", "10.0.x", "1.1.x", "1.30.x", "2.0.x", "2.0.x", "2.1.x", "2.21.x"]; //check major double digits
-  largest = findLargestVersion(versions);
-  console.assert(largest === "10.0.x", `Expected 10.0.x, got ${largest}`);
+// >>> BEGIN MANUAL RUN BLOCK — uncomment both lines, replace X.X.X with the released
+// version, and do not commit this file with the block enabled. It redirects the final
+// push to a scratch branch instead of writing straight to targetBranch.
+// git("checkout", "-b", "finalize-release-X.X.X");
+// targetBranch = "finalize-release-X.X.X";
+// <<< END MANUAL RUN BLOCK
+
+git("add", ".");
+git("commit", "-m", `${commitMessage} Changelogs`);
+rush("change", "--bulk", "--message", "", "--bump-type", "none");
+git("add", ".");
+git("commit", "--amend", "--no-edit");
+pushRef(`HEAD:${targetBranch}`);
+
+const refs = pendingPushRefs.join(" ");
+if (process.env.GITHUB_OUTPUT) {
+  // Hand off queued refspecs to the workflow's push step.
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `refs=${refs}\n`);
+} else {
+  console.log(`\nRun this to push the finalized release:\n  git push --atomic origin ${refs}\n`);
 }
-// testFindLargestVersion();

@@ -1,0 +1,27 @@
+name: Check Rush lockfile
+
+on:
+  pull_request:
+    branches:
+      - master
+      - "release/**"
+    paths:
+      - rush.json
+      - .github/workflows/automation-scripts/rush-lockfile/**
+      - .github/workflows/automation-scripts/check-rush-lockfile.mjs
+      - .github/workflows/check-rush-lockfile.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: rush.json matches bootstrap lockfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Check lockfile matches rush.json
+        run: node .github/workflows/automation-scripts/check-rush-lockfile.mjs
