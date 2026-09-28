@@ -1523,7 +1523,7 @@ export class InteractiveRebase {
         const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
         const conflict = RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
 
-        const fallbackProps = newProps === undefined ? undefined : this.clearNullableBrokenNavigationProperties(newProps, brokenRelationships);
+        const fallbackProps = newProps === undefined ? undefined : this.fixBrokenNavigationProperties(newProps, brokenRelationships, theirRow);
         if (fallbackProps !== undefined) {
           let fallbackApplied = false;
           this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fallbackProps, () => {
@@ -1531,7 +1531,7 @@ export class InteractiveRebase {
             fallbackApplied = true;
           });
           if (fallbackApplied)
-            conflict.recordBrokenRelationshipFix(brokenRelationships);
+            conflict.recordBrokenRelationshipFix(brokenRelationships, fallbackProps);
         }
         return undefined;
       }
@@ -1774,14 +1774,18 @@ export class InteractiveRebase {
     return broken;
   }
 
-  private clearNullableBrokenNavigationProperties(props: RebaseConflictProperties, brokenRelationships: BrokenRelationshipDetail[]): RebaseConflictProperties | undefined {
-    const nullableRelationships = brokenRelationships.filter((relationship) => relationship.nullable);
-    if (nullableRelationships.length === 0)
+  private fixBrokenNavigationProperties(props: RebaseConflictProperties, brokenRelationships: BrokenRelationshipDetail[], currentProps: RebaseConflictProperties | undefined): RebaseConflictProperties | undefined {
+    const fixableRelationships = currentProps === undefined
+      ? brokenRelationships.filter((relationship) => relationship.nullable)
+      : brokenRelationships;
+    if (fixableRelationships.length === 0)
       return undefined;
 
     const fallbackProps = { ...props };
-    for (const relationship of nullableRelationships)
-      setPropertyValue(fallbackProps, relationship.jsName, null);
+    for (const relationship of fixableRelationships) {
+      const value = currentProps === undefined ? null : getPropertyValue(currentProps, relationship.jsName);
+      setPropertyValue(fallbackProps, relationship.jsName, value);
+    }
 
     return fallbackProps;
   }
@@ -2293,15 +2297,15 @@ class RebaseConflictImpl implements RebaseConflict {
     return conflict;
   }
 
-  /** Records the nullable-navigation substitutions that were successfully written while replaying this conflict. */
-  public recordBrokenRelationshipFix(brokenRelationships: BrokenRelationshipDetail[]): void {
+  /** Records the navigation substitutions that were successfully written while replaying this conflict. */
+  public recordBrokenRelationshipFix(brokenRelationships: BrokenRelationshipDetail[], appliedProps: RebaseConflictProperties): void {
     for (const broken of brokenRelationships) {
-      if (!broken.nullable)
-        continue;
       const relationship = this.brokenRelationships.find((candidate) =>
         candidate.navigationProperty === broken.navigationProperty && candidate.relationshipClass === broken.relationshipClass);
-      if (relationship !== undefined)
-        relationship.appliedValue = null;
+      if (relationship !== undefined) {
+        const value = getPropertyValue(appliedProps, broken.jsName);
+        relationship.appliedValue = typeof value === "object" && value !== null ? value.id : value;
+      }
     }
   }
 
