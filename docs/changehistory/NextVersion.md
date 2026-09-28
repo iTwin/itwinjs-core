@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
+    - [OPC point clouds without a vertical datum use the iModel's vertical datum](#opc-point-clouds-without-a-vertical-datum-use-the-imodels-vertical-datum)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
     - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
@@ -13,6 +14,7 @@ publish: false
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
+      - [ChangesetReader identifiers filter](#changesetreader-identifiers-filter)
   - [@itwin/core-electron](#itwincore-electron)
     - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -35,6 +37,10 @@ await briefcase.pushChanges("my changes", {
 ```
 
 Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
+
+### OPC point clouds without a vertical datum use the iModel's vertical datum
+
+When an OPC point cloud's CRS does not say whether its heights are ellipsoidal or orthometric (relative to the geoid), the point cloud is now assumed to use the same height convention as the iModel it is displayed in. Previously a fixed assumption was made, displacing the point cloud by the local geoid-ellipsoid separation whenever it did not match the iModel. If you applied a manual vertical offset to compensate, remove it.
 
 ## @itwin/core-backend
 
@@ -113,6 +119,10 @@ The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` use
 #### SQLite changeset schema sources
 
 The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
+
+#### ChangesetReader identifiers filter
+
+The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
 
 ## @itwin/core-electron
 

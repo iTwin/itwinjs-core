@@ -24,6 +24,7 @@
     "debug:electron": "cross-env VITEST_CORE_DEBUG=1 run-p -r azurite:setup test:electron:vitest",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "cross-env VITEST_CORE_GREP=\"#integration\" VITEST_CORE_GREP_INVERT=false vitest run --config vitest.browser.config.mts",
+    "test:integration:chrome:no-graphics": "cross-env VITEST_CORE_GREP=\"^(?!.*#graphics).*#integration\" VITEST_CORE_GREP_INVERT=false vitest run --config vitest.browser.config.mts",
     "test:integration:electron": "cross-env VITEST_CORE_GREP=\"#integration\" VITEST_CORE_GREP_INVERT=false vitest run --config vitest.electron.config.mts",
     "test:performance": "npm run -s test:performance:chrome && npm run -s test:performance:electron",
     "test:performance:chrome": "run-p -r azurite:setup test:performance:chrome:vitest",
