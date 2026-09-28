@@ -44,6 +44,16 @@ function assertJsonValue(value: unknown, ancestors = new Set<object>()): void {
   ancestors.delete(value);
 }
 
+// JSON drops `value: undefined`, so the HTTP transport marks a successful undefined result explicitly.
+const undefinedHttpResult = { ok: true, undefined: true } as const;
+
+function decodeHttpCallbackResponse(payload: unknown): unknown {
+  if (typeof payload === "object" && payload !== null && !("value" in payload)
+    && (payload as Record<string, unknown>).ok === true && (payload as Record<string, unknown>).undefined === true)
+    return { ok: true, value: undefined };
+  return payload;
+}
+
 /** Create a framework-neutral handler for an HTTP backend callback endpoint.
  * @internal
  */
@@ -53,7 +63,11 @@ export function createHttpBackendCallbackHandler() {
       const payload: unknown = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
       assertJsonValue(payload);
       const result = await dispatchBackendCallback(payload);
-      if (result.ok && result.value !== undefined)
+      if (result.ok && result.value === undefined) {
+        response.status(200).json(undefinedHttpResult);
+        return;
+      }
+      if (result.ok)
         assertJsonValue(result.value);
       response.status(result.ok ? 200 : 500).json(result);
     } catch (error) {
@@ -94,6 +108,6 @@ export function createHttpBackendCallbackInvoker(options: HttpBackendCallbackInv
       throw new Error(`Backend callback at ${url} returned invalid JSON.`, { cause: error });
     }
 
-    return unwrapCallbackResponse(payload, "the HTTP backend callback endpoint");
+    return unwrapCallbackResponse(decodeHttpCallbackResponse(payload), "HTTP backend callback endpoint");
   };
 }
