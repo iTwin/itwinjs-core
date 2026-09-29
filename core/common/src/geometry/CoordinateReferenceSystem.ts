@@ -285,6 +285,50 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
     return true;
   }
+
+  /** Compares two horizontal CRS, but does not compare descriptions.
+   *  Number compares are applied a minuscule tolerance.
+   *  @public */
+  public isEquivalent(other: HorizontalCRS): boolean {
+    if (this.id !== other.id ||
+      this.source !== other.source ||
+      this.deprecated !== other.deprecated ||
+      this.epsg !== other.epsg ||
+      this.datumId !== other.datumId ||
+      this.ellipsoidId !== other.ellipsoidId ||
+      this.unit !== other.unit)
+      return false;
+
+    if ((this.datum === undefined) !== (other.datum === undefined))
+      return false;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (this.datum && !this.datum.equals(other.datum!))
+      return false;
+
+    if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
+      return false;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!))
+      return false;
+
+    if ((this.projection === undefined) !== (other.projection === undefined))
+      return false;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (this.projection && !this.projection.equals(other.projection!))
+      return false;
+
+    if ((this.extent === undefined) !== (other.extent === undefined))
+      return false;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (this.extent && !this.extent.equals(other.extent!))
+      return false;
+
+    return true;
+  }
 }
 
 /** Vertical Geographic Coordinate reference System definition
