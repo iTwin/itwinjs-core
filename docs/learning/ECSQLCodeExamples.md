@@ -123,7 +123,7 @@ See [property value types](./ECSQLRowFormat.md#property-value-types) for result 
 
 ### Working with Rows as JavaScript Literals
 
-Call `row.toRow()` to materialize the current row as a plain object. It uses ECSQL names unless `UseJsPropertyNames` was selected, including when the reader uses the default index format. Store these objects rather than the reusable row proxy.
+Call `row.toRow()` to materialize the current row as a plain object. It uses ECSQL names unless the deprecated `UseJsPropertyNames` format was selected, including when the reader uses the default index format. Store these objects rather than the reusable row proxy.
 
 `row.toArray()` returns only the current row's raw values. `reader.toArray()` collects all remaining rows, using the selected row format. See [ECSQL Row Formats](./ECSQLRowFormat.md) for the distinctions.
 
@@ -218,9 +218,9 @@ Here is an example using `.toArray`:
 ]
 ```
 
-#### QueryRowFormat.UseJsPropertyNames
+#### Deprecated QueryRowFormat.UseJsPropertyNames
 
-Use this format when callers need JS-shaped results, such as `id`, `className`, and navigation `relClassName`. It converts unaliased class-ID values to class names as well as mapping property keys. See [ECSQL Row Formats](./ECSQLRowFormat.md#property-names).
+This legacy format converts unaliased class-ID values to class names and maps property keys to names such as `id`, `className`, and navigation `relClassName`. It is deprecated; use it only while preserving an existing result contract. New queries should use `UseECSqlPropertyNames`, explicit aliases, and `ec_classname()` projections. See [ECSQL Row Formats](./ECSQLRowFormat.md#property-names).
 
 ```ts
 [[include:ExecuteECSql_QueryRowFormat_UseJsPropertyNames]]

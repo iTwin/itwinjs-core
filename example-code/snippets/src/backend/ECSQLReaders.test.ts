@@ -66,16 +66,13 @@ describe("ECSQL reader examples", () => {
     assert.isTrue(rows.some((row) => row[0] === "0x1"));
   });
 
-  it("materializes a JavaScript-shaped row", () => {
+  it("materializes a row with JavaScript-friendly aliases", () => {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Sync_JsRow
-    const row = iModel.withQueryReader("SELECT ECInstanceId, ECClassId, Model FROM bis.Element WHERE ECInstanceId=?", (reader) => {
+    const row = iModel.withQueryReader("SELECT ECInstanceId AS id, ec_classname(ECClassId, 's.c') AS className FROM bis.Element WHERE ECInstanceId=?", (reader) => {
       return reader.step() ? reader.current.toRow() : undefined;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    }, new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    }, new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     // __PUBLISH_EXTRACT_END__
     assert.equal(row.id, "0x1");
     assert.equal(row.className, "BisCore.Subject");
-    assert.equal(row.model.id, "0x1");
-    assert.equal(row.model.relClassName, "BisCore.ModelContainsElements");
   });
 });
