@@ -1032,17 +1032,18 @@ export abstract class IModelDb extends IModel {
       throw err;
     }
   }
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Creates a reader for asynchronous ECSQL query execution.
+   * Execution starts when the reader is consumed using asynchronous iteration or awaited calls to `step()` or `toArray()`.
+   * Results are fetched and buffered in batches. For synchronous, callback-scoped execution, use [[withQueryReader]].
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Asynchronous query examples]($docs/learning/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * Should be used when we donot want true step by step behaviour and want to take advantage of caching capabilities of the reader.
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -1057,20 +1058,21 @@ export abstract class IModelDb extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+  /** Executes a callback with a synchronous ECSQL reader on the owning database connection.
+   * The reader steps one row at a time without buffering result batches. Finish using it before the callback completes.
+   * Return materialized rows or computed values rather than the reader. For asynchronous execution, use [[createQueryReader]].
+   * The prepared statement may be reused from the statement cache between completed calls.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
-   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Use this method for true step-by-step row consumption without intermediate result or page caching.
-   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
