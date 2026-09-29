@@ -218,6 +218,8 @@ When you only have a KindOfQuantity name, you can use a SchemaContext to find th
 
 `FormatSetFormatsProvider` also implements `SyncFormatsProvider`. `getFormatSync` resolves local entries and synchronous fallbacks without awaiting. It returns `undefined` when the format is missing or the fallback is asynchronous.
 
+Both lookups forward the lookup context to the fallback provider to stop fallback cycles. The cycle check tracks providers, not format names: if a fallback calls back into the same `FormatSetFormatsProvider` with that context, the lookup returns `undefined`, even for a different format. A fallback that needs an independent lookup should call without the context.
+
 **Example: FormatSet with String References**
 
 <details>
