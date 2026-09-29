@@ -80,7 +80,7 @@ describe("Text annotation field formatting", () => {
   });
 
   afterEach(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormatting(iModel);
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel });
   });
 
   it("formats a field through the schema default with no registration", async () => {

@@ -174,7 +174,6 @@ describe("Field format resolution example", () => {
   });
 
   after(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
     imodel.close();
   });
 

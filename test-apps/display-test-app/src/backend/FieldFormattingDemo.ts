@@ -50,10 +50,10 @@ export function registerFieldFormattingFor(iModel: IModelDb, defaultSet?: Format
   imported.set(iModel.key, { defaultSet: mergedDefault, sets: mergedSets });
 }
 
-/** Unregisters the formats for `iModel` and discards its imported FormatSets. Safe to call when
- * nothing is registered.
+/** Reverts `iModel` to the schema default formats and discards its imported FormatSets. Safe to
+ * call when nothing is registered.
  */
 function unregister(iModel: IModelDb): void {
   imported.delete(iModel.key);
-  ElementDrivesTextAnnotation.unregisterFieldFormatting(iModel);
+  ElementDrivesTextAnnotation.registerFieldFormatting({ iModel });
 }

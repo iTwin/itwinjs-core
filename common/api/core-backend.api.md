@@ -3013,7 +3013,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static onRootChangedArg(arg: OnDependencyArg): void;
     static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
-    static unregisterFieldFormatting(iModel: IModelDb): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;

@@ -46,22 +46,22 @@ export interface FieldFormattingArgs {
   unitSystem?: UnitSystemKey;
 }
 
-/** The formats serving each open [[IModelDb]], and whether an application configured them via
- * [[ElementDrivesTextAnnotation.registerFieldFormatting]] or they are the schema-only default
- * created the first time one of the iModel's fields was evaluated. Weakly keyed so a closed
- * iModel takes its entry with it.
+/** The formats serving each open [[IModelDb]]: those an application configured via
+ * [[ElementDrivesTextAnnotation.registerFieldFormatting]], or the schema-only default created
+ * the first time one of the iModel's fields was evaluated. Weakly keyed so a closed iModel takes
+ * its entry with it.
  */
-const fieldFormattings = new WeakMap<IModelDb, { formatting: FieldFormatting, registered: boolean }>();
+const fieldFormattings = new WeakMap<IModelDb, FieldFormatting>();
 
 /** Returns the formats for `iModel`, creating the schema-only default on first use. */
 function getOrCreateFieldFormatting(iModel: IModelDb): FieldFormatting {
-  let entry = fieldFormattings.get(iModel);
-  if (!entry) {
-    entry = { formatting: createFieldFormatting({ iModel }), registered: false };
-    fieldFormattings.set(iModel, entry);
+  let formatting = fieldFormattings.get(iModel);
+  if (!formatting) {
+    formatting = createFieldFormatting({ iModel });
+    fieldFormattings.set(iModel, formatting);
   }
 
-  return entry.formatting;
+  return formatting;
 }
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
@@ -275,41 +275,28 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * });
    * ```
    *
-   * Each call replaces any prior registration for the same iModel. Registering does not
-   * re-evaluate existing annotations; listen to [[onFieldFormattingChanged]] to do so. The
-   * registration lives as long as the `IModelDb` object and is released with it.
+   * Each call replaces any prior registration for the same iModel; calling it with only
+   * `iModel` reverts to the schema defaults. Registering does not re-evaluate existing
+   * annotations; listen to [[onFieldFormattingChanged]] to do so. The registration lives as long
+   * as the `IModelDb` object and is released with it.
    * @see [Quantity formatting for text annotation fields]($docs/learning/backend/TextAnnotationFields.md)
    * @beta
    */
   public static registerFieldFormatting(args: FieldFormattingArgs): void {
-    fieldFormattings.set(args.iModel, { formatting: createFieldFormatting(args), registered: true });
+    fieldFormattings.set(args.iModel, createFieldFormatting(args));
     this.onFieldFormattingChanged.raiseEvent({ iModel: args.iModel });
   }
 
-  /** Raised after [[registerFieldFormatting]] configures an iModel's formats, or
-   * [[unregisterFieldFormatting]] reverts them to the schema default. Because every
+  /** Raised after every [[registerFieldFormatting]] call, once the new configuration is in
+   * place, whether or not it differs from the previous one. Because every
    * [FormatterSpec]($core-quantity) is built on demand, this is the only moment at which the
    * formatting an iModel's fields receive can change; applications that cache formatted output,
    * or that want to re-evaluate existing annotations against a newly adopted FormatSet, should
-   * listen here.
+   * listen here. A listener that throws does not undo the registration; its error is reported
+   * through [UnexpectedErrors]($bentley) rather than to the caller of `registerFieldFormatting`.
    * @beta
    */
   public static readonly onFieldFormattingChanged = new BeEvent<(args: { iModel: IModelDb }) => void>();
-
-  /** Discards the registration created by [[registerFieldFormatting]] for `iModel`, if any, so
-   * that its fields once again format through the schema-declared defaults. Does nothing when
-   * no registration exists.
-   *
-   * Existing [FieldRun.cachedContent]($common) is unchanged until the next evaluation. To swap
-   * FormatSets, call [[registerFieldFormatting]] again rather than unregistering in between.
-   * @beta
-   */
-  public static unregisterFieldFormatting(iModel: IModelDb): void {
-    if (fieldFormattings.get(iModel)?.registered) {
-      fieldFormattings.delete(iModel);
-      this.onFieldFormattingChanged.raiseEvent({ iModel });
-    }
-  }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
    * so that they refer to elements in the `context`'s target iModel, and sets any Ids that cannot be remapped to [Id64.invalid]($bentley).

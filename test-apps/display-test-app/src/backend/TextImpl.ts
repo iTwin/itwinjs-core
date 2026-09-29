@@ -123,7 +123,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
-/** Re-registers the field formatting provider for the specified iModel, or unregisters when both are absent. */
+/** Re-registers the field formatting for the specified iModel, or reverts to the schema default when both are absent. */
 export function registerFieldFormattingForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
   registerFieldFormattingFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
 }

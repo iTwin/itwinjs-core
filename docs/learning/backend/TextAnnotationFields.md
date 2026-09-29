@@ -83,9 +83,9 @@ This is still a **single** registration. One call supplies every FormatSet the i
 
 A registration lives exactly as long as its [IModelDb]($backend) object. Core holds it through a weak reference to the iModel, so closing the iModel releases it and there is nothing to unregister on close.
 
-Registering does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. [ElementDrivesTextAnnotation.onFieldFormattingChanged]($backend) fires on every registration and unregistration, and is the natural place to trigger that refresh — since specs are built on demand, it is the only moment at which an iModel's field formatting can change.
+Registering does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. [ElementDrivesTextAnnotation.onFieldFormattingChanged]($backend) fires after every registration, whether or not the configuration changed, and is the natural place to trigger that refresh — since specs are built on demand, it is the only moment at which an iModel's field formatting can change. A listener that throws does not undo the registration.
 
-[ElementDrivesTextAnnotation.unregisterFieldFormatting]($backend) discards the application's FormatSets and reverts the iModel to the schema default. It does not turn formatting off: the next source-element edit re-renders a field that was `"2500 mm"` under the FormatSet as `"2.5 m"` under the schema. Changing the adopted FormatSet therefore needs only a second `registerFieldFormatting` call — each registration replaces the prior one — rather than an unregister followed by a register.
+To revert an iModel to the schema default, call `registerFieldFormatting({ iModel })` with no FormatSets. This does not turn formatting off: the next source-element edit re-renders a field that was `"2500 mm"` under the FormatSet as `"2.5 m"` under the schema. Changing the adopted FormatSet therefore needs only a second `registerFieldFormatting` call — each registration replaces the prior one — rather than a revert followed by a register.
 
 ## Advanced
 

@@ -10,7 +10,7 @@ import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
 import { createFieldFormatting } from "../../internal/annotations/fieldSpecs";
-import { DbResult, Id64, Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -591,7 +591,7 @@ describe("Field evaluation", () => {
     }
 
     afterEach(() => {
-      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel });
     });
 
     it("preserves non-quantity field formatting", async () => {
@@ -827,7 +827,7 @@ describe("Field evaluation", () => {
     }
 
     afterEach(() => {
-      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel });
       // Clean up any TextAnnotation3d elements produced below so we don't leak state (and their
       // ElementDrivesTextAnnotation relationships) into later describe blocks. No longer relied
       // on for correctness -- every relationship-count assertion is scoped to its own target --
@@ -842,7 +842,7 @@ describe("Field evaluation", () => {
         withEditTxn(imodel, (txn) => { for (const id of ids) txn.deleteElement(id); });
     });
 
-    it("raises onFieldFormattingChanged on register and unregister only", () => {
+    it("raises onFieldFormattingChanged on every register call", () => {
       let events = 0;
       const drop = ElementDrivesTextAnnotation.onFieldFormattingChanged.addListener((args) => {
         expect(args.iModel).to.equal(imodel);
@@ -851,16 +851,35 @@ describe("Field evaluation", () => {
 
       try {
         registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+        // Re-registering the same configuration still reports.
         registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-        // Unregistering reverts to the schema default and reports it.
-        ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
-        // Nothing registered: no event.
-        ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
+        // Reverting to the schema default is a register call too.
+        ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel });
 
         expect(events).to.equal(3);
       } finally {
         drop();
       }
+    });
+
+    it("keeps the registration when a listener throws", () => {
+      // BeEvent routes listener exceptions to UnexpectedErrors rather than to the caller.
+      const unexpected: unknown[] = [];
+      const previousHandler = UnexpectedErrors.setHandler((e) => unexpected.push(e));
+      const drop = ElementDrivesTextAnnotation.onFieldFormattingChanged.addListener(() => {
+        throw new Error("listener failure");
+      });
+
+      try {
+        expect(() => registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }])).not.to.throw();
+      } finally {
+        drop();
+        UnexpectedErrors.setHandler(previousHandler);
+      }
+
+      expect(unexpected.length).to.equal(1);
+      const annotationElementId = insertAnnotationWithLengthField(sourceElementId);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
     });
 
     it("routes evaluateFields quantity formatting through a registered FormatSet", async () => {
@@ -1048,18 +1067,18 @@ describe("Field evaluation", () => {
       });
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
-      // 4. Unregistering is likewise not retroactive...
-      ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
+      // 4. Reverting to the schema default is likewise not retroactive...
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel });
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
       // ...but the following edit falls back to the schema default and overwrites the FormatSet's
-      // millimeters with the schema's meters. This is why unregisterFieldFormatting's docs
-      // tell hosts to swap FormatSets by re-registering rather than by unregistering first.
+      // millimeters with the schema's meters. This is why registerFieldFormatting's docs tell
+      // hosts to swap FormatSets with a single re-register rather than reverting first.
       const reloadedSource = imodel.elements.getElement<TestElement>(sourceId);
       reloadedSource.lengthProp = 3.5;
-      withEditTxn(imodel, "source update after unregister", (txn) => {
+      withEditTxn(imodel, "source update after revert", (txn) => {
         reloadedSource.update(txn);
-        txn.saveChanges("source update after unregister");
+        txn.saveChanges("source update after revert");
       });
       expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5 m");
     });
