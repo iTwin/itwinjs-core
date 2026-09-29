@@ -14,7 +14,7 @@ Normal commands exclude `#integration` and `#performance`. Integration and perfo
 
 ## Chrome-only suite decisions
 
-The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
+The following suites are Chrome-only because running them in Electron too would mostly retest the same frontend code. They do cross the RPC and IPC transport, but the Electron path they would add is already covered by the suites that still run in Electron and by `full-stack-tests/rpc`. The map suites compare pixels, which both runtimes render with the same Chromium WebGL. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
 
 - `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering.
 - `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering.
