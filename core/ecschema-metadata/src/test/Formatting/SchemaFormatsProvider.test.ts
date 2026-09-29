@@ -12,7 +12,23 @@ import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems, deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention -- EC schema item names are not camelCase */
+function createUnitSchemaJson(name: string, version: string, precision: number, unitSystemSchema = name) {
+  const references = unitSystemSchema === name ? [] : [{ name: unitSystemSchema, version: "1.0.0", alias: unitSystemSchema.toLowerCase() }];
+  return createSchemaJsonWithItems({
+    LENGTH: { schemaItemType: "Phenomenon", definition: "LENGTH" },
+    SI: { schemaItemType: "UnitSystem" },
+    M: { schemaItemType: "Unit", phenomenon: `${name}.LENGTH`, unitSystem: `${unitSystemSchema}.SI`, definition: "M" },
+    F: { schemaItemType: "Format", type: "Decimal", precision, composite: { units: [{ name: `${name}.M` }] } },
+  }, { name, version, alias: name.toLowerCase(), references });
+}
+
+function createKoqSchemaJson(persistenceUnit: string, presentationUnits: string[], references: Array<{ name: string, version: string }>) {
+  return createSchemaJsonWithItems({
+    LENGTH: { schemaItemType: "KindOfQuantity", relativeError: 0.001, persistenceUnit, presentationUnits },
+  }, { name: "KoqSchema", version: "1.0.0", alias: "koq", references: references.map((ref) => ({ ...ref, alias: ref.name.toLowerCase() })) });
+}
+/* eslint-enable @typescript-eslint/naming-convention */
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
@@ -229,7 +245,7 @@ describe("SchemaFormatsProvider", () => {
       });
     }
 
-    it("treats partially loaded schemas as synchronous cache misses", () => {
+    it("treats UnableToLoadSchema from the cache as a synchronous cache miss", () => {
       const provider = new SchemaFormatsProvider(new SchemaContext(), "metric");
       const cacheLookup = vi.spyOn(provider.context, "getCachedSchemaSync").mockImplementation(() => {
         throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema);
@@ -243,34 +259,46 @@ describe("SchemaFormatsProvider", () => {
     });
 
     it("treats a referenced schema version missing from the cache as a synchronous cache miss", async () => {
-      const createReferencedSchema = (version: string, precision: number) => createSchemaJsonWithItems({
-        LENGTH: { schemaItemType: "Phenomenon", definition: "LENGTH" },
-        SI: { schemaItemType: "UnitSystem" },
-        M: { schemaItemType: "Unit", phenomenon: "RefSchema.LENGTH", unitSystem: "RefSchema.SI", definition: "M" },
-        LengthFormat: { schemaItemType: "Format", type: "Decimal", precision },
-      }, { name: "RefSchema", version, alias: "ref" });
-
       // The KindOfQuantity resolves its references against RefSchema 1.0.1 from another context.
       const referencedContext = new SchemaContext();
-      Schema.fromJsonSync(createReferencedSchema("1.0.1", 4), referencedContext);
-      const koqSchema = Schema.fromJsonSync(createSchemaJsonWithItems({
-        LENGTH: {
-          schemaItemType: "KindOfQuantity",
-          relativeError: 0.001,
-          persistenceUnit: "RefSchema.M",
-          presentationUnits: ["RefSchema.LengthFormat"],
-        },
-      }, { name: "KoqSchema", version: "1.0.0", alias: "koq", references: [{ name: "RefSchema", version: "1.0.1", alias: "ref" }] }), referencedContext);
+      Schema.fromJsonSync(createUnitSchemaJson("RefSchema", "1.0.1", 4), referencedContext);
+      const koqSchema = Schema.fromJsonSync(createKoqSchemaJson("RefSchema.M", ["RefSchema.F"], [{ name: "RefSchema", version: "1.0.1" }]), referencedContext);
 
       // The provider's context caches the KindOfQuantity schema next to RefSchema 1.0.0.
       const cacheContext = new SchemaContext();
-      Schema.fromJsonSync(createReferencedSchema("1.0.0", 2), cacheContext);
+      Schema.fromJsonSync(createUnitSchemaJson("RefSchema", "1.0.0", 2), cacheContext);
       cacheContext.addSchemaSync(koqSchema);
 
       const provider = new SchemaFormatsProvider(cacheContext);
       expect((await provider.getFormat("KoqSchema.LENGTH"))?.precision).toBe(4);
       expect(provider.getFormatSync("KoqSchema.LENGTH")).toBeUndefined();
     });
+
+    for (const testCase of [
+      { missing: "format", presentationUnits: ["RefA.F", "RefB.F"], firstUnit: "RefA.M" },
+      { missing: "unit", presentationUnits: ["RefB.F[RefA.M]", "RefB.F"], firstUnit: "RefA.M" },
+      { missing: "unit system", presentationUnits: ["RefC.F", "RefB.F"], firstUnit: "RefC.M" },
+    ]) {
+      it(`returns a cache miss instead of skipping a candidate whose ${testCase.missing} is not cached`, async () => {
+        // Both candidates match the metric system. Only RefB is cached, so the first candidate cannot be resolved synchronously.
+        // RefC is cached, but its unit uses a unit system from RefA.
+        const loadContext = new SchemaContext();
+        Schema.fromJsonSync(createUnitSchemaJson("RefA", "1.0.0", 4), loadContext);
+        const refB = Schema.fromJsonSync(createUnitSchemaJson("RefB", "1.0.0", 6), loadContext);
+        const refC = Schema.fromJsonSync(createUnitSchemaJson("RefC", "1.0.0", 8, "RefA"), loadContext);
+        const references = ["RefA", "RefB", "RefC"].map((name) => ({ name, version: "1.0.0" }));
+        const koqSchema = Schema.fromJsonSync(createKoqSchemaJson("RefB.M", testCase.presentationUnits, references), loadContext);
+
+        const cacheContext = new SchemaContext();
+        cacheContext.addSchemaSync(refB);
+        cacheContext.addSchemaSync(refC);
+        cacheContext.addSchemaSync(koqSchema);
+
+        const provider = new SchemaFormatsProvider(cacheContext, "metric");
+        expect((await provider.getFormat("KoqSchema.LENGTH"))?.composite?.units[0].name).toBe(testCase.firstUnit);
+        expect(provider.getFormatSync("KoqSchema.LENGTH")).toBeUndefined();
+      });
+    }
 
     it("propagates unexpected cache errors", () => {
       const provider = new SchemaFormatsProvider(new SchemaContext(), "metric");

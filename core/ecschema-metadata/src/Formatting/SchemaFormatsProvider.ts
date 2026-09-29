@@ -101,17 +101,8 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
   }
 
   private async getKindOfQuantityFormatProps(kindOfQuantity: KindOfQuantity, systemOverride?: UnitSystemKey): Promise<FormatProps | undefined> {
-    // Cache each lazy format and unit once per lookup because matchers may revisit them.
-    const formatCache = new Map<FormatReference, Promise<ResolvedFormat>>();
+    // Cache each unit once per lookup because matchers may revisit it. Lazy formats already resolve only once.
     const unitCache = new Map<UnitReference, Promise<ResolvedUnit>>();
-    const getFormat = async (format: FormatReference): Promise<ResolvedFormat> => {
-      let resolved = formatCache.get(format);
-      if (!resolved) {
-        resolved = Promise.resolve(format);
-        formatCache.set(format, resolved);
-      }
-      return resolved;
-    };
     const getUnit = (unit: UnitReference | undefined): Promise<ResolvedUnit> | undefined => {
       if (!unit)
         return undefined;
@@ -125,7 +116,7 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
     };
 
     for (const candidate of getFormatSelectionCandidates(kindOfQuantity, systemOverride ?? this._unitSystem)) {
-      const format = candidate.type === "persistence" ? undefined : await getFormat(candidate.format);
+      const format = candidate.type === "persistence" ? undefined : await candidate.format;
       const unit = candidate.type === "default" ? undefined : await getUnit(candidate.type === "persistence" ? candidate.unit : format?.units?.[0]?.[0]);
       const props = getFormatPropsForCandidate(candidate, format, unit);
       if (props)
@@ -176,6 +167,7 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
   /**
    * Retrieves a format definition using only schema metadata already loaded in the context.
    * It follows the same selection order as `getFormat` but never asks a locater to load a schema. Returns `undefined` when required metadata is not cached.
+   * Unlike `getFormat`, which logs lookup errors and returns `undefined`, this method treats only a schema that is still loading as a cache miss and rethrows other errors.
    */
   public getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
@@ -223,9 +215,17 @@ export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvid
       return unitCache.get(unit);
     };
 
+    // A reference that cannot be resolved means metadata is not cached. Stop there: async lookup would resolve it and never reach a later candidate.
     for (const candidate of getFormatSelectionCandidates(kindOfQuantity, systemOverride ?? this._unitSystem)) {
       const format = candidate.type === "persistence" ? undefined : getFormat(candidate.format);
-      const unit = candidate.type === "default" ? undefined : getUnit(candidate.type === "persistence" ? candidate.unit : format?.units?.[0]?.[0]);
+      if (candidate.type !== "persistence" && !format)
+        return undefined;
+
+      const unitReference = candidate.type === "presentation" ? format?.units?.[0]?.[0] : candidate.type === "persistence" ? candidate.unit : undefined;
+      const unit = getUnit(unitReference);
+      if (unitReference && !unit)
+        return undefined;
+
       const props = getFormatPropsForCandidate(candidate, format, unit);
       if (props)
         return props;
@@ -304,8 +304,8 @@ function resolveUnitSync(context: SchemaContext, unit: UnitReference): ResolvedU
   if (!unitSystem)
     return { unit: resolvedUnit };
 
-  const schema = getCachedSchemaSync(context, unitSystem.schemaKey, SchemaMatchType.Exact);
-  return { unit: resolvedUnit, unitSystemName: schema?.getItemSync(unitSystem.name, UnitSystem)?.name };
+  const unitSystemName = getCachedSchemaSync(context, unitSystem.schemaKey, SchemaMatchType.Exact)?.getItemSync(unitSystem.name, UnitSystem)?.name;
+  return unitSystemName ? { unit: resolvedUnit, unitSystemName } : undefined;
 }
 
 /**
