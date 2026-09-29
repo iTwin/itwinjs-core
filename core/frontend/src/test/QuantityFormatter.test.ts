@@ -7,7 +7,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, SyncFormatsProvider, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
@@ -756,6 +756,29 @@ describe("Quantity formatter", async () => {
       expect(receivedName).toBe("TestFormat");
       expect(receivedSystem).toBe("metric");
       expect(receivedContext).toBe(context);
+    });
+
+    it("should forward synchronous format lookups to a synchronous provider", () => {
+      const context: FormatsProviderContext = { providerChain: new Set<FormatsProvider>() };
+      const definition: FormatDefinition = { type: "Decimal", precision: 4 };
+      const getFormatSync = vi.fn((_name: string, _system?: UnitSystemKey, _context?: FormatsProviderContext) => definition);
+      const provider: FormatsProvider & SyncFormatsProvider = {
+        async getFormat() { return undefined; },
+        getFormatSync,
+        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+      };
+      const manager = new FormatsProviderManager(provider);
+
+      expect(manager.getFormatSync("TestFormat", "metric", context)).toBe(definition);
+      expect(getFormatSync).toHaveBeenCalledWith("TestFormat", "metric", context);
+    });
+
+    it("should return undefined for synchronous lookups when the provider is asynchronous only", () => {
+      const getFormat = vi.fn(async () => undefined);
+      const manager = new FormatsProviderManager({ getFormat, onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>() });
+
+      expect(manager.getFormatSync("TestFormat", "metric")).toBeUndefined();
+      expect(getFormat).not.toHaveBeenCalled();
     });
 
     it("should not leak listeners when formatsProvider is replaced multiple times", () => {

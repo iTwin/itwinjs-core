@@ -317,6 +317,7 @@ import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryOverride } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
+import { SyncFormatsProvider } from '@itwin/core-quantity';
 import { SyncMode } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
@@ -3562,13 +3563,14 @@ export class FlyViewTool extends ViewManip {
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
 
 // @internal
-export class FormatsProviderManager implements FormatsProvider {
+export class FormatsProviderManager implements FormatsProvider, SyncFormatsProvider {
     constructor(_formatsProvider: FormatsProvider);
     // (undocumented)
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
     getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
+    getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }

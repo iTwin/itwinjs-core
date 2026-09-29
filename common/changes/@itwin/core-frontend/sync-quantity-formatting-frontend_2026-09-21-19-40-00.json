@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Preserve format provider lookup context across frontend provider delegation.",
+      "comment": "Forward format provider lookup context and synchronous format lookups through the frontend formats provider.",
       "type": "none"
     }
   ],

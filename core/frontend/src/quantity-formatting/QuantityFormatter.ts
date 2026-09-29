@@ -11,7 +11,7 @@ import {
   AddFormattingSpecArgs, AlternateUnitLabelsProvider, BasicUnitsProvider, Format, FormatDefinition, FormatProps,
   FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector,
   FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParseError, ParserSpec,
-  QuantityParseResult, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
+  QuantityParseResult, SyncFormatsProvider, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
@@ -355,7 +355,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
  * Also fires the onFormatsChanged event when the underlying FormatsProvider fires its own onFormatsChanged event.
  * @internal
  */
-export class FormatsProviderManager implements FormatsProvider {
+export class FormatsProviderManager implements FormatsProvider, SyncFormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
   private _removeProviderListener?: () => void;
 
@@ -367,6 +367,12 @@ export class FormatsProviderManager implements FormatsProvider {
 
   public async getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined> {
     return this._formatsProvider.getFormat(name, system, context);
+  }
+
+  /** Returns `undefined` when the current provider cannot look up formats synchronously. */
+  public getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined {
+    const provider: FormatsProvider & Partial<SyncFormatsProvider> = this._formatsProvider;
+    return typeof provider.getFormatSync === "function" ? provider.getFormatSync(name, system, context) : undefined;
   }
 
   public get formatsProvider(): FormatsProvider { return this; }
