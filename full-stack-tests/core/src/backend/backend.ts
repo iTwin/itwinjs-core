@@ -14,13 +14,12 @@ import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, Conflicti
 import { ElectronHost } from "@itwin/core-electron/main";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
 import * as path from "path";
-import { exposeBackendCallbacks } from "./testCallbacks";
+import { exposeBackendCallbacks, TestElectronMainAuthorization } from "./testCallbacks";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
@@ -46,7 +45,7 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-let electronAuth: ElectronMainAuthorization;
+let electronAuth: TestElectronMainAuthorization;
 
 function shouldLogToConsole(): boolean {
   return process.env.ITWINJS_CORE_FULL_STACK_BACKEND_LOG_TO_CONSOLE === "1";
@@ -277,13 +276,13 @@ async function init() {
 
   let shutdown: undefined | (() => Promise<void>);
 
-  exposeBackendCallbacks();
   if (ProcessDetector.isElectronAppBackend) {
-    electronAuth = new ElectronMainAuthorization({
+    electronAuth = new TestElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
       redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
+    exposeBackendCallbacks(electronAuth);
     await electronAuth.signInSilent();
     iModelHost.authorizationClient = electronAuth;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
@@ -294,6 +293,7 @@ async function init() {
     EditCommandAdmin.register(testCommands.FullStackTestEditCommand);
     FullStackTestIpcHandler.register();
   } else {
+    exposeBackendCallbacks();
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
