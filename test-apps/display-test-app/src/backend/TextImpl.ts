@@ -1,6 +1,8 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { FormatSet } from "@itwin/ecschema-metadata";
+import { registerFieldFormattingFor } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -102,6 +104,9 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
+  // Acquire locks before mutating, so a failure leaves the cached element untouched.
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+
   if (categoryId)
     text.category = categoryId;
 
@@ -115,8 +120,12 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
     text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
   }
 
-  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
+}
+
+/** Re-registers the field formatting provider for the specified iModel, or unregisters when both are absent. */
+export function registerFieldFormattingForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
+  registerFieldFormattingFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
 }
 
 /**

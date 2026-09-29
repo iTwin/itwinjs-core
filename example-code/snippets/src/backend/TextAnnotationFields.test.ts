@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
-  ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, PhysicalModel, SpatialCategory, StandaloneDb,
-  TextAnnotation2d, withEditTxn,
+  ElementDrivesTextAnnotation, IModelDb, PhysicalModel, SpatialCategory, StandaloneDb,
+  withEditTxn,
 } from "@itwin/core-backend";
 import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
 import { FormatDefinition } from "@itwin/core-quantity";
@@ -76,12 +76,28 @@ describe("Text annotation field formatting", () => {
   });
 
   after(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
     iModel.close();
   });
 
   afterEach(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
+    ElementDrivesTextAnnotation.unregisterFieldFormatting(iModel);
+  });
+
+  it("formats a field through the schema default with no registration", async () => {
+    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.SchemaDefault
+    // Nothing registered: the field is presented using the format `Snippets.LENGTH` declares.
+    const fieldRun = FieldRun.create({
+      propertyHost: { elementId, schemaName: "Snippets", className: "Widget" },
+      propertyPath: { propertyName: "length" },
+    });
+    const block = TextBlock.create();
+    block.appendRun(fieldRun);
+
+    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+    const formattedContent = fieldRun.cachedContent; // "2.5 m"
+    // __PUBLISH_EXTRACT_END__
+
+    expect(formattedContent).to.equal("2.5 m");
   });
 
   it("formats a field from an adopted FormatSet", async () => {
@@ -103,14 +119,9 @@ describe("Text annotation field formatting", () => {
       },
     };
 
-    // Adopt it for the iModel. Registration is asynchronous because it pre-warms a
-    // FormatterSpec for every requirement it is given, so evaluation itself needs no `await`.
-    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel,
-      formatSet,
-      requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
-    });
-    iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
+    // Adopt it for the iModel. Registration is synchronous; each FormatterSpec is built the
+    // first time a field asks for it and reused thereafter.
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel, formatSet });
 
     // A field displaying the `length` property of a widget that is 2.5 meters long.
     const fieldRun = FieldRun.create({
@@ -157,15 +168,8 @@ describe("Text annotation field formatting", () => {
     const formatSet = millimeterFormatSet;
 
     // __PUBLISH_EXTRACT_START__ TextAnnotationFields.AdoptFormatSet
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel,
-      formatSet,
-      requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
-    });
-    iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel, formatSet });
     // __PUBLISH_EXTRACT_END__
-
-    expect(provider).not.to.be.undefined;
 
     const { block, field } = blockWithLengthField();
 
@@ -174,49 +178,6 @@ describe("Text annotation field formatting", () => {
     // __PUBLISH_EXTRACT_END__
 
     expect(numUpdated).to.equal(1);
-    expect(field.cachedContent).to.equal("2500 mm");
-  });
-
-  it("finds annotations whose fields override the property's units", async () => {
-    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.QueryOverridingAnnotations
-    // Pass 1: the two built-in classes carry TextAnnotationData, so the substring test runs inside
-    // SQLite and non-overriding annotations never reach JavaScript.
-    const sql = `
-      SELECT ECInstanceId FROM BisCore.TextAnnotation2d
-        WHERE TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'
-      UNION ALL
-      SELECT ECInstanceId FROM BisCore.TextAnnotation3d
-        WHERE TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'`;
-    // __PUBLISH_EXTRACT_END__
-
-    const ids: Id64String[] = [];
-    for await (const row of iModel.createQueryReader(sql))
-      ids.push(row[0] as Id64String);
-
-    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.CollectBlockRequirements
-    const requirements = ids.flatMap((id) =>
-      [...iModel.elements.getElement<TextAnnotation2d>(id).getTextBlocks()].flatMap((b) =>
-        ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block: b.textBlock })));
-    // __PUBLISH_EXTRACT_END__
-
-    // This iModel has no annotations yet, so the query is simply proven to be valid ECSQL.
-    expect(requirements).to.deep.equal([]);
-  });
-
-  it("warms a block authored later in the session", async () => {
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel,
-      formatSet: millimeterFormatSet,
-      requirements: [],
-    });
-
-    const { block, field } = blockWithLengthField();
-
-    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.WarmBeforeWrite
-    await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
-    // __PUBLISH_EXTRACT_END__
-
-    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
     expect(field.cachedContent).to.equal("2500 mm");
   });
 
@@ -240,11 +201,10 @@ describe("Text annotation field formatting", () => {
       },
     };
 
-    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    ElementDrivesTextAnnotation.registerFieldFormatting({
       iModel,
       formatSet: millimeterFormatSet,                 // applies to every field that names no other
       formatSets: [{ id: imperialFormatSetId, formatSet: imperialFormatSet }],
-      requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
     });
 
     // A field opts into the imperial set by naming its id.
@@ -267,32 +227,5 @@ describe("Text annotation field formatting", () => {
     const metric = blockWithLengthField();
     ElementDrivesTextAnnotation.evaluateFields({ iModel, block: metric.block });
     expect(metric.field.cachedContent).to.equal("2500 mm");
-  });
-
-  it("detects and repairs a warm-up gap", async () => {
-    // Registered with no requirements, so the first evaluation cannot resolve a spec.
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel,
-      formatSet: millimeterFormatSet,
-      requirements: [],
-    });
-
-    const { block, field } = blockWithLengthField();
-    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
-
-    // The field rendered raw, and the shortfall was recorded.
-    expect(field.cachedContent).to.equal("2.5");
-    expect(provider.misses.length).to.be.greaterThan(0);
-
-    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.HandleMisses
-    if (provider.misses.length > 0) {
-      await provider.warmUp(provider.misses);
-      provider.clearMisses();
-      ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
-    }
-    // __PUBLISH_EXTRACT_END__
-
-    expect(field.cachedContent).to.equal("2500 mm");
-    expect(provider.misses).to.deep.equal([]);
   });
 });

@@ -9,10 +9,8 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
-import { FormattingSpecArgs } from "@itwin/core-quantity";
-import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { collectFieldQuantityPairs, lookupFieldSpec, specKey } from "./fieldSpecs";
+import { FieldFormatting, lookupFieldSpec } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -61,13 +59,12 @@ export interface UpdateFieldsContext {
    */
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Resolves `"quantity"` and `"coordinate"` values through already-built
-   * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the formats of the
-   * FormatSet named by [QuantityFieldFormatOptions.formatSet]($common); anything un-built falls
-   * back to `value.toString()` and is recorded in
-   * [FieldFormattingSpecProvider.misses]($backend).
+  /** The formats `"quantity"` and `"coordinate"` values resolve through. [[updateField]] builds
+   * a [FormatterSpec]($core-quantity) per field from the FormatSet named by
+   * [QuantityFieldFormatOptions.formatSet]($common), falling back to the adopted FormatSet and
+   * the schemas; a value none of them can format falls back to `value.toString()`.
    */
-  readonly formattingSpecProvider?: FieldFormattingSpecProvider;
+  readonly formatting?: FieldFormatting;
 }
 
 // Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
@@ -208,9 +205,6 @@ function enterProperty(prop: Property, containingClass: AnyClass): SchemaCursor 
 
 /** Advances a schema cursor by one [FieldPropertyPath]($common) accessor, or returns `undefined`
  * when the accessor doesn't apply to the current property.
- *
- * Shared by [[getFieldPropertyValue]], which reads values, and [[resolveFieldTerminalProperty]],
- * which reads metadata, so the two cannot disagree about which paths are legal.
  */
 function advanceSchemaCursor(cursor: SchemaCursor, accessor: string | number): SchemaCursor | undefined {
   const { ecProp, ecClass } = cursor;
@@ -369,37 +363,43 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  formattingSpecProvider?: FieldFormattingSpecProvider,
+  formatting?: FieldFormatting,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formattingSpecProvider,
+    formatting,
   };
 }
 
 /** Resolves the [FormatterSpec]($core-quantity) this field should render its magnitudes through,
- * returning a callback bound to it, or `undefined` when not a quantity or coordinate, no provider is
- * registered, or no format was built for any of the (KindOfQuantity, persistence unit) pairs the
- * field may resolve through. In that last case the unresolved pairs are recorded on the provider.
+ * returning a callback bound to it, or `undefined` when not a quantity or coordinate, no formats
+ * were supplied, or no format resolves for any of the (KindOfQuantity, persistence unit) pairs the
+ * field may format through. In that last case the shortfall is logged: a persistence unit or
+ * format unit outside the bundled BIS set, a KindOfQuantity with no presentation format, or a
+ * format whose units belong to a different phenomenon than the persisted value.
  */
 function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
-  const specProvider = context.formattingSpecProvider;
-  if (!specProvider || (value.type !== "quantity" && value.type !== "coordinate")) {
+  const formatting = context.formatting;
+  if (!formatting || (value.type !== "quantity" && value.type !== "coordinate")) {
     return undefined;
   }
 
-  const formatSet = field.formatOptions?.quantity?.formatSet;
-  const bucket = specProvider.getProviderFor(formatSet);
-  const { spec, candidates } = lookupFieldSpec(field.formatOptions?.quantity, value, bucket);
+  const quantityOptions = field.formatOptions?.quantity;
+  const { spec, candidates } = lookupFieldSpec(quantityOptions, value, formatting);
   if (!spec) {
     if (candidates.length > 0) {
-      specProvider.recordMisses(candidates, formatSet);
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "No format resolved for text annotation field; rendering raw value", () => ({
+        elementId: field.propertyHost.elementId,
+        propertyName: field.propertyPath.propertyName,
+        formatSet: quantityOptions?.formatSet,
+        tried: candidates.map((c) => `${c.name} in ${c.persistenceUnitName}`),
+      }));
     }
     return undefined;
   }
 
-  return (magnitude) => bucket.formatQuantity(magnitude, spec);
+  return (magnitude) => spec.applyFormatting(magnitude);
 }
 
 /** Recomputes a single field's cached display string synchronously. Returns true iff
@@ -451,12 +451,12 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formattingSpecProvider: FieldFormattingSpecProvider | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formatting: FieldFormatting | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, formattingSpecProvider);
+      const context = createUpdateContext(sourceId, iModel, deleted, formatting);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -478,135 +478,14 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
  * change (`deleted=false`) or delete (`deleted=true`). Invoked from
  * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
  */
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formattingSpecProvider?: FieldFormattingSpecProvider): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formattingSpecProvider);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formatting?: FieldFormatting): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formatting);
 }
 
 /** Re-evaluates every field of the given annotation element against its current property
  * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
  * establishing / refreshing relationships.
  */
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProvider?: FieldFormattingSpecProvider): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProvider);
-}
-
-/** Sentinel returned by [[resolveFieldTerminalProperty]] for a path that dives into a
- * JSON-in-string property. Such a path has no terminal [Property]($ecschema-metadata) — and so
- * no schema-side [KindOfQuantity]($ecschema-metadata) — but the field may still supply a
- * complete formatting key of its own.
- */
-const jsonInStringTerminal = "json-in-string";
-
-type FieldTerminal = Property | typeof jsonInStringTerminal;
-
-/** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
- * using schema metadata only (no ECSQL, no element values). Returns `undefined` when the path
- * cannot be followed, or [[jsonInStringTerminal]] when it dives into a JSON-in-string leaf.
- *
- * Walks with the same [[advanceSchemaCursor]] the value path uses, so the two agree on which
- * paths are legal. It cannot know whether the stored string actually parses as JSON, so a
- * JSON-in-string path may build a spec that evaluation never consults — harmless, where a
- * missing one is not.
- */
-function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldTerminal | undefined {
-  const host = field.propertyHost;
-  const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
-  if (!EntityClass.isEntityClass(schemaItem)) {
-    return undefined;
-  }
-
-  const { propertyName, accessors } = field.propertyPath;
-  const rootProp = schemaItem.getPropertySync(propertyName);
-  if (!rootProp) {
-    return undefined;
-  }
-
-  if (!accessors || accessors.length === 0) {
-    return rootProp;
-  }
-
-  // Mirrors getFieldPropertyValue: accessors applied to a non-array String property index into
-  // deserialized JSON, so the schema walk stops here.
-  if (rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.String) {
-    return jsonInStringTerminal;
-  }
-
-  let cursor = enterProperty(rootProp, schemaItem);
-  for (const accessor of accessors) {
-    const advanced = advanceSchemaCursor(cursor, accessor);
-    if (!advanced) {
-      return undefined;
-    }
-
-    cursor = advanced;
-  }
-
-  return cursor.ecProp;
-}
-
-/** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at formatting
- * time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
- * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
- * overrides. See [[QuantityFieldFormatOptions]] for the priority contract.
- *
- * Pre-warm and evaluation must enumerate identical pairs: a requirement that differs from the
- * pair the runtime resolves does not merely fail to format, it lets the runtime pick a
- * *different* pair and convert the value by the wrong factor. Both paths therefore share
- * [[collectFieldQuantityPairs]], and this metadata walk shares [[advanceSchemaCursor]] with the
- * runtime value walk.
- * @internal
- */
-export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
-  const quantityOptions = field.formatOptions?.quantity;
-
-  const terminal = resolveFieldTerminalProperty(field, iModel);
-  if (!terminal) {
-    return [];
-  }
-
-  if (terminal === jsonInStringTerminal) {
-    // A JSON leaf has no property-side pair to fall back to, so only the field's own overrides
-    // can name a format. `collectFieldQuantityPairs` drops an incomplete pair, which matches the
-    // runtime falling through to `value.toString()`.
-    return collectFieldQuantityPairs({
-      overrideName: quantityOptions?.kindOfQuantity,
-      overridePersistence: quantityOptions?.persistenceUnit,
-    });
-  }
-
-  const propertyType = determineFieldPropertyType(terminal);
-  if (propertyType !== "quantity" && propertyType !== "coordinate") {
-    return [];
-  }
-
-  const koq = terminal.kindOfQuantity ? terminal.getKindOfQuantitySync() : undefined;
-  return collectFieldQuantityPairs({
-    overrideName: quantityOptions?.kindOfQuantity,
-    overridePersistence: quantityOptions?.persistenceUnit,
-    propertyName: koq?.fullName,
-    propertyPersistence: koq?.persistenceUnit?.fullName,
-  });
-}
-
-/** Walks `textBlock` and returns the deduplicated [FormattingSpecArgs]($core-quantity) needed
- * to format its `"quantity"` and `"coordinate"` [FieldRun]($common)s. See
- * [[ElementDrivesTextAnnotation.collectFieldFormattingRequirements]] for the public contract
- * and the pre-warm workflow.
- * @internal
- */
-export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
-  const seen = new Map<string, FormattingSpecArgs>();
-  for (const { child } of traverseTextBlockComponent(textBlock)) {
-    if (child.type !== "field") {
-      continue;
-    }
-    for (const args of collectFieldRequirements(child, iModel)) {
-      const key = specKey(args);
-      if (!seen.has(key)) {
-        seen.set(key, args);
-      }
-    }
-  }
-
-  return Array.from(seen.values());
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formatting?: FieldFormatting): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, formatting);
 }

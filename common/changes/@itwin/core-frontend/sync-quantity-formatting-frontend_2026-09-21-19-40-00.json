@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Forward format provider lookup context and synchronous format lookups through the frontend formats provider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

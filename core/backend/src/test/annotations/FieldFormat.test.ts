@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
-import { FormatSet, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
-import { FormattingSpecArgs } from "@itwin/core-quantity";
-import { Id64String } from "@itwin/core-bentley";
+import { FormatSet } from "@itwin/ecschema-metadata";
+import { FormatterSpec } from "@itwin/core-quantity";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -16,7 +16,6 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { decimalFormat, toFormatSet } from "../AnnotationTestUtils";
 import { withEditTxn } from "../../EditTxn";
 
@@ -41,7 +40,7 @@ import { withEditTxn } from "../../EditTxn";
 
 const ADOPTED_SET = "adopted-set";
 const ALT_SET = "alternate-set";
-/** Deliberately never registered, so `getProviderFor` falls back to the adopted bucket. */
+/** Deliberately never registered, so lookup falls back to the adopted FormatSet. */
 const UNREGISTERED_SET = "unregistered-set";
 
 // ---------------------------------------------------------------------------------------------
@@ -73,6 +72,9 @@ const exampleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 
   <KindOfQuantity typeName="INT_LENGTH_PROP" displayLabel="Integer Length" persistenceUnit="u:MM" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
 
+  <Unit typeName="DOUBLE_M" displayLabel="dm" phenomenon="u:LENGTH" unitSystem="u:SI" definition="u:M" numerator="2"/>
+  <KindOfQuantity typeName="CUSTOM_UNIT_PROP" displayLabel="Custom-unit Length" persistenceUnit="DOUBLE_M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
+
   <KindOfQuantity typeName="SCHEMA_LENGTH" displayLabel="Schema Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:M]"/>
   <KindOfQuantity typeName="SCHEMA_AREA" displayLabel="Schema Area" persistenceUnit="u:SQ_M" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:SQ_M]"/>
   <KindOfQuantity typeName="SCHEMA_ANGLE" displayLabel="Schema Angle" persistenceUnit="u:ARC_DEG" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:ARC_DEG]"/>
@@ -89,6 +91,7 @@ const exampleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECProperty propertyName="intLengthProp" typeName="int" kindOfQuantity="INT_LENGTH_PROP"/>
     <ECProperty propertyName="intCountProp" typeName="int"/>
+    <ECProperty propertyName="customUnitProp" typeName="double" kindOfQuantity="CUSTOM_UNIT_PROP"/>
   </ECEntityClass>
 </ECSchema>
 `;
@@ -102,6 +105,7 @@ interface ExampleElementProps extends PhysicalElementProps {
   point: XYAndZ;
   intLengthProp: number;
   intCountProp: number;
+  customUnitProp: number;
 }
 
 class ExampleElement extends PhysicalElement {
@@ -114,6 +118,7 @@ class ExampleElement extends PhysicalElement {
   declare public point: XYAndZ;
   declare public intLengthProp: number;
   declare public intCountProp: number;
+  declare public customUnitProp: number;
 }
 
 class FieldExampleSchema extends Schema {
@@ -161,6 +166,7 @@ describe("Field format resolution example", () => {
         point: { x: 1, y: 2, z: 3 },
         intLengthProp: 2500,      // mm, int-typed -> 2.5 m
         intCountProp: 42,         // no KoQ; a count, not something with units
+        customUnitProp: 1.25,     // DOUBLE_M, a unit only this schema defines -> would be 2.5 m
         placement: { origin: new Point3d(0, 0, 0), angles: new YawPitchRollAngles() },
       };
       elementId = txn.insertElement(props);
@@ -168,9 +174,23 @@ describe("Field format resolution example", () => {
   });
 
   after(() => {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+    ElementDrivesTextAnnotation.unregisterFieldFormatting(imodel);
     imodel.close();
   });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  /** Spies on the warning [[render]] logs for each field it could not resolve a format for.
+   * Returns the (KindOfQuantity, persistence unit) pairs those warnings report as tried.
+   */
+  function spyOnFormatWarnings(): () => Array<{ propertyName: string, tried: string[] }> {
+    const logWarning = sinon.spy(Logger, "logWarning");
+    return () => logWarning.getCalls()
+      .filter((call) => typeof call.args[1] === "string" && call.args[1].startsWith("No format resolved for text annotation field"))
+      .map((call) => (call.args[2] as () => { propertyName: string, tried: string[] })());
+  }
 
   /** Appends a field on `propertyName` of the seeded element, and hands it back so the test can
    * read its content after [[render]].
@@ -186,31 +206,21 @@ describe("Field format resolution example", () => {
     return field;
   }
 
-  /** Registers a provider warmed for exactly `block`'s fields, then evaluates them in place --
-   * the same collect -> warm -> evaluate pass an app performs. Each call replaces the previous
-   * registration, so a test's FormatSets never leak into the next one.
+  /** Registers a provider with the given FormatSets, then evaluates `block`'s fields in place.
+   * Each call replaces the previous registration, so a test's FormatSets never leak into the
+   * next one.
    */
-  async function render(
+  function render(
     block: TextBlock,
     formatSets: { readonly adopted?: FormatSet, readonly byId?: ReadonlyArray<{ id: string, formatSet: FormatSet }> } = {},
-  ): Promise<void> {
-    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+  ): void {
+    ElementDrivesTextAnnotation.registerFieldFormatting({
       iModel: imodel,
       formatSet: formatSets.adopted,
       formatSets: formatSets.byId,
-      requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
     });
 
     ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-  }
-
-  /** Registers a provider warmed for exactly `requirements` — not for what `block` needs — then
-   * evaluates `block`. Lets a test create a deliberate pre-warm gap, which [[render]] cannot.
-   */
-  async function renderWarmedFor(block: TextBlock, requirements: FormattingSpecArgs[]): Promise<FieldFormattingSpecProvider> {
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel: imodel, requirements });
-    ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-    return provider;
   }
 
   it("formats integer-valued properties as quantities, leaving those that resolve no format raw", async () => {
@@ -226,7 +236,7 @@ describe("Field format resolution example", () => {
     const counted = appendField(block, "intCountProp");
     const overridden = appendField(block, "intCountProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block);
+    render(block);
 
     // The property's own KoQ persists millimeters and presents meters: converted, not relabelled.
     expect(measured.cachedContent).to.equal("2.5 m");
@@ -250,7 +260,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp");
     const point = appendField(block, "point");
 
-    await render(block);
+    render(block);
 
     // lengthProp, areaProp and slopeProp each declare a KindOfQuantity, so with no FormatSet
     // adopted the schema's own presentation format supplies the unit and precision.
@@ -280,7 +290,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO", persistenceUnit: "Units.ONE" });
     const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block);
+    render(block);
 
     // The SCHEMA_* KoQs declare the same units as the properties do, at precision 2 rather than 4,
     // so the KoQ-bearing properties look unchanged from the baseline.
@@ -308,7 +318,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO" });
     const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH" });
 
-    await render(block);
+    render(block);
 
     expect(length.cachedContent).to.equal("2.5 m");
     expect(area.cachedContent).to.equal("100.0 m²");
@@ -333,7 +343,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { persistenceUnit: "Units.ONE" });
     const point = appendField(block, "point", { persistenceUnit: "Units.M" });
 
-    await render(block);
+    render(block);
 
     expect(length.cachedContent).to.equal("2.5 m");
     expect(area.cachedContent).to.equal("100.0 m²");
@@ -343,11 +353,11 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("renders raw and records a miss when the persistence unit override does not exist", async () => {
+  it("renders raw and logs a warning when the persistence unit override does not exist", async () => {
     // The format leg is fine and the unit leg is garbage. The override is a claim about what the
     // stored magnitude means, so an unresolvable unit is not silently replaced by the property's
     // own -- that would ignore the claim and, for a *valid* wrong-phenomenon unit, render a number
-    // off by the conversion factor. The field goes raw and the shortfall is reported instead.
+    // off by the conversion factor. The field goes raw and the shortfall is logged instead.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -358,7 +368,8 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO", persistenceUnit: "Units.NOT_A_UNIT" });
     const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.NOT_A_UNIT" });
 
-    await render(block);
+    const warnings = spyOnFormatWarnings();
+    render(block);
 
     expect(length.cachedContent).to.equal("2.5");
     expect(area.cachedContent).to.equal("100");
@@ -367,40 +378,25 @@ describe("Field format resolution example", () => {
     expect(ratio.cachedContent).to.equal("0.9");
     expect(point.cachedContent).to.equal("(1, 2, 3)");
 
-    const provider = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)!;
-    expect(provider.misses.some((m) => m.persistenceUnitName === "Units.NOT_A_UNIT")).to.be.true;
+    expect(warnings()).to.have.length(6);
+    expect(warnings().every((w) => w.tried.some((t) => t.endsWith(" in Units.NOT_A_UNIT")))).to.be.true;
   });
 
-  it("does not format a valid persistence-unit override through the property's unit when it was never warmed", async () => {
-    // The sharp edge this whole rule exists for. The field says the 2.5 stored on lengthProp is
-    // 2.5 *feet*. Only the property's own (LENGTH_PROP, Units.M) pair is warmed. Formatting the
-    // 2.5 through that meter pair would render "2.5 m" -- a plausible-looking, durable, 3.28x
-    // wrong answer that the caller has no way to detect. It must go raw and be reported instead.
-    // Persisted on the element: lengthProp 2.5 m
-    const block = TextBlock.create();
-    const claimsFeet = appendField(block, "lengthProp", { persistenceUnit: "Units.FT" });
-
-    const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.M" }]);
-
-    expect(claimsFeet.cachedContent).to.equal("2.5");
-    expect(provider.misses.some((m) => m.name === "FieldExample.LENGTH_PROP" && m.persistenceUnitName === "Units.FT")).to.be.true;
-    // ...and specifically not as the property pair, which is the fallback that must not have run.
-    expect(provider.misses.some((m) => m.persistenceUnitName === "Units.M")).to.be.false;
-  });
-
-  it("formats a valid persistence-unit override through the requested unit once it is warmed", async () => {
-    // The complement: the same field, with the pair it asked for actually warmed. 2.5 ft renders
-    // through a feet-based spec, confirming the miss above was a pre-warm gap and not a refusal
-    // to honor the override at all.
+  it("formats a valid persistence-unit override through the requested unit, never the property's", async () => {
+    // The sharp edge the unit-override rule exists for. The field says the 2.5 stored on
+    // lengthProp is 2.5 *feet*. Formatting it through the property's own (LENGTH_PROP, Units.M)
+    // pair would render "2.5 m" -- a plausible-looking, durable, 3.28x wrong answer the caller
+    // has no way to detect. It must go through a feet-based spec instead.
     // Persisted on the element: lengthProp 2.5 m (reinterpreted by the field as 2.5 ft)
     const block = TextBlock.create();
     const claimsFeet = appendField(block, "lengthProp", { persistenceUnit: "Units.FT" });
 
-    const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.FT" }]);
+    const warnings = spyOnFormatWarnings();
+    render(block);
 
     // LENGTH_PROP presents in meters to 4 places, so 2.5 ft renders as its meter equivalent.
     expect(claimsFeet.cachedContent).to.equal("0.762 m");
-    expect(provider.misses).to.be.empty;
+    expect(warnings()).to.be.empty;
   });
 
   it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
@@ -419,7 +415,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.ONE" });
     const point = appendField(block, "point", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.M" });
 
-    await render(block);
+    render(block);
 
     expect(length.cachedContent).to.equal("2.5 m");
     expect(area.cachedContent).to.equal("100.0 m²");
@@ -453,7 +449,7 @@ describe("Field format resolution example", () => {
     const ratioBaseline = appendField(block, "ratioProp");
     const pointBaseline = appendField(block, "point");
 
-    await render(block);
+    render(block);
 
     expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);  // both "90"
     expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);  // both "0.9"
@@ -479,7 +475,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.RATIO", persistenceUnit: "Units.ONE" });
     const point = appendField(block, "point", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", {
         "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
         "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
@@ -513,7 +509,7 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.RATIO" });
     const point = appendField(block, "point", { kindOfQuantity: "Example.LENGTH" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", {
         "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
         "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
@@ -534,9 +530,9 @@ describe("Field format resolution example", () => {
   });
 
   it("routes to the adopted FormatSet whether the field names its id, names nothing, or names an id that was never registered", async () => {
-    // Three ways of addressing the default bucket, which must be indistinguishable: the adopted
+    // Three ways of addressing the default formats, which must be indistinguishable: the adopted
     // set is what a field gets when it asks for nothing, and an id absent from the registration
-    // falls back to it rather than failing or searching the other buckets. Asserted against each
+    // falls back to it rather than failing or searching the other sets. Asserted against each
     // other rather than against literals so it cannot drift with the formats above.
     // Persisted on the element: lengthProp 2.5 m, angleProp 90°
     const block = TextBlock.create();
@@ -554,7 +550,7 @@ describe("Field format resolution example", () => {
       "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
       "Example.ANGLE": decimalFormat("Units.RAD", "rad", 4),
     });
-    await render(block, { adopted, byId: [{ id: ADOPTED_SET, formatSet: adopted }] });
+    render(block, { adopted, byId: [{ id: ADOPTED_SET, formatSet: adopted }] });
 
     expect(namesNothing.cachedContent).to.equal("250 cm");
     expect(namesAdopted.cachedContent).to.equal(namesNothing.cachedContent);  // both "250 cm"
@@ -578,11 +574,11 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", { formatSet: ALT_SET, kindOfQuantity: "Example.RATIO", persistenceUnit: "Units.ONE" });
     const point = appendField(block, "point", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
 
-    // The same field routed to the default bucket, to prove the alternate set actually displaced
+    // The same field routed to the default formats, to prove the alternate set actually displaced
     // the adopted one rather than both happening to agree.
     const adoptedLength = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", {
         "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
         "Example.AREA": decimalFormat("Units.SQ_M", "m2", 2),
@@ -619,7 +615,7 @@ describe("Field format resolution example", () => {
     const redefined = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
     const omitted = appendField(block, "areaProp", { formatSet: ALT_SET, kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", {
         "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
         "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
@@ -637,25 +633,23 @@ describe("Field format resolution example", () => {
   });
 
   it("routes a colon-separated KindOfQuantity name to the FormatSet that defines it in dot-separated form", async () => {
-    // Pins an agreement between two packages. Warming a bucket asks "does this FormatSet define
-    // the key" and looking a format up asks "give me the format for the key" -- the first is
-    // answered by `FieldSpecBucket.definesOwnFormat`, the second by
-    // `FormatSetFormatsProvider.getFormat` in ecschema-metadata, and each normalizes the name
-    // itself. `SchemaItem.parseFullName` accepts `schemaName:itemName` (the form the node addon
-    // emits) as well as `schemaName.itemName`, so a set keyed in dot form must answer a field
-    // that names its KoQ in colon form.
+    // Pins a normalization in another package. `FormatSetFormatsProvider.getFormatSync` in
+    // ecschema-metadata normalizes the name it is asked for via `SchemaItem.parseFullName`, which
+    // accepts `schemaName:itemName` (the form the node addon emits) as well as
+    // `schemaName.itemName`, so a set keyed in dot form must answer a field that names its KoQ in
+    // colon form.
     //
-    // If those two normalizations ever diverge, the bucket skips warming a key its own set does
-    // define, and the field silently resolves through the *default* bucket instead -- no throw,
-    // and nothing on `misses`, because a spec did resolve. This test is the tripwire: it fails
-    // with the adopted set's "250 cm" rather than the alternate's "[alt]ft".
+    // If that normalization ever regresses, the alternate set misses a key it does define and the
+    // field silently falls through to the *adopted* set instead -- no throw, no warning, because a
+    // spec did resolve. This test is the tripwire: it fails with the adopted set's "250 cm" rather
+    // than the alternate's "[alt]ft".
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const colonNamed = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example:LENGTH", persistenceUnit: "Units.M" });
     const dotNamed = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block, {
-      // Defines the same key, so an under-warmed alternate bucket resolves here and produces a
+    render(block, {
+      // Defines the same key, so a regressed alternate set falls through to here and produces a
       // plausible-looking string instead of an obvious failure.
       adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
       byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
@@ -666,16 +660,16 @@ describe("Field format resolution example", () => {
   });
 
   it("resolves a key only the alternate FormatSet defines only when the field names that set", async () => {
-    // The complement of the fallthrough above: the adopted bucket cannot see into the alternate
-    // one. An unregistered id lands on the adopted bucket, so it fails the same way naming
-    // nothing does -- the fallback is one specific bucket, not a search of every registered set.
+    // The complement of the fallthrough above: the adopted set cannot see into the alternate
+    // one. An unregistered id lands on the adopted set, so it fails the same way naming
+    // nothing does -- the fallback is one specific set, not a search of every registered set.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
     const namesNothing = appendField(block, "lengthProp", { kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
     const namesUnregistered = appendField(block, "lengthProp", { formatSet: UNREGISTERED_SET, kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
       byId: [{
         id: ALT_SET, formatSet: toFormatSet("Alternate", {
@@ -699,7 +693,7 @@ describe("Field format resolution example", () => {
     const block = TextBlock.create();
     const angle = appendField(block, "angleProp", { formatSet: ALT_SET, kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
       byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
     });
@@ -707,64 +701,20 @@ describe("Field format resolution example", () => {
     expect(angle.cachedContent).to.equal("90.0 °");
   });
 
-  it("warms a requirement once rather than once per FormatSet when no set defines it", async () => {
-    // Pre-warming resolves a format for every bucket, but a FormatSet that does not define the
-    // key resolves it by delegating to the same provider the default bucket uses -- producing a
-    // duplicate of an entry lookup already reaches through the fallback chain. Warming it per
-    // bucket would therefore re-walk the schema's presentation formats once per registered set,
-    // which is the dominant cost of warming an iModel's worth of schema KindOfQuantities.
-    //
-    // Asserted on the *schema* provider because that is the expensive one: it rebuilds its
-    // FormatDefinition on every call rather than returning a cached instance.
-    const getFormat = sinon.spy(SchemaFormatsProvider.prototype, "getFormat");
-    try {
-      // Neither set defines this KoQ, so both buckets would fall through to the schema.
-      const block = TextBlock.create();
-      const angle = appendField(block, "angleProp", { kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
-
-      await render(block, {
-        adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
-        byId: [
-          { id: ADOPTED_SET, formatSet: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }) },
-          { id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) },
-        ],
-      });
-
-      // Three buckets are registered (default + two sets); the requirement is resolved once.
-      const schemaAngleLookups = getFormat.getCalls().filter((call) => call.args[0] === "FieldExample.SCHEMA_ANGLE");
-      expect(schemaAngleLookups.length).to.equal(1);
-
-      // ...and the field still renders, proving the fallback chain covers what was not warmed.
-      expect(angle.cachedContent).to.equal("90.0 °");
-    } finally {
-      getFormat.restore();
-    }
-  });
-
-  it("raises onFormattingReady once per warm, however many FormatSet buckets it warmed", async () => {
-    // Warming visits the default bucket plus one per registered FormatSet. Readiness is a
-    // property of the provider as a whole, so it is announced once, after every bucket is warm --
-    // never per bucket, which would announce readiness while siblings were still unwarmed.
+  it("renders raw and logs a warning when the persistence unit is defined only by the iModel's schemas", async () => {
+    // Synchronous resolution goes through the bundled BIS units alone; SchemaUnitProvider has no
+    // synchronous path. A property persisted in a unit its own schema defines is therefore a
+    // known limitation: it renders raw and is logged, rather than being silently formatted
+    // through the wrong unit.
+    // Persisted on the element: customUnitProp 1.25 DOUBLE_M (= 2.5 m)
     const block = TextBlock.create();
-    appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const custom = appendField(block, "customUnitProp");
 
-    // Three buckets: the default plus two registered sets.
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel: imodel,
-      formatSet: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
-      formatSets: [
-        { id: ADOPTED_SET, formatSet: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }) },
-        { id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) },
-      ],
-      requirements: [],
-    });
+    const warnings = spyOnFormatWarnings();
+    render(block);
 
-    const providerReady = sinon.spy();
-    provider.onFormattingReady.addListener(providerReady);
-
-    await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }));
-
-    expect(providerReady.callCount).to.equal(1);
+    expect(custom.cachedContent).to.equal("1.25");
+    expect(warnings()).to.deep.equal([{ elementId, propertyName: "customUnitProp", formatSet: undefined, tried: ["FieldExample.CUSTOM_UNIT_PROP in FieldExample.DOUBLE_M"] }]);
   });
 
   it("routes a field with no KindOfQuantity override through a FormatSet keyed on the property's own KindOfQuantity", async () => {
@@ -781,7 +731,7 @@ describe("Field format resolution example", () => {
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
     const namesNothing = appendField(block, "lengthProp");
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", { "FieldExample.LENGTH_PROP": decimalFormat("Units.CM", "cm", 2) }),
       byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "FieldExample.LENGTH_PROP": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
     });
@@ -802,7 +752,7 @@ describe("Field format resolution example", () => {
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
     const noOptions = appendField(block, "lengthProp");
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
       byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
     });
@@ -817,13 +767,13 @@ describe("Field format resolution example", () => {
     // as it would for any other unresolved format -- here, to the schema's own presentation format.
     // Without that check the magnitude would be relabelled rather than converted ("2.5 deg"),
     // because UnitsProvider.getConversion reports the mismatch by returning the *identity*
-    // conversion tagged `error: true`. See buildSpec in FieldFormattingSpecProvider.ts.
+    // conversion tagged `error: true`. See buildFieldFormatterSpec in fieldSpecs.ts.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const crossed = appendField(block, "lengthProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.M" });
     const baseline = appendField(block, "lengthProp");
 
-    await render(block, {
+    render(block, {
       adopted: toFormatSet("Adopted", { "Example.ANGLE": decimalFormat("Units.ARC_DEG", "deg", 2) }),
     });
 
@@ -845,17 +795,13 @@ describe("Field format resolution example", () => {
     const thrower = appendField(block, "lengthProp");
     const after = appendField(block, "slopeProp");
 
-    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel: imodel,
-      requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
-    });
+    ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel });
 
-    // Evaluation formats through the bucket, not the top-level provider, so stub the bucket.
-    const bucket = provider.getProviderFor(undefined);
-    sinon.stub(bucket, "formatQuantity").callsFake((magnitude: number, spec: any) => {
+    const applyFormatting = sinon.stub(FormatterSpec.prototype, "applyFormatting");
+    applyFormatting.callsFake(function (this: FormatterSpec, magnitude: number) {
       if (2.5 === magnitude)
         throw new Error("malformed format");
-      return spec.applyFormatting(magnitude);
+      return applyFormatting.wrappedMethod.call(this, magnitude);
     });
 
     expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block })).to.not.throw();

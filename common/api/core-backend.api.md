@@ -18,7 +18,6 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
-import { BeUnorderedUiEvent } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseConnectionProps } from '@itwin/core-common';
@@ -116,8 +115,6 @@ import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
 import { FormatSet } from '@itwin/ecschema-metadata';
-import { FormatterSpec } from '@itwin/core-quantity';
-import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -3005,18 +3002,18 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
-    static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
-    static getFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider | undefined;
-    static getFieldFormattingRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[];
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    static readonly onFieldFormattingChanged: BeEvent<(args: {
+        iModel: IModelDb;
+    }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
-    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
+    static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
-    static unregisterFieldFormattingProvider(iModel: IModelDb): void;
+    static unregisterFieldFormatting(iModel: IModelDb): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
@@ -3566,31 +3563,13 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 }
 
 // @beta
-export class FieldFormattingSpecProvider {
-    clearMisses(): void;
-    static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
-    static create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
-    getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
-    // @internal
-    getProviderFor(formatSet: string | undefined): FieldSpecProvider;
-    get misses(): UnresolvedFieldFormat[];
-    readonly onFormattingReady: BeUnorderedUiEvent<void>;
-    // @internal
-    recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void;
-    readonly unitSystem: UnitSystemKey;
-    warmUp(requirements: FormattingSpecArgs[]): Promise<void>;
-}
-
-// @beta
-export interface FieldFormattingSpecProviderArgs {
+export interface FieldFormattingArgs {
     formatSet?: FormatSet;
     formatSets?: ReadonlyArray<{
         id: string;
         formatSet: FormatSet;
     }>;
     iModel: IModelDb;
-    requirements: FormattingSpecArgs[];
     unitSystem?: UnitSystemKey;
 }
 
@@ -5941,7 +5920,8 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
 export enum PropertyFilter {
     All = 0,
     BisCoreElement = 1,
-    InstanceKey = 2
+    InstanceKey = 2,
+    InstanceKeyAndIdentifiers = 3
 }
 
 // @public @preview
@@ -7990,11 +7970,6 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     recipe?: RelatedElement;
-}
-
-// @beta
-export interface UnresolvedFieldFormat extends FormattingSpecArgs {
-    formatSet?: string;
 }
 
 // @public
