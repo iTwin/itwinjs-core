@@ -41,6 +41,9 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
  * | colors[2]     | "colors"     | [2]       |
  * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
  * ```
+ * A path may also index into a string property that holds serialized JSON, such as `JsonProperties`. In that case the
+ * accessors are applied to the parsed JSON instead of to BIS properties. The path must end on a scalar (string, number,
+ * or boolean); a path that ends on an object, an array, or a JSON `null` resolves to no value.
  * @beta
  */
 export interface FieldPropertyPath {

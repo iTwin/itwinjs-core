@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldPrimitiveValue, FieldPropertyType, FieldRun, formatFieldValue, FormatMagnitude, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, FormatMagnitude, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import { FieldFormatting, lookupFieldSpec, ResolvedFieldValue } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
-// An intermediate value obtained while walking a FieldPropertyPath through the EC schema.
+// An intermediate value obtained while evaluating a FieldPropertyPath.
 type FieldValueType = {
   primitive: FieldPrimitiveValue;
   struct?: never;
@@ -35,14 +35,6 @@ type FieldValueType = {
   struct?: never;
   primitiveArray?: never;
   structArray: FieldStructValue[];
-}
-
-/** A (property, containing class) pair identifying where a partially-walked
- * [FieldPropertyPath]($common) currently sits in the EC schema.
- */
-interface SchemaCursor {
-  readonly ecProp: Property;
-  readonly ecClass: AnyClass;
 }
 
 /** The per-evaluation state [[updateField]] needs: which element's fields to recompute, how to
@@ -76,13 +68,16 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedField
     return undefined;
   }
 
+  let ecClass: AnyClass = schemaItem;
   const { propertyName, accessors } = field.propertyPath;
-  const rootProp = schemaItem.getPropertySync(propertyName);
-  if (!rootProp) {
+  let ecProp = ecClass.getPropertySync(propertyName);
+  if (!ecProp) {
     return undefined;
   }
 
-  const isAspect = schemaItem.isSync("ElementAspect", "BisCore");
+  const rootProp = ecProp;
+
+  const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
   // `propertyName` may itself be a struct/array/point/navigation property, so its value can't be
   // decomposed into scalar sub-columns ahead of time. Query using the non-deprecated
@@ -98,12 +93,24 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedField
       return undefined;
     }
 
-    const rootValue = reshapePropertyValue(rawRootValue, rootProp, iModel);
-    if (rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.DateTime) {
-      return { primitive: new Date(rootValue) };
+    ecProp = expectDefined(ecProp);
+    const rootValue = reshapePropertyValue(rawRootValue, ecProp, iModel);
+    if (ecProp.isArray()) {
+      return ecProp.isStruct() ? { structArray: rootValue } : { primitiveArray: rootValue };
     }
 
-    return classifyEcValue(rootProp, rootValue);
+    if (ecProp.isStruct()) {
+      ecClass = ecProp.structClass;
+      return { struct: rootValue };
+    }
+
+    if (ecProp.isPrimitive()) {
+      return {
+        primitive: ecProp.primitiveType === PrimitiveType.DateTime ? new Date(rootValue) : rootValue,
+      };
+    }
+
+    return undefined;
   }, new QueryBinder().bindId("elementId", host.elementId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
 
   if (undefined === curValue) {
@@ -116,16 +123,10 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedField
     return readJsonLeaf(curValue.primitive, accessors);
   }
 
-  let cursor = enterProperty(rootProp, schemaItem);
   if (accessors) {
     for (const accessor of accessors) {
       if (undefined !== curValue.primitive) {
         // Can't index into a primitive.
-        return undefined;
-      }
-
-      const advanced = advanceSchemaCursor(cursor, accessor);
-      if (!advanced) {
         return undefined;
       }
 
@@ -139,11 +140,15 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedField
         const item: FieldPrimitiveValue | FieldStructValue = array[index];
         if (isNullish(item)) {
           return undefined;
-        }
+        } else if (curValue.primitiveArray) {
+          curValue = { primitive: curValue.primitiveArray[index] };
+        } else {
+          assert(undefined !== curValue.structArray);
+          assert(ecProp instanceof StructArrayProperty);
 
-        // `advanced.ecProp` is still the array property (see advanceSchemaCursor), so the
-        // element's shape comes from the array kind rather than from classifyEcValue.
-        curValue = curValue.primitiveArray ? { primitive: item as FieldPrimitiveValue } : { struct: item as FieldStructValue };
+          ecClass = ecProp.structClass;
+          curValue = { struct: curValue.structArray[index] };
+        }
       } else {
         if (undefined === curValue.struct) {
           return undefined;
@@ -154,20 +159,26 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedField
           return undefined;
         }
 
-        const classified = classifyEcValue(advanced.ecProp, item);
-        if (!classified) {
+        ecProp = ecClass.getPropertySync(accessor);
+        if (!ecProp) {
           return undefined;
         }
 
-        curValue = classified;
+        if (ecProp.isArray()) {
+          curValue = ecProp.isStruct() ? { structArray: item } : { primitiveArray: item };
+        } else if (ecProp.isStruct()) {
+          ecClass = ecProp.structClass;
+          curValue = { struct: item };
+        } else if (ecProp.isPrimitive()) {
+          curValue = { primitive: item };
+        } else {
+          return undefined;
+        }
       }
-
-      cursor = advanced;
     }
   }
 
-  const { ecProp } = cursor;
-  const propertyType = undefined !== curValue.primitive && !ecProp.isPrimitive() ? undefined : determineFieldPropertyType(ecProp);
+  const propertyType = determineFieldPropertyType(ecProp);
   if (!propertyType) {
     return undefined;
   }
@@ -196,51 +207,6 @@ function isNullish(value: unknown): value is null | undefined {
   return undefined === value || null === value;
 }
 
-/** Positions a schema cursor on `prop`. Entering a non-array struct moves the class context to
- * the struct's class so that subsequent named accessors resolve against its members.
- */
-function enterProperty(prop: Property, containingClass: AnyClass): SchemaCursor {
-  return { ecProp: prop, ecClass: prop.isStruct() && !prop.isArray() ? prop.structClass : containingClass };
-}
-
-/** Advances a schema cursor by one [FieldPropertyPath]($common) accessor, or returns `undefined`
- * when the accessor doesn't apply to the current property.
- */
-function advanceSchemaCursor(cursor: SchemaCursor, accessor: string | number): SchemaCursor | undefined {
-  const { ecProp, ecClass } = cursor;
-  if (typeof accessor === "number") {
-    if (!ecProp.isArray()) {
-      return undefined;
-    }
-
-    // A struct array's element type is its struct class; a primitive array's element type is
-    // already described by `ecProp`. Either way the property itself doesn't advance.
-    return ecProp.isStruct() ? { ecProp, ecClass: ecProp.structClass } : cursor;
-  }
-
-  // Named accessors require a struct context. A String primitive with further accessors is a
-  // JSON-in-string path, which callers handle before reaching here.
-  if (!ecProp.isStruct()) {
-    return undefined;
-  }
-
-  const next = ecClass.getPropertySync(accessor);
-  return next ? enterProperty(next, ecClass) : undefined;
-}
-
-/** Wraps an EC-schema-backed value in the [[FieldValueType]] variant matching its property. */
-function classifyEcValue(prop: Property, value: any): FieldValueType | undefined {
-  if (prop.isArray()) {
-    return prop.isStruct() ? { structArray: value } : { primitiveArray: value };
-  }
-
-  if (prop.isStruct()) {
-    return { struct: value };
-  }
-
-  return prop.isPrimitive() ? { primitive: value } : undefined;
-}
-
 /** Whether `curValue` is a string property the field can index into, i.e. possibly a serialized
  * JSON blob. Narrows `curValue.primitive` to `string` for the caller.
  */
@@ -257,7 +223,7 @@ function isIndexableJsonString(rootProp: Property, curValue: FieldValueType): cu
  * stops anywhere but a scalar — including on a JSON `null`, which is not a
  * [FieldPrimitiveValue]($common).
  */
-function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): ResolvedFieldValue | undefined {
+function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): FieldValue | undefined {
   let cur = parseJsonContainer(raw);
   if (undefined === cur) {
     return undefined;
@@ -284,9 +250,9 @@ function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): R
     }
   }
 
-  // A numeric leaf is typed `"quantity"`: JSON carries no units, so only the field's own
-  // `kindOfQuantity` + `persistenceUnit` overrides can name a format. Supplying only one of the
-  // two renders through the same `toString()` a `"string"` leaf would have used.
+  // JSON carries no type metadata, so the leaf's JavaScript type decides the field property type.
+  // A numeric leaf is typed `"quantity"` but has no property-side KoQ, so only the field's own
+  // `kindOfQuantity` + `persistenceUnit` overrides can name a format for it.
   switch (typeof cur) {
     case "number":
       return { value: cur, type: "quantity" };

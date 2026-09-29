@@ -59,7 +59,7 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
       stringProp: "abc",
       ints: [10, 11, 12, 13],
       bool: true,
-      // Deliberately present-but-null, to pin that a JSON null resolves to no value rather than
+      // Deliberately present-but-null, to check that a JSON null resolves to no value rather than
       // to a FieldValue the formatters would have to stringify.
       nullProp: null,
       lengthMeters: 2.5,
@@ -703,8 +703,7 @@ describe("Field evaluation", () => {
 
   describe("JSON-in-string properties", () => {
     // `JsonProperties` is a plain String column; accessors index into the parsed JSON, so none
-    // of these paths have an EC property — and therefore no schema-side KindOfQuantity — behind
-    // the leaf.
+    // of these paths have an EC property behind the leaf.
     function jsonPath(...accessors: Array<string | number>): FieldPropertyPath {
       return { propertyName: "JsonProperties", accessors };
     }
@@ -727,7 +726,7 @@ describe("Field evaluation", () => {
     });
 
     it("returns undefined for a JSON null leaf rather than an unformattable value", () => {
-      // A JSON null is not a FieldPrimitiveValue. Producing one here used to yield a
+      // A JSON null is not a FieldPrimitiveValue. Producing one here would yield a
       // `{ value: null, type: "string" }` FieldValue whose formatter called `null.toString()`.
       expect(evaluateJson(["nullProp"])).to.be.undefined;
       expect(evaluateJson(["readings", 1])).to.be.undefined;
@@ -775,26 +774,35 @@ describe("Field evaluation", () => {
     });
 
     it("types a numeric leaf as a quantity", () => {
-      // JSON carries no units, so the field is expected to declare its own KoQ and persistence
-      // unit. An incomplete key isn't an error: it produces no format candidates and renders
-      // through the same raw fallback a string leaf would have used.
-      expect(evaluateJson(["lengthMeters"])?.type).to.equal("quantity");
-      expect(evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH" } })?.type).to.equal("quantity");
-      expect(evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } })?.type).to.equal("quantity");
+      const value = evaluateJson(["lengthMeters"]);
+      expect(value?.type).to.equal("quantity");
+      expect(value?.value).to.equal(2.5);
+    });
+
+    it("renders a numeric leaf as its raw value", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("lengthMeters"),
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(updateField(fieldRun, context)).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("2.5");
     });
 
     it("carries no property-side KoQ for a numeric leaf", () => {
       // There is no EC property behind a JSON leaf, so the only pair the formatter can build is
       // the one the field supplies.
       const value = evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } });
+      expect(value?.type).to.equal("quantity");
       expect(value?.value).to.equal(2.5);
       expect(value?.kindOfQuantityFullName).to.be.undefined;
       expect(value?.persistenceUnitFullName).to.be.undefined;
     });
 
     it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
-      // The user-visible half of the contract: "quantity" with no resolvable (KoQ, unit) pair is
-      // indistinguishable from the plain string rendering, and logs no warning.
+      // "quantity" with no resolvable (KoQ, unit) pair is indistinguishable from the plain string
+      // rendering, and logs no warning.
       let missed = false;
       for (const quantity of [undefined, { kindOfQuantity: "Fields.LENGTH" }, { persistenceUnit: "Units.M" }]) {
         const options = quantity ? { quantity } : undefined;
