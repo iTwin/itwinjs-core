@@ -9,7 +9,7 @@ import * as path from "node:path";
 import type { TestProject } from "vitest/node" with { "resolution-mode": "import" };
 import { backendCallbackTokenEnvVar, backendCallbackTokenKey, createBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { rpcBackendIdentityHeader, type RpcBackendReadyMessage } from "./backend/notifyReady";
-import { backendPortFor, frontendPortEnvVar, loopbackHost, parseFrontendPort } from "./common/BrowserTestPorts";
+import { backendPortFor, frontendPortEnvVar, loopbackHost, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
 
 const packageRoot = path.resolve(__dirname, "..");
 

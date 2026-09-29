@@ -8,7 +8,8 @@ import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { backendOriginFor, backendPortFor, mobileBackendPortFor, parseFrontendPort } from "../common/BrowserTestPorts";
+import { backendOriginFor, backendPortFor, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
+import { mobileBackendPortFor } from "../common/BrowserTestPorts";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 

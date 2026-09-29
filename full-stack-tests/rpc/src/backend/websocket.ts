@@ -7,7 +7,7 @@ import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks
 import { LocalhostIpcHost } from "@itwin/core-backend";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, WebAppRpcProtocol } from "@itwin/core-common";
 import { WebEditServer } from "@itwin/express-server";
-import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "../common/BrowserTestPorts";
+import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
