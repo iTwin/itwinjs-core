@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, ColorDef, ExternalSourceAspectProps, GeometricElement2dProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { DrawingCategory } from "../../Category";
-import { _nativeDb, BriefcaseDb, ChannelControl } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, ChannelControl, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSourceAspect } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { ChangesetReader } from "../../ChangesetReader";
 import * as path from "node:path";
@@ -3749,6 +3749,130 @@ describe("ChangesetReader: behaviour in case imodel is not in sync with changese
     expect(elementNew!.$meta.changeFetchedPropNames).to.not.include("s.Y");
     expect(elementOld!.$meta.changeFetchedPropNames).to.include("s.X");
     expect(elementOld!.$meta.changeFetchedPropNames).to.not.include("s.Y");
+  });
+});
+
+describe("ChangesetReader: PropertyFilter.InstanceKeyAndIdentifiers", () => {
+  let iModel: BriefcaseDb;
+  let txn: EditTxn;
+  let modelId: Id64String;
+  let categoryId: Id64String;
+
+  before(async () => {
+    HubMock.startup("ChangesetReaderIdentifiersTest", KnownTestLocations.outputDir);
+    const accessToken = "super manager token";
+    const iModelId = await HubMock.createNewIModel({ iTwinId: HubMock.iTwinId, iModelName: "identifiersTest", description: "InstanceKeyAndIdentifiers", accessToken });
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId, accessToken });
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    txn = startTestTxn(iModel, "InstanceKeyAndIdentifiers setup");
+    await iModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
+    categoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "Category", new SubCategoryAppearance());
+    txn.saveChanges("setup");
+    await iModel.locks.acquireLocks({ shared: modelId });
+  });
+
+  after(() => {
+    txn.end();
+    iModel?.close();
+    HubMock.shutdown();
+  });
+
+  const insertGraphic = (props?: Partial<GeometricElement2dProps>): Id64String => {
+    const elementProps: GeometricElement2dProps = { classFullName: DrawingGraphic.classFullName, model: modelId, category: categoryId, code: Code.createEmpty(), ...props };
+    return txn.insertElement(elementProps);
+  };
+  const lastTxnId = (): string => iModel.txns.getLastSavedTxnProps()!.id;
+  // An aspect or relationship can have the same id as an element or model, so also match the table.
+  const readIdentifiers = (txnId: string, instanceId: Id64String, table: string): ChangeInstance[] =>
+    readTxn(iModel, txnId, PropertyFilter.InstanceKeyAndIdentifiers, { classIdsToClassNames: true })
+      .filter((i) => i.ECInstanceId === instanceId && i.$meta.tables.includes(table));
+
+  it("reads a reparent after the element is deleted, without querying the iModel", () => {
+    // iTwin/itwinjs-core#9738: the reparent records Parent.Id but not Parent.RelECClassId, which cannot be read back once the element is deleted.
+    const [parentA, parentB] = [insertGraphic(), insertGraphic()];
+    const childId = insertGraphic({ parent: new ElementOwnsChildElements(parentA) });
+    txn.saveChanges("insert child");
+    txn.updateElement({ ...iModel.elements.getElementProps(childId), parent: new ElementOwnsChildElements(parentB) });
+    txn.saveChanges("reparent child");
+    const reparentTxnId = lastTxnId();
+    txn.deleteElement(childId);
+    txn.saveChanges("delete child");
+
+    const reparented = readIdentifiers(reparentTxnId, childId, "bis_Element");
+    expect(reparented.map((i) => i.$meta.stage).sort()).to.deep.equal(["New", "Old"]);
+    for (const instance of reparented)
+      expect(Object.keys(instance).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId"]);
+  });
+
+  it("returns the owning Element of an aspect, plus ExternalSourceAspect identifiers when it is deleted", () => {
+    const [ownerId, scopeId] = [insertGraphic(), insertGraphic()];
+    const aspectId = txn.insertAspect({
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: ownerId },
+      scope: { id: scopeId },
+      identifier: "source-id",
+      kind: "Element",
+      version: "1",
+    } as ExternalSourceAspectProps);
+    txn.saveChanges("insert aspect");
+    const insertTxnId = lastTxnId();
+    const versionUpdate: ExternalSourceAspectProps = { ...(iModel.elements.getAspect(aspectId).toJSON() as ExternalSourceAspectProps), version: "2" };
+    txn.updateAspect(versionUpdate);
+    txn.saveChanges("update aspect version");
+    const updateTxnId = lastTxnId();
+    txn.deleteAspect(aspectId);
+    txn.saveChanges("delete aspect");
+    const deleteTxnId = lastTxnId();
+
+    // Scope, Kind, and Identifier are returned only for deleted rows.
+    const inserted = readIdentifiers(insertTxnId, aspectId, "bis_ElementMultiAspect");
+    expect(inserted).to.have.lengthOf(1);
+    expect(Object.keys(inserted[0]).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId", "Element"]);
+    expect(inserted[0].Element).to.deep.equal({ Id: ownerId });
+
+    // Version is not an identifier, and the update did not record Element.
+    const updated = readIdentifiers(updateTxnId, aspectId, "bis_ElementMultiAspect");
+    expect(updated).to.have.lengthOf(2);
+    for (const instance of updated)
+      expect(Object.keys(instance).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId"]);
+
+    const deleted = readIdentifiers(deleteTxnId, aspectId, "bis_ElementMultiAspect");
+    expect(deleted).to.have.lengthOf(1);
+    expect(deleted[0].$meta.op).to.equal("Deleted");
+    expect(Object.keys(deleted[0]).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId", "Element", "Identifier", "Kind", "Scope"]);
+    expect(deleted[0]).to.deep.include({ ECClassId: "BisCore.ExternalSourceAspect", Element: { Id: ownerId }, Scope: { Id: scopeId }, Kind: "Element", Identifier: "source-id" });
+  });
+
+  it("returns FederationGuid for a deleted element", () => {
+    const federationGuid = Guid.createValue();
+    const elementId = insertGraphic({ federationGuid });
+    txn.saveChanges("insert element");
+    txn.deleteElement(elementId);
+    txn.saveChanges("delete element");
+
+    const deleted = readIdentifiers(lastTxnId(), elementId, "bis_Element");
+    expect(deleted).to.have.lengthOf(1);
+    expect(deleted[0].$meta.op).to.equal("Deleted");
+    expect(Object.keys(deleted[0]).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId", "FederationGuid"]);
+    expect(deleted[0]).to.deep.include({ ECClassId: "BisCore.DrawingGraphic", FederationGuid: federationGuid });
+  });
+
+  it("returns source and target ids for a deleted link-table relationship", () => {
+    const [sourceId, targetId] = [insertGraphic(), insertGraphic()];
+    const props = { classFullName: ElementGroupsMembers.classFullName, sourceId, targetId, memberPriority: 1 };
+    const relationshipId = txn.insertRelationship(props);
+    txn.saveChanges("insert relationship");
+    txn.deleteRelationship({ ...props, id: relationshipId });
+    txn.saveChanges("delete relationship");
+
+    const deleted = readIdentifiers(lastTxnId(), relationshipId, "bis_ElementRefersToElements");
+    expect(deleted).to.have.lengthOf(1);
+    expect(deleted[0].$meta.op).to.equal("Deleted");
+    expect(Object.keys(deleted[0]).sort()).to.deep.equal(["$meta", "ECClassId", "ECInstanceId", "SourceECInstanceId", "TargetECInstanceId"]);
+    expect(deleted[0]).to.deep.include({ ECClassId: "BisCore.ElementGroupsMembers", SourceECInstanceId: sourceId, TargetECInstanceId: targetId });
   });
 });
 
