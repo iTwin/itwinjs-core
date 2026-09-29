@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import { defaultFrontendPort, loopbackHost } from "./src/common/BrowserTestPorts";
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,8 +30,8 @@ export default defineConfig({
     esbuildOptions: { target: "es2022" },
   },
   server: {
-    host: "127.0.0.1",
-    port: 3020,
+    host: loopbackHost,
+    port: defaultFrontendPort,
     strictPort: true,
   },
   test: {
@@ -53,7 +54,7 @@ export default defineConfig({
       ["junit", { outputFile: `lib/test/${environment}_junit_results.xml` }],
     ],
     browser: {
-      api: { host: "127.0.0.1", port: 3020, strictPort: true },
+      api: { host: loopbackHost, port: defaultFrontendPort, strictPort: true },
       enabled: true,
       provider: playwright({
         launchOptions: {

@@ -9,7 +9,10 @@ import {
   dispatchBackendCallback,
   registerBackendCallback,
 } from "../callbacks/backend.js";
-import { createHttpBackendCallbackHandler, createHttpBackendCallbackInvoker } from "../callbacks/http.js";
+import {
+  backendCallbackTokenEnvVar, createBackendCallbackToken, createHttpBackendCallbackHandler, createHttpBackendCallbackInvoker,
+  type HttpBackendCallbackRequest, readBackendCallbackToken,
+} from "../callbacks/http.js";
 import { installElectronCallbackHandler } from "../callbacks/electron.js";
 import { unwrapCallbackResponse } from "../callbacks/protocol.js";
 
@@ -36,9 +39,16 @@ class FakeIpcMain {
 const eventFrom = (id: number): FakeEvent => ({ sender: { id } });
 const request = (name: string, args: readonly unknown[]) => ({ name, args });
 
-async function httpResponse(body: unknown): Promise<Response> {
+const token = createBackendCallbackToken();
+const tokenRequest = (name: string, args: readonly unknown[]) => ({ token, name, args });
+
+async function httpResponse(body: unknown, overrides: Partial<HttpBackendCallbackRequest> = {}): Promise<Response> {
   let response: Response | undefined;
-  await createHttpBackendCallbackHandler()({ body }, {
+  await createHttpBackendCallbackHandler({ token })({
+    body,
+    socket: { remoteAddress: "127.0.0.1" },
+    ...overrides,
+  }, {
     status: (status) => ({ json: (value) => { response = new Response(JSON.stringify(value), { status }); } }),
   });
   if (!response)
@@ -90,6 +100,7 @@ describe("callback transport", () => {
   it("preserves an undefined callback result through the HTTP transport", async () => {
     registerBackendCallback("void", () => undefined);
     const invoke = createHttpBackendCallbackInvoker({
+      token,
       url: "http://localhost/callback",
       fetch: async (_url, init) => {
         const response = await httpResponse(init?.body);
@@ -105,6 +116,7 @@ describe("callback transport", () => {
     let called = false;
     registerBackendCallback("echo", (arg: unknown) => { called = true; return arg; });
     const invoke = createHttpBackendCallbackInvoker({
+      token,
       url: "http://localhost/callback",
       fetch: async (_url, init) => httpResponse(init?.body),
     });
@@ -114,7 +126,7 @@ describe("callback transport", () => {
 
   it.each(invalidJsonValues.filter((value) => value !== undefined).map((value) => [value]))("returns an explicit error for non-JSON HTTP results: %s", async (value) => {
     registerBackendCallback("invalid", () => value);
-    const response = await httpResponse(JSON.stringify(request("invalid", [])));
+    const response = await httpResponse(JSON.stringify(tokenRequest("invalid", [])));
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ ok: false, error: { message: expect.stringContaining("JSON values") } });
   });
@@ -122,6 +134,7 @@ describe("callback transport", () => {
   it("round-trips JSON arguments and results through the HTTP handler", async () => {
     registerBackendCallback("echo", (arg: unknown) => arg);
     const invoke = createHttpBackendCallbackInvoker({
+      token,
       url: "http://localhost/callback",
       fetch: async (_url, init) => httpResponse(init?.body),
     });
@@ -131,16 +144,49 @@ describe("callback transport", () => {
 
   it("returns HTTP failures for malformed JSON, malformed requests, and callback errors", async () => {
     registerBackendCallback("fail", () => { throw new Error("callback failure"); });
-    for (const body of ["{", { name: "fail", args: "invalid" }, request("fail", [])]) {
+    for (const body of ["{", { token, name: "fail", args: "invalid" }, tokenRequest("fail", [])]) {
       const response = await httpResponse(body);
       expect(response.status).toBe(500);
       expect(await response.json()).toMatchObject({ ok: false, error: { message: expect.any(String) } });
     }
   });
 
+  it("allows only loopback callers that present the per-run token", async () => {
+    let calls = 0;
+    registerBackendCallback("count", () => ++calls);
+
+    for (const remoteAddress of ["127.0.0.1", "::1", "::ffff:127.0.0.1"])
+      expect((await httpResponse(tokenRequest("count", []), { socket: { remoteAddress } })).status).toBe(200);
+    expect(calls).toBe(3);
+
+    const rejected: [unknown, Partial<HttpBackendCallbackRequest>, string][] = [
+      [tokenRequest("count", []), { socket: { remoteAddress: "192.168.1.20" } }, "caller address \"192.168.1.20\" is not a loopback address."],
+      [tokenRequest("count", []), { socket: { remoteAddress: undefined } }, "caller address \"unknown\" is not a loopback address."],
+      [request("count", []), {}, "missing or invalid callback token."],
+      [{ ...tokenRequest("count", []), token: createBackendCallbackToken() }, {}, "missing or invalid callback token."],
+      [{ ...tokenRequest("count", []), token: token.slice(1) }, {}, "missing or invalid callback token."],
+      [JSON.stringify(["count"]), {}, "missing or invalid callback token."],
+    ];
+    for (const [body, overrides, message] of rejected) {
+      const response = await httpResponse(body, overrides);
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ ok: false, error: { message: `Backend callback rejected: ${message}` } });
+    }
+    expect(calls).toBe(3);
+  });
+
+  it("requires a per-run token on both sides of the HTTP transport", async () => {
+    expect(() => createHttpBackendCallbackHandler({ token: "short" })).toThrow("An HTTP backend callback endpoint must provide a backend callback token");
+    expect(readBackendCallbackToken({ [backendCallbackTokenEnvVar]: token })).toBe(token);
+    expect(() => readBackendCallbackToken({})).toThrow(`${backendCallbackTokenEnvVar} must provide a backend callback token`);
+    const invoke = createHttpBackendCallbackInvoker({ url: "http://localhost/callback", token: () => "", fetch: async () => new Response("{}") });
+    await expect(invoke("add")).rejects.toThrow("The HTTP backend callback invoker must provide a backend callback token");
+  });
+
   it("invokes callbacks through an HTTP transport", async () => {
     const invocations: RequestInit[] = [];
     const invoke = createHttpBackendCallbackInvoker({
+      token,
       url: () => "http://localhost/callback",
       fetch: async (url, init) => {
         expect(url).toBe("http://localhost/callback");
@@ -152,13 +198,14 @@ describe("callback transport", () => {
     await expect(invoke("add", 2, 5)).resolves.toBe(7);
     expect(invocations).toEqual([{
       method: "POST",
-      body: JSON.stringify({ name: "add", args: [2, 5] }),
+      body: JSON.stringify({ token, name: "add", args: [2, 5] }),
     }]);
   });
 
   it("names the HTTP endpoint in malformed-response errors", async () => {
     for (const body of [{ ok: "true" }, { ok: true }, { ok: true, undefined: false }]) {
       const invoke = createHttpBackendCallbackInvoker({
+        token,
         url: "http://localhost/callback",
         fetch: async () => new Response(JSON.stringify(body)),
       });
@@ -168,6 +215,7 @@ describe("callback transport", () => {
 
   it("unwraps callback failures through an HTTP transport", async () => {
     const invoke = createHttpBackendCallbackInvoker({
+      token,
       url: "http://localhost/callback",
       fetch: async () => new Response(JSON.stringify({ ok: false, error: { message: "failed" } }), { status: 500 }),
     });
