@@ -5,6 +5,7 @@
 import { afterEach, beforeEach } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
+import { backendOriginFor } from "../common/BrowserTestPorts";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 import { installVitestMatchers } from "./testMatchers";
@@ -17,7 +18,7 @@ RpcConfiguration.disableRoutingValidation = true;
 if (!ProcessDetector.isElectronAppFrontend) {
   const params: BentleyCloudRpcParams = {
     info: { title: "full-stack-test", version: "v1.0" },
-    pathPrefix: `http://${window.location.hostname}:${Number(window.location.port) + 2000}`,
+    pathPrefix: backendOriginFor(window.location),
   };
   BentleyCloudRpcManager.initializeClient(params, rpcInterfaces);
 }

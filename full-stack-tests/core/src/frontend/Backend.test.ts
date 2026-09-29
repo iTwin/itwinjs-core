@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { backendOriginFor } from "../common/BrowserTestPorts";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Test Fixture", () => {
     it("Backend server should be accessible", async () => {
-      const backendUrl = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
+      const backendUrl = backendOriginFor(window.location);
       const response = await fetch(`${backendUrl}/v3/swagger.json`);
       expect(response.status).toBe(200);
       const description = await response.json() as { info: { title: string, version: string } };

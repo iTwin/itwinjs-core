@@ -6,17 +6,27 @@ import { once } from "node:events";
 import { type ChildProcess, spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import type { TestProject } from "vitest/node" with { "resolution-mode": "import" };
+import { backendCallbackTokenEnvVar, backendCallbackTokenKey, createBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { backendPortFor, frontendPortEnvVar, loopbackHost, parseFrontendPort } from "./common/BrowserTestPorts";
 
 const packageRoot = path.resolve(__dirname, "..");
-const frontendPort = 3010;
-const backendPort = frontendPort + 2000;
+
+/** What the setup that owns the backend records for setups that reuse it. */
+interface BackendState {
+  pid?: number;
+  callbackToken?: string;
+}
+
+function readBackendState(statePath: string): BackendState {
+  return JSON.parse(fs.readFileSync(statePath, "utf8")) as BackendState;
+}
 
 async function delay(ms: number) {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForBackend(process: ChildProcess) {
-  const url = `http://127.0.0.1:${backendPort}/ping`;
+async function waitForBackend(process: ChildProcess, url: string) {
   const deadline = Date.now() + 30000;
 
   while (Date.now() < deadline) {
@@ -46,8 +56,7 @@ function isProcessAlive(pid: number) {
   }
 }
 
-async function waitForExistingBackend(statePath: string) {
-  const url = `http://127.0.0.1:${backendPort}/ping`;
+async function waitForExistingBackend(statePath: string, url: string) {
   const deadline = Date.now() + 30000;
 
   while (Date.now() < deadline) {
@@ -63,7 +72,7 @@ async function waitForExistingBackend(statePath: string) {
       return false;
 
     try {
-      const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as { pid?: number };
+      const state = readBackendState(statePath);
       if (state.pid !== undefined && !isProcessAlive(state.pid)) {
         fs.rmSync(statePath, { force: true });
         return false;
@@ -80,7 +89,8 @@ async function waitForExistingBackend(statePath: string) {
 
 function claimBackend(statePath: string) {
   try {
-    const descriptor = fs.openSync(statePath, "wx");
+    // The state file later holds the callback token, so only this user may read it.
+    const descriptor = fs.openSync(statePath, "wx", 0o600);
     fs.writeFileSync(descriptor, JSON.stringify({ pid: process.pid }));
     fs.closeSync(descriptor);
     return true;
@@ -101,13 +111,22 @@ async function stopBackend(process: ChildProcess) {
     process.kill("SIGKILL");
 }
 
-export default async function setup() {
+export default async function setup(project: TestProject) {
+  // Use the page port Vitest actually resolved so the backend always matches the page.
+  const frontendPort = parseFrontendPort(project.config.browser.api.port, "Vitest browser.api.port");
+  const pingUrl = `http://${loopbackHost}:${backendPortFor(frontendPort)}/ping`;
   const statePath = path.join(packageRoot, "lib/backend/.vitest/chrome.json");
   fs.mkdirSync(path.dirname(statePath), { recursive: true });
 
   if (!claimBackend(statePath)) {
-    if (await waitForExistingBackend(statePath))
+    if (await waitForExistingBackend(statePath, pingUrl)) {
+      // Reuse the running backend, and give this setup's browsers the token it accepts.
+      const recordedToken = readBackendState(statePath).callbackToken;
+      if (recordedToken === undefined)
+        throw new Error("The running Chrome test backend did not record a callback token.");
+      project.provide(backendCallbackTokenKey, recordedToken);
       return async () => { };
+    }
 
     fs.rmSync(statePath, { force: true });
     if (!claimBackend(statePath))
@@ -117,22 +136,26 @@ export default async function setup() {
   const cacheDir = path.join(packageRoot, "lib/backend/.cache", "browser-chrome");
   fs.rmSync(cacheDir, { recursive: true, force: true });
 
+  const callbackToken = createBackendCallbackToken();
   const backend = spawn(process.execPath, [path.resolve(packageRoot, "lib/backend/backend.js")], {
     cwd: packageRoot,
     env: {
       ...process.env,
-      ["VITEST_FRONTEND_PORT"]: frontendPort.toString(),
+      [frontendPortEnvVar]: frontendPort.toString(),
+      [backendCallbackTokenEnvVar]: callbackToken,
       ["VITEST_BACKEND_CACHE_DIR"]: cacheDir,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
 
-  fs.writeFileSync(statePath, JSON.stringify({ pid: backend.pid }));
+  const state: BackendState = { pid: backend.pid, callbackToken };
+  fs.writeFileSync(statePath, JSON.stringify(state), { mode: 0o600 });
+  project.provide(backendCallbackTokenKey, callbackToken);
   backend.stdout?.on("data", (data: Buffer) => process.stderr.write(`[core-chrome] ${data.toString()}`));
   backend.stderr?.on("data", (data: Buffer) => process.stderr.write(`[core-chrome] ${data.toString()}`));
 
   try {
-    await waitForBackend(backend);
+    await waitForBackend(backend, pingUrl);
   } catch (error) {
     await stopBackend(backend);
     fs.rmSync(statePath, { force: true });

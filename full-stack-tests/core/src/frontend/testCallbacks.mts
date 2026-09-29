@@ -11,18 +11,14 @@ interface TestUserCredentials {
   scope?: string;
 }
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
-import { createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { backendCallbackTokenKey, createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { inject } from "vitest";
+import { backendOriginFor } from "../common/BrowserTestPorts.js";
 import { browserBackendCallbackPath, getTokenCallbackName } from "../common/testCallbacks.js";
 
 const invokeHttpBackendCallback = createHttpBackendCallbackInvoker({
-  url: () => {
-    const backendUrl = new URL(window.location.href);
-    backendUrl.port = (Number(backendUrl.port) + 2000).toString();
-    backendUrl.pathname = browserBackendCallbackPath;
-    backendUrl.search = "";
-    backendUrl.hash = "";
-    return backendUrl.toString();
-  },
+  url: () => `${backendOriginFor(window.location)}${browserBackendCallbackPath}`,
+  token: () => inject(backendCallbackTokenKey),
 });
 
 export async function setBackendAccessToken(user: TestUserCredentials): Promise<AccessToken> {
