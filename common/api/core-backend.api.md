@@ -3926,7 +3926,7 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 export function getAvailableCRSUnits(): string[];
 
 // @beta
-export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): Promise<AvailableVerticalCoordinateReferenceSystemProps[]>;
+export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): AvailableVerticalCoordinateReferenceSystemProps[];
 
 // @beta
 export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {

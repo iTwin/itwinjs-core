@@ -120,9 +120,9 @@ export async function getAvailableCoordinateReferenceSystems(
  * @returns The list of Vertical Coordinate Reference Systems according to the supplied parameters.
  * @beta
  */
-export async function getAvailableVerticalCoordinateReferenceSystems(
+export function getAvailableVerticalCoordinateReferenceSystems(
   args: GetAvailableVerticalCoordinateReferenceSystemsArgs = {}
-): Promise<AvailableVerticalCoordinateReferenceSystemProps[]> {
+): AvailableVerticalCoordinateReferenceSystemProps[] {
   GeoCoordConfig.loadDefaultDatabases();
   return IModelNative.platform.GeoServices.getListOfVerticalCRS(args);
 }

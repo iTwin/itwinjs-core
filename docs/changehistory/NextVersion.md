@@ -8,6 +8,7 @@ publish: false
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
     - [OPC point clouds without a vertical datum use the iModel's vertical datum](#opc-point-clouds-without-a-vertical-datum-use-the-imodels-vertical-datum)
   - [@itwin/core-backend](#itwincore-backend)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Schema sync rework](#schema-sync-rework)
     - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
     - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
@@ -43,6 +44,10 @@ Aborting rejects the returned promise and leaves the local changes pending, so t
 When an OPC point cloud's CRS does not say whether its heights are ellipsoidal or orthometric (relative to the geoid), the point cloud is now assumed to use the same height convention as the iModel it is displayed in. Previously a fixed assumption was made, displacing the point cloud by the local geoid-ellipsoid separation whenever it did not match the iModel. If you applied a manual vertical offset to compensate, remove it.
 
 ## @itwin/core-backend
+
+### Vertical CRS discovery
+
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
 ### Schema sync rework
 
@@ -153,9 +158,10 @@ The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBu
 `CurveCollection.isInner` is now moved to `Loop.isInner` since `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is a) only set by user code, b) does not effect region processing, and c) was previously accessible to `Loop` by virtue of inheritance, this should not break existing code.
 
 The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
-  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
-  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
-  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+
+- `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
+- `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
+- `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
 
 ## Electron 44 support
 

@@ -85,13 +85,13 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
       definitions: Array<{ verticalCRS: { crsName: string } }>;
     };
     const expectedNames = dictionary.definitions.map((entry) => entry.verticalCRS.crsName).sort();
-    const actualNames = (await getAvailableVerticalCoordinateReferenceSystems()).map((entry) => entry.crsName).sort();
+    const actualNames = getAvailableVerticalCoordinateReferenceSystems().map((entry) => entry.crsName).sort();
 
     expect(actualNames).to.deep.equal(expectedNames);
   });
 
   it("enumerates and converts EGM96 using DEV resources", async () => {
-    const verticalSystems = await getAvailableVerticalCoordinateReferenceSystems({
+    const verticalSystems = getAvailableVerticalCoordinateReferenceSystems({
       point: { x: 23.700523, y: 37.944210 },
     });
     const egm96 = verticalSystems.find((entry) => entry.crsName === "EGM96 height");
@@ -122,8 +122,8 @@ runDevAcceptance("Vertical CRS DEV workspace acceptance", function () {
     expect(result.z).to.be.closeTo(38.3, 0.5);
   });
 
-  it("filters by canonical unit name case-insensitively", async () => {
-    const verticalSystems = await getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
+  it("filters by canonical unit name case-insensitively", () => {
+    const verticalSystems = getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
 
     expect(verticalSystems).not.to.be.empty;
     expect(verticalSystems.every((entry) => entry.unit === "Meter")).to.be.true;
