@@ -92,7 +92,9 @@ export interface DateTimeFieldFormatOptions {
  * `"quantity"` or `"coordinate"` values.
  *
  * [[kindOfQuantity]] and [[persistenceUnit]] are independent overrides: setting one falls
- * through to the property for the other. A field that resolves no format renders its raw value.
+ * through to the property for the other, and an empty string counts as unset. Names are compared
+ * case-insensitively, with either `Schema.Item` or `Schema:Item` spelling. A field that resolves
+ * no format renders its raw value.
  *
  * These property names are also the persisted form — a [[FieldRun]] serializes them verbatim
  * into its element's `TextAnnotationData` — so applications can query for annotations carrying

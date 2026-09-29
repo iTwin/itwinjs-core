@@ -40,7 +40,7 @@ A field that should not simply inherit its property's KindOfQuantity configures 
 
 [[include:TextAnnotationFields.ConfigureFieldRun]]
 
-`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller control how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
+`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other, and an empty string counts as unset. Names are compared case-insensitively and accept either `Schema.Item` or `Schema:Item` spelling. This lets a caller control how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
 
 For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
 

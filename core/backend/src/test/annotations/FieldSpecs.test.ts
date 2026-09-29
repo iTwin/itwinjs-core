@@ -33,6 +33,26 @@ describe("collectFieldQuantityPairs candidate priority", () => {
     })).to.deep.equal([PROPERTY_PAIR]);
   });
 
+  it("keeps the kindOfQuantity override when the persistence override is an empty string", () => {
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", overridePersistence: "", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).to.deep.equal([{ name: "A.KOQ", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
+  });
+
+  it("compares unit names case-insensitively and accepts either full-name separator", () => {
+    for (const overridePersistence of ["units.m", "UNITS:M", "Units:m"]) {
+      expect(collectFieldQuantityPairs({
+        overrideName: "A.KOQ", overridePersistence, propertyName: "P.KOQ", propertyPersistence: "Units.M",
+      })).to.deep.equal([{ name: "A.KOQ", persistenceUnitName: overridePersistence }, PROPERTY_PAIR]);
+    }
+  });
+
+  it("emits a single pair when the overrides only restate the property's own pair", () => {
+    expect(collectFieldQuantityPairs({
+      overrideName: "p:koq", overridePersistence: "units:m", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).to.deep.equal([{ name: "p:koq", persistenceUnitName: "units:m" }]);
+  });
+
   it("emits no property-side pair at all when the property has no persistence unit", () => {
     expect(collectFieldQuantityPairs({
       overrideName: "A.KOQ", overridePersistence: "Units.ARC_DEG", propertyName: undefined, propertyPersistence: undefined,

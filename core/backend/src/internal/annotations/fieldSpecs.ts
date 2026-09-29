@@ -5,7 +5,7 @@
 
 import { FieldValue, QuantityFieldFormatOptions } from "@itwin/core-common";
 import {
-  BasicUnitsProvider, Format, FormatterSpec, FormattingSpecArgs, QuantityError, SyncFormatsProvider, SyncUnitsProvider, UnitSystemKey,
+  BasicUnitsProvider, Format, FormatterSpec, FormattingSpecArgs, QuantityError, SyncFormatsProvider, SyncUnitsProvider,
 } from "@itwin/core-quantity";
 import { FormatSetFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItem, SchemaKey } from "@itwin/ecschema-metadata";
 import type { FieldFormattingArgs } from "../../annotations/ElementDrivesTextAnnotation";
@@ -32,8 +32,6 @@ export interface ResolvedFieldValue extends FieldValue {
  * @internal
  */
 export interface FieldFormatting {
-  /** Unit system used to select a KindOfQuantity's presentation format. */
-  readonly unitSystem: UnitSystemKey;
   readonly schemaContext: SchemaContext;
   readonly unitsProvider: SyncUnitsProvider;
   /** The adopted FormatSet layered over the iModel's schema formats, or the schema formats alone. */
@@ -86,7 +84,7 @@ export function createFieldFormatting(args: FieldFormattingArgs): FieldFormattin
     formatSets.set(id, new FormatSetFormatsProvider({ formatSet, fallbackProvider: defaultFormats }));
   }
 
-  return { unitSystem, schemaContext, unitsProvider: new BasicUnitsProvider(), defaultFormats, formatSets };
+  return { schemaContext, unitsProvider: new BasicUnitsProvider(), defaultFormats, formatSets };
 }
 
 /** [SchemaFormatsProvider.getFormatSync]($ecschema-metadata) reads only schemas already in the
@@ -156,12 +154,26 @@ export function buildFieldFormatterSpec(args: FormattingSpecArgs, formatsProvide
   return formatterSpec;
 }
 
-/** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate FieldValue may
- * format through, in the priority order documented on [[QuantityFieldFormatOptions]].
+/** Whether two EC full names refer to the same schema item. EC names are case-insensitive and
+ * a full name may use either `Schema.Item` or `Schema:Item`.
+ */
+function isSameSchemaItem(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) {
+    return false;
+  }
+
+  const [schemaA, itemA] = SchemaItem.parseFullName(a);
+  const [schemaB, itemB] = SchemaItem.parseFullName(b);
+  return schemaA.toLowerCase() === schemaB.toLowerCase() && itemA.toLowerCase() === itemB.toLowerCase();
+}
+
+/** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate value may format
+ * through, in priority order: the field's overrides (each half falling back to the property's)
+ * first, then the property's own pair. An absent or empty override half counts as not supplied.
  *
- * A pair needs both halves, so a property with no [KindOfQuantity]($ecschema-metadata)
- * contributes none. The property-side pair is also withheld when `overridePersistence` names a
- * different unit.
+ * The property's pair is left out when the override names a different persistence unit: the
+ * override says what the stored magnitude *means*, and rendering it through the property's unit
+ * instead would be off by the conversion factor.
  * @internal
  */
 export function collectFieldQuantityPairs(args: {
@@ -171,26 +183,19 @@ export function collectFieldQuantityPairs(args: {
   propertyPersistence?: string;
 }): FormattingSpecArgs[] {
   const { overrideName, overridePersistence, propertyName, propertyPersistence } = args;
-  const effectiveName = overrideName ?? propertyName;
-  const effectivePersistence = overridePersistence ?? propertyPersistence;
-
-  // An override naming the same unit as the property contradicts nothing, so the fallback stands.
-  // Neither does an absent or empty override.
-  const contradictsProperty =
-    overridePersistence !== undefined
-    && overridePersistence !== ""
-    && overridePersistence !== propertyPersistence;
-
+  const name = overrideName || propertyName;
+  const unit = overridePersistence || propertyPersistence;
   const pairs: FormattingSpecArgs[] = [];
-  if (effectiveName && effectivePersistence) {
-    pairs.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
+  if (name && unit) {
+    pairs.push({ name, persistenceUnitName: unit });
   }
-  if (
-    propertyName && propertyPersistence && !contradictsProperty &&
-    (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
-  ) {
+
+  const unitAgrees = !overridePersistence || isSameSchemaItem(overridePersistence, propertyPersistence);
+  const isDuplicate = isSameSchemaItem(name, propertyName) && isSameSchemaItem(unit, propertyPersistence);
+  if (propertyName && propertyPersistence && unitAgrees && !isDuplicate) {
     pairs.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
+
   return pairs;
 }
 

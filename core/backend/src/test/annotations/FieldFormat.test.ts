@@ -329,6 +329,21 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
+  it("treats an empty persistenceUnit like an absent one, and matches unit spellings loosely", async () => {
+    // `persistenceUnit: ""` used to silently discard the kindOfQuantity override. And a unit
+    // spelled differently from the schema ("units:m" vs "Units.M") must still count as the
+    // property's own unit, or the property-side fallback is lost.
+    // Persisted on the element: lengthProp 2.5 m
+    const block = TextBlock.create();
+    const emptyUnit = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "" });
+    const respelled = appendField(block, "lengthProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "units:m" });
+
+    render(block);
+
+    expect(emptyUnit.cachedContent).to.equal("2.5 m");
+    expect(respelled.cachedContent).to.equal("2.5 m");
+  });
+
   it("ignores a persistence unit named without a KindOfQuantity", async () => {
     // The mirror image: a unit with no format to apply to it. Nothing names a format, so the
     // property-side candidate is all that is left and the result is the baseline exactly.
