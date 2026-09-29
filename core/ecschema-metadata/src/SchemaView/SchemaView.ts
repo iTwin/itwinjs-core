@@ -68,7 +68,7 @@ export interface SchemaViewData {
  * and cache nothing.
  *
  * Use {@link SchemaViewManager} to load schemas incrementally into one view, or parse a standalone
- * binary blob via {@link SchemaView.fromBinary}. Consumers cannot modify the metadata; a manager
+ * binary blob via {@link (SchemaView:class).fromBinary}. Consumers cannot modify the metadata; a manager
  * can extend its view with additional schemas while previously obtained view objects remain valid.
  * @beta
  */
