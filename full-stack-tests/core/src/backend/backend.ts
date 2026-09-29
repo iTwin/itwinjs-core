@@ -28,7 +28,7 @@ import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 import { TestServer } from "./TestServer";
 import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
-import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "../common/BrowserTestPorts";
+import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
 
 /* eslint-disable no-console */
 

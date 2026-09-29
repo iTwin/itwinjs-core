@@ -4,10 +4,12 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
-import { defaultFrontendPort, loopbackHost } from "./src/common/BrowserTestPorts";
+import { loopbackHost } from "@itwin/vitest-browser-bridge/ports";
 
 const require = createRequire(import.meta.url);
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+/** Port of the Vitest page. The global setup reads the port Vitest resolved and derives the backend from it. */
+const frontendPort = 3010;
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
 const invert = process.env.VITEST_CORE_GREP_INVERT !== "false";
 const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
@@ -158,7 +160,7 @@ export default defineConfig({
       allow: [path.resolve(packageRoot, "../.."), path.resolve(packageRoot, "../../core/electron")],
     },
     host: loopbackHost,
-    port: defaultFrontendPort,
+    port: frontendPort,
     strictPort: true,
   },
   test: {
@@ -185,7 +187,7 @@ export default defineConfig({
       ["junit", { outputFile: "lib/test/junit_results_chrome.xml" }],
     ],
     browser: {
-      api: { host: loopbackHost, port: defaultFrontendPort, strictPort: true },
+      api: { host: loopbackHost, port: frontendPort, strictPort: true },
       enabled: true,
       provider: playwright({
         launchOptions: { args: ["--disable-web-security", "--no-sandbox"] },

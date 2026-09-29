@@ -10,7 +10,7 @@ import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeA
 import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "./IModelHubUserMgr";
-import { backendPortFor, parseFrontendPort } from "../common/BrowserTestPorts";
+import { backendPortFor, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 
