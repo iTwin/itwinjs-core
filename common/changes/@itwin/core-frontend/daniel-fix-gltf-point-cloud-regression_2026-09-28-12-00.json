@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix non-indexed glTF point clouds in reality models not rendering.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

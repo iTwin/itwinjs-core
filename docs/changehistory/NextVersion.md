@@ -4,26 +4,28 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [@itwin/core-frontend](#itwincore-frontend)
+  - [Frontend](#frontend)
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
-  - [@itwin/core-backend](#itwincore-backend)
+    - [OPC point clouds without a vertical datum use the iModel's vertical datum](#opc-point-clouds-without-a-vertical-datum-use-the-imodels-vertical-datum)
+  - [Backend](#backend)
     - [Schema sync rework](#schema-sync-rework)
     - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
     - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
-  - [@itwin/core-electron](#itwincore-electron)
-    - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
-  - [@itwin/core-geometry](#itwincore-geometry)
+      - [ChangesetReader identifiers filter](#changesetreader-identifiers-filter)
+  - [Geometry](#geometry)
     - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
-  - [@itwin/core-quantity](#itwincore-quantity)
+  - [Quantity](#quantity)
     - [Synchronous quantity formatting](#synchronous-quantity-formatting)
-  - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [Synchronous format lookup](#synchronous-format-lookup)
-  - [Electron 44 support](#electron-44-support)
+  - [Electron](#electron)
+    - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
+  - [Platform support](#platform-support)
+    - [Electron 44 support](#electron-44-support)
 
-## @itwin/core-frontend
+## Frontend
 
 ### Download progress for pushChanges
 
@@ -40,7 +42,11 @@ await briefcase.pushChanges("my changes", {
 
 Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
 
-## @itwin/core-backend
+### OPC point clouds without a vertical datum use the iModel's vertical datum
+
+When an OPC point cloud's CRS does not say whether its heights are ellipsoidal or orthometric (relative to the geoid), the point cloud is now assumed to use the same height convention as the iModel it is displayed in. Previously a fixed assumption was made, displacing the point cloud by the local geoid-ellipsoid separation whenever it did not match the iModel. If you applied a manual vertical offset to compensate, remove it.
+
+## Backend
 
 ### Schema sync rework
 
@@ -118,7 +124,34 @@ The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` use
 
 The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
 
-## @itwin/core-electron
+#### ChangesetReader identifiers filter
+
+The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
+
+## Geometry
+
+### `PlanarRegionProps` refactor
+
+The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBuffers due to an oversight. To address this, the `CurveCollection` class and `PlanarRegionProps` schema have been slightly refactored.
+
+`CurveCollection.isInner` is now moved to `Loop.isInner` since `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is a) only set by user code, b) does not effect region processing, and c) was previously accessible to `Loop` by virtue of inheritance, this should not break existing code.
+
+The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
+  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
+  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
+  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+
+## Quantity
+
+### Synchronous quantity formatting
+
+`@itwin/core-quantity` now provides beta synchronous quantity-formatting capabilities through [SyncUnitsProvider]($quantity), [SyncFormatsProvider]($quantity), [Format.createFromJSONSync]($quantity), and [FormatterSpec.createSync]($quantity). Use these APIs only when the required format and unit data are already available locally; they do not load schemas or perform asynchronous I/O. Missing synchronous unit data is reported through `BadUnit` or an identity conversion with `error: true`, while missing synchronous formats are reported as `undefined`. Use the existing asynchronous construction path or a plain-value fallback when the required data is not local. Providers that delegate a format lookup can forward its optional context to preserve cycle detection; omit the context only for an independent lookup.
+
+### Synchronous format lookup
+
+[SchemaFormatsProvider]($ecschema-metadata) and [FormatSetFormatsProvider]($ecschema-metadata) now implement [SyncFormatsProvider]($quantity). `SchemaFormatsProvider.getFormatSync` follows the same selection order as `getFormat` but reads only schema metadata already loaded in the [SchemaContext]($ecschema-metadata), returning `undefined` instead of loading a schema. `FormatSetFormatsProvider.getFormatSync` resolves local entries and string references without awaiting, and uses the fallback provider only when it also implements `SyncFormatsProvider`. `FormatSetFormatsProvider` now forwards the lookup context to its fallback provider, so a fallback chain that leads back to the same provider returns `undefined` instead of recursing, provided each delegating provider in the chain forwards the context.
+
+## Electron
 
 ### Process-specific Electron ESM/CommonJS entry points
 
@@ -138,31 +171,8 @@ const { ElectronHost } = require("@itwin/core-electron/main");
 
 `renderer` resolves to the ESM build for `import` and to the CommonJS build for `require`. `main` resolves to the CommonJS build for both. The package now uses an exports map, so subpaths that are not listed are not supported; in particular, `lib/esm/*` paths and `ElectronPreload` are not public package entry points. The existing `@itwin/core-electron/lib/cjs/*` wildcard paths remain available in this release for compatibility with legacy consumers and will be removed in iTwin.js 6.0. New code should use the process-specific entry points. The Electron preload script remains an internal implementation detail configured by `ElectronHost`.
 
-## @itwin/core-geometry
+## Platform support
 
-### `PlanarRegionProps` refactor
-
-The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBuffers due to an oversight. To address this, the `CurveCollection` class and `PlanarRegionProps` schema have been slightly refactored.
-
-`CurveCollection.isInner` is now moved to `Loop.isInner` since `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is a) only set by user code, b) does not effect region processing, and c) was previously accessible to `Loop` by virtue of inheritance, this should not break existing code.
-
-The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
-  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
-  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
-  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
-
-## @itwin/core-quantity
-
-### Synchronous quantity formatting
-
-`@itwin/core-quantity` now provides beta synchronous quantity-formatting capabilities through [SyncUnitsProvider]($quantity), [SyncFormatsProvider]($quantity), [Format.createFromJSONSync]($quantity), and [FormatterSpec.createSync]($quantity). Use these APIs only when the required format and unit data are already available locally; they do not load schemas or perform asynchronous I/O. Missing synchronous unit data is reported through `BadUnit` or an identity conversion with `error: true`, while missing synchronous formats are reported as `undefined`. Use the existing asynchronous construction path or a plain-value fallback when the required data is not local. Providers that delegate a format lookup can forward its optional context to preserve cycle detection; omit the context only for an independent lookup.
-
-## @itwin/ecschema-metadata
-
-### Synchronous format lookup
-
-[SchemaFormatsProvider]($ecschema-metadata) and [FormatSetFormatsProvider]($ecschema-metadata) now implement [SyncFormatsProvider]($quantity). `SchemaFormatsProvider.getFormatSync` follows the same selection order as `getFormat` but reads only schema metadata already loaded in the [SchemaContext]($ecschema-metadata), returning `undefined` instead of loading a schema. `FormatSetFormatsProvider.getFormatSync` resolves local entries and string references without awaiting, and uses the fallback provider only when it also implements `SyncFormatsProvider`. `FormatSetFormatsProvider` now forwards the lookup context to its fallback provider, so a fallback chain that leads back to the same provider returns `undefined` instead of recursing, provided each delegating provider in the chain forwards the context.
-
-## Electron 44 support
+### Electron 44 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).

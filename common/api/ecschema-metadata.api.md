@@ -435,6 +435,8 @@ export enum ECClassModifier {
 // @public
 export class ECName {
     constructor(name: string);
+    // @internal
+    static decode(name: string): string;
     decode(): string;
     static encode(input: string): ECName;
     get name(): string;
@@ -2506,7 +2508,7 @@ export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
 
-// @internal
+// @beta
 export class SchemaManifest {
     constructor(entries: readonly SchemaManifestEntry[]);
     // (undocumented)
@@ -2516,10 +2518,11 @@ export class SchemaManifest {
     getAvailableSchemaNames(): string[];
     getSchemaClosure(requestedNames: Iterable<string>): string[];
     get schemaCount(): number;
+    // @internal
     sortInDependencyOrder(schemaNames: Iterable<string>): string[];
 }
 
-// @internal
+// @beta
 export interface SchemaManifestEntry {
     // (undocumented)
     readonly minorVersion: number;
@@ -2532,7 +2535,7 @@ export interface SchemaManifestEntry {
     readonly writeVersion: number;
 }
 
-// @internal
+// @beta
 export interface SchemaManifestReferenceRow {
     // (undocumented)
     readonly sourceECInstanceId: number;
@@ -2540,7 +2543,7 @@ export interface SchemaManifestReferenceRow {
     readonly targetECInstanceId: number;
 }
 
-// @internal
+// @beta
 export interface SchemaManifestSchemaRow {
     // (undocumented)
     readonly ecInstanceId: number;
@@ -2720,7 +2723,6 @@ export namespace SchemaView {
         isStruct(): boolean;
         // (undocumented)
         isView(): boolean;
-        // (undocumented)
         get label(): string;
         get mixins(): readonly Class[];
         // (undocumented)
@@ -2751,7 +2753,6 @@ export namespace SchemaView {
         readonly idx: number;
         // (undocumented)
         get isStrict(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2768,7 +2769,6 @@ export namespace SchemaView {
         get description(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2785,7 +2785,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2880,7 +2879,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2933,7 +2931,6 @@ export namespace SchemaView {
         // @internal (undocumented)
         readonly idx: number;
         get isHidden(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get minorVersion(): number;
@@ -2958,7 +2955,7 @@ export namespace SchemaView {
     }
 }
 
-// @internal
+// @beta
 export interface SchemaViewBlob {
     readonly data: Uint8Array;
     readonly schemaToken: string;
@@ -3046,7 +3043,7 @@ export interface SchemaViewData {
     readonly strings: readonly string[];
 }
 
-// @internal
+// @beta
 export interface SchemaViewDataProvider {
     fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
     fetchFullBlob(): Promise<SchemaViewBlob>;
@@ -3057,7 +3054,7 @@ export interface SchemaViewDataProvider {
 // @beta
 export const schemaViewFormatVersion = 1;
 
-// @internal
+// @beta
 export class SchemaViewManager {
     constructor(dataProvider: SchemaViewDataProvider);
     getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
