@@ -12,6 +12,7 @@
     "src/electron/bridge-preload.ts",
     "src/electron/frame-routing.ts",
     "src/electron/provider-session.ts",
+    "src/ports.ts",
     "src/test/fixtures/**/*.ts"
   ]
 }

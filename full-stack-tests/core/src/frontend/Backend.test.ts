@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { backendOriginFor } from "../common/BrowserTestPorts";
+import { backendOriginFor } from "@itwin/vitest-browser-bridge/ports";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Test Fixture", () => {

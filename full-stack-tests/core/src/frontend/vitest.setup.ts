@@ -5,7 +5,7 @@
 import { afterEach, beforeAll, beforeEach, inject } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
-import { backendOriginFor } from "../common/BrowserTestPorts";
+import { backendOriginFor } from "@itwin/vitest-browser-bridge/ports";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 import { installVitestMatchers } from "./testMatchers";

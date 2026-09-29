@@ -45,6 +45,16 @@
         "types": "./lib/cjs/callbacks/http.d.ts",
         "default": "./lib/cjs/callbacks/http.js"
       }
+    },
+    "./ports": {
+      "import": {
+        "types": "./lib/esm/ports.d.ts",
+        "default": "./lib/esm/ports.js"
+      },
+      "require": {
+        "types": "./lib/cjs/ports.d.ts",
+        "default": "./lib/cjs/ports.js"
+      }
     }
   },
   "license": "MIT",

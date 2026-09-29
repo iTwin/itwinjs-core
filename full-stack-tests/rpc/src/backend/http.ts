@@ -6,7 +6,8 @@ import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/
 import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { backendPortFor, frontendPortEnvVar, mobileBackendPortFor, parseFrontendPort } from "../common/BrowserTestPorts";
+import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
+import { mobileBackendPortFor } from "../common/BrowserTestPorts";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";

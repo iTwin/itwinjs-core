@@ -13,7 +13,7 @@ interface TestUserCredentials {
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { backendCallbackTokenKey, createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { inject } from "vitest";
-import { backendOriginFor } from "../common/BrowserTestPorts.js";
+import { backendOriginFor } from "@itwin/vitest-browser-bridge/ports";
 import { browserBackendCallbackPath, getTokenCallbackName } from "../common/testCallbacks.js";
 
 const invokeHttpBackendCallback = createHttpBackendCallbackInvoker({

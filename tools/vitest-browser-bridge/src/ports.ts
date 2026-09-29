@@ -3,24 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// The single source of truth for where the core Chrome tests listen. The Vitest config serves the
-// page on `defaultFrontendPort`; the global setup passes the resolved page port to the backend,
-// and the backend port is derived from it here.
+// Where a Vitest browser test page and its test backend listen. Each package's Vitest config owns
+// its page port; the package's global setup passes the port Vitest resolved to the backend through
+// `frontendPortEnvVar`, and every backend port is derived from it here. This module runs in Node
+// and in the browser, so it must not import Node APIs.
 
-/** Loopback host for the Vitest page and the test backend. */
+/** Loopback host for the Vitest page and the test backends. */
 export const loopbackHost = "127.0.0.1";
-
-/** Port of the Vitest browser page. Configure it only through the Vitest config. */
-export const defaultFrontendPort = 3010;
 
 /** Environment variable that carries the resolved page port to the backend process. */
 export const frontendPortEnvVar = "VITEST_FRONTEND_PORT";
 
-const portOffset = 2000;
+const backendPortOffset = 2000;
 
 /** Port of the test backend for a page served on `frontendPort`. */
 export function backendPortFor(frontendPort: number): number {
-  return frontendPort + portOffset;
+  return frontendPort + backendPortOffset;
 }
 
 /** Origin of the test backend for the page at `location`. */
