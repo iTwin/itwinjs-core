@@ -19,6 +19,8 @@ publish: false
     - [Cursor paging for ECSqlReader](#cursor-paging-for-ecsqlreader)
   - [Geometry](#geometry)
     - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
+  - [Quantity](#quantity)
+    - [Synchronous quantity formatting](#synchronous-quantity-formatting)
   - [Electron](#electron)
     - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
   - [Platform support](#platform-support)
@@ -154,6 +156,12 @@ The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 n
   - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
   - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
   - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+
+## Quantity
+
+### Synchronous quantity formatting
+
+`@itwin/core-quantity` now provides beta synchronous quantity-formatting capabilities through [SyncUnitsProvider]($quantity), [SyncFormatsProvider]($quantity), [Format.createFromJSONSync]($quantity), and [FormatterSpec.createSync]($quantity). Use these APIs only when the required format and unit data are already available locally; they do not load schemas or perform asynchronous I/O. Missing synchronous unit data is reported through `BadUnit` or an identity conversion with `error: true`, while missing synchronous formats are reported as `undefined`. Use the existing asynchronous construction path or a plain-value fallback when the required data is not local. Providers that delegate a format lookup can forward its optional context to preserve cycle detection; omit the context only for an independent lookup.
 
 ## Electron
 
