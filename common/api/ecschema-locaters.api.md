@@ -4,6 +4,7 @@
 
 ```ts
 
+import { Authoring } from '@itwin/ecschema-metadata';
 import { ISchemaLocater } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
@@ -72,6 +73,16 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaKey(data: string): SchemaKey;
     getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+}
+
+// @alpha
+export class SchemaXmlFileSource implements Authoring.SchemaSource {
+    constructor(directories?: Iterable<string>);
+    addDirectories(directories: Iterable<string>): void;
+    addDirectory(directory: string): void;
+    get directories(): ReadonlyArray<string>;
+    // (undocumented)
+    discoverCandidates(issues: Authoring.SchemaIssueList): Promise<Authoring.SchemaCandidate[]>;
 }
 
 // @beta

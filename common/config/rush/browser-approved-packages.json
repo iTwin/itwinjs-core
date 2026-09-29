@@ -16,7 +16,7 @@
     },
     {
       "name": "@bentley/bis-core-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
@@ -76,11 +76,11 @@
     },
     {
       "name": "@bentley/ecdb-map-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-schema-policies-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/formats-schema",
@@ -837,6 +837,10 @@
     {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sax",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "semver",

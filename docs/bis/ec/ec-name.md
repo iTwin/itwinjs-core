@@ -3,8 +3,8 @@
 An ECName is used any time an invariant, string based, name is needed for an element in a schema. These strings must follow the following rules:
 
 1. Must contain at least one character
-2. Must contain only alpha numeric characters plus `_`
-3. May not start with a number or `_`
+2. Must contain only ASCII letters (`A-Z`, `a-z`), digits (`0-9`), and `_`
+3. Must start with a letter or `_`
 4. May not contain spaces
 5. Case is allowed but all comparisons are case insensitive. E.g. PIPE == Pipe
 
