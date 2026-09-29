@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "make SchemaViewManager beta from internal",
+      "comment": "Expose SchemaView incremental-loading APIs as beta and decode ECName escapes in fallback display labels",
       "type": "none"
     }
   ],
