@@ -5,7 +5,6 @@
 import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { TestUtility as OidcTestUtility } from "@itwin/oidc-signin-tool";
 import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { getTokenCallbackName } from "../common/testCallbacks";
@@ -22,8 +21,16 @@ export function exposeBackendCallbacks() {
       : await OidcTestUtility.getAccessToken(user);
 
     if (ProcessDetector.isElectronAppBackend)
-      (IModelHost.authorizationClient as ElectronMainAuthorization as any).setAccessToken(accessToken);
+      setElectronAccessToken(accessToken);
 
     return accessToken;
   });
+}
+
+/** `ElectronMainAuthorization.setAccessToken` is protected, but the Electron test backend has to inject the token it signed in with. */
+function setElectronAccessToken(accessToken: AccessToken): void {
+  const client = IModelHost.authorizationClient as { setAccessToken?: unknown } | undefined;
+  if (typeof client?.setAccessToken !== "function")
+    throw new Error("The Electron test backend's authorization client has no setAccessToken method.");
+  client.setAccessToken(accessToken);
 }

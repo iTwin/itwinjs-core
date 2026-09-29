@@ -155,8 +155,7 @@ export class TestUtility {
       throw new Error("no access token");
 
     const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
-    expect(iTwin && iTwin.id).toBeTruthy();
-    if (!iTwin.id)
+    if (!iTwin?.id)
       throw new Error("Test iTwin has no id");
     return iTwin.id;
   }
