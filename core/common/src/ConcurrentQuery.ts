@@ -849,7 +849,7 @@ export interface DbQueryConfig {
   ignorePriority?: boolean;
   /** Max queue size after which queries are rejected with error QueueFull */
   requestQueueSize?: number;
-  /** Number of worker thread, default to 4 */
+  /** Number of worker threads. Defaults to 4, capped at the machine's hardware concurrency. Requests above hardware concurrency fall back to the default. */
   workerThreads?: number;
   /**
    * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. No longer used. Worker connections now prepare statements against a shared, dedicated
