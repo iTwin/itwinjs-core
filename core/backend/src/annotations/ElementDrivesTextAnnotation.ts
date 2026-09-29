@@ -14,7 +14,7 @@ import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
-import { createFieldFormatting, FieldFormatting } from "../internal/annotations/fieldSpecs";
+import { createFieldFormatting, setFieldFormatting } from "../internal/annotations/fieldSpecs";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -44,24 +44,6 @@ export interface FieldFormattingArgs {
    * adopted.
    */
   unitSystem?: UnitSystemKey;
-}
-
-/** The formats serving each open [[IModelDb]]: those an application configured via
- * [[ElementDrivesTextAnnotation.registerFieldFormatting]], or the schema-only default created
- * the first time one of the iModel's fields was evaluated. Weakly keyed so a closed iModel takes
- * its entry with it.
- */
-const fieldFormattings = new WeakMap<IModelDb, FieldFormatting>();
-
-/** Returns the formats for `iModel`, creating the schema-only default on first use. */
-function getOrCreateFieldFormatting(iModel: IModelDb): FieldFormatting {
-  let formatting = fieldFormattings.get(iModel);
-  if (!formatting) {
-    formatting = createFieldFormatting({ iModel });
-    fieldFormattings.set(iModel, formatting);
-  }
-
-  return formatting;
 }
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
@@ -157,7 +139,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, txn, getOrCreateFieldFormatting(iModel));
+      updateAllFields(annotationElementId, txn);
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -195,12 +177,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChangedArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, false, getOrCreateFieldFormatting(arg.indirectEditTxn.iModel));
+    updateElementFields(arg.props, arg.indirectEditTxn, false);
   }
 
   /** @internal */
   public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, true, getOrCreateFieldFormatting(arg.indirectEditTxn.iModel));
+    updateElementFields(arg.props, arg.indirectEditTxn, true);
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
@@ -243,7 +225,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @returns the number of fields whose display strings were modified.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getOrCreateFieldFormatting(args.iModel)));
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false));
   }
 
   /** Configures how `"quantity"` and `"coordinate"` [FieldRun]($common)s in `args.iModel` are
@@ -283,7 +265,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static registerFieldFormatting(args: FieldFormattingArgs): void {
-    fieldFormattings.set(args.iModel, createFieldFormatting(args));
+    setFieldFormatting(args.iModel, createFieldFormatting(args));
     this.onFieldFormattingChanged.raiseEvent({ iModel: args.iModel });
   }
 

@@ -10,7 +10,7 @@ import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { FieldFormatting, lookupFieldSpec, ResolvedFieldValue } from "./fieldSpecs";
+import { FieldFormatting, getFieldFormatting, lookupFieldSpec, ResolvedFieldValue } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -55,6 +55,8 @@ export interface UpdateFieldsContext {
    * a [FormatterSpec]($core-quantity) per field from the FormatSet named by
    * [QuantityFieldFormatOptions.formatSet]($common), falling back to the adopted FormatSet and
    * the schemas; a value none of them can format falls back to `value.toString()`.
+   * [[createUpdateContext]] always supplies the iModel's formatting; only hand-built contexts in
+   * tests that never format a quantity leave it out.
    */
   readonly formatting?: FieldFormatting;
 }
@@ -325,16 +327,11 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
   return undefined;
 }
 
-export function createUpdateContext(
-  hostElementId: string | undefined,
-  iModel: IModelDb,
-  deleted: boolean,
-  formatting?: FieldFormatting,
-): UpdateFieldsContext {
+export function createUpdateContext(hostElementId: string | undefined, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formatting,
+    formatting: getFieldFormatting(iModel),
   };
 }
 
@@ -417,12 +414,12 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formatting: FieldFormatting | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, formatting);
+      const context = createUpdateContext(sourceId, iModel, deleted);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -444,14 +441,14 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
  * change (`deleted=false`) or delete (`deleted=true`). Invoked from
  * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
  */
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formatting?: FieldFormatting): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formatting);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted);
 }
 
 /** Re-evaluates every field of the given annotation element against its current property
  * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
  * establishing / refreshing relationships.
  */
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formatting?: FieldFormatting): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, formatting);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): void {
+  doUpdateFields(txn, annotationElementId, undefined, false);
 }

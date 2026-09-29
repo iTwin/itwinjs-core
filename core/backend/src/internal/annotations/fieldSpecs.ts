@@ -9,6 +9,7 @@ import {
 } from "@itwin/core-quantity";
 import { FormatSetFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItem, SchemaKey } from "@itwin/ecschema-metadata";
 import type { FieldFormattingArgs } from "../../annotations/ElementDrivesTextAnnotation";
+import type { IModelDb } from "../../IModelDb";
 
 /** A [FieldValue]($common) as the backend resolves it: the primitive value plus, for
  * `"quantity"` and `"coordinate"` types, the KindOfQuantity and persistence unit of the EC
@@ -39,6 +40,34 @@ export interface FieldFormatting {
   readonly defaultFormats: SyncFormatsProvider;
   /** Per-field FormatSets by id, each falling through to [[defaultFormats]]. */
   readonly formatSets: ReadonlyMap<string, SyncFormatsProvider>;
+}
+
+/** Per-iModel [[FieldFormatting]], as configured by the last
+ * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend) call, or the schema-only default
+ * created the first time one of the iModel's fields was evaluated. Weakly keyed so a closed iModel
+ * takes its entry with it.
+ */
+const fieldFormattings = new WeakMap<IModelDb, FieldFormatting>();
+
+/** Returns the formats `iModel`'s fields resolve through, creating the schema-only default on
+ * first use.
+ * @internal
+ */
+export function getFieldFormatting(iModel: IModelDb): FieldFormatting {
+  let formatting = fieldFormattings.get(iModel);
+  if (!formatting) {
+    formatting = createFieldFormatting({ iModel });
+    fieldFormattings.set(iModel, formatting);
+  }
+
+  return formatting;
+}
+
+/** Replaces the formats `iModel`'s fields resolve through.
+ * @internal
+ */
+export function setFieldFormatting(iModel: IModelDb, formatting: FieldFormatting): void {
+  fieldFormattings.set(iModel, formatting);
 }
 
 /** @internal */
