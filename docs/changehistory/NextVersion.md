@@ -19,6 +19,7 @@ publish: false
     - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
   - [Quantity](#quantity)
     - [Synchronous quantity formatting](#synchronous-quantity-formatting)
+    - [Synchronous format lookup](#synchronous-format-lookup)
   - [Electron](#electron)
     - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
   - [Platform support](#platform-support)
@@ -145,6 +146,10 @@ The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 n
 ### Synchronous quantity formatting
 
 `@itwin/core-quantity` now provides beta synchronous quantity-formatting capabilities through [SyncUnitsProvider]($quantity), [SyncFormatsProvider]($quantity), [Format.createFromJSONSync]($quantity), and [FormatterSpec.createSync]($quantity). Use these APIs only when the required format and unit data are already available locally; they do not load schemas or perform asynchronous I/O. Missing synchronous unit data is reported through `BadUnit` or an identity conversion with `error: true`, while missing synchronous formats are reported as `undefined`. Use the existing asynchronous construction path or a plain-value fallback when the required data is not local. Providers that delegate a format lookup can forward its optional context to preserve cycle detection; omit the context only for an independent lookup.
+
+### Synchronous format lookup
+
+[SchemaFormatsProvider]($ecschema-metadata) and [FormatSetFormatsProvider]($ecschema-metadata) now implement [SyncFormatsProvider]($quantity). `SchemaFormatsProvider.getFormatSync` follows the same selection order as `getFormat` but reads only schema metadata already loaded in the [SchemaContext]($ecschema-metadata), returning `undefined` instead of loading a schema. `FormatSetFormatsProvider.getFormatSync` resolves local entries and string references without awaiting, and uses the fallback provider only when it also implements `SyncFormatsProvider`. `FormatSetFormatsProvider` now forwards the lookup context to its fallback provider, so a fallback chain that leads back to the same provider returns `undefined` instead of recursing, provided each delegating provider in the chain forwards the context.
 
 ## Electron
 
