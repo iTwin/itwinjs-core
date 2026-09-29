@@ -5,3 +5,10 @@
 
 export const getTokenCallbackName = "setBackendAccessToken";
 export const browserBackendCallbackPath = "/__vitest_core_backend_callback";
+
+declare module "vitest" {
+  interface ProvidedContext {
+    /** Per-run token for the HTTP callback endpoint; see `backendCallbackTokenKey` in the browser bridge. */
+    backendCallbackToken: string;
+  }
+}

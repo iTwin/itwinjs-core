@@ -28,6 +28,8 @@ import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 import { TestServer } from "./TestServer";
 import { ChromeBackendReadyMessage } from "../common/ChromeTestBackend";
+import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "../common/BrowserTestPorts";
 
 /* eslint-disable no-console */
 
@@ -321,8 +323,8 @@ async function init() {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
-    const port = Number(process.env.VITEST_FRONTEND_PORT || 3010) + 2000;
-    testServer = new TestServer(rpcConfig.protocol);
+    const port = backendPortFor(parseFrontendPort(process.env[frontendPortEnvVar], frontendPortEnvVar));
+    testServer = new TestServer(rpcConfig.protocol, readBackendCallbackToken(process.env));
     const httpServer = await testServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 

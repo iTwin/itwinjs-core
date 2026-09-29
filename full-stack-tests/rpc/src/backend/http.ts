@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { backendPortFor, frontendPortEnvVar, mobileBackendPortFor, parseFrontendPort } from "../common/BrowserTestPorts";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
@@ -15,8 +17,9 @@ import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
 
 async function init() {
-  const port = Number(process.env.VITEST_FRONTEND_PORT || 3020) + 2000;
-  const mobilePort = port + 2000;
+  const frontendPort = parseFrontendPort(process.env[frontendPortEnvVar], frontendPortEnvVar);
+  const port = backendPortFor(frontendPort);
+  const mobilePort = mobileBackendPortFor(frontendPort);
   await setupMockMobileTest(mobilePort);
 
   await commonSetup(registerBackendCallback);
@@ -25,7 +28,7 @@ async function init() {
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
-  const testServer = new TestServer(rpcConfig.protocol);
+  const testServer = new TestServer(rpcConfig.protocol, readBackendCallbackToken(process.env));
   const httpServer = await testServer.initialize(port);
 
   // eslint-disable-next-line no-console

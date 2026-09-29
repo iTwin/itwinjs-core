@@ -47,15 +47,16 @@ class BackendProcess extends EventEmitter {
   }
 }
 
-function createProjects() {
+function createProjects(port: unknown = 3010) {
+  const config = { browser: { api: { port } } };
   const provider = { close: vi.fn().mockResolvedValue(undefined) };
   const vitest = {
     state: { catchError: vi.fn() },
     cancelCurrentRun: vi.fn().mockResolvedValue(undefined),
     projects: [{ browser: { provider } }],
   };
-  const root = { vitest, isRootProject: () => true, provide: vi.fn() };
-  const browser = { vitest, isRootProject: () => false, provide: vi.fn() };
+  const root = { vitest, config, isRootProject: () => true, provide: vi.fn() };
+  const browser = { vitest, config, isRootProject: () => false, provide: vi.fn() };
   return { root, browser, vitest, provider };
 }
 
@@ -99,6 +100,25 @@ describe("core Chrome backend ownership", () => {
     expect(root.provide).toHaveBeenCalledWith("coreChromeBackendId", expect.any(String));
     expect(fetch).not.toHaveBeenCalled();
     await teardown?.();
+  });
+
+  it("starts the backend for the resolved page port and shares one callback token with it", async () => {
+    const { root } = createProjects(4321);
+    const opening = start(root);
+    await flush();
+    const env = mocks.spawn.mock.calls.at(-1)?.[2]?.env as Record<string, string>;
+    expect(env.VITEST_FRONTEND_PORT).toBe("4321");
+    expect(env.VITEST_BACKEND_CALLBACK_TOKEN).toMatch(/^[0-9a-f-]{36}$/);
+    backend.ready();
+    const teardown = await opening;
+    expect(root.provide).toHaveBeenCalledWith("backendCallbackToken", env.VITEST_BACKEND_CALLBACK_TOKEN);
+    await teardown?.();
+  });
+
+  it("rejects an invalid resolved page port before starting a backend", async () => {
+    const { root } = createProjects("not-a-port");
+    await expect(start(root)).rejects.toThrow("Vitest browser.api.port must be a TCP port, got \"not-a-port\".");
+    expect(mocks.spawn).not.toHaveBeenCalled();
   });
 
   it("rejects a readiness message belonging to another backend", async () => {

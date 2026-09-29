@@ -7,6 +7,8 @@ import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { TestProject } from "vitest/node" with { "resolution-mode": "import" };
+import { backendCallbackTokenEnvVar, backendCallbackTokenKey, createBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { frontendPortEnvVar, parseFrontendPort } from "./common/BrowserTestPorts";
 import { ChromeBackendReadyMessage, chromeBackendStartupTimeout } from "./common/ChromeTestBackend";
 
 const packageRoot = path.resolve(__dirname, "..");
@@ -31,14 +33,18 @@ export default async function setup(project: TestProject) {
   if (!project.isRootProject())
     return;
 
+  // Use the page port Vitest actually resolved so the backend always matches the page.
+  const frontendPort = parseFrontendPort(project.config.browser.api.port, "Vitest browser.api.port");
   const backendId = randomUUID();
+  const callbackToken = createBackendCallbackToken();
   const cacheDir = path.join(packageRoot, "lib/backend/.cache", "browser-chrome");
   fs.rmSync(cacheDir, { recursive: true, force: true });
   const backend = spawn(process.execPath, [path.resolve(packageRoot, "lib/backend/backend.js")], {
     cwd: packageRoot,
     env: {
       ...process.env,
-      ["VITEST_FRONTEND_PORT"]: "3010",
+      [frontendPortEnvVar]: frontendPort.toString(),
+      [backendCallbackTokenEnvVar]: callbackToken,
       ["VITEST_BACKEND_CACHE_DIR"]: cacheDir,
       ["VITEST_CORE_BACKEND_ID"]: backendId,
     },
@@ -110,6 +116,7 @@ export default async function setup(project: TestProject) {
     if (failure)
       throw failure;
     project.provide("coreChromeBackendId", backendId);
+    project.provide(backendCallbackTokenKey, callbackToken);
     initialized = true;
   } catch (error) {
     await stop().catch((closeError) => project.vitest.state.catchError(closeError, "Core Chrome backend cleanup"));

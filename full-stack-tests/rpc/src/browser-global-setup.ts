@@ -7,10 +7,11 @@ import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { TestProject } from "vitest/node" with { "resolution-mode": "import" };
+import { backendCallbackTokenEnvVar, backendCallbackTokenKey, createBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { rpcBackendIdentityHeader, type RpcBackendReadyMessage } from "./backend/notifyReady";
+import { backendPortFor, frontendPortEnvVar, loopbackHost, parseFrontendPort } from "./common/BrowserTestPorts";
 
 const packageRoot = path.resolve(__dirname, "..");
-const frontendPort = 3020;
 
 async function waitFor(promise: Promise<void>, timeout: number): Promise<boolean> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -33,18 +34,24 @@ export default async function setup(project: TestProject) {
   if (environment !== "http" && environment !== "websocket")
     throw new Error(`Unsupported RPC browser environment: ${environment ?? "undefined"}.`);
 
+  // Use the page port Vitest actually resolved so the backend and its allowed origin always match the page.
+  const frontendPort = parseFrontendPort(project.config.browser.api.port, "Vitest browser.api.port");
   const debugging = process.env.VITEST_RPC_DEBUG === "1";
   const backendId = randomUUID();
+  // Browser projects inherit the root's provided context, so the page and backend share this run's token.
+  const callbackToken = createBackendCallbackToken();
+  project.provide(backendCallbackTokenKey, callbackToken);
   const cacheDir = path.join(packageRoot, "lib/backend/.cache", `browser-${environment}`);
   fs.rmSync(cacheDir, { recursive: true, force: true });
   const backend = spawn(process.execPath, [
-    ...(debugging ? ["--inspect=127.0.0.1:5858"] : []),
+    ...(debugging ? [`--inspect=${loopbackHost}:5858`] : []),
     path.resolve(packageRoot, `lib/backend/${environment}.js`),
   ], {
     cwd: packageRoot,
     env: {
       ...process.env,
-      ["VITEST_FRONTEND_PORT"]: frontendPort.toString(),
+      [frontendPortEnvVar]: frontendPort.toString(),
+      [backendCallbackTokenEnvVar]: callbackToken,
       ["VITEST_BACKEND_CACHE_DIR"]: cacheDir,
       ["VITEST_RPC_BACKEND_ID"]: backendId,
     },
@@ -124,7 +131,7 @@ export default async function setup(project: TestProject) {
       await ready;
     else if (!await waitFor(ready, 30000))
       throw new Error(`Timed out waiting for the ${environment} backend ${backend.pid} to initialize.`);
-    const response = await fetch(`http://127.0.0.1:${frontendPort + 2000}/ping`, {
+    const response = await fetch(`http://${loopbackHost}:${backendPortFor(frontendPort)}/ping`, {
       signal: debugging ? undefined : AbortSignal.timeout(5000),
     });
     if (!response.ok || response.headers.get(rpcBackendIdentityHeader) !== backendId)

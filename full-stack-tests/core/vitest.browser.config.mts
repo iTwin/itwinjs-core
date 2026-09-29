@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
+import { defaultFrontendPort, loopbackHost } from "./src/common/BrowserTestPorts";
 
 const require = createRequire(import.meta.url);
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -156,8 +157,8 @@ export default defineConfig({
     fs: {
       allow: [path.resolve(packageRoot, "../.."), path.resolve(packageRoot, "../../core/electron")],
     },
-    host: "127.0.0.1",
-    port: 3010,
+    host: loopbackHost,
+    port: defaultFrontendPort,
     strictPort: true,
   },
   test: {
@@ -192,7 +193,7 @@ export default defineConfig({
             .catch((error) => project.vitest.state.catchError(error, "Core Chrome cancellation"));
         },
       },
-      api: { host: "127.0.0.1", port: 3010, strictPort: true },
+      api: { host: loopbackHost, port: defaultFrontendPort, strictPort: true },
       enabled: true,
       provider: playwright({
         launchOptions: { args: ["--disable-web-security", "--no-sandbox"] },

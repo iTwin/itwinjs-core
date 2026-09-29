@@ -10,6 +10,7 @@ import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeA
 import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "./IModelHubUserMgr";
+import { backendPortFor, parseFrontendPort } from "../common/BrowserTestPorts";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 
@@ -236,7 +237,7 @@ export class TestUtility {
 
     if (enableWebEdit) {
       let socketUrl = new URL(window.location.toString());
-      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl.port = backendPortFor(parseFrontendPort(socketUrl.port, "The Vitest page port")).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
       return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });

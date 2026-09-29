@@ -20,8 +20,12 @@ const kill = vi.fn<ChildProcess["kill"]>();
 const warning = vi.fn(() => true);
 const cancelCurrentRun = vi.fn(async () => {});
 const closeBrowser = vi.fn(async () => {});
+const browserApi = { port: 3020 as unknown };
+const provide = vi.fn();
 const project = {
   isRootProject: () => true,
+  provide,
+  config: { browser: { api: browserApi } },
   vitest: { state: { catchError }, cancelCurrentRun, projects: [{ browser: { provider: { close: closeBrowser } } }] },
 } as unknown as TestProject;
 
@@ -47,6 +51,7 @@ async function start() {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   vi.clearAllMocks();
+  browserApi.port = 3020;
   vi.stubEnv("VITEST_RPC_ENVIRONMENT", "http");
   vi.stubEnv("VITEST_RPC_DEBUG", "0");
   vi.stubGlobal("fetch", vi.fn(async () => new Response("Success", {
@@ -77,6 +82,28 @@ afterEach(() => {
 describe("RPC browser backend lifecycle", () => {
   it("does not spawn another backend for inherited browser projects", async () => {
     await setup({ ...project, isRootProject: () => false } as TestProject);
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("starts the backend for the page port Vitest resolved", async () => {
+    browserApi.port = 4321;
+    const stop = await start();
+    expect(vi.mocked(spawn).mock.calls.at(-1)?.[2]?.env?.VITEST_FRONTEND_PORT).toBe("4321");
+    expect(vi.mocked(fetch).mock.calls.at(-1)?.[0]).toBe("http://127.0.0.1:6321/ping");
+    await stop();
+  });
+
+  it("shares one per-run callback token with the backend and the browser", async () => {
+    const stop = await start();
+    const token = vi.mocked(spawn).mock.calls.at(-1)?.[2]?.env?.VITEST_BACKEND_CALLBACK_TOKEN;
+    expect(token).toMatch(/^[0-9a-f-]{36}$/);
+    expect(provide).toHaveBeenCalledWith("backendCallbackToken", token);
+    await stop();
+  });
+
+  it("rejects an invalid resolved page port before starting a backend", async () => {
+    browserApi.port = undefined;
+    await expect(setup(project)).rejects.toThrow("Vitest browser.api.port must be a TCP port, got \"undefined\".");
     expect(spawn).not.toHaveBeenCalled();
   });
 
