@@ -184,11 +184,12 @@ describe("Field format resolution example", () => {
   /** Spies on the warning [[render]] logs for each field it could not resolve a format for.
    * Returns the (KindOfQuantity, persistence unit) pairs those warnings report as tried.
    */
-  function spyOnFormatWarnings(): () => Array<{ propertyName: string, tried: string[] }> {
+  interface FormatWarning { elementId: string, propertyName: string, formatSet: string | undefined, tried: string[] }
+  function spyOnFormatWarnings(): () => FormatWarning[] {
     const logWarning = sinon.spy(Logger, "logWarning");
     return () => logWarning.getCalls()
       .filter((call) => typeof call.args[1] === "string" && call.args[1].startsWith("No format resolved for text annotation field"))
-      .map((call) => (call.args[2] as () => { propertyName: string, tried: string[] })());
+      .map((call) => (call.args[2] as () => FormatWarning)());
   }
 
   /** Appends a field on `propertyName` of the seeded element, and hands it back so the test can
@@ -394,6 +395,13 @@ describe("Field format resolution example", () => {
 
     expect(warnings()).to.have.length(6);
     expect(warnings().every((w) => w.tried.some((t) => t.endsWith(" in Units.NOT_A_UNIT")))).to.be.true;
+    // The metadata identifies the field so a host can find it, and lists exactly what was tried.
+    expect(warnings()[0]).to.deep.equal({
+      elementId,
+      propertyName: "lengthProp",
+      formatSet: undefined,
+      tried: ["FieldExample.SCHEMA_LENGTH in Units.NOT_A_UNIT"],
+    });
   });
 
   it("formats a valid persistence-unit override through the requested unit, never the property's", async () => {
