@@ -121,7 +121,8 @@ export interface QuantityFieldFormatOptions {
    * Application-chosen, and matched against the ids supplied to
    * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend); iTwin.js does not
    * resolve it against anything persisted in the iModel. A field naming an id that was never
-   * supplied falls through to the iModel's schema presentation format.
+   * supplied resolves as if it named none: through the iModel's adopted FormatSet, then the
+   * schema presentation format.
    */
   formatSet?: string;
 }

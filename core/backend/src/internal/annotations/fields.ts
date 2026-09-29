@@ -369,7 +369,8 @@ function resolveFormatMagnitude(value: ResolvedFieldValue, field: FieldRun, cont
  * cachedContent changed.
  *
  * Resolving the property value and formatting it are both fallible. A failure of either is
- * logged and degrades *this* field to [FieldRun.invalidContentIndicator]($common);
+ * logged and degrades *this* field to [FieldRun.invalidContentIndicator]($common); other
+ * fields in the same block are unaffected.
  */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {

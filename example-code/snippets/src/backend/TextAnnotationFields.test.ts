@@ -119,8 +119,7 @@ describe("Text annotation field formatting", () => {
       },
     };
 
-    // Adopt it for the iModel. Registration is synchronous; each FormatterSpec is built the
-    // first time a field asks for it and reused thereafter.
+    // Adopt it for the iModel. Registration is synchronous and replaces any prior registration.
     ElementDrivesTextAnnotation.registerFieldFormatting({ iModel, formatSet });
 
     // A field displaying the `length` property of a widget that is 2.5 meters long.
@@ -149,8 +148,8 @@ describe("Text annotation field formatting", () => {
       propertyPath: { propertyName: "length" },
       formatOptions: {
         quantity: {
-          // Look up a specific KindOfQuantity via the active FormatsProvider,
-          // overriding the property's own KoQ.
+          // Name the KindOfQuantity to format through. Here it is the property's own KoQ,
+          // stated explicitly; naming a different one overrides it.
           kindOfQuantity: "Snippets.LENGTH",
           // Optionally scope resolution to a specific registered FormatSet.
           formatSet: formatSetId,
