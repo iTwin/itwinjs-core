@@ -34,7 +34,8 @@
     "test:performance:electron": "run-p -r azurite:setup test:performance:electron:vitest",
     "test:performance:electron:vitest": "cross-env VITEST_CORE_GREP=\"#performance\" VITEST_CORE_GREP_INVERT=false vitest run --config vitest.electron.config.mts",
     "test:performance:chrome:azurite": "certa -r chrome --grep \"#performance\"",
-    "test:performance:electron:azurite": "certa -r electron --grep \"#performance\"",
+    "test:performance:electron:certa": "run-p -r azurite:setup test:performance:electron:certa:azurite",
+    "test:performance:electron:certa:azurite": "certa -r electron --grep \"#performance\"",
     "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {},
