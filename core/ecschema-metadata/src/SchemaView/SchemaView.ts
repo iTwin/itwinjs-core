@@ -9,6 +9,7 @@
 import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "../ECObjects";
+import { ECName } from "../ECName";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
 // core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
@@ -402,9 +403,10 @@ export namespace SchemaView {
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get alias(): string { return this._ctx[_storage].strings[this._data.aliasStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -507,9 +509,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -720,11 +723,11 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._ref.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._def.nameStringIdx]; }
-    /** Display label. Falls back to the property name if no explicit label is set.
+    /** Display label, or the decoded property name when the label is absent or empty.
      * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
     public get label(): string {
       const labelStringIdx = this._ref.labelStringIdx;
-      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : this.name;
+      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._def.descriptionStringIdx;
@@ -931,9 +934,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -990,9 +994,10 @@ export namespace SchemaView {
     private get _data() { return this._ctx[_storage].enumerators[this.idx]; }
 
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1060,9 +1065,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1137,9 +1143,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
