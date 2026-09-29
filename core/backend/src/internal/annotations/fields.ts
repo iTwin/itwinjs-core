@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, FormatMagnitude, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldPrimitiveValue, FieldPropertyType, FieldRun, formatFieldValue, FormatMagnitude, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { FieldFormatting, lookupFieldSpec } from "./fieldSpecs";
+import { FieldFormatting, lookupFieldSpec, ResolvedFieldValue } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -57,7 +57,7 @@ export interface UpdateFieldsContext {
   /** Reads the value a field points at, or `undefined` if it cannot be resolved — including
    * every field when the source element was deleted.
    */
-  getProperty(field: FieldRun): FieldValue | undefined;
+  getProperty(field: FieldRun): ResolvedFieldValue | undefined;
 
   /** The formats `"quantity"` and `"coordinate"` values resolve through. [[updateField]] builds
    * a [FormatterSpec]($core-quantity) per field from the FormatSet named by
@@ -67,9 +67,9 @@ export interface UpdateFieldsContext {
   readonly formatting?: FieldFormatting;
 }
 
-// Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
+// Resolves the property a field points at into a [[ResolvedFieldValue]] — primitive value plus, for
 // `"quantity"` / `"coordinate"` types, the property-side KoQ and persistence unit.
-function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | undefined {
+function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): ResolvedFieldValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
@@ -257,7 +257,7 @@ function isIndexableJsonString(rootProp: Property, curValue: FieldValueType): cu
  * stops anywhere but a scalar — including on a JSON `null`, which is not a
  * [FieldPrimitiveValue]($common).
  */
-function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): FieldValue | undefined {
+function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): ResolvedFieldValue | undefined {
   let cur = parseJsonContainer(raw);
   if (undefined === cur) {
     return undefined;
@@ -379,7 +379,7 @@ export function createUpdateContext(
  * format unit outside the bundled BIS set, a KindOfQuantity with no presentation format, or a
  * format whose units belong to a different phenomenon than the persisted value.
  */
-function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
+function resolveFormatMagnitude(value: ResolvedFieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
   const formatting = context.formatting;
   if (!formatting || (value.type !== "quantity" && value.type !== "coordinate")) {
     return undefined;

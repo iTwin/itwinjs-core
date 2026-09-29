@@ -3770,8 +3770,6 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
-    kindOfQuantityFullName?: string;
-    persistenceUnitFullName?: string;
     type: FieldPropertyType;
     value: FieldPrimitiveValue;
 }

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormatDefinition } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
-import { createFieldFormatting } from "../../internal/annotations/fieldSpecs";
+import { createFieldFormatting, ResolvedFieldValue } from "../../internal/annotations/fieldSpecs";
 import { DbResult, Id64, Id64String, Logger, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -99,7 +99,7 @@ describe("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun): FieldValue | undefined => {
+    getProperty: (field: FieldRun): ResolvedFieldValue | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -337,7 +337,7 @@ describe("Field evaluation", () => {
     imodel.close();
   });
 
-  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, formatOptions?: FieldRun["formatOptions"]): FieldValue | undefined {
+  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, formatOptions?: FieldRun["formatOptions"]): ResolvedFieldValue | undefined {
     if (typeof propertyHost === "string") {
       propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
     }
@@ -664,7 +664,7 @@ describe("Field evaluation", () => {
     });
   });
 
-  /** Drives the production format path for a hand-built [[FieldValue]]: `updateField` builds a
+  /** Drives the production format path for a hand-built [[ResolvedFieldValue]]: `updateField` builds a
    * [FormatterSpec]($core-quantity) from the iModel's schema formats and hands `formatFieldValue`
    * a magnitude callback bound to it. Returns the resulting cached content.
    *
@@ -673,7 +673,7 @@ describe("Field evaluation", () => {
    * fails them. `onMiss` fires when the field produced candidates but none resolved.
    */
   function formatThroughSchema(
-    value: FieldValue,
+    value: ResolvedFieldValue,
     options: FieldFormatOptions | undefined,
     onMiss?: () => void,
   ): string | undefined {
@@ -709,7 +709,7 @@ describe("Field evaluation", () => {
       return { propertyName: "JsonProperties", accessors };
     }
 
-    function evaluateJson(accessors: Array<string | number>, formatOptions?: FieldRun["formatOptions"]): FieldValue | undefined {
+    function evaluateJson(accessors: Array<string | number>, formatOptions?: FieldRun["formatOptions"]): ResolvedFieldValue | undefined {
       return evaluateField(jsonPath(...accessors), sourceElementId, false, formatOptions);
     }
 

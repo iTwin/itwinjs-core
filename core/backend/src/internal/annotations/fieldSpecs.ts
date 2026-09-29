@@ -10,6 +10,19 @@ import {
 import { FormatSetFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItem, SchemaKey } from "@itwin/ecschema-metadata";
 import type { FieldFormattingArgs } from "../../annotations/ElementDrivesTextAnnotation";
 
+/** A [FieldValue]($common) as the backend resolves it: the primitive value plus, for
+ * `"quantity"` and `"coordinate"` types, the KindOfQuantity and persistence unit of the EC
+ * property it was read from. These serve as the fallback when the field's own
+ * [QuantityFieldFormatOptions]($common) do not resolve.
+ * @internal
+ */
+export interface ResolvedFieldValue extends FieldValue {
+  /** EC full name of the property's KindOfQuantity, e.g. `"AecUnits.LENGTH"`, if it has one. */
+  kindOfQuantityFullName?: string;
+  /** EC full name of the unit the stored magnitude is expressed in, e.g. `"Units.M"`. */
+  persistenceUnitFullName?: string;
+}
+
 /** The formats an iModel's fields resolve through, as configured by
  * [ElementDrivesTextAnnotation.registerFieldFormatting]($backend) or defaulted from the iModel's
  * schemas. Holds only providers; every [FormatterSpec]($core-quantity) is built on demand by
@@ -160,7 +173,7 @@ export function collectFieldQuantityPairs(args: {
  */
 export function lookupFieldSpec(
   quantityOptions: QuantityFieldFormatOptions | undefined,
-  value: FieldValue,
+  value: ResolvedFieldValue,
   formatting: FieldFormatting,
 ): { spec?: FormatterSpec, candidates: FormattingSpecArgs[] } {
   const candidates = collectFieldQuantityPairs({
