@@ -57,6 +57,8 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
+  const rootProp = ecProp;
+
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
   // `propertyName` may itself be a struct/array/point/navigation property, so its value can't be
@@ -69,7 +71,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     const rawRootValue = reader.current[0];
-    if (undefined === rawRootValue) {
+    if (isNullish(rawRootValue)) {
       return undefined;
     }
 
@@ -97,6 +99,12 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
+  // Indexed JSON strings are handled by `readJsonLeaf`. An un-indexed string stays on the EC path, where it resolves to
+  // itself.
+  if (accessors && accessors.length > 0 && isIndexableJsonString(rootProp, curValue)) {
+    return readJsonLeaf(curValue.primitive, accessors);
+  }
+
   if (accessors) {
     for (const accessor of accessors) {
       if (undefined !== curValue.primitive) {
@@ -112,7 +120,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
 
         const index: number = accessor < 0 ? (array.length + accessor) : accessor;
         const item: FieldPrimitiveValue | FieldStructValue = array[index];
-        if (undefined === item) {
+        if (isNullish(item)) {
           return undefined;
         } else if (curValue.primitiveArray) {
           curValue = { primitive: curValue.primitiveArray[index] };
@@ -129,7 +137,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
         }
 
         const item: any = curValue.struct[accessor];
-        if (undefined === item) {
+        if (isNullish(item)) {
           return undefined;
         }
 
@@ -163,6 +171,85 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   return { value: curValue.primitive, type: propertyType };
+}
+
+function isNullish(value: unknown): value is null | undefined {
+  return undefined === value || null === value;
+}
+
+/** Whether `curValue` is a string property the field can index into, i.e. possibly a serialized
+ * JSON blob. Narrows `curValue.primitive` to `string` for the caller.
+ */
+function isIndexableJsonString(rootProp: Property, curValue: FieldValueType): curValue is { primitive: string } {
+  return rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.String
+    && typeof curValue.primitive === "string";
+}
+
+/** Resolves a [FieldPropertyPath]($common) that indexes into a string property holding serialized
+ * JSON, as a walk entirely separate from the EC one: there is no schema behind a JSON blob,
+ * so no EC metadata is consulted.
+ *
+ * Returns `undefined` when `raw` is not JSON, when an accessor does not resolve, or when the path
+ * stops anywhere but a scalar — including on a JSON `null`, which is not a
+ * [FieldPrimitiveValue]($common).
+ */
+function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): FieldValue | undefined {
+  let cur = parseJsonContainer(raw);
+  if (undefined === cur) {
+    return undefined;
+  }
+
+  for (const accessor of accessors) {
+    if (typeof cur !== "object" || null === cur) {
+      // Can't index into a scalar.
+      return undefined;
+    }
+
+    if (typeof accessor === "number") {
+      if (!Array.isArray(cur)) {
+        return undefined;
+      }
+
+      cur = cur[accessor < 0 ? cur.length + accessor : accessor];
+    } else {
+      cur = Array.isArray(cur) ? undefined : (cur as FieldStructValue)[accessor];
+    }
+
+    if (undefined === cur) {
+      return undefined;
+    }
+  }
+
+  // JSON carries no type metadata, so the leaf's JavaScript type decides the field property type.
+  switch (typeof cur) {
+    case "number":
+      return { value: cur, type: "quantity" };
+    case "boolean":
+      return { value: cur, type: "boolean" };
+    case "string":
+      return { value: cur, type: "string" };
+    default:
+      return undefined;
+  }
+}
+
+/** Parses `raw` if it looks like a JSON object or array, else `undefined` -- in which case the
+ * string is just a string, and a field indexing into it resolves to nothing.
+ */
+function parseJsonContainer(raw: string): unknown {
+  const trimmed = raw.trimStart();
+  const firstChar = trimmed.charAt(0);
+  if (firstChar !== "{" && firstChar !== "[") {
+    return undefined;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+    return (parsed !== null && typeof parsed === "object") ? parsed : undefined;
+  } catch {
+    // Not valid JSON; treat as a normal string.
+    return undefined;
+  }
 }
 
 function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
