@@ -16,7 +16,7 @@ import { SchemaView } from "./SchemaView";
 export interface SchemaViewBlob {
   /** The binary schema metadata (the `data` column of `PRAGMA schema_view` / `schema_view_fragment`). */
   readonly data: Uint8Array;
-  /** Schema-identity hash of the iModel's whole schema set (the `schemaToken` column). Empty string when unavailable. */
+  /** Schema-identity hash of the iModel's whole schema set (the `schemaToken` column). */
   readonly schemaToken: string;
 }
 
@@ -155,10 +155,6 @@ export class SchemaViewManager {
     }
     if (existing === undefined)
       return undefined;
-    // A view without a token (e.g. built directly from a SchemaViewBuilder) cannot be verified by
-    // token; views loaded through this manager always carry one.
-    if (existing.schemaToken === "")
-      return existing;
 
     try {
       if (await this._dataProvider.fetchSchemaToken() === existing.schemaToken)
