@@ -202,6 +202,13 @@ export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent =
   elementId: Id64String;
 
   /**
+   * A callback that allows specifying which fields should be included or excluded in the result based on the given content descriptor. This
+   * is useful when requesting properties of elements with a very large number of fields, where it may be desirable to only get a
+   * subset of all available fields for performance improvement.
+   */
+  fieldsSelector?: (descriptor: Descriptor) => DescriptorFieldsSelector | undefined;
+
+  /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
    */
