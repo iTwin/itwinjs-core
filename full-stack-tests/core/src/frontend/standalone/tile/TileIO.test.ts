@@ -708,7 +708,7 @@ describe("mirukuru TileTree", () => {
       const projExt = imodel.projectExtents;
       expect(projExt.xLength()).toBe(header.contentRange.xLength());
       expect(projExt.yLength()).toBe(header.contentRange.yLength());
-      expect(header.contentRange.zLength()).toEqualWithFpTolerance(0); // project extents are chubbed up; content range is tight.
+      expect(header.contentRange.zLength()).toBeCloseTo(0, 10); // project extents are chubbed up; content range is tight.
     };
 
     // Test current version of tile tree by asking model to load it

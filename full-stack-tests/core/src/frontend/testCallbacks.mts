@@ -4,12 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import type { AccessToken } from "@itwin/core-bentley";
-
-interface TestUserCredentials {
-  email: string;
-  password: string;
-  scope?: string;
-}
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend.js";
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { backendCallbackTokenKey, createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { inject } from "vitest";
@@ -25,5 +20,7 @@ export async function setBackendAccessToken(user: TestUserCredentials): Promise<
   const accessToken = ProcessDetector.isElectronAppFrontend
     ? await invokeBackendCallback(getTokenCallbackName, user)
     : await invokeHttpBackendCallback(getTokenCallbackName, user);
-  return accessToken as AccessToken;
+  if (typeof accessToken !== "string")
+    throw new Error(`Expected the backend to return an access token string, got ${typeof accessToken}.`);
+  return accessToken;
 }

@@ -55,11 +55,8 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
-    expect(iModel).toEqual(expect.anything());
     expect(iModel instanceof IModelConnection).toBe(true);
-    expect(iModel.models).toEqual(expect.anything());
     expect(iModel.models instanceof IModelConnection.Models).toBe(true);
-    expect(iModel.elements).toEqual(expect.anything());
     expect(iModel.elements instanceof IModelConnection.Elements).toBe(true);
 
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);

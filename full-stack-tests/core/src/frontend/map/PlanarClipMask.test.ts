@@ -16,6 +16,10 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 // #graphics: tags this suite as graphics-heavy (shader compilation + pixel readback can take
 // minutes per test on software renderers). Node-compatibility CI lanes exclude #graphics suites.
 const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+
+/** Per-test timeout for the #graphics tests below. */
+const maskTestTimeout = 480000;
+
 describeChrome("Planar clip mask (#integration #graphics)", () => {
   let imodel: IModelConnection;
 
@@ -119,7 +123,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     await expectPixels(undefined, "map");
   });
 
-  it("is masked by specific model", { timeout: 480000 }, async () => {
+  it("is masked by specific model", { timeout: maskTestTimeout }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
@@ -130,7 +134,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
-  it("is masked by DesignModel priority", { timeout: 480000 }, async () => {
+  it("is masked by DesignModel priority", { timeout: maskTestTimeout }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
@@ -183,7 +187,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry", { timeout: 480000 }, async () => {
+  it("is masked by dynamic element geometry", { timeout: maskTestTimeout }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
@@ -210,7 +214,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     });
   });
 
-  it("is masked by priority by dynamic geometry", { timeout: 480000 }, async () => {
+  it("is masked by priority by dynamic geometry", { timeout: maskTestTimeout }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,

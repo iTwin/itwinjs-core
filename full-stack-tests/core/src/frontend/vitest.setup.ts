@@ -8,9 +8,6 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from 
 import { backendOriginFor } from "@itwin/vitest-browser-bridge/ports";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
-import { installVitestMatchers } from "./testMatchers";
-
-installVitestMatchers();
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
