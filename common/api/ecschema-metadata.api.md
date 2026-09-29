@@ -433,6 +433,8 @@ export enum ECClassModifier {
 // @public
 export class ECName {
     constructor(name: string);
+    // @internal
+    static decode(name: string): string;
     decode(): string;
     static encode(input: string): ECName;
     get name(): string;
@@ -2717,7 +2719,6 @@ export namespace SchemaView {
         isStruct(): boolean;
         // (undocumented)
         isView(): boolean;
-        // (undocumented)
         get label(): string;
         get mixins(): readonly Class[];
         // (undocumented)
@@ -2748,7 +2749,6 @@ export namespace SchemaView {
         readonly idx: number;
         // (undocumented)
         get isStrict(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2765,7 +2765,6 @@ export namespace SchemaView {
         get description(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2782,7 +2781,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2877,7 +2875,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2930,7 +2927,6 @@ export namespace SchemaView {
         // @internal (undocumented)
         readonly idx: number;
         get isHidden(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get minorVersion(): number;
