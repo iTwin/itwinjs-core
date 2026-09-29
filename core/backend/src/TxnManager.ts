@@ -1151,6 +1151,11 @@ export class TxnManager {
       return DbConflictResolution.Skip;
     }
 
+    if (args.tableName === "sqlite_stat1" && (args.cause === "Conflict" || args.cause === "Data")) {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "sqlite_stat1 conflict during rebase. Keeping the local statistics.", getChangeMetaData());
+      return DbConflictResolution.Replace;
+    }
+
     // Where schema sync is in use, native has already resolved ec_ rows by comparing sync db
     // versions before we get here.
     if (args.cause === "Data" && !args.indirect) {

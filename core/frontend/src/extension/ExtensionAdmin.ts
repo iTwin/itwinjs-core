@@ -27,6 +27,36 @@ import type { ExtensionManifest, ExtensionProvider } from "./Extension";
  */
 
 /**
+ * Normalizes hostnames for comparison.
+ * @returns The normalized hostname of a URL or bare hostname.
+ * @throws Error if the input cannot be parsed, or does not contain a hostname.
+ */
+function normalizeHostname(input: string): string {
+  const invalid = () => new Error(`"${input}" is not a valid URL or hostname (i.e. http://localhost:3000, yourdomain.com, etc.).`);
+
+  // inputs without a scheme (e.g., https://) will throw an error in the URL constructor
+  const inputWithScheme = /^[a-z][a-z0-9+\-.]*:\/\//i.test(input) ? input : `https://${input}`;
+
+  let hostname;
+  try {
+    hostname = new URL(inputWithScheme).hostname.toLowerCase();
+  } catch {
+    throw invalid();
+  }
+
+  // strip only a leading "www." label - removing "www" anywhere would make unrelated
+  // hosts like "wwwexample.com" compare equal to "example.com"
+  const normalized = hostname.startsWith("www.") ? hostname.substring("www.".length) : hostname;
+
+  // schemes with an optional or opaque host (e.g. file:///, data:) parse successfully but carry no
+  // hostname, and an input of just "www." normalizes to nothing. Neither can identify a host.
+  if (normalized.length === 0)
+    throw invalid();
+
+  return normalized;
+}
+
+/**
  * A "ready to use" Extension (contains a manifest object and an extension provider to help execute).
  * Will be used as the type for in-memory extensions in the ExtensionAdmin
  */
@@ -64,10 +94,10 @@ export class ExtensionAdmin {
    * @alpha
    */
   public async addExtension(provider: ExtensionProvider): Promise<void> {
-    if (provider.hostname) {
-      const hostName = provider.hostname;
-      if (this._hosts.length > 0 && this._hosts.indexOf(hostName) < 0) {
-        throw new Error(`Error loading extension: ${hostName} was not registered.`);
+    if (provider.hostname !== undefined && this._hosts.length > 0) {
+      const hostname = normalizeHostname(provider.hostname);
+      if (this._hosts.indexOf(hostname) < 0) {
+        throw new Error(`Error loading extension: ${provider.hostname} was not registered.`);
       }
     }
     try {
@@ -101,26 +131,9 @@ export class ExtensionAdmin {
    * @param hostUrl (string) Accepts both URLs and hostnames (e.g., http://localhost:3000, yourdomain.com, https://www.yourdomain.com, etc.).
    */
   public registerHost(hostUrl: string) {
-    const hostname = this.getHostName(hostUrl);
+    const hostname = normalizeHostname(hostUrl);
     if (this._hosts.indexOf(hostname) < 0) {
       this._hosts.push(hostname);
-    }
-  }
-
-  /** Returns the hostname of an input string. Throws an error if input is not a valid hostname (or URL). */
-  private getHostName(inputUrl: string): string {
-    // inputs without a protocol (e.g., http://) will throw an error in URL constructor
-    const inputWithProtocol = /(http|https):\/\//.test(inputUrl) ?
-      inputUrl :
-      `https://${inputUrl}`;
-    try {
-      const hostname = new URL(inputWithProtocol).hostname.replace("www.", "");
-      return hostname;
-    } catch (e) {
-      if (e instanceof TypeError) {
-        throw new Error("Argument hostUrl should be a valid URL or hostname (i.e. http://localhost:3000, yourdomain.com, etc.).");
-      }
-      throw e;
     }
   }
 

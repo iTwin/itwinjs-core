@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed inconsistent hostname normalization that could cause extension host allow-list checks to reject legitimate hosts or match unrelated ones",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

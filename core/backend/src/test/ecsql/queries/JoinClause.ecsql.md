@@ -459,6 +459,10 @@ FROM
 
 # JOIN on Empty Table
 
+The `AllProperties` dataset contains a single `TestElementRefersToElements` instance, but its `i`
+property is unset, so the join predicate below never matches and the LEFT JOIN still yields exactly
+one row per `TestElement`. Give that instance an `i` value and this test will need updating.
+
 - dataset: AllProperties.bim
 
 ```sql
