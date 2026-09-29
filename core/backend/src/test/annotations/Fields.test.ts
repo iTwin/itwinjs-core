@@ -51,6 +51,11 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
       stringProp: "abc",
       ints: [10, 11, 12, 13],
       bool: true,
+      // Deliberately present-but-null, to check that a JSON null resolves to no value rather than
+      // to a FieldValue the formatters would have to stringify.
+      nullProp: null,
+      lengthMeters: 2.5,
+      readings: [1.5, null, "text"],
       zoo: {
         address: {
           zipcode: 12345,
@@ -540,6 +545,96 @@ describe("Field evaluation", () => {
       expect(updatedCount).to.equal(1);
       expect(fieldRun1.cachedContent).to.equal("100");
       expect(fieldRun2.cachedContent).to.equal("a");
+    });
+  });
+
+  describe("JSON-in-string properties", () => {
+    // `JsonProperties` is a plain String column; accessors index into the parsed JSON, so none
+    // of these paths have an EC property behind the leaf.
+    function jsonPath(...accessors: Array<string | number>): FieldPropertyPath {
+      return { propertyName: "JsonProperties", accessors };
+    }
+
+    function evaluateJson(accessors: Array<string | number>): FieldValue | undefined {
+      return evaluateField(jsonPath(...accessors), sourceElementId);
+    }
+
+    it("indexes into a deserialized JSON object", () => {
+      expect(evaluateJson(["stringProp"])?.value).to.equal("abc");
+      expect(evaluateJson(["bool"])?.value).to.equal(true);
+      expect(evaluateJson(["zoo", "address", "zipcode"])?.value).to.equal(12345);
+    });
+
+    it("indexes into a deserialized JSON array, including negative indices", () => {
+      expect(evaluateJson(["ints", 0])?.value).to.equal(10);
+      expect(evaluateJson(["ints", 3])?.value).to.equal(13);
+      expect(evaluateJson(["ints", -1])?.value).to.equal(13);
+      expect(evaluateJson(["zoo", "birds", 1, "sound"])?.value).to.equal("scree!");
+    });
+
+    it("returns undefined for a JSON null leaf rather than an unformattable value", () => {
+      // A JSON null is not a FieldPrimitiveValue. Producing one here would yield a
+      // `{ value: null, type: "string" }` FieldValue whose formatter called `null.toString()`.
+      expect(evaluateJson(["nullProp"])).to.be.undefined;
+      expect(evaluateJson(["readings", 1])).to.be.undefined;
+    });
+
+    it("does not throw when a field resolves to a JSON null", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("nullProp"),
+        cachedContent: "stale",
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(() => updateField(fieldRun, context)).to.not.throw();
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    it("returns undefined for a missing key or an out-of-range index", () => {
+      expect(evaluateJson(["nope"])).to.be.undefined;
+      expect(evaluateJson(["zoo", "address", "street"])).to.be.undefined;
+      expect(evaluateJson(["ints", 4])).to.be.undefined;
+      expect(evaluateJson(["ints", -5])).to.be.undefined;
+    });
+
+    it("returns undefined when the path stops on a JSON object or array", () => {
+      expect(evaluateJson(["zoo"])).to.be.undefined;
+      expect(evaluateJson(["ints"])).to.be.undefined;
+    });
+
+    it("returns undefined when indexing past a JSON scalar", () => {
+      expect(evaluateJson(["stringProp", "more"])).to.be.undefined;
+      expect(evaluateJson(["bool", 0])).to.be.undefined;
+    });
+
+    it("keeps the raw string when the property is not indexed", () => {
+      const value = evaluateField({ propertyName: "JsonProperties" }, sourceElementId);
+      expect(value?.type).to.equal("string");
+      expect(value?.value).to.be.a("string").and.to.contain("stringProp");
+    });
+
+    it("types string and boolean leaves from the parsed JSON", () => {
+      expect(evaluateJson(["stringProp"])?.type).to.equal("string");
+      expect(evaluateJson(["bool"])?.type).to.equal("boolean");
+      expect(evaluateJson(["readings", 2])?.type).to.equal("string");
+    });
+
+    it("types a numeric leaf as a quantity", () => {
+      const value = evaluateJson(["lengthMeters"]);
+      expect(value?.type).to.equal("quantity");
+      expect(value?.value).to.equal(2.5);
+    });
+
+    it("renders a numeric leaf as its raw value", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("lengthMeters"),
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(updateField(fieldRun, context)).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("2.5");
     });
   });
 
