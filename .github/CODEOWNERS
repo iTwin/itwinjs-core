@@ -62,8 +62,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-extension/                        @wgoehrig @aruniverse @ben-polinsky
 /common/**/core-frontend.*                        @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /common/**/core-frontend/                         @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
-/common/**/core-i18n.*                            @aruniverse @wgoehrig
-/common/**/core-i18n/                             @aruniverse @wgoehrig
+/common/**/core-i18n.*                            @aruniverse @MichaelSwigerAtBentley
+/common/**/core-i18n/                             @aruniverse @MichaelSwigerAtBentley
 /common/**/core-markup.*                          @pmconne @bbastings
 /common/**/core-markup/                           @pmconne @bbastings
 /common/**/core-quantity.*                        @hl662 @rschili @RohitPtnkr1996
@@ -110,7 +110,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /core/webgl-compatibility                         @iTwin/itwinjs-core-display
 
 /docs                                             @iTwin/itwinjs-core
-/docs/bis                                         @diegoalexdiaz @MichaelSwigerAtBentley 
+/docs/bis                                         @diegoalexdiaz @MichaelSwigerAtBentley
 /docs/config                                      @iTwin/itwinjs-core-admins @ben-polinsky
 /docs/presentation                                @iTwin/itwinjs-core-presentation
 

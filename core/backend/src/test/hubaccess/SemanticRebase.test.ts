@@ -13,6 +13,7 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
+import { semanticRebaseExtendedDescribe, semanticRebaseExtendedIt } from "./SemanticRebaseTestUtils";
 
 function startTestTxn(iModel: BriefcaseDb, description = "semantic rebase"): EditTxn {
   const txn = new EditTxn(iModel, description);
@@ -234,6 +235,60 @@ class TestIModel {
         <BaseClass>A</BaseClass>
         <ECProperty propertyName="PropD" typeName="string"/>
       </ECEntityClass>
+    </ECSchema>`,
+
+    /** v01x00x01 - Adds a link-table relationship class ARefersToA (ElementRefersToElements subclass) between A elements */
+    v01x00x01WithRelationship: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+      <ECRelationshipClass typeName="ARefersToA" strength="referencing" modifier="None">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+          <Class class="A"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referred to by" polymorphic="true">
+          <Class class="A"/>
+        </Target>
+      </ECRelationshipClass>
+    </ECSchema>`,
+
+    /** v01x00x02 - Moves PropC from C to A (transforming) while keeping the ARefersToA relationship class */
+    v01x00x02WithRelationshipMovePropCToA: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+      <ECRelationshipClass typeName="ARefersToA" strength="referencing" modifier="None">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+          <Class class="A"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referred to by" polymorphic="true">
+          <Class class="A"/>
+        </Target>
+      </ECRelationshipClass>
     </ECSchema>`,
   };
 
@@ -830,7 +885,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(element2.propC).to.equal("value_c2", "Element 2 propC should be unchanged");
   });
 
-  it("local trivial schema changes onto incoming trivial schema changes (local newer)", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming trivial schema changes (local newer)", async () => {
     t = await TestIModel.initialize("TrivialSchemaLocalNewer");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming trivial schema changes local newer local");
     const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming trivial schema changes local newer far");
@@ -866,7 +921,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Local schema (newer) should be preserved");
   });
 
-  it("local trivial schema changes onto incoming trivial schema changes (incoming newer)", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming trivial schema changes (incoming newer)", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncomingNewer");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming trivial schema changes incoming newer local");
     const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming trivial schema changes incoming newer far");
@@ -902,7 +957,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Incoming schema (newer) should win, local should not override");
   });
 
-  it("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
     t = await TestIModel.initialize("TrivialSchemaIdenticalWithData");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming identical schema changes with data local");
     let farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes with data far");
@@ -968,7 +1023,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(localElement.propC2).to.equal("local_value_c2", "Local element propC2 should be preserved");
   });
 
-  it("both add different properties, increment to same version number", async () => {
+  semanticRebaseExtendedIt("both add different properties, increment to same version number", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncompatible");
     const localTxn = startTestTxn(t.local, "both add different properties increment to same version local");
     const farTxn = startTestTxn(t.far, "both add different properties increment to same version far");
@@ -985,7 +1040,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
   });
 
-  it("both add compatible properties, local version number higher", async () => {
+  semanticRebaseExtendedIt("both add compatible properties, local version number higher", async () => {
     t = await TestIModel.initialize("CompatibleSchemaLocalHigher");
     const localTxn = startTestTxn(t.local, "both add compatible properties local version higher local");
     const farTxn = startTestTxn(t.far, "both add compatible properties local version higher far");
@@ -1011,7 +1066,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(await classD!.getProperty("PropD2")).to.exist;
   });
 
-  it("both add compatible properties, incoming version number higher", async () => {
+  semanticRebaseExtendedIt("both add compatible properties, incoming version number higher", async () => {
     t = await TestIModel.initialize("CompatibleSchemaIncomingHigher");
     const localTxn = startTestTxn(t.local, "both add compatible properties incoming version higher local");
     const farTxn = startTestTxn(t.far, "both add compatible properties incoming version higher far");
@@ -1051,7 +1106,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
-  it("both add same but incompatible property, incoming version number higher", async () => {
+  semanticRebaseExtendedIt("both add same but incompatible property, incoming version number higher", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncompatible");
     const localTxn = startTestTxn(t.local, "both add same but incompatible property incoming version higher local");
     const farTxn = startTestTxn(t.far, "both add same but incompatible property incoming version higher far");
@@ -1067,7 +1122,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
-  it("local transforming schema change onto incoming trivial schema change", async () => {
+  semanticRebaseExtendedIt("local transforming schema change onto incoming trivial schema change", async () => {
     t = await TestIModel.initialize("LocalTransformIncomingTrivial");
     const farTxn = startTestTxn(t.far, "local transforming schema change onto incoming trivial schema change far");
     const localTxn = startTestTxn(t.local, "local transforming schema change onto incoming trivial schema change local");
@@ -1122,7 +1177,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(localElement.propC).to.equal("local_value_c", "Local element propC should be preserved after transform");
   });
 
-  it("local trivial schema change onto incoming transforming schema change", async () => {
+  semanticRebaseExtendedIt("local trivial schema change onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalTrivialIncomingTransform");
     const farTxn = startTestTxn(t.far, "local trivial schema change onto incoming transforming schema change far");
     const localTxn = startTestTxn(t.local, "local trivial schema change onto incoming transforming schema change local");
@@ -1301,7 +1356,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("Incoming data update onto local transforming schema change", async () => {
+  semanticRebaseExtendedIt("Incoming data update onto local transforming schema change", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
     const farTxn = startTestTxn(t.far, "Incoming data update onto local transforming schema change far");
     const localTxn = startTestTxn(t.local, "Incoming data update onto local transforming schema change local");
@@ -1349,7 +1404,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
+  semanticRebaseExtendedIt("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
     // Must close briefcases before deleting their files - on Windows, open files are locked by the OS.
     // Save paths before closing since pathName getter throws on closed dbs.
@@ -1365,7 +1420,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(IModelJsFs.existsSync(farRebasePath)).to.be.false; // after briefcase deletion the rebase folder should also be deleted
   });
 
-  it("local multiple data transactions onto incoming transforming schema change", async () => {
+  semanticRebaseExtendedIt("local multiple data transactions onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalMultipleDataIncomingTransform");
     let farTxn = startTestTxn(t.far, "local multiple data transactions onto incoming transforming schema change far");
     let localTxn = startTestTxn(t.local, "local multiple data transactions onto incoming transforming schema change local");
@@ -1417,7 +1472,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("local transforming schema change onto incoming multiple data transactions", async () => {
+  semanticRebaseExtendedIt("local transforming schema change onto incoming multiple data transactions", async () => {
     t = await TestIModel.initialize("LocalTransformIncomingMultipleData");
     let farTxn = startTestTxn(t.far, "local transforming schema change onto incoming multiple data transactions far");
     let localTxn = startTestTxn(t.local, "local transforming schema change onto incoming multiple data transactions local");
@@ -1469,7 +1524,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Local schema transformation should be preserved");
   });
 
-  it("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
+  semanticRebaseExtendedIt("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
     const runBulkRebaseTest = async (count: number) => {
       t = await TestIModel.initialize(`BulkElements${count}`);
       const farTxn = startTestTxn(t.far, `${count} elements rebase far`);
@@ -1508,7 +1563,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await runBulkRebaseTest(101);
   });
 
-  it("should fail when importing schema with unsaved data changes", async () => {
+  semanticRebaseExtendedIt("should fail when importing schema with unsaved data changes", async () => {
     t = await TestIModel.initialize("UnsavedDataChangesSchemaImport");
     const localTxn = startTestTxn(t.local, "should fail when importing schema with unsaved data changes local");
 
@@ -1531,12 +1586,182 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.local.isOpen).to.be.true;
   });
 
+  it("navigation property (parent) with explicit relationship class survives trivial schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTrivial");
+    const localTxn = startTestTxn(t.local, "nav parent trivial local");
+    const farTxn = startTestTxn(t.far, "nav parent trivial far");
+
+    // Far imports a trivial additive schema change and pushes it (incoming change to rebase onto).
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(farTxn, "add PropC2 to class C");
+
+    // Local inserts (unpushed) a parent element and a child whose `parent` navigation property
+    // carries an explicit relationship class (RelECClassId). These inserts are the changes that
+    // get captured and reinstated during the rebase.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const childId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "child_a",
+      propC: "child_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + child");
+
+    // Local pulls and rebases its local inserts onto the incoming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // The navigation property (id + relClassName) captured from the insert must survive the rebase.
+    const child = t.getElementProps(t.local, childId);
+    chai.expect(child.parent).to.not.be.undefined;
+    chai.expect(child.parent.id).to.equal(parentId, "parent navigation id must be preserved");
+    chai.expect(child.parent.relClassName.replace(":", ".")).to.equal(
+      "BisCore.ElementOwnsChildElements",
+      "parent navigation relationship class name must be preserved",
+    );
+    chai.expect(child.classFullName).to.equal("TestDomain:C", "child classFullName must be preserved");
+    chai.expect(child.propA).to.equal("child_a", "propA must be preserved");
+    chai.expect(child.propC).to.equal("child_c", "propC must be preserved");
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01");
+  });
+
+  it("navigation property + multi-class ECClassId survive transforming schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTransforming");
+    let localTxn = startTestTxn(t.local, "nav parent transforming local");
+    let farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Baseline: bump both briefcases to v01.00.01 so the incoming transforming change (v01.00.02
+    // MovePropCToA) applies cleanly on top of it.
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(localTxn, "baseline v01.00.01");
+    localTxn = startTestTxn(t.local, "nav parent transforming local");
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Local inserts a parent (class A) and children of classes C and D, with explicit parent
+    // relationship classes, then makes them local (unpushed) changes.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const cChildId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "c_a",
+      propC: "c_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    const dChildId = t.insertElement(localTxn, "TestDomain:D", {
+      propA: "d_a",
+      propD: "d_d",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + C + D children");
+
+    // Far pushes a transforming schema change (moves PropC from C to A).
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far transforming schema v01.00.02");
+
+    // Local pulls and rebases its local inserts onto the transforming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // ECClassId of each element (a class-id-typed value) must resolve to the correct class name.
+    const cChild = t.getElementProps(t.local, cChildId);
+    chai.expect(cChild.classFullName).to.equal("TestDomain:C", "C child classFullName must be preserved");
+    chai.expect(cChild.propC).to.equal("c_c", "propC value must survive column migration C→A");
+    chai.expect(cChild.parent.id).to.equal(parentId, "C child parent id must be preserved");
+    chai.expect(cChild.parent.relClassName.replace(":", ".")).to.equal("BisCore.ElementOwnsChildElements");
+
+    const dChild = t.getElementProps(t.local, dChildId);
+    chai.expect(dChild.classFullName).to.equal("TestDomain:D", "D child classFullName must be preserved");
+    chai.expect(dChild.propD).to.equal("d_d");
+    chai.expect(dChild.parent.id).to.equal(parentId, "D child parent id must be preserved");
+
+    // ECSql resolves ECClassId to the correct class names after rebase.
+    const rows = await TestIModel.queryToMap(
+      t.local,
+      `SELECT ECInstanceId, ec_className(ECClassId) AS className FROM TestDomain.A`,
+    );
+    chai.expect(rows.get(cChildId)?.className).to.include("C");
+    chai.expect(rows.get(dChildId)?.className).to.include("D");
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
+  });
+
+  it("link-table relationship (with constraint class ids) survives transforming schema rebase", async () => {
+    t = await TestIModel.initialize("LinkTableRelTransforming");
+    let localTxn = startTestTxn(t.local, "link table rel transforming local");
+    let farTxn = startTestTxn(t.far, "link table rel transforming far");
+
+    // Baseline: bump both briefcases to v01.00.01 so the ARefersToA link-table relationship class
+    // exists on both sides and the incoming transforming change (v01.00.02 MovePropCToA) applies cleanly.
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01WithRelationship]);
+    await pushChanges(localTxn, "baseline v01.00.01 with relationship class");
+    localTxn = startTestTxn(t.local, "link table rel transforming local");
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "link table rel transforming far");
+
+    // Local inserts a source (class C) and a target (class D) element and a link-table relationship
+    // (ARefersToA) between them - all unpushed local changes to be reinstated during rebase.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const sourceId = t.insertElement(localTxn, "TestDomain:C", { propA: "src_a", propC: "src_c" });
+    const targetId = t.insertElement(localTxn, "TestDomain:D", { propA: "tgt_a", propD: "tgt_d" });
+    const relId = localTxn.insertRelationship({
+      classFullName: "TestDomain:ARefersToA",
+      sourceId,
+      targetId,
+    });
+    localTxn.saveChanges("local insert source + target + relationship");
+
+    // Far pushes a transforming schema change (moves PropC from C to A) which migrates the source
+    // element's column, so the relationship's SourceECClassId must survive the migration.
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02WithRelationshipMovePropCToA]);
+    await pushChanges(farTxn, "far transforming schema v01.00.02");
+
+    // Local pulls and rebases its local inserts onto the transforming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // The relationship instance and its endpoints must survive the rebase.
+    const rel = t.local.relationships.tryGetInstanceProps("TestDomain:ARefersToA", relId);
+    chai.expect(rel, "relationship should exist after rebase").to.not.be.undefined;
+    chai.expect(rel!.sourceId).to.equal(sourceId, "relationship source id must be preserved");
+    chai.expect(rel!.targetId).to.equal(targetId, "relationship target id must be preserved");
+
+    // ECSql resolves the relationship's ECClassId and its constraint class ids (Source/Target) to the
+    // correct class names even after the transforming schema change migrated the endpoint columns.
+    const rows = await TestIModel.queryToMap(
+      t.local,
+      `SELECT ECInstanceId, SourceECInstanceId AS sourceId, TargetECInstanceId AS targetId,
+              ec_className(ECClassId, 's.c') AS className,
+              ec_className(SourceECClassId, 's.c') AS sourceClassName,
+              ec_className(TargetECClassId, 's.c') AS targetClassName
+       FROM TestDomain.ARefersToA`,
+    );
+    const relRow = rows.get(relId);
+    chai.expect(relRow, "relationship row should be queryable after rebase").to.not.be.undefined;
+    chai.expect(relRow!.sourceId).to.equal(sourceId);
+    chai.expect(relRow!.targetId).to.equal(targetId);
+    chai.expect(relRow!.className).to.equal("TestDomain.ARefersToA", "relationship class id must resolve to ARefersToA");
+    chai.expect(relRow!.sourceClassName).to.equal("TestDomain.C", "source constraint class id must resolve to class C");
+    chai.expect(relRow!.targetClassName).to.equal("TestDomain.D", "target constraint class id must resolve to class D");
+
+    // The endpoint elements themselves survive the transforming change with values intact.
+    const source = t.getElementProps(t.local, sourceId);
+    chai.expect(source.classFullName).to.equal("TestDomain:C", "source classFullName must be preserved");
+    chai.expect(source.propC).to.equal("src_c", "propC value must survive column migration C→A");
+
+    const target = t.getElementProps(t.local, targetId);
+    chai.expect(target.classFullName).to.equal("TestDomain:D", "target classFullName must be preserved");
+    chai.expect(target.propD).to.equal("tgt_d", "propD value must be preserved");
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
+  });
+
 });
 
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe("Semantic Rebase with indirect changes", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase with indirect changes", function (this: Suite) {
   this.timeout(90000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1883,7 +2108,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 /**
  * Test suite for data conflicts, conflict handlers, lifecycle events, and mixed schema+conflict scenarios during semantic rebase.
  */
-describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Data Correctness Under Conflict", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2157,7 +2382,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
  * Multi-step schema upgrade chains.
  * Tests scenarios where one or both sides import schemas in multiple sequential steps before the rebase.
  */
-describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2385,7 +2610,7 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
  * ElementAspect changes during semantic rebase.
  * Tests that aspect insert/update/delete operations are correctly captured and reinstated.
  */
-describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2644,7 +2869,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
  * Property type variations during semantic rebase.
  * Ensures int, double, and boolean property values are preserved correctly through rebase.
  */
-describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Property Type Variations", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2870,7 +3095,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
  * Both sides delete the same element.
  * Edge case where both local and far delete the same element independently.
  */
-describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Both Sides Delete Same Element", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2941,7 +3166,7 @@ describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Sui
  * Three-briefcase scenarios.
  * Tests interactions when three separate briefcases are involved in schema+data operations.
  */
-describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3075,7 +3300,7 @@ describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
  * Tests that semantic rebase state is handled correctly when the local briefcase
  * pulls multiple times before pushing, accumulating rebase operations.
  */
-describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3179,7 +3404,7 @@ describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite)
  * New class addition to schema.
  * Tests that newly added entity classes and their instances survive semantic rebase.
  */
-describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - New Class Addition to Schema", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3334,7 +3559,7 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
  * Guard conditions and error paths for semantic rebase.
  * Tests boundary conditions like importing schema while rebasing, concurrent pull attempts, etc.
  */
-describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Guard Conditions and Error Paths", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3477,7 +3702,7 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
  * Tests scenarios where local txns contain a mix of insert, update, and delete operations
  * that need to be correctly captured and reinstated during semantic rebase.
  */
-describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3683,7 +3908,7 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
  * Cleanup and folder lifecycle edge cases.
  * Tests that rebase folder state is correctly managed in unusual lifecycle scenarios.
  */
-describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3802,7 +4027,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
 
 });
 
-describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   this.timeout(120000);
   let t: TestIModel | undefined;
 
@@ -4219,4 +4444,3 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema must be v02 after pull #3");
   });
 });
-

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "Fixed false namespace load errors when localization namespaces are registered concurrently.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}

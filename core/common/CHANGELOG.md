@@ -1,6 +1,51 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+_Version update only_
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+_Version update only_
+
+## 5.13.3
+Tue, 15 Sep 2026 20:25:28 GMT
+
+_Version update only_
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- QueryBinder.bindIdSet now throws a descriptive ITwinError (scope "itwin-QueryBinder", key "invalid-arguments") when an entry is a string that is not a valid Id64String, instead of silently ignoring it.
+- Add the public TxnEntityMetadata interface in @itwin/core-common for the backend and frontend transaction change APIs.
+- Fixed `Code.equals` to be case-insensitive with code values and added error types for the new `SynchronousChannel.Reservations` backend API.
+- Introduce TextAnnotation leader target point
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
@@ -29,6 +74,11 @@ Mon, 03 Aug 2026 12:25:49 GMT
 
 - Added an internal QueryBinder helper to support restoring legacy binding-skip semantics in downstream packages.
 - Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle).
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

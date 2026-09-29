@@ -330,6 +330,7 @@ import { TileVersionInfo } from '@itwin/core-common';
 import { Transform } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
+import { TxnEntityMetadata as TxnEntityMetadata_2 } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
@@ -1761,6 +1762,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // @beta
+    pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
     // @deprecated
@@ -2262,6 +2265,7 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
+    direction: "geoToIModel" | "iModelToGeo";
     // (undocumented)
     isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
@@ -8150,6 +8154,13 @@ export interface PullChangesOptions {
     progressInterval?: number;
 }
 
+// @beta
+export interface PushChangesOptions {
+    abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    downloadProgressInterval?: number;
+}
+
 // @public
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -10744,6 +10755,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
     // (undocumented)
+    get outputColorTexture(): TextureHandle | undefined;
+    // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
@@ -12346,7 +12359,7 @@ export class TwoWayViewportSync {
 // @public
 export interface TxnEntityChange {
     id: Id64String;
-    metadata: TxnEntityMetadata;
+    metadata: TxnEntityMetadata_2;
     type: TxnEntityChangeType;
 }
 
@@ -12370,14 +12383,11 @@ export interface TxnEntityChangesFilterOptions {
 // @public
 export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
 
-// @public
-export interface TxnEntityMetadata {
-    readonly classFullName: string;
-    is(baseClassFullName: string): boolean;
-}
+// @public @deprecated
+export type TxnEntityMetadata = TxnEntityMetadata_2;
 
 // @public
-export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;
+export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata_2) => boolean;
 
 // @public
 export interface Uniform {

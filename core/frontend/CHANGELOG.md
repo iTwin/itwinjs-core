@@ -1,6 +1,60 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+### Updates
+
+- Fixed GL_INVALID_FRAMEBUFFER_OPERATION that could occur when reading pixels right after a second viewport was closed
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+_Version update only_
+
+## 5.13.3
+Tue, 15 Sep 2026 20:25:28 GMT
+
+_Version update only_
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- EmphasizeElements' default appearance applies even if no elements are emphasized.
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
+- Update Units Schema to 01.00.11.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Map-layer credentials can now be restricted to trusted origins via the opt-in MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins, and blocked requests are reported through MapLayerImageryProviderStatus.UntrustedOrigin. While the restriction is enabled, requests carrying credentials refuse redirects so that credentials cannot reach an unlisted origin. Server-provided attribution text, ArcGIS identify tooltip fields, and map-layer and reality-model names and properties are now rendered as plain text instead of HTML; WMS GetFeatureInfo responses from trusted origins intentionally keep their rich HTML, so applications must sanitize that content themselves.
+- Handle incompatible format-provider entries during QuantityFormatter registry reload.
+- Deprecate the existing @itwin/core-frontend TxnEntityMetadata export; use TxnEntityMetadata from @itwin/core-common instead. Frontend TxnEntityChange.metadata uses the shared contract.
+- Invalidate cached decorations when always/never-drawn elements change.
+- Upgrade wms-capabilities to 0.6.0 (drops minimist runtime dependency) and harden WMS GetCapabilities XML parsing against malformed and hostile input
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
@@ -33,6 +87,13 @@ Mon, 03 Aug 2026 12:25:49 GMT
 - Clarify/document/prove support for the KHR_mesh_primitive_restart glTF extension for line strip primitives.
 - Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
 - Add filtering support to SchemaView and improve performance.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

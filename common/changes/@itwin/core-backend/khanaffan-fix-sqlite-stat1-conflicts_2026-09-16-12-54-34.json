@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Resolve sqlite_stat1 conflicts during changeset merge and local transaction rebase.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "khanaffan@users.noreply.github.com"
+}

@@ -44,11 +44,20 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
+   * Each [[TxnEntityChange]] exposes its class through `metadata.classFullName`. Use [[TxnEntityChanges.filter]] with `metadata.is` to match a class or one of its subclasses.
+   * @example
+   * ```ts
+   * iModel.txns.onElementsChanged.addListener((changes) => {
+   *   for (const change of changes.filter({ includeMetadata: (metadata) => metadata.is("BisCore:GeometricElement") }))
+   *     updateElement(change.id);
+   * });
+   * ```
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
+   * Each [[TxnEntityChange]] exposes its class through `metadata.classFullName`. Use [[TxnEntityChanges.filter]] with `metadata.is` to match a class or one of its subclasses.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onModelsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();

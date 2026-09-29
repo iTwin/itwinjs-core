@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Allow SqliteChangesetReader to use a SQLiteDb as its schema source.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

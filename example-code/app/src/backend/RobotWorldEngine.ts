@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BriefcaseDb, ECSqlStatement, EditTxn, Element, IModelDb, IModelHost, withEditTxn } from "@itwin/core-backend";
+import { BriefcaseDb, EditTxn, Element, IModelDb, IModelHost, withEditTxn } from "@itwin/core-backend";
 import {
-  Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+  Code, IModelReadRpcInterface, QueryBinder, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
@@ -36,51 +36,46 @@ export class RobotWorldEngine {
   }
 
   public static countRobots(iModelDb: IModelDb): number {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return iModelDb.withPreparedStatement(`SELECT COUNT(*) from ${RobotWorld.Class.Robot}`, (stmt: ECSqlStatement): number => {
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        return 0;
-      return stmt.getValue(0).getInteger();
+    return iModelDb.withQueryReader(`SELECT COUNT(*) from ${RobotWorld.Class.Robot}`, (reader): number => {
+      return reader.step() ? reader.current[0] : 0;
     });
   }
 
-  // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
+  // __PUBLISH_EXTRACT_START__ ECSqlReader.spatialQuery
   public static queryObstaclesHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
     const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
-      stmt.bindRange3d("bbox", robot1.placement.calculateRange());
-      stmt.bindId("thisRobot", rid);
+    const params = new QueryBinder()
+      .bindRange3d("bbox", robot1.placement.calculateRange())
+      .bindId("thisRobot", rid);
+    return iModelDb.withQueryReader(selStmt, (reader) => {
       const hits: Id64String[] = [];
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        hits.push(stmt.getValue(0).getId());
-      }
+      while (reader.step())
+        hits.push(reader.current[0]);
       return hits;
-    });
+    }, params);
   }
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ ECSqlStatement.spatialQuery
+  // __PUBLISH_EXTRACT_START__ ECSqlReader.spatialQuery
   public static queryBarriersHitByRobot(iModelDb: IModelDb, rid: Id64String): Id64String[] {
     const robot1 = iModelDb.elements.getElement<Robot>(rid);
 
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
-      stmt.bindRange3d("bbox", robot1.placement.calculateRange());
-      stmt.bindId("thisRobot", rid);
+    const params = new QueryBinder()
+      .bindRange3d("bbox", robot1.placement.calculateRange())
+      .bindId("thisRobot", rid);
+    return iModelDb.withQueryReader(selStmt, (reader) => {
       const hits: Id64String[] = [];
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        hits.push(stmt.getValue(0).getId());
-      }
+      while (reader.step())
+        hits.push(reader.current[0]);
       return hits;
-    });
+    }, params);
   }
   // __PUBLISH_EXTRACT_END__
 
