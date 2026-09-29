@@ -2915,7 +2915,14 @@ describe("PresentationManager", () => {
         const elementIds = [Id64.fromLocalAndBriefcaseIds(123, 1), Id64.fromLocalAndBriefcaseIds(124, 1), Id64.fromLocalAndBriefcaseIds(333, 1)];
         imodelMock.createQueryReader
           .withArgs(sinon.match((query: string) => query.includes(`FROM bis.Element`)))
-          .returns(stubECSqlReader([{ className: "TestSchema.TestClass", ids: elementIds.join(",") }]));
+          .returns(
+            stubECSqlReader([
+              {
+                className: "TestSchema.TestClass",
+                ids: `${elementIds[0]}:,${elementIds[1]}:${elementIds[0]},${elementIds[2]}:${Id64.fromLocalAndBriefcaseIds(200, 1)}`,
+              },
+            ]),
+          );
 
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContentSet,
