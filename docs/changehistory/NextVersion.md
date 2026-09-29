@@ -15,6 +15,8 @@ publish: false
       - [ChangesetReader row options](#changesetreader-row-options)
       - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
       - [ChangesetReader identifiers filter](#changesetreader-identifiers-filter)
+  - [Common](#common)
+    - [Cursor paging for ECSqlReader](#cursor-paging-for-ecsqlreader)
   - [Geometry](#geometry)
     - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
   - [Electron](#electron)
@@ -124,6 +126,21 @@ The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteD
 #### ChangesetReader identifiers filter
 
 The `@beta` [PropertyFilter]($backend) enum has a new `InstanceKeyAndIdentifiers` member. It returns `ECInstanceId`, `ECClassId`, and a fixed set of identifiers read only from the changeset, so it still works when a changeset is read after its instances were deleted. See [Identifiers returned by `InstanceKeyAndIdentifiers`](../learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers) for the list.
+
+## Common
+
+### Cursor paging for ECSqlReader
+
+Large ECSQL result sets are returned in pages, and by default each page re-runs the query and steps past `OFFSET` rows, so reading a large result costs O(n²) row steps. The new @beta `QueryOptions.useCursor` (or `QueryOptionsBuilder.setUseCursor(true)`) lets a backend retain the statement for a partial page and resume it for the next page. Resumed pages share the read snapshot of the first page. If the cursor is unavailable (evicted, expired after 30 seconds of inactivity, invalidated by a data change, or the next page is served by a different backend process), paging falls back to the previous offset behavior. Exit a `for await` loop early, or call `ECSqlReader.return()`, to release the cursor promptly.
+
+If a page request is in flight, `return()` waits for it before releasing the returned cursor and discards the page's rows. A failed cursor close is reported to the caller and can be retried by calling `return()` again.
+
+```ts
+const reader = iModelDb.createQueryReader("SELECT ECInstanceId, GeometryStream FROM bis.GeometricElement3d", undefined, { useCursor: true });
+for await (const row of reader) {
+  // ...
+}
+```
 
 ## Geometry
 

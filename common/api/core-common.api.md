@@ -2239,6 +2239,8 @@ export class DbQueryError extends BentleyError {
 export interface DbQueryRequest extends DbRequest, QueryOptions {
     // (undocumented)
     args?: object;
+    closeCursor?: boolean;
+    cursorId?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -2247,6 +2249,7 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
 
 // @internal (undocumented)
 export interface DbQueryResponse extends DbResponse {
+    cursorId?: string;
     // (undocumented)
     data: any[];
     // (undocumented)
@@ -2860,6 +2863,8 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     reset(options?: QueryOptions): void;
     // @deprecated
     resetBindings(): void;
+    // @beta
+    return(): Promise<IteratorResult<QueryRowProxy>>;
     // @internal (undocumented)
     protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
     // @deprecated (undocumented)
@@ -7903,6 +7908,8 @@ export interface QueryOptions extends BaseReaderOptions {
     limit?: QueryLimit;
     rowFormat?: QueryRowFormat;
     suppressLogErrors?: boolean;
+    // @beta
+    useCursor?: boolean;
 }
 
 // @public (undocumented)
@@ -7922,6 +7929,8 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
+    // @beta
+    setUseCursor(val: boolean): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 

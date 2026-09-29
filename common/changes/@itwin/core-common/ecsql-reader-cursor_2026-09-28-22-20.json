@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add opt-in `QueryOptions.useCursor` so ECSqlReader can resume partial pages from a retained backend cursor, and `ECSqlReader.return()` to release it early.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
