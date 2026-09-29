@@ -1928,7 +1928,10 @@ export abstract class IModelDb extends IModel {
         const result = await reader.next();
         if (result.done)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
-        return result.value.sha3_256 as string;
+        const token: unknown = result.value.sha3_256;
+        if (typeof token !== "string")
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned an invalid sha3_256 column");
+        return token;
       },
     };
   }
@@ -1945,10 +1948,12 @@ export abstract class IModelDb extends IModel {
     if (result.done)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
-    const token = result.value.schemaToken as string | undefined;
+    const token: unknown = result.value.schemaToken;
     if (data === undefined || data === null)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
-    return { data, schemaToken: token ?? "" };
+    if (typeof token !== "string")
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned an invalid schemaToken column`);
+    return { data, schemaToken: token };
   }
 
   /** Get the linkTableRelationships for this IModel */
