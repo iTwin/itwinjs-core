@@ -191,7 +191,6 @@ describe("SchemaView label fallback", () => {
   ])("resolves $name with label $label", ({ name, label, expected }) => {
     for (const [prefix, item] of makeLabelViews(name, label)) {
       expect(item.label, prefix).toBe(`${prefix}${expected}`);
-      expect(item.label, prefix).toBe(`${prefix}${expected}`);
       expect(item.name, prefix).toBe(`${prefix}${name}`);
     }
   });
