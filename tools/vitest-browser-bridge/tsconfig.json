@@ -11,6 +11,7 @@
     "src/callbacks/http.ts",
     "src/electron/bridge-preload.ts",
     "src/electron/provider-session.ts",
+    "src/ports.ts",
     "src/test/fixtures/**/*.ts"
   ]
 }

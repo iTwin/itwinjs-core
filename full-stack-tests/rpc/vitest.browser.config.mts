@@ -2,9 +2,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
-import { defaultFrontendPort, loopbackHost } from "./src/common/BrowserTestPorts";
+import { loopbackHost } from "@itwin/vitest-browser-bridge/ports";
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+/** Port of the Vitest page. The global setup reads the port Vitest resolved and derives the backends from it. */
+const frontendPort = 3020;
 
 const environment = process.env.VITEST_RPC_ENVIRONMENT;
 if (environment !== "http" && environment !== "websocket")
@@ -31,7 +33,7 @@ export default defineConfig({
   },
   server: {
     host: loopbackHost,
-    port: defaultFrontendPort,
+    port: frontendPort,
     strictPort: true,
   },
   test: {
@@ -54,7 +56,7 @@ export default defineConfig({
       ["junit", { outputFile: `lib/test/${environment}_junit_results.xml` }],
     ],
     browser: {
-      api: { host: loopbackHost, port: defaultFrontendPort, strictPort: true },
+      api: { host: loopbackHost, port: frontendPort, strictPort: true },
       enabled: true,
       provider: playwright({
         launchOptions: {
