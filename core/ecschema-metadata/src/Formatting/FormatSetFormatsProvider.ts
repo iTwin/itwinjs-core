@@ -106,10 +106,8 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFor
   }
 
   private getFormatSyncFromFallback(name: string, system: UnitSystemKey | undefined, context: FormatsProviderContext): FormatDefinition | undefined {
-    const fallbackProvider = this._fallbackProvider;
-    if (!isSyncFormatsProvider(fallbackProvider))
-      return undefined;
-    return fallbackProvider.getFormatSync(name, system, context);
+    const fallbackProvider: (FormatsProvider & Partial<SyncFormatsProvider>) | undefined = this._fallbackProvider;
+    return typeof fallbackProvider?.getFormatSync === "function" ? fallbackProvider.getFormatSync(name, system, context) : undefined;
   }
 
   /**
@@ -206,8 +204,4 @@ function normalizeFormatName(input: string): string {
   // Convert node-addon names from `schemaName:schemaItemName` to the dot-separated key used by FormatSet.
   const [schemaName, itemName] = SchemaItem.parseFullName(input);
   return schemaName === "" ? itemName : `${schemaName}.${itemName}`;
-}
-
-function isSyncFormatsProvider(provider: FormatsProvider | undefined): provider is FormatsProvider & SyncFormatsProvider {
-  return provider !== undefined && "getFormatSync" in provider && typeof provider.getFormatSync === "function";
 }
