@@ -67,8 +67,9 @@ export interface SchemaViewData {
  * stateless wrappers that hold a reference to this view plus an index. They allocate nothing
  * and cache nothing.
  *
- * The view is immutable after construction. Build it via `SchemaViewBuilder` or parse
- * from a binary blob via `fromBinary`.
+ * Use {@link SchemaViewManager} to load schemas incrementally into one view, or parse a standalone
+ * binary blob via {@link SchemaView.fromBinary}. Consumers cannot modify the metadata; a manager
+ * can extend its view with additional schemas while previously obtained view objects remain valid.
  * @beta
  */
 export class SchemaView {
@@ -169,7 +170,8 @@ export class SchemaView {
   }
 
   /** Parse a binary blob into a SchemaView. Synchronous.
-   * @param blob - The binary blob from `PRAGMA schema_view`.
+   * @param blob - The binary blob from `PRAGMA schema_view`, or a standalone `PRAGMA schema_view_fragment`
+   * containing the requested schemas and their references.
    * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA checksum(schema_token)`).
    * @beta
    */
@@ -619,7 +621,8 @@ export namespace SchemaView {
       return this._ctx.getTransitiveBases(this.idx).has(targetIdx);
     }
 
-    /** Direct derived classes. Expensive on first call (builds reverse map across all classes). */
+    /** Direct derived classes among the currently loaded schemas. A partial view may omit derived
+     * classes from other schemas. Expensive on first call (builds reverse map across all loaded classes). */
     public get derivedClasses(): readonly Class[] {
       const map = this._ctx.buildDerivedClassMap();
       const indices = map.get(this.idx);

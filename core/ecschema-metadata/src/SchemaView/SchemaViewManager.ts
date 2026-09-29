@@ -11,7 +11,7 @@ import { SchemaView } from "./SchemaView";
 
 /** One schema-view blob with its cache-invalidation token, as fetched by a
  * {@link SchemaViewDataProvider}. Full and fragment blobs share this shape.
- * @internal
+ * @beta
  */
 export interface SchemaViewBlob {
   /** The binary schema metadata (the `data` column of `PRAGMA schema_view` / `schema_view_fragment`). */
@@ -20,19 +20,20 @@ export interface SchemaViewBlob {
   readonly schemaToken: string;
 }
 
-/** The data source a {@link SchemaViewManager} loads schema-view data from, implemented by the hosts
- * that own the query APIs: `IModelDb` on the backend and `IModelConnection` on the frontend. The
- * manager deals only in schema names, blobs and the manifest; everything transport-specific - pragma
- * strings, format-version pinning - belongs to the provider.
- * @internal
+/** The data source a {@link SchemaViewManager} loads schema-view data from. Implement this interface
+ * to load schema metadata through your own query API, without an `IModelDb` or `IModelConnection`.
+ * The manager deals only in schema names, blobs and the manifest; everything transport-specific -
+ * pragma strings, format-version pinning - belongs to the provider.
+ * @beta
  */
 export interface SchemaViewDataProvider {
   /** Fetch the blob containing every schema in the iModel (`PRAGMA schema_view`). */
   fetchFullBlob(): Promise<SchemaViewBlob>;
 
-  /** Fetch one blob containing exactly the given schemas (`PRAGMA schema_view_fragment`). The
-   * requested set is always dependency-closed - the manager computes the reference closure from the
-   * manifest before calling. */
+  /** Fetch one blob containing exactly the given schemas (`PRAGMA schema_view_fragment`), subject
+   * to SchemaView's schema exclusions. The manager computes the reference closure and omits schemas
+   * already loaded, so references may target schemas in this blob or in previously fetched blobs.
+   * Use {@link schemaViewFormatVersion} to pin the format: `PRAGMA schema_view_fragment('v<N>;name,name,...')`. */
   fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
 
   /** Fetch the reference graph of every schema in the iModel, built from ECDbMeta
@@ -70,10 +71,14 @@ export interface GetSchemaViewArgs {
 }
 
 /** Owns the lifetime of one iModel's {@link (SchemaView:class)}: lazy loading, incremental (filtered)
- * hydration, serialization of concurrent requests, and invalidation. Hosts (`IModelDb`,
- * `IModelConnection`) hold one instance and delegate to it; all data access goes through the
- * host-implemented {@link SchemaViewDataProvider}.
- * @internal
+ * loading, serialization of concurrent requests, and invalidation. All data access goes through the
+ * supplied {@link SchemaViewDataProvider}.
+ *
+ * Keep one manager per iModel connection. Calls to {@link SchemaViewManager.getSchemaView} reuse
+ * one accumulating view until it is invalidated. The manager does not monitor schema changes;
+ * call {@link SchemaViewManager.reset} after a known change, or await
+ * {@link SchemaViewManager.invalidateIfChanged} after an operation that may have changed schemas.
+ * @beta
  */
 export class SchemaViewManager {
   private readonly _dataProvider: SchemaViewDataProvider;
@@ -95,9 +100,9 @@ export class SchemaViewManager {
     this._dataProvider = dataProvider;
   }
 
-  /** Get the schema view, loading whatever the request needs that is not present yet. See
-   * {@link GetSchemaViewArgs} for filtering and reload semantics; hosts document the full
-   * user-facing contract on their `getSchemaView` methods.
+  /** Get the schema view, loading the requested schemas and their references that are not present
+   * yet. Omitting the schema filter loads every schema. Calls accumulate into the same view until
+   * it is invalidated. See {@link GetSchemaViewArgs} for filtering semantics.
    */
   public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
     const previous = this._viewPromise;
