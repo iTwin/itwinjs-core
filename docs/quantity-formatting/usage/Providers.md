@@ -42,6 +42,14 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 > **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
 
+#### Synchronous local data
+
+Use the optional [SyncUnitsProvider]($quantity) capability when a caller must construct a formatter without awaiting a provider. [BasicUnitsProvider]($quantity) implements it for the bundled canonical BIS units.
+
+These methods use local data only. `BasicUnitsProvider` returns `BadUnit` for an unknown name. It returns an identity conversion with `error: true` when a unit is unavailable or the units are incompatible. Treat either result as a miss and use the plain-value fallback instead of loading a schema or awaiting.
+
+A format provider can implement [SyncFormatsProvider]($quantity) when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous. A provider that delegates the current lookup to another provider should forward the optional lookup context unchanged; omit it only when starting an independent lookup.
+
 #### createUnitsProvider
 
 [createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `bisUnitsPolicy: "preferBundled"` to invert precedence so the bundled BIS units win instead.
@@ -96,6 +104,8 @@ A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity
 #### SchemaFormatsProvider
 
 [SchemaFormatsProvider]($ecschema-metadata) retrieves formats from EC schemas using a [SchemaContext]($ecschema-metadata). It requires a [UnitSystemKey]($quantity) to filter formats according to the current unit system.
+
+A schema-backed provider can implement [SyncFormatsProvider]($quantity) for definitions that are already loaded. Treat an `undefined` result as a synchronous cache miss and use the asynchronous provider path when loading is acceptable.
 
 **Characteristics:**
 
