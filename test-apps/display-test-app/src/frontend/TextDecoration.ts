@@ -215,7 +215,7 @@ export class TextDecorationTool extends Tool {
 
         if (what === "formatset") {
           if (path === "off") {
-            await dtaIpc.registerFieldFormatting(vp.iModel.key);
+            await dtaIpc.clearFormatSets(vp.iModel.key);
             // Registration works before `init`; only skip the redraw when there is nothing to draw yet.
             if (!editor.isInitialized)
               return true;
@@ -227,10 +227,9 @@ export class TextDecorationTool extends Tool {
           }
 
           const formatSet = JSON.parse(await dtaIpc.readTextFile(path)) as FormatSet;
-          const id = inArgs[3];
           // An id makes the set addressable by a FieldRun's `formatSet` option; without one it is
           // adopted as the iModel's default.
-          await dtaIpc.registerFieldFormatting(vp.iModel.key, id ? undefined : formatSet, id ? [{ id, formatSet }] : undefined);
+          await dtaIpc.importFormatSet(vp.iModel.key, formatSet, inArgs[3]);
           if (!editor.isInitialized)
             return true;
           break;

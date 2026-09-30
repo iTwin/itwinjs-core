@@ -12,48 +12,41 @@
 import { ElementDrivesTextAnnotation, IModelDb } from "@itwin/core-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 
-/** FormatSets imported per iModel, so a later import adds to the routing table rather than
+/** FormatSets imported per iModel, so a later import adds to the registration rather than
  * replacing it. Core's registry holds the compiled formats, not the sets they were built from.
+ * Weakly keyed so a closed iModel takes its entry with it.
  */
-const imported = new Map<string, { defaultSet?: FormatSet, sets: { id: string, formatSet: FormatSet }[] }>();
+const imported = new WeakMap<IModelDb, { formatSet?: FormatSet, byId: Map<string, FormatSet> }>();
 
-/** Re-registers the formats for `iModel` from `defaultSet`, `sets`, and everything previously
- * imported for it. `defaultSet` applies to FieldRuns naming no set; each `sets` entry is
- * addressable by its `id`. Supplying neither unregisters, reverting to the schema defaults.
+/** Registers `formatSet` for the iModel alongside everything previously imported for it. With an
+ * `id` the set is addressable by a FieldRun's `formatSet` option, and re-importing that `id`
+ * replaces the earlier entry; without one it becomes the iModel's default.
  */
-export function registerFieldFormattingFor(iModel: IModelDb, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
-  if (undefined === defaultSet && (undefined === sets || 0 === sets.length)) {
-    unregister(iModel);
-    return;
+export function importFormatSet(iModelKey: string, formatSet: FormatSet, id?: string): void {
+  const iModel = IModelDb.findByKey(iModelKey);
+  let entry = imported.get(iModel);
+  if (!entry) {
+    entry = { byId: new Map() };
+    imported.set(iModel, entry);
   }
 
-  const previous = imported.get(iModel.key);
-  // Absent means "leave the adopted set alone".
-  const mergedDefault = defaultSet ?? previous?.defaultSet;
-  // Re-importing an id replaces that entry.
-  const incoming = sets ?? [];
-  const mergedSets = [
-    ...(previous?.sets ?? []).filter((entry) => !incoming.some((added) => added.id === entry.id)),
-    ...incoming,
-  ];
+  if (id)
+    entry.byId.set(id, formatSet);
+  else
+    entry.formatSet = formatSet;
 
   ElementDrivesTextAnnotation.registerFieldFormatting({
     iModel,
-    formatSet: mergedDefault,
-    formatSets: mergedSets,
+    formatSet: entry.formatSet,
+    formatSets: [...entry.byId].map(([setId, set]) => ({ id: setId, formatSet: set })),
   });
-
-  // Core releases its registration with the IModelDb; only the routing table needs tearing down.
-  if (!imported.has(iModel.key))
-    iModel.onBeforeClose.addOnce(() => imported.delete(iModel.key));
-
-  imported.set(iModel.key, { defaultSet: mergedDefault, sets: mergedSets });
 }
 
-/** Reverts `iModel` to the schema default formats and discards its imported FormatSets. Safe to
+/** Reverts the iModel to the schema default formats and discards its imported FormatSets. Safe to
  * call when nothing is registered.
  */
-function unregister(iModel: IModelDb): void {
-  imported.delete(iModel.key);
+export function clearFormatSets(iModelKey: string): void {
+  const iModel = IModelDb.findByKey(iModelKey);
+  imported.delete(iModel);
   ElementDrivesTextAnnotation.registerFieldFormatting({ iModel });
 }

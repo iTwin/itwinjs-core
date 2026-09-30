@@ -78,12 +78,14 @@ export interface DtaIpcInterface {
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 
   /**
-   * Re-registers the field FormatSets for the specified iModel, adding to whatever was
-   * previously imported rather than replacing it. `defaultSet` applies to every FieldRun that
-   * names no FormatSet; each `sets` entry is addressable by its `id`. Supplying neither
-   * unregisters and discards everything imported so far.
+   * Registers a FormatSet for the specified iModel alongside everything previously imported for
+   * it. With an `id` the set is addressable by a FieldRun's `formatSet` option, and re-importing
+   * that `id` replaces the earlier entry; without one it becomes the iModel's default.
    */
-  registerFieldFormatting(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void>;
+  importFormatSet(iModelKey: string, formatSet: FormatSet, id?: string): Promise<void>;
+
+  /** Reverts the specified iModel to the schema default formats and discards its imported FormatSets. */
+  clearFormatSets(iModelKey: string): Promise<void>;
 
   /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
   readTextFile(filePath: string): Promise<string>;
