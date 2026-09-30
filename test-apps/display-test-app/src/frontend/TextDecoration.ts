@@ -49,13 +49,17 @@ class TextEditor implements Decorator {
     IModelApp.viewManager.dropDecorator(this);
 
     this._iModel = undefined;
-    this._graphic?.disposeGraphic();
-    this._graphic = undefined;
+    this.disposeGraphic();
 
     this.annotation = TextAnnotation.create();
     this.defaultTextStyleId = Id64.invalid;
     this.origin.setZero();
     this.debugAnchorPointAndRange = false;
+  }
+
+  private disposeGraphic(): void {
+    this._graphic?.disposeGraphic();
+    this._graphic = undefined;
   }
 
   public setAnnotation(props: TextAnnotationProps): void {
@@ -75,6 +79,8 @@ class TextEditor implements Decorator {
     }
 
     if (this.annotation.textBlock.isEmpty || this.annotation.textBlock.isWhitespace) {
+      this.disposeGraphic();
+      IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
       return;
     }
 
@@ -93,6 +99,7 @@ class TextEditor implements Decorator {
       );
 
       const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
+      this.disposeGraphic();
       this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
     } catch (err) {
       // eslint-disable-next-line no-console

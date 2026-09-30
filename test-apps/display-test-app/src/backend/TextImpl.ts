@@ -125,7 +125,8 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
 /** Re-registers the field formatting for the specified iModel, or reverts to the schema default when both are absent. */
 export function registerFieldFormattingForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): void {
-  registerFieldFormattingFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
+  // Registration only needs an IModelDb, so snapshots qualify too.
+  registerFieldFormattingFor(IModelDb.findByKey(iModelKey), defaultSet, sets);
 }
 
 /**
