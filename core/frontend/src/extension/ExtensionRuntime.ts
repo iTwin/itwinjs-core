@@ -9,6 +9,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @itwin/no-internal-barrel-imports */
 /* eslint-disable sort-imports */
+/* eslint-disable @typescript-eslint/no-deprecated -- the extension runtime must keep exposing deprecated public APIs until they are removed */
 
 import { ExtensionHost } from "./ExtensionHost";
 
