@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, iTwinChannel } from "@itwin/core-common";
-import { chromeBackendIdentityHeader, chromeBackendStartupTimeout } from "../common/ChromeTestBackend";
+import { chromeBackendIdentityHeader, chromeBackendStartupTimeout, fullStackTestPing } from "../common/ChromeTestBackend";
 import { fullstackIpcChannel } from "../common/FullStackTestIpc";
 
 // Use the normal IPC codec without installing IpcApp's process-global transport.
@@ -40,7 +40,7 @@ async function pingBackend(url: string, signal: AbortSignal) {
           if (message.type !== IpcWebSocketMessageType.Response || message.channel !== channel || message.response !== 1)
             return;
           const response = message.data as unknown as { result?: { commandId?: string, version?: string } } | undefined;
-          if (response?.result?.commandId !== "full-stack-tests" || response.result.version !== "1.0.0")
+          if (response?.result?.commandId !== fullStackTestPing.commandId || response.result.version !== fullStackTestPing.version)
             throw new Error("The backend did not return a successful test IPC ping.");
           received = true;
           socket.close();

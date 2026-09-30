@@ -8,6 +8,8 @@ import type {} from "vitest";
 export const chromeBackendIdentityHeader = "x-core-test-backend-id";
 /** @internal */
 export const chromeBackendStartupTimeout = 30000;
+/** What the backend's test IPC `ping` returns, and what the Chrome preflight expects. @internal */
+export const fullStackTestPing = { commandId: "full-stack-tests", version: "1.0.0" } as const;
 
 /** @internal */
 export interface ChromeBackendReadyMessage {

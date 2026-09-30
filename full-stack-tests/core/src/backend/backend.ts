@@ -26,7 +26,8 @@ import * as testCommands from "./TestEditCommands";
 import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 import { TestServer } from "./TestServer";
-import { ChromeBackendReadyMessage } from "../common/ChromeTestBackend";
+import { resolveTestAssetPath } from "./testAssets";
+import { ChromeBackendReadyMessage, fullStackTestPing } from "../common/ChromeTestBackend";
 import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
 
@@ -58,7 +59,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
   public async ping(): Promise<{ commandId: string, version: string }> {
-    return { commandId: "full-stack-tests", version: "1.0.0" };
+    return { ...fullStackTestPing };
   }
 
   public async closeAndReopenDb(key: string): Promise<void> {
@@ -67,6 +68,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   }
 
   public async createTempBimCopy(sourcePath: string): Promise<string> {
+    sourcePath = resolveTestAssetPath(sourcePath);
     const directory = fs.mkdtempSync(path.join(IModelHost.cacheDir, "bim-copy-"));
     const filePath = path.join(directory, path.basename(sourcePath));
     try {

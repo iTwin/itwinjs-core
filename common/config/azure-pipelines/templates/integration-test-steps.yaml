@@ -46,6 +46,8 @@ steps:
   - script: node node_modules/electron/install.js
     displayName: "Ensure Electron binary is downloaded"
     workingDirectory: "tools/vitest-browser-bridge"
+    timeoutInMinutes: 5
+    retryCountOnTaskFailure: 1
 
   # Build every package needed by the integration test suites in a single Rush
   # invocation. Each frontend test package (and @itwin/core-electron) already runs

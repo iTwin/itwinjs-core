@@ -56,6 +56,8 @@ steps:
   - script: node node_modules/electron/install.js
     displayName: "Ensure Electron binary is downloaded"
     workingDirectory: ${{ parameters.workingDir }}/tools/vitest-browser-bridge
+    timeoutInMinutes: 5
+    retryCountOnTaskFailure: 1
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
