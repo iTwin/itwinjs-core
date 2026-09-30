@@ -18,6 +18,7 @@ preview;class;AuxCoordSystem3d
 public;class;AuxCoordSystemSpatial
 preview;class;AuxCoordSystemSpatial
 beta;interface;AvailableCoordinateReferenceSystemProps
+beta;interface;AvailableVerticalCoordinateReferenceSystemProps
 beta;interface;AzureBlobStorageCredentials
 public;interface;BackendHubAccess
 public;enum;BackendLoggerCategory
@@ -329,6 +330,8 @@ preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
 beta;function;getAvailableCRSUnits
+beta;function;getAvailableVerticalCoordinateReferenceSystems
+beta;interface;GetAvailableVerticalCoordinateReferenceSystemsArgs
 beta;interface;GetResolvedSettingDefOptions
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
