@@ -311,7 +311,9 @@ export function createUpdateContext(hostElementId: string | undefined, iModel: I
  * were supplied, or no format resolves for any of the (KindOfQuantity, persistence unit) pairs the
  * field may format through. In that last case the shortfall is logged: a persistence unit or
  * format unit outside the bundled BIS set, a KindOfQuantity with no presentation format, or a
- * format whose units belong to a different phenomenon than the persisted value.
+ * format whose units belong to a different phenomenon than the persisted value. A
+ * `persistenceUnit` override that disagrees with the property's own unit is ignored and logged
+ * too; the property's unit is what the stored magnitude means.
  */
 function resolveFormatMagnitude(value: ResolvedFieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
   const formatting = context.formatting;
@@ -320,7 +322,15 @@ function resolveFormatMagnitude(value: ResolvedFieldValue, field: FieldRun, cont
   }
 
   const quantityOptions = field.formatOptions?.quantity;
-  const { spec, candidates } = lookupFieldSpec(quantityOptions, value, formatting);
+  const { spec, candidates, ignoredPersistenceUnit } = lookupFieldSpec(quantityOptions, value, formatting);
+  if (ignoredPersistenceUnit) {
+    Logger.logWarning(BackendLoggerCategory.IModelDb, "Ignoring persistenceUnit override that disagrees with the property's own persistence unit", () => ({
+      elementId: field.propertyHost.elementId,
+      propertyName: field.propertyPath.propertyName,
+      persistenceUnit: ignoredPersistenceUnit,
+      propertyPersistenceUnit: value.persistenceUnitFullName,
+    }));
+  }
   if (!spec) {
     if (candidates.length > 0) {
       Logger.logWarning(BackendLoggerCategory.IModelDb, "No format resolved for text annotation field; rendering raw value", () => ({

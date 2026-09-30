@@ -121,11 +121,13 @@ export interface DateTimeFieldFormatOptions {
  * @beta
  */
 export interface QuantityFieldFormatOptions {
-  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) a
-   * magnitude is expressed in, overriding the property's persistence unit.
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) the magnitude is expressed in,
+   * for a property that has no persistence unit of its own — a coordinate, a plain `double`, or a
+   * JSON leaf.
    *
-   * Because this states what the value *means* rather than how it looks, it does not fall back
-   * to the property's own unit when the two disagree — the field renders raw instead.
+   * Because this states what the value *means* rather than how it looks, the property's own
+   * persistence unit is authoritative when it has one: a `persistenceUnit` that names a different
+   * unit is ignored and a warning is logged.
    */
   persistenceUnit?: string;
   /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to format

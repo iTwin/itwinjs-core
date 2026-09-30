@@ -179,17 +179,33 @@ describe("Field format resolution example", () => {
 
   afterEach(() => {
     sinon.restore();
+    logWarningSpy = undefined;
   });
+
+  interface FormatWarning { elementId: string, propertyName: string, formatSet: string | undefined, tried: string[] }
+  interface UnitOverrideWarning { elementId: string, propertyName: string, persistenceUnit: string, propertyPersistenceUnit: string }
+
+  // Sinon refuses to wrap a method twice, so tests spying on both messages share one spy.
+  // Reset alongside `sinon.restore()` in afterEach.
+  let logWarningSpy: sinon.SinonSpy | undefined;
+
+  function spyOnWarnings<T>(messagePrefix: string): () => T[] {
+    const spy = logWarningSpy ??= sinon.spy(Logger, "logWarning");
+    return () => spy.getCalls()
+      .filter((call) => typeof call.args[1] === "string" && call.args[1].startsWith(messagePrefix))
+      .map((call) => (call.args[2] as () => T)());
+  }
 
   /** Spies on the warning [[render]] logs for each field it could not resolve a format for.
    * Returns the (KindOfQuantity, persistence unit) pairs those warnings report as tried.
    */
-  interface FormatWarning { elementId: string, propertyName: string, formatSet: string | undefined, tried: string[] }
   function spyOnFormatWarnings(): () => FormatWarning[] {
-    const logWarning = sinon.spy(Logger, "logWarning");
-    return () => logWarning.getCalls()
-      .filter((call) => typeof call.args[1] === "string" && call.args[1].startsWith("No format resolved for text annotation field"))
-      .map((call) => (call.args[2] as () => FormatWarning)());
+    return spyOnWarnings<FormatWarning>("No format resolved for text annotation field");
+  }
+
+  /** Warnings that a `persistenceUnit` override disagreed with the property's unit and was ignored. */
+  function spyOnUnitOverrideWarnings(): () => UnitOverrideWarning[] {
+    return spyOnWarnings<UnitOverrideWarning>("Ignoring persistenceUnit override");
   }
 
   /** Appends a field on `propertyName` of the seeded element, and hands it back so the test can
@@ -343,20 +359,21 @@ describe("Field format resolution example", () => {
 
   it("accepts any case and either separator for names the iModel's schemas define", async () => {
     // Override names are normalized to the schema's spelling before anything compares or looks
-    // them up. Without that, `units:m` on a meters property was treated as a *different* unit --
-    // dropping the property's own pair -- and then failed the exact-spelling unit lookup, so the
-    // field rendered raw.
+    // them up. Without that, `units:m` on a meters property would be flagged as disagreeing with
+    // `Units.M`, and `fieldexample:schema_angle` would fail the exact-spelling unit lookup.
     // Persisted on the element: lengthProp 2.5 m, angleProp 90° (no KindOfQuantity)
     const block = TextBlock.create();
     const respelledUnit = appendField(block, "lengthProp", { persistenceUnit: "units:m" });
     const respelledBoth = appendField(block, "lengthProp", { kindOfQuantity: "fieldexample:schema_length", persistenceUnit: "UNITS.M" });
     const respelledKoq = appendField(block, "angleProp", { kindOfQuantity: "fieldexample:schema_angle", persistenceUnit: "units:arc_deg" });
 
+    const ignored = spyOnUnitOverrideWarnings();
     render(block);
 
     expect(respelledUnit.cachedContent).to.equal("2.5 m");
     expect(respelledBoth.cachedContent).to.equal("2.5 m");
     expect(respelledKoq.cachedContent).to.equal("90.0 °");
+    expect(ignored()).to.be.empty;
   });
 
   it("ignores a persistence unit named without a KindOfQuantity", async () => {
@@ -382,11 +399,10 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("renders raw and logs a warning when the persistence unit override does not exist", async () => {
-    // The format leg is fine and the unit leg is garbage. The override is a claim about what the
-    // stored magnitude means, so an unresolvable unit is not silently replaced by the property's
-    // own -- that would ignore the claim and, for a *valid* wrong-phenomenon unit, render a number
-    // off by the conversion factor. The field goes raw and the shortfall is logged instead.
+  it("logs a warning when the persistence unit override does not exist", async () => {
+    // The format leg is fine and the unit leg is garbage. A property that carries its own unit
+    // ignores the override (and says so), so its KoQ override still formats. A property with no
+    // unit of its own has nothing else to try, so it goes raw and the shortfall is logged.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -398,41 +414,56 @@ describe("Field format resolution example", () => {
     const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.NOT_A_UNIT" });
 
     const warnings = spyOnFormatWarnings();
+    const ignored = spyOnUnitOverrideWarnings();
     render(block);
 
-    expect(length.cachedContent).to.equal("2.5");
-    expect(area.cachedContent).to.equal("100");
-    expect(slope.cachedContent).to.equal("0.01");
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
     expect(angle.cachedContent).to.equal("90");
     expect(ratio.cachedContent).to.equal("0.9");
     expect(point.cachedContent).to.equal("(1, 2, 3)");
 
-    expect(warnings()).to.have.length(6);
+    expect(ignored().map((w) => w.propertyName)).to.deep.equal(["lengthProp", "areaProp", "slopeProp"]);
+    expect(ignored()[0]).to.deep.equal({
+      elementId,
+      propertyName: "lengthProp",
+      persistenceUnit: "Units.NOT_A_UNIT",
+      propertyPersistenceUnit: "Units.M",
+    });
+
+    expect(warnings()).to.have.length(3);
     expect(warnings().every((w) => w.tried.some((t) => t.endsWith(" in Units.NOT_A_UNIT")))).to.be.true;
     // The metadata identifies the field so a host can find it, and lists exactly what was tried.
     expect(warnings()[0]).to.deep.equal({
       elementId,
-      propertyName: "lengthProp",
+      propertyName: "angleProp",
       formatSet: undefined,
-      tried: ["FieldExample.SCHEMA_LENGTH in Units.NOT_A_UNIT"],
+      tried: ["FieldExample.SCHEMA_ANGLE in Units.NOT_A_UNIT"],
     });
   });
 
-  it("formats a valid persistence-unit override through the requested unit, never the property's", async () => {
-    // The sharp edge the unit-override rule exists for. The field says the 2.5 stored on
-    // lengthProp is 2.5 *feet*. Formatting it through the property's own (LENGTH_PROP, Units.M)
-    // pair would render "2.5 m" -- a plausible-looking, durable, 3.28x wrong answer the caller
-    // has no way to detect. It must go through a feet-based spec instead.
-    // Persisted on the element: lengthProp 2.5 m (reinterpreted by the field as 2.5 ft)
+  it("ignores a valid persistence-unit override that disagrees with the property's own unit", async () => {
+    // The field claims the 2.5 stored on lengthProp is 2.5 *feet*. The schema says the property
+    // persists meters, and the schema is the authority on what a stored magnitude means: the
+    // override is a formatting hint, not a reinterpretation. The property's unit is used, and the
+    // disagreement is logged so the author can find the mistake.
+    // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const claimsFeet = appendField(block, "lengthProp", { persistenceUnit: "Units.FT" });
 
     const warnings = spyOnFormatWarnings();
+    const ignored = spyOnUnitOverrideWarnings();
     render(block);
 
-    // LENGTH_PROP presents in meters to 4 places, so 2.5 ft renders as its meter equivalent.
-    expect(claimsFeet.cachedContent).to.equal("0.762 m");
+    expect(claimsFeet.cachedContent).to.equal("2.5 m");
     expect(warnings()).to.be.empty;
+    expect(ignored()).to.deep.equal([{
+      elementId,
+      propertyName: "lengthProp",
+      persistenceUnit: "Units.FT",
+      propertyPersistenceUnit: "Units.M",
+    }]);
   });
 
   it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
@@ -461,12 +492,13 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("renders raw when both legs of the override fail, matching a no-KoQ property's baseline", async () => {
-    // The most degenerate row: nothing the field says can be resolved. Because the failing leg
-    // includes a persistence unit that contradicts the property's, there is no property-side
-    // rescue -- every field here goes raw, including the three whose properties do carry a KoQ.
-    // Asserted against the KoQ-less baselines rendered in the same pass rather than against
-    // captured literals, so the claim survives any change to the seed values or the schema.
+  it("falls back to the property's own pair when both legs of the override fail", async () => {
+    // The most degenerate row: nothing the field says can be resolved. The bad persistence unit
+    // is ignored in favor of the property's, and the unknown KoQ fails, so the property's own pair
+    // is the only candidate left. The three KoQ-bearing properties render their baseline; the
+    // three KoQ-less ones have nothing to fall back to and go raw. Asserted against baselines
+    // rendered in the same pass rather than captured literals, so the claim survives any change
+    // to the seed values or the schema.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -479,22 +511,21 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", bothLegsFail);
     const point = appendField(block, "point", bothLegsFail);
 
-    // These three properties carry no KoQ, so they render raw with or without formatOptions --
-    // the shape a fully-failed override must now also produce.
+    const lengthBaseline = appendField(block, "lengthProp");
+    const areaBaseline = appendField(block, "areaProp");
+    const slopeBaseline = appendField(block, "slopeProp");
     const angleBaseline = appendField(block, "angleProp");
     const ratioBaseline = appendField(block, "ratioProp");
     const pointBaseline = appendField(block, "point");
 
     render(block);
 
-    expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);  // both "90"
-    expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);  // both "0.9"
-    expect(point.cachedContent).to.equal(pointBaseline.cachedContent);  // both "(1, 2, 3)"
-
-    // The KoQ-carrying three no longer fall back to their property format.
-    expect(length.cachedContent).to.equal("2.5");
-    expect(area.cachedContent).to.equal("100");
-    expect(slope.cachedContent).to.equal("0.01");
+    expect(length.cachedContent).to.equal(lengthBaseline.cachedContent);  // both "2.5 m"
+    expect(area.cachedContent).to.equal(areaBaseline.cachedContent);      // both "100.0 m²"
+    expect(slope.cachedContent).to.equal(slopeBaseline.cachedContent);    // both "0.01 m/m"
+    expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);    // both "90"
+    expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);    // both "0.9"
+    expect(point.cachedContent).to.equal(pointBaseline.cachedContent);    // both "(1, 2, 3)"
   });
 
   it("prefers the adopted FormatSet's format over the property's own schema format", async () => {

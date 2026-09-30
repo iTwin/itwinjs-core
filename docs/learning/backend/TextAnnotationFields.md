@@ -40,14 +40,14 @@ A field that should not simply inherit its property's KindOfQuantity configures 
 
 [[include:TextAnnotationFields.ConfigureFieldRun]]
 
-`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other, and an empty string counts as unset. A name the iModel's schemas define may use any case and either `Schema.Item` or `Schema:Item` spelling; a KindOfQuantity defined only by a FormatSet must match its key exactly. This lets a caller control how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
+`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other, and an empty string counts as unset. A name the iModel's schemas define may use any case and either `Schema.Item` or `Schema:Item` spelling; a KindOfQuantity defined only by a FormatSet must match its key exactly. This lets a caller control how a value is formatted (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or supply a unit for a property that has none.
 
 For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
 
-1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
-2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair, and skipped entirely when `persistenceUnit` names a *different* unit than the property's own.
+1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `propertyPersistenceUnit ?? formatOptions.quantity.persistenceUnit` for the unit.
+2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair.
 
-Skipping the property-side pair when the units disagree is deliberate. `kindOfQuantity` only chooses how a magnitude is displayed, so falling back to the property's is harmless. `persistenceUnit` instead states what the stored magnitude *means*: a field declaring `Units.FT` asserts the `2.5` on the property is 2.5 feet, and formatting it through the property's meter-based pair would render `2.5 m` — off by the conversion factor, with nothing to signal the substitution. So a disagreeing `persistenceUnit` renders raw rather than falling back.
+The two halves fall back in opposite directions on purpose. `kindOfQuantity` only chooses how a magnitude is displayed, so the field's choice wins and the property's is the fallback. `persistenceUnit` states what the stored magnitude *means*, and the schema is the authority on that: when the property declares a persistence unit, that unit is used and a `persistenceUnit` naming a different one is ignored with a warning logged (category `BackendLoggerCategory.IModelDb`). `persistenceUnit` matters for properties that have no unit of their own — a `"coordinate"`, a plain `double`, or a JSON leaf — where it supplies the missing half of the pair.
 
 The first pair whose format-props lookup **and** persistence-unit lookup both succeed wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
 

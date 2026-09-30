@@ -21,10 +21,20 @@ describe("collectFieldQuantityPairs candidate priority", () => {
     })).to.deep.equal([{ name: "A.KOQ", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
   });
 
-  it("drops the property-side fallback when the persistence override names a different unit", () => {
+  it("keeps the property's own persistence unit over a persistence override that disagrees", () => {
+    // The override only supplies a unit the property lacks; it never reinterprets a stored value.
     expect(collectFieldQuantityPairs({
       overridePersistence: "Units.FT", propertyName: "P.KOQ", propertyPersistence: "Units.M",
-    })).to.deep.equal([{ name: "P.KOQ", persistenceUnitName: "Units.FT" }]);
+    })).to.deep.equal([PROPERTY_PAIR]);
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", overridePersistence: "Units.FT", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).to.deep.equal([{ name: "A.KOQ", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
+  });
+
+  it("uses the persistence override when the property has no unit of its own", () => {
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", overridePersistence: "Units.FT", propertyName: undefined, propertyPersistence: undefined,
+    })).to.deep.equal([{ name: "A.KOQ", persistenceUnitName: "Units.FT" }]);
   });
 
   it("emits a single pair when the overrides only restate the property's own pair", () => {
@@ -34,11 +44,11 @@ describe("collectFieldQuantityPairs candidate priority", () => {
   });
 
   it("compares names exactly; callers normalize spellings to the schema's before building pairs", () => {
-    // `lookupFieldSpec` resolves `units:m` to `Units.M` first. Anything that reaches here unnormalized
+    // `lookupFieldSpec` resolves `p:koq` to `P.KOQ` first. Anything that reaches here unnormalized
     // is a name no schema defines, and those really are different keys.
     expect(collectFieldQuantityPairs({
-      overridePersistence: "units:m", propertyName: "P.KOQ", propertyPersistence: "Units.M",
-    })).to.deep.equal([{ name: "P.KOQ", persistenceUnitName: "units:m" }]);
+      overrideName: "p:koq", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).to.deep.equal([{ name: "p:koq", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
   });
 
   it("emits no property-side pair at all when the property has no persistence unit", () => {

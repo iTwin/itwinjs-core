@@ -170,13 +170,15 @@ function normalizeToSchemaName(context: SchemaContext, name: string | undefined)
 }
 
 /** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate value may format
- * through, in priority order: the field's overrides (each half falling back to the property's)
- * first, then the property's own pair. Names are compared exactly, so callers pass override
- * names already normalized to the schema's spelling.
+ * through, in priority order: the field's override pair first, then the property's own pair.
+ * Names are compared exactly, so callers pass override names already normalized to the schema's
+ * spelling.
  *
- * The property's pair is left out when the override names a different persistence unit: the
- * override says what the stored magnitude *means*, and rendering it through the property's unit
- * instead would be off by the conversion factor.
+ * The two halves fall back differently. `kindOfQuantity` only chooses how the magnitude is
+ * displayed, so the override wins and the property's is the fallback. `persistenceUnit` states
+ * what the stored magnitude *means*, so the property's own unit is authoritative when it has one;
+ * the override only supplies a unit for a property that lacks one (a coordinate, a plain double,
+ * a JSON leaf). See [[lookupFieldSpec]] for reporting an override that was ignored this way.
  * @internal
  */
 export function collectFieldQuantityPairs(args: {
@@ -187,15 +189,14 @@ export function collectFieldQuantityPairs(args: {
 }): FormattingSpecArgs[] {
   const { overrideName, overridePersistence, propertyName, propertyPersistence } = args;
   const name = overrideName ?? propertyName;
-  const persistenceUnitName = overridePersistence ?? propertyPersistence;
+  const persistenceUnitName = propertyPersistence ?? overridePersistence;
   const pairs: FormattingSpecArgs[] = [];
   if (name && persistenceUnitName) {
     pairs.push({ name, persistenceUnitName });
   }
 
-  // Fall back to the property's own pair unless the override changed the unit, or the pair above
-  // already is the property's pair.
-  if (propertyName && propertyPersistence && persistenceUnitName === propertyPersistence && name !== propertyName) {
+  // Fall back to the property's own pair unless the pair above already is it.
+  if (propertyName && propertyPersistence && name !== propertyName) {
     pairs.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
 
@@ -205,27 +206,33 @@ export function collectFieldQuantityPairs(args: {
 /** Builds the first [FormatterSpec]($core-quantity) that resolves for `value` among the formats
  * of the FormatSet named by `quantityOptions.formatSet` -- or the adopted FormatSet and schema
  * formats when it names none, or one that was never registered -- along with the pairs that were
- * tried, so the caller can report when none resolved.
+ * tried, so the caller can report when none resolved. `ignoredPersistenceUnit` is set when the
+ * field's `persistenceUnit` named a unit other than the property's own and was therefore not
+ * used, so the caller can report the likely authoring mistake.
  * @internal
  */
 export function lookupFieldSpec(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: ResolvedFieldValue,
   formatting: FieldFormatting,
-): { spec?: FormatterSpec, candidates: FormattingSpecArgs[] } {
+): { spec?: FormatterSpec, candidates: FormattingSpecArgs[], ignoredPersistenceUnit?: string } {
+  const overridePersistence = normalizeToSchemaName(formatting.schemaContext, quantityOptions?.persistenceUnit);
+  const propertyPersistence = value.persistenceUnitFullName;
+  const ignoredPersistenceUnit = overridePersistence && propertyPersistence && overridePersistence !== propertyPersistence
+    ? overridePersistence : undefined;
   const candidates = collectFieldQuantityPairs({
     overrideName: normalizeToSchemaName(formatting.schemaContext, quantityOptions?.kindOfQuantity),
-    overridePersistence: normalizeToSchemaName(formatting.schemaContext, quantityOptions?.persistenceUnit),
+    overridePersistence,
     propertyName: value.kindOfQuantityFullName,
-    propertyPersistence: value.persistenceUnitFullName,
+    propertyPersistence,
   });
   const formatSet = quantityOptions?.formatSet;
   const formats = (formatSet ? formatting.formatSets.get(formatSet) : undefined) ?? formatting.defaultFormats;
   for (const candidate of candidates) {
     const spec = buildFieldFormatterSpec(candidate, formats, formatting);
     if (spec) {
-      return { spec, candidates };
+      return { spec, candidates, ignoredPersistenceUnit };
     }
   }
-  return { candidates };
+  return { candidates, ignoredPersistenceUnit };
 }
