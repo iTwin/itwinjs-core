@@ -593,6 +593,7 @@ describe("Field evaluation", () => {
 
     it("returns undefined for a missing key or an out-of-range index", () => {
       expect(evaluateJson(["nope"])).to.be.undefined;
+      expect(evaluateJson(["toString"])).to.be.undefined;
       expect(evaluateJson(["zoo", "address", "street"])).to.be.undefined;
       expect(evaluateJson(["ints", 4])).to.be.undefined;
       expect(evaluateJson(["ints", -5])).to.be.undefined;
