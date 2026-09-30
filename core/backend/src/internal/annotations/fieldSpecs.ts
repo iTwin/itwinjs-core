@@ -154,22 +154,28 @@ export function buildFieldFormatterSpec(args: FormattingSpecArgs, formatsProvide
   return formatterSpec;
 }
 
-/** Whether two EC full names refer to the same schema item. EC names are case-insensitive and
- * a full name may use either `Schema.Item` or `Schema:Item`.
+/** Returns `name` as the iModel's schemas spell it (`Units.M` for `units:m`), so later lookups
+ * and comparisons can be exact: [BasicUnitsProvider.findUnitByNameSync]($core-quantity) only
+ * recognizes the canonical spelling. An empty name counts as unset. A name no schema defines,
+ * such as a KindOfQuantity only a FormatSet declares, is returned unchanged.
  */
-function isSameSchemaItem(a: string | undefined, b: string | undefined): boolean {
-  if (!a || !b) {
-    return false;
+function normalizeToSchemaName(context: SchemaContext, name: string | undefined): string | undefined {
+  if (!name) {
+    return undefined;
   }
 
-  const [schemaA, itemA] = SchemaItem.parseFullName(a);
-  const [schemaB, itemB] = SchemaItem.parseFullName(b);
-  return schemaA.toLowerCase() === schemaB.toLowerCase() && itemA.toLowerCase() === itemB.toLowerCase();
+  try {
+    return context.getSchemaItemSync(name)?.fullName ?? name;
+  } catch {
+    // Not a schema this iModel knows.
+    return name;
+  }
 }
 
 /** Builds the (KindOfQuantity, persistence unit) pairs a quantity/coordinate value may format
  * through, in priority order: the field's overrides (each half falling back to the property's)
- * first, then the property's own pair. An absent or empty override half counts as not supplied.
+ * first, then the property's own pair. Names are compared exactly, so callers pass override
+ * names already normalized to the schema's spelling.
  *
  * The property's pair is left out when the override names a different persistence unit: the
  * override says what the stored magnitude *means*, and rendering it through the property's unit
@@ -183,16 +189,16 @@ export function collectFieldQuantityPairs(args: {
   propertyPersistence?: string;
 }): FormattingSpecArgs[] {
   const { overrideName, overridePersistence, propertyName, propertyPersistence } = args;
-  const name = overrideName || propertyName;
-  const unit = overridePersistence || propertyPersistence;
+  const name = overrideName ?? propertyName;
+  const persistenceUnitName = overridePersistence ?? propertyPersistence;
   const pairs: FormattingSpecArgs[] = [];
-  if (name && unit) {
-    pairs.push({ name, persistenceUnitName: unit });
+  if (name && persistenceUnitName) {
+    pairs.push({ name, persistenceUnitName });
   }
 
-  const unitAgrees = !overridePersistence || isSameSchemaItem(overridePersistence, propertyPersistence);
-  const isDuplicate = isSameSchemaItem(name, propertyName) && isSameSchemaItem(unit, propertyPersistence);
-  if (propertyName && propertyPersistence && unitAgrees && !isDuplicate) {
+  // Fall back to the property's own pair unless the override changed the unit, or the pair above
+  // already is the property's pair.
+  if (propertyName && propertyPersistence && persistenceUnitName === propertyPersistence && name !== propertyName) {
     pairs.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
 
@@ -211,8 +217,8 @@ export function lookupFieldSpec(
   formatting: FieldFormatting,
 ): { spec?: FormatterSpec, candidates: FormattingSpecArgs[] } {
   const candidates = collectFieldQuantityPairs({
-    overrideName: quantityOptions?.kindOfQuantity,
-    overridePersistence: quantityOptions?.persistenceUnit,
+    overrideName: normalizeToSchemaName(formatting.schemaContext, quantityOptions?.kindOfQuantity),
+    overridePersistence: normalizeToSchemaName(formatting.schemaContext, quantityOptions?.persistenceUnit),
     propertyName: value.kindOfQuantityFullName,
     propertyPersistence: value.persistenceUnitFullName,
   });

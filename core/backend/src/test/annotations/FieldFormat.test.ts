@@ -330,19 +330,33 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("treats an empty persistenceUnit like an absent one, and matches unit spellings loosely", async () => {
-    // `persistenceUnit: ""` used to silently discard the kindOfQuantity override. And a unit
-    // spelled differently from the schema ("units:m" vs "Units.M") must still count as the
-    // property's own unit, or the property-side fallback is lost.
+  it("treats an empty persistenceUnit like an absent one", async () => {
+    // `persistenceUnit: ""` used to silently discard the kindOfQuantity override.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const emptyUnit = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "" });
-    const respelled = appendField(block, "lengthProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "units:m" });
 
     render(block);
 
     expect(emptyUnit.cachedContent).to.equal("2.5 m");
-    expect(respelled.cachedContent).to.equal("2.5 m");
+  });
+
+  it("accepts any case and either separator for names the iModel's schemas define", async () => {
+    // Override names are normalized to the schema's spelling before anything compares or looks
+    // them up. Without that, `units:m` on a meters property was treated as a *different* unit --
+    // dropping the property's own pair -- and then failed the exact-spelling unit lookup, so the
+    // field rendered raw.
+    // Persisted on the element: lengthProp 2.5 m, angleProp 90° (no KindOfQuantity)
+    const block = TextBlock.create();
+    const respelledUnit = appendField(block, "lengthProp", { persistenceUnit: "units:m" });
+    const respelledBoth = appendField(block, "lengthProp", { kindOfQuantity: "fieldexample:schema_length", persistenceUnit: "UNITS.M" });
+    const respelledKoq = appendField(block, "angleProp", { kindOfQuantity: "fieldexample:schema_angle", persistenceUnit: "units:arc_deg" });
+
+    render(block);
+
+    expect(respelledUnit.cachedContent).to.equal("2.5 m");
+    expect(respelledBoth.cachedContent).to.equal("2.5 m");
+    expect(respelledKoq.cachedContent).to.equal("90.0 °");
   });
 
   it("ignores a persistence unit named without a KindOfQuantity", async () => {

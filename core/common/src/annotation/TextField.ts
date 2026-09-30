@@ -99,8 +99,9 @@ export interface DateTimeFieldFormatOptions {
  * `"quantity"` or `"coordinate"` values.
  *
  * [[kindOfQuantity]] and [[persistenceUnit]] are independent overrides: setting one falls
- * through to the property for the other, and an empty string counts as unset. Names are compared
- * case-insensitively, with either `Schema.Item` or `Schema:Item` spelling. A field that resolves
+ * through to the property for the other, and an empty string counts as unset. A name the iModel's
+ * schemas define may use any case and either `Schema.Item` or `Schema:Item` spelling; a
+ * KindOfQuantity defined only by a FormatSet must match its key exactly. A field that resolves
  * no format renders its raw value.
  *
  * These property names are also the persisted form — a [[FieldRun]] serializes them verbatim
