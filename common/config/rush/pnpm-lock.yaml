@@ -6,12 +6,7 @@ settings:
 
 overrides:
   rollup-plugin-copy>globby: ^11.0.0
-  '@microsoft/api-extractor>minimatch': ^10.2.3
-  elliptic: ^6.6.1
-  form-data: ^4.0.6
   browserslist: latest
-  glob@>=11.0.0 <11.1.0: ^11.1.0
-  axios@<1.0.0: ^1.13.5
   serialize-javascript: ^7.0.5
   lodash@>=4.0.0 <=4.17.23: ^4.18.0
   esbuild@>=0.17.0 <0.28.1: ~0.28.1
@@ -7826,6 +7821,10 @@ packages:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
 
+  form-data@2.5.6:
+    resolution: {integrity: sha512-Ogz/E85h9tlfJzpI6TuFpGcHZFhLrb9Gw8wq9v40CxSCPnv7ahKr6Xgtkn0KYCDQJ8DNn5VoMO8EXr9V5PadyA==}
+    engines: {node: '>= 0.12'}
+
   form-data@4.0.6:
     resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
     engines: {node: '>= 6'}
@@ -8953,6 +8952,10 @@ packages:
 
   minimalistic-assert@1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
+
+  minimatch@10.2.3:
+    resolution: {integrity: sha512-Rwi3pnapEqirPSbWbrZaa6N3nmqq4Xer/2XooiOKyV3q12ML06f7MOuc5DVH8ONZIFhwIYQ3yzPH4nt7iWHaTg==}
+    engines: {node: 18 || 20 || >=22}
 
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
@@ -11183,7 +11186,7 @@ snapshots:
     dependencies:
       '@azure/core-auth': 1.11.0
       abort-controller: 3.0.0
-      form-data: 4.0.6
+      form-data: 2.5.6
       node-fetch: 2.7.0
       tslib: 1.14.1
       tunnel: 0.0.6
@@ -12022,7 +12025,7 @@ snapshots:
       '@rushstack/terminal': 0.24.3(@types/node@20.17.58)
       '@rushstack/ts-command-line': 5.3.13(@types/node@20.17.58)
       diff: 8.0.4
-      minimatch: 10.2.6
+      minimatch: 10.2.3
       resolve: 1.22.12
       semver: 7.7.4
       source-map: 0.6.1
@@ -12988,7 +12991,7 @@ snapshots:
       '@types/caseless': 0.12.5
       '@types/node': 20.17.58
       '@types/tough-cookie': 4.0.5
-      form-data: 4.0.6
+      form-data: 2.5.6
 
   '@types/responselike@1.0.3':
     dependencies:
@@ -15100,6 +15103,15 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
+  form-data@2.5.6:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.4
+      mime-types: 2.1.35
+      safe-buffer: 5.2.1
+
   form-data@4.0.6:
     dependencies:
       asynckit: 0.4.0
@@ -16296,6 +16308,10 @@ snapshots:
   mimic-response@3.1.0: {}
 
   minimalistic-assert@1.0.1: {}
+
+  minimatch@10.2.3:
+    dependencies:
+      brace-expansion: 5.0.12
 
   minimatch@10.2.6:
     dependencies:
