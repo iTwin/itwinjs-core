@@ -51,13 +51,11 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   let ecClass: AnyClass = schemaItem;
-  const { propertyName, accessors } = field.propertyPath;
+  const { propertyName, accessors, jsonAccessors } = field.propertyPath;
   let ecProp = ecClass.getPropertySync(propertyName);
   if (!ecProp) {
     return undefined;
   }
-
-  const isStringRoot = ecProp.isPrimitive() && !ecProp.isArray() && ecProp.primitiveType === PrimitiveType.String;
 
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
@@ -97,12 +95,6 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
 
   if (undefined === curValue) {
     return undefined;
-  }
-
-  // Indexed JSON strings are handled by `readJsonLeaf`. An un-indexed string stays on the EC path, where it resolves to
-  // itself.
-  if (isStringRoot && accessors && accessors.length > 0 && typeof curValue.primitive === "string") {
-    return readJsonLeaf(curValue.primitive, accessors);
   }
 
   if (accessors) {
@@ -160,22 +152,36 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
   }
 
-  const propertyType = determineFieldPropertyType(ecProp);
-  if (!propertyType) {
+  // The ultimate result must be a primitive value.
+  if (undefined === curValue.primitive) {
     return undefined;
   }
 
-  // The ultimate result must be a primitive value.
-  if (undefined === curValue.primitive) {
+  // `jsonAccessors` continue the walk inside a serialized JSON string. There is no schema behind a JSON blob, so the
+  // property must declare itself as JSON via its extended type; an un-indexed JSON property resolves to the raw string.
+  if (jsonAccessors && jsonAccessors.length > 0) {
+    if (!isJsonProperty(ecProp) || typeof curValue.primitive !== "string") {
+      return undefined;
+    }
+
+    return readJsonLeaf(curValue.primitive, jsonAccessors);
+  }
+
+  const propertyType = determineFieldPropertyType(ecProp);
+  if (!propertyType) {
     return undefined;
   }
 
   return { value: curValue.primitive, type: propertyType };
 }
 
-/** Resolves a [FieldPropertyPath]($common) that indexes into a string property holding serialized
- * JSON, as a walk entirely separate from the EC one: there is no schema behind a JSON blob,
- * so no EC metadata is consulted.
+function isJsonProperty(prop: Property): boolean {
+  return prop.isPrimitive() && !prop.isArray() && prop.primitiveType === PrimitiveType.String && prop.extendedTypeName === "Json";
+}
+
+/** Applies [FieldPropertyPath.jsonAccessors]($common) to a string property holding serialized JSON,
+ * as a walk entirely separate from the EC one: there is no schema behind a JSON blob, so no EC
+ * metadata is consulted.
  *
  * Returns `undefined` when `raw` is not JSON, when an accessor does not resolve, or when the path
  * stops anywhere but a scalar — including on a JSON `null`, which is not a

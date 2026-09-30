@@ -36,7 +36,12 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
     datetime: new Date("2025-08-28T13:45:30.123Z"),
     intEnum: 1,
     outerStruct: {
-      innerStruct: { bool: false, doubles: [1, 2, 3] },
+      innerStruct: {
+        bool: false,
+        doubles: [1, 2, 3],
+        json: JSON.stringify({ contactInfo: { email: "duck@pond.example", phoneNumbers: [{ areaCode: 555 }] } }),
+        notJson: JSON.stringify({ contactInfo: { email: "not-indexable" } }),
+      },
       innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
     },
     outerStructs: [{
@@ -195,6 +200,8 @@ const fieldsSchemaXml = `
 
   <ECStructClass typeName="InnerStruct" modifier="None">
     <ECProperty propertyName="bool" typeName="boolean"/>
+    <ECProperty propertyName="json" typeName="string" extendedTypeName="Json"/>
+    <ECProperty propertyName="notJson" typeName="string"/>
     <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
   </ECStructClass>
 
@@ -240,6 +247,8 @@ const fieldsSchemaXml = `
 interface InnerStruct {
   bool: boolean;
   doubles: number[];
+  json?: string;
+  notJson?: string;
 }
 
 interface OuterStruct {
@@ -549,10 +558,10 @@ describe("Field evaluation", () => {
   });
 
   describe("JSON-in-string properties", () => {
-    // `JsonProperties` is a plain String column; accessors index into the parsed JSON, so none
-    // of these paths have an EC property behind the leaf.
-    function jsonPath(...accessors: Array<string | number>): FieldPropertyPath {
-      return { propertyName: "JsonProperties", accessors };
+    // `JsonProperties` is a String column of extended type `Json`; `jsonAccessors` index into the
+    // parsed JSON, so none of these paths have an EC property behind the leaf.
+    function jsonPath(...jsonAccessors: Array<string | number>): FieldPropertyPath {
+      return { propertyName: "JsonProperties", jsonAccessors };
     }
 
     function evaluateJson(accessors: Array<string | number>): FieldValue | undefined {
@@ -613,6 +622,40 @@ describe("Field evaluation", () => {
       const value = evaluateField({ propertyName: "JsonProperties" }, sourceElementId);
       expect(value?.type).to.equal("string");
       expect(value?.value).to.be.a("string").and.to.contain("stringProp");
+    });
+
+    it("does not treat plain accessors as JSON accessors", () => {
+      // A String property cannot be walked with `accessors`; only `jsonAccessors` continue into the JSON.
+      expect(evaluateField({ propertyName: "JsonProperties", accessors: ["stringProp"] }, sourceElementId)).to.be.undefined;
+    });
+
+    it("indexes into a JSON property reached through accessors", () => {
+      const path = (...jsonAccessors: Array<string | number>): FieldPropertyPath => ({
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "json"],
+        jsonAccessors,
+      });
+
+      expect(evaluateField(path("contactInfo", "email"), sourceElementId)?.value).to.equal("duck@pond.example");
+      expect(evaluateField(path("contactInfo", "phoneNumbers", 0, "areaCode"), sourceElementId)?.value).to.equal(555);
+      expect(evaluateField(path("contactInfo", "missing"), sourceElementId)).to.be.undefined;
+    });
+
+    it("requires the property to have the Json extended type", () => {
+      const path: FieldPropertyPath = {
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "notJson"],
+        jsonAccessors: ["contactInfo", "email"],
+      };
+
+      expect(evaluateField(path, sourceElementId)).to.be.undefined;
+      // Without jsonAccessors the plain string still resolves to itself.
+      expect(evaluateField({ ...path, jsonAccessors: undefined }, sourceElementId)?.value).to.be.a("string").and.to.contain("not-indexable");
+    });
+
+    it("ignores an empty jsonAccessors array", () => {
+      const value = evaluateField({ propertyName: "JsonProperties", jsonAccessors: [] }, sourceElementId);
+      expect(value?.type).to.equal("string");
     });
 
     it("types string and boolean leaves from the parsed JSON", () => {
