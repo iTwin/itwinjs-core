@@ -51,7 +51,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   let ecClass: AnyClass = schemaItem;
-  const { propertyName, accessors } = field.propertyPath;
+  const { propertyName, accessors, jsonAccessors } = field.propertyPath;
   let ecProp = ecClass.getPropertySync(propertyName);
   if (!ecProp) {
     return undefined;
@@ -152,17 +152,76 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
   }
 
-  const propertyType = determineFieldPropertyType(ecProp);
-  if (!propertyType) {
-    return undefined;
-  }
-
   // The ultimate result must be a primitive value.
   if (undefined === curValue.primitive) {
     return undefined;
   }
 
+  // `jsonAccessors` continue the walk inside a serialized JSON string. There is no schema behind a JSON blob, so the
+  // property must declare itself as JSON via its extended type; an un-indexed JSON property resolves to the raw string.
+  if (jsonAccessors && jsonAccessors.length > 0) {
+    if (!isJsonProperty(ecProp) || typeof curValue.primitive !== "string") {
+      return undefined;
+    }
+
+    return readJsonLeaf(curValue.primitive, jsonAccessors);
+  }
+
+  const propertyType = determineFieldPropertyType(ecProp);
+  if (!propertyType) {
+    return undefined;
+  }
+
   return { value: curValue.primitive, type: propertyType };
+}
+
+function isJsonProperty(prop: Property): boolean {
+  return prop.isPrimitive() && !prop.isArray() && prop.primitiveType === PrimitiveType.String && prop.extendedTypeName === "Json";
+}
+
+/** Applies [FieldPropertyPath.jsonAccessors]($common) to a string property holding serialized JSON,
+ * as a walk entirely separate from the EC one: there is no schema behind a JSON blob, so no EC
+ * metadata is consulted.
+ *
+ * Returns `undefined` when `raw` is not JSON, when an accessor does not resolve, or when the path
+ * stops anywhere but a scalar — including on a JSON `null`, which is not a
+ * [FieldPrimitiveValue]($common).
+ */
+function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): FieldValue | undefined {
+  let cur: any;
+  try {
+    cur = JSON.parse(raw);
+  } catch {
+    // Not valid JSON; treat as a normal string.
+    return undefined;
+  }
+
+  for (const accessor of accessors) {
+    // A number indexes an array and a string keys an object; anything else doesn't resolve.
+    const isIndex = typeof accessor === "number";
+    if (typeof cur !== "object" || null === cur || Array.isArray(cur) !== isIndex) {
+      return undefined;
+    }
+
+    if (isIndex) {
+      cur = cur[accessor < 0 ? cur.length + accessor : accessor];
+    } else {
+      // Own keys only, so a key missing from the JSON can't resolve through Object.prototype.
+      cur = Object.hasOwn(cur, accessor) ? cur[accessor] : undefined;
+    }
+  }
+
+  // JSON carries no type metadata, so the leaf's JavaScript type decides the field property type.
+  switch (typeof cur) {
+    case "number":
+      return { value: cur, type: "quantity" };
+    case "boolean":
+      return { value: cur, type: "boolean" };
+    case "string":
+      return { value: cur, type: "string" };
+    default:
+      return undefined;
+  }
 }
 
 function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
