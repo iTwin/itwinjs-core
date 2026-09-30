@@ -104,7 +104,6 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
-  // Acquire locks before mutating, so a failure leaves the cached element untouched.
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
 
   if (categoryId)
