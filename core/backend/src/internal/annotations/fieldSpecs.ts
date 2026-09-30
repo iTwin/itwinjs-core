@@ -106,13 +106,10 @@ function ensureSchemaLoaded(context: SchemaContext, fullName: string): void {
   }
 }
 
-/** Builds the [FormatterSpec]($core-quantity) for one requirement, or `undefined` when the
+/** Builds the [FormatterSpec]($core-quantity) for `args`, or `undefined` when the
  * format fails to resolve, the persistence unit is not a bundled BIS unit, the format names a
  * unit that is not, or the two cannot be converted between -- leaving the caller on the same
  * fallback as any other unresolved override.
- *
- * Only a formatter is built, never the matching [ParserSpec]($core-quantity): field evaluation
- * only ever formats.
  * @internal
  */
 export function buildFieldFormatterSpec(args: FormattingSpecArgs, formatsProvider: SyncFormatsProvider, formatting: FieldFormatting): FormatterSpec | undefined {
@@ -134,7 +131,7 @@ export function buildFieldFormatterSpec(args: FormattingSpecArgs, formatsProvide
     const format = Format.createFromJSONSync("fieldFormat", unitsProvider, formatProps);
     formatterSpec = FormatterSpec.createSync("fieldFormat", format, unitsProvider, persistenceUnit);
   } catch (err) {
-    // A format naming a unit the bundled provider lacks is an unresolvable requirement, not a bug.
+    // A format naming a unit the bundled provider lacks can't be resolved.
     if (err instanceof QuantityError) {
       return undefined;
     }

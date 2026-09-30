@@ -239,7 +239,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *  1. The FormatSet named by the field's [QuantityFieldFormatOptions.formatSet]($common).
    *  2. The FormatSet adopted for the iModel ([[FieldFormattingArgs.formatSet]]).
    *  3. The KindOfQuantity's presentation format for [[FieldFormattingArgs.unitSystem]].
-   *  4. `value.toString()`, with the unresolved requirement logged.
+   *  4. `value.toString()`, with a warning logged.
    *
    * Units resolve through the bundled BIS [BasicUnitsProvider]($core-quantity) only. A field
    * whose persistence unit, or whose format's units, are defined solely by the iModel's own
@@ -270,12 +270,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Raised after every [[registerFieldFormatting]] call, once the new configuration is in
-   * place, whether or not it differs from the previous one. Because every
-   * [FormatterSpec]($core-quantity) is built on demand, this is the only moment at which the
-   * formatting an iModel's fields receive can change; applications that cache formatted output,
-   * or that want to re-evaluate existing annotations against a newly adopted FormatSet, should
-   * listen here. A listener that throws does not undo the registration; its error is reported
-   * through [UnexpectedErrors]($bentley) rather than to the caller of `registerFieldFormatting`.
+   * place, whether or not it differs from the previous one. Applications that cache formatted
+   * output, or that want to re-evaluate existing annotations against a newly adopted FormatSet,
+   * should listen here. A listener that throws does not undo the registration; its error is
+   * reported through [UnexpectedErrors]($bentley) rather than to the caller of
+   * `registerFieldFormatting`.
    * @beta
    */
   public static readonly onFieldFormattingChanged = new BeEvent<(args: { iModel: IModelDb }) => void>();
