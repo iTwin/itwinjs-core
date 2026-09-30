@@ -25,7 +25,8 @@ import { withEditTxn } from "../../EditTxn";
  * consult the registered FormatSets.
  *
  * Which format a given field resolves to is covered exhaustively by FieldFormat.test.ts; nothing
- * here varies `kindOfQuantity` or `persistenceUnit`.
+ * here varies `kindOfQuantity` or `persistenceUnit`. The registration-level `unitSystem` argument
+ * is covered here because it is part of the registration contract rather than the per-field one.
  */
 
 const lifecycleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -35,10 +36,12 @@ const lifecycleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
 
   <KindOfQuantity typeName="LENGTH" displayLabel="Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
+  <KindOfQuantity typeName="DUAL_LENGTH" displayLabel="Dual Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M];f:DefaultRealU(4)[u:FT]"/>
 
   <ECEntityClass typeName="LifecycleElement" modifier="None">
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECProperty propertyName="lengthProp" typeName="double" kindOfQuantity="LENGTH"/>
+    <ECProperty propertyName="dualLengthProp" typeName="double" kindOfQuantity="DUAL_LENGTH"/>
     <ECProperty propertyName="maybeNull" typeName="double"/>
     <ECArrayProperty propertyName="strings" typeName="string"/>
   </ECEntityClass>
@@ -47,6 +50,7 @@ const lifecycleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 
 interface LifecycleElementProps extends PhysicalElementProps {
   lengthProp: number;
+  dualLengthProp: number;
   maybeNull?: number;
   strings: string[];
 }
@@ -54,6 +58,7 @@ interface LifecycleElementProps extends PhysicalElementProps {
 class LifecycleElement extends PhysicalElement {
   public static override get className() { return "LifecycleElement"; }
   declare public lengthProp: number;
+  declare public dualLengthProp: number;
   declare public maybeNull?: number;
   declare public strings: string[];
 }
@@ -119,6 +124,7 @@ describe("Field formatting lifecycle", () => {
       category,
       code: Code.createEmpty(),
       lengthProp: 2.5,
+      dualLengthProp: 2.5,
       strings: ["a", "b"],
       placement: { origin: new Point3d(0, 0, 0), angles: new YawPitchRollAngles() },
     };
@@ -285,6 +291,39 @@ describe("Field formatting lifecycle", () => {
       expect(unexpected.length).to.equal(1);
       const annotationElementId = insertAnnotationWithLengthField(sourceElementId);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
+    });
+
+    it("selects the KindOfQuantity's presentation format for the registered unitSystem", () => {
+      // DUAL_LENGTH lists a metric and an imperial presentation format. The unit system chosen
+      // at registration decides which one the schema provider hands back, and an explicit
+      // `unitSystem` wins over the adopted FormatSet's own.
+      // Persisted on the element: dualLengthProp 2.5 m
+      const evaluate = () => {
+        const block = TextBlock.create();
+        const field = FieldRun.create({
+          propertyHost: propertyHost(sourceElementId),
+          propertyPath: { propertyName: "dualLengthProp" },
+          cachedContent: "old",
+        });
+        block.appendRun(field);
+        ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+        return field.cachedContent;
+      };
+
+      // Nothing registered: metric.
+      expect(evaluate()).to.equal("2.5 m");
+
+      // An explicit unit system alone.
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel, unitSystem: "imperial" });
+      expect(evaluate()).to.equal("8.2021 ft");
+
+      // An adopted metric FormatSet that does not define the key defers to the schema, using the
+      // set's own system when none is given and the explicit one when it is.
+      const metricSet = toFormatSet("Adopted", mmSet());
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel, formatSet: metricSet });
+      expect(evaluate()).to.equal("2.5 m");
+      ElementDrivesTextAnnotation.registerFieldFormatting({ iModel: imodel, formatSet: metricSet, unitSystem: "imperial" });
+      expect(evaluate()).to.equal("8.2021 ft");
     });
 
     it("formats through the schema default on the txn callback path when nothing is registered", () => {
