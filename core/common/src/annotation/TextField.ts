@@ -29,21 +29,24 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
- * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
- * a primitive property.
- * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
- * Some examples:
- * ```
- * | Access String | propertyName | accessors |
- * | ------------- | ------------ | --------- |
- * | name          | "name"       | undefined |
- * | spouse.name   | "spouse"     | [name]    |
- * | colors[2]     | "colors"     | [2]       |
- * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
- * ```
- * A path may also index into a string property that holds serialized JSON, such as `JsonProperties`. In that case the
- * accessors are applied to the parsed JSON instead of to BIS properties. The path must end on a scalar (string, number,
- * or boolean); a path that ends on an object, an array, or a JSON `null` resolves to no value.
+   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
+   * a primitive property.
+   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
+   * If `propertyName` (including any [[accessors]]) resolves to a string property of extended type `Json`, such as `JsonProperties`,
+   * then additional [[jsonAccessors]] are required to identify a specific value within the serialized JSON.
+   * Some examples:
+   * ```
+   * | Access String | propertyName | accessors | jsonAccessors |
+   * | ------------- | ------------ | --------- | ------------- |
+   * | name          | "name"       | undefined | undefined     |
+   * | spouse.name   | "spouse"     | [name]    | undefined     |
+   * | colors[2]     | "colors"     | [2]       | undefined     |
+   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
+   * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
+   * | spouse.jsonProperties.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
+   * ```
+   * A path using `jsonAccessors` must end on a scalar (string, number, or boolean); a path that ends on an object, an array,
+   * or a JSON `null` resolves to no value.
  * @beta
  */
 export interface FieldPropertyPath {
@@ -51,6 +54,10 @@ export interface FieldPropertyPath {
   propertyName: string;
   /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
   accessors?: Array<string | number>;
+  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a BIS string property of extended type `Json`, property names and/or
+   * array indices for selecting a primitive value within the JSON.
+   */
+  jsonAccessors?: Array<string | number>;
 }
 
 /** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
