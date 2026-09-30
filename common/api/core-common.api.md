@@ -3733,6 +3733,7 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
+    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
 

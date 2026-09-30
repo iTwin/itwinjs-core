@@ -36,7 +36,12 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
     datetime: new Date("2025-08-28T13:45:30.123Z"),
     intEnum: 1,
     outerStruct: {
-      innerStruct: { bool: false, doubles: [1, 2, 3] },
+      innerStruct: {
+        bool: false,
+        doubles: [1, 2, 3],
+        json: JSON.stringify({ contactInfo: { email: "duck@pond.example", phoneNumbers: [{ areaCode: 555 }] } }),
+        notJson: JSON.stringify({ contactInfo: { email: "not-indexable" } }),
+      },
       innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
     },
     outerStructs: [{
@@ -51,6 +56,11 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
       stringProp: "abc",
       ints: [10, 11, 12, 13],
       bool: true,
+      // Deliberately present-but-null, to check that a JSON null resolves to no value rather than
+      // to a FieldValue the formatters would have to stringify.
+      nullProp: null,
+      lengthMeters: 2.5,
+      readings: [1.5, null, "text"],
       zoo: {
         address: {
           zipcode: 12345,
@@ -190,6 +200,8 @@ const fieldsSchemaXml = `
 
   <ECStructClass typeName="InnerStruct" modifier="None">
     <ECProperty propertyName="bool" typeName="boolean"/>
+    <ECProperty propertyName="json" typeName="string" extendedTypeName="Json"/>
+    <ECProperty propertyName="notJson" typeName="string"/>
     <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
   </ECStructClass>
 
@@ -235,6 +247,8 @@ const fieldsSchemaXml = `
 interface InnerStruct {
   bool: boolean;
   doubles: number[];
+  json?: string;
+  notJson?: string;
 }
 
 interface OuterStruct {
@@ -540,6 +554,131 @@ describe("Field evaluation", () => {
       expect(updatedCount).to.equal(1);
       expect(fieldRun1.cachedContent).to.equal("100");
       expect(fieldRun2.cachedContent).to.equal("a");
+    });
+  });
+
+  describe("JSON-in-string properties", () => {
+    // `JsonProperties` is a String column of extended type `Json`; `jsonAccessors` index into the
+    // parsed JSON, so none of these paths have an EC property behind the leaf.
+    function jsonPath(...jsonAccessors: Array<string | number>): FieldPropertyPath {
+      return { propertyName: "JsonProperties", jsonAccessors };
+    }
+
+    function evaluateJson(accessors: Array<string | number>): FieldValue | undefined {
+      return evaluateField(jsonPath(...accessors), sourceElementId);
+    }
+
+    it("indexes into a deserialized JSON object", () => {
+      expect(evaluateJson(["stringProp"])?.value).to.equal("abc");
+      expect(evaluateJson(["bool"])?.value).to.equal(true);
+      expect(evaluateJson(["zoo", "address", "zipcode"])?.value).to.equal(12345);
+    });
+
+    it("indexes into a deserialized JSON array, including negative indices", () => {
+      expect(evaluateJson(["ints", 0])?.value).to.equal(10);
+      expect(evaluateJson(["ints", 3])?.value).to.equal(13);
+      expect(evaluateJson(["ints", -1])?.value).to.equal(13);
+      expect(evaluateJson(["zoo", "birds", 1, "sound"])?.value).to.equal("scree!");
+    });
+
+    it("returns undefined for a JSON null leaf rather than an unformattable value", () => {
+      // A JSON null is not a FieldPrimitiveValue. Producing one here would yield a
+      // `{ value: null, type: "string" }` FieldValue whose formatter called `null.toString()`.
+      expect(evaluateJson(["nullProp"])).to.be.undefined;
+      expect(evaluateJson(["readings", 1])).to.be.undefined;
+    });
+
+    it("does not throw when a field resolves to a JSON null", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("nullProp"),
+        cachedContent: "stale",
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(() => updateField(fieldRun, context)).to.not.throw();
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    it("returns undefined for a missing key or an out-of-range index", () => {
+      expect(evaluateJson(["nope"])).to.be.undefined;
+      expect(evaluateJson(["toString"])).to.be.undefined;
+      expect(evaluateJson(["zoo", "address", "street"])).to.be.undefined;
+      expect(evaluateJson(["ints", 4])).to.be.undefined;
+      expect(evaluateJson(["ints", -5])).to.be.undefined;
+    });
+
+    it("returns undefined when the path stops on a JSON object or array", () => {
+      expect(evaluateJson(["zoo"])).to.be.undefined;
+      expect(evaluateJson(["ints"])).to.be.undefined;
+    });
+
+    it("returns undefined when indexing past a JSON scalar", () => {
+      expect(evaluateJson(["stringProp", "more"])).to.be.undefined;
+      expect(evaluateJson(["bool", 0])).to.be.undefined;
+    });
+
+    it("keeps the raw string when the property is not indexed", () => {
+      const value = evaluateField({ propertyName: "JsonProperties" }, sourceElementId);
+      expect(value?.type).to.equal("string");
+      expect(value?.value).to.be.a("string").and.to.contain("stringProp");
+    });
+
+    it("does not treat plain accessors as JSON accessors", () => {
+      // A String property cannot be walked with `accessors`; only `jsonAccessors` continue into the JSON.
+      expect(evaluateField({ propertyName: "JsonProperties", accessors: ["stringProp"] }, sourceElementId)).to.be.undefined;
+    });
+
+    it("indexes into a JSON property reached through accessors", () => {
+      const path = (...jsonAccessors: Array<string | number>): FieldPropertyPath => ({
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "json"],
+        jsonAccessors,
+      });
+
+      expect(evaluateField(path("contactInfo", "email"), sourceElementId)?.value).to.equal("duck@pond.example");
+      expect(evaluateField(path("contactInfo", "phoneNumbers", 0, "areaCode"), sourceElementId)?.value).to.equal(555);
+      expect(evaluateField(path("contactInfo", "missing"), sourceElementId)).to.be.undefined;
+    });
+
+    it("requires the property to have the Json extended type", () => {
+      const path: FieldPropertyPath = {
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "notJson"],
+        jsonAccessors: ["contactInfo", "email"],
+      };
+
+      expect(evaluateField(path, sourceElementId)).to.be.undefined;
+      // Without jsonAccessors the plain string still resolves to itself.
+      expect(evaluateField({ ...path, jsonAccessors: undefined }, sourceElementId)?.value).to.be.a("string").and.to.contain("not-indexable");
+    });
+
+    it("ignores an empty jsonAccessors array", () => {
+      const value = evaluateField({ propertyName: "JsonProperties", jsonAccessors: [] }, sourceElementId);
+      expect(value?.type).to.equal("string");
+    });
+
+    it("types string and boolean leaves from the parsed JSON", () => {
+      expect(evaluateJson(["stringProp"])?.type).to.equal("string");
+      expect(evaluateJson(["bool"])?.type).to.equal("boolean");
+      expect(evaluateJson(["readings", 2])?.type).to.equal("string");
+    });
+
+    it("types a numeric leaf as a quantity", () => {
+      const value = evaluateJson(["lengthMeters"]);
+      expect(value?.type).to.equal("quantity");
+      expect(value?.value).to.equal(2.5);
+    });
+
+    it("renders a numeric leaf as its raw value", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("lengthMeters"),
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(updateField(fieldRun, context)).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("2.5");
     });
   });
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add `FieldPropertyPath.jsonAccessors` for indexing into a String property of extended type `Json`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "claudiaareneee@users.noreply.github.com"
+}
