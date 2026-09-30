@@ -356,16 +356,10 @@ export class VerticalCRS implements VerticalCRSProps {
     return data;
   }
 
-  /** Compares two vertical CRS.
+  /** Strictly compares the stored properties of two vertical CRS, not their resolved identities.
    *  @public */
   public equals(other: VerticalCRS): boolean {
-    if (this.crsName !== undefined || other.crsName !== undefined)
-      return this.crsName === other.crsName;
-
-    if (this.epsg !== undefined || other.epsg !== undefined)
-      return this.epsg === other.epsg;
-
-    return this.id === other.id;
+    return this.id === other.id && this.crsName === other.crsName && this.epsg === other.epsg;
   }
 }
 

@@ -925,17 +925,19 @@ describe("Geodetic Settings", () => {
   });
 
   /* GeographicCRS unit tests */
-  it("round-trips and compares VerticalCRS identities by precedence", () => {
+  it("round-trips and strictly compares VerticalCRS properties", () => {
     expect(new VerticalCRS({ id: "NAVD88" }).toJSON()).to.deep.equal({ id: "NAVD88" });
 
     const named = new VerticalCRS({ id: "GEOID", crsName: "EGM96 height", epsg: 5773 });
     expect(VerticalCRS.fromJSON(named.toJSON()).toJSON()).to.deep.equal({ id: "GEOID", crsName: "EGM96 height", epsg: 5773 });
-    expect(named.equals(new VerticalCRS({ id: "ELLIPSOID", crsName: "EGM96 height", epsg: 9999 }))).to.be.true;
+    expect(named.equals(VerticalCRS.fromJSON(named.toJSON()))).to.be.true;
+    expect(named.equals(new VerticalCRS({ id: "ELLIPSOID", crsName: "EGM96 height", epsg: 5773 }))).to.be.false;
+    expect(named.equals(new VerticalCRS({ id: "GEOID", crsName: "EGM96 height", epsg: 9999 }))).to.be.false;
     expect(named.equals(new VerticalCRS({ id: "GEOID", crsName: "EGM2008 height", epsg: 5773 }))).to.be.false;
     expect(named.equals(new VerticalCRS({ id: "GEOID", epsg: 5773 }))).to.be.false;
 
     const epsg = new VerticalCRS({ id: "GEOID", epsg: 5773 });
-    expect(epsg.equals(new VerticalCRS({ id: "ELLIPSOID", epsg: 5773 }))).to.be.true;
+    expect(epsg.equals(new VerticalCRS({ id: "ELLIPSOID", epsg: 5773 }))).to.be.false;
     expect(epsg.equals(new VerticalCRS({ id: "GEOID", epsg: 3855 }))).to.be.false;
     expect(epsg.equals(new VerticalCRS({ id: "GEOID" }))).to.be.false;
 

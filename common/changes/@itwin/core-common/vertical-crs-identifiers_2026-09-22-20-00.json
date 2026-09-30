@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Add optional dictionary name and EPSG identifiers to VerticalCRS.",
+      "comment": "Add optional dictionary name and EPSG identifiers to VerticalCRS. Compare all stored vertical CRS properties so fallback corrections and EPSG additions update the iModel.",
       "type": "none"
     }
   ],

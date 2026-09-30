@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it, vi } from "vitest";
-import { GeoCoordStatus, GeographicCRSProps, VerticalCRSProps } from "@itwin/core-common";
+import { GeoCoordStatus, GeographicCRS, GeographicCRSProps, VerticalCRSProps } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { computeVerticalDatumShift } from "../../internal/tile/OrbitGtTileTree";
@@ -12,6 +12,7 @@ interface FakeConnectionOptions {
   noGcsDefined?: boolean;
   /** The iModel's vertical datum. Defaults to GEOID. */
   verticalDatum?: VerticalCRSProps["id"] | "none";
+  verticalCRS?: VerticalCRSProps;
   converterUndefined?: boolean;
   status?: GeoCoordStatus;
   geoidZ?: number;
@@ -39,10 +40,10 @@ function createFakeConnection(options: FakeConnectionOptions) {
   const verticalDatum = options.verticalDatum ?? "GEOID";
   const iModel = {
     noGcsDefined: options.noGcsDefined ?? false,
-    geographicCoordinateSystem: {
+    geographicCoordinateSystem: GeographicCRS.fromJSON({
       horizontalCRS: { epsg: 25830 },
-      verticalCRS: "none" === verticalDatum ? undefined : { id: verticalDatum },
-    },
+      verticalCRS: options.verticalCRS ?? ("none" === verticalDatum ? undefined : { id: verticalDatum }),
+    }),
     geoServices: { getConverter },
   } as unknown as IModelConnection;
 
@@ -85,6 +86,23 @@ describe("computeVerticalDatumShift", () => {
       const { iModel, getConverter } = createFakeConnection({ verticalDatum, geoidZ: 0 });
       await computeVerticalDatumShift(geoOrigin, 0, iModel);
       expect(getConverter).toHaveBeenCalledWith(source);
+    }
+  });
+
+  it("preserves named and EPSG-only vertical definitions in the conversion source", async () => {
+    const definitions: VerticalCRSProps[] = [
+      { id: "GEOID", crsName: "EGM2008 height", epsg: 3855 },
+      { id: "GEOID", epsg: 3855 },
+      { id: "NAVD88", crsName: "NAVD88 height", epsg: 5703 },
+      { id: "NGVD29", epsg: 5702 },
+    ];
+    for (const verticalCRS of definitions) {
+      const { iModel, getConverter } = createFakeConnection({ verticalCRS });
+      await computeVerticalDatumShift(geoOrigin, 0, iModel);
+      expect(getConverter).toHaveBeenCalledWith({
+        horizontalCRS: { epsg: verticalCRS.id === "GEOID" ? 4326 : 4269 },
+        verticalCRS,
+      });
     }
   });
 

@@ -19,6 +19,35 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 
 const runDevAcceptance = process.env.IMODELJS_VERTICAL_CRS_DEV_TEST === "1" ? describe : describe.skip;
+const runProductionAcceptance = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_PRODUCTION_TESTS ?? "") ? describe : describe.skip;
+
+runProductionAcceptance("Vertical CRS production workspace acceptance", function () {
+  this.timeout(120_000);
+  const cacheDir = path.join(path.dirname(IModelTestUtils.prepareOutputFile("VerticalCrsProduction", "VerticalCrsProduction.bim")), "cache");
+
+  before(async () => {
+    await TestUtils.shutdownBackend();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
+    await TestUtils.startBackend({ cacheDir, loadGcsWorkspaces: true });
+    IModelNative.platform.enableLocalGcsFiles(false);
+  });
+
+  after(async () => {
+    IModelNative.platform.enableLocalGcsFiles(true);
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
+  });
+
+  it("enumerates and filters vertical systems using the shipped defaults", () => {
+    const verticalSystems = getAvailableVerticalCoordinateReferenceSystems();
+    expect(verticalSystems).not.to.be.empty;
+    expect(verticalSystems.some((entry) => entry.crsName === "EGM96 height")).to.be.true;
+
+    const meters = getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
+    expect(meters).not.to.be.empty;
+    expect(meters.every((entry) => entry.unit === "Meter")).to.be.true;
+  });
+});
 
 const baseDbProps: GcsDbProps = {
   dbName: "base",
