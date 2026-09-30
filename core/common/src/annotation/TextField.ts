@@ -44,6 +44,15 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
    * ```
    * A path using `jsonAccessors` must end on a scalar (string, number, or boolean); a path that ends on an object, an array,
    * or a JSON `null` resolves to no value.
+   *
+   * For example, to display a value stored in an element's `JsonProperties`:
+   * ```ts
+   * [[include:TextFields_JsonAccessors]]
+   * ```
+   * Or, when the JSON property is reached through a struct member:
+   * ```ts
+   * [[include:TextFields_NestedJsonAccessors]]
+   * ```
  * @beta
  */
 export interface FieldPropertyPath {
