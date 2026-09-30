@@ -21,7 +21,7 @@ class Env:
     # Note: these are upack version strings.
     avd_ver = '34.0.0-3'
     '''The version of the avd to use.'''
-    sdk_ver = '34.0.0-0'
+    sdk_ver = '34.0.0-1'
     '''The version of the Android SDK to use.'''
     jdk_ver = '21.0.1-0'
     '''The version of the Open JDK to use.'''
@@ -341,67 +341,39 @@ def make_upack_executable(upack_dir: str) -> None:
         for file in files:
             os.chmod(f'{root}/{file}', 0o755)
 
-def sdk_version_exists(dst_dir: str, version: str) -> bool:
+def upack_version_path(dst_dir: str) -> str:
     '''
-    Check if the given version of the Android SDK is present in the given upack directory.
+    Return the path of the file that records which upack version is installed in the given
+    directory.
     '''
-    parts = version.split('.')
-    if len(parts) != 3:
-        raise Exception(f'SDK Version must have 3 parts!')
-    if parts[1] == '0':
-        version = parts[0]
-    else:
-        version = f'{parts[0]}-ext{parts[1]}'
-    return os.path.exists(f'{dst_dir}/platforms/android-{version}')
-
-def avd_version_exists(dst_dir: str, version: str) -> bool:
-    '''
-    Check if the given version of the Android AVD is present in the given upack directory.
-    '''
-    return os.path.exists(f'{dst_dir}/{env.avd_name}.avd')
-
-def jdk_version_exists(dst_dir: str, version: str) -> bool:
-    '''
-    Check if the given version of the Open JDK is present in the given upack directory.
-    '''
-    parts = version.split('.')
-    if len(parts) != 3:
-        raise Exception(f'JDK Version must have 3 parts!')
-    if '-' in parts[2]:
-        parts[2] = parts[2].split('-')[0]
-    on_jvm_version = False
-    with open(f'{dst_dir}/Info.plist') as file:
-        while line := file.readline():
-            if on_jvm_version:
-                return line.strip() == f'<string>{parts[0]}.{parts[1]}.{parts[2]}</string>'
-            else:
-                on_jvm_version = line.strip() == '<key>JVMVersion</key>'
-    raise Exception(f'Could not find OpenJDK version in Info.plist!')
+    return f'{dst_dir}/.upack_version'
 
 def upack_exists(name: str, version: str) -> bool:
     '''
-    Check if the given upack is present.
+    Check if the given version of the given upack is present.
+
+    A directory that was populated before this script started recording versions has no version
+    file, and is therefore reported as absent so that it gets replaced with a known-good download.
     '''
-    dst_dir = f'{env.upack_dir}/{name}'
-    if not os.path.exists(dst_dir):
+    try:
+        with open(upack_version_path(f'{env.upack_dir}/{name}')) as file:
+            return file.read().strip() == version
+    except OSError:
         return False
-    if name == 'androidavd_macos':
-        return avd_version_exists(dst_dir, version)
-    if name == 'androidsdk_macos':
-        return sdk_version_exists(dst_dir, version)
-    if name == 'openjdk_macos':
-        return jdk_version_exists(dst_dir, version)
-    raise Exception(f'Unknown upack name: {name}!')
 
 def download_upack_if_needed(name: str, version: str) -> None:
     '''
-    Check if the given upack is present, and download it if not.
+    Check if the given version of the given upack is present, and download it if not.
     '''
     dst_dir = f'{env.upack_dir}/{name}'
     if upack_exists(name, version):
-        log(f'upack {name} already present.')
+        log(f'upack {name} {version} already present.')
     else:
-        log(f'Downloading {name} upack...')
+        # Delete any existing contents first. Downloading into a populated directory merges the two,
+        # which can leave behind files from the previous version (or from SDK components that Gradle
+        # auto-installed), resulting in a directory that matches no upack version.
+        shutil.rmtree(dst_dir, ignore_errors=True)
+        log(f'Downloading {name} {version} upack...')
         command = ('az artifacts universal download '
             '--organization "https://dev.azure.com/bentleycs/" '
             '--feed "upack" '
@@ -409,7 +381,9 @@ def download_upack_if_needed(name: str, version: str) -> None:
             f'--version "{version}" '
             f'--path "{dst_dir}"')
         run_command(command, f'Error downloading {name} upack!')
-        log(f'upack {name} downloaded.')
+        with open(upack_version_path(dst_dir), 'w') as file:
+            file.write(f'{version}\n')
+        log(f'upack {name} {version} downloaded.')
     make_upack_executable(dst_dir)
 
 def download_upacks_if_needed() -> None:
@@ -421,10 +395,6 @@ def download_upacks_if_needed() -> None:
         os.mkdir(env.upack_dir)
     download_upack_if_needed('androidavd_macos', env.avd_ver)
     download_upack_if_needed('androidsdk_macos', env.sdk_ver)
-    # If jdk_dir includes a __MACOS subdirectory, it is openjdk 11, and we want 21, so delete the
-    # existing jdk_dir.
-    if os.path.exists(os.path.join(env.jdk_dir, '__MACOSX')):
-        shutil.rmtree(env.jdk_dir)
     download_upack_if_needed('openjdk_macos', env.jdk_ver)
     log('upacks downloaded.')
 
