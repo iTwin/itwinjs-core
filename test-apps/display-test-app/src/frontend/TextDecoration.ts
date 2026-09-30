@@ -35,6 +35,8 @@ class TextEditor implements Decorator {
     return { origin: this.origin, angle: 0 };
   }
 
+  public get isInitialized(): boolean { return undefined !== this._iModel; }
+
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
 
@@ -214,6 +216,9 @@ export class TextDecorationTool extends Tool {
         if (what === "formatset") {
           if (path === "off") {
             await dtaIpc.registerFieldFormatting(vp.iModel.key);
+            // Registration works before `init`; only skip the redraw when there is nothing to draw yet.
+            if (!editor.isInitialized)
+              return true;
             break;
           }
 
@@ -226,6 +231,8 @@ export class TextDecorationTool extends Tool {
           // An id makes the set addressable by a FieldRun's `formatSet` option; without one it is
           // adopted as the iModel's default.
           await dtaIpc.registerFieldFormatting(vp.iModel.key, id ? undefined : formatSet, id ? [{ id, formatSet }] : undefined);
+          if (!editor.isInitialized)
+            return true;
           break;
         }
 
