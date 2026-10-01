@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@itwin/core-frontend";
+import { IModelApp, MapLayerAuthenticationFailedError } from "@itwin/core-frontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 
 /** Restricts map-layer credentials (including SSO / Windows Authentication) to the exact
@@ -123,7 +123,11 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
     const searchParams = new URLSearchParams(request.searchParams);
     for (const [name, value] of queryParams)
       searchParams.set(name, value);
-    return fetchRequest({ ...request, headers, searchParams });
+    const response = await fetchRequest({ ...request, headers, searchParams });
+    // The handler owns classification of the responses it returns; a fixed credential cannot be refreshed.
+    if (response.status === 401 || response.status === 403)
+      throw new MapLayerAuthenticationFailedError(request.url);
+    return response;
   });
 }
 

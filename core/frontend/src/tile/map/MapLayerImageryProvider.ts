@@ -570,10 +570,11 @@ export abstract class MapLayerImageryProvider {
       } else {
         this.reportBlockedOrigin(challengedUrl);
       }
-    } else if ((rsp.status === 401 || rsp.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
+    } else if ((rsp.status === 401 || rsp.status === 403) && hasSettingsCreds && !credentialed && !this.isCredentialsSharingAllowed(challengedUrl)) {
       // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
       // since this request could not present its credentials to the challenging origin, either status most
-      // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
+      // likely results from that (never on a send the handler modified: the handler classifies those).
+      // The permission is recomputed for the challenged URL rather than reusing the
       // decision made for the requested one: `fetch` strips the Authorization header when it follows a
       // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
       // and conversely a request that started out untrusted may end up at an origin that is trusted.

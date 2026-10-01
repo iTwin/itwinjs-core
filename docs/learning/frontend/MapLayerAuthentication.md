@@ -18,7 +18,7 @@ While token acquisition is pure OAuth2, the token's *delivery* follows the ESRI 
 
 ## The map-layer fetch handler
 
-Some services use authentication schemes the OAuth facility above cannot express: an HTTP header such as `Authorization: Bearer …` or an API-key header (required for example by services exposed through an authenticating proxy), a custom query parameter under the hosting application's control, or a computed request signature. For these, the hosting application registers a `@beta` [MapLayerFetchHandler]($frontend) that wraps every map-layer network request — tiles, tooltips, capabilities, service metadata, and source validation, across **every** built-in format — the way a `DelegatingHandler` wraps `HttpClient` sends in .NET:
+Some services use authentication schemes the OAuth facility above cannot express: an HTTP header such as `Authorization: Bearer …` or an API-key header (required for example by services exposed through an authenticating proxy), a custom query parameter under the hosting application's control, or a computed request signature. For these, the hosting application registers a `@beta` [MapLayerFetchHandler]($frontend) that wraps every map-layer network request — tiles, tooltips, capabilities, service metadata, and source validation — of the WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features formats, the way a `DelegatingHandler` wraps `HttpClient` sends in .NET (see [Interaction with other mechanisms](#interaction-with-other-mechanisms) for the requests of other formats):
 
 ```ts
 const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(myHandler);
@@ -113,7 +113,10 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request: MapLaye
     return undefined;   // do not send this layer's token to another origin
   const headers = new Headers(request.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  return fetchRequest({ ...request, headers });
+  const response = await fetchRequest({ ...request, headers });
+  if (response.status === 401 || response.status === 403)
+    throw new MapLayerAuthenticationFailedError(request.url); // the handler classifies the responses it returns
+  return response;
 });
 ```
 
@@ -134,4 +137,5 @@ Once the application has re-established authentication, update the credentials u
 - **SSO** — a credentialed send never triggers the NTLM/Negotiate retry with browser credentials; the handler is the authentication authority for every request it manages. Requests every handler declines keep the SSO retry, so layers served by Windows-Authentication-protected services keep working alongside handlers that leave their requests alone.
 - **Caching** — while at least one handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those every handler declines: every source validation and provider initialization then re-issues its `GetCapabilities` / service-metadata request instead of reusing a cached response.
 - **Google Maps** — tile requests are routed through the pipeline, but the session-creation (`createSession`) and viewport-info (attribution) requests issued by `@itwin/map-layers-formats` are not: they target Google's fixed endpoints with the layer's own API key, so there is no proxy or alternate credential for a handler to apply. The session is a framework-owned credential, so a failing tile response still triggers one session refresh and retry even when a handler manages the request; but the framework never gives up on the layer over a response a handler returned as its own. Applications implementing their own `GoogleMapsSessionManager` own those requests entirely.
+- **Bing Maps** (deprecated) — tile requests are routed through the pipeline, but the imagery-metadata request issued when the layer initializes is not: it targets Bing's fixed endpoint with the application's own key.
 - **Backward compatibility** — handlers are strictly opt-in. Without one, requests and failure detection are exactly as in previous releases, driven by the pre-existing status-code checks. The framework applies no default failure classification to responses a handler returns; recognizing failures — by status code or protocol-specific convention (e.g. an error embedded in a `200` body) — and throwing [MapLayerAuthenticationFailedError]($frontend) is the handler's job.

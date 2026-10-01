@@ -362,7 +362,7 @@ export class ArcGisUtilities {
       let { response, managedByHandler } = await requestJson(tmpUrl, true);
 
       // Append security token when corresponding error code is returned by ArcGIS service
-      let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
+      const errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
       if (!accessTokenRequired
         && (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.MissingPermissions) ) {
         accessTokenRequired = true;
@@ -371,16 +371,17 @@ export class ArcGisUtilities {
           tmpUrl = createUrlObj();
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
           ({ response, managedByHandler } = await requestJson(tmpUrl, false));
-          errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
       }
 
       const json = await response.json();
-      const info: ArcGISServiceMetadata = {content: json, accessTokenRequired, errorCode: managedByHandler ? undefined : errorCode};
-      // Cache the response only if it doesn't contain any error, and never when a fetch handler is
-      // registered (the cache is keyed by URL only, so protected data must not be cached).
-      if (!hasFetchHandler)
-        ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
+      // Classified from the parsed body regardless of the Content-Type the server labelled it with.
+      const contentErrorCode: ArcGisErrorCode | undefined = json?.error?.code;
+      const info: ArcGISServiceMetadata = {content: json, accessTokenRequired, errorCode: managedByHandler ? undefined : contentErrorCode};
+      // Cache the response only if it doesn't contain any error, and never when a fetch handler managed it or
+      // is registered (the cache is keyed by URL only, so protected data must not be cached).
+      if (!hasFetchHandler && !managedByHandler)
+        ArcGisUtilities._serviceCache.set(url, (contentErrorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 
     } catch (err) {

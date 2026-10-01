@@ -64,6 +64,8 @@ const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(a
     await tokens.refresh();
     response = await fetchRequest(withBearer(tokens.current));  // transparent retry
   }
+  if (response.status === 401 || response.status === 403)
+    throw new MapLayerAuthenticationFailedError(request.url); // unrecoverable: prompt the user
   return response;
 });
 ```
@@ -104,7 +106,10 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRe
   const searchParams = new URLSearchParams(request.searchParams);
   for (const [name, value] of Object.entries(params))
     searchParams.set(name, value);
-  return fetchRequest({ ...request, searchParams });
+  const response = await fetchRequest({ ...request, searchParams });
+  if (response.status === 401 || response.status === 403)
+    throw new MapLayerAuthenticationFailedError(request.url); // the handler classifies the responses it returns
+  return response;
 });
 ```
 

@@ -284,6 +284,37 @@ describe("map-layer fetch handler", () => {
     expect(getRequestInit(1)?.redirect).toEqual("error");
   });
 
+  it("does not blame a blocked origin for a 401 the handler retries on a cross-origin send", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    const crossOriginTileUrl = "https://tiles.other.example.com/tile/0/0/0";
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(okResponse());
+    let token = "expired";
+    addHandler(async (request, fetchRequest) => {
+      let attempt = await fetchRequest(withHeader(request, "Authorization", `Bearer ${token}`));
+      if (attempt.status === 401) {
+        token = "fresh";
+        attempt = await fetchRequest(withHeader(request, "Authorization", `Bearer ${token}`));
+      }
+      return attempt;
+    });
+    const provider = createProvider({ userName: "user", password: "pwd" });
+    const statusEvents: MapLayerImageryProviderStatus[] = [];
+    provider.onStatusChanged.addListener((p) => statusEvents.push(p.status));
+
+    const response = await provider.makeRequest(crossOriginTileUrl);
+
+    expect(response.status).toEqual(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The settings credentials were withheld from the untrusted origin on both sends...
+    expect(getRequestHeaders(0)?.get("Authorization")).toEqual("Bearer expired");
+    expect(getRequestHeaders(1)?.get("Authorization")).toEqual("Bearer fresh");
+    // ...and the first 401 was the handler's to classify, not a blocked origin.
+    expect(statusEvents).toEqual([]);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+    expect(provider.blockedOrigins).toEqual([]);
+  });
+
   it("honors the query parameters and headers of a request copy, but never its target", async () => {
     addHandler(async (request, fetchRequest) =>
       fetchRequest({ ...withHeader(withParam(request, "token", "abc"), "Authorization", "Bearer secret-jwt"), url: "https://evil.example.net/steal" }));
@@ -948,6 +979,47 @@ describe("map-layer fetch handler", () => {
     const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
 
     expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("classifies an ArcGIS error body regardless of its Content-Type when no handler is registered", async () => {
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code: 499 } }), { status: 200, headers: { "content-type": "text/plain" } }));
+    const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/TextPlain/MapServer" })!;
+
+    const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
+
+    expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("classifies an ArcGIS error body without a Content-Type when every handler declines", async () => {
+    // A byte body gets no default Content-Type, unlike a string body.
+    fetchMock.mockImplementation(async () => new Response(new TextEncoder().encode(JSON.stringify({ error: { code: 499 } })), { status: 200 }));
+    addHandler(decliningHandler);
+    const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/NoContentType/MapServer" })!;
+
+    const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
+
+    expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("does not cache ArcGIS metadata managed by a handler registered while the token was pending", async () => {
+    const url = "https://arcgis.example.com/DeferredToken/MapServer";
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ currentVersion: 11 }), { headers: { "content-type": "application/json" } }));
+    let releaseToken!: () => void;
+    const tokenPending = new Promise<void>((resolve) => releaseToken = resolve);
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", { getAccessToken: async () => { await tokenPending; return { token: "abc" }; } });
+
+    // No handler when the lookup starts; one registers while the token is being acquired.
+    const lookup = ArcGisUtilities.getServiceJson({ url, formatId: "ArcGIS", requireToken: true });
+    const removeHandler = setCredentialedHandler();
+    releaseToken();
+    await lookup;
+    expect(getRequestHeaders(0)?.get("Authorization")).toEqual("Bearer secret-jwt");
+    removeHandler();
+
+    await ArcGisUtilities.getServiceJson({ url, formatId: "ArcGIS", requireToken: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(getRequestHeaders(1)?.get("Authorization")).toBeNull();
   });
 
   it("shapes ArcGIS provider requests", async () => {
