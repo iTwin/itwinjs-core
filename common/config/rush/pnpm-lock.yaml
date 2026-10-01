@@ -662,7 +662,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       eslint:
         specifier: ^9.31.0
@@ -1652,7 +1652,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
     devDependencies:
       '@itwin/build-tools':
@@ -2383,7 +2383,7 @@ importers:
         specifier: ^7.1.1
         version: 7.1.2(chai@4.5.0)
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       fs-extra:
         specifier: ^8.1.0
@@ -2838,7 +2838,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       express:
         specifier: ^4.22.1
@@ -3531,7 +3531,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       eslint:
         specifier: ^9.31.0
@@ -3742,7 +3742,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       eslint:
         specifier: ^9.31.0
@@ -4145,7 +4145,7 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       electron:
-        specifier: ^44.0.0
+        specifier: 44.4.5
         version: 44.4.5
       eslint:
         specifier: ^9.31.0
@@ -4305,8 +4305,8 @@ importers:
         specifier: ~20.17.0
         version: 20.17.58
       electron:
-        specifier: ^44.0.0
-        version: 44.3.0
+        specifier: 44.4.5
+        version: 44.4.5
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -7540,11 +7540,6 @@ packages:
 
   electron-to-chromium@1.5.440:
     resolution: {integrity: sha512-SghDzqdJokdz8zP8YNlvS74+CwLRoUPDGvP/gFA+HrKVw+pOshUAgx8pXR37xl/u16zGae746rFNWvZ/22kU2Q==}
-
-  electron@44.3.0:
-    resolution: {integrity: sha512-St9EV7F2VtYaYWD2qaAjBwUgKxx39eJOUsUJ5+/1113sqbVfNqv4Dbm/W1rN7qmYSPa+mWwR6yr+b7MfgjgVfQ==}
-    engines: {node: '>= 22.12.0'}
-    hasBin: true
 
   electron@44.4.5:
     resolution: {integrity: sha512-SjgoaeYsSWZfJzubgQU7juvuXMTvn6/e1gAHdGFA/yuMbpF+I+skYqIJ6DdXBXHeWbkbpNpmwZCTpiivtlWZSw==}
@@ -14817,14 +14812,6 @@ snapshots:
       type-fest: 2.19.0
 
   electron-to-chromium@1.5.440: {}
-
-  electron@44.3.0:
-    dependencies:
-      '@electron-internal/extract-zip': 1.0.5
-      '@electron/get': 3.1.0
-      '@types/node': 24.19.0
-    transitivePeerDependencies:
-      - supports-color
 
   electron@44.4.5:
     dependencies:
