@@ -338,7 +338,7 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
     if (undefined === script || undefined === this._animationTransformNodeId)
       return tf;
 
-    const timePoint = this.iModelRef.parent[_backingView].displayStyle.settings.timePoint ?? script.duration.low;
+    const timePoint = this.iModelRef.parent.timePoint ?? script.duration.low;
     const animTf = script.getTransform(this._id.modelId, this._animationTransformNodeId, timePoint);
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);

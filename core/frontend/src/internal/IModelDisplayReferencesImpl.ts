@@ -26,13 +26,26 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
 
   public readonly primary: R;
   public readonly subcategories = new SubCategoriesCache.Queue();
+  public readonly onTimePointChanged = new BeEvent<() => void>();
 
   protected constructor(view: V) {
     this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
+
+    this[_backingView].displayStyle.settings.onAfterTimePointChanged.addListener(
+      () => this.onTimePointChanged.raiseEvent()
+    );
   }
 
   public abstract [Symbol.iterator](): Iterator<R>;
+
+  public get timePoint(): number | undefined {
+    return this[_backingView].displayStyle.settings.timePoint;
+  }
+
+  public set timePoint(timePoint: number | undefined) {
+    this[_backingView].displayStyle.settings.timePoint = timePoint;
+  }
 }
 
 class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d> implements IModelDisplayReferences2d {

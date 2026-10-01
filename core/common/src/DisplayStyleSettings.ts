@@ -562,6 +562,8 @@ export class DisplayStyleSettings {
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
+  /** Event raised just after assignment to the [[timePoint]] property. */
+  public readonly onAfterTimePointChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[analysisStyle]] property. */
   public readonly onAnalysisStyleChanged = new BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>();
   /** Event raised just prior to assignment to the [[analysisFraction]] property. */
@@ -791,6 +793,7 @@ export class DisplayStyleSettings {
     if (timePoint !== this.timePoint) {
       this.onTimePointChanged.raiseEvent(timePoint);
       this._json.timePoint = timePoint;
+      this.onAfterTimePointChanged.raiseEvent();
     }
   }
 

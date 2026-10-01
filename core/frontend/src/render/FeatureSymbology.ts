@@ -166,7 +166,7 @@ export namespace FeatureSymbology {
 
       const script = ref[_scheduleScriptReference]?.script;
       if (script)
-        script.addSymbologyOverrides(this, /* ###TODO timePoint */ 0);
+        script.addSymbologyOverrides(this, ref.parent.timePoint ?? 0);
 
       for (const provider of ref.featureOverrideProviders)
         provider.addFeatureOverrides(this, ref)

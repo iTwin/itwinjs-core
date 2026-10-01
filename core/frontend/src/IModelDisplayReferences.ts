@@ -57,6 +57,15 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
 
   /** The set of iModels displayed by this view (only one, in its present implementation). */
   readonly iModels: Iterable<IModelConnection>;
+
+  /** The point in time currently reflected by the view, expressed in seconds in the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
+   * This identifies a point on the timeline of each [[IModelDisplayReference]]'s' [[RenderSchedule.Script]].
+   * @see [[onTimePointChanged]] to be notified of changes to this property.
+   */
+  timePoint: number | undefined;
+
+  /** Event raised when the value of [[timePoint]] changes. */
+  readonly onTimePointChanged: BeEvent<() => void>;
 }
 
 /** The collection of iModels displayed by a [[SpatialViewState]] and interactable with via a [[Viewport]].
@@ -100,6 +109,15 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
   /** Remove a previously-[[link]]ed iModel reference from the view. */
   unlink(ref: IModelDisplayReference): void;
+
+  /** The point in time currently reflected by the view, expressed in seconds in the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
+   * This identifies a point on the timeline of each [[IModelDisplayReference]]'s' [[RenderSchedule.Script]].
+   * @see [[onTimePointChanged]] to be notified of changes to this property.
+   */
+  timePoint: number | undefined;
+
+  /** Event raised when the value of [[timePoint]] changes. */
+  readonly onTimePointChanged: BeEvent<() => void>;
 }
 
 /** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] and interactble with via a [[Viewport]].
