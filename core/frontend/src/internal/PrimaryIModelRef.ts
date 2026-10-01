@@ -77,7 +77,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
-    // ###TODO handle event listener cleanup...
     view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
 
     ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
