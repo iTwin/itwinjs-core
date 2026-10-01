@@ -525,11 +525,13 @@ export class ECDb implements Disposable {
     return this._nativeDb;
   }
 
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Creates a reader for asynchronous ECSQL query execution.
+   * Execution starts when the reader is consumed using asynchronous iteration or awaited calls to `step()` or `toArray()`.
+   * Results are fetched and buffered in batches. For synchronous, callback-scoped execution, use [[withQueryReader]].
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Asynchronous query examples]($docs/learning/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    *
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -549,11 +551,14 @@ export class ECDb implements Disposable {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+  /** Executes a callback with a synchronous ECSQL reader on the owning database connection.
+   * The reader steps one row at a time without buffering result batches. Finish using it before the callback completes.
+   * Return materialized rows or computed values rather than the reader. For asynchronous execution, use [[createQueryReader]].
+   * The prepared statement may be reused from the statement cache between completed calls.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
    * @param callback the callback to invoke on the prepared ECSqlSyncReader
