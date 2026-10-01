@@ -982,13 +982,12 @@ export class TxnManager {
    * @internal Used by IModelDb on push/pull.
    */
   public touchWatchFile(): void {
-    // This is an async call. We don't have any reason to await it.
-    // utimes never creates the file; a missing watch file means nobody is watching.
-    // Other errors are rethrown, preserving the previous `touch(..., { nocreate: true })` behavior.
+    // Best-effort notification; we don't await it. utimes never creates the file, and a missing
+    // watch file just means nobody is watching.
     const now = new Date();
-    fs.promises.utimes(this._iModel.watchFilePathName, now, now).catch((err: NodeJS.ErrnoException) => {
+    fs.promises.utimes(this._iModel.watchFilePathName, now, now).catch((err) => {
       if (err.code !== "ENOENT")
-        throw err;
+        Logger.logWarning(BackendLoggerCategory.IModelDb, `Failed to touch watch file: ${BentleyError.getErrorMessage(err)}`);
     });
   }
 

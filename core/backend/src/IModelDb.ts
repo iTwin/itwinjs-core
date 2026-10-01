@@ -4038,14 +4038,10 @@ export class BriefcaseDb extends IModelDb {
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
-      // Must touch the file synchronously - cannot watch a file until it exists.
-      const watchFd = fs.openSync(briefcaseDb.watchFilePathName, fs.constants.O_RDWR | fs.constants.O_CREAT);
-      try {
-        const now = new Date();
-        fs.futimesSync(watchFd, now, now);
-      } finally {
-        fs.closeSync(watchFd);
-      }
+      // Must touch the file synchronously - cannot watch a file until it exists. "a" creates without truncating.
+      fs.closeSync(fs.openSync(briefcaseDb.watchFilePathName, "a"));
+      const now = new Date();
+      fs.utimesSync(briefcaseDb.watchFilePathName, now, now);
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Replace the `touch` dependency with `node:fs`.",
+      "comment": "Replace the `touch` dependency with `node:fs`. A failure to update an iModel's watch file after a change now logs a warning instead of causing an unhandled promise rejection.",
       "type": "none"
     }
   ],
