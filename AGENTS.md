@@ -32,6 +32,13 @@ Read only the references relevant to the task:
 - Give every new export a release tag.
 - Do not hand-write dates in `@deprecated` tags.
 
+## Change notes
+
+When editing `docs/changehistory/NextVersion.md`:
+
+- List the allowed `##` sections with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`. Add each entry as a `###` heading under the section it belongs to, reusing that section when it already exists, and add it to the table of contents.
+- Done when `node .github/workflows/automation-scripts/check-nextversion.mjs` passes. It checks the whole file, so fix any problems already there in the same change, and tell the user what you fixed and why, since it is outside the task you were given.
+
 ## Before remote work
 
 Before committing work that will be pushed, apply only the checks required by the final diff:

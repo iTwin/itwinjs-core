@@ -427,6 +427,12 @@ export interface FieldRunProps extends TextBlockComponentProps {
   cachedContent?: string;
 }
 
+function accessorsEqual(a: ReadonlyArray<string | number> | undefined, b: ReadonlyArray<string | number> | undefined): boolean {
+  const lhs = a ?? [];
+  const rhs = b ?? [];
+  return lhs.length === rhs.length && lhs.every((value, index) => value === rhs[index]);
+}
+
 /** A [[Run]] that displays the formatted value of a property of some [Element]($backend).
  * When a [[TextBlock]] containing a [[FieldRun]] is written into the iModel as an [ITextAnnotation]($backend) element,
  * a dependency is established between the two elements via the [ElementDrivesTextAnnotation]($backend) relationship such that
@@ -535,14 +541,11 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    const thisAccessors = this.propertyPath.accessors ?? [];
-    const otherAccessors = other.propertyPath.accessors ?? [];
-
-    if (thisAccessors.length !== otherAccessors.length) {
+    if (!accessorsEqual(this.propertyPath.accessors, other.propertyPath.accessors)) {
       return false;
     }
 
-    if (!thisAccessors.every((value, index) => value === otherAccessors[index])) {
+    if (!accessorsEqual(this.propertyPath.jsonAccessors, other.propertyPath.jsonAccessors)) {
       return false;
     }
 
