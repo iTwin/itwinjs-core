@@ -1797,9 +1797,6 @@ importers:
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
-      mkdirp:
-        specifier: ^1.0.4
-        version: 1.0.4
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
@@ -2277,9 +2274,6 @@ importers:
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
-      mkdirp:
-        specifier: ^1.0.4
-        version: 1.0.4
       npm-run-all2:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2461,9 +2455,6 @@ importers:
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
-      mkdirp:
-        specifier: ^1.0.4
-        version: 1.0.4
       nock:
         specifier: ^12.0.3
         version: 12.0.3
@@ -9186,11 +9177,6 @@ packages:
 
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
-    hasBin: true
-
-  mkdirp@1.0.4:
-    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
     hasBin: true
 
   mkdirp@3.0.1:
@@ -16593,8 +16579,6 @@ snapshots:
   mkdirp@0.5.6:
     dependencies:
       minimist: 1.2.8
-
-  mkdirp@1.0.4: {}
 
   mkdirp@3.0.1: {}
 
