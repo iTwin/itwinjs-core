@@ -235,7 +235,6 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
 
       if (override !== PerModelCategoryVisibility.Override.None) {
         // Ensure subcategories loaded.
-        // ###TODO viewport should listen for this event and invalidate scene
         this._queue.push(this._iModel.subcategories, categoryIds, () => this.onChanged.raiseEvent());
       }
     }
