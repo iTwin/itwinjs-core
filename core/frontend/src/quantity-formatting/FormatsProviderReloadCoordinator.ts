@@ -3,14 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
-
-/** @internal */
-export interface FormatsProviderChange {
-  readonly baseProvider: FormatsProvider;
-  readonly replacementProvider: FormatsProvider;
-  readonly impliedUnitSystem?: UnitSystemKey;
-}
+import { FormatsChangedArgs } from "@itwin/core-quantity";
 
 /** @internal */
 export class ReloadSupersededError extends Error {
@@ -23,17 +16,12 @@ export class ReloadSupersededError extends Error {
 /** @internal */
 export type ReloadIntent =
   | { scope: "full" }
-  | {
-    scope: "formatsChanged";
-    args: FormatsChangedArgs;
-    provider: FormatsProvider;
-    providerChange?: FormatsProviderChange;
-    targetUnitSystem: UnitSystemKey;
-  }
-  | { scope: "activeSystem"; system: UnitSystemKey; emitSystemChanged?: boolean };
+  | { scope: "formatsChanged"; args: FormatsChangedArgs }
+  | { scope: "activeSystem" };
+
+type FormatsChangedIntent = Extract<ReloadIntent, { scope: "formatsChanged" }>;
 
 interface ReloadCoordinatorHost {
-  isDisposed(): boolean;
   startReload(): void;
   executeReload(intent: ReloadIntent): Promise<void>;
   finalizeReload(): Promise<void>;
@@ -46,13 +34,13 @@ interface ReloadCaller {
 }
 
 /**
- * Serializes formatting reloads, keeps the newest pending request, and resolves or rejects callers waiting for formatting to become ready.
+ * Serializes formatting reloads and resolves or rejects the caller waiting for formatting to become ready.
  * @internal
  */
 export class FormatsProviderReloadCoordinator {
   private _reloadInFlight = false;
   private _pendingReload: ReloadIntent | undefined;
-  private _pendingProviderReload: ReloadIntent | undefined;
+  private _pendingFormatsChange: FormatsChangedIntent | undefined;
   private _reloadCaller: ReloadCaller | undefined;
   private _isDisposed = false;
 
@@ -64,17 +52,16 @@ export class FormatsProviderReloadCoordinator {
 
     this._isDisposed = true;
     this._pendingReload = undefined;
-    this._pendingProviderReload = undefined;
+    this._pendingFormatsChange = undefined;
     this._rejectReloadCaller(this._disposedError);
   }
 
   /**
    * Runs an action that schedules a reload and waits for the reload queue to drain.
    * A newer call rejects an older call that is still waiting.
-   * @internal
    */
   public async runAndWaitForReload(action: () => void): Promise<void> {
-    if (this._isDisposed || this._host.isDisposed())
+    if (this._isDisposed)
       throw this._disposedError;
 
     let caller!: ReloadCaller;
@@ -97,120 +84,94 @@ export class FormatsProviderReloadCoordinator {
   }
 
   /**
-   * Schedules a reload and keeps the newest pending reload while another is running.
-   * Provider replacement reloads are retained separately because the manager has already changed the active provider and the transaction must not be discarded by an unrelated reload.
+   * Runs a reload now, or queues it if one is already running.
+   * Pending format changes are merged and kept apart from other pending reloads, so a later unit-system or units-provider reload cannot drop a provider change.
    * If a reload is already running, this method returns immediately; use [[runAndWaitForReload]] when the caller must wait for completion.
-   * @internal
+   * The waiting caller is rejected if any reload fails before the queue drains.
    */
   public async scheduleReload(intent: ReloadIntent): Promise<void> {
-    if (this._isDisposed || this._host.isDisposed()) {
-      this._rejectReloadCaller(this._disposedError);
+    if (this._isDisposed)
       return;
-    }
 
     if (this._reloadInFlight) {
-      this._queuePendingReload(intent);
+      if (intent.scope === "formatsChanged")
+        this._pendingFormatsChange = mergeFormatsChanges(this._pendingFormatsChange, intent);
+      else
+        this._pendingReload = intent;
       return;
     }
 
     this._reloadInFlight = true;
+    let failure: { error: unknown } | undefined;
     let current: ReloadIntent | undefined = intent;
     while (current) {
       try {
         this._host.startReload();
         await this._host.executeReload(current);
-      } catch (error) {
         if (this._stopAfterDisposal())
           return;
-
-        if (!(error instanceof ReloadSupersededError))
-          this._host.handleReloadFailure(error);
 
         current = this._takePendingReload();
-        if (current)
-          continue;
-
-        this._reloadInFlight = false;
-        this._rejectReloadCaller(error);
-        return;
-      }
-
-      if (this._stopAfterDisposal())
-        return;
-
-      current = this._takePendingReload();
-      if (current)
-        continue;
-
-      try {
-        await this._host.finalizeReload();
+        if (!current) {
+          await this._host.finalizeReload();
+          if (this._stopAfterDisposal())
+            return;
+          current = this._takePendingReload();
+        }
       } catch (error) {
         if (this._stopAfterDisposal())
           return;
 
+        // Keep draining so queued work still runs, but report the failure to the waiting caller.
         this._host.handleReloadFailure(error);
+        failure = { error };
         current = this._takePendingReload();
-        if (current)
-          continue;
-
-        this._reloadInFlight = false;
-        this._rejectReloadCaller(error);
-        return;
       }
-
-      if (this._stopAfterDisposal())
-        return;
-
-      current = this._takePendingReload();
     }
 
     this._reloadInFlight = false;
-    this._resolveReloadCaller();
-  }
-
-  private _queuePendingReload(intent: ReloadIntent): void {
-    if (intent.scope === "formatsChanged" && intent.providerChange)
-      this._pendingProviderReload = intent;
+    if (failure)
+      this._rejectReloadCaller(failure.error);
     else
-      this._pendingReload = intent;
+      this._resolveReloadCaller();
   }
 
-  /** Stops reload processing when this coordinator or its host is disposed. */
   private _stopAfterDisposal(): boolean {
-    if (!this._isDisposed && !this._host.isDisposed())
+    if (!this._isDisposed)
       return false;
 
     this._reloadInFlight = false;
-    this._pendingReload = undefined;
-    this._pendingProviderReload = undefined;
-    this._rejectReloadCaller(this._disposedError);
     return true;
   }
 
-  /** Removes the newest pending reload, retaining provider transactions ahead of unrelated reloads. */
   private _takePendingReload(): ReloadIntent | undefined {
-    if (this._pendingProviderReload) {
-      const providerReload = this._pendingProviderReload;
-      this._pendingProviderReload = undefined;
-      return providerReload;
-    }
-
-    const nextReload = this._pendingReload;
-    this._pendingReload = undefined;
-    return nextReload;
+    const next = this._pendingFormatsChange ?? this._pendingReload;
+    if (next === this._pendingFormatsChange)
+      this._pendingFormatsChange = undefined;
+    else
+      this._pendingReload = undefined;
+    return next;
   }
 
-  /** Resolves the caller after the reload queue finishes successfully. */
   private _resolveReloadCaller(): void {
     const caller = this._reloadCaller;
     this._reloadCaller = undefined;
     caller?.resolve();
   }
 
-  /** Rejects the caller when the reload queue fails or is superseded. */
   private _rejectReloadCaller(error: unknown): void {
     const caller = this._reloadCaller;
     this._reloadCaller = undefined;
     caller?.reject(error);
   }
+}
+
+function mergeFormatsChanges(pending: FormatsChangedIntent | undefined, next: FormatsChangedIntent): FormatsChangedIntent {
+  if (!pending)
+    return next;
+
+  const pendingNames = pending.args.formatsChanged;
+  const nextNames = next.args.formatsChanged;
+  const formatsChanged = pendingNames === "all" || nextNames === "all" ? "all" : [...new Set([...pendingNames, ...nextNames])];
+  return { scope: "formatsChanged", args: { formatsChanged } };
 }

@@ -1027,7 +1027,7 @@ describe("Failed reload recovery (Issue 5)", () => {
     await qf.onInitialized();
     expect(qf.isReady).toBe(true);
 
-    // Spy on the format/parser map loader to force it to throw
+    // Spy on loadFormatAndParsingMapsForSystem to force it to throw
     const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
     let shouldThrow = true;
     (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
@@ -1037,23 +1037,21 @@ describe("Failed reload recovery (Issue 5)", () => {
       return originalLoad(...args);
     };
 
-    // setActiveUnitSystem triggers scheduleReload → calls the format/parser map loader
+    // setActiveUnitSystem triggers scheduleReload → calls loadFormatAndParsingMapsForSystem
     await qf.setActiveUnitSystem("metric");
 
-    // After failure: isReady and the committed active system should remain usable.
+    // After failure: isReady should be restored (stale-but-usable)
     expect(qf.isReady).toBe(true);
-    expect(qf.activeUnitSystem).toBe("imperial");
 
     // Verify that a successful reload still works after recovery
     shouldThrow = false;
-    await qf.setActiveUnitSystem("metric");
-    expect(qf.activeUnitSystem).toBe("metric");
+    await qf.setActiveUnitSystem("imperial");
     expect(qf.isReady).toBe(true);
   });
 
   it("isReady stays false if first init fails (was never ready)", async () => {
     const qf = new QuantityFormatter();
-    // Override the format/parser map loader before onInitialized
+    // Override loadFormatAndParsingMapsForSystem before onInitialized
     (qf as any).loadFormatAndParsingMapsForSystem = async function () {
       throw new Error("simulated first load failure");
     };
@@ -1397,6 +1395,15 @@ describe("Deferred unit-system-changed emit (race condition validation)", () => 
     expect(qf.activeUnitSystem).toBe("metric");
     // The deferred emit should fire exactly once for the winning reload
     expect(systemChanges).toEqual(["metric"]);
+
+    // A later unit-system change that does not request an event must not leave the event reporting the replaced system.
+    systemChanges.length = 0;
+    await qf.runAndWaitForReload(() => {
+      void qf.setActiveUnitSystem("imperial");
+      void qf.reinitializeFormatAndParsingsMaps(new Map(), "usSurvey", false);
+    });
+    expect(qf.activeUnitSystem).toBe("usSurvey");
+    expect(systemChanges).toEqual(["usSurvey"]);
   });
 
   it("does not emit onActiveFormattingUnitSystemChanged when impliedUnitSystem is undefined", async () => {

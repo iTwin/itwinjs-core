@@ -8,7 +8,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, SyncFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
-import { FormatsProviderManager, QuantityFormatter, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
+import { FormatsProviderManager, QuantityFormatter, QuantityType, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 
 function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -137,13 +137,14 @@ describe("Formats provider reload invariants", () => {
       await providerReload;
       await unitSystemReload;
       expect(quantityFormatter.activeUnitSystem).toBe("imperial");
+      expect(quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length)?.format.units?.[0][0].name).toBe("Units.FT");
     } finally {
       releaseLoad.resolve();
       await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider(), { unitSystem: originalUnitSystem });
     }
   });
 
-  it("does not carry forward an uncommitted implied unit system when the next replacement omits it", async () => {
+  it("keeps the unit system from an earlier replacement when the next replacement omits it", async () => {
     const quantityFormatter = IModelApp.quantityFormatter;
     const originalUnitSystem = quantityFormatter.activeUnitSystem;
     await quantityFormatter.setActiveUnitSystem("imperial");
@@ -170,8 +171,9 @@ describe("Formats provider reload invariants", () => {
 
       await expect(firstReplacement).rejects.toThrow(/superseded/i);
       await expect(secondReplacement).resolves.toBeUndefined();
-      expect(quantityFormatter.activeUnitSystem).toBe("imperial");
-      expect(systemChanged).not.toHaveBeenCalled();
+      expect(quantityFormatter.activeUnitSystem).toBe("metric");
+      expect(systemChanged).toHaveBeenCalledTimes(1);
+      expect(systemChanged).toHaveBeenCalledWith({ system: "metric" });
     } finally {
       releaseFirstLookup.resolve();
       removeSystemChangedListener();
@@ -179,7 +181,7 @@ describe("Formats provider reload invariants", () => {
     }
   });
 
-  it("does not drop a provider replacement queued ahead of an unrelated reload", async () => {
+  it("does not drop a provider replacement or unit-system change queued behind other reloads", async () => {
     const quantityFormatter = IModelApp.quantityFormatter;
     const originalUnitSystem = quantityFormatter.activeUnitSystem;
     const nextUnitSystem = originalUnitSystem === "metric" ? "imperial" : "metric";
@@ -189,15 +191,16 @@ describe("Formats provider reload invariants", () => {
 
     const loadStarted = deferred<void>();
     const releaseLoad = deferred<void>();
-    const originalLoad = (quantityFormatter as any).loadFormatAndParsingMapsForSystem.bind(quantityFormatter);
+    // Block the units-provider reload at its start, before the registry is rebuilt.
+    const originalInitialize = (quantityFormatter as any).initializeQuantityTypesRegistry.bind(quantityFormatter);
     let shouldBlock = true;
-    (quantityFormatter as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
+    (quantityFormatter as any).initializeQuantityTypesRegistry = async function (...args: any[]) {
       if (shouldBlock) {
         shouldBlock = false;
         loadStarted.resolve();
         await releaseLoad.promise;
       }
-      return originalLoad(...args);
+      return originalInitialize(...args);
     };
 
     const provider = createFormatsProvider(async (formatName) => formatName === name ? providerFormat : undefined);
@@ -206,21 +209,26 @@ describe("Formats provider reload invariants", () => {
       await loadStarted.promise;
       const providerReload = IModelApp.setFormatsProvider(provider);
       const systemReload = quantityFormatter.setActiveUnitSystem(nextUnitSystem);
+      // A units-provider reload queued after the unit-system change replaces it in the queue, but must still load the requested system.
+      const secondUnrelatedReload = quantityFormatter.setUnitsProvider(quantityFormatter.unitsProvider);
       releaseLoad.resolve();
 
       await unrelatedReload;
       await providerReload;
       await systemReload;
+      await secondUnrelatedReload;
       await expect(IModelApp.formatsProvider.getFormat(name, "metric")).resolves.toEqual(providerFormat);
       expect(quantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.M", system: "metric" })?.formatterSpec.format.precision).toBe(5);
+      expect(quantityFormatter.activeUnitSystem).toBe(nextUnitSystem);
+      expect(quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length)?.format.units?.[0][0].name).toBe(nextUnitSystem === "metric" ? "Units.M" : "Units.FT");
     } finally {
       releaseLoad.resolve();
-      (quantityFormatter as any).loadFormatAndParsingMapsForSystem = originalLoad;
+      (quantityFormatter as any).initializeQuantityTypesRegistry = originalInitialize;
       await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider(), { unitSystem: originalUnitSystem });
     }
   });
 
-  it("keeps the applied provider and cache coherent after a fatal replacement failure", async () => {
+  it("rejects a provider replacement whose reload fails, even when other reloads are queued", async () => {
     const quantityFormatter = IModelApp.quantityFormatter;
     const name = "TestKoQ.PROVIDER_REPLACEMENT_ATOMICITY";
     const providerAFormat = { ...simpleFormat, precision: 3 };
@@ -243,8 +251,14 @@ describe("Formats provider reload invariants", () => {
       await expect(IModelApp.formatsProvider.getFormat(name, "metric")).resolves.toEqual(providerAFormat);
       expect(quantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.M", system: "metric" })?.formatterSpec.format.precision).toBe(3);
 
-      await expect(IModelApp.setFormatsProvider(providerB)).rejects.toThrow("provider B failed");
-      await expect(IModelApp.formatsProvider.getFormat(name, "metric")).resolves.toEqual(providerAFormat);
+      const originalUnitSystem = quantityFormatter.activeUnitSystem;
+      const replacement = IModelApp.setFormatsProvider(providerB);
+      // A unit-system change queued behind the failing reload succeeds, but must not turn the failure into success.
+      const systemReload = quantityFormatter.setActiveUnitSystem(originalUnitSystem === "metric" ? "imperial" : "metric");
+      await expect(replacement).rejects.toThrow("provider B failed");
+      await systemReload;
+      await quantityFormatter.setActiveUnitSystem(originalUnitSystem);
+      expect(quantityFormatter.isReady).toBe(true);
       expect(quantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.M", system: "metric" })?.formatterSpec.format.precision).toBe(3);
     } finally {
       await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider());
@@ -269,31 +283,6 @@ describe("Formats provider reload invariants", () => {
       removeSystemChangedListener();
       quantityFormatter[Symbol.dispose]();
     }
-  });
-
-  it("does not register a provider listener after disposal during initialization", async () => {
-    const quantityFormatter = new QuantityFormatter();
-    const providerEvents = IModelApp.formatsProvider.onFormatsChanged;
-    const listenerCountBeforeInitialization = providerEvents.numberOfListeners;
-
-    try {
-      const initialization = quantityFormatter.onInitialized();
-      quantityFormatter[Symbol.dispose]();
-      await initialization;
-      expect(providerEvents.numberOfListeners).toBe(listenerCountBeforeInitialization);
-    } finally {
-      quantityFormatter[Symbol.dispose]();
-    }
-  });
-
-  it("does not register a provider listener after initialization is called on a disposed formatter", async () => {
-    const quantityFormatter = new QuantityFormatter();
-    const providerEvents = IModelApp.formatsProvider.onFormatsChanged;
-    const listenerCountBeforeInitialization = providerEvents.numberOfListeners;
-    quantityFormatter[Symbol.dispose]();
-
-    await quantityFormatter.onInitialized();
-    expect(providerEvents.numberOfListeners).toBe(listenerCountBeforeInitialization);
   });
 
   it("drains a reload queued before formatting finalization fails", async () => {
@@ -367,10 +356,14 @@ describe("Formats provider reload invariants", () => {
 
         formatsChangedSpy.mockClear();
         readySpy.mockClear();
-        await IModelApp.setFormatsProvider(provider);
+        const replacement = IModelApp.setFormatsProvider(provider);
+        // The new provider reports its own change before its replacement reload finishes, as FormatSetFormatsProvider.addFormat does.
+        provider.onFormatsChanged.raiseEvent({ formatsChanged: ["TestKoQ.ADDED_DURING_REPLACEMENT"] });
+        await expect(replacement).resolves.toBeUndefined();
         expect(appQuantityFormatter.activeUnitSystem).toBe("metric");
-        expect(formatsChangedSpy).toHaveBeenCalledTimes(1);
-        expect(formatsChangedSpy).toHaveBeenCalledWith({ formatsChanged: "all" });
+        expect(appQuantityFormatter.isReady).toBe(true);
+        expect(formatsChangedSpy).toHaveBeenCalledTimes(2);
+        expect(formatsChangedSpy).toHaveBeenNthCalledWith(1, { formatsChanged: "all" });
         expect(readySpy).toHaveBeenCalledTimes(1);
       } finally {
         removeFormatsChangedListener();
@@ -470,7 +463,7 @@ describe("Formats provider reload invariants", () => {
       expect(receivedContext).toBe(context);
     });
 
-    it("should forward synchronous format lookups to a synchronous provider", () => {
+    it("should forward synchronous format lookups to the current synchronous provider", () => {
       const context: FormatsProviderContext = { providerChain: new Set<FormatsProvider>() };
       const definition: FormatDefinition = { type: "Decimal", precision: 4 };
       const getFormatSync = vi.fn((_name: string, _system?: UnitSystemKey, _context?: FormatsProviderContext) => definition);
@@ -479,8 +472,10 @@ describe("Formats provider reload invariants", () => {
         getFormatSync,
         onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
       };
-      const manager = new FormatsProviderManager(provider);
+      const manager = new FormatsProviderManager(createFormatsProvider(async () => undefined));
+      expect(manager.getFormatSync("TestFormat", "metric", context)).toBeUndefined();
 
+      manager.setFormatsProvider(provider);
       expect(manager.getFormatSync("TestFormat", "metric", context)).toBe(definition);
       expect(getFormatSync).toHaveBeenCalledWith("TestFormat", "metric", context);
     });

@@ -370,6 +370,7 @@ export class IModelApp {
    * Replaces the formats provider and optionally changes the active unit system.
    * Resolves after the formatter has rebuilt its formatting and parsing caches.
    * Incompatible provider entries are logged and skipped, so they do not reject this Promise.
+   * If the reload fails, this Promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
    * If a later setFormatsProvider call supersedes this request, this Promise rejects.
    * It also rejects if the application shuts down first.
    * @beta
