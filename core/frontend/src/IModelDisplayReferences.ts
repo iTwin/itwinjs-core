@@ -12,8 +12,8 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { ModelClipGroups } from "@itwin/core-common";
-import { IModelDisplayOverridesProps, SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
-import { ViewState2d } from "./ViewState";
+import { SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
+import { ViewState, ViewState2d } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
 
 /** Arguments supplied to [[SpatialIModelDisplayReferences.link]].
@@ -34,24 +34,15 @@ export interface LinkSpatialIModelArgs {
   overrides?: SpatialIModelDisplayOverridesProps;
 }
 
-/** The implementation of [[IModelDisplayReferences]] for 2d views.
- * In its present form, it supports only a single iModel reference - the [[primary]] iModel.
- * @beta
- */
-export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReference2d> {
+export interface BaseIModelDisplayReferences {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
   /** @internal */
-  readonly [_backingView]: ViewState2d;
+  readonly [_backingView]: ViewState;
 
-  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
-  readonly is2d: true;
-  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
-  readonly isSpatial?: never;
-
-  /** The reference primary (and only) iModel displayed in the view. */
-  readonly primary: IModelDisplayReference2d;
+  /** The reference to the primary iModel displayed in the view. */
+  readonly primary: IModelDisplayReference;
   /** @internal */
   readonly subcategories: SubCategoriesCache.Queue;
 
@@ -68,6 +59,23 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   readonly onTimePointChanged: BeEvent<() => void>;
 }
 
+/** The implementation of [[IModelDisplayReferences]] for 2d views.
+ * In its present form, it supports only a single iModel reference - the [[primary]] iModel.
+ * @beta
+ */
+export interface IModelDisplayReferences2d extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference2d> {
+  /** @internal */
+  readonly [_backingView]: ViewState2d;
+
+  /** The reference to the primary (and only) iModel displayed in the view. */
+  readonly primary: IModelDisplayReference2d;
+
+  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
+  readonly is2d: true;
+  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
+  readonly isSpatial?: never;
+}
+
 /** The collection of iModels displayed by a [[SpatialViewState]] and interactable with via a [[Viewport]].
  * A spatial view always has exactly one "primary" iModel reference, which cannot be changed.
  * Any number of additional iModel references can be freely linked to and unlinked from the view.
@@ -77,26 +85,20 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
  * [[HitDetail]]s from linked iModels using [[LocateOptions.allowExternalIModels]].
  * @beta
  */
-export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
-  /** @internal */
-  readonly [_implementationProhibited]: unknown;
-
+export interface SpatialIModelDisplayReferences extends BaseIModelDisplayReferences, Iterable<SpatialIModelDisplayReference> {
   /** @internal */
   readonly [_backingView]: SpatialViewState;
 
   /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
-  readonly isSpatial: true;
-  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
   readonly is2d?: never;
+  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
+  readonly isSpatial: true;
 
-  /** The iModel that serves as the main content for the view. It cannot be changed or replaced. */
+  /** The reference to the primary iModel displayed in the view. */
   readonly primary: SpatialIModelDisplayReference;
+
   /** The set of additional iModels that have been added to the view. */
   readonly linked: Iterable<SpatialIModelDisplayReference>;
-  /** @internal */
-  readonly subcategories: SubCategoriesCache.Queue;
-  /** The set of iModels - both primary and linked - displayed by the view. */
-  readonly iModels: Iterable<IModelConnection>;
 
   /** Event dispatched just after `ref` is [[link]]ed to the view. */
   readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
@@ -109,15 +111,6 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
   /** Remove a previously-[[link]]ed iModel reference from the view. */
   unlink(ref: IModelDisplayReference): void;
-
-  /** The point in time currently reflected by the view, expressed in seconds in the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
-   * This identifies a point on the timeline of each [[IModelDisplayReference]]'s' [[RenderSchedule.Script]].
-   * @see [[onTimePointChanged]] to be notified of changes to this property.
-   */
-  timePoint: number | undefined;
-
-  /** Event raised when the value of [[timePoint]] changes. */
-  readonly onTimePointChanged: BeEvent<() => void>;
 }
 
 /** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] and interactble with via a [[Viewport]].
