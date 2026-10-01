@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
@@ -49,9 +49,8 @@ export async function startupForIntegration(cfg?: IModelHostOptions) {
     api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` }
   });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
-  fs.mkdirSync(cfg.cacheDir, { recursive: true });
-  for (const entry of fs.readdirSync(cfg.cacheDir))
-    fs.rmSync(path.join(cfg.cacheDir, entry), { recursive: true, force: true });
+  IModelJsFs.recursiveMkDirSync(cfg.cacheDir);
+  IModelJsFs.purgeDirSync(cfg.cacheDir);
   setupIntegrationLogging();
   return IModelHost.startup(cfg);
 }

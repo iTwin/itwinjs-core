@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { mkdirSync, readdirSync, rmSync } from "fs";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, IModelJsFs, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import * as crypto from "crypto";
@@ -90,9 +89,8 @@ export namespace AzuriteTest {
       }
     };
     export const makeEmptyDir = (name: LocalDirName) => {
-      mkdirSync(name, { recursive: true });
-      for (const entry of readdirSync(name))
-        rmSync(join(name, entry), { recursive: true, force: true });
+      IModelJsFs.recursiveMkDirSync(name);
+      IModelJsFs.purgeDirSync(name);
     };
 
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }

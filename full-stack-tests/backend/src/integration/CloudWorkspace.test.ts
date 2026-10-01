@@ -5,7 +5,6 @@
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { expect } from "chai";
-import * as fs from "fs";
 import { join } from "path";
 import {
   CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceContainerProps,
@@ -194,8 +193,7 @@ describe("Cloud workspace containers", () => {
   it("Edit Settings and Workspaces", async () => {
     const tmpdir = join(__dirname, "output", "settingsTest");
     IModelJsFs.recursiveMkDirSync(tmpdir);
-    for (const entry of fs.readdirSync(tmpdir))
-      fs.rmSync(join(tmpdir, entry), { recursive: true, force: true });
+    IModelJsFs.purgeDirSync(tmpdir);
 
     const fileName = join(tmpdir, "settings.bim");
     const imodel = StandaloneDb.createEmpty(fileName, {

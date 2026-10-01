@@ -14,9 +14,9 @@ const ec32ReferenceDir: string = path.join(assetDir, "schema3.2");
 const ec3132ReferenceDir: string = path.join(assetDir, "schema3.1_3.2");
 
 function cleanGeneratedTsFile(outputDir: string, schemaName: string) {
-  fs.rmSync(path.join(outputDir, `${schemaName}.ts`), { recursive: true, force: true });
-  fs.rmSync(path.join(outputDir, `${schemaName}Elements.ts`), { recursive: true, force: true });
-  fs.rmSync(path.join(outputDir, `${schemaName}ElementProps.ts`), { recursive: true, force: true });
+  fs.rmSync(path.join(outputDir, `${schemaName}.ts`), { force: true });
+  fs.rmSync(path.join(outputDir, `${schemaName}Elements.ts`), { force: true });
+  fs.rmSync(path.join(outputDir, `${schemaName}ElementProps.ts`), { force: true });
 }
 
 async function testFileConverterFailure(context: SchemaContext, schemaFileName: string, outputDir: string, referenceDir: string[]): Promise<void> {
