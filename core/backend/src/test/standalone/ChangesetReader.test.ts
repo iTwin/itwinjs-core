@@ -1877,7 +1877,7 @@ describe("ChangesetReader update-full", () => {
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.ECInstanceId, fullElementId);
-    assert.equal(elemNew!.ECClassId, rwIModel[_nativeDb].classNameToId("TestDomain:Test2dElement"));
+    assert.equal(elemNew!.ECClassId, "0x176");
     assert.equal(elemNew!.StrProp, "updated");
     assert.equal(elemNew!.IntProp, 99);
     assert.equal(elemNew!.LongProp, 0);
@@ -1925,7 +1925,7 @@ describe("ChangesetReader update-full", () => {
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.ECInstanceId, fullElementId);
-    assert.equal(elemOld!.ECClassId, rwIModel[_nativeDb].classNameToId("TestDomain:Test2dElement"));
+    assert.equal(elemOld!.ECClassId, "0x176");
     assert.equal(elemOld!.StrProp, "hello");
     assert.equal(elemOld!.IntProp, 42);
     assert.equal(elemOld!.LongProp, 9007199254740991);
@@ -2076,7 +2076,7 @@ describe("ChangesetReader update-full", () => {
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.ECInstanceId, fullElementId);
-    assert.equal(elemNew!.ECClassId, rwIModel[_nativeDb].classNameToId("TestDomain:Test2dElement"));
+    assert.equal(elemNew!.ECClassId, "0x176");
     assert.isUndefined(elemNew!.StrProp);
     assert.isUndefined(elemNew!.Model);
     assert.isUndefined(elemNew!.LastMod);
@@ -2096,7 +2096,7 @@ describe("ChangesetReader update-full", () => {
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.ECInstanceId, fullElementId);
-    assert.equal(elemOld!.ECClassId, rwIModel[_nativeDb].classNameToId("TestDomain:Test2dElement"));
+    assert.equal(elemOld!.ECClassId, "0x176");
     assert.isUndefined(elemOld!.StrProp);
     assert.isUndefined(elemOld!.Model);
     assert.deepEqual(Object.keys(elemOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
@@ -2198,7 +2198,7 @@ describe("ChangesetReader update-full", () => {
 
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
-    assert.equal(elemOld!.ECClassId, rwIModel[_nativeDb].classNameToId("TestDomain:Test2dElement"));
+    assert.equal(elemOld!.ECClassId, "0x176");
     assert.equal(elemOld!.StrProp, "hello");
     assert.include(String(elemOld!.BinProp), "bytes");
     assert.deepEqual(elemOld!.$meta.rowOptions, { abbreviateBlobs: true });
