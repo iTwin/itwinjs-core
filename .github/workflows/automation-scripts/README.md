@@ -9,26 +9,25 @@ bootstrap dependency tree they install with `npm ci`.
 ## Emergency: rotating `IMJS_ADMIN_GH_TOKEN`
 
 If the token is suspected compromised (leaked in logs, a workflow run was tampered with,
-the `imodeljs-admin` account shows unexpected activity), rotate it immediately. The
-replacement PAT must be issued to `imodeljs-admin` with:
+the `imodeljs-admin` account shows unexpected activity), rotate it immediately.
 
-- Fine-grained PAT, scoped to `iTwin/itwinjs-core`, with **Contents: Read and write**
-  (pushes in `finalize-release.yaml`), **Commit statuses: Read and write**, and
-  **Pull requests: Read-only** (both used by `invalidate-open-prs.yaml`). A classic PAT
-  with the `repo` scope also works.
-- The shortest expiration GitHub allows for this use case.
-
-Steps (permissions above don't require inspecting the old token, so revoke first):
+Steps (revoking the old token doesn't require inspecting its permissions first, so revoke
+it first):
 
 1. Revoke the current PAT: as `imodeljs-admin` (or an org admin acting on its behalf), go to
-   GitHub Settings > Developer settings > Personal access tokens and delete/revoke the
+   `GitHub Settings > Developer settings > Personal access tokens` and delete/revoke the
    token in use. This invalidates it everywhere immediately, including any place it may
    have leaked to.
 2. Audit recent activity: check `imodeljs-admin`'s recent pushes/API calls and the run logs
    of `finalize-release.yaml` / `invalidate-open-prs.yaml` for anything unexpected around
    the suspected compromise window.
-3. Generate a replacement PAT for `imodeljs-admin` with the permissions listed above.
-4. Update the `IMJS_ADMIN_GH_TOKEN` secret: repo Settings > Secrets and variables > Actions.
+3. Generate a replacement PAT for `imodeljs-admin` with the permissions listed below:
+   - Fine-grained PAT, scoped to `iTwin/itwinjs-core`, with **Contents: Read and write**
+     (pushes in `finalize-release.yaml`), **Commit statuses: Read and write**, and
+     **Pull requests: Read-only** (both used by `invalidate-open-prs.yaml`). A classic PAT
+     with the `repo` scope also works.
+   - The shortest expiration GitHub allows for this use case.
+4. Update the `IMJS_ADMIN_GH_TOKEN` secret: repo `Settings > Secrets and variables > Actions`.
 5. Re-run any release step that failed or was skipped because the token was revoked
    mid-rotation (see rollback below for `finalize-release.yaml` specifically).
 
