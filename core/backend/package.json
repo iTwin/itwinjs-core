@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.14.0-dev.19",
+  "version": "5.15.0-dev.1",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
@@ -56,6 +56,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@opentelemetry/api": "^1.0.4"
   },
@@ -73,6 +74,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
@@ -108,7 +110,7 @@
     "vite": "^6.4.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.14.38",
+    "@bentley/imodeljs-native": "5.15.3",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.6",
