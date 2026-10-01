@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/perf-tools",
+      "comment": "Remove the `fs-extra` dependency; use `node:fs`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/perf-tools"
+}

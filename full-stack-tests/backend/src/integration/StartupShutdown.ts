@@ -8,7 +8,6 @@ import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { emptyDirSync, mkdirsSync } from "fs-extra";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -50,8 +49,9 @@ export async function startupForIntegration(cfg?: IModelHostOptions) {
     api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` }
   });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
-  mkdirsSync(cfg.cacheDir);
-  emptyDirSync(cfg.cacheDir);
+  fs.mkdirSync(cfg.cacheDir, { recursive: true });
+  for (const entry of fs.readdirSync(cfg.cacheDir))
+    fs.rmSync(path.join(cfg.cacheDir, entry), { recursive: true, force: true });
   setupIntegrationLogging();
   return IModelHost.startup(cfg);
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as sinon from "sinon";
 import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
@@ -18,7 +18,7 @@ describe("SchemaXml tests:", () => {
   const outDir = path.join(__dirname, "output");
 
   before(() => {
-    fs.ensureDirSync(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
   });
 
   beforeEach(() => {
@@ -59,7 +59,7 @@ describe("SchemaXml tests:", () => {
   it("writeFile, writeFile fails, failure handled properly.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
-    sinon.stub(fs, "writeFile").rejects(new Error("SomeError"));
+    sinon.stub(fs.promises, "writeFile").rejects(new Error("SomeError"));
     const outFile = path.resolve(outDir, `${schema!.name}.ecschema.xml`);
 
     await expect(SchemaXml.writeFile(schema!, outDir)).to.be.rejectedWith(`An error occurred writing to file '${outFile}': SomeError`);

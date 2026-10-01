@@ -7,7 +7,7 @@
 import * as path from "path";
 import * as commander from "commander";
 import * as chalk from "chalk";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 
 import { ECSchemaToTsXmlWriter } from "./ecschema2ts_io";
 import { SchemaContext } from "@itwin/ecschema-metadata";

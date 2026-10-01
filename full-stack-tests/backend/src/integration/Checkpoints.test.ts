@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { ChildProcess } from "child_process";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";

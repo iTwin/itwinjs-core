@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import { Schema } from "@itwin/ecschema-metadata";
@@ -27,7 +27,7 @@ export namespace SchemaXml {
 
     const baseFile = getSchemaPath(schema, outputPath);
     try {
-      await fs.writeFile(baseFile, xml);
+      await fs.promises.writeFile(baseFile, xml);
     } catch (err: any) {
       const msg = `An error occurred writing to file '${baseFile}': ${err.message}`;
       throw new Error(msg);
@@ -48,7 +48,7 @@ export namespace SchemaXml {
 
   function getSchemaPath(schema: Schema, outputPath: string): string {
     const realDir = path.normalize(outputPath);
-    const test = fs.pathExistsSync(realDir);
+    const test = fs.existsSync(realDir);
     if (!test) {
       const msg = `The output directory '${realDir}' does not exist.`;
       throw new Error(msg);

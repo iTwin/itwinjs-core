@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 
 /** Class that loads GeoJSON data from an input file. */

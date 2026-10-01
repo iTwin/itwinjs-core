@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ECSchemaToTsXmlWriter } from "../ecschema2ts_io";
 import { assert } from "chai";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import * as utils from "./utilities/utils";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -14,9 +14,9 @@ const ec32ReferenceDir: string = path.join(assetDir, "schema3.2");
 const ec3132ReferenceDir: string = path.join(assetDir, "schema3.1_3.2");
 
 function cleanGeneratedTsFile(outputDir: string, schemaName: string) {
-  fs.removeSync(path.join(outputDir, `${schemaName}.ts`));
-  fs.removeSync(path.join(outputDir, `${schemaName}Elements.ts`));
-  fs.removeSync(path.join(outputDir, `${schemaName}ElementProps.ts`));
+  fs.rmSync(path.join(outputDir, `${schemaName}.ts`), { recursive: true, force: true });
+  fs.rmSync(path.join(outputDir, `${schemaName}Elements.ts`), { recursive: true, force: true });
+  fs.rmSync(path.join(outputDir, `${schemaName}ElementProps.ts`), { recursive: true, force: true });
 }
 
 async function testFileConverterFailure(context: SchemaContext, schemaFileName: string, outputDir: string, referenceDir: string[]): Promise<void> {
@@ -49,7 +49,7 @@ describe("Convert from ECSchema xml file to typescript string", () => {
 describe("Convert from ECSchema xml file to typescript file", () => {
   it("Success 3.2 Schema File Tests", async () => {
     const outDir = path.join(utils.getOutDir(), "schema3.2", "async");
-    fs.ensureDirSync(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
 
     let schemaFilePath = path.join(assetDir, "BasicTest.01.00.00.ecschema.xml");
     cleanGeneratedTsFile(outDir, "BasicTest");
@@ -74,7 +74,7 @@ describe("Convert from ECSchema xml file to typescript file", () => {
 
   it("Success 3.1 and 3.2 Schema File Tests", async () => {
     const outDir = path.join(utils.getOutDir(), "schema3.1_3.2", "async");
-    fs.ensureDirSync(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
 
     let schemaFilePath = path.join(assetDir, "schema3.1_3.2", "ComprehensiveSchema.01.00.00.ecschema.xml");
     cleanGeneratedTsFile(outDir, "ComprehensiveSchema");
@@ -109,7 +109,7 @@ describe("Convert from ECSchema xml file to typescript file", () => {
   it("success without trailing slash on out directory", async () => {
     const schemaFilePath = path.join(assetDir, "BasicTest.01.00.00.ecschema.xml");
     let outdir = `${utils.getOutDir()}async/`;
-    fs.ensureDirSync(outdir);
+    fs.mkdirSync(outdir, { recursive: true });
     outdir = outdir.slice(0, outdir.length - 1);
     cleanGeneratedTsFile(assetDir, "BasicTest");
     await testFileConverterSuccess(new SchemaContext(), schemaFilePath, "BasicTest", outdir, [ec32ReferenceDir]);

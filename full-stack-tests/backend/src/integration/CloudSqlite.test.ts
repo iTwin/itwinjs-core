@@ -5,7 +5,7 @@
 
 import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { existsSync, removeSync } from "fs-extra";
+import { existsSync, rmSync } from "fs";
 import { join } from "path";
 import * as sinon from "sinon";
 import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
@@ -69,7 +69,7 @@ describe("CloudSqlite", () => {
 
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testWs.db");
     if (existsSync(tempDbFile))
-      removeSync(tempDbFile);
+      rmSync(tempDbFile, { recursive: true, force: true });
 
     PropertyStore.PropertyDb.createNewDb(tempDbFile);
 

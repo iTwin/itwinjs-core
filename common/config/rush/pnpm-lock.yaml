@@ -317,9 +317,6 @@ importers:
       '@xmldom/xmldom':
         specifier: ~0.8.13
         version: 0.8.15
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
       glob:
         specifier: ^13.0.6
         version: 13.0.6
@@ -387,9 +384,6 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.8
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.10
@@ -2234,9 +2228,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
@@ -2262,9 +2253,6 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.8
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.10
@@ -3699,9 +3687,6 @@ importers:
       '@types/express-ws':
         specifier: ^3.0.3
         version: 3.0.6
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -3738,9 +3723,6 @@ importers:
       express-ws:
         specifier: ^5.0.2
         version: 5.0.2(express@4.22.3)
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3887,9 +3869,6 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
       yargs:
         specifier: ^17.4.0
         version: 17.7.3
@@ -3900,9 +3879,6 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.17.25
@@ -3949,9 +3925,6 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -3982,9 +3955,6 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
       yargs:
         specifier: ^17.4.0
         version: 17.7.3
@@ -3995,9 +3965,6 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.17.25
@@ -4177,9 +4144,6 @@ importers:
       commander:
         specifier: ^2.14.1
         version: 2.20.3
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -4193,9 +4157,6 @@ importers:
       '@types/chai-string':
         specifier: ^1.4.1
         version: 1.4.5
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.10
@@ -4247,10 +4208,6 @@ importers:
         version: 11.8.0
 
   ../../tools/perf-tools:
-    dependencies:
-      fs-extra:
-        specifier: ^8.1.0
-        version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -4258,9 +4215,9 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.15
+      '@types/node':
+        specifier: ~20.17.0
+        version: 20.17.58
       eslint:
         specifier: ^9.31.0
         version: 9.39.5

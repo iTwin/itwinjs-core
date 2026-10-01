@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { emptyDirSync, mkdirsSync } from "fs-extra";
+import { mkdirSync, readdirSync, rmSync } from "fs";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
@@ -90,8 +90,9 @@ export namespace AzuriteTest {
       }
     };
     export const makeEmptyDir = (name: LocalDirName) => {
-      mkdirsSync(name);
-      emptyDirSync(name);
+      mkdirSync(name, { recursive: true });
+      for (const entry of readdirSync(name))
+        rmSync(join(name, entry), { recursive: true, force: true });
     };
 
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }

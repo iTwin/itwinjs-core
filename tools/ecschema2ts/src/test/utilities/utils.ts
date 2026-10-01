@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
@@ -38,7 +38,7 @@ export function getAssetsDir(): string {
 
 export function getOutDir(): string {
   const outputDir = path.normalize(`${__dirname}/../../../lib/test/output/`);
-  fs.ensureDirSync(outputDir);
+  fs.mkdirSync(outputDir, { recursive: true });
   return outputDir;
 }
 

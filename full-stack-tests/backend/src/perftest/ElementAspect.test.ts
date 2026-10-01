@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./setup";
 import { assert } from "chai";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as path from "path";
 import { AccessToken, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { existsSync, mkdirSync, unlinkSync } from "fs-extra";
+import { existsSync, mkdirSync, unlinkSync } from "fs";
 import { Suite } from "mocha";
 import { join } from "path";
 import * as sinon from "sinon";
