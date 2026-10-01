@@ -384,8 +384,8 @@ describe("ECSql Abstract Syntax Tree", () => {
   it("parse ECSQLOPTIONS", async () => {
     const tests = [
       {
-        orignalECSql: "SELECT 1 FROM meta.ECClassDef ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X=3",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3",
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef ECSQLOPTIONS DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES NAV_REL_CLASSID_FALLBACK NoECClassIdFilter ReadonlyPropertiesAreUpdatable USE_JS_PROP_NAMES X=3",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ECSQLOPTIONS DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES NAV_REL_CLASSID_FALLBACK NoECClassIdFilter ReadonlyPropertiesAreUpdatable USE_JS_PROP_NAMES X = 3",
       },
     ];
     for (const test of tests) {

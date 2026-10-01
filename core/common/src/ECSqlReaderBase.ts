@@ -77,10 +77,10 @@ export interface QueryRowProxy {
   toRow(): any;
 
   /**
-   * Get all remaining rows from the query result.
-   * If called on the current row ([[ECSqlReader.current]]), only that row is returned.
+   * Get the current row's raw values as an array in SELECT-column order.
+   * To collect all remaining rows, use [[ECSqlReader.toArray]] instead.
    *
-   * @returns All remaining rows from the query result.
+   * @returns The current row's values.
    */
   toArray(): QueryValueType[];
 

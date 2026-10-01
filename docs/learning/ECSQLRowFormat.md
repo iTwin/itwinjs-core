@@ -1,93 +1,97 @@
-# Format of a row returned from an [ECSQL](./ECSQL.md) SELECT query
+# ECSQL Row Formats
 
-> Code examples showing off the use of different row formats can be found in [ECSQL Code Examples](./ECSQLCodeExamples.md#specifying-row-formats)
+The asynchronous [ECSqlReader]($common) and synchronous [ECSqlSyncReader]($backend) use the same [QueryRowFormat]($common) options. Set `rowFormat` when calling `createQueryReader` or `withQueryReader`.
 
-When using Concurrent query a row format can be selected. By default ConcurrentQuery engine always render top level row as array of values and not object. But it also include meta data allowing array to be converted into two other formats. The format is controlled by flag [QueryRowFormat]($common) which can have one of following values.
+## Row proxies and materialized rows
 
-- **UseECSqlPropertyNames**: Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql. Null values are omitted.
-- **UseJsPropertyNames**: Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement. Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
-- **UseECSqlPropertyIndexes**: The default format if none is specified by the caller
+Iteration and `step()` expose a [QueryRowProxy]($common) for the current row. It supports zero-based column indexes and case-insensitive lookup using ECSQL or JavaScript property names. The proxy follows the reader's current row; materialize a row before retaining it across reader advances.
 
-There is tiny overhead when accessing row as `UseECSqlPropertyNames` or `UseJsPropertyNames` as it require convert array values into a object with property name and values. We recommend using array values as is allowing much better performance.
+| Operation | Result |
+| --- | --- |
+| `row[0]`, `row.ECInstanceId` | One value from the current row |
+| `row.toArray()` | The current row's raw array of values in SELECT-column order |
+| `row.toRow()` | A plain object; ECSQL property names by default, or legacy JavaScript names with the deprecated `UseJsPropertyNames` |
+| `reader.toArray()` | All remaining rows, materialized according to `rowFormat`; returns a promise for the async reader |
 
-> **Note** that `ECSqlStatement.getRow()` function does not take row format as parameter and always return `UseJsPropertyNames`. In future the parameter will be added but we recommend using concurrent query on both frontend and backend as it is more efficient in term of memory and performance.
+`row.toRow()` always produces an object, including with the default index format. `reader.toArray()` uses the following formats for each collected row:
+
+| `rowFormat` | Materialized row | Class-ID values by default |
+| --- | --- | --- |
+| `UseECSqlPropertyIndexes` (default) | Array in SELECT-column order | Id64 strings |
+| `UseECSqlPropertyNames` | Object keyed by ECSQL column names or aliases | Id64 strings |
+| `UseJsPropertyNames` (deprecated) | Object keyed by legacy JavaScript names | Class names for unaliased class-ID system properties, including navigation relationship classes |
+
+Object rows omit null and undefined values. Array rows preserve nulls before a later non-null column, but omit trailing nulls. An omitted trailing column reads as `undefined` by index. Allow for absent values when assigning query results to TypeScript types.
+
+See [row-format examples](./ECSQLCodeExamples.md#specifying-row-formats) for code and representative output.
 
 ## Property names
 
-If the ECSQL select clause item
+`UseECSqlPropertyNames` preserves the ECSQL column name or alias. For new code, use this format with explicit aliases and `ec_classname()` projections when JavaScript-friendly names and class names are required.
 
-- has a column alias, the alias, with the first character lowered, becomes the property name.
-- has no alias and is no ECSQL system property, the ECSQL select clause item, with the **first character lowered**, becomes the property name.
-- is an ECSQL system property (see also enum [ECSqlSystemProperty]($common)):
+`UseJsPropertyNames` is deprecated. It lowercases the first character of ordinary property names and aliases, and maps unaliased system properties as follows. Use it only to preserve an existing result contract while migrating.
 
-### System properties when `UseJsPropertyNames` options is used
+### System properties when deprecated `UseJsPropertyNames` is used
 
-  System property | JavaScript Type
-  --- | ---
-  [ECInstanceId](./ECSQL.md#ECInstanceId-and-ECClassId) | id
-  [ECClassId](./ECSQL.md#ECInstanceId-and-ECClassId) | className
-  [SourceECInstanceId](./ECSQL.md#ecrelationshipclasses) | sourceId
-  [SourceECClassId](./ECSQL.md#ecrelationshipclasses) | sourceClassName
-  [TargetECInstanceId](./ECSQL.md#ecrelationshipclasses) | targetId
-  [TargetECClassId](./ECSQL.md#ecrelationshipclasses) | targetClassName
+| ECSQL property | JavaScript property | Value |
+| --- | --- | --- |
+| `ECInstanceId` | `id` | Id64 string |
+| `ECClassId` | `className` | Qualified class name |
+| `SourceECInstanceId` | `sourceId` | Id64 string |
+| `SourceECClassId` | `sourceClassName` | Qualified class name |
+| `TargetECInstanceId` | `targetId` | Id64 string |
+| `TargetECClassId` | `targetClassName` | Qualified class name |
 
-  Navigation property member | JavaScript Type
-  --- | ---
-  [Id](./ECSQL.md#navigation-properties) | id
-  [RelClassId](./ECSQL.md#navigation-properties) | relClassName
+Navigation properties use `{ id, relClassName }` in this format. The conversion includes class-ID values as well as property keys; renaming `ECClassId` to `className` alone does not convert its value.
 
-### System properties when `UseECSqlPropertyNames` options is used
+### System properties when `UseECSqlPropertyNames` is used
 
->Note: the property case will be same as specified in ECSQL
+System-property keys retain their ECSQL names, such as `ECInstanceId` and `ECClassId`. Navigation properties use `{ Id, RelECClassId }`, with both values represented as Id64 strings. The default index format uses the same value representation, including these nested navigation objects.
 
-  System property | JavaScript Type
-  --- | ---
-  [ECInstanceId](./ECSQL.md#ECInstanceId-and-ECClassId) | ECInstanceId
-  [ECClassId](./ECSQL.md#ECInstanceId-and-ECClassId) | ECClassId
-  [SourceECInstanceId](./ECSQL.md#ecrelationshipclasses) | SourceECInstanceId
-  [SourceECClassId](./ECSQL.md#ecrelationshipclasses) | SourceECClassId
-  [TargetECInstanceId](./ECSQL.md#ecrelationshipclasses) | TargetECInstanceId
-  [TargetECClassId](./ECSQL.md#ecrelationshipclasses) | TargetECClassId
+Point members retain ECSQL casing in the default index format and in `UseECSqlPropertyNames`, producing `{ X, Y }` or `{ X, Y, Z }`. The deprecated `UseJsPropertyNames` format converts them to `{ x, y }` or `{ x, y, z }`.
 
-  Navigation property member | JavaScript Type
-  --- | ---
-  [Id](./ECSQL.md#navigation-properties) | Id
-  [RelClassId](./ECSQL.md#navigation-properties) | RelECClassId
+### Aliases and class names
 
-  Point property member | JavaScript Type
-  --- | ---
-  [X](./ECSQL.md#points) | x
-  [Y](./ECSQL.md#points) | y
-  [Z](./ECSQL.md#points) | z
+Aliases determine the output key and can suppress automatic class-name conversion. For example, selecting `ECClassId AS elementClassId` preserves an ID with the default conversion options even when using JS names. The same value is exposed through index access, name access, `toRow()`, and `toArray()`. Use an explicit expression when a selected value must be a class name:
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId, 's.c') AS className FROM bis.Element
+```
+
+The deprecated `convertClassIdsToClassNames` reader option also requests class-name conversion. Use an explicit `ec_classname()` projection instead. The deprecated `UseJsPropertyNames` format already supplies the legacy system-property conversions shown above.
 
 ## Property value types
 
-The resulting types of the returned property values are these:
+| ECSQL value | JavaScript representation |
+| --- | --- |
+| Boolean | `boolean` |
+| Blob | `Uint8Array` by default; a byte-count string when `abbreviateBlobs` is `true` |
+| Blob with BeGuid extended type | [GuidString]($bentley) |
+| Double, Integer, Int64 | `number`; account for JavaScript integer precision limits |
+| DateTime | ISO 8601 date-time string |
+| Instance ID or Int64 with Id extended type | [Id64String]($bentley) |
+| Class-ID system property | Id64 string or qualified class name, as described above |
+| Point2d | `{ X, Y }` by default; `{ x, y }` with deprecated `UseJsPropertyNames` |
+| Point3d | `{ X, Y, Z }` by default; `{ x, y, z }` with deprecated `UseJsPropertyNames` |
+| String | `string` |
+| Navigation | `{ Id, RelECClassId }` or [NavigationValue]($common), depending on format |
+| Struct | Object containing the struct's members |
+| Array | Array of property values |
 
-ECSQL type | Extended Type | JavaScript Typ
----------- | ------------- | ---------------
-Boolean    | -             | boolean
-Blob       | -             | Uint8Array
-Blob       | BeGuid        | [GuidString]($core-bentley)
-ClassId system properties | - | fully qualified class name
-Double     | -             | number
-DateTime   | -             | ISO 8601 date time string
-Id system properties | -   | [Id64String]($core-bentley)
-Integer    | -             | number
-Int64      | -             | number
-Int64      | Id            | hexadecimal string
-Point2d    | -             | [XAndY]($core-geometry)
-Point3d    | -             | [XYAndZ]($core-geometry)
-String     | -             | string
-Navigation | n/a           | [NavigationValue]($common)
-Struct     | n/a           | JavaScript object with properties of the types in this table
-Array      | n/a           | array of the types in this table
+With `abbreviateBlobs: true`, ordinary blobs are returned as strings such as `'{"bytes":123}'`, describing their byte count instead of returning their contents. The option defaults to `false`.
 
-## Examples
+Read-value support does not imply that the same value can be bound as a query parameter. See [ECSQL parameter types](./ECSQLParameterTypes.md).
 
-ECSQL | Row
------ | ---
-`SELECT ECInstanceId,ECClassId,Parent,LastMod,FederationGuid,UserLabel FROM bis.Element` | `{id:"0x132", className:"generic.PhysicalObject", parent:{id:"0x444", relClassName:"bis.ElementOwnsChildElements"},lastMod:"2018-02-27T14:12:55.000Z",federationGuid:"274e25dc-8407-11e7-bb31-be2e44b06b34",userLabel:"My element"}`
-`SELECT s.ECInstanceId schemaId, c.ECInstanceId classId FROM meta.ECSchemaDef s JOIN meta.ECClassDef c ON s.ECInstanceId=c.Schema.Id` | `{schemaId:"0x132", classId:"0x332"}`
-`SELECT count(*) FROM bis.Element` | `{"count(*)": 31241}`
-`SELECT count(*) cnt FROM bis.Element` | `{cnt: 31241}`
+## Instance JSON and `OPTIONS USE_JS_PROP_NAMES`
+
+The SQL option `USE_JS_PROP_NAMES` applies to JSON produced by the `$` instance accessor:
+
+```sql
+SELECT $ FROM BisCore.Element OPTIONS USE_JS_PROP_NAMES
+```
+
+This option controls the properties and values inside the selected JSON instance. The reader's `rowFormat` controls the surrounding query row. Neither option selects which connection or thread executes the query. See [instance queries](./ECSqlReference/InstanceQuery.md) and [ECSQL options](./ECSqlReference/ECSqlOptions.md).
+
+## Legacy statement rows
+
+The deprecated [ECSqlStatement.getRow]($backend) defaults to JS-shaped rows. It also accepts [ECSqlRowArg]($backend) formatting options. When migrating, prefer `UseECSqlPropertyNames` with explicit aliases and `ec_classname()` projections. Use deprecated `UseJsPropertyNames` only when an existing caller requires the exact legacy shape. See [backend migration guidance](./backend/ECSQLCodeExamples.md#migrating-from-withpreparedstatement).

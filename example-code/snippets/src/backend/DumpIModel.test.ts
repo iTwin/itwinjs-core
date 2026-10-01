@@ -5,8 +5,9 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
+import { QueryBinder } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 // __PUBLISH_EXTRACT_START__ WireFormat_DumpIModel.code
@@ -28,12 +29,9 @@ class DumpIModel {
     }
     // Iterate each Model
     const sql = `SELECT ECInstanceId AS id FROM ${Model.classFullName}`;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        DumpIModel.dumpModel(iModel, row.id, outputDir);
-      }
+    iModel.withQueryReader(sql, (reader) => {
+      while (reader.step())
+        DumpIModel.dumpModel(iModel, reader.current.id, outputDir);
     });
   }
 
@@ -43,20 +41,17 @@ class DumpIModel {
     fs.writeFileSync(outputFile, "[");
     // ECSQL to SELECT every Element in the specified Model
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
+    iModel.withQueryReader(sql, (reader) => {
       let isFirstEntry = true;
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+      while (reader.step()) {
         isFirstEntry ? fs.appendFileSync(outputFile, "\n") : fs.appendFileSync(outputFile, ",\n");
         isFirstEntry = false;
-        const row = statement.getRow();
         // Get the ElementProps (including the geometry detail) for the specified Element
-        const elementProps = iModel.elements.getElementProps({ id: row.id, wantGeometry: true });
+        const elementProps = iModel.elements.getElementProps({ id: reader.current.id, wantGeometry: true });
         // Output the ElementProps as a JSON string
         fs.appendFileSync(outputFile, JSON.stringify(elementProps));
       }
-    });
+    }, new QueryBinder().bindId("modelId", modelId));
     fs.appendFileSync(outputFile, "\n]");
   }
 }

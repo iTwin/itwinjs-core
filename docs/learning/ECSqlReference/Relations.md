@@ -6,6 +6,23 @@
 
 It is an experimental feature, so `PRAGMA experimental_features_enabled=true` must be set on the connection, or the ECSQL option `ENABLE_EXPERIMENTAL_FEATURES` must be passed with the query, in order for it to work.
 
+## Legacy navigation properties with no relationship class id
+
+Some older data writers persisted a navigation property `Id` without its `RelECClassId`. By default, `Relations()` omits these rows because their concrete relationship class cannot be read from storage.
+
+Use `NAV_REL_CLASSID_FALLBACK` to treat such a row as an instance of the relationship declared by the navigation property:
+
+```sql
+SELECT r.RelatedECInstanceId, r.RelationshipECClassId
+FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId) r
+WHERE e.ECInstanceId = :elementId
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES NAV_REL_CLASSID_FALLBACK
+```
+
+The option also applies when selecting the corresponding end-table relationship class directly. It does not modify the stored navigation property: selecting its `RelECClassId` still returns `NULL`. The fallback relationship may be abstract, and derived relationship classes do not claim the row.
+
+The compatibility predicate can produce a less efficient query plan than the default behavior, so enable it only for queries that must read this legacy data.
+
 ## When to use it
 
 [Joins](./JOIN.md) and [navigation properties](../ECSQL.md#navigation-properties) both require you to know *which* relationship to traverse, and are the better choice whenever you do. `Relations` is for the cases where you do not:

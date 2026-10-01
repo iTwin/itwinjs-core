@@ -149,42 +149,21 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 > SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1
 > ```
 
-Using **aliases** is also helpful when working with the iTwin.js API. The API returns query results as JavaScript object literals where
-each expression of the SELECT clause becomes the member of the object.
-
-If you, for example, used the [Element Count example](#element-count) with the iTwin.js API, you would get this JavaScript object literal:
-
-```ts
-{ "count(*)" : 27 }
-```
-
-The power of JavaScript object literals is lost here, because `count(*)` is not a valid member name. If you applied an alias to
-the count expression though so that the ECSQL would look like this:
+Using **aliases** is also helpful when working with the iTwin.js query readers. Each row exposes selected values by index or column name. Without an alias, the [Element Count example](#element-count) requires bracket notation, `row["count(*)"]`. An alias permits ordinary property access:
 
 ```sql
 SELECT count(*) elementCount FROM bis.SpatialElement
 ```
 
-the JavaScript object would now look like this:
+Consume the result asynchronously with `createQueryReader`:
 
 ```ts
-{
-  elementCount: 27;
+for await (const row of iModelDb.createQueryReader("SELECT count(*) elementCount FROM bis.SpatialElement")) {
+  console.log("Element count: " + row.elementCount);
 }
 ```
 
-Now the result can be consumed in TypeScript as desired:
-
-```ts
-iModelDb.withPreparedStatement(
-  "SELECT count(*) elementCount FROM bis.SpatialElement",
-  (stmt: ECSqlStatement) => {
-    stmt.step();
-    const row: any = stmt.getRow();
-    console.log("Element count: " + row.elementCount);
-  },
-);
-```
+Call `row.toRow()` to retain a plain object, for example `{ elementCount: 27 }`. See [asynchronous query examples](../ECSQLCodeExamples.md) for row access and materialization.
 
 ## Parametrizing the ECSQL
 

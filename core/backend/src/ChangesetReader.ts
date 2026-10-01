@@ -70,7 +70,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @internal */
   private get _batchSize(): number {
     if (this._batchSizeOverride !== undefined) return this._batchSizeOverride;
-    if (this._propFilter === PropertyFilter.InstanceKey) return 100;
+    if (this._propFilter === PropertyFilter.InstanceKey || this._propFilter === PropertyFilter.InstanceKeyAndIdentifiers) return 100;
     if (this._propFilter === PropertyFilter.BisCoreElement) return 20; // because BisCore Element class do not contain any GeomStream property so abbreviateBlobs is not relevant here
     if (this._rowOptions?.abbreviateBlobs === false) return 5;
     return 10; // PropertyFilter.All
@@ -351,7 +351,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Increasing the batch size improves throughput at the cost of higher peak memory; decreasing it keeps memory consumption lower.
    *
    * Default batch sizes when `setBatchSize` is not called:
-   * - `InstanceKey` filter: **100**.
+   * - `InstanceKey` or `InstanceKeyAndIdentifiers` filter: **100**.
    * - `BisCoreElement` filter (any `abbreviateBlobs` setting): **20**.
    * - `All` filter, `abbreviateBlobs: false`: **5**.
    * - `All` filter (blobs abbreviated or unset): **10**.

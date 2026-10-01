@@ -8,14 +8,16 @@
 
 import { bufferCount, defer, from, groupBy, map, mergeMap, Observable, ObservedValueOf, of, range, reduce } from "rxjs";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { QueryRowProxy } from "@itwin/core-common";
+import { Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { QueryBinder, QueryRowProxy } from "@itwin/core-common";
 import {
   ContentDescriptorRequestOptions,
   ContentRequestOptions,
   Descriptor,
+  Field,
   Item,
   KeySet,
+  NestedContentField,
   PresentationError,
   PresentationStatus,
   Ruleset,
@@ -47,10 +49,11 @@ export function getContentItemsObservableFromElementIds(
       mergeMap(
         ({ classFullName, ids }) =>
           getBatchedClassContentItems(
+            imodel,
             classFullName,
             contentDescriptorGetter,
             contentSetGetter,
-            () => createIdBatches(OrderedId64Iterable.sortArray(ids), batchSize),
+            () => createIdBatches(ids, batchSize),
             batchesParallelism,
           ),
         classParallelism,
@@ -79,6 +82,7 @@ export function getContentItemsObservableFromClassNames(
       mergeMap(
         (classFullName) =>
           getBatchedClassContentItems(
+            imodel,
             classFullName,
             contentDescriptorGetter,
             contentSetGetter,
@@ -93,6 +97,7 @@ export function getContentItemsObservableFromClassNames(
 }
 
 function getBatchedClassContentItems(
+  imodel: IModelDb,
   classFullName: string,
   contentDescriptorGetter: (
     partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">,
@@ -100,7 +105,7 @@ function getBatchedClassContentItems(
   contentSetGetter: (
     partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
   ) => Promise<Item[]>,
-  batcher: () => Observable<Array<{ from: Id64String; to: Id64String }>>,
+  batcher: () => Observable<ElementIdBatch>,
   batchesParallelism: number,
 ): Observable<{ descriptor: Descriptor; items: Item[] }> {
   return defer(async () => {
@@ -110,46 +115,84 @@ function getBatchedClassContentItems(
     if (!descriptor) {
       throw new PresentationError(PresentationStatus.Error, `Failed to get descriptor for class ${classFullName}`);
     }
-    return { descriptor, keys, ruleset };
+    const aspectFields = getPrunableAspectFields(descriptor, classFullName);
+    return { descriptor, keys, ruleset, aspectFields };
   }).pipe(
-    // create elements' id batches
     mergeMap((x) => batcher().pipe(map((batch) => ({ ...x, batch })))),
-    // request content for each batch, filter by IDs for performance
     mergeMap(
-      ({ descriptor, keys, ruleset, batch }) =>
+      ({ descriptor, keys, ruleset, batch, aspectFields }) =>
         defer(async () => {
-          const filteringDescriptor = new Descriptor(descriptor);
-          filteringDescriptor.instanceFilter = {
+          const batchDescriptor = new Descriptor(descriptor);
+          batchDescriptor.instanceFilter = {
             selectClassName: classFullName,
-            expression: createElementIdsECExpressionFilter(batch),
+            expression: batch.ranges
+              .map(({ from: fromId, to }) =>
+                fromId === to ? `this.ECInstanceId = ${fromId}` : `this.ECInstanceId >= ${fromId} AND this.ECInstanceId <= ${to}`,
+              )
+              .join(" OR "),
           };
-          return contentSetGetter({
+          if (aspectFields.length) {
+            await selectBatchAspectFields(imodel, batchDescriptor, aspectFields, batch.ids);
+          }
+          const items = await contentSetGetter({
             rulesetOrId: ruleset,
             keys,
-            descriptor: filteringDescriptor,
+            descriptor: batchDescriptor,
           });
-        }).pipe(map((items) => ({ descriptor, items }))),
+          return { descriptor: batchDescriptor, items };
+        }),
       batchesParallelism,
     ),
   );
 }
 
-function createElementIdsECExpressionFilter(batch: Array<{ from: Id64String; to: Id64String }>): string {
-  let filter = "";
-  function appendCondition(cond: string) {
-    if (filter.length > 0) {
-      filter += " OR ";
-    }
-    filter += cond;
+function getPrunableAspectFields(descriptor: Descriptor, classFullName: string): NestedContentField[] {
+  // Caller selections take precedence; don't replace an include/exclude selector with our own.
+  if (descriptor.fieldsSelector || countFields(descriptor.fields) <= 1000) {
+    return [];
   }
-  for (const item of batch) {
-    if (item.from === item.to) {
-      appendCondition(`this.ECInstanceId = ${item.from}`);
-    } else {
-      appendCondition(`this.ECInstanceId >= ${item.from} AND this.ECInstanceId <= ${item.to}`);
+  const { schemaName, className } = parseFullClassName(classFullName);
+  return descriptor.fields.filter((field): field is NestedContentField => {
+    if (!field.isNestedContentField() || field.pathToPrimaryClass.length !== 1) {
+      return false;
     }
+    const step = field.pathToPrimaryClass[0];
+    return (
+      !step.isForwardRelationship &&
+      (step.relationshipInfo.name === "BisCore:ElementOwnsMultiAspects" || step.relationshipInfo.name === "BisCore:ElementOwnsUniqueAspect") &&
+      step.sourceClassInfo.id === field.contentClassInfo.id &&
+      step.targetClassInfo.name === `${schemaName}:${className}`
+    );
+  });
+}
+
+function countFields(fields: Field[]): number {
+  return fields.reduce((count, field) => count + 1 + (field.isNestedContentField() ? countFields(field.nestedFields) : 0), 0);
+}
+
+async function selectBatchAspectFields(imodel: IModelDb, descriptor: Descriptor, aspectFields: NestedContentField[], batch: Id64Array): Promise<void> {
+  const query = `
+    WITH aspectClasses(ClassId) AS (
+      SELECT DISTINCT a.ECClassId
+      FROM bis.ElementMultiAspect a
+      JOIN IdSet(:elementIds) e ON e.id = a.Element.Id
+      UNION ALL
+      SELECT DISTINCT a.ECClassId
+      FROM bis.ElementUniqueAspect a
+      JOIN IdSet(:elementIds) e ON e.id = a.Element.Id
+    )
+    SELECT IdToHex(b.TargetECInstanceId) classId
+    FROM meta.ClassHasAllBaseClasses b
+    JOIN aspectClasses a ON a.ClassId = b.SourceECInstanceId
+  `;
+  const aspectClasses = new Set<Id64String>();
+  for await (const row of imodel.createQueryReader(query, QueryBinder.from({ elementIds: batch }))) {
+    aspectClasses.add(row.classId);
   }
-  return filter;
+  const excludedFields = aspectFields.filter((field) => !aspectClasses.has(field.contentClassInfo.id));
+  if (excludedFields.length > 0) {
+    descriptor.fieldsSelector = { type: "exclude", fields: excludedFields.map((field) => field.getFieldDescriptor()) };
+  }
 }
 
 function createClassContentRuleset(fullClassName: string): Ruleset {
@@ -175,44 +218,90 @@ function createClassContentRuleset(fullClassName: string): Ruleset {
   };
 }
 
-/** Given a list of element ids, group them by class name. */
-function getElementClassesFromIds(imodel: IModelDb, elementIds: string[]): Observable<{ classFullName: string; ids: Id64Array }> {
+interface ElementIdWithPrevClassInstance {
+  id: Id64String;
+  /** ID of the previous (by ECInstanceId) element of the same class, if any. */
+  prevClassInstanceId?: Id64String;
+}
+
+/**
+ * Given a list of element ids, group them by class name. In addition, for every element, get ID of the previous
+ * element of the same class, which lets us put requested IDs into ranges without other instances of the same class.
+ *
+ * The query reader re-executes the query for every page, so querying all IDs at once is much slower than querying
+ * them in chunks. Chunks are made of the sorted IDs list and run in parallel. `GROUP_CONCAT` order isn't guaranteed
+ * by SQLite, so each chunk's IDs are sorted individually (usually a no-op check), then stored at the chunk's index.
+ * Concatenating them gives each class its IDs sorted.
+ */
+function getElementClassesFromIds(
+  imodel: IModelDb,
+  elementIds: Id64Array,
+): Observable<{ classFullName: string; ids: ElementIdWithPrevClassInstance[] }> {
   const elementIdsBatchSize = 5000;
-  return range(0, elementIds.length / elementIdsBatchSize).pipe(
-    mergeMap((batchIndex) => {
-      const idsFrom = batchIndex * elementIdsBatchSize;
-      const idsTo = Math.min(idsFrom + elementIdsBatchSize, elementIds.length);
+  const sortedElementIds = OrderedId64Iterable.sortArray([...elementIds]);
+  return range(0, sortedElementIds.length / elementIdsBatchSize).pipe(
+    mergeMap((_, chunkIndex) => {
+      const idsFrom = chunkIndex * elementIdsBatchSize;
+      const idsTo = Math.min(idsFrom + elementIdsBatchSize, sortedElementIds.length);
       return from(
         imodel.createQueryReader(
           `
-            SELECT ec_classname(e.ECClassId) className, GROUP_CONCAT(IdToHex(e.ECInstanceId)) ids
+            SELECT
+              ec_classname(e.ECClassId) className,
+              GROUP_CONCAT(
+                IdToHex(e.ECInstanceId) || ':' || IFNULL((
+                  SELECT IdToHex(MAX(p.ECInstanceId))
+                  FROM bis.Element p
+                  WHERE p.ECClassId = e.ECClassId AND p.ECInstanceId < e.ECInstanceId
+                ), '')
+              ) ids
             FROM bis.Element e
-            WHERE e.ECInstanceId IN (${elementIds.slice(idsFrom, idsTo).join(",")})
+            JOIN IdSet(:elementIds) elementIds ON elementIds.id = e.ECInstanceId
             GROUP BY e.ECClassId
           `,
+          new QueryBinder().bindIdSet("elementIds", sortedElementIds.slice(idsFrom, idsTo)),
         ),
+      ).pipe(
+        map((row: QueryRowProxy) => ({
+          chunkIndex,
+          className: row.className as string,
+          ids: ensureSortedById(
+            (row.ids as string).split(",").map((pair): ElementIdWithPrevClassInstance => {
+              const [id, prevClassInstanceId] = pair.split(":");
+              return { id, ...(prevClassInstanceId ? { prevClassInstanceId } : undefined) };
+            }),
+          ),
+        })),
       );
     }),
-    map((row: QueryRowProxy): { className: string; ids: Id64Array } => ({ className: row.className, ids: row.ids.split(",") })),
     groupBy(({ className }) => className),
     mergeMap((groups) =>
       groups.pipe(
-        reduce<ObservedValueOf<typeof groups>, { classFullName: string; ids: Id64Array }>(
+        reduce<ObservedValueOf<typeof groups>, { classFullName: string; chunks: ElementIdWithPrevClassInstance[][] }>(
           (acc, g) => {
-            g.ids.forEach((id) => acc.ids.push(id));
-            return {
-              classFullName: g.className,
-              ids: acc.ids,
-            };
+            acc.chunks[g.chunkIndex] = g.ids;
+            return { classFullName: g.className, chunks: acc.chunks };
           },
-          { classFullName: "", ids: [] },
+          { classFullName: "", chunks: [] },
         ),
       ),
     ),
+    // chunks cover consecutive ID ranges and are sorted individually, so their concatenation is sorted as well;
+    // `flat` skips holes left by chunks that had no elements of the class
+    map(({ classFullName, chunks }) => ({ classFullName, ids: chunks.flat() })),
   );
 }
 
-/** Given a list of full class names, get a stream of actual class names that have instances. */
+function ensureSortedById(ids: ElementIdWithPrevClassInstance[]): ElementIdWithPrevClassInstance[] {
+  for (let i = 1; i < ids.length; ++i) {
+    if (OrderedId64Iterable.compare(ids[i - 1].id, ids[i].id) > 0) {
+      return ids.sort((a, b) => OrderedId64Iterable.compare(a.id, b.id));
+    }
+  }
+  return ids;
+}
+
+/** Given a list of full class names, get concrete class names with instances. */
 function getClassesWithInstances(imodel: IModelDb, fullClassNames: string[]): Observable<string> {
   return from(fullClassNames).pipe(
     mergeMap((fullClassName) =>
@@ -230,45 +319,40 @@ function getClassesWithInstances(imodel: IModelDb, fullClassNames: string[]): Ob
   );
 }
 
+interface ElementIdBatch {
+  ids: Id64Array;
+  ranges: Array<{ from: Id64String; to: Id64String }>;
+}
+
 /**
- * Given a sorted list of ECInstanceIds and a batch size, create a stream of batches. Because the IDs won't necessarily
- * be sequential, a batch is defined a list of from-to pairs.
- * @internal
+ * Given a list of same-class ECInstanceIds, sorted by ID, and a batch size, create a stream of batches. Because the IDs won't
+ * necessarily be sequential, a batch is defined as a list of from-to pairs. An ID extends the current range if there are no other
+ * instances of the same class between it and the previous requested ID.
  */
-export function createIdBatches(sortedIds: Id64String[], batchSize: number): Observable<Array<{ from: Id64String; to: Id64String }>> {
+function createIdBatches(sortedIds: ElementIdWithPrevClassInstance[], batchSize: number): Observable<ElementIdBatch> {
   return range(0, sortedIds.length / batchSize).pipe(
     map((batchIndex) => {
-      const sequences = new Array<{ from: Id64String; to: Id64String }>();
+      const ranges = new Array<{ from: Id64String; to: Id64String }>();
       const startIndex = batchIndex * batchSize;
       const endIndex = Math.min((batchIndex + 1) * batchSize, sortedIds.length) - 1;
-      let fromId = sortedIds[startIndex];
-      let to = {
-        id: sortedIds[startIndex],
-        localId: Id64.getLocalId(sortedIds[startIndex]),
-      };
+      let fromId = sortedIds[startIndex].id;
       for (let i = startIndex + 1; i <= endIndex; ++i) {
-        const currLocalId = Id64.getLocalId(sortedIds[i]);
-        if (currLocalId !== to.localId + 1) {
-          sequences.push({ from: fromId, to: sortedIds[i - 1] });
-          fromId = sortedIds[i];
+        if (sortedIds[i].prevClassInstanceId !== sortedIds[i - 1].id) {
+          ranges.push({ from: fromId, to: sortedIds[i - 1].id });
+          fromId = sortedIds[i].id;
         }
-        to = { id: sortedIds[i], localId: currLocalId };
       }
-      sequences.push({ from: fromId, to: sortedIds[endIndex] });
-      return sequences;
+      ranges.push({ from: fromId, to: sortedIds[endIndex].id });
+      return { ids: sortedIds.slice(startIndex, endIndex + 1).map(({ id }) => id), ranges };
     }),
   );
 }
 
-/**
- * Query all ECInstanceIds from given class and stream from-to pairs that batch the items into batches of `batchSize` size.
- * @internal
- */
-export function getBatchedClassElementIds(imodel: IModelDb, fullClassName: string, batchSize: number): Observable<Array<{ from: Id64String; to: Id64String }>> {
-  return from(imodel.createQueryReader(`SELECT IdToHex(ECInstanceId) id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`)).pipe(
+function getBatchedClassElementIds(imodel: IModelDb, fullClassName: string, batchSize: number): Observable<ElementIdBatch> {
+  return from(imodel.createQueryReader(`SELECT IdToHex(ECInstanceId) id FROM ONLY ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`)).pipe(
     map((row): Id64String => row.id),
     bufferCount(batchSize),
-    map((batch) => [{ from: batch[0], to: batch[batch.length - 1] }]),
+    map((ids) => ({ ids, ranges: [{ from: ids[0], to: ids[ids.length - 1] }] })),
   );
 }
 

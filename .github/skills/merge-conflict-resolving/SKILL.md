@@ -63,27 +63,19 @@ rush change --bulk --message "" --bump-type none -b origin/<base-branch>
 
 ## Documentation Conflicts (NextVersion.md)
 
-`NextVersion.md` is the active changelog for the upcoming release. Merge both versions intelligently:
+`NextVersion.md` is the active changelog for the upcoming release. Resolve it to hold every entry from both sides:
 
-1. Extract unique sections from both versions
-2. Merge into logical category order
-3. Update table of contents to match headers
-4. Remove duplicate content
-
-Example: If one branch adds Electron support and another adds Presentation changes, include both sections in the proper order.
+1. Keep each entry once, as a `###` heading under its `##` section. When both sides add the same section, the result is one section holding both sides' entries. List the allowed sections with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`.
+2. Rebuild the table of contents from the resulting headings.
 
 > Backports follow a different rule once the target release branch has shipped `X.X.0` — `NextVersion.md` stays empty and entries move into `X.X.0.md`. See the `backport-resolution` skill.
 
 ### Verification
 
 ```bash
+node .github/workflows/automation-scripts/check-nextversion.mjs  # Sections, duplicates, table of contents
 rush docs  # Ensure documentation builds
 ```
-
-**Avoid:**
-
-- Leaving mismatched table of contents
-- Keeping duplicate sections
 
 ## Source Code Conflicts (.ts files)
 

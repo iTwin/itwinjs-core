@@ -487,5 +487,5 @@ An rtree MATCH function that only accepts objects from the spatial index whose r
 _Example:_
 
 ```ts
-[[include:ECSqlStatement.spatialQuery]]
+[[include:ECSqlReader.spatialQuery]]
 ```

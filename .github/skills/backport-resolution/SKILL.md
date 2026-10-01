@@ -145,7 +145,7 @@ On backport branches targeting `release/X.X.x` **after** the `X.X.0` release, `N
 
 ### Scenario B — Initial release has NOT shipped yet (no `X.X.0.md`)
 
-`NextVersion.md` is still the active changelog for the upcoming release. Merge both versions intelligently, as described in the `merge-conflict-resolving` skill: extract unique sections from both, merge into logical category order, update the table of contents, and remove duplicate content.
+`NextVersion.md` is still the active changelog for the upcoming release. Resolve it as in the `merge-conflict-resolving` skill's "Documentation Conflicts (NextVersion.md)" section.
 
 ### Verification
 

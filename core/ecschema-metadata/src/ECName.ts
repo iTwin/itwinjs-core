@@ -92,8 +92,18 @@ export class ECName {
     return new ECName(output);
   }
 
+  /** Decode EC name escape sequences without requiring a valid EC identifier.
+   * @internal
+   */
+  public static decode(name: string): string {
+    if (!name.includes("__x"))
+      return name;
+
+    return name.replace(ecNameReplacerRegex, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)));
+  }
+
   /** Decode this ECName, replacing encoded special characters with the characters they encode. */
   public decode(): string {
-    return this.name.replace(ecNameReplacerRegex, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
+    return ECName.decode(this.name);
   }
 }

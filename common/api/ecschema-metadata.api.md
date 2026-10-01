@@ -11,12 +11,14 @@ import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatsProviderContext } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
+import { SyncFormatsProvider } from '@itwin/core-quantity';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
@@ -433,6 +435,8 @@ export enum ECClassModifier {
 // @public
 export class ECName {
     constructor(name: string);
+    // @internal
+    static decode(name: string): string;
     decode(): string;
     static encode(input: string): ECName;
     get name(): string;
@@ -907,14 +911,15 @@ export interface FormatSet {
 }
 
 // @beta
-export class FormatSetFormatsProvider implements MutableFormatsProvider {
+export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFormatsProvider {
     constructor(props: {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
     addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
-    getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
+    getFormatSync(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     removeFormat(name: string): Promise<void>;
@@ -2236,11 +2241,12 @@ export interface SchemaData {
 }
 
 // @beta
-export class SchemaFormatsProvider implements FormatsProvider {
+export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
@@ -2502,7 +2508,7 @@ export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
 
-// @internal
+// @beta
 export class SchemaManifest {
     constructor(entries: readonly SchemaManifestEntry[]);
     // (undocumented)
@@ -2512,10 +2518,11 @@ export class SchemaManifest {
     getAvailableSchemaNames(): string[];
     getSchemaClosure(requestedNames: Iterable<string>): string[];
     get schemaCount(): number;
+    // @internal
     sortInDependencyOrder(schemaNames: Iterable<string>): string[];
 }
 
-// @internal
+// @beta
 export interface SchemaManifestEntry {
     // (undocumented)
     readonly minorVersion: number;
@@ -2528,7 +2535,7 @@ export interface SchemaManifestEntry {
     readonly writeVersion: number;
 }
 
-// @internal
+// @beta
 export interface SchemaManifestReferenceRow {
     // (undocumented)
     readonly sourceECInstanceId: number;
@@ -2536,7 +2543,7 @@ export interface SchemaManifestReferenceRow {
     readonly targetECInstanceId: number;
 }
 
-// @internal
+// @beta
 export interface SchemaManifestSchemaRow {
     // (undocumented)
     readonly ecInstanceId: number;
@@ -2716,7 +2723,6 @@ export namespace SchemaView {
         isStruct(): boolean;
         // (undocumented)
         isView(): boolean;
-        // (undocumented)
         get label(): string;
         get mixins(): readonly Class[];
         // (undocumented)
@@ -2747,7 +2753,6 @@ export namespace SchemaView {
         readonly idx: number;
         // (undocumented)
         get isStrict(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2764,7 +2769,6 @@ export namespace SchemaView {
         get description(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2781,7 +2785,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2876,7 +2879,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2929,7 +2931,6 @@ export namespace SchemaView {
         // @internal (undocumented)
         readonly idx: number;
         get isHidden(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get minorVersion(): number;
@@ -2954,7 +2955,7 @@ export namespace SchemaView {
     }
 }
 
-// @internal
+// @beta
 export interface SchemaViewBlob {
     readonly data: Uint8Array;
     readonly schemaToken: string;
@@ -3042,7 +3043,7 @@ export interface SchemaViewData {
     readonly strings: readonly string[];
 }
 
-// @internal
+// @beta
 export interface SchemaViewDataProvider {
     fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
     fetchFullBlob(): Promise<SchemaViewBlob>;
@@ -3053,7 +3054,7 @@ export interface SchemaViewDataProvider {
 // @beta
 export const schemaViewFormatVersion = 1;
 
-// @internal
+// @beta
 export class SchemaViewManager {
     constructor(dataProvider: SchemaViewDataProvider);
     getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;

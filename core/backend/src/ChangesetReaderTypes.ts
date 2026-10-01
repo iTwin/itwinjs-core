@@ -25,6 +25,9 @@ export enum PropertyFilter {
   BisCoreElement = 1,
   /** Only `ECInstanceId` and `ECClassId`. */
   InstanceKey = 2,
+  /** `ECInstanceId` and `ECClassId`, plus identifiers read only from the changeset, such as an aspect's owning `Element`.
+   * See [the full list]($docs/learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers). */
+  InstanceKeyAndIdentifiers = 3,
 }
 
 /**

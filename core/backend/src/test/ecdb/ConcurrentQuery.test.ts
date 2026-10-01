@@ -1,5 +1,6 @@
 import { DbQueryRequest, DbQueryResponse, DbResponseStatus } from "@itwin/core-common";
 import { expect } from "chai";
+import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { SnapshotDb } from "../../IModelDb";
 import { _nativeDb } from "../../core-backend";
@@ -9,6 +10,15 @@ async function delay(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
+}
+
+/**
+ * The native default for `workerThreads` is 4, capped at the machine's hardware concurrency
+ * (2-core CI agents report 2). An explicit request above hardware concurrency is rejected and
+ * falls back to that default rather than being clamped.
+ */
+function defaultWorkerThreads(): number {
+  return Math.min(4, os.availableParallelism());
 }
 
 describe("ConcurrentQuery", () => {
@@ -26,7 +36,7 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 5000,
       requestQueueSize: 2000,
       statementCacheSizePerWorker: 40,
-      workerThreads: 4,
+      workerThreads: defaultWorkerThreads(),
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], {});
     expect(config).deep.eq(defaultConfig);
@@ -47,10 +57,19 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 6000,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 20,
-      workerThreads: 3,
+      workerThreads: 1,
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], modifiedConfig);
     expect(config).deep.eq(modifiedConfig);
+    db.close();
+  });
+
+  it("workerThreads above hardware concurrency falls back to the default", () => {
+    const testFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const db = SnapshotDb.openFile(testFile);
+    const requested = os.availableParallelism() + 8;
+    const config = ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: requested });
+    expect(config.workerThreads).eq(defaultWorkerThreads());
     db.close();
   });
 

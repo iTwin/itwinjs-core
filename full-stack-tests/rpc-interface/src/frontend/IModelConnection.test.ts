@@ -428,16 +428,21 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
-    try {
-      await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
-      const snap = await promise;
+    // Settle both requests together. The snap can reject while cancelSnap is still pending; awaiting them
+    // one at a time would leave that rejection unhandled and terminate the test runner.
+    const [snap, cancel] = await Promise.allSettled([
+      IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps),
+      IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id),
+    ]);
 
-      // This is what we expect if the snap is completed before the cancellation is processed.
-      expect(snap.status).not.to.be.undefined;
-    } catch (err: any) {
-      // This is what we expect if the cancellation occurs in time to really cancel the snap.
-      expect(err.message).to.equal("Unknown server response code.");
+    // This is what we expect if the snap is completed before the cancellation is processed.
+    if (snap.status === "fulfilled")
+      expect(snap.value.status).not.to.be.undefined;
+
+    // This is what we expect if the cancellation occurs in time to really cancel the snap.
+    for (const result of [snap, cancel]) {
+      if (result.status === "rejected")
+        expect((result.reason as Error).message).to.equal("Unknown server response code.");
     }
   });
 });

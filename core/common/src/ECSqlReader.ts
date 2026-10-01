@@ -42,7 +42,7 @@ export interface QueryStats {
  * There are three primary ways to interact with and read the results:
  * - Stream them using ECSqlReader as an asynchronous iterator.
  * - Iterator over them manually using [[ECSqlReader.step]].
- * - Capture all of the results at once in an array using [[QueryRowProxy.toArray]].
+ * - Capture all of the results at once in an array using [[ECSqlReader.toArray]].
  *
  * @see
  * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
@@ -83,7 +83,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   }
 
   /**
-   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public setParams(param: QueryBinder) {
     if (this._lockArgs) {
@@ -92,7 +92,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     this._param = param.serialize();
   }
   /**
-   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public reset(options?: QueryOptions) {
     if (options) {
@@ -117,7 +117,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
 
   /**
    * Clear all bindings.
-   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
     this._param = new QueryBinder().serialize();
@@ -297,4 +297,3 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     }
   }
 }
-
