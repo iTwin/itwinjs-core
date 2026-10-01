@@ -134,7 +134,6 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
-    // ###TODO when viewed models/categories change.
 
     this.#disposalFunctions.push(listenForSubCategoryChanges(this));
 
