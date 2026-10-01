@@ -2,24 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* ###TODO fix these tests
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
-import { BeDuration } from "@itwin/core-bentley";
-import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
+import { BeDuration, Id64String } from "@itwin/core-bentley";
+import { IModelTileRpcInterface, RenderMode, ServerTimeoutError, ViewFlags } from "@itwin/core-common";
 import {
-  IModelApp, IpcApp, RenderGraphic, RenderMemory, Tile, TileLoadStatus,
+  IModelApp, IModelConnection, IpcApp, RenderGraphic, RenderMemory, SpatialViewState, Tile, TileLoadStatus,
   TileRequestChannel, Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
-import { fakeViewState } from "./TileIO.test";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { IModelTile, IModelTileContent, IModelTileTree, TileStorage } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
 use(sinonChai);
+
+function createViewState(iModel: IModelConnection): ViewState {
+  return SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+}
 
 describe("IModelTileRequestChannels", () => {
   function getTileData() {
@@ -36,7 +39,7 @@ describe("IModelTileRequestChannels", () => {
   async function getTileForIModel(imodel: TestSnapshotConnection): Promise<IModelTile> {
     await imodel.models.load("0x1c");
     const model = imodel.models.getLoaded("0x1c")!.asGeometricModel!;
-    const view = fakeViewState(imodel);
+    const view = createViewState(imodel);
     const ref = model.createTileTreeReference(view.iModelRefs.primary);
     const tree = (await ref.treeOwner.loadTree()) as IModelTileTree;
 
@@ -431,4 +434,3 @@ describe("TileStorage", () => {
     expect(tileRpcInterfaceStub).to.have.been.calledTwice;
   });
 });
-*/

@@ -15,7 +15,7 @@ import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe.only("Viewport changed events", async () => {
+describe("Viewport changed events", async () => {
   // test.bim:
   //  3d views:
   //    view:           34
