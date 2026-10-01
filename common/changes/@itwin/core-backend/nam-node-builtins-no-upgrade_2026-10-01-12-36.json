@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Replace the `touch` dependency with `node:fs`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

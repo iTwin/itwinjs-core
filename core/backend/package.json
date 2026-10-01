@@ -90,7 +90,6 @@
     "@types/node": "~20.17.0",
     "@types/semver": "7.3.10",
     "@types/sinon": "^17.0.2",
-    "@types/touch": "^3.1.2",
     "@types/ws": "^7.0.0",
     "@xmldom/xmldom": "~0.8.13",
     "chai": "^4.3.10",
@@ -119,7 +118,6 @@
     "linebreak": "^1.1.0",
     "multiparty": "^4.3.0",
     "semver": "^7.5.2",
-    "touch": "^3.1.0",
     "ws": "^7.5.11"
   },
   "nyc": {

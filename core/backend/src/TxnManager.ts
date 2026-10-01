@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import * as touch from "touch";
+import * as fs from "fs";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
@@ -983,8 +983,13 @@ export class TxnManager {
    */
   public touchWatchFile(): void {
     // This is an async call. We don't have any reason to await it.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    touch(this._iModel.watchFilePathName, { nocreate: true });
+    // utimes never creates the file; a missing watch file means nobody is watching.
+    // Other errors are rethrown, preserving the previous `touch(..., { nocreate: true })` behavior.
+    const now = new Date();
+    fs.promises.utimes(this._iModel.watchFilePathName, now, now).catch((err: NodeJS.ErrnoException) => {
+      if (err.code !== "ENOENT")
+        throw err;
+    });
   }
 
   /** @internal */

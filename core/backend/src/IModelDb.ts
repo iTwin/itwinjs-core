@@ -8,7 +8,6 @@
 
 import * as fs from "fs";
 import { join } from "path";
-import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
@@ -4040,7 +4039,13 @@ export class BriefcaseDb extends IModelDb {
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
       // Must touch the file synchronously - cannot watch a file until it exists.
-      touch.sync(briefcaseDb.watchFilePathName);
+      const watchFd = fs.openSync(briefcaseDb.watchFilePathName, fs.constants.O_RDWR | fs.constants.O_CREAT);
+      try {
+        const now = new Date();
+        fs.futimesSync(watchFd, now, now);
+      } finally {
+        fs.closeSync(watchFd);
+      }
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
