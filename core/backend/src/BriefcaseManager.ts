@@ -57,6 +57,12 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 export interface PushChangesArgs extends TokenArg {
   /** A description of the changes. This is visible on the iModel's timeline. */
   description: string;
+  /** If present, a function called periodically while downloading the changesets that must be merged before the local changeset is pushed.
+   * @note This reports only the download portion of pull/merge/push. It is not called while the local changeset is uploaded.
+   * @note Return non-zero from this function to abort the operation. Aborting only takes effect during the download, before any changeset is created or pushed.
+   * @beta
+   */
+  onDownloadProgress?: ProgressFunction;
   /** if present, the locks are retained after the operation. Otherwise, *all* locks are released after the changeset is successfully pushed. */
   retainLocks?: true;
   /** number of times to retry pull/merge if other users are pushing at the same time. Default is 5 */
@@ -851,7 +857,7 @@ export class BriefcaseManager {
     let retryCount = arg.mergeRetryCount ?? 5;
     while (true) {
       try {
-        await BriefcaseManager.pullAndApplyChangesets(db, arg);
+        await BriefcaseManager.pullAndApplyChangesets(db, { ...arg, onProgress: arg.onDownloadProgress });
         SchemaSync.updateDbSchema(db);
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false

@@ -15,6 +15,7 @@ import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
  * Algorithmic class for cloning curve collections.
  * * recurse through collection nodes, building image nodes as needed and inserting clones of children.
  * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
+ * @internal
  */
 export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
   protected _result: CurveCollection | undefined;
@@ -29,7 +30,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     target.announceToCurveProcessor(context);
     return context._result;
   }
-  public override enter(c: CurveCollection) {
+  public override enter(c: CurveCollection): void {
     if (c instanceof CurveCollection)
       super.enter(c.cloneEmptyPeer());
   }
@@ -53,7 +54,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     const c = this.doClone(primitive);
     if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];
-      if (parent instanceof CurveChain || parent instanceof BagOfCurves)
+      if (parent instanceof CurveChain || parent instanceof BagOfCurves) {
         if (Array.isArray(c)) {
           for (const c1 of c) {
             parent.tryAddChild(c1);
@@ -61,6 +62,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
         } else {
           parent.tryAddChild(c);
         }
+      }
     }
   }
 }

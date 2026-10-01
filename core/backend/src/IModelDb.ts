@@ -233,31 +233,38 @@ export interface ComputedProjectExtents {
  * @beta
  */
 export interface IntegrityCheckOptions {
-  /** If true, perform a quick integrity check that only reports whether each check passed or failed, without detailed results. */
+  /**
+   * If true, perform a quick check of the ten integrity checks other than the missing child rows check.
+   * The quick check reports pass/fail for each check without problem details. If false is specified without
+   * enabling a specific check, the quick check is still performed by default.
+   */
   quickCheck?: boolean;
-  /** Options for performing specific integrity checks with detailed results. */
+  /**
+   * Options for performing specific integrity checks with detailed results. Each selected check returns all
+   * problem rows. If quickCheck is also true, the selected checks are performed again in specific mode.
+   */
   specificChecks?: {
-    /** If true, checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns. */
+    /** If true, checks for missing nonvirtual physical columns in mapped data tables. It does not compare column types. */
     checkDataColumns?: boolean;
-    /** If true, checks if the profile table, indexes, and triggers are present. Does not check be_* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL. */
+    /** If true, checks expected EC profile tables, indexes, and iModel triggers for missing or mismatching SQL definitions. It does not check be_* tables. */
     checkECProfile?: boolean;
-    /** If true, checks if RelClassId of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class. */
+    /** If true, checks that each non-null persisted RelECClassId is the declared relationship class or one of its derived classes. */
     checkNavigationClassIds?: boolean;
-    /** If true, checks if Id of a Navigation property matches a valid row primary class. */
+    /** If true, checks that a navigation property's non-null .Id (the referenced instance's ECInstanceId) resolves to a row in the first relationship constraint class in the navigation direction, including derived classes. */
     checkNavigationIds?: boolean;
-    /** If true, checks if SourceECClassId or TargetECClassId of a link table matches a valid ECClassId. */
+    /** If true, checks that SourceECClassId and TargetECClassId have matching meta.ECClassDef entries. This checks class existence only, not endpoint-class validity. */
     checkLinktableForeignKeyClassIds?: boolean;
-    /** If true, checks if SourceECInstanceId or TargetECInstanceId of a link table matches a valid row in primary class. */
+    /** If true, checks SourceECInstanceId and TargetECInstanceId for null or an unresolved row in the first endpoint constraint class, including derived classes. */
     checkLinktableForeignKeyIds?: boolean;
-    /** If true, checks persisted ECClassId in all data tables and makes sure they are valid. */
+    /** If true, checks persisted ECClassId values for a corresponding class definition. This checks class existence, not whether the class belongs in that table. */
     checkClassIds?: boolean;
-    /** If true, checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL. */
+    /** If true, checks for missing mapped data tables and indexes. Results report object names and types, not DDL differences. */
     checkDataSchema?: boolean;
-    /** If true, checks if all schemas can be loaded into memory. */
+    /** If true, checks whether the schema manager can load each schema recorded in the database. A problem reports the schema name without a reason. */
     checkSchemaLoad?: boolean;
-    /** If true, checks if all child rows have a corresponding parent row. */
+    /** If true, checks whether each existing bis_Element row has all required mapped child-table rows. */
     checkMissingChildRows?: boolean;
-    /** If true, checks if a class maps every inherited property to the same column as each of its base classes. */
+    /** If true, checks whether an inherited property maps to different columns for a base and derived class under the same physical table root. */
     checkDivergedPropMaps?: boolean;
   }
 }
@@ -838,24 +845,30 @@ export abstract class IModelDb extends IModel {
 
   /**
    * Performs integrity checks on this iModel.
-   * Types of integrity checks that can be performed are:
    *
-   * Default Check:
-   * - Quick Check: Runs all integrity checks below and returns whether each check passed or failed, without detailed results.
+   * The quick check runs the ten checks below other than Missing Child Rows. It reports pass/fail for each check
+   * based on the first problem found, without returning problem details. The specific checks return all problem rows.
+   * Selecting both quickCheck and specific checks repeats the selected work in both modes.
    *
-   * Specific Checks:
-   * - Data Columns Check: Checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
-   * - EC Profile Check: Checks if the profile table, indexes, and triggers are present. Does not check be_* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL.
-   * - Navigation Class Ids Check: Checks if RelClassId of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
-   * - Navigation Ids Check: Checks if Id of a Navigation property matches a valid row primary class.
-   * - Linktable Foreign Key Class Ids Check: Checks if SourceECClassId or TargetECClassId of a link table matches a valid ECClassId.
-   * - Linktable Foreign Key Ids Check: Checks if SourceECInstanceId or TargetECInstanceId of a link table matches a valid row in primary class.
-   * - Class Ids Check: Checks persisted ECClassId in all data tables and makes sure they are valid.
-   * - Data Schema Check: Checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL.
-   * - Schema Load Check: Checks if all schemas can be loaded into memory.
-   * - Missing Child Rows Check: Checks if all child rows have a corresponding parent row.
+   * The checks are:
+   * - Data Columns Check: Checks for missing nonvirtual physical columns in mapped data tables. It does not compare column types.
+   * - EC Profile Check: Checks expected EC profile tables, indexes, and iModel triggers for missing or mismatching SQL definitions. It does not check be_* tables.
+   * - Navigation Class Ids Check: Checks that each non-null persisted RelECClassId is the declared relationship class or one of its derived classes.
+   * - Navigation Ids Check: Checks that a navigation property's non-null .Id (the referenced instance's ECInstanceId) resolves to a row in the first relationship constraint class in the navigation direction, including derived classes.
+   * - Linktable Foreign Key Class Ids Check: Checks that SourceECClassId and TargetECClassId have matching meta.ECClassDef entries. This checks class existence only, not endpoint-class validity.
+   * - Linktable Foreign Key Ids Check: Checks SourceECInstanceId and TargetECInstanceId for null or an unresolved row in the first endpoint constraint class, including derived classes.
+   * - Class Ids Check: Checks persisted ECClassId values for a corresponding class definition. This checks class existence, not whether the class belongs in that table.
+   * - Data Schema Check: Checks for missing mapped data tables and indexes. Results report object names and types, not DDL differences.
+   * - Schema Load Check: Checks whether the schema manager can load each schema recorded in the database. A problem reports the schema name without a reason.
+   * - Missing Child Rows Check: Checks whether each existing bis_Element row has all required mapped child-table rows.
+   * - Diverged Property Maps Check: Checks whether an inherited property maps to different columns for a base and derived class under the same physical table root.
    *
-   * @param options Options specifying which integrity checks to perform. If no options are provided or all options are false, a quick check will be performed by default.
+   * If no options are provided, or if quickCheck is false and no specific check is enabled, a quick check is performed by default.
+   * The checks are read-only and use the current primary connection. They have no callbacks, and the native operation
+   * blocks the backend while each check runs.
+   *
+   * @see [ECSQL integrity checks]($docs/learning/ECSqlReference/Pragmas.md#pragma-integrity_check-experimental)
+   * @param options Options specifying which integrity checks to perform.
    * @returns An array of integrity check results.
    * @throws [[IModelError]] if the iModel is not open.
    * @beta
@@ -1019,17 +1032,18 @@ export abstract class IModelDb extends IModel {
       throw err;
     }
   }
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Creates a reader for asynchronous ECSQL query execution.
+   * Execution starts when the reader is consumed using asynchronous iteration or awaited calls to `step()` or `toArray()`.
+   * Results are fetched and buffered in batches. For synchronous, callback-scoped execution, use [[withQueryReader]].
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Asynchronous query examples]($docs/learning/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * Should be used when we donot want true step by step behaviour and want to take advantage of caching capabilities of the reader.
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -1044,20 +1058,21 @@ export abstract class IModelDb extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+  /** Executes a callback with a synchronous ECSQL reader on the owning database connection.
+   * The reader steps one row at a time without buffering result batches. Finish using it before the callback completes.
+   * Return materialized rows or computed values rather than the reader. For asynchronous execution, use [[createQueryReader]].
+   * The prepared statement may be reused from the statement cache between completed calls.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
-   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Use this method for true step-by-step row consumption without intermediate result or page caching.
-   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
@@ -1913,7 +1928,10 @@ export abstract class IModelDb extends IModel {
         const result = await reader.next();
         if (result.done)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
-        return result.value.sha3_256 as string;
+        const token: unknown = result.value.sha3_256;
+        if (typeof token !== "string")
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned an invalid sha3_256 column");
+        return token;
       },
     };
   }
@@ -1930,10 +1948,12 @@ export abstract class IModelDb extends IModel {
     if (result.done)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
-    const token = result.value.schemaToken as string | undefined;
+    const token: unknown = result.value.schemaToken;
     if (data === undefined || data === null)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
-    return { data, schemaToken: token ?? "" };
+    if (typeof token !== "string")
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned an invalid schemaToken column`);
+    return { data, schemaToken: token };
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -4097,6 +4117,14 @@ export class BriefcaseDb extends IModelDb {
           return "foreign key";
       }
     };
+
+    // sqlite_stat1 contains query-planner statistics, not iModel state. Its values can legitimately
+    // differ between briefcases and are safe to replace with the incoming values.
+    if (args.tableName === "sqlite_stat1" && (args.cause === DbConflictCause.Conflict || args.cause === DbConflictCause.Data)) {
+      Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on sqlite_stat1 - resolved by replacing the existing row with the incoming row`);
+      args.dump();
+      return DbConflictResolution.Replace;
+    }
 
     // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
     // created automatically as soon as the domain's schema is imported, so merging a changeset

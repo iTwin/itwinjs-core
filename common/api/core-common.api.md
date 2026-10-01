@@ -3717,6 +3717,7 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -3733,6 +3734,7 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
+    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
 
@@ -3769,9 +3771,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
-    // (undocumented)
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
@@ -3865,8 +3865,18 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal (undocumented)
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+// @internal
+export function formatFieldValue(input: FormatFieldValueArgs): string | undefined;
+
+// @internal
+export interface FormatFieldValueArgs {
+    formatMagnitude?: FormatMagnitude;
+    options?: FieldFormatOptions;
+    value: FieldValue;
+}
+
+// @internal
+export type FormatMagnitude = (magnitude: number) => string;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -4502,7 +4512,10 @@ export function getMarkerText(marker: ListMarker, num: number): string;
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 // @internal
-export const getPullChangesIpcChannel: (iModelId: string) => string;
+export const getPullChangesIpcChannel: (key: string) => string;
+
+// @internal
+export const getPushChangesIpcChannel: (key: string) => string;
 
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
@@ -5640,6 +5653,7 @@ export interface IpcAppFunctions {
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
+    cancelPushChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
@@ -5655,7 +5669,7 @@ export interface IpcAppFunctions {
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
-    pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+    pushChanges: (key: string, description: string, options?: PushChangesOptions) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -5820,7 +5834,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal (undocumented)
+// @internal
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
@@ -7668,6 +7682,13 @@ export interface PullChangesOptions {
     reportProgress?: boolean;
 }
 
+// @internal
+export interface PushChangesOptions {
+    downloadProgressInterval?: number;
+    enableCancellation?: boolean;
+    reportDownloadProgress?: boolean;
+}
+
 // @public
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
@@ -7846,6 +7867,13 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatSet?: string;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
 }
 
 // @public

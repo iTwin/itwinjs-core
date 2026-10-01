@@ -732,7 +732,7 @@ describe("CurveCurveIntersectXYZChains", () => {
     const rotationAxis: Vector3d = Vector3d.create(1, 0, 0);
     const rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, angle)!;
     const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
-    return curve.cloneTransformed(rotationTransform) as AnyCurve;
+    return curve.cloneTransformed(rotationTransform);
   }
   it("intersectionXyzPrimitiveVsPathLineSegment", () => {
     const ck = new Checker();
