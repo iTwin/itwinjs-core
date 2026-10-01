@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "azurite:setup": "node -e \"require('node:fs').mkdirSync('./lib/cjs/test/azuriteStorage', { recursive: true })\" && azurite-blob --skipApiVersionCheck --blobPort 10001 --silent --loose --location ./lib/test/azuriteStorage",
+    "azurite:setup": "azurite-blob --skipApiVersionCheck --blobPort 10001 --silent --loose --location ./lib/test/azuriteStorage",
     "build": "tsc 1>&2",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",

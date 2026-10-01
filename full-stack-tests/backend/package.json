@@ -11,7 +11,7 @@
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "",
-    "azurite:setup": "node -e \"require('node:fs').mkdirSync('./lib/cjs/test/azuriteStorage', { recursive: true })\" && azurite-blob --skipApiVersionCheck --silent --loose --location ./lib/cjs/test/azuriteStorage",
+    "azurite:setup": "azurite-blob --skipApiVersionCheck --silent --loose --location ./lib/cjs/test/azuriteStorage",
     "test": "",
     "cover": "",
     "docs": "",
