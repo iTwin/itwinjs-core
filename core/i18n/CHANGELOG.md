@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Thu, 01 Oct 2026 15:17:00 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Oct 2026 14:55:04 GMT and should not be manually modified.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Fixed false namespace load errors when localization namespaces are registered concurrently.
 
 ## 5.13.7
 Thu, 01 Oct 2026 15:15:30 GMT

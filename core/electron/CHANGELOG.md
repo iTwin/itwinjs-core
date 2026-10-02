@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Thu, 01 Oct 2026 15:17:00 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Oct 2026 14:55:04 GMT and should not be manually modified.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Add support for Electron 44
+- Add conditional renderer and CommonJS main-process entry points.
 
 ## 5.13.7
 Thu, 01 Oct 2026 15:15:30 GMT
