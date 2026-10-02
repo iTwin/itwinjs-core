@@ -50,7 +50,7 @@ export interface RowFormatOptions {
    * When `true`, all property keys and struct sub-keys are returned in camelCase
    * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
    * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
-   * @deprecated We should stick to ECProperty names as is instead.
+   * @deprecated in 5.14.0 - will not be removed until after 2027-10-02. We should stick to ECProperty names as is instead.
    */
   useJsName?: boolean;
 }
