@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import * as path from "path";
+import * as path from "node:path";
 import { QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
