@@ -11,18 +11,20 @@ import * as path from "node:path";
 import { monitorEventLoopDelay, performance } from "node:perf_hooks";
 import { _nativeDb, GeoCoordConfig, IModelDb, IModelHost, SettingsPriority, SnapshotDb, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { ConcurrentQuery } from "@itwin/core-backend/lib/cjs/ConcurrentQuery";
-import { DbQueryConfig, DbQueryRequest, DbQueryResponse, ECSqlReader, QueryOptions, QueryStats } from "@itwin/core-common";
+import { DbQueryConfig, DbQueryRequest, DbQueryResponse, ECSqlReader, QueryBinder, QueryOptions, QueryStats } from "@itwin/core-common";
 
 // Run one case per process from this package using `rushx perftest:ecSqlDeployment`.
 // Required: PERF_IMODEL=/path/to/closed.bim PERF_RESULT=/path/to/new-result.json.
-// Select PERF_SCENARIO=desktop-read|desktop-edit|web-cached|web-varied, PERF_CURSOR=0|1,
+// Select PERF_SCENARIO=desktop-read|desktop-edit|desktop-idset|web-cached|web-varied, PERF_CURSOR=0|1,
 // PERF_MMAP_BYTES, PERF_ROWS, PERF_QUERIES, PERF_CLIENTS and PERF_WORKERS.
+// For desktop-idset, select PERF_ID_COUNT (default 500), PERF_ID_PATTERN=in|join|virtual,
+// and PERF_BIND_ITERATIONS (default 200). PERF_PAGE_BYTES controls native response bytes, not row count.
 // For an isolated published native baseline, set PERF_BASELINE_ADDON to its package directory
 // and NODE_OPTIONS="--require ./scripts/ecsqlNativeBaseline.cjs". Set PERF_EXPECT_NATIVE_SHA256
 // to the known binary hash for both old and new runs to detect an incorrect package resolution.
 // Repeat cases in fresh processes,
 // alternate baseline/changed order, and compare paired medians. No network/frontends are timed.
-type Scenario = "desktop-read" | "desktop-edit" | "web-cached" | "web-varied";
+type Scenario = "desktop-read" | "desktop-edit" | "desktop-idset" | "web-cached" | "web-varied";
 
 interface QueryResult {
   elapsedMs: number;
@@ -70,13 +72,18 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
     assert.ok(!fs.existsSync(output), "Do not overwrite existing measurements");
     fs.mkdirSync(path.dirname(output), { recursive: true });
     const scenario = process.env.PERF_SCENARIO ?? "desktop-read";
-    assert.ok(["desktop-read", "desktop-edit", "web-cached", "web-varied"].includes(scenario));
+    assert.ok(["desktop-read", "desktop-edit", "desktop-idset", "web-cached", "web-varied"].includes(scenario));
     const desktop = scenario.startsWith("desktop");
     const editing = scenario === "desktop-edit";
+    const idset = scenario === "desktop-idset";
+    const idCount = integerOption("PERF_ID_COUNT", 500);
+    const idPattern = process.env.PERF_ID_PATTERN ?? "in";
+    assert.ok(idPattern === "in" || idPattern === "join" || idPattern === "virtual");
+    const bindIterations = integerOption("PERF_BIND_ITERATIONS", 200);
     const config = {
       scenario: scenario as Scenario,
       label: process.env.PERF_LABEL ?? "local",
-      rows: integerOption("PERF_ROWS", 500_000),
+      rows: idset ? idCount : integerOption("PERF_ROWS", 500_000),
       queries: integerOption("PERF_QUERIES", desktop ? 3 : 5000),
       concurrency: integerOption("PERF_CLIENTS", desktop ? 1 : 8),
       workers: integerOption("PERF_WORKERS", 4),
@@ -84,6 +91,7 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
       mmapBytes: integerOption("PERF_MMAP_BYTES", 0, 0),
       pageBytes: integerOption("PERF_PAGE_BYTES", desktop ? 64 * 1024 : 8 * 1024 * 1024),
       editEveryRows: integerOption("PERF_EDIT_EVERY_ROWS", 10_000),
+      ...(idset ? { idCount, idPattern, bindIterations } : {}),
     };
     assert.ok(!editing || config.concurrency === 1, "The editing case has one foreground reader");
     assert.ok(desktop || !config.cursor, "Web cases intentionally use stateless paging");
@@ -125,7 +133,80 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
       const applied = ConcurrentQuery.resetConfig(model[_nativeDb], nativeConfig);
       assert.equal(applied.workerThreads, config.workers);
       assert.equal(applied.memoryMapFileSize, config.mmapBytes);
-      const sql = "SELECT ECInstanceId, ECClassId, Model.Id, CodeValue FROM bis.Element ORDER BY ECInstanceId";
+      const ids: string[] = [];
+      let sampledDigest: string | undefined;
+      let idSample: { minimum: string; maximum: string; modelElements: number } | undefined;
+      if (idset || !desktop) {
+        const count = idset ? idCount : 1024;
+        // Spread the deterministic sample across the model; an ID prefix would hide VirtualSet scans.
+        const sampleSql = idset
+          ? `SELECT ECInstanceId, ECClassId, Model.Id, CodeValue FROM bis.Element ORDER BY ((ECInstanceId * 1103515245 + 12345) % 2147483647), ECInstanceId LIMIT ${count}`
+          : `SELECT ECInstanceId FROM bis.Element ORDER BY ECInstanceId LIMIT ${count}`;
+        const sample = model.createQueryReader(sampleSql);
+        const sampledRows: unknown[][] = [];
+        try {
+          while (await sample.step()) {
+            const row: unknown[] = sample.getRowInternal();
+            const id = row[0];
+            assert.equal(typeof id, "string");
+            ids.push(String(id));
+            if (idset)
+              sampledRows.push(row);
+          }
+        } finally {
+          await sample.return();
+        }
+        assert.equal(ids.length, count, `Dataset needs at least ${count} elements`);
+        if (idset) {
+          sampledRows.sort((a, b) => {
+            const left = BigInt(String(a[0]));
+            const right = BigInt(String(b[0]));
+            return left < right ? -1 : left > right ? 1 : 0;
+          });
+          const digest = createHash("sha256");
+          for (const row of sampledRows)
+            digest.update(`${JSON.stringify(row)}\n`);
+          sampledDigest = digest.digest("hex");
+          const modelElements = model.withQueryReader("SELECT COUNT(*) FROM bis.Element", (reader) => {
+            assert.ok(reader.step());
+            const countValue: unknown = reader.current[0];
+            assert.equal(typeof countValue, "number");
+            return Number(countValue);
+          });
+          idSample = { minimum: String(sampledRows[0][0]), maximum: String(sampledRows[sampledRows.length - 1][0]), modelElements };
+        }
+      }
+      const projection = "SELECT e.ECInstanceId, e.ECClassId, e.Model.Id, e.CodeValue FROM bis.Element e";
+      const filters = {
+        in: " WHERE e.ECInstanceId IN (SELECT id FROM IdSet(?))",
+        join: " JOIN IdSet(?) ids ON e.ECInstanceId=ids.id",
+        virtual: " WHERE InVirtualSet(?, e.ECInstanceId)",
+      };
+      const sql = `${projection}${idset ? filters[idPattern] : ""} ORDER BY e.ECInstanceId`;
+      let binder: QueryBinder | undefined;
+      let binding: { iterations: number; queryBinderMsPerBind: number; statementMsPerBind: number; nativeSql: string } | undefined;
+      if (idset) {
+        const iterations = bindIterations;
+        const binderStart = performance.now();
+        for (let i = 0; i < iterations; ++i)
+          binder = new QueryBinder().bindIdSet(1, ids);
+        const queryBinderMsPerBind = (performance.now() - binderStart) / iterations;
+        // The legacy statement API lets us time binding without stepping or scheduling a query.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        model.withPreparedStatement(sql, (statement) => {
+          const parameter = statement.getBinder(1);
+          parameter.bindIdSet(ids);
+          statement.clearBindings();
+          let elapsedMs = 0;
+          for (let i = 0; i < iterations; ++i) {
+            const bindStart = performance.now();
+            parameter.bindIdSet(ids);
+            elapsedMs += performance.now() - bindStart;
+            statement.clearBindings();
+          }
+          binding = { iterations, queryBinderMsPerBind, statementMsPerBind: elapsedMs / iterations, nativeSql: statement.getNativeSql() };
+        });
+      }
       const options: QueryOptions = { useCursor: config.cursor, limit: { count: config.rows } };
       let pages = 0;
       let cursorPages = 0;
@@ -164,8 +245,8 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
           ++cursorPages;
         return result;
       };
-      const query = async (statement: string, queryOptions: QueryOptions, checkDigest: boolean, withEdits = false): Promise<QueryResult> => {
-        const reader = new ECSqlReader({ execute }, statement, undefined, queryOptions);
+      const query = async (statement: string, queryOptions: QueryOptions, checkDigest: boolean, withEdits = false, parameters?: QueryBinder): Promise<QueryResult> => {
+        const reader = new ECSqlReader({ execute }, statement, parameters, queryOptions);
         let rows = 0;
         let firstRowMs = 0;
         const digest = checkDigest ? createHash("sha256") : undefined;
@@ -188,23 +269,12 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
       };
 
       let expectedDigest: string | undefined;
-      const ids: string[] = [];
       if (desktop) {
-        const warmup = await query(sql, options, true);
+        const warmup = await query(sql, options, true, false, binder);
         assert.equal(warmup.rows, config.rows, "Dataset must contain the requested number of elements");
         expectedDigest = warmup.digest;
-      } else {
-        const sample = model.createQueryReader("SELECT ECInstanceId FROM bis.Element ORDER BY ECInstanceId LIMIT 1024");
-        try {
-          while (await sample.step()) {
-            const id: unknown = sample.getRowInternal()[0];
-            assert.equal(typeof id, "string");
-            ids.push(String(id));
-          }
-        } finally {
-          await sample.return();
-        }
-        assert.equal(ids.length, 1024, "Dataset needs at least 1024 elements");
+        if (idset)
+          assert.equal(warmup.digest, sampledDigest, "ID filtering must return exactly the sampled elements in order");
       }
       const webStatement = (index: number) => {
         const id = ids[scenario === "web-cached" ? index % 8 : (index * 37) % 1000];
@@ -230,7 +300,7 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
       let results: QueryResult[];
       try {
         results = await clients(config.queries, config.concurrency, async (i) => {
-          const result = await query(desktop ? sql : webStatement(i), desktop ? options : {}, desktop, editing);
+          const result = await query(desktop ? sql : webStatement(i), desktop ? options : {}, desktop, editing, binder);
           if (desktop) {
             assert.equal(result.rows, config.rows);
             assert.equal(result.digest, expectedDigest, "No missing, duplicated, or changed projected rows");
@@ -249,7 +319,7 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
       const cpu = process.cpuUsage(cpuStart);
       const rssEnd = process.memoryUsage().rss;
       peakRss = Math.max(peakRss, rssEnd);
-      if (config.cursor)
+      if (config.cursor && (!idset || pages > config.queries))
         assert.ok(cursorPages > 0 && continuationRequests > 0, "Cursor measurement must actually return and submit cursors");
       if (editing) {
         assert.equal(pendingEdit, false);
@@ -276,6 +346,8 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
         input: { basename: path.basename(source), bytes: fs.statSync(source).size },
         machine: { platform: process.platform, arch: process.arch, node: process.version, cpu: os.cpus()[0].model, logicalCpus: os.cpus().length, memoryBytes: os.totalmem() },
         native: { path: binaries[0], sha256: nativeSha256 },
+        binding,
+        idSample,
         measurement: {
           wallMs,
           throughputQps: results.length * 1000 / wallMs,
@@ -300,6 +372,13 @@ async function clients<T>(count: number, concurrency: number, task: (index: numb
           "Continuation requests count submitted cursor ids, not verified native cache hits.",
           "mmapBytes is the requested native configuration, not independently observed mapped residency.",
           "Desktop p95 has few samples; compare repeated trial medians rather than treating it as a robust tail estimate.",
+          ...(idset ? [
+            "Statement binding timing includes N-API conversion, ID parsing/deduplication and native binding; it is not isolated BoundQueryIdSet::_Bind time.",
+            "QueryBinder validation/sorting/compression is measured separately and excluded from query wall time; the serialized set is reused across readers/pages.",
+            "prepareMs includes native cache lookup/preparation and binding, has millisecond resolution, and is not a binding-only timer.",
+            "Cursor benefits apply to pages of one ECSqlReader query, not separate native Presentation content queries.",
+            "IDs are sampled deterministically across the model, not just its first rows; sampling is excluded from timings.",
+          ] : []),
         ],
       };
       fs.writeFileSync(output, JSON.stringify(outputData, undefined, 2), { flag: "wx" });

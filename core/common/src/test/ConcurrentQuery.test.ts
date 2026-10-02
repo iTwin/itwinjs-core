@@ -9,6 +9,60 @@ import { Base64 } from "js-base64";
 import { DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestKind, DbResponseKind, DbResponseStatus, QueryBinder, QueryOptions, QueryParamType } from "../ConcurrentQuery";
 import { Id64String, ITwinError } from "@itwin/core-bentley";
 import { ECSqlReader } from "../ECSqlReader";
+import { ECSqlReaderBase } from "../ECSqlReaderBase";
+import { Base64EncodedString } from "../Base64EncodedString";
+
+class BinaryRowReader extends ECSqlReaderBase {
+  public static decode(row: unknown): void {
+    this.replaceBase64WithUint8Array(row);
+  }
+
+  protected getRowInternal(): unknown[] {
+    return [];
+  }
+}
+
+describe("ECSqlReader binary conversion", () => {
+  it("decodes binary values in JSON rows, nested arrays and objects in place", () => {
+    const bytes = new Uint8Array([0, 1, 127, 255]);
+    const encoded = Base64EncodedString.fromUint8Array(bytes);
+    const empty = Base64EncodedString.fromUint8Array(new Uint8Array());
+    const row: unknown[] = [null, "", "ordinary text", 0, false, encoded, empty, [encoded, { blob: encoded, value: null }], { nested: [encoded], empty: [] }];
+    const nested = row[7];
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row, [null, "", "ordinary text", 0, false, bytes, new Uint8Array(), [bytes, { blob: bytes, value: null }], { nested: [bytes], empty: [] }]);
+    assert.strictEqual(row[7], nested);
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row[5], bytes);
+  });
+
+  it("ignores inherited and non-enumerable object properties", () => {
+    const encoded = Base64EncodedString.fromUint8Array(new Uint8Array([9]));
+    const row: { own: unknown } = { own: encoded };
+    Object.setPrototypeOf(row, { inherited: encoded });
+    Object.defineProperty(row, "hidden", { value: encoded });
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row.own, new Uint8Array([9]));
+    assert.equal(Object.getPrototypeOf(row).inherited, encoded);
+    assert.equal(Object.getOwnPropertyDescriptor(row, "hidden")?.value, encoded);
+  });
+
+  it("preserves enumerable-property behavior for unusual arrays", () => {
+    const encoded = Base64EncodedString.fromUint8Array(new Uint8Array([9]));
+    const row: unknown[] & { extra: unknown } = Object.assign([encoded], { extra: encoded });
+    Object.defineProperty(row, "1", { value: encoded, writable: true, enumerable: false });
+    const prototype = Object.create(Array.prototype);
+    prototype[2] = encoded;
+    Object.setPrototypeOf(row, prototype);
+    row.length = 3;
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row[0], new Uint8Array([9]));
+    assert.deepEqual(row.extra, new Uint8Array([9]));
+    assert.equal(row[1], encoded);
+    assert.equal(row[2], encoded);
+    assert.isFalse(Object.hasOwn(row, "2"));
+  });
+});
 
 describe("ECSqlReader cursor paging", () => {
   const stats = { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 };
@@ -18,6 +72,16 @@ describe("ECSqlReader cursor paging", () => {
 
   const makeReader = (handler: (request: DbQueryRequest) => DbQueryResponse | Promise<DbQueryResponse>, requests: DbQueryRequest[], options: QueryOptions = { useCursor: true, restartToken: "tok" }) =>
     new ECSqlReader({ execute: async (request) => { requests.push(request); return handler(request); } }, "SELECT 1", undefined, options);
+
+  it("decodes binary result columns and nested values without changing other values", async () => {
+    const bytes = new Uint8Array([0, 9, 255]);
+    const encoded = Base64EncodedString.fromUint8Array(bytes);
+    const data = [[encoded, null, 0, false, "text", [encoded, { blob: encoded }]]];
+    const reader = makeReader(() => response(DbResponseStatus.Done, data), []);
+    assert.isTrue(await reader.step());
+    assert.deepEqual(reader.getRowInternal(), [bytes, null, 0, false, "text", [bytes, { blob: bytes }]]);
+    assert.isFalse(await reader.step());
+  });
 
   it("does not request cursors unless opted in", async () => {
     const requests: DbQueryRequest[] = [];

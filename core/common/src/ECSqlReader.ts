@@ -10,6 +10,7 @@ import {
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlReaderBase";
+import { Base64EncodedString } from "./Base64EncodedString";
 
 /**
  * Performance-related statistics for [[ECSqlReader]].
@@ -183,9 +184,22 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {
-      ECSqlReader.replaceBase64WithUint8Array(row);
+      ECSqlReader.decodeResultRow(row);
     }
     return resp.data;
+  }
+
+  private static decodeResultRow(row: unknown[]): void {
+    // Only the outer backend result row is known to have ordinary indexed properties.
+    for (let index = 0; index < row.length; ++index) {
+      const val = row[index];
+      if (typeof val === "string") {
+        if (Base64EncodedString.hasPrefix(val))
+          row[index] = Base64EncodedString.toUint8Array(val);
+      } else if (typeof val === "object" && val !== null) {
+        this.replaceBase64WithUint8Array(val);
+      }
+    }
   }
 
   /**
