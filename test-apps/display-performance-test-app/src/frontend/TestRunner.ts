@@ -334,6 +334,7 @@ export class TestRunner {
 
   private async runTests(context: TestContext): Promise<void> {
     const viewNames = await this.getViewNames(context);
+    const timer = new StopWatch(undefined, true);
     for (const viewName of viewNames) {
       this.curConfig.viewName = viewName;
 
@@ -350,6 +351,9 @@ export class TestRunner {
         await this.onException(ex);
       }
     }
+    timer.stop();
+    const iModelName = this.curConfig.iModelNameAlias ?? this.curConfig.iModelName;
+    await this.logMessage(`${iModelName}: generated ${viewNames.length} view(s) in ${timer.current.seconds.toFixed(2)} seconds`);
   }
 
   private async runTest(context: TestContext): Promise<TestResult | undefined> {
@@ -680,8 +684,7 @@ export class TestRunner {
     testNames.set(testName, testNameDupes + 1);
   }
 
-  private async logTest(): Promise<void> {
-    const testConfig = this.curConfig;
+  private async logMessage(message: string): Promise<void> {
     const today = new Date();
     const month = (`0${(today.getMonth() + 1)}`).slice(-2);
     const day = (`0${today.getDate()}`).slice(-2);
@@ -689,10 +692,15 @@ export class TestRunner {
     const hours = (`0${today.getHours()}`).slice(-2);
     const minutes = (`0${today.getMinutes()}`).slice(-2);
     const seconds = (`0${today.getSeconds()}`).slice(-2);
-    const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName}  [${testConfig.viewName}]`;
+    const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${message}`;
 
     await this.logToConsole(outStr);
     return this.logToFile(outStr);
+  }
+
+  private async logTest(): Promise<void> {
+    const testConfig = this.curConfig;
+    await this.logMessage(` ${testConfig.iModelNameAlias ?? testConfig.iModelName}  [${testConfig.viewName}]`);
   }
 
   // Log url path for cases it is used
