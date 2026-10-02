@@ -5,10 +5,10 @@
 
 import { defineConfig } from "vitest/config";
 
+// Runs real Electron from the Node side against the built package, unlike the browser-mode smoke config.
 export default defineConfig({
   test: {
     dir: "src/test",
-    include: ["**/*.test.ts"],
-    exclude: ["electron-provider-smoke.test.ts", "electron-provider-startup.test.ts"],
+    include: ["electron-provider-startup.test.ts"],
   },
 });
