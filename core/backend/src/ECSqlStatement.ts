@@ -8,7 +8,7 @@
 
 import { assert, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -70,6 +70,10 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
   private _props = new PropertyMetaDataMap([]);
+  /** Column metadata for the prepared statement, keyed by row-adaptor options. Native metadata depends only on the
+   * prepared statement and those options, so it is reused until the statement is re-prepared or disposed.
+   */
+  private _metadataCache?: Map<string, QueryPropertyMetaData[]>;
 
   public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
@@ -102,6 +106,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
+    this._metadataCache = undefined;
     this._stmt = new IModelNative.platform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql, logErrors);
   }
@@ -126,6 +131,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
   public [Symbol.dispose](): void {
+    this._metadataCache = undefined;
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
@@ -377,13 +383,20 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
 
   /**
    * Used by ECSqlRowExecutor to get metadata as json.
+   * The native metadata is cached per row-adaptor options; each call returns copies so callers cannot alter the cache.
    * @internal */
   public getMetadata(args: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
 
-    const resp = this._stmt.getMetadata(args);
-    return new PropertyMetaDataMap(resp.meta);
+    const key = `${args.abbreviateBlobs}|${args.classIdsToClassNames}|${args.useJsName}|${args.doNotConvertClassIdsToClassNamesWhenAliased}`;
+    this._metadataCache ??= new Map();
+    let properties = this._metadataCache.get(key);
+    if (!properties) {
+      properties = new PropertyMetaDataMap(this._stmt.getMetadata(args).meta).properties;
+      this._metadataCache.set(key, properties);
+    }
+    return new PropertyMetaDataMap(properties.map((property) => ({ ...property })));
   }
 
   /**
