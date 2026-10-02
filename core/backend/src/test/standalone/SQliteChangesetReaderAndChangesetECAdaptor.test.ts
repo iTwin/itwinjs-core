@@ -464,7 +464,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
         assert.equal(changes[2].ECInstanceId, "0x20000000004");
         assert.isUndefined(changes[2].ECClassId);
         assert.isDefined(changes[2].$meta?.fallbackClassId);
-        assert.equal(changes[2].$meta?.fallbackClassId, "0x3d");
+        assert.equal(otherDb.getClassNameFromId(changes[2].$meta!.fallbackClassId!), "BisCore:GeometricElement2d");
         assert.isUndefined(changes[2].s);
         assert.equal(changes[2].$meta?.classFullName, "BisCore:GeometricElement2d");
         assert.equal(changes[2].$meta?.op, "Updated");
@@ -474,7 +474,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
         assert.equal(changes[3].ECInstanceId, "0x20000000004");
         assert.isUndefined(changes[3].ECClassId);
         assert.isDefined(changes[3].$meta?.fallbackClassId);
-        assert.equal(changes[3].$meta?.fallbackClassId, "0x3d");
+        assert.equal(otherDb.getClassNameFromId(changes[3].$meta!.fallbackClassId!), "BisCore:GeometricElement2d");
         assert.isUndefined(changes[3].s);
         assert.equal(changes[3].$meta?.classFullName, "BisCore:GeometricElement2d");
         assert.equal(changes[3].$meta?.op, "Updated");
