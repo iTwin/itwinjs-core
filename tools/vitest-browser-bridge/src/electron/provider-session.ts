@@ -82,6 +82,8 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   let exitCode = 0;
   let settled = false;
   let shutdownRequested = false;
+  let ready = false;
+  let startupPreloadError: Error | undefined;
   let resolveShutdown: () => void;
   const shutdown = new Promise<void>((resolve) => {
     resolveShutdown = resolve;
@@ -116,6 +118,17 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
     console.error(`[vitest-browser-bridge:${environment.sessionId}] renderer exited: ${details.reason}`);
     finish(1);
   };
+  const onPreloadError = (_event: Electron.Event, preloadPath: string, error: Error) => {
+    const failure = new Error(`Preload ${preloadPath} threw: ${error.message}`, { cause: error });
+    if (!ready) {
+      // A throwing preload does not reject loadURL, so startup checks this before reporting ready.
+      startupPreloadError ??= failure;
+      return;
+    }
+    // Preloads also run when Vitest reloads its tester iframe, after the session is ready.
+    console.error(`[vitest-browser-bridge:${environment.sessionId}] ${failure.message}`);
+    finish(1);
+  };
 
   process.once("SIGTERM", onSignal);
   process.once("SIGINT", onSignal);
@@ -142,10 +155,14 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
     disposeCallbacks = installElectronCallbackHandler(ipcMain, window.webContents.id);
     window.once("closed", onWindowClosed);
     window.webContents.once("render-process-gone", onRenderGone);
+    window.webContents.on("preload-error", onPreloadError);
 
     if (!await completesBeforeShutdown(window.loadURL(environment.url)))
       return exitCode;
+    if (startupPreloadError !== undefined)
+      throw startupPreloadError;
 
+    ready = true;
     sendToProvider({ type: "ready", sessionId: environment.sessionId });
     await shutdown;
     return exitCode;
@@ -158,6 +175,7 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
     if (window !== undefined) {
       window.off("closed", onWindowClosed);
       window.webContents.off("render-process-gone", onRenderGone);
+      window.webContents.off("preload-error", onPreloadError);
       if (!window.isDestroyed())
         window.destroy();
     }

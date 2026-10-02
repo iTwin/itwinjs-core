@@ -72,7 +72,7 @@
     "test": "npm run -s build && npm run -s test:unit && npm run -s test:electron-provider:built",
     "test:unit": "vitest run --config src/test/vitest.config.mts",
     "test:electron-provider": "npm run -s build && npm run -s test:electron-provider:built",
-    "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts"
+    "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts && vitest run --config src/test/vitest.electron-startup.config.mts"
   },
   "dependencies": {
     "@vitest/browser": "^4.1.11"

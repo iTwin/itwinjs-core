@@ -3,12 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { defineConfig } from "vitest/config";
+import { contextBridge } from "electron";
 
-export default defineConfig({
-  test: {
-    dir: "src/test",
-    include: ["**/*.test.ts"],
-    exclude: ["electron-provider-smoke.test.ts", "electron-provider-startup.test.ts"],
-  },
+// Expose the expected global before throwing, so tests that only check the global would still pass.
+contextBridge.exposeInMainWorld("__vitestBrowserBridgeUserPreload", {
+  loaded: true,
+  processType: process.type,
 });
+throw new Error("intentional preload failure");
