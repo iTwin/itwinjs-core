@@ -67,6 +67,9 @@ function safeSessionId(sessionId: string): string {
   return sessionId.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
+// On Windows this terminates only the Electron main process. Chromium helpers exit when they lose
+// their connection to it, but a process started by a backend init module would be left running.
+// No current consumer starts one.
 function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
   if (child.pid !== undefined && process.platform !== "win32") {
     try {
