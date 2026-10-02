@@ -2,6 +2,27 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.14.0",
+      "tag": "@itwin/presentation-backend_v5.14.0",
+      "date": "Fri, 02 Oct 2026 14:55:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve performance of `PresentationManager.getElementProperties` overload that takes `elementIds` prop."
+          },
+          {
+            "comment": "Further `PresentationManager.getElementProperties` performance improvements for the case when elements have more than 1k properties and most of them come from aspects."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.13.7",
+      "tag": "@itwin/presentation-backend_v5.13.7",
+      "date": "Thu, 01 Oct 2026 15:15:30 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.13.6",
       "tag": "@itwin/presentation-backend_v5.13.6",
       "date": "Fri, 25 Sep 2026 22:27:22 GMT",

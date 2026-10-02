@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Oct 2026 14:56:23 GMT and should not be manually modified.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Fix non-indexed glTF point clouds in reality models not rendering.
+- Fixed GL_INVALID_FRAMEBUFFER_OPERATION that could occur when reading pixels right after a second viewport was closed
+- Fixed inconsistent hostname normalization that could cause extension host allow-list checks to reject legitimate hosts or match unrelated ones
+- OPC point clouds whose CRS does not specify a height convention now assume the same one as the iModel they are displayed in.
+- Include conversion direction and per-request point count in coordinate-conversion error diagnostics.
+- Add download progress reporting and cancellation to pushChanges
+- Changed @loaders.gl dependency range to ^4.4.5.
+- Forward format provider lookup context and synchronous format lookups through the frontend formats provider.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
 
 ## 5.13.6
 Fri, 25 Sep 2026 22:27:22 GMT
