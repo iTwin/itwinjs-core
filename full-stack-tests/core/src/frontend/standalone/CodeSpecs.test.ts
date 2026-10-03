@@ -7,9 +7,10 @@ import { BisCodeSpec, CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-c
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { IModelStatus } from "@itwin/core-bentley";
+import { IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 
-describe("IModelConnection.CodeSpecs", async () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("IModelConnection.CodeSpecs", async () => {
   let iModel: IModelConnection;
 
   before(async () => {

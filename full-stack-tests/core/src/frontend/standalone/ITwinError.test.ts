@@ -32,7 +32,7 @@ if (ProcessDetector.isElectronAppFrontend) {
           expect(ConflictingLocksError.isError(err)).true;
           if (ConflictingLocksError.isError(err)) {
             expect(BentleyError.isError(err, errorNumber)).true;
-            expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
+            expect(err.stack?.includes("backend.ts") || err.stack?.includes("backend.js")).true; // this is where we threw from the backend
             expect(err.message).equal(testMsg);
             expect(err.errorNumber).equal(errorNumber);
             expect(err.iTwinErrorId.key).equal("Lock is owned by another briefcase");
@@ -59,7 +59,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         caughtError = true;
         expect(ChannelControlError.isError(err, errKey)).true;
         if (ChannelControlError.isError(err, errKey)) {
-          expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
+          expect(err.stack?.includes("backend.ts") || err.stack?.includes("backend.js")).true; // this is where we threw from the backend
           expect(err.message).equal(sentErr.message);
           expect(err.name).equal(errKey);
           expect(err.channelKey).equal(sentErr.channelKey);
