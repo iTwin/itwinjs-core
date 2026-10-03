@@ -5,12 +5,12 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d, Point3d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
+import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
@@ -18,6 +18,7 @@ import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
@@ -594,6 +595,75 @@ describe("Viewport", () => {
       });
     });
 
+    it("scopes excluded elements to their IModelDisplayReference", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          try {
+            const createSquare = (z: number) => {
+              const points = [
+                new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
+              ];
+              vp.viewToWorldArray(points);
+
+              const builder = IModelApp.renderSystem.createGraphic({
+                type: GraphicType.WorldDecoration,
+                pickable: { id: "0xa" },
+                computeChordTolerance: () => 0,
+              });
+              builder.addShape(points);
+              return IModelApp.renderSystem.createGraphicOwner(builder.finish());
+            };
+
+            const primaryGraphic = createSquare(0);
+            const linkedBranch = new GraphicBranch(true);
+            linkedBranch.add(createSquare(-10));
+            const linkedGraphic = IModelApp.renderSystem.createGraphicBranch(linkedBranch, Transform.identity, { iModelRef: linkedRef });
+
+            addDecorator({
+              decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, primaryGraphic),
+            });
+            addDecorator({
+              decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, linkedGraphic),
+            });
+
+            vp.renderFrame();
+
+            const readVisibleReference = (excludedElements?: ReadPixelsArgs["excludedElements"]) => {
+              let feature: Pixel.Data["feature"];
+              vp.readPixels({
+                selector: Pixel.Selector.Feature,
+                excludedElements,
+                receiver: (pixels) => {
+                  if (pixels) {
+                    const coordinate = vp.cssPixelsToDevicePixels(1);
+                    feature = pixels.getPixel(coordinate, coordinate).feature;
+                  }
+                },
+              });
+              return feature?.iModelRef;
+            };
+
+            expect(readVisibleReference()).toBe(vp.iModelRefs.primary);
+            expect(readVisibleReference(["0xa"])).toBe(linkedRef);
+            expect(readVisibleReference([["0xa", linkedRef]])).toBe(vp.iModelRefs.primary);
+            expect(readVisibleReference([["0xa", refs.primary]])).toBe(linkedRef);
+            expect(readVisibleReference([["0xa", refs.primary], ["0xa", linkedRef]])).toBeUndefined();
+            expect(readVisibleReference()).toBe(refs.primary);
+          } finally {
+            refs.unlink(linkedRef);
+          }
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
+    });
+
     it("can filter out specified elements within a single batch", () => {
       testBlankViewport((vp) => {
         const frontPts = [
@@ -731,7 +801,7 @@ describe("Viewport", () => {
     class PixelCanvasDecoration implements CanvasDecoration {
       public drawDecoration(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "red";
-        ctx.fillRect(0,0,1,1);
+        ctx.fillRect(0, 0, 1, 1);
       }
     }
 
@@ -773,10 +843,10 @@ describe("Viewport", () => {
       const ctx = canvas.getContext("2d");
       const pixel = ctx!.getImageData(0, 0, 1, 1).data;
       const rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
-      });
+    });
 
 
     it("should include canvas decorations if omitCanvasDecorations is false or undefined", () => {
@@ -794,7 +864,7 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       readImageOptions = {
         omitCanvasDecorations: undefined,
@@ -804,7 +874,7 @@ describe("Viewport", () => {
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
     });
@@ -828,18 +898,18 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       expect(vp2.rendersToScreen).to.be.false;
       canvas = vp2.readImageToCanvas(readImageOptions);
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
-      });
+    });
 
 
     it("should include canvas decorations if omitCanvasDecorations is false or undefined with multiple viewports", () => {
@@ -861,7 +931,7 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       readImageOptions = {
         omitCanvasDecorations: undefined,
@@ -872,7 +942,7 @@ describe("Viewport", () => {
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
@@ -927,7 +997,7 @@ describe("Viewport", () => {
         return new Set<string>([id]);
       }
 
-      test(false, () => {});
+      test(false, () => { });
 
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.

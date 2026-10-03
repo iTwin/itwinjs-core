@@ -10,7 +10,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { ImageBuffer } from "@itwin/core-common";
 import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
-import { HiliteSet } from "../SelectionSet";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { SceneContext } from "../ViewContext";
 import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
@@ -32,7 +32,6 @@ import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTargetDebugControl } from "../internal/render/RenderTargetDebugControl";
-import { IModelDisplayReference } from "../IModelDisplayReference";
 
 /** Connects a [[Viewport]] to a graphics renderer such as a [WebGLRenderingContext](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext)
  * to enable the viewport's contents to be rendered to the screen or to an off-screen buffer.
@@ -132,7 +131,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */

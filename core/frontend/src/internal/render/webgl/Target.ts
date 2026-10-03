@@ -113,8 +113,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
-  private _currPickExclusions = new Id64.Uint32Set();
-  private _swapPickExclusions = new Id64.Uint32Set();
+  private _currPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
+  private _swapPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashedElem?: FlashedElem;
@@ -201,7 +201,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
-  public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
+  public getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined { return this._currPickExclusions.get(iModelRef); }
 
   public get flashedElem(): FlashedElem | undefined { return this._flashedElem; }
   public get flashIntensity(): number { return this._flashIntensity; }
@@ -586,11 +586,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (realityMapLayerChanged) {
       this.changePlanarClassifiers(undefined);
     } else if (this._planarClassifiers) {
-        const filteredClassifiers = new Map(
-            [...this._planarClassifiers.entries()]
-                .filter(([key]) => key.toLowerCase().includes("maplayer"))
-        );
-        this.changePlanarClassifiers(filteredClassifiers.size > 0 ? filteredClassifiers : undefined);
+      const filteredClassifiers = new Map(
+        [...this._planarClassifiers.entries()]
+          .filter(([key]) => key.toLowerCase().includes("maplayer"))
+      );
+      this.changePlanarClassifiers(filteredClassifiers.size > 0 ? filteredClassifiers : undefined);
     }
 
     this.changeTextureDrapes(undefined);
@@ -781,7 +781,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void {
     if (!this.assignDC())
       return;
 
@@ -810,11 +810,25 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       if (excludedElements) {
         const swap = this._swapPickExclusions;
         swap.clear();
-        for (const exclusion of excludedElements) {
-          swap.addId(exclusion);
+        for (const [id, iModelRef] of excludedElements) {
+          let ids = swap.get(iModelRef);
+          if (!ids)
+            swap.set(iModelRef, ids = new Id64.Uint32Set());
+
+          ids.addId(id);
         }
 
-        if (!this._currPickExclusions.equals(swap)) {
+        let equal = this._currPickExclusions.size === swap.size;
+        if (equal) {
+          for (const [iModelRef, ids] of this._currPickExclusions) {
+            if (!swap.get(iModelRef)?.equals(ids)) {
+              equal = false;
+              break;
+            }
+          }
+        }
+
+        if (!equal) {
           this._swapPickExclusions = this._currPickExclusions;
           this._currPickExclusions = swap;
           updatedExclusions = true;

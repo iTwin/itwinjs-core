@@ -38,6 +38,7 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isMod
 export type FeatureOverridesCleanup = () => void;
 
 const scratchPackedFeature = PackedFeature.createWithIndex();
+const emptyPickExclusions = new Id64.Uint32Set();
 
 /** @internal */
 export class FeatureOverrides implements WebGLDisposable {
@@ -412,7 +413,8 @@ export class FeatureOverrides implements WebGLDisposable {
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     this._mostRecentSymbologyOverrides = ovrs;
     const hilite = this._iModel.hilited;
-    this._lut = this._initialize(provider, map, ovrs, this.target.pickExclusions, hilite, this.target.flashedElem);
+    const pickExclusions = this.target.currentBranch.iModelRef ? this.target.getPickExclusions(this.target.currentBranch.iModelRef) : undefined;
+    this._lut = this._initialize(provider, map, ovrs, pickExclusions ?? emptyPickExclusions, hilite, this.target.flashedElem);
     this._lastFlashId = undefined;
     this._hiliteSyncObserver = {};
     this._pickExclusionsSyncObserver = {};
@@ -431,6 +433,8 @@ export class FeatureOverrides implements WebGLDisposable {
     const hilite = this._iModel.hilited;
     const hiliteUpdated = !sync(this.target.hiliteSyncTarget, this._hiliteSyncObserver);
     const pickExcludesUpdated = !sync(this.target.pickExclusionsSyncTarget, this._pickExclusionsSyncObserver);
+    const iModelRef = this.target.currentBranch.iModelRef;
+    const pickExclusions = iModelRef ? this.target.getPickExclusions(iModelRef) : undefined;
 
     if (ovrsUpdated || hiliteUpdated || flashedId !== this._lastFlashId || pickExcludesUpdated) {
       // _lut can be undefined if context was lost, (gl.createTexture returns null)
@@ -439,7 +443,7 @@ export class FeatureOverrides implements WebGLDisposable {
           provider,
           features,
           this._lut,
-          undefined !== ovrs || pickExcludesUpdated ? this.target.pickExclusions : undefined,
+          undefined !== ovrs || pickExcludesUpdated ? pickExclusions ?? emptyPickExclusions : undefined,
           this.target.flashedElem,
           undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs,
         );

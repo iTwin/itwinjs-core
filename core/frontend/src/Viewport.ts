@@ -284,8 +284,10 @@ export interface ReadPixelsArgs {
   selector?: Pixel.Selector;
   /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
   excludeNonLocatable?: boolean;
-  /** An optional set of Ids of elements that should not be drawn, potentially revealing other geometry they would otherwise obscure. */
-  excludedElements?: Iterable<Id64String>;
+  /** Optional elements that should not be drawn, potentially revealing other geometry they would otherwise obscure.
+   * An Id applies only to the primary IModelDisplayReference; a [Id, IModelDisplayReference] pair applies only to that reference.
+   */
+  excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
 }
 
 /** Arguments supplied to [[Viewport.readImageToCanvas]].
@@ -2826,13 +2828,21 @@ export abstract class Viewport implements Disposable, TileUser {
     );
   }
 
-  private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+  private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>): void {
     if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect)) {
       receiver(undefined);
       return;
     }
 
-    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
+    let exclusions: Array<readonly [Id64String, IModelDisplayReference]> | undefined;
+    if (excludedElements) {
+      exclusions = [];
+      for (const exclusion of excludedElements) {
+        exclusions.push(typeof exclusion === "string" ? [exclusion, this.iModelRefs.primary] : exclusion);
+      }
+    }
+
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, exclusions);
   }
 
   /** @internal */

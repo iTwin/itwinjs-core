@@ -6,13 +6,13 @@
  * @module LocatingElements
  */
 
-import { expectDefined, Id64, Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { ReadPixelsArgs, ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./common/ViewRect";
 
 /** The possible actions for which a locate filter can be called.
@@ -193,10 +193,11 @@ export class ElementPicker {
    * @param pickPointWorld Pick location in world coordinates
    * @param pickRadiusView Pick radius in pixels
    * @param options Pick options to use
-   * @param excludedElements Optional ids to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
+   * @param excludedElements Optional elements to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
+   * @note Unqualified ids apply to the primary IModelDisplayReference.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number {
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: ReadPixelsArgs["excludedElements"]): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -326,7 +327,7 @@ export class ElementLocateManager {
     const preLocated = fromAccuSnap ?? IModelApp.tentativePoint.getHitAndList(this);
 
     if (preLocated) {
-      const excludedElements = (preLocated.isElementHit ? new Set<string>([preLocated.sourceId]) : undefined);
+      const excludedElements = preLocated.isElementHit ? [[preLocated.sourceId, preLocated.feature.iModelRef] as const] : undefined;
 
       if (excludedElements || !fromAccuSnap) {
         // NOTE: For tentative snap, get new hit list at snap point; want reset to cycle hits using adjusted point location...
