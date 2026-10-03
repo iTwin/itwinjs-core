@@ -376,7 +376,7 @@
     },
     {
       "name": "@opentelemetry/api",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "@sinonjs/fake-timers",
@@ -389,6 +389,10 @@
     {
       "name": "@typescript-eslint/parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@vitest/browser",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@vitest/browser-playwright",
@@ -956,7 +960,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "webpack",
