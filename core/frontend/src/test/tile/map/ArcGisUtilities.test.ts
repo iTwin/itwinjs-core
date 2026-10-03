@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
 import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities";
@@ -33,7 +34,7 @@ const getSampleSourceWithQueryParams = () => {
   }
 
   source.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
-  source.savedQueryParams = indexedArrayFromUrlParams(saved);
+  source.queryParams = indexedArrayFromUrlParams(saved);
   return source;
 };
 

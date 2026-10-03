@@ -185,6 +185,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
+import { MapLayerProviderProperties } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
@@ -1285,6 +1286,8 @@ export interface ArcGisGetServiceJsonArgs {
     formatId: string;
     // (undocumented)
     ignoreCache?: boolean;
+    layerProperties?: MapLayerProviderProperties;
+    layerUrl?: string;
     // (undocumented)
     password?: string;
     // (undocumented)
@@ -1320,6 +1323,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
     content: any;
+    errorCode?: ArcGisErrorCode;
 }
 
 // @internal
@@ -2377,6 +2381,9 @@ export interface CreateTextureFromSourceArgs {
 
 // @beta
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T>;
+
+// @internal
+export function credentialedFetchRedirect(): RequestRedirect | undefined;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -3464,6 +3471,16 @@ export interface FeatureSymbologyRenderer {
     // (undocumented)
     isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
 }
+
+// @internal
+export function fetchMapLayerRequest(args: {
+    url: string;
+    formatId: string;
+    layerUrl: string;
+    layerProperties?: MapLayerProviderProperties;
+    headers?: Headers;
+    send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
+}): Promise<MapLayerFetchResult>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -6063,6 +6080,12 @@ export interface MapLayerAccessTokenParams {
     userName?: string;
 }
 
+// @beta
+export class MapLayerAuthenticationFailedError extends Error {
+    constructor(url: string);
+    readonly url: string;
+}
+
 // @beta (undocumented)
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
@@ -6097,6 +6120,19 @@ export class MapLayerFeatureRecord {
     static createRecordFromAttribute(attribute: MapLayerFeatureAttribute): PropertyRecord;
 }
 
+// @beta
+export type MapLayerFetchHandler = (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => Promise<Response | undefined>;
+
+// @beta
+export type MapLayerFetchRequest = (request: MapLayerRequest) => Promise<Response>;
+
+// @internal
+export interface MapLayerFetchResult {
+    managedByHandler: boolean;
+    // (undocumented)
+    response: Response;
+}
+
 // @public
 export class MapLayerFormat {
     // @beta
@@ -6114,6 +6150,8 @@ export class MapLayerFormat {
 // @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
+    // @beta
+    addMapLayerFetchHandler(handler: MapLayerFetchHandler): () => void;
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
@@ -6130,6 +6168,8 @@ export class MapLayerFormatRegistry {
     isSsoAllowed(url: string): boolean;
     // @internal
     logUntrustedOriginUse(url: string, settingsUrl?: string): void;
+    // @internal
+    get mapLayerFetchHandlers(): ReadonlyArray<MapLayerFetchHandler>;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta
@@ -6151,6 +6191,8 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 // @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
+    // @internal
+    protected get accessClient(): MapLayerAccessClient | undefined;
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
@@ -6211,6 +6253,8 @@ export abstract class MapLayerImageryProvider {
     getPotentialChildIds(quadId: QuadId): QuadId[];
     // @internal
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // @internal
+    protected get hasFetchHandler(): boolean;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // @internal
@@ -6218,6 +6262,8 @@ export abstract class MapLayerImageryProvider {
     initialize(): Promise<void>;
     // @internal
     protected isCredentialsSharingAllowed(url: string): boolean;
+    // @internal
+    protected isManagedByHandler(response: Response): boolean;
     // @internal
     protected isSsoAllowed(url: string): boolean;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
@@ -6249,6 +6295,8 @@ export abstract class MapLayerImageryProvider {
     protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // @internal
     protected recordSsoSucceeded(url: string): void;
+    // @internal
+    protected reportAuthenticationFailure(): void;
     // @internal
     protected reportBlockedOrigin(url: string): void;
     resetStatus(): void;
@@ -6312,6 +6360,16 @@ export interface MapLayerOptions {
 }
 
 // @beta
+export interface MapLayerRequest {
+    readonly formatId: string;
+    readonly headers: Headers;
+    readonly layerProperties?: MapLayerProviderProperties;
+    readonly layerUrl: string;
+    readonly searchParams: URLSearchParams;
+    readonly url: string;
+}
+
+// @beta
 export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
@@ -6337,9 +6395,16 @@ export class MapLayerSource {
     // (undocumented)
     password?: string;
     // @beta
-    savedQueryParams?: {
+    queryParams?: {
         [key: string]: string;
     };
+    // @beta @deprecated
+    get savedQueryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set savedQueryParams(value: {
+        [key: string]: string;
+    } | undefined);
     // (undocumented)
     toJSON(): Omit<MapLayerSourceProps, "formatId"> & {
         formatId: string;
@@ -6348,7 +6413,7 @@ export class MapLayerSource {
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };
@@ -6463,6 +6528,12 @@ export interface MapLayerTreeSetting {
     settings: MapLayerSettings;
     // (undocumented)
     tree: ImageryMapTileTree;
+}
+
+// @internal
+export class MapLayerUntrustedOriginError extends Error {
+    constructor(url: string);
+    readonly url: string;
 }
 
 // @beta
@@ -14367,7 +14438,7 @@ export class WindowAreaTool extends ViewTool {
 
 // @internal (undocumented)
 export class WmsUtilities {
-    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
+    static fetchXml(url: string, options?: WmsFetchOptions): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

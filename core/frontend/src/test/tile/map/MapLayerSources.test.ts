@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- savedQueryParams/unsavedQueryParams must keep working until they are removed. */
 import { MapSubLayerSettings } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
 import { MapLayerSource, MapLayerSourceProps } from "../../../tile/map/MapLayerSources";
@@ -25,7 +26,7 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.formatId).toEqual("WMS");
     expect(sampleSource!.transparentBackground).toEqual(true);
     expect(sampleSource!.baseMap).toEqual(false);
-    expect(sampleSource!.savedQueryParams).toEqual(undefined);
+    expect(sampleSource!.queryParams).toEqual(undefined);
     expect(sampleSource!.unsavedQueryParams).toEqual(undefined);
   });
 
@@ -38,7 +39,12 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.url).toEqual(sampleSourceJson.url);
     expect(sampleSource!.transparentBackground).toEqual(sampleSourceJson.transparentBackground);
     expect(sampleSource!.baseMap).toEqual(sampleSourceJson.baseMap);
+    expect(sampleSource!.queryParams).toEqual(sampleSourceJson.queryParams);
+    // The deprecated alias reads and writes the same value.
     expect(sampleSource!.savedQueryParams).toEqual(sampleSourceJson.queryParams);
+    sampleSource!.savedQueryParams = { renamed: "1" };
+    expect(sampleSource!.queryParams).toEqual({ renamed: "1" });
+    sampleSource!.queryParams = sampleSourceJson.queryParams;
     expect(sampleSource!.unsavedQueryParams).toEqual(undefined);
 
     // check baseMap false
@@ -83,7 +89,7 @@ describe("MapLayerSources", () => {
     expect(sampleSource.url).toEqual(settings.url);
     expect(sampleSource.userName).toEqual(settings.userName);
     expect(sampleSource.password).toEqual(settings.password);
-    expect(JSON.stringify(sampleSource.savedQueryParams)).toEqual(JSON.stringify(settings.savedQueryParams));
+    expect(JSON.stringify(sampleSource.queryParams)).toEqual(JSON.stringify(settings.queryParams));
     expect(JSON.stringify(sampleSource.unsavedQueryParams)).toEqual(JSON.stringify(settings.unsavedQueryParams));
     expect(settings.subLayers).toBeDefined();
     expect(settings.subLayers.length).toEqual(subLayers.length);

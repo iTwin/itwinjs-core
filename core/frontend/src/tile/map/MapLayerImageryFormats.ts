@@ -13,6 +13,7 @@ import {
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
+  MapLayerAuthenticationFailedError,
   MapLayerFormat,
   MapLayerImageryProvider,
   MapLayerSource,
@@ -63,7 +64,12 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
+      const capabilities = await WmsCapabilities.create(url, {
+        credentials: (userName && password ? {user: userName, password} : undefined),
+        ignoreCache,
+        queryParams: source.collectQueryParams(),
+        formatId: source.formatId,
+      });
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -116,7 +122,9 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
         return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
       }
       let status = MapLayerSourceStatus.InvalidUrl;
-      if (err?.status === 401) {
+      if (err instanceof MapLayerAuthenticationFailedError) {
+        status = MapLayerSourceStatus.RequireAuth;
+      } else if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
       }
       return { status};
@@ -146,7 +154,12 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
     const { url, userName, password } = source;
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
+      const capabilities = await WmtsCapabilities.create(url, {
+        credentials: (userName && password ? {user: userName, password} : undefined),
+        ignoreCache,
+        queryParams: source.collectQueryParams(),
+        formatId: source.formatId,
+      });
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
@@ -195,7 +208,9 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
         return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
       }
       let status = MapLayerSourceStatus.InvalidUrl;
-      if (err?.status === 401) {
+      if (err instanceof MapLayerAuthenticationFailedError) {
+        status = MapLayerSourceStatus.RequireAuth;
+      } else if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
       }
       return { status};

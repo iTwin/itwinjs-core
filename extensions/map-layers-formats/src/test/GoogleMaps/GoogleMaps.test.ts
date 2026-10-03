@@ -294,4 +294,53 @@ describe("GoogleMapsProvider", () => {
     await provider.initialize();
     expect(createSessionSpy.called).to.be.true;
   });
+
+  /** A non-OK JSON tile response, which loadTile treats as an expired session. */
+  const stubFailingJsonTileRequest = () =>
+    sandbox.stub(GoogleMapsImageryProvider.prototype, "makeTileRequest").callsFake(async function _(_url: string, _timeoutMs?: number) {
+      return ({
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ message: "session expired" }),
+        ok: false,
+        status: 401,
+        statusText: "Unauthorized",
+      } as unknown) as Response;
+    });
+
+  it("should give up on the layer after a session refresh still fails", async () => {
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const sessionManager = new FakeSessionManager();
+    const createSessionSpy = sandbox.spy(sessionManager, "createSession");
+    const makeTileRequestStub = stubFailingJsonTileRequest();
+    const provider = createProvider(GoogleMaps.createBaseLayerSettings(minCreateSessionOptions), sessionManager);
+    await provider.initialize();
+
+    expect(await provider.loadTile(0, 0, 1)).to.be.undefined;
+    // Initial request, session refresh, retry.
+    expect(createSessionSpy.callCount).to.eq(2);
+    expect(makeTileRequestStub.callCount).to.eq(2);
+
+    // Further tiles are not requested anymore.
+    expect(await provider.loadTile(0, 1, 1)).to.be.undefined;
+    expect(makeTileRequestStub.callCount).to.eq(2);
+  });
+
+  it("should not give up on the layer when the failing response is managed by the fetch handler", async () => {
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const sessionManager = new FakeSessionManager();
+    const createSessionSpy = sandbox.spy(sessionManager, "createSession");
+    const makeTileRequestStub = stubFailingJsonTileRequest();
+    sandbox.stub(GoogleMapsImageryProvider.prototype, "isManagedByHandler" as any).returns(true);
+    const provider = createProvider(GoogleMaps.createBaseLayerSettings(minCreateSessionOptions), sessionManager);
+    await provider.initialize();
+
+    expect(await provider.loadTile(0, 0, 1)).to.be.undefined;
+    // The session (a framework-owned credential) is still refreshed once.
+    expect(createSessionSpy.callCount).to.eq(2);
+    expect(makeTileRequestStub.callCount).to.eq(2);
+
+    // The handler is the authority on the responses it returns: the layer keeps requesting tiles.
+    expect(await provider.loadTile(0, 1, 1)).to.be.undefined;
+    expect(makeTileRequestStub.callCount).to.eq(4);
+  });
 });
