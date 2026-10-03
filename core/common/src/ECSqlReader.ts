@@ -10,6 +10,7 @@ import {
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlReaderBase";
+import { Base64EncodedString } from "./Base64EncodedString";
 
 /**
  * Performance-related statistics for [[ECSqlReader]].
@@ -52,6 +53,8 @@ export interface QueryStats {
  *
  * @note When iterating over the results, the current row will be a [[QueryRowProxy]] object. To get the row as a basic
  *       JavaScript object, call [[QueryRowProxy.toRow]] on it.
+ * @note With [[QueryOptions.useCursor]], partial pages may be resumed from a retained backend cursor. Stop early with
+ *       `return()` (or `break` from `for await`) to release it.
  * @public
  */
 export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterator<QueryRowProxy> {
@@ -62,6 +65,9 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   private _globalOffset: number = -1;
   private _globalCount: number = -1;
   private _globalDone: boolean = false;
+  private _cursorId?: string;
+  private _staleCursorIds: string[] = [];
+  private _pendingRead?: Promise<any[]>;
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
   private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
@@ -100,6 +106,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     }
     this._props = new PropertyMetaDataMap([]);
     this._localRows = [];
+    this.retireCursor();
     this._globalDone = false;
     this._globalOffset = 0;
     this._globalCount = -1;
@@ -120,6 +127,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
    * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
+    this.retireCursor();
     this._param = new QueryBinder().serialize();
     this._lockArgs = false;
   }
@@ -161,18 +169,37 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       valueFormat,
       query: this.query,
       args: this._param,
+      cursorId: this._cursorId,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
+    if (this._staleCursorIds.length > 0)
+      await this.closeStaleCursors().catch(() => undefined); // best effort; the backend expires cursors anyway
     const resp = await this.runWithRetry(request);
+    this._cursorId = resp.cursorId;
+    if (this._globalDone)
+      return []; // return() is waiting to release the cursor without exposing these rows.
     this._globalDone = resp.status === DbResponseStatus.Done || resp.status === DbResponseStatus.NotOpen;
     if (this._props.length === 0 && resp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {
-      ECSqlReader.replaceBase64WithUint8Array(row);
+      ECSqlReader.decodeResultRow(row);
     }
     return resp.data;
+  }
+
+  private static decodeResultRow(row: unknown[]): void {
+    // Only the outer backend result row is known to have ordinary indexed properties.
+    for (let index = 0; index < row.length; ++index) {
+      const val = row[index];
+      if (typeof val === "string") {
+        if (Base64EncodedString.hasPrefix(val))
+          row[index] = Base64EncodedString.toUint8Array(val);
+      } else if (typeof val === "object" && val !== null) {
+        this.replaceBase64WithUint8Array(val);
+      }
+    }
   }
 
   /**
@@ -227,7 +254,14 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
    */
   private async fetchRows() {
     this._localOffset = -1;
-    this._localRows = await this.readRows();
+    const pendingRead = this._pendingRead = this.readRows();
+    try {
+      const rows = await pendingRead;
+      this._localRows = this._done ? [] : rows;
+    } finally {
+      if (this._pendingRead === pendingRead)
+        this._pendingRead = undefined;
+    }
     if (this._localRows.length === 0) {
       this._done = true;
     }
@@ -295,5 +329,49 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
         value: this.current,
       };
     }
+  }
+  /** Queue the current cursor to be released by the next request. */
+  private retireCursor() {
+    if (this._cursorId)
+      this._staleCursorIds.push(this._cursorId);
+    this._cursorId = undefined;
+  }
+
+  /** A cursor id is forgotten only after the backend confirms the close, so a failed close can be retried. */
+  private async closeStaleCursors(): Promise<void> {
+    while (this._staleCursorIds.length > 0) {
+      const request: DbQueryRequest = {
+        ...this._options,
+        kind: DbRequestKind.ECSql,
+        query: this.query,
+        args: this._param,
+        cursorId: this._staleCursorIds[0],
+        closeCursor: true,
+        restartToken: undefined, // a close must not cancel other queries sharing the token
+      };
+      const response = await this._executor.execute(request);
+      DbQueryError.throwIfError(response, request);
+      if (response.status !== DbResponseStatus.Done)
+        throw new DbQueryError(response, request);
+      this._staleCursorIds.shift();
+    }
+  }
+
+  /**
+   * Stop iteration and release any backend cursor retained for this reader. Called automatically when a
+   * `for await` loop exits early. If releasing fails the error is thrown and calling `return()` again retries.
+   * Waits for an in-flight page request before releasing its cursor; rows received after closure are discarded.
+   * @beta
+   */
+  public async return(): Promise<IteratorResult<QueryRowProxy>> {
+    this._done = this._globalDone = true;
+    this._localRows = [];
+    try {
+      await this._pendingRead;
+    } finally {
+      this.retireCursor();
+      await this.closeStaleCursors();
+    }
+    return { done: true, value: undefined };
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve ECSQL query-reader throughput by decoding result rows without allocating property-key arrays.",
+      "type": "none",
+      "packageName": "@itwin/core-common"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "khanaffan@users.noreply.github.com"
+}

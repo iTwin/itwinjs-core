@@ -4,10 +4,226 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { assert, describe, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { Base64 } from "js-base64";
-import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestKind, DbResponseKind, DbResponseStatus, QueryBinder, QueryOptions, QueryParamType } from "../ConcurrentQuery";
 import { Id64String, ITwinError } from "@itwin/core-bentley";
+import { ECSqlReader } from "../ECSqlReader";
+import { ECSqlReaderBase } from "../ECSqlReaderBase";
+import { Base64EncodedString } from "../Base64EncodedString";
+
+class BinaryRowReader extends ECSqlReaderBase {
+  public static decode(row: unknown): void {
+    this.replaceBase64WithUint8Array(row);
+  }
+
+  protected getRowInternal(): unknown[] {
+    return [];
+  }
+}
+
+describe("ECSqlReader binary conversion", () => {
+  it("decodes binary values in JSON rows, nested arrays and objects in place", () => {
+    const bytes = new Uint8Array([0, 1, 127, 255]);
+    const encoded = Base64EncodedString.fromUint8Array(bytes);
+    const empty = Base64EncodedString.fromUint8Array(new Uint8Array());
+    const row: unknown[] = [null, "", "ordinary text", 0, false, encoded, empty, [encoded, { blob: encoded, value: null }], { nested: [encoded], empty: [] }];
+    const nested = row[7];
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row, [null, "", "ordinary text", 0, false, bytes, new Uint8Array(), [bytes, { blob: bytes, value: null }], { nested: [bytes], empty: [] }]);
+    assert.strictEqual(row[7], nested);
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row[5], bytes);
+  });
+
+  it("ignores inherited and non-enumerable object properties", () => {
+    const encoded = Base64EncodedString.fromUint8Array(new Uint8Array([9]));
+    const row: { own: unknown } = { own: encoded };
+    Object.setPrototypeOf(row, { inherited: encoded });
+    Object.defineProperty(row, "hidden", { value: encoded });
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row.own, new Uint8Array([9]));
+    assert.equal(Object.getPrototypeOf(row).inherited, encoded);
+    assert.equal(Object.getOwnPropertyDescriptor(row, "hidden")?.value, encoded);
+  });
+
+  it("preserves enumerable-property behavior for unusual arrays", () => {
+    const encoded = Base64EncodedString.fromUint8Array(new Uint8Array([9]));
+    const row: unknown[] & { extra: unknown } = Object.assign([encoded], { extra: encoded });
+    Object.defineProperty(row, "1", { value: encoded, writable: true, enumerable: false });
+    const prototype = Object.create(Array.prototype);
+    prototype[2] = encoded;
+    Object.setPrototypeOf(row, prototype);
+    row.length = 3;
+    BinaryRowReader.decode(row);
+    assert.deepEqual(row[0], new Uint8Array([9]));
+    assert.deepEqual(row.extra, new Uint8Array([9]));
+    assert.equal(row[1], encoded);
+    assert.equal(row[2], encoded);
+    assert.isFalse(Object.hasOwn(row, "2"));
+  });
+});
+
+describe("ECSqlReader cursor paging", () => {
+  const stats = { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 };
+  const response = (status: DbResponseStatus, data: DbQueryResponse["data"], cursorId?: string): DbQueryResponse => ({
+    status, kind: DbResponseKind.ECSql, data, cursorId, meta: [], rowCount: data.length, stats,
+  });
+
+  const makeReader = (handler: (request: DbQueryRequest) => DbQueryResponse | Promise<DbQueryResponse>, requests: DbQueryRequest[], options: QueryOptions = { useCursor: true, restartToken: "tok" }) =>
+    new ECSqlReader({ execute: async (request) => { requests.push(request); return handler(request); } }, "SELECT 1", undefined, options);
+
+  it("decodes binary result columns and nested values without changing other values", async () => {
+    const bytes = new Uint8Array([0, 9, 255]);
+    const encoded = Base64EncodedString.fromUint8Array(bytes);
+    const data = [[encoded, null, 0, false, "text", [encoded, { blob: encoded }]]];
+    const reader = makeReader(() => response(DbResponseStatus.Done, data), []);
+    assert.isTrue(await reader.step());
+    assert.deepEqual(reader.getRowInternal(), [bytes, null, 0, false, "text", [bytes, { blob: bytes }]]);
+    assert.isFalse(await reader.step());
+  });
+
+  it("does not request cursors unless opted in", async () => {
+    const requests: DbQueryRequest[] = [];
+    const reader = makeReader(() => response(DbResponseStatus.Done, [[1]]), requests, {});
+    while (await reader.step());
+    assert.equal(requests.length, 1);
+    assert.isUndefined(requests[0].useCursor);
+    assert.isUndefined(requests[0].cursorId);
+  });
+
+  it("resumes partial pages and falls back when no cursor is returned", async () => {
+    const requests: DbQueryRequest[] = [];
+    const pages = [response(DbResponseStatus.Partial, [[1]], "cursor-1"), response(DbResponseStatus.Partial, [[2]]), response(DbResponseStatus.Done, [[3]])];
+    const reader = makeReader(() => {
+      const page = pages.shift();
+      if (!page)
+        throw new Error("unexpected query page");
+      return page;
+    }, requests);
+    const rows: number[] = [];
+    while (await reader.step())
+      rows.push(reader.getRowInternal()[0]);
+    assert.deepEqual(rows, [1, 2, 3]);
+    assert.deepEqual(requests.map(({ cursorId, limit, useCursor }) => ({ cursorId, offset: limit?.offset, useCursor })), [
+      { cursorId: undefined, offset: 0, useCursor: true },
+      { cursorId: "cursor-1", offset: 1, useCursor: true },
+      { cursorId: undefined, offset: 2, useCursor: true },
+    ]);
+  });
+
+  it("closes an unused cursor when iteration ends early", async () => {
+    const requests: DbQueryRequest[] = [];
+    const reader = makeReader((request) => request.closeCursor ? response(DbResponseStatus.Done, []) : response(DbResponseStatus.Partial, [[1]], "cursor-2"), requests);
+    for await (const _row of reader)
+      break;
+    assert.equal(requests.length, 2);
+    assert.equal(requests[1].kind, DbRequestKind.ECSql);
+    assert.equal(requests[1].closeCursor, true);
+    assert.equal(requests[1].cursorId, "cursor-2");
+    assert.isUndefined(requests[1].restartToken);
+  });
+
+  it("keeps the cursor id when a close fails so it can be retried", async () => {
+    const requests: DbQueryRequest[] = [];
+    let closeStatus = DbResponseStatus.QueueFull;
+    const reader = makeReader((request) => request.closeCursor ? response(closeStatus, []) : response(DbResponseStatus.Partial, [[1]], "cursor-3"), requests);
+    assert.isTrue(await reader.step());
+    await expect(reader.return()).rejects.toBeInstanceOf(DbQueryError);
+    closeStatus = DbResponseStatus.Done;
+    await reader.return();
+    const closes = requests.filter((r) => r.closeCursor).map((r) => r.cursorId);
+    assert.deepEqual(closes, ["cursor-3", "cursor-3"]);
+    await reader.return();
+    assert.equal(requests.filter((r) => r.closeCursor).length, 2);
+  });
+
+  for (const continuation of [false, true]) {
+    it(`waits for and closes a cursor returned by an in-flight ${continuation ? "continuation" : "first page"}`, async () => {
+      const requests: DbQueryRequest[] = [];
+      let deliverPage!: (page: DbQueryResponse) => void;
+      const pendingPage = new Promise<DbQueryResponse>((resolve) => { deliverPage = resolve; });
+      const reader = makeReader(async (request) => {
+        if (request.closeCursor)
+          return response(DbResponseStatus.Done, []);
+        if (continuation && requests.length === 1)
+          return response(DbResponseStatus.Partial, [[1]], "old-cursor");
+        return pendingPage;
+      }, requests);
+      if (continuation)
+        assert.isTrue(await reader.step());
+
+      const next = reader.next();
+      let closed = false;
+      const closing = reader.return().then((result) => { closed = true; return result; });
+      await Promise.resolve();
+      assert.isFalse(closed);
+      assert.isEmpty(requests.filter((request) => request.closeCursor));
+
+      deliverPage(response(DbResponseStatus.Partial, [[2]], "late-cursor"));
+      assert.isTrue((await next).done);
+      assert.isTrue((await closing).done);
+      const closes = requests.filter((request) => request.closeCursor);
+      assert.equal(closes.length, 1);
+      assert.equal(closes[0].cursorId, "late-cursor");
+      assert.isUndefined(closes[0].restartToken);
+      assert.throws(() => reader.getRowInternal(), "no current row");
+      assert.isFalse(await reader.step());
+      await reader.return();
+      assert.equal(requests.length, continuation ? 3 : 2);
+    });
+  }
+
+  it("can retry closing a cursor returned after iteration was stopped", async () => {
+    const requests: DbQueryRequest[] = [];
+    let deliverPage!: (page: DbQueryResponse) => void;
+    const pendingPage = new Promise<DbQueryResponse>((resolve) => { deliverPage = resolve; });
+    let closeStatus = DbResponseStatus.QueueFull;
+    const reader = makeReader(async (request) => request.closeCursor ? response(closeStatus, []) : pendingPage, requests);
+    const next = reader.next();
+    const closing = expect(reader.return()).rejects.toBeInstanceOf(DbQueryError);
+    deliverPage(response(DbResponseStatus.Partial, [[1]], "late-cursor"));
+    assert.isTrue((await next).done);
+    await closing;
+    closeStatus = DbResponseStatus.Done;
+    await reader.return();
+    assert.deepEqual(requests.filter((request) => request.closeCursor).map((request) => request.cursorId), ["late-cursor", "late-cursor"]);
+  });
+
+  it("releases the existing cursor if an in-flight continuation fails during closure", async () => {
+    const requests: DbQueryRequest[] = [];
+    let rejectPage!: (error: Error) => void;
+    const pendingPage = new Promise<DbQueryResponse>((_resolve, reject) => { rejectPage = reject; });
+    const reader = makeReader(async (request) => {
+      if (request.closeCursor)
+        return response(DbResponseStatus.Done, []);
+      return requests.length === 1 ? response(DbResponseStatus.Partial, [[1]], "old-cursor") : pendingPage;
+    }, requests);
+    assert.isTrue(await reader.step());
+    const error = new Error("page failed");
+    const next = expect(reader.next()).rejects.toBe(error);
+    const closing = expect(reader.return()).rejects.toBe(error);
+    rejectPage(error);
+    await Promise.all([next, closing]);
+    assert.deepEqual(requests.filter((request) => request.closeCursor).map((request) => request.cursorId), ["old-cursor"]);
+    await reader.return();
+    assert.equal(requests.length, 3);
+  });
+
+  it("releases the cursor of a reset reader before the next page", async () => {
+    const requests: DbQueryRequest[] = [];
+    const reader = makeReader((request) => request.closeCursor ? response(DbResponseStatus.Done, []) : response(DbResponseStatus.Partial, [[1]], "cursor-4"), requests);
+    assert.isTrue(await reader.step());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    reader.reset();
+    assert.isTrue(await reader.step());
+    assert.deepEqual(requests.map(({ cursorId, closeCursor }) => ({ cursorId, closeCursor })), [
+      { cursorId: undefined, closeCursor: undefined },
+      { cursorId: "cursor-4", closeCursor: true },
+      { cursorId: undefined, closeCursor: undefined },
+    ]);
+  });
+});
 
 describe("QueryBinder", () => {
   it("binds values", async () => {

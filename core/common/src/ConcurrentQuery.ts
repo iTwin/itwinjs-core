@@ -154,6 +154,15 @@ export interface QueryOptions extends BaseReaderOptions {
    * Determine row format.
    */
   rowFormat?: QueryRowFormat;
+  /**
+   * default to false. When true, a backend that supports it keeps the statement of a partial page open so the next
+   * page resumes it instead of re-stepping to its offset. This is much faster for large result sets. Pages served
+   * from a retained statement share the read snapshot of the first page; if the cursor is unavailable (evicted,
+   * expired, or the next page is served by another backend process) paging silently falls back to offset paging.
+   * Call [[ECSqlReader.return]] (or `break` out of `for await`) to release the cursor early.
+   * @beta
+   */
+  useCursor?: boolean;
 }
 
 /** @beta */
@@ -251,6 +260,16 @@ export class QueryOptionsBuilder {
    */
   public setRowFormat(val: QueryRowFormat) {
     this._options.rowFormat = val;
+    return this;
+  }
+  /**
+   * Opt into cursor paging. See [[QueryOptions.useCursor]].
+   * @param val A boolean value, if true partial pages are resumed from a retained backend cursor when available.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   * @beta
+   */
+  public setUseCursor(val: boolean) {
+    this._options.useCursor = val;
     return this;
   }
   /**
@@ -790,6 +809,10 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
   valueFormat?: DbValueFormat;
   query: string;
   args?: object;
+  /** @internal Native worker cursor for the next partial page. */
+  cursorId?: string;
+  /** @internal Release an unused cursor. */
+  closeCursor?: boolean;
 }
 
 /** @internal */
@@ -812,6 +835,8 @@ export interface DbQueryResponse extends DbResponse {
   meta: QueryPropertyMetaData[];
   data: any[];
   rowCount: number;
+  /** @internal Present only when a native worker retained a cursor. */
+  cursorId?: string;
 }
 
 /** @internal */
