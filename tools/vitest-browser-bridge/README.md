@@ -3,13 +3,13 @@
 > [!WARNING]
 > This package is under active development. Its APIs and behavior may change without notice.
 
-Internal Vitest BrowserProvider infrastructure for running renderer tests in a real Electron browser runtime. The package is not a test runner and does not expose a package-root entrypoint.
+Internal Vitest BrowserProvider and callback infrastructure for running renderer tests in real browser runtimes. The package is not a test runner and does not expose a package-root entrypoint.
 
-The provider and browser callback exports are ESM-only. The backend callback export also supports `require` because existing backend initialization modules compile to CommonJS. CommonJS Electron session and preload files are private process-boundary artifacts, not a second public package surface.
+The provider and browser callback exports are ESM-only. The backend and HTTP callback exports also support `require` because existing backend initialization modules compile to CommonJS. CommonJS Electron session and preload files are private process-boundary artifacts, not a second public package surface.
 
 ## Vitest 4 provider
 
-The consuming project must provide Vitest `^4.1.11` and an Electron version in the supported `>=35 <45` range. This package temporarily pins `@opentelemetry/api` 1.0.4 so its Vitest types resolve to the same peer instance as `@vitest/browser` in the current Rush graph; remove that pin when the repository aligns on Vitest's `^1.9.0` optional peer. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
+The consuming project must provide Vitest `^4.1.11` and an Electron version in the supported `>=35 <45` range. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -45,23 +45,45 @@ This foundation intentionally does not implement Vitest browser automation comma
 
 The callback surfaces are deliberately separate so browser-only code does not import Electron:
 
-- `@itwin/vitest-browser-bridge/callbacks/backend` registers narrow test callbacks in the Electron main process and clears them during teardown.
-- `@itwin/vitest-browser-bridge/callbacks/browser` invokes the preload-exposed callback bridge without importing Electron.
+- `@itwin/vitest-browser-bridge/callbacks/backend` registers and dispatches narrow test callbacks in the backend process.
+- `@itwin/vitest-browser-bridge/callbacks/browser` invokes the Electron preload-exposed callback bridge without importing Electron.
+- `@itwin/vitest-browser-bridge/callbacks/http` creates a browser callback invoker for an HTTP endpoint backed by `dispatchBackendCallback`.
 
-The IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled Electron IPC errors. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
+The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
 
 ```ts
-// Electron main-process backend init module
+// Backend init module
 import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 
 registerBackendCallback("example:add", (a: number, b: number) => a + b);
 ```
 
 ```ts
-// Renderer test
+// Electron renderer test
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 
 const result = await invokeBackendCallback("example:add", 2, 5);
 ```
 
-The package exports only `./electron-provider`, `./callbacks/backend`, and `./callbacks/browser`. Transport and Electron integration modules remain private implementation details, and there is intentionally no broad package-root export.
+HTTP callbacks accept JSON arguments and results: `null`, booleans, finite numbers, strings, arrays, and plain objects containing those values. A top-level `undefined` result is also supported. Unsupported values, including `undefined` arguments or object fields, are rejected rather than silently converted or omitted. The Electron transport is unchanged.
+
+The consuming backend must mount the HTTP handler. The bridge does not create a server or choose a route. For cross-origin tests, the server must also allow the test origin through CORS. For example, an Express backend can register the endpoint before starting its server:
+
+```ts
+import express from "express";
+import { createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
+
+const app = express();
+app.post("/test-callback", express.text(), createHttpBackendCallbackHandler());
+app.listen(5020, "127.0.0.1");
+```
+
+```ts
+// Chromium test using the endpoint mounted above
+import { createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
+
+const invokeBackendCallback = createHttpBackendCallbackInvoker({ url: "http://localhost:5020/test-callback" });
+const result = await invokeBackendCallback("example:add", 2, 5);
+```
+
+The package exports `./electron-provider`, `./callbacks/backend`, `./callbacks/browser`, and `./callbacks/http`. Transport and Electron integration modules remain private implementation details, and there is intentionally no broad package-root export.

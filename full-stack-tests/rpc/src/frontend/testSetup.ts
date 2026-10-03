@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "./executeBackendCallback";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/renderer";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { backendOriginFor, backendPortFor, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
+import { mobileBackendPortFor } from "../common/BrowserTestPorts";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
@@ -16,13 +17,12 @@ Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
 RpcConfiguration.disableRoutingValidation = true;
 
-function initializeCloud(protocol: string) {
-  const port = Number(window.location.port) + 2000;
-  const mobilePort = port + 2000;
+function initializeCloud() {
+  const mobilePort = mobileBackendPortFor(parseFrontendPort(window.location.port, "The Vitest page port"));
 
   const config = BentleyCloudRpcManager.initializeClient({
     info: { title: "rpc-full-stack-test", version: "v1.0" },
-    pathPrefix: `${protocol}://${window.location.hostname}:${port}`,
+    pathPrefix: backendOriginFor(window.location),
   }, rpcInterfaces);
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
@@ -57,24 +57,25 @@ function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) 
   config.attach(AttachedInterface);
 }
 
+export const configuredEnvironment = process.env.VITEST_RPC_ENVIRONMENT;
 export let currentEnvironment: string;
 
-export async function setupFrontend() {
+export async function setupFrontend(electronStartup?: () => Promise<void>) {
   currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
+  // Test skips use the configured environment, so it must match the backend that actually started.
+  if (currentEnvironment !== configuredEnvironment)
+    throw new Error(`RPC test environment mismatch: configured "${configuredEnvironment}", but the backend reported "${currentEnvironment}".`);
   switch (currentEnvironment) {
     case "http":
-      return initializeCloud("http");
+      return initializeCloud();
     case "electron":
-      await ElectronApp.startup({
-        iModelApp: {
-          rpcInterfaces,
-          localization: new EmptyLocalization(),
-        },
-      });
+      if (electronStartup === undefined)
+        throw new Error("Electron frontend startup was not provided.");
+      await electronStartup();
       return;
     case "websocket":
       let socketUrl = new URL(window.location.toString());
-      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl.port = backendPortFor(parseFrontendPort(socketUrl.port, "The Vitest page port")).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
       BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);

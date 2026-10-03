@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type RegisterBackendCallback, registerCertaBackendCallback } from "./CallbackRegistrar";
+import type { BackendCallbackRegistrar } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { IpcHost } from "@itwin/core-backend";
 import { BentleyError, ITwinError } from "@itwin/core-bentley";
 import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
@@ -40,7 +40,7 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
   });
 }
 
-export function setupIpcTestElectron(registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback) {
+export function setupIpcTestElectron(registerBackendCallback: BackendCallbackRegistrar) {
   orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-require-imports
 
   // Return immediately and deliver result on responseChannel to avoid deadlocks
@@ -63,8 +63,8 @@ export function setupIpcTestElectron(registerBackendCallback: RegisterBackendCal
 
 export async function setupIpcTest(
   before = async () => { },
-  socketOverride?: IpcWebSocketBackend,
-  registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback,
+  socketOverride: IpcWebSocketBackend | undefined,
+  registerBackendCallback: BackendCallbackRegistrar,
 ) {
   let socket: IpcWebSocketBackend;
   let ready: () => void;
@@ -107,12 +107,12 @@ export async function setupIpcTest(
     return true;
   });
 
-  // WebSocket Certa callbacks use HTTP, so we can await IpcHost.invoke directly.
+  // Browser callbacks use HTTP, so we can await IpcHost.invoke directly.
   registerBackendCallback(BackendTestCallbacks.invokeIpcApp, async (channel: string, ...args: any[]) => {
     return IpcHost.invoke(channel, ...args);
   });
 
-  // WebSocket Certa callbacks use HTTP and can only return primitives, so JSON-stringify the result.
+  // Browser callback responses use JSON, so JSON-stringify the result.
   registerBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, async (channel: string, methodName: string, ...args: any[]) => {
     const proxy = IpcHost.makeIpcProxy<any>(channel);
     try {

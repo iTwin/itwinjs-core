@@ -1027,17 +1027,17 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "test:${input:rpcTestEnvironment}",
-        "--",
-        "--debug"
+        "test:${input:rpcTestEnvironment}"
       ],
+      "env": {
+        "VITEST_RPC_DEBUG": "1"
+      },
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
+        "${workspaceFolder}/core/*/lib/**/*.js"
       ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/rpc/certa.json
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] Full Stack RPC Tests"
       ]
@@ -1049,12 +1049,11 @@
       },
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc/certa.json
+      "port": 9223, // Chromium CDP or Electron remote debugging port.
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
+        "${workspaceFolder}/core/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] Full Stack RPC Tests"
@@ -1432,7 +1431,6 @@
       "options": [
         "chrome",
         "electron",
-        "direct",
         "chrome-websocket"
       ]
     }
