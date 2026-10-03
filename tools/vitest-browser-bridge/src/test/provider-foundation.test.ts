@@ -3,10 +3,13 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import * as childProcess from "node:child_process";
 import * as path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createElectronBrowserProviderOption, ElectronBrowserProvider } from "../electron/provider.js";
 import { createProviderWindowOptions } from "../electron/provider-session.js";
+
+vi.mock("node:child_process", { spy: true });
 
 const packageRoot = process.cwd();
 const failureFixture = path.join(packageRoot, "src/test/fixtures/failure-and-wait.cjs");
@@ -18,7 +21,7 @@ const fakeProject = {
   },
 };
 
-function createProvider(electronArgs: string[]): ElectronBrowserProvider {
+function createProvider(electronArgs: string[], startupTimeout = 2_000, closeTimeout = 2_000): ElectronBrowserProvider {
   return new ElectronBrowserProvider(
     fakeProject,
     {},
@@ -26,8 +29,8 @@ function createProvider(electronArgs: string[]): ElectronBrowserProvider {
     {
       electronBinary: process.execPath,
       electronArgs,
-      startupTimeout: 2_000,
-      closeTimeout: 2_000,
+      startupTimeout,
+      closeTimeout,
     },
   );
 }
@@ -54,6 +57,22 @@ describe("Electron provider foundation", () => {
     expect(provider.getCommandsContext("session")).toEqual({});
   });
 
+  it.each([
+    { port: undefined, args: [] },
+    { port: 9223, args: ["--remote-debugging-port=9223"] },
+  ])("enables renderer debugging only when a port is configured: $port", async ({ port, args }) => {
+    const spawn = vi.spyOn(childProcess, "spawn").mockImplementation(() => { throw new Error("spawn intercepted"); });
+    try {
+      const option = createElectronBrowserProviderOption({ remoteDebuggingPort: port }, "/tmp/provider-session.js");
+      const provider = option.providerFactory(fakeProject as Parameters<typeof option.providerFactory>[0]);
+      await expect(provider.openPage("inspector", "http://127.0.0.1:1", { parallel: false }))
+        .rejects.toThrow("spawn intercepted");
+      expect(spawn.mock.calls[0][1]).toEqual([...args, "/tmp/provider-session.js"]);
+    } finally {
+      spawn.mockRestore();
+    }
+  });
+
   it("reports an Electron process that exits before the session is ready", async () => {
     const provider = createProvider(["--version"]);
     await expect(provider.openPage("early-exit", "http://127.0.0.1:1", { parallel: false }))
@@ -73,6 +92,15 @@ describe("Electron provider foundation", () => {
     await provider.openPage("teardown", "http://127.0.0.1:1", { parallel: false });
     await provider.close();
     await provider.close();
+  });
+
+  it("allows debugger startup without a readiness timeout", async () => {
+    const provider = createProvider([readyFixture], 0);
+    try {
+      await provider.openPage("debug-startup", "http://127.0.0.1:1", { parallel: false });
+    } finally {
+      await provider.close();
+    }
   });
 
   it("does not finish opening after teardown starts", async () => {

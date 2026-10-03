@@ -355,6 +355,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@itwin/vitest-browser-bridge",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -392,7 +396,7 @@
     },
     {
       "name": "@vitest/browser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "@vitest/browser-playwright",
