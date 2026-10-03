@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, MultiIModelSelectionTool, RenderSystem, SelectionTool,
   SnapMode, TileAdmin, Tool, ToolAdmin,
   ViewManager,
 } from "@itwin/core-frontend";
@@ -60,7 +60,7 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
-import { ToggleSecondaryIModelTool } from "./TiledGraphics";
+import { LinkIModelTool, UnlinkIModelsTool } from "./LinkedIModelTools";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
@@ -122,16 +122,6 @@ class DisplayTestAppToolAdmin extends ToolAdmin {
     }
 
     return this._shortcuts.processShortcutKey(keyEvent);
-  }
-}
-
-class SVTSelectionTool extends SelectionTool {
-  public static override toolId = "SVTSelect";
-  protected override initSelectTool() {
-    super.initSelectTool();
-
-    // ###TODO Want to do this only if version comparison enabled, but meh.
-    IModelApp.locateManager.options.allowExternalIModels = true;
   }
 }
 
@@ -444,20 +434,20 @@ export class DisplayTestApp {
       ShutDownTool,
       SignInTool,
       SignOutTool,
-      SVTSelectionTool,
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
-      ToggleSecondaryIModelTool,
+      LinkIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      UnlinkIModelsTool,
       ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
-    IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+    IModelApp.toolAdmin.defaultToolId = MultiIModelSelectionTool.toolId;
 
     registerDtaFrontendIpcHandler();
 

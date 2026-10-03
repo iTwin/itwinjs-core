@@ -38,6 +38,14 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return this.targetView.view.iModel;
   }
 
+  /** Get the set of iModels on which this tool may operate if it supports linked [[IModelDisplayReference]]s.
+   * @beta
+   */
+  public get iModels(): Iterable<IModelConnection> {
+    assert(undefined !== this.targetView);
+    return this.targetView.iModelRefs.iModels;
+  }
+
   /** Get the briefcase on which this tool operates, if the tool has successfully installed and the target [[iModel]] is a briefcase. */
   public get briefcase(): BriefcaseConnection | undefined {
     const iModel = this.targetView?.view.iModel;

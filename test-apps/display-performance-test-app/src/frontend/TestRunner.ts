@@ -525,8 +525,8 @@ export class TestRunner {
       const styleProps = await imodel.elements.queryProps({ from: DisplayStyleState.classFullName, where: `CodeValue='${config.displayStyle}'` });
       if (styleProps.length >= 1) {
         const style = new DisplayStyle3dState(styleProps[0], imodel);
-        await style.load();
-        viewport.view.setDisplayStyle(style);
+        const styledView = await viewport.view.cloneWithDisplayStyle(style);
+        viewport.changeView(styledView);
       }
     }
 

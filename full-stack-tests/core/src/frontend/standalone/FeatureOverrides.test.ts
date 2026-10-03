@@ -49,8 +49,8 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     const target = vp.target as Target;
-    target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
+    imodel.hilited.clear();
+    const ovr = FeatureOverrides.createFromTarget(imodel, target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -61,9 +61,7 @@ describe("FeatureOverrides", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new HiliteSet(imodel);
-    hls.add({ elements: "0x1" });
-    vp.target.setHiliteSet(hls);
+    imodel.hilited.add({ elements: "0x1" });
     ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });
@@ -76,8 +74,8 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     const target = vp.target as Target;
-    target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(target, {}, undefined);
+    imodel.hilited.clear();
+    const ovr = FeatureOverrides.createFromTarget(imodel, target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
@@ -89,9 +87,7 @@ describe("FeatureOverrides", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new HiliteSet(imodel);
-    hls.add({ elements: "0x1" });
-    vp.target.setHiliteSet(hls);
+    imodel.hilited.add({ elements: "0x1" });
     ovr.update(table, target.currentBranch);
     expect(ovr.anyHilited).to.be.true;
   });

@@ -21,6 +21,7 @@ import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
@@ -138,13 +139,11 @@ export interface GraphicBranchOptions {
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
   /** Optionally replaces the view's hidden line settings when drawing the branch. */
   hline?: HiddenLine.Settings;
-  /** The iModel from which the graphics originate, if different than that associated with the view. */
-  iModel?: IModelConnection;
-  /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
-   * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
-   * with the [[Viewport]]).
+  /** The iModel reference from which these graphics originate. If unspecified, the iModel reference from any parent [[GraphicBranch]] is inherited by this branch.
+   * Otherwise, it defaults to the view's primary iModel reference ([[IModelDisplayReferences.primary]]).
+   * @beta
    */
-  transformFromIModel?: Transform;
+  iModelRef?: IModelDisplayReference;
   /** @internal */
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */

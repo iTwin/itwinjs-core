@@ -704,6 +704,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
   public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
 
+  /** @internal for RealityModelSource */
+  public get activeViewFlags() { return this.viewFlags; }
+
   /** The background color for this DisplayStyle */
   public get backgroundColor(): ColorDef { return this.settings.backgroundColor; }
   public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }

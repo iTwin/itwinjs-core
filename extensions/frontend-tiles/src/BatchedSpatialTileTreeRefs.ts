@@ -6,10 +6,11 @@
 import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
+    _backingView,
+    _scheduleScriptReference,
   AnimationNodeId,
-  AttachToViewportArgs, collectMaskRefs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
-  TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
-  Viewport,
+  AttachToViewportArgs, collectMaskRefs, createSpatialTileTreeReferences, IModelConnection, SpatialIModelDisplayReference, SpatialTileTreeReferences,
+  TileTreeLoadStatus, TileTreeOwner, TileTreeReference, Viewport,
 } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 import { BatchedModelGroups } from "./BatchedModelGroups.js";
@@ -22,7 +23,7 @@ import { loggerCategory } from "./LoggerCategory.js";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
-  private readonly _view: SpatialViewState;
+  private readonly _iModelRef: SpatialIModelDisplayReference;
   private readonly _models: BatchedModels;
   private readonly _groups: BatchedModelGroups;
   private readonly _spec: BatchedTilesetSpec;
@@ -34,18 +35,18 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _excludedRefs: SpatialTileTreeReferences;
   private _removeSceneInvalidationListener?: () => void;
 
-  public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
-    this._view = view;
-    this._models = new BatchedModels(view, spec.models);
+  public constructor(spec: BatchedTilesetSpec, iModelRef: SpatialIModelDisplayReference) {
+    this._iModelRef = iModelRef;
+    this._models = new BatchedModels(iModelRef, spec.models);
     this._spec = spec;
 
-    const script = view.displayStyle.scheduleScript;
+    const script = iModelRef[_scheduleScriptReference]?.script;
     this._currentScript = script?.requiresBatching ? script : undefined;
 
     const includedModels = new Set(spec.models.keys());
-    this._excludedRefs = createSpatialTileTreeReferences(view, includedModels);
+    this._excludedRefs = createSpatialTileTreeReferences(iModelRef, includedModels);
 
-    this._groups = new BatchedModelGroups(view, this._currentScript, includedModels, spec.models);
+    this._groups = new BatchedModelGroups(iModelRef, this._currentScript, includedModels, spec.models);
     this._treeOwner = this.getTreeOwner();
     this.loadRefs();
 
@@ -61,7 +62,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   private getTreeOwner(): TileTreeOwner {
-    return getBatchedTileTreeOwner(this._view.iModel, {
+    return getBatchedTileTreeOwner(this._iModelRef.iModel, {
       spec: this._spec,
       script: this._currentScript,
       modelGroups: this._groups.guid,
@@ -69,6 +70,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   private listenForScriptChange(): void {
+    /* ###TODO onScheduleScriptChanged
     const onScriptChanged = (newScript: RenderSchedule.Script | undefined) => {
       if (!newScript?.requiresBatching)
         newScript = undefined;
@@ -81,12 +83,13 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
           this._groups.setScript(newScript);
     };
 
-    let rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
-    this._view.onDisplayStyleChanged.addListener((newStyle) => {
+    let rmListener = this._iModelRef.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+    this._iModelRef.onDisplayStyleChanged.addListener((newStyle) => {
       rmListener();
       onScriptChanged(newStyle.scheduleScript);
-      rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+      rmListener = this._iModelRef.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
     });
+    */
   }
 
   private loadRefs(): void {
@@ -94,14 +97,15 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       ref.detachLayerListeners();
     this._refs.length = 0;
     const groups = this._groups.groups;
+    const view = this._iModelRef.parent[_backingView];
     const args: BatchedTileTreeReferenceArgs = {
       models: this._models,
       groups,
       treeOwner: this._treeOwner,
-      getCurrentTimePoint: () => this._currentScript ? (this._view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
-      getBackgroundBase: () => this._view.displayStyle.settings.mapImagery.backgroundBase,
-      getBackgroundLayers: () => this._view.displayStyle.settings.mapImagery.backgroundLayers,
-      iModel: this._view.iModel,
+      getCurrentTimePoint: () => this._currentScript ? (view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
+      getBackgroundBase: () => view.displayStyle.settings?.mapImagery.backgroundBase,
+      getBackgroundLayers: () => view.displayStyle.settings?.mapImagery.backgroundLayers,
+      iModel: this._iModelRef.iModel,
     };
 
     for (let i = 0; i < groups.length; i++) {
@@ -125,7 +129,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   public update(): void {
     this._excludedRefs.update();
-    this._models.setViewedModels(this._view.modelSelector.models);
+    this._models.setViewedModels(this._iModelRef.viewedModels);
     if (this._onModelSelectorChanged)
       this._onModelSelectorChanged();
   }
@@ -153,7 +157,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   // For every model used by the mask (modelIds), extend the maskRange by that model's range.
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
     // Use V1 tiles for masking - producing the mask from batched tiles can significantly impact performance.
-    return collectMaskRefs(this._view, modelIds, undefined, maskTreeRefs, maskRange);
+    return collectMaskRefs(this._iModelRef, modelIds, undefined, maskTreeRefs, maskRange);
   }
 
   // Returns a list of the models that are NOT in the planar clip mask.
@@ -204,21 +208,21 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
-  public constructor(view: SpatialViewState, getSpec: Promise<BatchedTilesetSpec | null>, nopFallback: boolean = false) {
-    this._proxyRef = new ProxyTileTreeReference(view.iModel);
+  public constructor(iModelRef: SpatialIModelDisplayReference, getSpec: Promise<BatchedTilesetSpec | null>, nopFallback: boolean = false) {
+    this._proxyRef = new ProxyTileTreeReference(iModelRef.iModel);
     getSpec.then((spec: BatchedTilesetSpec | null) => {
       if (spec) {
-        this.setTreeRefs(new BatchedSpatialTileTreeReferences(spec, view));
+        this.setTreeRefs(new BatchedSpatialTileTreeReferences(spec, iModelRef));
       } else if(nopFallback) {
         this.setTreeRefs(new EmptySpatialTileTreeReferences());
       }else {
-        this.setTreeRefs(createSpatialTileTreeReferences(view));
+        this.setTreeRefs(createSpatialTileTreeReferences(iModelRef));
       }
     }).catch(() => {
       if(nopFallback) {
         this.setTreeRefs(new EmptySpatialTileTreeReferences());
       }else {
-        this.setTreeRefs(createSpatialTileTreeReferences(view));
+        this.setTreeRefs(createSpatialTileTreeReferences(iModelRef));
       }
     });
   }
@@ -313,8 +317,8 @@ class EmptySpatialTileTreeReferences implements SpatialTileTreeReferences {
 }
 
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl, nopFallback: boolean = false): SpatialTileTreeReferences {
-  const iModel = view.iModel;
+export function createBatchedSpatialTileTreeReferences(iModelRef: SpatialIModelDisplayReference, computeBaseUrl: ComputeSpatialTilesetBaseUrl, nopFallback: boolean = false): SpatialTileTreeReferences {
+  const iModel = iModelRef.iModel;
   let entry = iModelToTilesetSpec.get(iModel);
   if (undefined === entry) {
     const promise = entry = fetchTilesetSpec(iModel, computeBaseUrl);
@@ -337,12 +341,12 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
     }
 
     // No tileset could be obtained for this iModel - use default tile generation instead.
-    return createSpatialTileTreeReferences(view);
+    return createSpatialTileTreeReferences(iModelRef);
   }
 
   if (entry instanceof Promise)
-    return new ProxySpatialTileTreeReferences(view, entry, nopFallback);
+    return new ProxySpatialTileTreeReferences(iModelRef, entry, nopFallback);
 
-  return new BatchedSpatialTileTreeReferences(entry, view);
+  return new BatchedSpatialTileTreeReferences(entry, iModelRef);
 }
 

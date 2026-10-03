@@ -43,29 +43,45 @@ export class Feature {
    * @returns zero if the features are equivalent, a negative value if this feature compares as "less than" `rhs`, or a positive value if this feature compares "greater than" `rhs`.
    */
   public compare(rhs: Feature): number {
-    if (this === rhs)
+    return Feature.compare(this, rhs);
+  }
+}
+
+/** Describes a [[Feature]].
+ * @public
+ */
+export interface FeatureProps {
+  /** The Id of the [Element]($backend) to which this feature belongs. */
+  elementId: Id64String;
+  /** The Id of the [SubCategory]($backend) to which this feature belongs. */
+  subCategoryId: Id64String;
+  /** The kind of geometry this feature represents. */
+  geometryClass: GeometryClass;
+}
+
+/** @public */
+export namespace Feature {
+  /** An [OrderedComparator]($bentley) used for comparing [[Feature]]s. */
+  export function compare(lhs: FeatureProps, rhs: FeatureProps): number {
+    if (lhs === rhs)
       return 0;
 
-    let cmp = compareNumbers(this.geometryClass, rhs.geometryClass);
+    let cmp = compareNumbers(lhs.geometryClass, rhs.geometryClass);
     if (0 === cmp) {
-      cmp = compareStrings(this.elementId, rhs.elementId);
+      cmp = compareStrings(lhs.elementId, rhs.elementId);
       if (0 === cmp) {
-        cmp = compareStrings(this.subCategoryId, rhs.subCategoryId);
+        cmp = compareStrings(lhs.subCategoryId, rhs.subCategoryId);
       }
     }
 
     return cmp;
   }
 }
-
 /** A [[Feature]] with a modelId identifying the model containing the feature, obtained from a [[RenderFeatureTable]].
  * @public
  */
-export interface ModelFeature {
+export interface ModelFeature extends FeatureProps {
   modelId: Id64String;
-  elementId: Id64String;
-  subCategoryId: Id64String;
-  geometryClass: GeometryClass;
 }
 
 /** @public */
@@ -80,6 +96,11 @@ export namespace ModelFeature {
       subCategoryId: Id64.invalid,
       geometryClass: GeometryClass.Primary,
     };
+  }
+
+  /** An [OrderedComparator]($bentley) that compares two [[ModeFeature]]s. */
+  export function compare(lhs: ModelFeature, rhs: ModelFeature): number {
+    return Feature.compare(lhs, rhs) || compareStrings(lhs.modelId, rhs.modelId);
   }
 
   /** Returns `true` if any of `feature`'s properties differ from the defaults (invalid Ids and [[GeometryClass.Primary]]). */

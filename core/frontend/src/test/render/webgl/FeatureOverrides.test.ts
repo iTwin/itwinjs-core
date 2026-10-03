@@ -13,7 +13,7 @@ import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../internal/render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../internal/render/webgl/Texture";
 import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
-import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
+import { openBlankViewport, readUniqueColors, testBlankViewport } from "../../openBlankViewport";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { Decorator } from "../../../ViewManager";
 import { DecorateContext } from "../../../ViewContext";
@@ -27,6 +27,8 @@ describe("FeatureOverrides", () => {
     const rect = new ViewRect(0, 0, 100, 50);
     const target = IModelApp.renderSystem.createOffscreenTarget(rect);
     expect(target).toBeInstanceOf(Target);
+    const vp = openBlankViewport();
+    target.reset(undefined, vp.primaryIModelRef);
     return target as Target;
   }
 
@@ -340,7 +342,6 @@ describe("FeatureOverrides", () => {
           setup();
           vp.renderFrame();
 
-          expect(target.hilites).toEqual(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).toEqual(1);
 
           const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);

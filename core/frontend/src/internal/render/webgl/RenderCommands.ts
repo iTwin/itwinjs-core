@@ -641,9 +641,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
     // assert(RenderPass.None === this._forcedRenderPass);
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
+    assert(undefined !== this._stack.top.iModelRef);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
-    const overrides = batch.getOverrides(this.target, this.appearanceProvider ?? this._stack.top);
+    const overrides = batch.getOverrides(this._stack.top.iModelRef.iModel, this.target, this.appearanceProvider ?? this._stack.top);
     if (overrides.allHidden)
       return;
 
