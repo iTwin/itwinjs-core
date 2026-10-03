@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: "24.x"
 
+      - name: Audit Rush lockfile
+        run: node ./.github/workflows/automation-scripts/audit-rush-lockfile.mjs
+
       - name: Run update-changelogs.mjs
         id: prepare
         run: node ./.github/workflows/automation-scripts/update-changelogs.mjs
