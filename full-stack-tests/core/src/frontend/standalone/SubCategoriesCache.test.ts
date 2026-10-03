@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "vitest";
-import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
@@ -367,16 +368,31 @@ describeChrome("SubCategoriesCache", () => {
     let bc: BriefcaseConnection;
     let dictId: Id64String;
     let pullChanges: () => Id64String[];
+    let perTestFilePath: string | undefined;
+    const removeListeners: Array<() => void> = [];
 
     beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
+    });
 
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
-      bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+    afterAll(async () => {
+      try {
+        await deletePerTestFile();
+      } finally {
+        await TestUtility.shutdownFrontend();
+      }
+    });
+
+    beforeEach(async () => {
+      await deletePerTestFile();
+      // Other suites edit the generated asset; always copy the unchanged source fixture.
+      const sourcePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/src/test/assets/planprojection.bim");
+      perTestFilePath = await coreFullStackTestIpc.createTempBimCopy(sourcePath);
+      bc = await BriefcaseConnection.openStandalone(perTestFilePath, OpenMode.ReadWrite);
 
       const changedElements = new Set<Id64String>();
-      bc.txns.onElementsChanged.addListener((changes) => {
+      removeListeners.push(bc.txns.onElementsChanged.addListener((changes) => {
         for (const key of ["inserted", "updated", "deleted"] as const) {
           const elems = changes[key];
           if (undefined !== elems) {
@@ -385,7 +401,7 @@ describeChrome("SubCategoriesCache", () => {
             }
           }
         }
-      });
+      }));
 
       dictId = await bc.models.getDictionaryModel();
 
@@ -396,27 +412,49 @@ describeChrome("SubCategoriesCache", () => {
       };
     });
 
-    afterAll(async () => {
-      await bc.close();
-      await TestUtility.shutdownFrontend();
+    afterEach(async () => {
+      try {
+        // Remove pending waiters before ending edits, including those left by a timed-out test.
+        for (const remove of removeListeners.splice(0))
+          remove();
+
+        if (bc !== undefined && !bc.isClosed)
+          await EditTools.finishCommand();
+      } finally {
+        try {
+          if (bc !== undefined && !bc.isClosed)
+            await bc.close();
+        } finally {
+          await deletePerTestFile();
+        }
+      }
     });
+
+    async function deletePerTestFile(): Promise<void> {
+      if (perTestFilePath !== undefined) {
+        // Retain ownership if removal fails so later cleanup cannot lose this directory.
+        await coreFullStackTestIpc.deleteTempBimCopy(perTestFilePath);
+        perTestFilePath = undefined;
+      }
+    }
 
     function expectChanges(changedElementIds: Id64String[]): void {
       const actual = pullChanges();
       expect(actual).toEqual(changedElementIds);
     }
 
-    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+    async function doAndExpectChanges(changedElementIds: Id64String[], operation: () => Promise<void>): Promise<void> {
       const pending = new Promise<void>((resolve) => {
-        const remove = bc.txns.onElementsChanged.addListener(() => {
-          remove();
-          resolve();
-        });
+        removeListeners.push(bc.txns.onElementsChanged.addOnce(() => resolve()));
       });
 
-      await saveBriefcaseChanges(bc);
+      await operation();
       await pending;
       expectChanges(changedElementIds);
+    }
+
+    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+      return doAndExpectChanges(changedElementIds, async () => saveBriefcaseChanges(bc));
     }
 
     function getDefaultSubCategoryId(categoryId: string): string {
@@ -518,8 +556,9 @@ describeChrome("SubCategoriesCache", () => {
       expectCachedSubCategories(cat, [s1]);
 
       // Undo
-      await bc.txns.reverseSingleTxn();
-      expectChanges([s2]);
+      await doAndExpectChanges([s2], async () => {
+        expect(await bc.txns.reverseSingleTxn()).toBe(IModelStatus.Success);
+      });
       // Soft invalidation: stale data from last reload (s1 only) is preserved
       expectCachedSubCategories(cat, [s1]);
 
@@ -528,8 +567,9 @@ describeChrome("SubCategoriesCache", () => {
       expectAppearance(s1, ColorDef.blue);
 
       // Redo
-      await bc.txns.reinstateTxn();
-      expectChanges([s2]);
+      await doAndExpectChanges([s2], async () => {
+        expect(await bc.txns.reinstateTxn()).toBe(IModelStatus.Success);
+      });
       // Soft invalidation: stale data from last reload (s1 + s2) is preserved
       expectCachedSubCategories(cat, [s1, s2]);
 

@@ -3,7 +3,7 @@
 This package contains tests of standard iTwin.js RPC interfaces using a local client and server side.
 Every test in this directory should test frontend APIs with an actual backend.
 
-The tests share source between Electron and Chrome and should only include one test RPC interface. Both runtimes run through Vitest with the browser bridge. The runtime matrix is intentional: common frontend behavior is not duplicated when the other runtime adds no coverage, while Electron-specific IPC/native behavior and Chrome-specific browser behavior remain explicit. See [TEST_MATRIX.md](./TEST_MATRIX.md) for the current suite-level ownership.
+The tests share source between Chrome (Vitest/Playwright) and Electron (Vitest browser bridge) and should use one test RPC interface. Selected shared frontend and pixel suites run only in Chrome to avoid duplicate execution; native-app/IPC suites run only in Electron. Runtime selections and their rationale live in the Vitest configs and per-test guards.
 
 There are three types of tests:
 
