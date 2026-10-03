@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "vitest";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
@@ -12,11 +12,11 @@ import { SchemaKey } from "@itwin/ecschema-metadata";
 if (ProcessDetector.isElectronAppFrontend) {
 
   describe("SnapshotConnection", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -27,77 +27,77 @@ if (ProcessDetector.isElectronAppFrontend) {
       /* eslint-enable @typescript-eslint/no-deprecated */
       const snapshotF1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
-      assert.notEqual(snapshotR1.key, snapshotF1.key);
-      assert.isTrue(snapshotR1.isRemote);
-      assert.isTrue(snapshotR2.isRemote);
-      assert.isFalse(snapshotF1.isRemote);
+      expect(snapshotR1.key).not.toBe(snapshotF1.key);
+      expect(snapshotR1.isRemote).toBe(true);
+      expect(snapshotR2.isRemote).toBe(true);
+      expect(snapshotF1.isRemote).toBe(false);
 
-      assert.isTrue(snapshotR1.isOpen);
-      assert.isTrue(snapshotR2.isOpen);
-      assert.isTrue(snapshotF1.isOpen);
+      expect(snapshotR1.isOpen).toBe(true);
+      expect(snapshotR2.isOpen).toBe(true);
+      expect(snapshotF1.isOpen).toBe(true);
 
-      assert.isFalse(snapshotR1.isClosed);
-      assert.isFalse(snapshotR2.isClosed);
-      assert.isFalse(snapshotF1.isClosed);
+      expect(snapshotR1.isClosed).toBe(false);
+      expect(snapshotR2.isClosed).toBe(false);
+      expect(snapshotF1.isClosed).toBe(false);
 
-      assert.isDefined(snapshotR1.iModelId);
-      assert.isDefined(snapshotR2.iModelId);
-      assert.isDefined(snapshotF1.iModelId);
+      expect(snapshotR1.iModelId).toBeDefined();
+      expect(snapshotR2.iModelId).toBeDefined();
+      expect(snapshotF1.iModelId).toBeDefined();
 
-      assert.isTrue(Guid.isV4Guid(snapshotR1.iModelId));
-      assert.isTrue(Guid.isV4Guid(snapshotR2.iModelId));
-      assert.isTrue(Guid.isV4Guid(snapshotF1.iModelId));
+      expect(Guid.isV4Guid(snapshotR1.iModelId)).toBe(true);
+      expect(Guid.isV4Guid(snapshotR2.iModelId)).toBe(true);
+      expect(Guid.isV4Guid(snapshotF1.iModelId)).toBe(true);
 
-      assert.isTrue(snapshotR1.isSnapshot);
-      assert.isTrue(snapshotR2.isSnapshot);
-      assert.isTrue(snapshotF1.isSnapshot);
+      expect(snapshotR1.isSnapshot).toBe(true);
+      expect(snapshotR2.isSnapshot).toBe(true);
+      expect(snapshotF1.isSnapshot).toBe(true);
 
-      assert.isTrue(snapshotR1.isSnapshotConnection());
-      assert.isTrue(snapshotR2.isSnapshotConnection());
-      assert.isTrue(snapshotF1.isSnapshotConnection());
+      expect(snapshotR1.isSnapshotConnection()).toBe(true);
+      expect(snapshotR2.isSnapshotConnection()).toBe(true);
+      expect(snapshotF1.isSnapshotConnection()).toBe(true);
 
-      assert.isFalse(snapshotR1.isBriefcase);
-      assert.isFalse(snapshotR2.isBriefcase);
-      assert.isFalse(snapshotF1.isBriefcase);
+      expect(snapshotR1.isBriefcase).toBe(false);
+      expect(snapshotR2.isBriefcase).toBe(false);
+      expect(snapshotF1.isBriefcase).toBe(false);
 
-      assert.isFalse(snapshotR1.isCheckpointConnection());
-      assert.isFalse(snapshotR2.isCheckpointConnection());
-      assert.isFalse(snapshotF1.isCheckpointConnection());
+      expect(snapshotR1.isCheckpointConnection()).toBe(false);
+      expect(snapshotR2.isCheckpointConnection()).toBe(false);
+      expect(snapshotF1.isCheckpointConnection()).toBe(false);
 
-      assert.isDefined(snapshotR1.schemaContext);
-      assert.isDefined(snapshotR2.schemaContext);
-      assert.isDefined(snapshotF1.schemaContext);
+      expect(snapshotR1.schemaContext).toBeDefined();
+      expect(snapshotR2.schemaContext).toBeDefined();
+      expect(snapshotF1.schemaContext).toBeDefined();
 
 
       const testKey = new SchemaKey("BisCore");
       const schemaElemR1 = await snapshotR1.schemaContext.getSchema(testKey);
-      assert.isDefined(schemaElemR1, "BisCore schema should be defined in snapshot iModel");
+      expect(schemaElemR1).toBeDefined();
       const schemaElemR2 = await snapshotR2.schemaContext.getSchema(testKey);
-      assert.isDefined(schemaElemR2, "BisCore schema should be defined in snapshot iModel");
+      expect(schemaElemR2).toBeDefined();
       const schemaElemF1 = await snapshotF1.schemaContext.getSchema(testKey);
-      assert.isDefined(schemaElemF1, "BisCore schema should be defined in snapshot iModel");
+      expect(schemaElemF1).toBeDefined();
       const elementPropsR1 = await snapshotR1.elements.getProps(IModel.rootSubjectId);
-      assert.equal(1, elementPropsR1.length);
-      assert.equal(elementPropsR1[0].id, IModel.rootSubjectId);
+      expect(1).toBe(elementPropsR1.length);
+      expect(elementPropsR1[0].id).toBe(IModel.rootSubjectId);
       await snapshotR1.close(); // R1 is the same backend iModel as F1, but close should not affect F1
 
       const elementPropsR2 = await snapshotR2.elements.getProps(IModel.rootSubjectId);
-      assert.equal(1, elementPropsR2.length);
-      assert.equal(elementPropsR2[0].id, IModel.rootSubjectId);
+      expect(1).toBe(elementPropsR2.length);
+      expect(elementPropsR2[0].id).toBe(IModel.rootSubjectId);
       await snapshotR2.close();
 
       const elementPropsF1 = await snapshotF1.elements.getProps(IModel.rootSubjectId);
-      assert.equal(1, elementPropsF1.length, "R1 close should not have affected F1");
-      assert.equal(elementPropsF1[0].id, IModel.rootSubjectId, "R1 close should not have affected F1");
+      expect(1, "R1 close should not have affected F1").toBe(elementPropsF1.length);
+      expect(elementPropsF1[0].id, "R1 close should not have affected F1").toBe(IModel.rootSubjectId);
       await snapshotF1.close();
 
-      assert.isFalse(snapshotR1.isOpen);
-      assert.isFalse(snapshotR2.isOpen);
-      assert.isFalse(snapshotF1.isOpen);
+      expect(snapshotR1.isOpen).toBe(false);
+      expect(snapshotR2.isOpen).toBe(false);
+      expect(snapshotF1.isOpen).toBe(false);
 
-      assert.isTrue(snapshotR1.isClosed);
-      assert.isTrue(snapshotR2.isClosed);
-      assert.isTrue(snapshotF1.isClosed);
+      expect(snapshotR1.isClosed).toBe(true);
+      expect(snapshotR2.isClosed).toBe(true);
+      expect(snapshotF1.isClosed).toBe(true);
 
 
     });

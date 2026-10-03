@@ -21,6 +21,7 @@ import { createGraphicTemplate, GraphicTemplateBatch } from "../../internal/rend
 import { GraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 
+/** @internal */
 export class PrimitiveBuilder extends GraphicBuilder {
   public readonly [_implementationProhibited] = undefined;
   public readonly system: RenderSystem;

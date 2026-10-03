@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -15,12 +15,12 @@ describe("ViewState attached to Viewport", async () => {
   div.style.width = div.style.height = "40px";
   document.body.appendChild(div);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -32,62 +32,62 @@ describe("ViewState attached to Viewport", async () => {
 
   async function loadView(id = "0x34"): Promise<SpatialViewState> {
     const view = await imodel.views.load(id);
-    expect(view).instanceof(SpatialViewState);
+    expect(view).toBeInstanceOf(SpatialViewState);
     return view as SpatialViewState;
   }
 
   it("should attach to viewport on construction", async () => {
     const view = await loadView();
-    expect(view.isAttachedToViewport).to.be.false;
+    expect(view.isAttachedToViewport).toBe(false);
     vp = ScreenViewport.create(div, view);
-    expect(view.isAttachedToViewport).to.be.true;
+    expect(view.isAttachedToViewport).toBe(true);
   });
 
   it("should detach when viewport is disposed", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
-    expect(view.isAttachedToViewport).to.be.true;
+    expect(view.isAttachedToViewport).toBe(true);
     vp[Symbol.dispose]();
-    expect(view.isAttachedToViewport).to.be.false;
+    expect(view.isAttachedToViewport).toBe(false);
   });
 
   it("should detach when Viewport.changeView is used", async () => {
     const v1 = await loadView();
     const v2 = v1.clone();
     vp = ScreenViewport.create(div, v1);
-    expect(v1.isAttachedToViewport).to.be.true;
-    expect(v2.isAttachedToViewport).to.be.false;
+    expect(v1.isAttachedToViewport).toBe(true);
+    expect(v2.isAttachedToViewport).toBe(false);
 
     vp.changeView(v2);
 
-    expect(v1.isAttachedToViewport).to.be.false;
-    expect(v2.isAttachedToViewport).to.be.true;
+    expect(v1.isAttachedToViewport).toBe(false);
+    expect(v2.isAttachedToViewport).toBe(true);
   });
 
   it("should detach when Viewport.applyViewState is used", async () => {
     const v1 = await loadView();
     const v2 = v1.clone();
     vp = ScreenViewport.create(div, v1);
-    expect(v1.isAttachedToViewport).to.be.true;
-    expect(v2.isAttachedToViewport).to.be.false;
+    expect(v1.isAttachedToViewport).toBe(true);
+    expect(v2.isAttachedToViewport).toBe(false);
 
     vp.applyViewState(v2);
 
-    expect(v1.isAttachedToViewport).to.be.false;
-    expect(v2.isAttachedToViewport).to.be.true;
+    expect(v1.isAttachedToViewport).toBe(false);
+    expect(v2.isAttachedToViewport).toBe(true);
   });
 
   it("should throw when attempting to detach while not attached", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view.clone());
-    expect(view.isAttachedToViewport).to.be.false;
+    expect(view.isAttachedToViewport).toBe(false);
     expect(() => view.detachFromViewport()).to.throw("Attempting to detach a ViewState from a Viewport to which it is not attached.");
   });
 
   it("should throw when attempting to attach while already attached", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
-    expect(view.isAttachedToViewport).to.be.true;
+    expect(view.isAttachedToViewport).toBe(true);
     expect(() => view.attachToViewport(vp)).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
   });
 
@@ -98,9 +98,9 @@ describe("ViewState attached to Viewport", async () => {
 
     const reset = () => categoriesChanged = modelsChanged = styleChanged = false;
     const expectChanges = (categories: boolean, models: boolean, style: boolean) => {
-      expect(categoriesChanged).to.equal(categories);
-      expect(modelsChanged).to.equal(models);
-      expect(styleChanged).to.equal(style);
+      expect(categoriesChanged).toBe(categories);
+      expect(modelsChanged).toBe(models);
+      expect(styleChanged).toBe(style);
     };
 
     const view = await loadView();
@@ -158,8 +158,8 @@ describe("ViewState attached to Viewport", async () => {
     let modelsChanged = false;
     const reset = () => categoriesChanged = modelsChanged = false;
     const expectChanges = (categories: boolean, models: boolean) => {
-      expect(categoriesChanged).to.equal(categories);
-      expect(modelsChanged).to.equal(models);
+      expect(categoriesChanged).toBe(categories);
+      expect(modelsChanged).toBe(models);
     };
 
     const view = await loadView();

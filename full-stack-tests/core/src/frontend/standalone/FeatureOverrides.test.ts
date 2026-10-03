@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
-import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
@@ -24,18 +24,18 @@ describe("FeatureOverrides", () => {
   let vp: ScreenViewport;
 
   const viewDiv = document.createElement("div");
-  assert(null !== viewDiv);
+  expect(null !== viewDiv).toBeTruthy();
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -60,12 +60,12 @@ describe("FeatureOverrides", () => {
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
     // set something hilited; should be overridden
-    expect(ovr.anyHilited).to.be.false;
+    expect(ovr.anyHilited).toBe(false);
     const hls = new HiliteSet(imodel);
     hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
     ovr.update(table, target.currentBranch);
-    expect(ovr.anyHilited).to.be.true;
+    expect(ovr.anyHilited).toBe(true);
   });
 
   it("should create a non-uniform feature overrides object", () => {
@@ -88,12 +88,12 @@ describe("FeatureOverrides", () => {
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
     // set something hilited; should be overridden
-    expect(ovr.anyHilited).to.be.false;
+    expect(ovr.anyHilited).toBe(false);
     const hls = new HiliteSet(imodel);
     hls.add({ elements: "0x1" });
     vp.target.setHiliteSet(hls);
     ovr.update(table, target.currentBranch);
-    expect(ovr.anyHilited).to.be.true;
+    expect(ovr.anyHilited).toBe(true);
   });
 });
 
@@ -114,30 +114,30 @@ describe("FeatureTable", () => {
     const table = new FeatureTable(100, Id64.fromString("0x1234"));
     for (const feature of features) {
       let testId = Id64.fromString(feature.elementId);
-      expect(Id64.isValid(testId)).to.be.true;
+      expect(Id64.isValid(testId)).toBe(true);
       testId = Id64.fromString(feature.subCategoryId);
-      expect(Id64.isValid(testId)).to.be.true;
+      expect(Id64.isValid(testId)).toBe(true);
 
       table.insert(feature);
     }
 
-    expect(table.length).to.equal(features.length);
+    expect(table.length).toBe(features.length);
 
     const packed = PackedFeatureTable.pack(table);
     const unpacked = packed.unpack();
 
-    expect(table.length).to.equal(unpacked.length);
-    expect(table.modelId.toString()).to.equal(unpacked.modelId.toString());
-    expect(table.isUniform).to.equal(unpacked.isUniform);
+    expect(table.length).toBe(unpacked.length);
+    expect(table.modelId.toString()).toBe(unpacked.modelId.toString());
+    expect(table.isUniform).toBe(unpacked.isUniform);
 
     for (let i = 0; i < table.length; i++) {
       const lhs = table.getArray()[i];
       const rhs = unpacked.getArray()[i];
 
-      expect(lhs.index).to.equal(rhs.index);
-      expect(lhs.value.geometryClass).to.equal(rhs.value.geometryClass);
-      expect(lhs.value.elementId).to.equal(rhs.value.elementId);
-      expect(lhs.value.subCategoryId).to.equal(rhs.value.subCategoryId);
+      expect(lhs.index).toBe(rhs.index);
+      expect(lhs.value.geometryClass).toBe(rhs.value.geometryClass);
+      expect(lhs.value.elementId).toBe(rhs.value.elementId);
+      expect(lhs.value.subCategoryId).toBe(rhs.value.subCategoryId);
     }
   });
 });

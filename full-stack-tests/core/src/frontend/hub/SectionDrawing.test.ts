@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState, ViewState3d } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
@@ -11,7 +11,7 @@ import { testOnScreenViewport, TestViewport } from "../TestViewport";
 describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
@@ -20,7 +20,7 @@ describe("Section Drawings (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -43,31 +43,31 @@ describe("Section Drawings (#integration)", () => {
     await imodel.models.load(modelIds);
     for (const modelId of modelIds) {
       const model = imodel.models.getLoaded(modelId)!;
-      expect(model).not.to.be.undefined;
-      expect(model).instanceof(SectionDrawingModelState);
+      expect(model).not.toBeUndefined();
+      expect(model).toBeInstanceOf(SectionDrawingModelState);
     }
   });
 
   it("loads section drawing info for view", async () => {
     for (const spec of specs) {
       const first = await imodel.views.load(spec.views[0]) as DrawingViewState;
-      expect(first).instanceof(DrawingViewState);
-      expect(first.baseModelId).to.equal(spec.model);
+      expect(first).toBeInstanceOf(DrawingViewState);
+      expect(first.baseModelId).toBe(spec.model);
 
       const info = first.sectionDrawingInfo;
 
-      expect(info.spatialView).to.equal(spec.spatialView);
-      expect(info.drawingToSpatialTransform.isIdentity).to.be.false;
+      expect(info.spatialView).toBe(spec.spatialView);
+      expect(info.drawingToSpatialTransform.isIdentity).toBe(false);
 
       if (spec.views.length > 1) {
         const second = await imodel.views.load(spec.views[1]) as DrawingViewState;
-        expect(second).instanceof(DrawingViewState);
-        expect(second.baseModelId).to.equal(first.baseModelId);
+        expect(second).toBeInstanceOf(DrawingViewState);
+        expect(second.baseModelId).toBe(first.baseModelId);
 
         const secondInfo = second.sectionDrawingInfo;
 
-        expect(secondInfo.spatialView).to.equal(info.spatialView);
-        expect(secondInfo.drawingToSpatialTransform.isAlmostEqual(info.drawingToSpatialTransform)).to.be.true;
+        expect(secondInfo.spatialView).toBe(info.spatialView);
+        expect(secondInfo.drawingToSpatialTransform.isAlmostEqual(info.drawingToSpatialTransform)).toBe(true);
       }
     }
   });
@@ -82,8 +82,8 @@ describe("Section Drawings (#integration)", () => {
       await view.changeViewedModel(spec.model);
 
       const newInfo = view.sectionDrawingInfo;
-      expect(newInfo).not.to.equal(oldInfo);
-      expect(newInfo.spatialView).to.equal(spec.spatialView);
+      expect(newInfo).not.toBe(oldInfo);
+      expect(newInfo.spatialView).toBe(spec.spatialView);
     }
   });
 
@@ -92,9 +92,9 @@ describe("Section Drawings (#integration)", () => {
     const info = first.sectionDrawingInfo;
 
     const second = first.clone();
-    expect(second).not.to.equal(first);
+    expect(second).not.toBe(first);
     const secondInfo = second.sectionDrawingInfo;
-    expect(secondInfo).to.deep.equal(info);
+    expect(secondInfo).toEqual(info);
   });
 
   it("preserves section drawing info when round-tripped through JSON", async () => {
@@ -102,75 +102,75 @@ describe("Section Drawings (#integration)", () => {
     const info = view.sectionDrawingInfo;
 
     const props = view.toProps();
-    expect(props.sectionDrawing).not.to.be.undefined;
+    expect(props.sectionDrawing).not.toBeUndefined();
 
     const clone = DrawingViewState.createFromProps(props, view.iModel);
-    expect(clone.sectionDrawingProps).not.to.be.undefined;
-    expect(clone.sectionDrawingProps).to.deep.equal(view.sectionDrawingProps);
+    expect(clone.sectionDrawingProps).not.toBeUndefined();
+    expect(clone.sectionDrawingProps).toEqual(view.sectionDrawingProps);
 
     await clone.load();
-    expect(clone.sectionDrawingInfo).not.to.be.undefined;
-    expect(clone.sectionDrawingInfo).to.deep.equal(info);
+    expect(clone.sectionDrawingInfo).not.toBeUndefined();
+    expect(clone.sectionDrawingInfo).toEqual(info);
   });
 
   it("clones attachment info when view is cloned", async () => {
     const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
-    expect(typeof v1.attachmentInfo.spatialView).to.equal("string");
+    expect(typeof v1.attachmentInfo.spatialView).toBe("string");
 
     const v2 = v1.clone();
-    expect(v2.attachmentInfo).not.to.equal(v1.attachmentInfo);
-    expect(v2.attachmentInfo).to.deep.equal(v1.attachmentInfo);
+    expect(v2.attachmentInfo).not.toBe(v1.attachmentInfo);
+    expect(v2.attachmentInfo).toEqual(v1.attachmentInfo);
   });
 
   it("clones attached spatial view when cloned", async () => {
     DrawingViewState.alwaysDisplaySpatialView = true;
 
     const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
-    expect(v1.attachmentInfo.spatialView).instanceof(ViewState3d);
+    expect(v1.attachmentInfo.spatialView).toBeInstanceOf(ViewState3d);
 
     const v2 = v1.clone();
-    expect(v2.attachmentInfo.spatialView).instanceof(ViewState3d);
-    expect(v2.attachmentInfo.spatialView).not.to.equal(v1.attachmentInfo.spatialView);
+    expect(v2.attachmentInfo.spatialView).toBeInstanceOf(ViewState3d);
+    expect(v2.attachmentInfo.spatialView).not.toBe(v1.attachmentInfo.spatialView);
 
     DrawingViewState.alwaysDisplaySpatialView = false;
   });
 
   it("only allocates attachment if attachment is to be displayed", async () => {
-    expect(DrawingViewState.alwaysDisplaySpatialView).to.be.false;
+    expect(DrawingViewState.alwaysDisplaySpatialView).toBe(false);
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      expect((vp.view as DrawingViewState).attachment).to.be.undefined;
+      expect((vp.view as DrawingViewState).attachment).toBeUndefined();
     });
 
     DrawingViewState.alwaysDisplaySpatialView = true;
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      expect((vp.view as DrawingViewState).attachment).not.to.be.undefined;
+      expect((vp.view as DrawingViewState).attachment).not.toBeUndefined();
     });
   });
 
   it("allocates attachment when attached to viewport and disposes of it when detached from viewport", async () => {
     DrawingViewState.alwaysDisplaySpatialView = true;
     const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
-    expect(v1.attachment).to.be.undefined;
+    expect(v1.attachment).toBeUndefined();
     let v2: DrawingViewState;
     let v3: DrawingViewState;
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
       v2 = vp.view as DrawingViewState;
-      expect(v2.attachment).not.to.be.undefined;
+      expect(v2.attachment).not.toBeUndefined();
 
       v3 = v2.clone();
-      expect(v3.attachment).to.be.undefined;
+      expect(v3.attachment).toBeUndefined();
 
       vp.changeView(v3);
-      expect(v2.attachment).to.be.undefined;
-      expect(v3.attachment).not.to.be.undefined;
+      expect(v2.attachment).toBeUndefined();
+      expect(v3.attachment).not.toBeUndefined();
 
       vp.changeView(v2);
-      expect(v2.attachment).not.to.be.undefined;
-      expect(v3.attachment).to.be.undefined;
+      expect(v2.attachment).not.toBeUndefined();
+      expect(v3.attachment).toBeUndefined();
     });
 
-    expect(v2!.attachment).to.be.undefined;
-    expect(v3!.attachment).to.be.undefined;
+    expect(v2!.attachment).toBeUndefined();
+    expect(v3!.attachment).toBeUndefined();
   });
 
   it("displays the 3d tiles in the 2d view if so specified", async () => {
@@ -181,11 +181,11 @@ describe("Section Drawings (#integration)", () => {
       });
     }
 
-    expect(DrawingViewState.alwaysDisplaySpatialView).to.be.false;
+    expect(DrawingViewState.alwaysDisplaySpatialView).toBe(false);
     let num2dTiles = 0;
     await test((vp) => {
       num2dTiles = vp.numSelectedTiles;
-      expect(num2dTiles).least(1);
+      expect(num2dTiles).toBeGreaterThanOrEqual(1);
     });
 
     DrawingViewState.alwaysDisplaySpatialView = true;
@@ -193,12 +193,12 @@ describe("Section Drawings (#integration)", () => {
     let num3dTiles = 0;
     await test((vp) => {
       num3dTiles = vp.numSelectedTiles;
-      expect(num3dTiles).least(1);
+      expect(num3dTiles).toBeGreaterThanOrEqual(1);
     });
 
     DrawingViewState.hideDrawingGraphics = false;
     await test((vp) => {
-      expect(vp.numSelectedTiles).to.equal(num2dTiles + num3dTiles);
+      expect(vp.numSelectedTiles).toBe(num2dTiles + num3dTiles);
     });
   });
 });

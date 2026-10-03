@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai"
+import { expect } from "vitest";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -21,15 +21,15 @@ describe("queryExtents Performance Tests (#performance)", () => {
   const csvPath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "full-stack-tests/core/lib/frontend/test/output", "QueryExtentsPerfTests.csv");
   const reporter = new FrontendPerfReporter(csvPath);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
 
     iModel = await TestSnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets", "test_ec_4003.bim"));
-    assert.isTrue(iModel.isOpen, "iModel should be open");
+    expect(iModel.isOpen).toBe(true);
     await discoverModelIds();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (iModel)
       await iModel.close();
 
@@ -48,8 +48,8 @@ describe("queryExtents Performance Tests (#performance)", () => {
       }
     }
 
-    assert.isAtLeast(spatiallyLocatedModelIds.length, 350);
-    assert.isAtLeast(nonSpatiallyLocatedModelIds.length, 250);
+    expect(spatiallyLocatedModelIds.length).toBeGreaterThanOrEqual(350);
+    expect(nonSpatiallyLocatedModelIds.length).toBeGreaterThanOrEqual(250);
   }
 
   async function measureMs(fn: () => Promise<unknown>): Promise<number> {
@@ -61,7 +61,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
 
   function clearExtentsCache() {
     (iModel.models as any)["_loadedExtents"]?.clear();
-    assert.equal((iModel.models as any)["_loadedExtents"]?.size, 0, "Cache should be cleared");
+    expect((iModel.models as any)["_loadedExtents"]?.size, "Cache should be cleared").toBe(0);
   }
 
   describe("basic performance tests", () => {
@@ -80,12 +80,12 @@ describe("queryExtents Performance Tests (#performance)", () => {
         });
 
         // Validate the query results
-        assert.isArray(results);
-        assert.equal(results.length, testModelIds.length);
+        expect(results).toBeInstanceOf(Array);
+        expect(results.length).toBe(testModelIds.length);
 
         for (const result of results) {
-          assert.notEqual(result.id, "0", "Result should have a valid model ID");
-          assert.isDefined(result.extents, "Spatially located model should have extents");
+          expect(result.id, "Result should have a valid model ID").not.toBe("0");
+          expect(result.extents).toBeDefined();
         }
 
         reporter.addEntry("queryExtents Performance", `queryExtents for ${count} spatial models`, "Execution time (ms)", elapsed);
@@ -103,13 +103,13 @@ describe("queryExtents Performance Tests (#performance)", () => {
         });
 
         // Validate the query results
-        assert.isArray(results);
-        assert.equal(results.length, testModelIds.length);
+        expect(results).toBeInstanceOf(Array);
+        expect(results.length).toBe(testModelIds.length);
 
         let index = 0;
         for (const result of results) {
-          assert.equal(result.id, testModelIds[index], "Result should have a valid model ID");
-          assert.isDefined(result.extents, "Non-spatially located model should have extents");
+          expect(result.id, "Result should have a valid model ID").toBe(testModelIds[index]);
+          expect(result.extents).toBeDefined();
           index++;
         }
 
@@ -127,13 +127,13 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate the query results
-      assert.isArray(results);
-      assert.equal(results.length, allModelIds.length);
+      expect(results).toBeInstanceOf(Array);
+      expect(results.length).toBe(allModelIds.length);
 
       let index = 0;
       for (const result of results) {
-        assert.equal(result.id, allModelIds[index], "Result should have a valid model ID");
-        assert.isDefined(result.extents, "Model should have extents");
+        expect(result.id, "Result should have a valid model ID").toBe(allModelIds[index]);
+        expect(result.extents).toBeDefined();
         index++;
       }
 
@@ -149,8 +149,8 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate the query results
-      assert.isArray(results);
-      assert.equal(results.length, 0);
+      expect(results).toBeInstanceOf(Array);
+      expect(results.length).toBe(0);
       reporter.addEntry("queryExtents sanity check", `queryExtents for an empty array`, "Execution time (ms)", elapsed);
     });
 
@@ -164,13 +164,13 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate the query results
-      assert.isArray(results);
-      assert.equal(results.length, duplicateIds.length);
+      expect(results).toBeInstanceOf(Array);
+      expect(results.length).toBe(duplicateIds.length);
 
       // All should return the same extents
       for (const result of results) {
-        assert.equal(result.id, modelId);
-        assert.isDefined(result.extents);
+        expect(result.id).toBe(modelId);
+        expect(result.extents).toBeDefined();
       }
 
       reporter.addEntry("queryExtents sanity check", `queryExtents for 3 duplicate model IDs`, "Execution time (ms)", elapsed);
@@ -194,23 +194,23 @@ describe("queryExtents Performance Tests (#performance)", () => {
         const coldElapsed = await measureMs(async () => {
           results = await iModel.models.queryExtents(testModelIds);
         });
-        assert.equal(results.length, count);
+        expect(results.length).toBe(count);
 
         // Warm call — should hit cache, no database queries
         const warmElapsed = await measureMs(async () => {
           results = await iModel.models.queryExtents(testModelIds);
         });
 
-        assert.equal(results.length, count);
+        expect(results.length).toBe(count);
         let index = 0;
         for (const result of results) {
-          assert.equal(result.id, testModelIds[index], "Result should have a valid model ID");
-          assert.isDefined(result.extents, "Model should have extents");
+          expect(result.id, "Result should have a valid model ID").toBe(testModelIds[index]);
+          expect(result.extents).toBeDefined();
           index++;
         }
 
         reporter.addEntry("queryExtents Performance", `queryExtents cache performance for ${count} models`, "Cache speedup factor", parseFloat((coldElapsed / Math.max(warmElapsed, 0.01)).toFixed(2)), `Cold: ${coldElapsed.toFixed(2)}ms, Warm: ${warmElapsed.toFixed(2)}ms`);
-        expect(warmElapsed).to.be.lessThan(coldElapsed + 0.5);
+        expect(warmElapsed).toBeLessThan(coldElapsed + 0.5);
       }
     });
 
@@ -225,7 +225,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
 
       // Verify cache was populated
       const cacheSize = (iModel.models as any)["_loadedExtents"]?.size ?? 0;
-      assert.isAtLeast(cacheSize, firstHalf.length, "Cache should contain at least the first half");
+      expect(cacheSize, "Cache should contain at least the first half").toBeGreaterThanOrEqual(firstHalf.length);
 
       // Second call: mix of cached (first half) + uncached (second half) + invalid
       const secondHalf = validModelIds.slice(validCount / 2);
@@ -237,19 +237,19 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate the results
-      assert.equal(results.length, mixedIds.length);
+      expect(results.length).toBe(mixedIds.length);
 
       // First half + second half: should be valid
       for (let i = 0; i < validCount; i++) {
-        assert.equal(results[i].id, validModelIds[i], "Result should have a valid model ID");
-        assert.isDefined(results[i].extents);
+        expect(results[i].id, "Result should have a valid model ID").toBe(validModelIds[i]);
+        expect(results[i].extents).toBeDefined();
       }
 
       // Invalid IDs should return results
       for (let i = validCount; i < mixedIds.length; i++) {
-        assert.isDefined(results[i]);
-        assert.equal(results[i].id, "0");
-        assert.equal(results[i].status, IModelStatus.InvalidId);
+        expect(results[i]).toBeDefined();
+        expect(results[i].id).toBe("0");
+        expect(results[i].status).toBe(IModelStatus.InvalidId);
       }
 
       reporter.addEntry("queryExtents Performance", `queryExtents for ${firstHalf.length} cached + ${secondHalf.length} uncached + ${invalidModelIds.length} invalid`, "Execution time (ms)", elapsed);
@@ -270,13 +270,13 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate results
-      assert.equal(results.length, mixedIds.length);
+      expect(results.length).toBe(mixedIds.length);
 
       // All should have extents defined
       let index = 0;
       for (const result of results) {
-        assert.equal(result.id, mixedIds[index], "Result should have a valid model ID");
-        assert.isDefined(result.extents);
+        expect(result.id, "Result should have a valid model ID").toBe(mixedIds[index]);
+        expect(result.extents).toBeDefined();
         index++;
       }
 
@@ -310,10 +310,10 @@ describe("queryExtents Performance Tests (#performance)", () => {
       });
 
       // Validate results
-      assert.equal(results.length, mixedIds.length);
+      expect(results.length).toBe(mixedIds.length);
       for (let i = 0; i < results.length; i++) {
-        assert.equal(results[i].id, mixedIds[i], "Result should have a valid model ID");
-        assert.isDefined(results[i].extents, `Model at index ${i} should have extents`);
+        expect(results[i].id, "Result should have a valid model ID").toBe(mixedIds[i]);
+        expect(results[i].extents).toBeDefined();
       }
       reporter.addEntry("queryExtents Performance", `Random mixed queryExtents (${spatialCount} spatial + ${nonSpatialCount} non-spatial, ${preCacheCount} cached)`, "Execution time (ms)", elapsed);
       clearExtentsCache();

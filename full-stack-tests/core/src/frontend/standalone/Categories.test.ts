@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -26,12 +26,12 @@ describeChrome("IModelConnection.Categories", () => {
 
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -43,26 +43,26 @@ describeChrome("IModelConnection.Categories", () => {
   afterEach(() => reset());
 
   function expectSubCategory(subcat: IModelConnection.Categories.SubCategoryInfo, id: string, categoryId: string): void {
-    expect(subcat.id).to.equal(id);
-    expect(subcat.categoryId).to.equal(categoryId);
+    expect(subcat.id).toBe(id);
+    expect(subcat.categoryId).toBe(categoryId);
   }
 
   function expectCategory(cat: IModelConnection.Categories.CategoryInfo, id: string, expectedSubCategoryIds: string | string[]): void {
-    expect(cat.id).to.equal(id);
+    expect(cat.id).toBe(id);
     if ("string" === typeof expectedSubCategoryIds)
       expectedSubCategoryIds = [expectedSubCategoryIds];
 
-    expect(cat.subCategories.size).to.equal(expectedSubCategoryIds.length);
+    expect(cat.subCategories.size).toBe(expectedSubCategoryIds.length);
     for (const subcatId of expectedSubCategoryIds) {
       const subcat = cat.subCategories.get(subcatId)!;
-      expect(subcat).not.to.be.undefined;
+      expect(subcat).not.toBeUndefined();
       expectSubCategory(subcat, subcatId, id);
     }
   }
 
   it("queries categories", async () => {
     let cats = await imodel.categories.getCategoryInfo(allCats);
-    expect(cats.size).to.equal(5);
+    expect(cats.size).toBe(5);
     expectCategory(cats.get(c1)!, c1, s1);
     expectCategory(cats.get(c2)!, c2, s2);
     expectCategory(cats.get(c3)!, c3, s3);
@@ -70,13 +70,13 @@ describeChrome("IModelConnection.Categories", () => {
     expectCategory(cats.get(c5)!, c5, s5);
 
     cats = await imodel.categories.getCategoryInfo(c4);
-    expect(cats.size).to.equal(1);
+    expect(cats.size).toBe(1);
     expectCategory(cats.get(c4)!, c4, [s41, s42]);
   });
 
   it("queries subcategories", async () => {
     const subcats = await imodel.categories.getSubCategoryInfo({ category: c4, subCategories: [s41, s42] });
-    expect(subcats.size).to.equal(2);
+    expect(subcats.size).toBe(2);
     expectSubCategory(subcats.get(s41)!, s41, c4);
     expectSubCategory(subcats.get(s42)!, s42, c4);
   });
@@ -85,33 +85,33 @@ describeChrome("IModelConnection.Categories", () => {
     const badIds = [Id64.invalid, "0xNotAnId", "", "0x12345678"];
     for (const catId of badIds) {
       const cats = await imodel.categories.getCategoryInfo(catId);
-      expect(cats.size).to.equal(1);
+      expect(cats.size).toBe(1);
       expectCategory(cats.get(catId)!, catId, []);
 
       let subcats = await imodel.categories.getSubCategoryInfo({ category: catId, subCategories: badIds });
-      expect(subcats.size).to.equal(0);
+      expect(subcats.size).toBe(0);
       subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: badIds });
-      expect(subcats.size).to.equal(0);
+      expect(subcats.size).toBe(0);
       subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: [...badIds, s1] });
-      expect(subcats.size).to.equal(1);
-      expect(subcats.get(s1)).not.to.be.undefined;
+      expect(subcats.size).toBe(1);
+      expect(subcats.get(s1)).not.toBeUndefined();
     }
   });
 
   it("omits subcategories that don't belong to specified category", async () => {
     const subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: [s1, s2, s41, s42, s3] });
-    expect(subcats.size).to.equal(1);
-    expect(subcats.get(s1)).not.to.be.undefined;
+    expect(subcats.size).toBe(1);
+    expect(subcats.get(s1)).not.toBeUndefined();
   });
 
   it("ignores duplicate Ids", async () => {
     const cats = await imodel.categories.getCategoryInfo([...allCats, ...allCats]);
-    expect(cats.size).to.equal(5);
-    expect(Array.from(cats.keys()).sort()).to.deep.equal(allCats);
+    expect(cats.size).toBe(5);
+    expect(Array.from(cats.keys()).sort()).toEqual(allCats);
 
     const subcats = await imodel.categories.getSubCategoryInfo({ category: c4, subCategories: [s41, s42, s42, s41] });
-    expect(subcats.size).to.equal(2);
-    expect(subcats.get(s41)).not.to.be.undefined;
-    expect(subcats.get(s42)).not.to.be.undefined;
+    expect(subcats.size).toBe(2);
+    expect(subcats.get(s41)).not.toBeUndefined();
+    expect(subcats.get(s42)).not.toBeUndefined();
   });
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
@@ -14,12 +14,12 @@ if (!ProcessDetector.isMobileAppFrontend) {
   describe("Model change monitoring", () => {
     let imodel: BriefcaseConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -59,7 +59,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
 
         await imodel.models.load(modelId);
         model = imodel.models.getLoaded(modelId) as GeometricModelState;
-        expect(model).instanceof(GeometricModelState);
+        expect(model).toBeInstanceOf(GeometricModelState);
       });
 
       let zTranslation = 0;
@@ -71,30 +71,30 @@ if (!ProcessDetector.isMobileAppFrontend) {
 
       it("at transaction boundaries outside of a graphical editing scope", async () => {
         const prevGuid = model.geometryGuid;
-        expect(prevGuid).not.to.be.undefined;
+        expect(prevGuid).not.toBeUndefined();
 
         let modelIds = await getBufferedChanges(async () => moveElement());
-        expect(modelIds.size).to.equal(1);
-        expect(modelIds.has(model.id)).to.be.true;
+        expect(modelIds.size).toBe(1);
+        expect(modelIds.has(model.id)).toBe(true);
 
-        expect(imodel.models.getLoaded(model.id)).to.equal(model);
-        expect(model.geometryGuid).not.to.be.undefined;
+        expect(imodel.models.getLoaded(model.id)).toBe(model);
+        expect(model.geometryGuid).not.toBeUndefined();
         const newGuid = model.geometryGuid!;
-        expect(newGuid).not.to.equal(prevGuid);
+        expect(newGuid).not.toBe(prevGuid);
 
         modelIds = await getBufferedChanges(async () => {
           await imodel.txns.reverseSingleTxn();
         });
-        expect(modelIds.size).to.equal(1);
-        expect(modelIds.has(model.id)).to.be.true;
-        expect(model.geometryGuid).to.equal(prevGuid);
+        expect(modelIds.size).toBe(1);
+        expect(modelIds.has(model.id)).toBe(true);
+        expect(model.geometryGuid).toBe(prevGuid);
 
         modelIds = await getBufferedChanges(async () => {
           await imodel.txns.reinstateTxn();
         });
-        expect(modelIds.size).to.equal(1);
-        expect(modelIds.has(model.id)).to.be.true;
-        expect(model.geometryGuid).to.equal(newGuid);
+        expect(modelIds.size).toBe(1);
+        expect(modelIds.has(model.id)).toBe(true);
+        expect(model.geometryGuid).toBe(newGuid);
       });
 
       it("after exiting a graphical editing scope", async () => {
@@ -102,26 +102,26 @@ if (!ProcessDetector.isMobileAppFrontend) {
         imodel.onBufferedModelChanges.addListener(() => ++numBufferedChanges);
 
         const prevGuid = model.geometryGuid;
-        expect(prevGuid).not.to.be.undefined;
+        expect(prevGuid).not.toBeUndefined();
 
         const scope = await imodel.enterEditingScope();
         await moveElement();
-        expect(model.geometryGuid).to.equal(prevGuid);
+        expect(model.geometryGuid).toBe(prevGuid);
 
         await imodel.txns.reverseSingleTxn();
-        expect(model.geometryGuid).to.equal(prevGuid);
+        expect(model.geometryGuid).toBe(prevGuid);
 
         await imodel.txns.reinstateTxn();
-        expect(model.geometryGuid).to.equal(prevGuid);
+        expect(model.geometryGuid).toBe(prevGuid);
 
-        expect(numBufferedChanges).to.equal(0);
+        expect(numBufferedChanges).toBe(0);
 
         const modelIds = await getBufferedChanges(async () => scope.exit());
-        expect(numBufferedChanges).to.equal(1);
-        expect(modelIds.size).to.equal(1);
-        expect(modelIds.has(model.id)).to.be.true;
-        expect(model.geometryGuid).not.to.equal(prevGuid);
-        expect(model.geometryGuid).not.to.be.undefined;
+        expect(numBufferedChanges).toBe(1);
+        expect(modelIds.size).toBe(1);
+        expect(modelIds.has(model.id)).toBe(true);
+        expect(model.geometryGuid).not.toBe(prevGuid);
+        expect(model.geometryGuid).not.toBeUndefined();
       });
     });
   });
