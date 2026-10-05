@@ -22,3 +22,11 @@ Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one
 For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
 
 The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
+
+## Quantity
+
+### Built-in length ratio units for drawing scales
+
+The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.00.12, which adds three `LENGTH_RATIO` units: `Units.DECIMAL_LENGTH_RATIO`, `Units.M_PER_M_LENGTH_RATIO` (label `m:m`), and `Units.IN_PER_FT_LENGTH_RATIO` (label `in:ft`). These are intended for persisting drawing and sheet scales as paper length divided by model length, so a `1:100` scale is stored as `0.01` and a `1/4" = 1'` scale is stored as `1/48` in `m:m` (or `0.25` in `in:ft`).
+
+[UnitConversions]($quantity) can convert between these units, and [getDefaultPersistenceUnit]($quantity) now accepts `Phenomena.LENGTH_RATIO` and returns `Units.M_PER_M_LENGTH_RATIO`. Previously `LENGTH_RATIO` was excluded from that helper because no built-in default existed.
