@@ -24,8 +24,11 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       // ⚠️ Currently ignored. For more information see https://github.com/iTwin/itwinjs-core/issues/9505
+      // Until fixed, also pass each ignored advisory's GHSA id to `--ignore` in the `audit` command in command-line.json.
       "auditConfig": {
-        "ignoreCves": []
+        "ignoreCves": [
+          "CVE-2026-93687" // https://github.com/advisories/GHSA-vfj7-8cjw-p6xm @itwin/eslint-plugin>workspace-tools>micromatch>braces, vite-plugin-static-copy>chokidar>braces (dev tooling, no patched version)
+        ]
       }
     }
   },
