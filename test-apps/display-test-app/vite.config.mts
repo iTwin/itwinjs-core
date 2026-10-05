@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { defineConfig, loadEnv, type Plugin, searchForWorkspaceRoot } from "vite";
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import ignore from "rollup-plugin-ignore";
@@ -55,30 +55,14 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
   }
 });
 
-interface CopyTarget {
-  src: string;
-  dest: string;
-  /** Copy the directory's contents into `dest` instead of the directory itself. */
-  contentsOnly?: boolean;
-}
-
-/** Copies static assets once at build start (dev server and production build). Later targets overwrite earlier ones. */
-function copyStaticAssets(targets: CopyTarget[]): Plugin {
-  let copied = false;
-  return {
-    name: "copy-static-assets",
-    buildStart() {
-      if (copied)
-        return;
-      copied = true;
-      for (const { src, dest, contentsOnly } of targets) {
-        if (!fs.existsSync(src))
-          continue;
-        const target = contentsOnly ? dest : path.join(dest, path.basename(src));
-        fs.cpSync(src, target, { recursive: true, force: true });
-      }
-    },
-  };
+// copy static assets into publicDir (later sources overwrite earlier ones), and cesium's runtime files into cesiumBaseUrl
+const copies = [
+  ...assets.map((src) => [src, ".static-assets"]),
+  ...["Build/Workers", "Build/ThirdParty", "Source/Assets"].map((dir) => [`${cesiumEngineDir}${dir}`, `${cesiumBaseUrl}/${path.basename(dir)}`]),
+];
+for (const [src, dest] of copies) {
+  if (fs.existsSync(src))
+    fs.cpSync(src, dest, { recursive: true, force: true });
 }
 
 // https://vitejs.dev/config/
@@ -152,13 +136,6 @@ export default defineConfig(() => {
         },
       },
       ignore(["electron"]), // equivalent to webpack externals (build only fallback)
-      // copy static assets to .static-assets folder
-      copyStaticAssets([
-        ...assets.map((src) => ({ src, dest: ".static-assets", contentsOnly: true })),
-        { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
-        { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
-        { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
-      ]),
       envCompatible({
         prefix: "IMJS_",
       }),
