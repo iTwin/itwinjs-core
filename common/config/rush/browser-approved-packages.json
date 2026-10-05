@@ -807,10 +807,6 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "rollup-plugin-copy",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "rollup-plugin-external-globals",
       "allowedCategories": [ "internal" ]
     },

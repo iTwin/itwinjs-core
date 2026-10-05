@@ -2,15 +2,15 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
+import { defineConfig, loadEnv, type Plugin, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
 import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
 import webpackStats from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
+import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -25,7 +25,7 @@ const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
 
 // array of public directories static assets from dependencies to copy
-const assets = ["./public/*"]; // assets for test-app
+const assets = ["./public"]; // assets for test-app
 // local path alias to the ts entry point of each package
 const packageAliases = {};
 
@@ -34,13 +34,13 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
     try {
       // gets dependency path
       const pkgPath = require.resolve(pkgName);
-      // replaces everything after /lib/ with /lib/public/* to get static assets
-      let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+      // replaces everything after /lib/ with /lib/public to get static assets
+      let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public");
 
       const assetsPath = path
         .relative(process.cwd(), pkgPublicPath)
         .replace(/\\/g, "/"); // use relative path with forward slashes
-      if (assetsPath.endsWith("lib/public/*")) {
+      if (assetsPath.endsWith("lib/public")) {
         // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
@@ -54,6 +54,32 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
     } catch { }
   }
 });
+
+interface CopyTarget {
+  src: string;
+  dest: string;
+  /** Copy the directory's contents into `dest` instead of the directory itself. */
+  contentsOnly?: boolean;
+}
+
+/** Copies static assets once at build start (dev server and production build). Later targets overwrite earlier ones. */
+function copyStaticAssets(targets: CopyTarget[]): Plugin {
+  let copied = false;
+  return {
+    name: "copy-static-assets",
+    buildStart() {
+      if (copied)
+        return;
+      copied = true;
+      for (const { src, dest, contentsOnly } of targets) {
+        if (!fs.existsSync(src))
+          continue;
+        const target = contentsOnly ? dest : path.join(dest, path.basename(src));
+        fs.cpSync(src, target, { recursive: true, force: true });
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -127,25 +153,12 @@ export default defineConfig(() => {
       },
       ignore(["electron"]), // equivalent to webpack externals (build only fallback)
       // copy static assets to .static-assets folder
-      copy({
-        targets: [
-          {
-            src: assets,
-            dest: ".static-assets",
-            rename: (_name, _extension, fullPath) => {
-              // rename files to name of file without directory path
-              const regex = new RegExp("(public(?:\\\\|/))(.*)");
-              return regex.exec(fullPath)![2];
-            },
-          },
-          { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
-          { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
-          { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
-        ],
-        overwrite: true,
-        copyOnce: true, // only during initial build or on change
-        hook: "buildStart",
-      }),
+      copyStaticAssets([
+        ...assets.map((src) => ({ src, dest: ".static-assets", contentsOnly: true })),
+        { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
+        { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
+        { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
+      ]),
       envCompatible({
         prefix: "IMJS_",
       }),

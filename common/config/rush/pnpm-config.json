@@ -10,7 +10,6 @@
     ]
   },
   "globalOverrides": {
-    "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
     "serialize-javascript": "^7.0.5", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq and https://github.com/advisories/GHSA-qj8w-gfj5-8c6v mocha>serialize-javascript
     "lodash@>=4.0.0 <=4.17.23": "^4.18.0" // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
@@ -27,7 +26,7 @@
       // Until fixed, also pass each ignored advisory's GHSA id to `--ignore` in the `audit` command in command-line.json.
       "auditConfig": {
         "ignoreCves": [
-          "CVE-2026-93687" // https://github.com/advisories/GHSA-vfj7-8cjw-p6xm @itwin/eslint-plugin>workspace-tools>micromatch>braces, vite-plugin-static-copy>chokidar>braces (dev tooling, no patched version)
+          "CVE-2026-93687" // https://github.com/advisories/GHSA-vfj7-8cjw-p6xm @itwin/eslint-plugin>workspace-tools>globby>fast-glob>micromatch>braces (dev tooling, no patched version; drop once @itwin/eslint-plugin 6.1.1 is consumed)
         ]
       }
     }
