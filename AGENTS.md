@@ -20,6 +20,7 @@ Read only the references relevant to the task:
 - Use non-interactive Git. Do not discard changes without explicit approval.
 - Use `rush` from the repository root and `rushx` in a package. Do not use `npm install`, `pnpm install`, or edit `pnpm-lock.yaml` directly.
 - Use relative imports within a package. Do not self-import through `@itwin/*`.
+- Import Node.js built-ins with the `node:` prefix (`node:fs`, `node:path`), not bare specifiers.
 - Keep backend and native dependencies out of `core/common` and `core/frontend`.
 - Frontend code uses `IModelConnection` and its managers, not new direct RPC clients.
 - Do not change an existing exported API or RPC signature without a compatibility plan.
