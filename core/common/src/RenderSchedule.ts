@@ -519,7 +519,7 @@ export namespace RenderSchedule {
       for (let i = 0; i < last; i++) {
         const time0 = this._entries[i].time;
         const time1 = this._entries[i + 1].time;
-        if (time0 <= time && time1 >= time) {
+        if (time0 <= time && time1 > time) {
           let fraction;
           if (Interpolation.Linear === this._entries[i].interpolation)
             fraction = (time - time0) / (time1 - time0);

@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 01 Oct 2026 15:17:55 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Oct 2026 14:56:23 GMT and should not be manually modified.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Add `FieldPropertyPath.jsonAccessors` for indexing into a String property of extended type `Json`.
+- Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value.
+- Add download progress reporting and cancellation to pushChanges
 
 ## 5.13.7
 Thu, 01 Oct 2026 15:15:30 GMT
