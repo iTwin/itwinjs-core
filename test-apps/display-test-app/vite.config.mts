@@ -10,9 +10,9 @@ import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
 import webpackStats from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
-import fs from "fs";
-import path from "path";
-import { createRequire } from "module";
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 const cesiumEngineDir = "node_modules/@cesium/engine/";
