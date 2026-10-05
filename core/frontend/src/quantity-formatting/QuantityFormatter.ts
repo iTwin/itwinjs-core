@@ -385,7 +385,7 @@ export class FormatsProviderManager implements FormatsProvider, SyncFormatsProvi
   /**
    * Replaces the underlying formats provider and raises an event indicating that all formats changed.
    * @param formatsProvider The formats provider to use for subsequent format lookups.
-   * @param impliedUnitSystem The unit system implied by the replacement provider, if any. It is forwarded as `FormatsChangedArgs.impliedUnitSystem`.
+   * @param impliedUnitSystem The unit system implied by the replacement provider, if any. Not stored here; [[QuantityFormatter]] applies it as the active unit system when handling `onFormatsChanged`.
    * @internal
    */
   public setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void {
