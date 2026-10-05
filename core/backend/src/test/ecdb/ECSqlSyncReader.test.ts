@@ -5,13 +5,17 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import * as path from "node:path";
+import { QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64 } from "@itwin/core-bentley";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelNative } from "../../internal/NativePlatform";
+import { IModelJsFs } from "../../IModelJsFs";
+import { SynchronousQueryOptions } from "../../ECSqlSyncReader";
 
 describe("WithQueryReaderTests", () => {
   let iModel: SnapshotDb;
@@ -215,6 +219,151 @@ describe("WithQueryReaderTests", () => {
       for (let i = 0; i < 10; i++)
         ecdb.withQueryReader(ecdbSql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
       expect(prepareSpy.callCount).to.equal(1, "ECDb.withQueryReader should also reuse a cached prepared statement");
+    });
+  });
+
+  describe("metadata caching", () => {
+    // Column metadata depends only on the prepared statement and the row-adaptor options, so it is cached
+    // on the cached ECSqlStatement instead of being fetched from native code on every withQueryReader call.
+    const sql = "SELECT ECInstanceId, ECClassId, CodeValue, GeometryStream FROM bis.GeometricElement3d WHERE ECInstanceId=?";
+    let elementId: string;
+
+    before(() => {
+      elementId = iModel.withQueryReader("SELECT ECInstanceId FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", (reader) => {
+        assert.isTrue(reader.step());
+        return reader.current[0] as string;
+      });
+    });
+
+    afterEach(() => sinon.restore());
+
+    function readMetadata(options: SynchronousQueryOptions): { meta: QueryPropertyMetaData[], row: any } {
+      return iModel.withQueryReader(sql, (reader) => {
+        assert.isTrue(reader.step());
+        return { meta: reader.getMetaData(), row: reader.current.toRow() };
+      }, new QueryBinder().bindId(1, elementId), options);
+    }
+
+    it("returns metadata matching the row options when the same statement is reused with different options", () => {
+      const optionSets: SynchronousQueryOptions[] = [
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+        { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true },
+        { rowFormat: QueryRowFormat.UseECSqlPropertyNames, abbreviateBlobs: true },
+        { rowFormat: QueryRowFormat.UseECSqlPropertyNames, convertClassIdsToClassNames: true },
+      ];
+
+      // Expected metadata comes from a freshly prepared statement for each option set.
+      const expected = optionSets.map((options) => {
+        iModel.clearCaches();
+        return readMetadata({ ...options }).meta;
+      });
+      expect(expected[0].map((p) => p.jsonName)).to.deep.equal(["id", "className", "codeValue", "geometryStream"]);
+      expect(expected[1].map((p) => p.name)).to.deep.equal(["ECInstanceId", "ECClassId", "CodeValue", "GeometryStream"]);
+
+      iModel.clearCaches();
+      for (let pass = 0; pass < 2; pass++) {
+        optionSets.forEach((options, i) => {
+          const { meta, row } = readMetadata({ ...options });
+          expect(meta).to.deep.equal(expected[i]);
+          const geometryStream = row[options.rowFormat === QueryRowFormat.UseECSqlPropertyNames ? "GeometryStream" : "geometryStream"];
+          if (options.abbreviateBlobs)
+            expect(geometryStream).to.be.a("string").and.match(/^\{"bytes":\d+\}$/);
+          else
+            expect(geometryStream).to.be.instanceOf(Uint8Array);
+        });
+      }
+    });
+
+    it("fetches native metadata once per statement and row options", () => {
+      // Native prototype methods cannot be spied on directly, so count calls through a subclass.
+      const getMetadataSpy = sinon.spy();
+      const nativeStatement = IModelNative.platform.ECSqlStatement;
+      sinon.replace(IModelNative.platform, "ECSqlStatement", class extends nativeStatement {
+        public override getMetadata(...args: Parameters<typeof nativeStatement.prototype.getMetadata>) {
+          getMetadataSpy();
+          return super.getMetadata(...args);
+        }
+      });
+      iModel.clearCaches();
+      const options = { rowFormat: QueryRowFormat.UseECSqlPropertyNames };
+      for (let i = 0; i < 10; i++)
+        readMetadata({ ...options });
+      expect(getMetadataSpy.callCount).to.equal(1);
+
+      readMetadata({ ...options, abbreviateBlobs: true });
+      readMetadata({ ...options, abbreviateBlobs: true });
+      expect(getMetadataSpy.callCount).to.equal(2, "different row options need their own metadata");
+
+      iModel.clearCaches();
+      readMetadata({ ...options });
+      expect(getMetadataSpy.callCount).to.equal(3, "a re-prepared statement must not reuse cached metadata");
+    });
+
+    it("does not share metadata objects between calls", () => {
+      iModel.clearCaches();
+      const options = { rowFormat: QueryRowFormat.UseECSqlPropertyNames };
+      const expected = structuredClone(readMetadata({ ...options }).meta);
+
+      iModel.withQueryReader(sql, (reader) => {
+        assert.isTrue(reader.step());
+        const readerMeta = reader.getMetaData();
+        readerMeta[0].name = "Changed";
+        readerMeta[0].index = 3;
+        readerMeta.reverse();
+        const proxyMeta = reader.current.getMetaData();
+        proxyMeta.push({ ...proxyMeta[0], name: "Extra" });
+      }, new QueryBinder().bindId(1, elementId), options);
+
+      const { meta, row } = readMetadata({ ...options });
+      expect(meta).to.deep.equal(expected);
+      expect(row.ECInstanceId).to.equal(elementId);
+    });
+
+    it("returns metadata for queries that produce no rows", () => {
+      iModel.clearCaches();
+      const options = { rowFormat: QueryRowFormat.UseECSqlPropertyNames };
+      const expected = readMetadata({ ...options }).meta;
+      for (let i = 0; i < 3; i++) {
+        iModel.withQueryReader(sql, (reader) => {
+          expect(reader.step()).to.be.false;
+          expect(reader.getMetaData()).to.deep.equal(expected);
+        }, new QueryBinder().bindId(1, "0xffffff"), options);
+        iModel.withQueryReader(sql, (reader) => {
+          expect(reader.getMetaData()).to.deep.equal(expected);
+          expect(reader.toArray()).to.deep.equal([]);
+        }, new QueryBinder().bindId(1, "0xffffff"), options);
+      }
+    });
+
+    it("reflects a schema import between calls", () => {
+      const schemaXml = (version: string, extraProperty: string) => `<ECSchema schemaName="Test" alias="ts" version="${version}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+            ${extraProperty}
+          </ECEntityClass>
+        </ECSchema>`;
+      using ecdb = ECDbTestHelper.createECDb(KnownTestLocations.outputDir, "syncReaderMetadataCache.ecdb", schemaXml("01.00.00", ""));
+      ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n) VALUES(1)", (stmt) => stmt.stepForInsert());
+      ecdb.saveChanges();
+
+      const fooSql = "SELECT * FROM ts.Foo";
+      const options = { rowFormat: QueryRowFormat.UseECSqlPropertyNames };
+      const readNames = () => ecdb.withQueryReader(fooSql, (reader) => {
+        assert.isTrue(reader.step());
+        return reader.getMetaData().map((p) => p.name);
+      }, undefined, options);
+      expect(readNames()).to.deep.equal(["ECInstanceId", "ECClassId", "n"]);
+      expect(readNames()).to.deep.equal(["ECInstanceId", "ECClassId", "n"]);
+
+      const schemaPath = path.join(KnownTestLocations.outputDir, "syncReaderMetadataCache.ecschema.xml");
+      IModelJsFs.writeFileSync(schemaPath, schemaXml("01.00.01", `<ECProperty propertyName="m" typeName="string"/>`));
+      ecdb.importSchema(schemaPath);
+      ecdb.saveChanges();
+
+      expect(readNames()).to.deep.equal(["ECInstanceId", "ECClassId", "n", "m"]);
     });
   });
 });
