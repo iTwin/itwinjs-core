@@ -23,7 +23,9 @@ const runProductionAcceptance = ["1", "true", "yes"].includes(process.env.ITWIN_
 
 runProductionAcceptance("Vertical CRS production workspace acceptance", function () {
   this.timeout(120_000);
-  const cacheDir = path.join(path.dirname(IModelTestUtils.prepareOutputFile("VerticalCrsProduction", "VerticalCrsProduction.bim")), "cache");
+  const iModelFileName = IModelTestUtils.prepareOutputFile("VerticalCrsProduction", "VerticalCrsProduction.bim");
+  const cacheDir = path.join(path.dirname(iModelFileName), "cache");
+  let iModel: SnapshotDb | undefined;
 
   before(async () => {
     await TestUtils.shutdownBackend();
@@ -33,12 +35,30 @@ runProductionAcceptance("Vertical CRS production workspace acceptance", function
   });
 
   after(async () => {
+    iModel?.close();
     IModelNative.platform.enableLocalGcsFiles(true);
     await TestUtils.shutdownBackend();
     await TestUtils.startBackend();
   });
 
-  it("enumerates and filters vertical systems using the shipped defaults", () => {
+  it("enumerates every definition in the production Vertical Datum dictionary", async () => {
+    const defaults = IModelHost.appWorkspace.settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases);
+    const baseProps = defaults?.find((entry) => entry.dbName === "base");
+    expect(baseProps, "shipped defaults must include the base workspace").not.to.be.undefined;
+    const baseDb = await IModelHost.appWorkspace.getWorkspaceDb(baseProps!);
+    const dictionaryBlob = baseDb.getBlob("VerticalDatumDefinitions.json");
+    expect(dictionaryBlob, "VerticalDatumDefinitions.json is missing from the PROD base workspace").not.to.be.undefined;
+
+    const dictionary = JSON.parse(new TextDecoder().decode(dictionaryBlob)) as {
+      definitions: Array<{ verticalCRS: { crsName: string } }>;
+    };
+    expect(dictionary.definitions).not.to.be.empty;
+    const expectedNames = dictionary.definitions.map((entry) => entry.verticalCRS.crsName).sort();
+    const actualNames = getAvailableVerticalCoordinateReferenceSystems().map((entry) => entry.crsName).sort();
+    expect(actualNames).to.deep.equal(expectedNames);
+  });
+
+  it("enumerates and filters vertical systems using production resources", () => {
     const verticalSystems = getAvailableVerticalCoordinateReferenceSystems();
     expect(verticalSystems).not.to.be.empty;
     expect(verticalSystems.some((entry) => entry.crsName === "EGM96 height")).to.be.true;
@@ -46,6 +66,32 @@ runProductionAcceptance("Vertical CRS production workspace acceptance", function
     const meters = getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
     expect(meters).not.to.be.empty;
     expect(meters.every((entry) => entry.unit === "Meter")).to.be.true;
+  });
+
+  it("converts EGM96 height to ellipsoid height using production resources", async () => {
+    iModel = SnapshotDb.createEmpty(
+      iModelFileName,
+      { rootSubject: { name: "Vertical CRS PROD acceptance" }, guid: Guid.createValue() },
+    );
+    const modelCrs = {
+      horizontalCRS: { id: "LL84" },
+      verticalCRS: { id: "GEOID", crsName: "EGM96 height" },
+    } as GeographicCRSProps;
+    iModel[_nativeDb].updateIModelProps({ geographicCoordinateSystem: modelCrs } as IModelProps);
+
+    const response = await iModel.getGeoCoordinatesFromIModelCoordinates({
+      target: JSON.stringify({
+        horizontalCRS: { id: "LL84" },
+        verticalCRS: { id: "ELLIPSOID" },
+      }),
+      iModelCoords: [{ x: 23.700523, y: 37.944210, z: 0 }],
+    });
+
+    expect(response.geoCoords[0].s).to.equal(GeoCoordStatus.Success);
+    const result = Point3d.fromJSON(response.geoCoords[0].p);
+    expect(result.x).to.be.closeTo(23.700523, 0.000001);
+    expect(result.y).to.be.closeTo(37.944210, 0.000001);
+    expect(result.z).to.be.closeTo(38.3, 0.5);
   });
 });
 
