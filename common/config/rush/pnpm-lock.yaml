@@ -77,7 +77,7 @@ importers:
         version: link:../ecsql/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
@@ -173,7 +173,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
@@ -216,7 +216,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
@@ -264,7 +264,7 @@ importers:
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.5
@@ -385,7 +385,7 @@ importers:
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -466,7 +466,7 @@ importers:
         version: link:../quantity
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.5
@@ -517,7 +517,7 @@ importers:
         version: link:../../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -574,7 +574,7 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -596,7 +596,7 @@ importers:
         version: link:../../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -644,7 +644,7 @@ importers:
         version: link:../frontend
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -708,7 +708,7 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/body-parser':
         specifier: ^1.17.0
         version: 1.19.6
@@ -769,7 +769,7 @@ importers:
     devDependencies:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -839,7 +839,7 @@ importers:
         version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
@@ -903,7 +903,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/file-saver':
         specifier: ^2.0.1
         version: 2.0.7
@@ -934,7 +934,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.3
@@ -983,7 +983,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1053,7 +1053,7 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1120,7 +1120,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1187,7 +1187,7 @@ importers:
         version: link:../frontend
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.17.25
@@ -1217,7 +1217,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1262,7 +1262,7 @@ importers:
         version: link:../bentley
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -1299,7 +1299,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1353,7 +1353,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1407,7 +1407,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/linear-referencing-common':
         specifier: workspace:*
         version: link:../common
@@ -1455,7 +1455,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -1482,7 +1482,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1534,7 +1534,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -1561,7 +1561,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1613,7 +1613,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.2
@@ -1656,7 +1656,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1762,7 +1762,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1837,7 +1837,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -1888,7 +1888,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1960,7 +1960,7 @@ importers:
         version: link:../../core/frontend
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2036,7 +2036,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2115,7 +2115,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       esbuild:
         specifier: ^0.13.8
         version: 0.13.15
@@ -2260,7 +2260,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2399,7 +2399,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
@@ -2583,7 +2583,7 @@ importers:
         version: link:../../core/backend
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2685,7 +2685,7 @@ importers:
         version: link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-backend':
         specifier: workspace:*
         version: link:../../presentation/backend
@@ -2854,7 +2854,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2938,7 +2938,7 @@ importers:
         version: link:../../core/quantity
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -3099,7 +3099,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3220,7 +3220,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3341,7 +3341,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3492,7 +3492,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
@@ -3700,7 +3700,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/express':
         specifier: ^4.17.20
         version: 4.17.25
@@ -3809,7 +3809,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -3852,7 +3852,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3904,7 +3904,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.15
@@ -3953,7 +3953,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.15
@@ -3999,7 +3999,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.15
@@ -4066,7 +4066,7 @@ importers:
     devDependencies:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -4112,7 +4112,7 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4191,7 +4191,7 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4262,7 +4262,7 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.15
@@ -4289,7 +4289,7 @@ importers:
         version: link:../../core/bentley
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4368,7 +4368,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
-        version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
+        version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -5207,8 +5207,8 @@ packages:
       '@itwin/core-common': workspace:*
       electron: '>=35.0.0 <45.0.0'
 
-  '@itwin/eslint-plugin@6.1.0':
-    resolution: {integrity: sha512-4HDfTmenGSQfL8o8Cr1tKavF2ZQsKEjF31e8pZUPv4QMUZCTr5Gt+lALNLPO4huRJo9e5rasUB/vq0MCBD0t4Q==}
+  '@itwin/eslint-plugin@6.1.1':
+    resolution: {integrity: sha512-EZnTbeU+evEsKStoElK8OSJKGA+At0D2gCaTClJbSkyaf2h6hqxQYXirRmNKYqaIT5ZN2LJf0asDv+i0j/jdmQ==}
     engines: {node: ^20.11.0 || ^22.0.0 || ^24.0.0}
     hasBin: true
     peerDependencies:
@@ -5406,18 +5406,6 @@ packages:
 
   '@nodable/entities@3.1.0':
     resolution: {integrity: sha512-LsS/DjHr+uDM647Gru/cA8+J3a3HfhttwCKLyuoyN7yXTFCxKBtSgMQBvrW9yNPa2/zDRUNuGPaH5QUFoa4arQ==}
-
-  '@nodelib/fs.scandir@2.1.5':
-    resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
-    engines: {node: '>= 8'}
-
-  '@nodelib/fs.stat@2.0.5':
-    resolution: {integrity: sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A==}
-    engines: {node: '>= 8'}
-
-  '@nodelib/fs.walk@1.2.8':
-    resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
-    engines: {node: '>= 8'}
 
   '@openid/appauth@1.3.2':
     resolution: {integrity: sha512-NoOejniaqzOEbHg3RcBZtTriYqhqpQFgTC4lDNaRbgRCnpz6n8PlxWlCbh2N1K5qKawfxRP29/Wiho3FrXQ3Qw==}
@@ -6543,9 +6531,6 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@yarnpkg/lockfile@1.1.0':
-    resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
-
   '@zip.js/zip.js@2.7.73':
     resolution: {integrity: sha512-I2UP8/rdQE5hTtVVL08B7P8XuwXiKuuMUPjNuFOVL/9b+8IsExR9S5jz2H58u0rJjU4M1BikLgqEMG8gZJZVBw==}
     engines: {bun: '>=0.7.0', deno: '>=1.0.0', node: '>=16.5.0'}
@@ -6703,10 +6688,6 @@ packages:
   array-includes@3.2.0:
     resolution: {integrity: sha512-VXY5eFRarnXcYxwBjJzPmEhH55+rmP79/+ueDhi0F+TuqfHCItagIHqxeUZrmgrOPa31QTh9H85DjX3FfJ0FTg==}
     engines: {node: '>= 0.4'}
-
-  array-union@2.1.0:
-    resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
-    engines: {node: '>=8'}
 
   array.prototype.findlast@1.2.5:
     resolution: {integrity: sha512-CVvd6FHg1Z3POpBLxO6E6zr+rSKEQ9L6rZHAaY7lLfhKsWYUBBOuMs0e9o24oopj6H+geRCX0YJ+TJLBK2eHyQ==}
@@ -6873,10 +6854,6 @@ packages:
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
-
-  braces@3.0.3:
-    resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
-    engines: {node: '>=8'}
 
   browser-stdout@1.3.1:
     resolution: {integrity: sha512-qhAVI1+Av2X7qelOfAIYwXONood6XlZE/fXaBSmW/T5SzLAmCgzi+eiWE7fUvbHaeNBQH13UftjpXxsfLkMpgw==}
@@ -7349,10 +7326,6 @@ packages:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
 
-  dir-glob@3.0.1:
-    resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
-    engines: {node: '>=8'}
-
   discontinuous-range@1.0.0:
     resolution: {integrity: sha512-c68LpLbO+7kP/b1Hr1qs8/BJ09F5khZGTxqxZuhzxpmwJKOgRFHJWIb9/KmqnqHhLdO55aOxFH/EGBvUQbL/RQ==}
 
@@ -7785,10 +7758,6 @@ packages:
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
-  fast-glob@3.3.3:
-    resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
-    engines: {node: '>=8.6.0'}
-
   fast-json-stable-stringify@2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
 
@@ -7814,9 +7783,6 @@ packages:
   fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
-
-  fastq@1.20.3:
-    resolution: {integrity: sha512-XKv5nnLs6nLF71NgiKJLIZFLkPyIEuOselLG7ujZnGrRfQK8HpvY+WqKhAJUAdLomwVHErVS4LfxFlPq0/FTAw==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -7849,10 +7815,6 @@ packages:
 
   file-saver@2.0.5:
     resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==}
-
-  fill-range@7.1.1:
-    resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
-    engines: {node: '>=8'}
 
   finalhandler@1.3.2:
     resolution: {integrity: sha512-aA4RyPcd3badbdABGDuTXCMTtOneUCAYH/gxoYRTZlIJdF0YPWuGqiAsIrhNnnqdXGswYk6dGujem4w80UJFhg==}
@@ -8076,16 +8038,6 @@ packages:
     resolution: {integrity: sha512-zzlgaYnHMIEgHRrfC7x0Qp0Ylhw/sHpM6MHXeVBTYIsvGf5GpbnClB+Q6rAPdn+0gd2oZZIo6Tj3EaWrt4VhDQ==}
     engines: {node: '>8.0.0'}
 
-  git-up@7.0.0:
-    resolution: {integrity: sha512-ONdIrbBCFusq1Oy0sC71F5azx8bVkvtZtMJAsv+a6lz5YAmbNnLD6HAB4gptHZVLPR8S2/kVN6Gab7lryq5+lQ==}
-
-  git-url-parse@13.1.1:
-    resolution: {integrity: sha512-PCFJyeSSdtnbfhSNRw9Wk96dDCNx+sogTe4YNXeXSJxt7xz5hvXekuRn9JX7m+Mf4OscCu8h+mtAl3+h5Fo8lQ==}
-
-  glob-parent@5.1.2:
-    resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
-    engines: {node: '>= 6'}
-
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
@@ -8123,10 +8075,6 @@ packages:
   globalthis@1.0.4:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
-
-  globby@11.1.0:
-    resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
-    engines: {node: '>=10'}
 
   google-auth-library@10.5.0:
     resolution: {integrity: sha512-7ABviyMOlX5hIVD60YOfHw4/CxOfBhyduaYB+wbFWCWoni4N7SLcV46hrVRktuBbZjFC9ONyqamZITN7q3n32w==}
@@ -8454,10 +8402,6 @@ packages:
     resolution: {integrity: sha512-lZhclumE1G6VYD8VHe35wFaIif+CTy5SJIi5+3y4psDgWu4wPDoBhF8NxUOinEc7pHgiTsT6MaBb92rKhhD+Xw==}
     engines: {node: '>= 0.4'}
 
-  is-number@7.0.0:
-    resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
-    engines: {node: '>=0.12.0'}
-
   is-obj@2.0.0:
     resolution: {integrity: sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==}
     engines: {node: '>=8'}
@@ -8497,9 +8441,6 @@ packages:
   is-shared-array-buffer@1.0.4:
     resolution: {integrity: sha512-ISWac8drv4ZGfwKl5slpHG9OwPNty4jOWPRIhBpxOoD+hqITiwuipOQ2bNthAzwA3B4fIjO4Nln74N0S9byq8A==}
     engines: {node: '>= 0.4'}
-
-  is-ssh@1.4.1:
-    resolution: {integrity: sha512-JNeu1wQsHjyHgn9NcWTaXq6zWSR6hqE0++zhfZlkFBbScNkyvxCdeV8sRkSBaeLKxmbpR21brail63ACNxJ0Tg==}
 
   is-stream@2.0.1:
     resolution: {integrity: sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==}
@@ -8977,10 +8918,6 @@ packages:
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
 
-  merge2@1.4.1:
-    resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
-    engines: {node: '>= 8'}
-
   mersenne-twister@1.1.0:
     resolution: {integrity: sha512-mUYWsMKNrm4lfygPkL3OfGzOPTR2DBlTkBNHM//F6hGp8cLThY897crAlk3/Jo17LEOOjQUrNAx6DvgO77QJkA==}
 
@@ -8990,10 +8927,6 @@ packages:
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
-
-  micromatch@4.0.8:
-    resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
-    engines: {node: '>=8.6'}
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
@@ -9468,14 +9401,8 @@ packages:
   parse-imports-exports@0.2.4:
     resolution: {integrity: sha512-4s6vd6dx1AotCx/RCI2m7t7GCh5bDRUtGNvRfHSP2wbBQdMi67pPe7mtzmgwcaQ8VKK/6IB7Glfyu3qdZJPybQ==}
 
-  parse-path@7.1.0:
-    resolution: {integrity: sha512-EuCycjZtfPcjWk7KTksnJ5xPMvWGA/6i4zrLYhRG0hGvC3GPU/jGUj3Cy+ZR0v30duV3e23R95T1lE2+lsndSw==}
-
   parse-statements@1.0.11:
     resolution: {integrity: sha512-HlsyYdMBnbPQ9Jr/VgJ1YF4scnldvJpJxCVx6KgqPL4dxppsWrJHCIIxQXMJrqGnsRkNPATbeMJ8Yxu7JMsYcA==}
-
-  parse-url@8.1.0:
-    resolution: {integrity: sha512-xDvOoLU5XRrcOZvnI6b8zA6n9O9ejNk/GExuz1yBuWUGn9KA97GI6HTs6u02wKara1CeVmZhH+0TZFdWScR89w==}
 
   parse5@7.3.0:
     resolution: {integrity: sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==}
@@ -9534,10 +9461,6 @@ packages:
   path-to-regexp@8.4.2:
     resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
 
-  path-type@4.0.0:
-    resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
-    engines: {node: '>=8'}
-
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
@@ -9563,10 +9486,6 @@ packages:
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
-
-  picomatch@2.3.2:
-    resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
-    engines: {node: '>=8.6'}
 
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
@@ -9668,9 +9587,6 @@ packages:
     resolution: {integrity: sha512-dYDWdjSl5RNb7SgPxGQcRU+GtvP7s2fpkrY0r432PcOIaZ0/rBcxEZnQN67iJhFuQiVw754JDoPruPCNdGsbjg==}
     engines: {node: '>=12.0.0'}
 
-  protocols@2.0.2:
-    resolution: {integrity: sha512-hHVTzba3wboROl0/aWRRG9dMytgH6ow//STBZh43l/wQgmMhYhOFi0EHWAPtoCz9IAUymsyP0TSBHkhgMEGNnQ==}
-
   proxy-addr@2.0.8:
     resolution: {integrity: sha512-5nnx0yGyVUcY6t9RnWcARWtwT9F1D8O9rt08htPvnd49W1IgZtmLkhu9WfMzQj1cFxjHIO6connUNVW5k7AVyQ==}
     engines: {node: '>= 0.10'}
@@ -9693,9 +9609,6 @@ packages:
   qs@6.16.0:
     resolution: {integrity: sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==}
     engines: {node: '>=0.6'}
-
-  queue-microtask@1.2.3:
-    resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
   quick-lru@5.1.1:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
@@ -9849,10 +9762,6 @@ packages:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
     engines: {node: '>= 4'}
 
-  reusify@1.1.0:
-    resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
-    engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
-
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
@@ -9933,9 +9842,6 @@ packages:
   run-applescript@7.1.0:
     resolution: {integrity: sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q==}
     engines: {node: '>=18'}
-
-  run-parallel@1.2.0:
-    resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
   rxjs-for-await@1.0.0:
     resolution: {integrity: sha512-MJhvf1vtQaljd5wlzsasvOjcohVogzkHkUI0gFE9nGhZ15/fT2vR1CjkLEh37oRqWwpv11vHo5D+sLM+Aw9Y8g==}
@@ -10140,10 +10046,6 @@ packages:
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
     engines: {node: '>=18'}
-
-  slash@3.0.0:
-    resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
-    engines: {node: '>=8'}
 
   sort-any@4.0.7:
     resolution: {integrity: sha512-UuZVEXClHW+bVa6ZBQ4biTWmLXMP7y6/jv5arfA0rKk7ZExy+5Zm19uekIqqDx6ZuvUMu7z5Ba9FfBi6FlGXPQ==}
@@ -10419,10 +10321,6 @@ packages:
   tldts@6.1.86:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
-
-  to-regex-range@5.0.1:
-    resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
-    engines: {node: '>=8.0'}
 
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
@@ -10894,9 +10792,6 @@ packages:
 
   workerpool@9.3.4:
     resolution: {integrity: sha512-TmPRQYYSAnnDiEB0P/Ytip7bFGvqnSU6I2BcuSw7Hx+JSg/DsUi5ebYfc8GYaSdpuvOcEs6dXxPurOYpe9QFwg==}
-
-  workspace-tools@0.36.4:
-    resolution: {integrity: sha512-v0UFVvw9BjHtRu2Dau5PEJKkuG8u4jPlpXZQWjSz9XgbSutpPURqtO2P0hp3cVmQVATh8lkMFCewFgJuDnyC/w==}
 
   wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
@@ -11915,7 +11810,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@itwin/eslint-plugin@6.1.0(eslint@9.39.5)(typescript@5.6.3)':
+  '@itwin/eslint-plugin@6.1.1(eslint@9.39.5)(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.71.0(@typescript-eslint/parser@8.71.0(eslint@9.39.5)(typescript@5.6.3))(eslint@9.39.5)(typescript@5.6.3)
       '@typescript-eslint/parser': 8.71.0(eslint@9.39.5)(typescript@5.6.3)
@@ -11928,9 +11823,10 @@ snapshots:
       eslint-plugin-prefer-arrow: 1.2.3(eslint@9.39.5)
       eslint-plugin-react: 7.37.5(eslint@9.39.5)
       eslint-plugin-react-hooks: 5.2.0(eslint@9.39.5)
+      js-yaml: 4.3.2
       luxon: 3.7.2
+      tinyglobby: 0.2.17
       typescript: 5.6.3
-      workspace-tools: 0.36.4
     transitivePeerDependencies:
       - supports-color
 
@@ -12208,18 +12104,6 @@ snapshots:
   '@noble/hashes@1.8.0': {}
 
   '@nodable/entities@3.1.0': {}
-
-  '@nodelib/fs.scandir@2.1.5':
-    dependencies:
-      '@nodelib/fs.stat': 2.0.5
-      run-parallel: 1.2.0
-
-  '@nodelib/fs.stat@2.0.5': {}
-
-  '@nodelib/fs.walk@1.2.8':
-    dependencies:
-      '@nodelib/fs.scandir': 2.1.5
-      fastq: 1.20.3
 
   '@openid/appauth@1.3.2':
     dependencies:
@@ -13503,8 +13387,6 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@yarnpkg/lockfile@1.1.0': {}
-
   '@zip.js/zip.js@2.7.73': {}
 
   abort-controller@3.0.0:
@@ -13684,8 +13566,6 @@ snapshots:
       es-shim-unscopables: 1.1.0
       is-string: 1.1.1
       math-intrinsics: 1.1.0
-
-  array-union@2.1.0: {}
 
   array.prototype.findlast@1.2.5:
     dependencies:
@@ -13968,10 +13848,6 @@ snapshots:
   brace-expansion@5.0.12:
     dependencies:
       balanced-match: 4.0.4
-
-  braces@3.0.3:
-    dependencies:
-      fill-range: 7.1.1
 
   browser-stdout@1.3.1: {}
 
@@ -14433,10 +14309,6 @@ snapshots:
   diff@7.0.0: {}
 
   diff@8.0.4: {}
-
-  dir-glob@3.0.1:
-    dependencies:
-      path-type: 4.0.0
 
   discontinuous-range@1.0.0: {}
 
@@ -15076,14 +14948,6 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-glob@3.3.3:
-    dependencies:
-      '@nodelib/fs.stat': 2.0.5
-      '@nodelib/fs.walk': 1.2.8
-      glob-parent: 5.1.2
-      merge2: 1.4.1
-      micromatch: 4.0.8
-
   fast-json-stable-stringify@2.1.0: {}
 
   fast-levenshtein@2.0.6: {}
@@ -15110,10 +14974,6 @@ snapshots:
 
   fastest-levenshtein@1.0.16: {}
 
-  fastq@1.20.3:
-    dependencies:
-      reusify: 1.1.0
-
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
@@ -15138,10 +14998,6 @@ snapshots:
       flat-cache: 4.0.1
 
   file-saver@2.0.5: {}
-
-  fill-range@7.1.1:
-    dependencies:
-      to-regex-range: 5.0.1
 
   finalhandler@1.3.2:
     dependencies:
@@ -15405,19 +15261,6 @@ snapshots:
 
   get-system-fonts@2.0.2: {}
 
-  git-up@7.0.0:
-    dependencies:
-      is-ssh: 1.4.1
-      parse-url: 8.1.0
-
-  git-url-parse@13.1.1:
-    dependencies:
-      git-up: 7.0.0
-
-  glob-parent@5.1.2:
-    dependencies:
-      is-glob: 4.0.3
-
   glob-parent@6.0.2:
     dependencies:
       is-glob: 4.0.3
@@ -15462,15 +15305,6 @@ snapshots:
     dependencies:
       define-properties: 1.2.1
       gopd: 1.2.0
-
-  globby@11.1.0:
-    dependencies:
-      array-union: 2.1.0
-      dir-glob: 3.0.1
-      fast-glob: 3.3.3
-      ignore: 5.3.2
-      merge2: 1.4.1
-      slash: 3.0.0
 
   google-auth-library@10.5.0:
     dependencies:
@@ -15845,8 +15679,6 @@ snapshots:
       call-bound: 1.0.4
       has-tostringtag: 1.0.2
 
-  is-number@7.0.0: {}
-
   is-obj@2.0.0: {}
 
   is-path-inside@3.0.3: {}
@@ -15879,10 +15711,6 @@ snapshots:
   is-shared-array-buffer@1.0.4:
     dependencies:
       call-bound: 1.0.4
-
-  is-ssh@1.4.1:
-    dependencies:
-      protocols: 2.0.2
 
   is-stream@2.0.1: {}
 
@@ -16378,18 +16206,11 @@ snapshots:
 
   merge-stream@2.0.0: {}
 
-  merge2@1.4.1: {}
-
   mersenne-twister@1.1.0: {}
 
   meshoptimizer@0.25.0: {}
 
   methods@1.1.2: {}
-
-  micromatch@4.0.8:
-    dependencies:
-      braces: 3.0.3
-      picomatch: 2.3.2
 
   mime-db@1.52.0: {}
 
@@ -16874,15 +16695,7 @@ snapshots:
     dependencies:
       parse-statements: 1.0.11
 
-  parse-path@7.1.0:
-    dependencies:
-      protocols: 2.0.2
-
   parse-statements@1.0.11: {}
-
-  parse-url@8.1.0:
-    dependencies:
-      parse-path: 7.1.0
 
   parse5@7.3.0:
     dependencies:
@@ -16924,8 +16737,6 @@ snapshots:
 
   path-to-regexp@8.4.2: {}
 
-  path-type@4.0.0: {}
-
   pathe@2.0.3: {}
 
   pathval@1.1.1: {}
@@ -16947,8 +16758,6 @@ snapshots:
       postgres-interval: 1.2.0
 
   picocolors@1.1.1: {}
-
-  picomatch@2.3.2: {}
 
   picomatch@4.0.7: {}
 
@@ -17037,8 +16846,6 @@ snapshots:
       '@types/node': 20.17.58
       long: 5.3.2
 
-  protocols@2.0.2: {}
-
   proxy-addr@2.0.8:
     dependencies:
       forwarded: 0.2.0
@@ -17059,8 +16866,6 @@ snapshots:
     dependencies:
       es-define-property: 1.0.1
       side-channel: 1.1.1
-
-  queue-microtask@1.2.3: {}
 
   quick-lru@5.1.1: {}
 
@@ -17235,8 +17040,6 @@ snapshots:
 
   retry@0.13.1: {}
 
-  reusify@1.1.0: {}
-
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
@@ -17326,10 +17129,6 @@ snapshots:
   rrweb-cssom@0.8.0: {}
 
   run-applescript@7.1.0: {}
-
-  run-parallel@1.2.0:
-    dependencies:
-      queue-microtask: 1.2.3
 
   rxjs-for-await@1.0.0(rxjs@7.8.2):
     dependencies:
@@ -17594,8 +17393,6 @@ snapshots:
       '@polka/url': 1.0.0-next.29
       mrmime: 2.0.1
       totalist: 3.0.1
-
-  slash@3.0.0: {}
 
   sort-any@4.0.7: {}
 
@@ -17952,10 +17749,6 @@ snapshots:
   tldts@6.1.86:
     dependencies:
       tldts-core: 6.1.86
-
-  to-regex-range@5.0.1:
-    dependencies:
-      is-number: 7.0.0
 
   toidentifier@1.0.1: {}
 
@@ -18494,16 +18287,6 @@ snapshots:
   word-wrap@1.2.5: {}
 
   workerpool@9.3.4: {}
-
-  workspace-tools@0.36.4:
-    dependencies:
-      '@yarnpkg/lockfile': 1.1.0
-      fast-glob: 3.3.3
-      git-url-parse: 13.1.1
-      globby: 11.1.0
-      jju: 1.4.0
-      js-yaml: 4.3.2
-      micromatch: 4.0.8
 
   wrap-ansi@6.2.0:
     dependencies:
