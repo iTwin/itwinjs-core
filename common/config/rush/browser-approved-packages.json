@@ -951,10 +951,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "vite-plugin-static-copy",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "vitest",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
