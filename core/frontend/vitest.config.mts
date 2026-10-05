@@ -1,8 +1,8 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { createRequire } from 'module';
-import path from 'path';
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+import path from 'node:path';
 import * as packageJson from "./package.json";
 
 const require = createRequire(import.meta.url);
@@ -12,7 +12,20 @@ const testSchemaFiles = [
   '@bentley/units-schema/Units.ecschema.json',
   '@bentley/formats-schema/Formats.ecschema.json',
   '@bentley/aec-units-schema/AecUnits.ecschema.json',
-].map((specifier) => require.resolve(specifier).replace(/\\/g, "/"));
+].map((specifier) => require.resolve(specifier));
+
+// Stage test assets into one folder served as Vite's publicDir. Later copies overwrite earlier ones.
+const testPublicDir = "lib/test-public";
+fs.rmSync(testPublicDir, { recursive: true, force: true });
+for (const [src, dest] of [
+  ["src/test/public", ""],
+  ["lib/public", ""],
+  ...testSchemaFiles.map((file) => [file, `assets/schemas/${path.basename(file)}`]),
+  ["lib/test/test-worker.js", "test-worker.js"],
+]) {
+  if (fs.existsSync(src))
+    fs.cpSync(src, path.join(testPublicDir, dest), { recursive: true, force: true });
+}
 
 const includePackages: string[] = [
   ...Object.entries(packageJson.peerDependencies)
@@ -61,29 +74,7 @@ export default defineConfig({
     minWorkers: 1,
     maxWorkers: 3
   },
-  plugins: [
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'lib/test/test-worker.js',
-          dest: '.'
-        },
-        {
-          src: 'lib/public/*',
-          dest: '.'
-        },
-        {
-          src: 'src/test/public/*',
-          dest: '.'
-        },
-        // Serve EC schema JSON files for example-code tests (resolved through pnpm symlinks)
-        ...testSchemaFiles.map((filePath) => ({
-          src: filePath,
-          dest: 'assets/schemas'
-        }))
-      ]
-    })
-  ],
+  publicDir: testPublicDir,
   resolve: {
     alias: {
       "../../package.json": "../package.json",
