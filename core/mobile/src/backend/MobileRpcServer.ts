@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { randomBytes, timingSafeEqual } from "crypto";
 import * as ws from "ws";
 import { IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
@@ -11,7 +12,7 @@ import { MobileHost } from "./MobileHost";
 import { BentleyStatus, expectDefined, ProcessDetector } from "@itwin/core-bentley";
 
 interface MobileAddon {
-  notifyListening: (port: number) => void;
+  notifyListening: (port: number, rpcToken: string) => void;
   registerDeviceImpl: () => void;
 }
 
@@ -20,6 +21,9 @@ let addon: MobileAddon | undefined;
 /** @internal */
 export class MobileRpcServer {
   private static _nextId = -1;
+  private static readonly _rpcToken = randomBytes(32).toString("hex");
+
+  public static get rpcToken() { return this._rpcToken; }
 
   public static interop: MobileRpcGateway = {
     handler: (_payload: ArrayBuffer | string) => { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); },
@@ -46,7 +50,18 @@ export class MobileRpcServer {
      */
     this._pingTimer = setInterval(() => { }, 5);
     this._port = MobileRpcConfiguration.setup.obtainPort();
-    this._server = new ws.Server({ host: "127.0.0.1", port: this._port });
+    this._server = new ws.Server({
+      host: "127.0.0.1", port: this._port,
+      verifyClient: (info: Parameters<ws.VerifyClientCallbackSync>[0]) => {
+        const protocol = info.req.headers["sec-websocket-protocol"];
+        const expected = Buffer.from(`itwin-rpc.${MobileRpcServer._rpcToken}`);
+        if (typeof protocol !== "string")
+          return false;
+
+        const supplied = Buffer.from(protocol);
+        return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+      },
+    });
     this._connectionId = ++MobileRpcServer._nextId;
     MobileRpcServer.interop.connectionId = this._connectionId;
     this._onListening();
@@ -66,7 +81,7 @@ export class MobileRpcServer {
     MobileRpcServer.interop.port = this._port;
 
     if (addon) {
-      addon.notifyListening(this._port);
+      addon.notifyListening(this._port, MobileRpcServer._rpcToken);
     }
 
     if (this._connectionId !== 0) {
