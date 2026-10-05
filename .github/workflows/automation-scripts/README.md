@@ -53,11 +53,12 @@ locally. If that push lands bad changelog content on `master` or a `release/X.Y.
    each reviewed/merged normally.
    - Reverting the `gather-docs.yaml` commit on the release branch can be skipped if that
      repoint is actually correct and only the changelog merge on the target branch was
-     wrong.
+     wrong. A rerun is safe in that case: the repoint commit is skipped when the file is
+     already correct.
 3. Re-run `finalize-release.yaml` (`workflow_dispatch`) once the target branch(es) are back
    in a good state, if changelogs still need to be re-merged.
 
-For a run that fails _before_ the push step (e.g. the "Audit Rush lockfile" step, or
+For a run that fails _before_ the push step (e.g. the Rush lockfile audit or
 `update-changelogs.mjs` throwing), nothing has been pushed yet. Fix the underlying issue
 (bump `rushVersion` and regenerate `rush-lockfile/package-lock.json` for an audit failure;
 see that directory's README) and re-run the workflow.
