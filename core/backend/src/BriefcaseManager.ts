@@ -75,7 +75,7 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryDelay?: BeDuration;
   /**
    *  (unused)
-   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
+   * @deprecated in 5.1.8 - might be removed in next major version. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
@@ -100,7 +100,7 @@ export type PullChangesArgs = ToChangesetArgs & {
   onProgress?: ProgressFunction;
   /**
    *  (unused)
-   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
+   * @deprecated in 5.1.8 - might be removed in next major version. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
