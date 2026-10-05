@@ -17,11 +17,11 @@ import { Path } from "../../curve/Path";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../GeometrySamples";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 
 // cspell:word XYAB, XYBA
 
@@ -65,6 +65,29 @@ describe("CurveChainWithDistanceIndex", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClosestPointProblem");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("ClosestPointPeriodicFractionSpace", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const arc = Arc3d.create(Point3d.create(158250.7536449462, 392111.648837931), Vector3d.create(45.72009144018288), Vector3d.create(0, 45.72009144018288), AngleSweep.createStartEndDegrees(246.62239404404025, 323.01676672815));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc);
+
+    const path = Path.create(arc);
+    const chain = CurveChainWithDistanceIndex.createCapture(path);
+
+    let spacePt = Point3d.create(158301, 392079);
+    let detail = chain.closestPoint(spacePt, true);
+    if (ck.testDefined(detail, "closest point found"))
+      ck.testTrue(detail.fraction > 1, "projection beyond end should not be negative");
+
+    spacePt = Point3d.create(158230, 392088);
+    detail = chain.closestPoint(spacePt, true);
+    if (ck.testDefined(detail, "closest point found"))
+      ck.testTrue(detail.fraction < 0, "projection beyond start should be negative");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClosestPointPeriodicFractionSpace");
     expect(ck.getNumErrors()).toBe(0);
   });
 
