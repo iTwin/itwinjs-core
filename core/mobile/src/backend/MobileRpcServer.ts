@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { randomBytes, timingSafeEqual } from "crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import * as ws from "ws";
 import { IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
