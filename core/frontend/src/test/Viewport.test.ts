@@ -69,6 +69,7 @@ describe("Viewport", () => {
 
     function expectFlashedId(viewport: ScreenViewport, expectedId: string | undefined, expectedEvent: ChangedEvent | undefined, func: () => void): void {
       let event: ChangedEvent | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
         expect(vp).to.equal(viewport);
         expect(event).to.be.undefined;
@@ -78,33 +79,46 @@ describe("Viewport", () => {
       func();
       removeListener();
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewport.flashedId).toEqual(expectedId);
       expect(event).toEqual(expectedEvent);
     }
 
     it("dispatches events when flashed Id changes", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x123", [undefined, "0x123"], () => viewport.flashedId = "0x123");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x456", ["0x123", "0x456"], () => viewport.flashedId = "0x456");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x456", undefined, () => viewport.flashedId = "0x456");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x456", undefined], () => viewport.flashedId = undefined);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = undefined);
       });
     });
 
     it("treats invalid Id as undefined", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = "0");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = undefined);
       });
     });
 
     it("rejects malformed Ids", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = "not an id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x123", undefined, () => viewport.flashedId = "not an id");
       });
     });
@@ -112,7 +126,9 @@ describe("Viewport", () => {
     it("prohibits assignment from within event callback", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
         UnexpectedErrors.setHandler(oldHandler);
       });
@@ -999,24 +1015,37 @@ describe("Viewport", () => {
 
       test(false, () => { });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearNeverDrawn());
       // No-op because never-drawn is already empty.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearNeverDrawn());
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearAlwaysDrawn());
       // No-op because always-drawn is already empty
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearAlwaysDrawn());
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123"), true));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp.isAlwaysDrawnExclusive).to.be.true;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearAlwaysDrawn());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp.isAlwaysDrawnExclusive).to.be.false;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearAlwaysDrawn());
 
       test(true, () => vp.primaryIModelRef.neverDrawnElements.add("0x123"));

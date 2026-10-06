@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
-import { HiliteSet, ModelSubCategoryHiliteMode } from "../../../SelectionSet";
+import { ModelSubCategoryHiliteMode } from "../../../SelectionSet";
 import { SceneContext } from "../../../ViewContext";
 import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../../../Viewport";
 import { IModelConnection } from "../../../IModelConnection";
@@ -80,18 +80,6 @@ export interface Hilites {
   readonly models: Id64.Uint32Set;
   readonly isEmpty: boolean;
   readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
-}
-
-class EmptyHiliteSet {
-  public readonly elements: Id64.Uint32Set;
-  public readonly subcategories: Id64.Uint32Set;
-  public readonly models: Id64.Uint32Set;
-  public readonly isEmpty = true;
-  public readonly modelSubCategoryMode = "union";
-
-  public constructor() {
-    this.elements = this.subcategories = this.models = new Id64.Uint32Set();
-  }
 }
 
 interface ReadPixelResources {

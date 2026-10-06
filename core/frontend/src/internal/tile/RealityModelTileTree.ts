@@ -25,7 +25,6 @@ import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   GeometryTileTreeReferenceOptions,
@@ -1008,7 +1007,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-    /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
       cards.dataset.openStreetMapLogoCard = "true";

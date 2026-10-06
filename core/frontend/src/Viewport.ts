@@ -64,7 +64,7 @@ import { ViewRect } from "./common/ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
-import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
+import { queryVisibleFeatures } from "./internal/render/QueryVisibleFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
@@ -386,6 +386,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    * @deprecated Use [[onFlashedElementChanged]].
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
   /** Event dispatched immediately after [[flashedElement]] changes, supplying the previously-flashed element (if any) as the event payload. */
@@ -1144,12 +1145,12 @@ export abstract class Viewport implements Disposable, TileUser {
   private _frameStatsCollector = new FrameStatsCollector(this.onFrameStats);
 
   /** A function invoked once, after the constructor, to initialize the viewport's state.
-   * Subclasses can use this perform additional initialization, as the viewport's constructor is not directly invokable.
+   * Subclasses can use this perform additional initialization, as the viewport's constructor is not directly invocable.
    */
   protected initialize(): void {
   }
 
-  /** @internal because subclasses must derive from ScreenViewport or OffScreenviewport. */
+  /** @internal because subclasses must derive from ScreenViewport or OffScreenViewport. */
   protected constructor(target: RenderTarget) {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
@@ -1523,10 +1524,11 @@ export abstract class Viewport implements Disposable, TileUser {
    * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearAlwaysDrawn(): void {
-    if (0 < this.alwaysDrawn.size || this.isAlwaysDrawnExclusive) {
-      this.alwaysDrawn.clear();
+    const ref = this.primaryIModelRef;
+    if (0 < ref.alwaysDrawnElements.size || ref.isAlwaysDrawnExclusive) {
+      ref.alwaysDrawnElements.clear();
 
-      this.primaryIModelRef.isAlwaysDrawnExclusive = false;
+      ref.isAlwaysDrawnExclusive = false;
 
       this._changeFlags.setAlwaysDrawn();
       this.invalidateScene();
@@ -1538,8 +1540,9 @@ export abstract class Viewport implements Disposable, TileUser {
    * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearNeverDrawn(): void {
-    if (0 < this.neverDrawn.size) {
-      this.neverDrawn.clear();
+    const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
+    if (0 < neverDrawnElements.size) {
+      neverDrawnElements.clear();
 
       this._changeFlags.setNeverDrawn();
       this.invalidateScene();
@@ -1551,8 +1554,9 @@ export abstract class Viewport implements Disposable, TileUser {
    * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public setNeverDrawn(ids: Id64Set): void {
-    this.neverDrawn.clear();
-    this.neverDrawn.addAll(ids);
+    const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
+    neverDrawnElements.clear();
+    neverDrawnElements.addAll(ids);
 
     this._changeFlags.setNeverDrawn();
     this.invalidateScene();
@@ -1566,9 +1570,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @deprecated Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
-    this.alwaysDrawn.clear();
-    this.alwaysDrawn.addAll(ids);
-    this.primaryIModelRef.isAlwaysDrawnExclusive = exclusive;
+    const ref = this.primaryIModelRef;
+    ref.alwaysDrawnElements.clear();
+    ref.alwaysDrawnElements.addAll(ids);
+    ref.isAlwaysDrawnExclusive = exclusive;
 
     this._changeFlags.setAlwaysDrawn();
     this.invalidateScene();
@@ -1878,12 +1883,12 @@ export abstract class Viewport implements Disposable, TileUser {
 
     this._assigningFlashedElement = true;
     try {
-      // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
       assert(undefined !== flashed || undefined !== previous);
-      // Note; we don't actually know that flashed is defined below, but since only current or previous needs to be
-      // defined, we only need to assert that one of them is defined. Either would work.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.onFlashedIdChanged.raiseEvent(this, { current: flashed?.id!, previous: previous?.id });
+      const legacyEvent = flashed
+        ? { current: flashed.id, previous: previous?.id }
+        : { current: undefined, previous: expectDefined(previous).id };
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this.onFlashedIdChanged.raiseEvent(this, legacyEvent);
       this.onFlashedElementChanged.raiseEvent(previous);
     } finally {
       this._assigningFlashedElement = false;
@@ -2748,7 +2753,7 @@ export abstract class Viewport implements Disposable, TileUser {
     if (this.processFlash()) {
       target.setFlashed(this._flashedElem, this._flashIntensity);
       isRedrawNeeded = true;
-      requestNextAnimation = undefined !== this.flashedId;
+      requestNextAnimation = undefined !== this.flashedElement;
     }
 
     this._frameStatsCollector.beginTime("onBeforeRenderTime");

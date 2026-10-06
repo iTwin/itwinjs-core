@@ -555,7 +555,7 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     for (const vp of this.areFlashed)
-      vp.flashedId = undefined;
+      vp.flashedElement = undefined;
 
     this.areFlashed.clear();
   }
@@ -757,7 +757,7 @@ export class AccuSnap implements Decorator {
 
     hitVp = hitVp ?? thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
-      const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
+      const appearance = thisHit.feature.iModelRef.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;

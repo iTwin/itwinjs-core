@@ -30,6 +30,7 @@ function createMockViewport(subCategoriesMap?: Map<string, Set<string>>) {
 
 function createOverrides(subCategoriesMap?: Map<string, Set<string>>) {
   const vp = createMockViewport(subCategoriesMap);
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return { ovrs: PerModelCategoryVisibility.createOverrides(vp), vp };
 }
 

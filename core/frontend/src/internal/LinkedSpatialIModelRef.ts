@@ -109,10 +109,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     });
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
-    loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => {
+    void loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      loadViewedCategories(this);
+      void loadViewedCategories(this);
     });
 
     const updateViewFlags = () => {
@@ -146,8 +146,8 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
     this.viewedModels.addAll(args.viewedModels ?? []);
-    loadViewedModels(this);
-    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
+    void loadViewedModels(this);
+    this.viewedModels.onChanged.addListener(() => void loadViewedModels(this));
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 

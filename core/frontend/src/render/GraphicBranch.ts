@@ -11,14 +11,13 @@ import {
   ContourDisplay,
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
 import { IModelDisplayReference } from "../IModelDisplayReference";

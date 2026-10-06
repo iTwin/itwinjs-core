@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, GeometryClass, ModelFeature } from "@itwin/core-common";
+import { BatchType, GeometryClass } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
 import { IModelDisplayFeature } from "../IModelDisplayReference";
 import type { Viewport } from "../Viewport";
@@ -126,7 +126,7 @@ export namespace Pixel {
         const checkVp = path?.viewAttachment?.viewport ?? viewport;
         const attachVp = checkVp.view.getAttachmentViewport({ inSectionDrawingAttachment: true });
         if (attachVp) {
-          path = path ?? { };
+          path = path ?? {};
           path.sectionDrawingAttachment = { viewport: attachVp };
         }
       }
@@ -217,7 +217,7 @@ export namespace Pixel {
   export enum Selector {
     None = 0,
     /** Select the [[Feature]] which produced each pixel. */
-    Feature = 1 << 0,  
+    Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
     /** Select all aspects of each pixel. */

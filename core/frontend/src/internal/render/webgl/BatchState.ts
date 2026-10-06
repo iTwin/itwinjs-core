@@ -7,7 +7,6 @@
  */
 
 import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
-import { ModelFeature } from "@itwin/core-common";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";
 import { IModelDisplayFeature, IModelDisplayReference } from "../../../IModelDisplayReference";

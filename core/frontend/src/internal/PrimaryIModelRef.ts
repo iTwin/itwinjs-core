@@ -203,10 +203,10 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => {
+    void loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      loadViewedCategories(this);
+      void loadViewedCategories(this);
     });
 
   }
@@ -257,14 +257,14 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 
-    loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(async () => {
+    void loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      loadViewedCategories(this);
+      void loadViewedCategories(this);
     });
 
-    loadViewedModels(this);
-    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
+    void loadViewedModels(this);
+    this.viewedModels.onChanged.addListener(() => void loadViewedModels(this));
   }
 
   public override isSpatial(): this is SpatialIModelDisplayReference { return true; }

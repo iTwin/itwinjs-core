@@ -103,16 +103,17 @@ export namespace FeatureSymbology {
      */
     public initFromViewport(viewport: Viewport): void {
       // Set the initial always/never-drawn sets. Later, initFromView can add more elements to them.
-      if (undefined !== viewport.neverDrawn)
-        this.setNeverDrawnSet(viewport.neverDrawn);
+      const ref = viewport.primaryIModelRef;
+      if (0 < ref.neverDrawnElements.size)
+        this.setNeverDrawnSet(ref.neverDrawnElements);
 
-      if (undefined !== viewport.alwaysDrawn)
-        this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
+      if (0 < ref.alwaysDrawnElements.size)
+        this.setAlwaysDrawnSet(ref.alwaysDrawnElements, ref.isAlwaysDrawnExclusive);
 
       this._initFromView(viewport.view);
 
       viewport.addFeatureOverrides(this);
-      viewport.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
+      ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
       // This will include any per-model subcategory visibility overrides added above.
       this._initSubCategoryOverrides(viewport.view.displayStyle.settings.subCategoryOverrides);

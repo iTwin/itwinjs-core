@@ -577,7 +577,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
   public static async startTool(): Promise<boolean> { return new MultiIModelSelectionTool().run(); }
 
-  private get isAnySelectionSetActive(): boolean {
+  private get _isAnySelectionSetActive(): boolean {
     for (const iModel of this.iModels)
       if (iModel.selectionSet.isActive)
         return true;
@@ -586,7 +586,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
   }
 
   private syncSelectionMode(): void {
-    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
+    if (SelectionMode.Remove === this.selectionMode && !this._isAnySelectionSetActive) {
       // No selection active resetting selection mode since there is nothing to Remove
       this.selectionMode = SelectionMode.Replace;
       this.initSelectTool();
@@ -612,7 +612,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
     });
 
     // Make sure a mode of SelectionMode.Remove is valid
-    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
+    if (SelectionMode.Remove === this.selectionMode && !this._isAnySelectionSetActive) {
       this.selectionMode = SelectionMode.Replace;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MultiIModelSelectionTool._modesName, value: this._selectionModeValue });
     }
@@ -703,11 +703,12 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
       if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
         return undefined; // no geometry at this location...
 
-      if (!vp.isPixelSelectable(pixel))
+      const feature = pixel.feature;
+      if (undefined === feature || !vp.isPixelSelectable(pixel))
         return undefined; // reality model, terrain, etc - not selectable
 
       const element = {
-        iModel: pixel.feature!.iModelRef.iModel,
+        iModel: feature.iModelRef.iModel,
         id: pixel.elementId,
       };
 

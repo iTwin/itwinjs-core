@@ -15,8 +15,7 @@ import { BeButton, BeButtonEvent } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { expectDefined, Id64 } from "@itwin/core-bentley";
-import { GeometryClass } from "@itwin/core-common";
+import { expectDefined } from "@itwin/core-bentley";
 
 /**
  * @public

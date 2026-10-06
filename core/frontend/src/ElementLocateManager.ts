@@ -371,7 +371,7 @@ export class ElementLocateManager {
     }
 
     if (undefined !== hit.subCategoryId && !hit.isExternalIModelHit) {
-      const appearance = hit.viewport.getSubCategoryAppearance(hit.subCategoryId);
+      const appearance = hit.feature.iModelRef.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatableSubCategory");
         return LocateFilterStatus.Reject;

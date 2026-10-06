@@ -9,10 +9,9 @@
 import { assert, dispose, expectDefined, Id64String } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
-import { IModelConnection } from "../../../IModelConnection";
 import { SceneContext } from "../../../ViewContext";
 import { ViewRect } from "../../../common/ViewRect";
 import { Pixel } from "../../../render/Pixel";
@@ -748,10 +747,9 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModelRef, tileId, viewAttachmentId, inSectionDrawingAttachment;
+    let featureTable, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
-      iModelRef = batchInfo.iModelRef;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
       inSectionDrawingAttachment = batchInfo.inSectionDrawingAttachment;

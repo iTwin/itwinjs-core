@@ -288,7 +288,7 @@ export class ViewClipTool extends PrimitiveTool {
   }
 
   private static isFlashed(vp: Viewport, id?: string): boolean {
-    return (undefined !== id ? vp.lastFlashedElementId === id : false);
+    return (undefined !== id ? vp.lastFlashedElement?.id === id : false);
   }
 
   public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
