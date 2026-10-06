@@ -2156,10 +2156,7 @@ class Compositor extends SceneCompositor {
     // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn't need to since it is only used elsewhere when Z write is turned off)
     // and we don't really want another whole set of hilite shaders just for this.
 
-    // ###TODO this is using only the hilite set from the primary iModel.
-    const hilites = this.target.currentBranch.iModelRef?.iModel.hilited;
-    assert(undefined !== hilites);
-    const cmdsSelected = extractHilitedVolumeClassifierCommands(hilites, commands.getCommands(RenderPass.HiliteClassification));
+    const cmdsSelected = extractHilitedVolumeClassifierCommands(commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
     if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited

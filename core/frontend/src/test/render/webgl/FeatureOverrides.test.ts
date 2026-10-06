@@ -11,6 +11,8 @@ import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../internal/render/webgl/Target";
+import { BranchState } from "../../../internal/render/webgl/BranchState";
+import { DrawCommands, extractHilitedVolumeClassifierCommands } from "../../../internal/render/webgl/DrawCommand";
 import { Texture2DDataUpdater } from "../../../internal/render/webgl/Texture";
 import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
 import { openBlankViewport, readUniqueColors, testBlankViewport } from "../../openBlankViewport";
@@ -18,6 +20,7 @@ import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { Decorator } from "../../../ViewManager";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common/render/GraphicType";
+import { createBlankConnection } from "../../createBlankConnection";
 
 describe("FeatureOverrides", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -52,6 +55,43 @@ describe("FeatureOverrides", () => {
     featureTable.insertWithIndex(new Feature("0x456", "0x789"), 0);
     return createBatch(featureTable);
   }
+
+  it("filters volume classifier hilites using each batch's iModel", () => {
+    const linkedIModel = createBlankConnection();
+    try {
+      testBlankViewport((vp) => {
+        const refs = vp.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primaryBatch = makeBatch();
+        const linkedBatch = makeBatch();
+        primaryBatch.setContext(1, { iModelRef: refs.primary } as unknown as BranchState);
+        linkedBatch.setContext(2, { iModelRef: linkedRef } as unknown as BranchState);
+        linkedIModel.hilited.add({ elements: "0x456" });
+
+        const makeDrawCommand = () => ({
+          opcode: "drawPrimitive",
+          primitive: { cachedGeometry: { asSurface: { mesh: { uniformFeatureId: 0 } } } },
+        });
+        const primaryDraw = makeDrawCommand();
+        const linkedDraw = makeDrawCommand();
+        const commands = [
+          { opcode: "pushBatch", batch: primaryBatch }, primaryDraw, { opcode: "popBatch" },
+          { opcode: "pushBatch", batch: linkedBatch }, linkedDraw, { opcode: "popBatch" },
+        ] as unknown as DrawCommands;
+
+        const filtered = extractHilitedVolumeClassifierCommands(commands);
+        expect(filtered).not.toContain(primaryDraw);
+        expect(filtered).toContain(linkedDraw);
+
+        refs.unlink(linkedRef);
+      });
+    } finally {
+      linkedIModel.closeSync();
+    }
+  });
 
   function makeOverrides(source?: FeatureSymbology.Source): FeatureSymbology.Overrides {
     return source ? FeatureSymbology.Overrides.withSource(source) : new FeatureSymbology.Overrides();
