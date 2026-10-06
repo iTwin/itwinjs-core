@@ -1388,10 +1388,6 @@ export abstract class Viewport implements Disposable, TileUser {
       this._changeFlags.setDisplayStyle();
     }));
 
-    // ###TODO detach/attach reality model
-    // ###TODO reality model appearance overrides
-    // ###TODO OSM Building display
-
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
