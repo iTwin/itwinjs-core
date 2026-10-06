@@ -28,7 +28,7 @@ export class LinkIModelTool extends Tool {
 
     let iModel;
     try {
-      iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
+      iModel = await BriefcaseConnection.openFile({ fileName, key: fileName });
 
       const viewedCategories = [];
       for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM BisCore.SpatialCategory"))
@@ -44,7 +44,7 @@ export class LinkIModelTool extends Tool {
         viewedModels,
         overrides: {
         },
-      })
+      });
       return true;
     } catch (err: any) {
       alert(err.toString());

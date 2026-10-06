@@ -170,7 +170,7 @@ export namespace FeatureSymbology {
         script.addSymbologyOverrides(this, ref.parent.timePoint ?? 0);
 
       for (const provider of ref.featureOverrideProviders)
-        provider.addFeatureOverrides(this, ref)
+        provider.addFeatureOverrides(this, ref);
 
       ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
