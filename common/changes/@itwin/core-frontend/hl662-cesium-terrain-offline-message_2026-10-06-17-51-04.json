@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Cesium terrain: report network/service failures separately from a missing Cesium ion access key.",
+      "comment": "Cesium terrain: distinguish missing, rejected, and unreachable Cesium ion access when reporting terrain failures.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }

@@ -42,7 +42,8 @@
     "OpenStreetMapContributors": "contributors",
     "CannotObtainTerrain": "Terrain is unavailable",
     "MissingCesiumToken": "The application must be configured with a valid Cesium ION access key to obtain 3d terrain data.",
-    "TerrainServiceUnavailable": "Could not connect to the terrain service. Check your network connection and try again. If the problem persists, verify the application's terrain access configuration."
+    "InvalidCesiumToken": "The configured Cesium ION access key was rejected or does not have access to this terrain data.",
+    "TerrainServiceUnavailable": "Could not connect to the terrain service. Check your network connection and try again."
   },
   "ExtensionErrors": {
     "Success": "Extension '{{extensionName}}' loaded",

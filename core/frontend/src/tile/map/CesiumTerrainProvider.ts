@@ -10,7 +10,7 @@ import { assert, BeDuration, BeTimePoint, ByteStream, GuidString, JsonUtils, utf
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { CesiumIonAssetId, CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { request, RequestOptions } from "../../request/Request";
+import { HttpResponseError, request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { CesiumAccessClient, CesiumAssetEndpoint } from "../../CesiumAccessClient";
 import { IModelApp } from "../../IModelApp";
@@ -69,12 +69,23 @@ export function computeCesiumTokenTimeoutInterval(expiresAt: Date | undefined): 
   return BeDuration.fromMilliseconds(Math.max(remainingMs, cesiumMinTokenTimeoutInterval.milliseconds));
 }
 
+/** Why a Cesium Ion asset endpoint could not be resolved.
+ * - `missingKey`: no Cesium Ion key or [[CesiumAccessClient]] is configured.
+ * - `rejected`: Cesium Ion rejected the key, or the key does not grant access to the asset.
+ * - `unavailable`: the service could not be reached (e.g. offline) or returned an unexpected response.
+ * @internal
+ */
+export type CesiumEndpointFailure = "missingKey" | "rejected" | "unavailable";
+
+/** HTTP statuses Cesium Ion returns when the access token is invalid or lacks access to the asset. */
+const cesiumRejectedKeyStatuses = [401, 403, 404];
+
 /** @internal */
-export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string }> {
+export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string, failure?: CesiumEndpointFailure }> {
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
     if (undefined === requestKey)
-      return {};
+      return { failure: "missingKey" };
   }
 
   const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
@@ -84,23 +95,47 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
     const apiResponse = await request(apiUrl, "json");
     if (undefined === apiResponse || undefined === apiResponse.url) {
       assert(false);
-      return {};
+      return { failure: "unavailable" };
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
-  } catch {
+  } catch (err) {
     // Expected when offline or when the key is rejected - not a programming error.
-    return {};
+    if (err instanceof HttpResponseError && cesiumRejectedKeyStatuses.includes(err.status))
+      return { failure: "rejected" };
+
+    return { failure: "unavailable" };
   }
 }
 
 /** Returns the localized detail message to display when a Cesium terrain endpoint cannot be resolved.
- * Only blames a missing access key when no Cesium access is configured at all; otherwise the failure is
- * most likely a network or service problem.
+ * @param failure The reason, if known. Custom [[CesiumAccessClient]]s cannot report a reason, so when it is
+ * undefined the message only blames a missing key if no Cesium access is configured at all.
  * @internal
  */
-export function getCesiumTerrainEndpointErrorDescription(): string {
-  const key = IModelApp.tileAdmin.canAccessCesium ? "TerrainServiceUnavailable" : "MissingCesiumToken";
-  return IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.${key}`);
+export function getCesiumTerrainEndpointErrorDescription(failure?: CesiumEndpointFailure): string {
+  if (undefined === failure)
+    failure = IModelApp.tileAdmin.canAccessCesium ? "unavailable" : "missingKey";
+
+  const keys: Record<CesiumEndpointFailure, string> = {
+    missingKey: "MissingCesiumToken",
+    rejected: "InvalidCesiumToken",
+    unavailable: "TerrainServiceUnavailable",
+  };
+
+  return IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.${keys[failure]}`);
+}
+
+/** Resolve the terrain asset endpoint, along with the reason for failure when using the built-in Cesium Ion client. */
+async function resolveTerrainEndpoint(assetId: string, iTwinId?: GuidString): Promise<{ endpoint?: CesiumAssetEndpoint, failure?: CesiumEndpointFailure }> {
+  const customClient = IModelApp.tileAdmin.cesiumAccess;
+  if (customClient)
+    return { endpoint: await customClient.getAssetEndpoint(assetId, iTwinId) };
+
+  const result = await getCesiumAccessTokenAndEndpointUrl(assetId);
+  if (!result.token || !result.url)
+    return { failure: result.failure ?? "unavailable" };
+
+  return { endpoint: { accessToken: result.token, url: result.url } };
 }
 
 let notifiedTerrainError = false;
@@ -117,10 +152,9 @@ function notifyTerrainError(detailedDescription?: string): void {
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
   const assetId = opts.dataSource || CesiumTerrainAssetId.Default;
-  const client = getCesiumAccessClient();
-  const endpoint = await client.getAssetEndpoint(assetId, opts.iTwinId);
+  const { endpoint, failure } = await resolveTerrainEndpoint(assetId, opts.iTwinId);
   if (!endpoint) {
-    notifyTerrainError(getCesiumTerrainEndpointErrorDescription());
+    notifyTerrainError(getCesiumTerrainEndpointErrorDescription(failure));
     return undefined;
   }
 
