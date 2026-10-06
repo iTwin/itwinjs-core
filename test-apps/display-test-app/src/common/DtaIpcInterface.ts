@@ -6,6 +6,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { DisplayStyle3dProps, Placement2dProps, SpatialViewDefinitionProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 export const dtaChannel = "display-test-app/dta";
 
@@ -75,4 +76,22 @@ export interface DtaIpcInterface {
    * If the model is a DrawingModel, sets the scale factor on the Drawing element.
    */
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
+
+  /**
+   * Registers a FormatSet for the specified iModel alongside everything previously imported for
+   * it. With an `id` the set is addressable by a FieldRun's `formatSet` option, and re-importing
+   * that `id` replaces the earlier entry; without one it becomes the iModel's default.
+   */
+  importFormatSet(iModelKey: string, formatSet: FormatSet, id?: string): Promise<void>;
+
+  /** Reverts the specified iModel to the schema default formats and discards its imported FormatSets. */
+  clearFormatSets(iModelKey: string): Promise<void>;
+
+  /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
+  readTextFile(filePath: string): Promise<string>;
+
+  /** Writes `contents` as a UTF-8 text file. Rejects rather than clobbering an existing file
+   * unless `overwrite` is true.
+   */
+  writeTextFile(filePath: string, contents: string, overwrite?: boolean): Promise<void>;
 }

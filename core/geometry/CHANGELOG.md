@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 14:01:53 GMT and should not be manually modified.
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- serialize Loop.isInner
+- automatically adjust tolerance in RegionOps.constructAllXYRegionLoops
+- Fixed wrong type definitions in IModelJsonSchema.ts
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
 
 ## 5.13.6
 Fri, 25 Sep 2026 22:27:22 GMT

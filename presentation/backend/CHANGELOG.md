@@ -1,6 +1,24 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 14:01:53 GMT and should not be manually modified.
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Improve performance of `PresentationManager.getElementProperties` overload that takes `elementIds` prop.
+- Further `PresentationManager.getElementProperties` performance improvements for the case when elements have more than 1k properties and most of them come from aspects.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
 
 ## 5.13.6
 Fri, 25 Sep 2026 22:27:22 GMT

@@ -1,6 +1,35 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 25 Sep 2026 22:28:38 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 14:01:53 GMT and should not be manually modified.
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+### Updates
+
+- Reuse ECSQL column metadata for cached statements in withQueryReader.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Added tests and documentation for the experimental Relations() ECSQL table valued function.
+- Text annotation fields can index into a String property holding serialized JSON.
+- Quantity and coordinate `FieldRun` values in text annotations now render through the iTwin.js quantity formatting pipeline instead of `toString()`, using the property's KindOfQuantity and the schema's presentation format by default. Apps can supply `FormatSet`s per iModel with `ElementDrivesTextAnnotation.registerFieldFormatting` and evaluate fields in memory with `ElementDrivesTextAnnotation.evaluateFields`. `@itwin/core-quantity` is now a peer dependency of this package.
+- Added beta ECDb APIs for atomically importing in-memory CSV rows or streaming CSV files.
+- Resolve sqlite_stat1 conflicts during changeset merge and local transaction rebase.
+- Allow SqliteChangesetReader to use a SQLiteDb as its schema source.
+- Add `PropertyFilter.InstanceKeyAndIdentifiers` to read fixed identifiers from a changeset without querying the current iModel.
+- Add download progress reporting and cancellation to pushChanges
+- improve schemasync, split upgrade scenario from regular updates
+- Deprecated "useJsName" from "RowFormatOptions" which is used by "ChangesetReader" api.
+- Escape iModel element labels when constructing HTML tooltip messages.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
 
 ## 5.13.6
 Fri, 25 Sep 2026 22:27:22 GMT
