@@ -1163,7 +1163,6 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
 
     this._target = dispose(this._target);
-    // ###TODO? this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
