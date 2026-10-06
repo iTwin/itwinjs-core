@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
@@ -192,6 +192,8 @@ export interface IModelDisplayReference2d extends IModelDisplayReference {
 
   /** The Id of the [GeometricModel2d]($backend) displayed by this reference. */
   readonly viewedModel: Id64String;
+  /** @internal */
+  readonly [_invalidateTileTreeRef]: () => void;
 }
 
 /** A reference to any number of spatial models within an iModel.

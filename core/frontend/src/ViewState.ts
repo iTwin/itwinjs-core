@@ -42,7 +42,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { _attachToViewport, _detachFromViewport, _scheduleScriptReference } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _invalidateTileTreeRef, _scheduleScriptReference } from "./common/internal/Symbols";
 import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
 import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
@@ -2376,24 +2376,10 @@ export abstract class ViewState2d extends ViewState {
   public readonly angle: Angle;
   protected _baseModelId: Id64String;
   public get baseModelId(): Id64String { return this._baseModelId; }
-  /** @internal */
-  protected _treeRef?: TileTreeReference;
-
   /** The set of iModels displayed by this view.
    * @beta
    */
   public readonly iModelRefs: IModelDisplayReferences2d;
-
-  /** @internal */
-  protected get _tileTreeRef(): TileTreeReference | undefined {
-    if (undefined === this._treeRef) {
-      const model = this.getViewedModel();
-      if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this.iModelRefs.primary);
-    }
-
-    return this._treeRef;
-  }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -2462,7 +2448,7 @@ export abstract class ViewState2d extends ViewState {
       throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
 
     this._baseModelId = newViewedModelId;
-    this._treeRef = undefined;
+    this.iModelRefs.primary[_invalidateTileTreeRef]();
     await this.load();
   }
 
@@ -2517,9 +2503,7 @@ export abstract class ViewState2d extends ViewState {
 
   /** @internal */
   public override * getModelTreeRefs(): Iterable<TileTreeReference> {
-    if (this._tileTreeRef) {
-      yield this._tileTreeRef;
-    }
+    yield* this.iModelRefs.primary.tileTreeRefs;
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }

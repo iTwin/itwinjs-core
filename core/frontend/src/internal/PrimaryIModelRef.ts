@@ -7,7 +7,7 @@
  */
 
 import { ModelClipGroups, SubCategoryAppearance, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
@@ -188,6 +188,8 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 }
 
 class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayReference2d {
+  private _treeRef?: TileTreeReference;
+
   protected override get _view(): ViewState2d {
     return this.parent[_backingView];
   }
@@ -216,7 +218,17 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
   }
 
   public override get tileTreeRefs() {
-    return this._view.getModelTreeRefs();
+    if (undefined === this._treeRef) {
+      const model = this._view.getViewedModel();
+      if (undefined !== model)
+        this._treeRef = model.createTileTreeReference(this);
+    }
+
+    return undefined !== this._treeRef ? [this._treeRef] : [];
+  }
+
+  public [_invalidateTileTreeRef](): void {
+    this._treeRef = undefined;
   }
 
   public get viewedModel() {
