@@ -12,6 +12,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { Range3d } from "@itwin/core-geometry";
+import { _treeRefs } from "./common/internal/Symbols";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -56,7 +57,8 @@ export class PlanarClipMaskState {
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       for (const ref of context.viewport.getTileTreeRefs()) {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && ref.planarClipMaskPriority > thisPriority)
+        const sameClassifiedModel = tree?.modelId === classifiedModelId && ref.treeOwner.iModel === context.iModelRef.iModel;
+        if (tree && !sameClassifiedModel && ref.planarClipMaskPriority > thisPriority)
           viewTrees.push(ref);
       }
 
@@ -68,8 +70,8 @@ export class PlanarClipMaskState {
     // Keep calling this until loaded so that the range is valid.
     if (!this._allLoaded) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds && context.viewport.view.isSpatialView()) {
-        context.viewport.view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
+      if (this.settings.modelIds && context.iModelRef.isSpatial()) {
+        context.iModelRef[_treeRefs].collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
       }
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
       maskRange.clone(this._maskRange);
@@ -83,15 +85,19 @@ export class PlanarClipMaskState {
   public getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
     this._usingViewportOverrides = this._overridesModelVisibility = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
-    const overrideModels = context.viewport.view.isSpatialView() ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode) : undefined;
+    const overrideModels = context.iModelRef.isSpatial()
+      ? context.iModelRef[_treeRefs].getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode)
+      : undefined;
 
     const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
     if (noSubCategoryOrElementIds && !overrideModels)
       return undefined;
 
     const ovrBasedOnContext = PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds;
-    const viewport = overrideModels && ovrBasedOnContext ? context.viewport : undefined;
-    const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource, viewport);
+    const useReferenceOverrides = undefined !== overrideModels && ovrBasedOnContext;
+    const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource);
+    if (useReferenceOverrides)
+      overrides.initFromIModelDisplayReference(context.iModelRef);
 
     if (overrideModels) {
       this._overridesModelVisibility = true;
@@ -100,7 +106,7 @@ export class PlanarClipMaskState {
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
       if (ovrBasedOnContext) {
-        this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
+        this._usingViewportOverrides = true; // Set flag to use listener since context may change afterwards.
         overrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((modelId: string) => {
           overrides.override({ modelId, appearance: appOff, onConflict: "replace" });

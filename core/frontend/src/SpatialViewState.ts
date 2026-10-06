@@ -228,7 +228,12 @@ export class SpatialViewState extends ViewState3d {
       for (const missingTile of linkedContext.missingTiles)
         context.insertMissingTile(missingTile);
 
-      // ###TODO classifiers, texture drapes
+      for (const [key, classifier] of linkedContext.planarClassifiers)
+        context.planarClassifiers.set(key, classifier);
+
+      for (const [key, drape] of linkedContext.textureDrapes)
+        context.textureDrapes.set(key, drape);
+
       for (const listName of ["foreground", "background", "overlay"] as const) {
         for (const entry of linkedContext.scene[listName])
           context.scene[listName].push(entry);

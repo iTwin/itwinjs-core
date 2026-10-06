@@ -1275,6 +1275,7 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(ref.onModelClipGroupsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveHiddenLineSettingsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveContoursChanged.addListener(() => this.invalidateRenderPlan()));
+      removals.push(ref.planarClipMasks.onChanged.addListener(invalidateScene));
 
       const modelsChanged = () => {
         this.invalidateScene();

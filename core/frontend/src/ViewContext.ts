@@ -469,14 +469,15 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined {
+    const key = this.referenceModelKey(classifiedModelId);
     // Target may have the classifier from a previous frame; if not we must create one.
-    let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
+    let classifier = this.viewport.target.getPlanarClassifier(key);
     if (undefined === classifier)
       classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
-      this.planarClassifiers.set(classifiedModelId, classifier);
+      this.planarClassifiers.set(key, classifier);
       classifier.setSource(classifierTree, planarClipMask);
     }
 
@@ -485,7 +486,11 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
-    return this.planarClassifiers.get(modelId);
+    return this.planarClassifiers.get(this.referenceModelKey(modelId));
+  }
+
+  private referenceModelKey(modelId: Id64String): string {
+    return `${this.iModelRef.guid}:${modelId}`;
   }
 
   /** @internal */
@@ -494,7 +499,7 @@ export class SceneContext extends RenderContext {
     if (undefined === drapedTree)
       return undefined;
 
-    const id = drapedTree.modelId;
+    const id = this.referenceModelKey(drapedTree.modelId);
     let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
       return drape;

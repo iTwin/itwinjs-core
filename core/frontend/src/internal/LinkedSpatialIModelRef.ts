@@ -7,7 +7,7 @@
  */
 
 import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { FeatureSymbologyOverrider } from "../FeatureOverrideProvider";
@@ -17,6 +17,7 @@ import { SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "../ViewState";
 import { createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { RenderClipVolume } from "../render/RenderClipVolume";
+import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -35,6 +36,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   #symbologyOverrides?: FeatureSymbology.Overrides;
   #modelClipGroups: ModelClipGroups;
   #removeSubCategoryChangesListener?: () => void;
+  readonly #planarClipMaskStates = new Map<Id64String, { settings: PlanarClipMaskSettings, state: PlanarClipMaskState }>();
 
   get #spatialView() {
     return this.parent[_backingView];
@@ -164,6 +166,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   #dispose(): void {
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;
+    this.#planarClipMaskStates.clear();
 
     for (const disposalFunction of this.#disposalFunctions)
       disposalFunction();
@@ -293,6 +296,23 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this.#modelClips[index] : undefined;
+  }
+
+  public [_getPlanarClipMaskState](modelId: Id64String): PlanarClipMaskState | undefined {
+    const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
+    const settings = this.planarClipMasks.get(modelId);
+    if (!model?.isRealityModel || !settings) {
+      this.#planarClipMaskStates.delete(modelId);
+      return undefined;
+    }
+
+    const cached = this.#planarClipMaskStates.get(modelId);
+    if (cached?.settings === settings)
+      return cached.state;
+
+    const state = PlanarClipMaskState.create(settings);
+    this.#planarClipMaskStates.set(modelId, { settings, state });
+    return state;
   }
 
   public get activeHiddenLineSettings() {

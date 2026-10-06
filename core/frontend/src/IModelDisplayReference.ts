@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, ContourDisplay, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
@@ -19,6 +19,7 @@ import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDispla
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { RenderClipVolume } from "./render/RenderClipVolume";
+import type { PlanarClipMaskState } from "./PlanarClipMaskState";
 
 /** Describes a [Feature]($common) within the context of a specific iModel.
  * @beta
@@ -233,6 +234,8 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
   readonly onModelClipGroupsChanged: BeEvent<() => void>;
   /** @internal */
   [_getModelClip](modelId: Id64String): RenderClipVolume | undefined;
+  /** @internal */
+  [_getPlanarClipMaskState](modelId: Id64String): PlanarClipMaskState | undefined;
 
   /** Overrides aspects of the view's display style when displaying this reference. */
   readonly overrides: SpatialIModelDisplayOverrides;

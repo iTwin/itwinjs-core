@@ -20,6 +20,7 @@ import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometr
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
+import { _getPlanarClipMaskState } from "../../common/internal/Symbols";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
@@ -697,7 +698,7 @@ export namespace RealityModelTileTree {
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
-      const planarClipMask = this._planarClipMask ?? context.viewport.displayStyle.getPlanarClipMaskState(this.modelId);
+      const planarClipMask = this._planarClipMask ?? (context.iModelRef.isSpatial() ? context.iModelRef[_getPlanarClipMaskState](this.modelId) : undefined);
       if (!classifierTree && !planarClipMask)
         return;
 

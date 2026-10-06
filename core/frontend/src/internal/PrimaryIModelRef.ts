@@ -7,7 +7,7 @@
  */
 
 import { ModelClipGroups, SubCategoryAppearance, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
@@ -315,6 +315,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public [_getModelClip](modelId: Id64String) {
     return this._view.getModelClip(modelId);
+  }
+
+  public [_getPlanarClipMaskState](modelId: Id64String) {
+    return this._view.displayStyle.getPlanarClipMaskState(modelId);
   }
 
   public get activeHiddenLineSettings() {

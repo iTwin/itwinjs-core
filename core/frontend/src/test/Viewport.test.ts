@@ -15,7 +15,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, SceneContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -771,6 +771,35 @@ describe("Viewport", () => {
   });
 
   describe("contour overrides", () => {
+    it("keeps planar classifiers distinct for references with the same model Id", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          const classifier = { setSource: vi.fn() } as any;
+          vi.spyOn(vp.target, "getPlanarClassifier").mockReturnValue(undefined);
+          vi.spyOn(vp.target, "createPlanarClassifier").mockReturnValue(classifier);
+
+          const primaryContext = new SceneContext(vp);
+          const linkedContext = new SceneContext({ viewport: vp, iModelRef: linkedRef });
+          primaryContext.addPlanarClassifier("0x123");
+          linkedContext.addPlanarClassifier("0x123");
+
+          expect(primaryContext.planarClassifiers.size).toBe(1);
+          expect(linkedContext.planarClassifiers.size).toBe(1);
+          expect([...primaryContext.planarClassifiers.keys()][0]).not.toBe([...linkedContext.planarClassifiers.keys()][0]);
+
+          refs.unlink(linkedRef);
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
+    });
+
     it("uses reference-specific contours and falls back to the display style", () => {
       const linkedIModel = createBlankConnection();
       try {
