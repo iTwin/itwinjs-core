@@ -212,9 +212,9 @@ describe("LeaderGeometry", () => {
                 expect(builder.geometries.length).to.equal(3) // One entry for geometry query and another for geometryParams for fill
                 terminatorGeometry = builder.geometries[2];
 
-                const fillParams = builder.params.find((params) => params.fillDisplay === FillDisplay.Always);
-                expect(fillParams.fillDisplay).to.equal(FillDisplay.Always);
-                expect(fillParams.fillColor).to.equal(fillParams.lineColor);
+                const params = builder.params[builder.params.length - 1];
+                expect(params.fillDisplay).to.equal(FillDisplay.Always);
+                expect(params.fillColor).to.equal(params.lineColor);
               }
               if (shape.includes("circle")) {
                 expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
