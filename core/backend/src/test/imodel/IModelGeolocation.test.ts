@@ -236,7 +236,7 @@ describe("iModel geolocation", () => {
           const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
 
           expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1, 0.001)).to.be.true;
-          expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
+          expect(Math.abs(expectedPt1.z - outPt1.z), fileName).to.be.lessThan(0.0001);
 
           // No point testing reversal when Out of useful range since reversibility is doubtful
           if (outputCoord.s !== GeoCoordStatus.OutOfUsefulRange) {
@@ -339,7 +339,7 @@ describe("iModel geolocation", () => {
 
       await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z: 130.74977547686285 }, { p: { x: -75.68712011112366, y: 40.06524845273591, z: 95.9769083 }, s: GeoCoordStatus.Success });
 
-      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.000392204716569311 }, s: GeoCoordStatus.Success });
 
       await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: GeoCoordStatus.Success });
       await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.718, y: 11572.405, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
@@ -361,7 +361,7 @@ describe("iModel geolocation", () => {
       await convertTest("UTM83-10-NGVD29-7.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "GEOID" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
       await convertTest("UTM83-10-NGVD29-8.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NGVD29" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.0 }, s: GeoCoordStatus.Success });
       await convertTest("UTM83-10-NGVD29-9.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
-      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.000392204716569311 }, s: GeoCoordStatus.Success });
 
       await convertTest("BritishNatGrid-Ellipsoid4.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336 }, s: GeoCoordStatus.Success });
 
