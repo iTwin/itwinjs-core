@@ -71,6 +71,7 @@ import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 import { IModelDisplayReferences } from "./IModelDisplayReferences";
 import { IModelDisplayReference } from "./IModelDisplayReference";
+import { _attachToViewport, _detachFromViewport } from "./common/internal/Symbols";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -1214,11 +1215,13 @@ export abstract class Viewport implements Disposable, TileUser {
 
       removals.push(this.iModelRefs.onLinked.addListener((ref) => {
         this.addIModelRefListeners(ref);
+        ref[_attachToViewport](this);
         this.invalidateScene();
       }));
 
-      removals.push(this.iModelRefs.onUnlinked.addListener(() => {
+      removals.push(this.iModelRefs.onUnlinked.addListener((ref) => {
         // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
+        ref[_detachFromViewport]();
         this.invalidateScene();
       }));
     }
@@ -1245,6 +1248,18 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(ref.onSymbologyOverridesInvalidated.addListener(invalidateScene));
     removals.push(ref.onModelDisplayTransformProviderChanged.addListener(invalidateScene));
     removals.push(ref.perModelCategoryVisibility.onChanged.addListener(() => this.setViewedCategoriesPerModelChanged()));
+    removals.push(ref.neverDrawnElements.onChanged.addListener(() => {
+      this._changeFlags.setNeverDrawn();
+      this.invalidateScene();
+    }));
+    removals.push(ref.alwaysDrawnElements.onChanged.addListener(() => {
+      this._changeFlags.setAlwaysDrawn();
+      this.invalidateScene();
+    }));
+    removals.push(ref.onIsAlwaysDrawnExclusiveChanged.addListener(() => {
+      this._changeFlags.setAlwaysDrawn();
+      this.invalidateScene();
+    }));
 
     const styleAndOverridesChanged = () => {
       this.invalidateRenderPlan();
@@ -1513,7 +1528,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
       this.primaryIModelRef.isAlwaysDrawnExclusive = false;
 
-      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setAlwaysDrawn();
       this.invalidateScene();
     }
@@ -1527,7 +1541,6 @@ export abstract class Viewport implements Disposable, TileUser {
     if (0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
 
-      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setNeverDrawn();
       this.invalidateScene();
     }
@@ -1541,7 +1554,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this.neverDrawn.clear();
     this.neverDrawn.addAll(ids);
 
-    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setNeverDrawn();
     this.invalidateScene();
   }
@@ -1558,7 +1570,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this.alwaysDrawn.addAll(ids);
     this.primaryIModelRef.isAlwaysDrawnExclusive = exclusive;
 
-    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setAlwaysDrawn();
     this.invalidateScene();
   }

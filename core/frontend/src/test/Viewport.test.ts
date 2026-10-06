@@ -1018,6 +1018,13 @@ describe("Viewport", () => {
       test(true, () => vp.clearAlwaysDrawn());
       expect(vp.isAlwaysDrawnExclusive).to.be.false;
       test(false, () => vp.clearAlwaysDrawn());
+
+      test(true, () => vp.primaryIModelRef.neverDrawnElements.add("0x123"));
+      test(true, () => vp.primaryIModelRef.neverDrawnElements.delete("0x123"));
+      test(true, () => vp.primaryIModelRef.alwaysDrawnElements.add("0x123"));
+      test(true, () => vp.primaryIModelRef.alwaysDrawnElements.delete("0x123"));
+      test(true, () => vp.primaryIModelRef.isAlwaysDrawnExclusive = true);
+      test(true, () => vp.primaryIModelRef.isAlwaysDrawnExclusive = false);
     });
 
     it("are invalidated when symbology overrides change", () => {

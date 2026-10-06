@@ -142,7 +142,7 @@ export class SpatialViewState extends ViewState3d {
     for (const iModelRef of this.iModelRefs)
       for (const ref of iModelRef.tileTreeRefs)
         ref.unionFitRange(range);
-      
+
     for (const ref of this.displayStyle.getTileTreeRefs()) {
       ref.unionFitRange(range);
     }
@@ -208,7 +208,7 @@ export class SpatialViewState extends ViewState3d {
 
   /** @internal */
   public override * getModelTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.iModelRefs.primary.tileTreeRefs;
+    yield* this.iModelRefs.primary.tileTreeRefs;
   }
 
   /** @internal */
@@ -243,13 +243,11 @@ export class SpatialViewState extends ViewState3d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     this.registerModelSelectorListeners();
-    this._treeRefs.attachToViewport(args);
   }
 
   /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
-    this._treeRefs.detachFromViewport();
     this.unregisterModelSelectorListeners();
   }
 

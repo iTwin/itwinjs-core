@@ -16,7 +16,6 @@ import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "../ViewState";
 import { createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
-import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
@@ -25,7 +24,7 @@ import { IModelApp } from "../IModelApp";
 import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
-  readonly [_implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
 
   readonly #disposalFunctions: Array<() => void> = [];
   readonly #modelClips: Array<RenderClipVolume | undefined> = [];
@@ -35,6 +34,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   #symbologyOverrides?: FeatureSymbology.Overrides;
   #modelClipGroups: ModelClipGroups;
+  #removeSubCategoryChangesListener?: () => void;
 
   get #spatialView() {
     return this.parent[_backingView];
@@ -120,22 +120,19 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
-    // ###TODO handle event listener cleanup...
-    view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
+    this.#disposalFunctions.push(view.displayStyle.settings.onAfterViewFlagsChanged.addListener(updateViewFlags));
 
-    this.overrides.onViewFlagsChanged.addListener(() => updateViewFlags);
+    this.#disposalFunctions.push(this.overrides.onViewFlagsChanged.addListener(updateViewFlags));
 
-    view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
+    this.#disposalFunctions.push(view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
       if (undefined === this.overrides.clipStyle) {
         this.onActiveClipStyleChanged.raiseEvent();
       }
-    });
+    }));
 
-    this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+    this.#disposalFunctions.push(this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent()));
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
-
-    this.#disposalFunctions.push(listenForSubCategoryChanges(this));
 
     refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
       if (ref === this) {
@@ -154,14 +151,17 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 
-    refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
+    this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
-    });
+    }));
 
     this.#updateModelClips();
   }
 
   #dispose(): void {
+    this.#removeSubCategoryChangesListener?.();
+    this.#removeSubCategoryChangesListener = undefined;
+
     for (const disposalFunction of this.#disposalFunctions)
       disposalFunction();
 
@@ -296,11 +296,14 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public [_attachToViewport](args: AttachToViewportArgs): void {
+    this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
     this[_treeRefs].attachToViewport(args);
   }
 
   public [_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
+    this.#removeSubCategoryChangesListener?.();
+    this.#removeSubCategoryChangesListener = undefined;
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {

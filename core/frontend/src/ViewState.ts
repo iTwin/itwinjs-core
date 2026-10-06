@@ -42,7 +42,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _scheduleScriptReference } from "./common/internal/Symbols";
 import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
 import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
@@ -1400,6 +1400,8 @@ export abstract class ViewState extends ElementState {
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
     this.registerCategorySelectorListeners();
+    for (const ref of this.iModelRefs)
+      ref[_attachToViewport](_args);
   }
 
   private registerCategorySelectorListeners(): void {
@@ -1420,6 +1422,9 @@ export abstract class ViewState extends ElementState {
   public detachFromViewport(): void {
     if (!this.isAttachedToViewport)
       throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+
+    for (const ref of this.iModelRefs)
+      ref[_detachFromViewport]();
 
     this.unregisterCategorySelectorListeners();
   }

@@ -7,9 +7,10 @@
  */
 
 import { ColorDef, FeatureAppearance } from "@itwin/core-common";
-import { EmphasizeIModelElements, FeatureSymbology, IModelApp, Tool, Viewport } from "@itwin/core-frontend";
+import { EmphasizeIModelElements, FeatureSymbology, IModelApp, IModelDisplayReference, Tool, Viewport } from "@itwin/core-frontend";
 
 const emphasizedViewports = new Set<Viewport>();
+const stateByViewport = new WeakMap<Viewport, { emphasize: boolean, colorize: boolean, anyEmphasized: boolean }>();
 
 // ###TODO Might wanna put a default FeatureAppearance on IModelDisplayReferences that can be inherited or overridden per-iModelRef...
 const defaultAppearanceProvider = {
@@ -19,6 +20,19 @@ const defaultAppearanceProvider = {
   }
 };
 
+function configureReference(ref: IModelDisplayReference, emphasize: boolean, colorize: boolean): boolean {
+  if (ref.iModel.selectionSet.isActive) {
+    const emph = EmphasizeIModelElements.getOrCreate(ref);
+    if (!colorize || emph.overrideSelectedElements(ref, ColorDef.white, undefined, true, false)) {
+      emph.wantEmphasis = emphasize;
+      return emph.emphasizeSelectedElements(ref, undefined, true);
+    }
+  }
+
+  ref.featureOverrideProviders.add(defaultAppearanceProvider);
+  return false;
+}
+
 function getViewport(registerIfNotFound: boolean): Viewport | undefined {
   const vp = IModelApp.viewManager.selectedView;
   if (vp && !emphasizedViewports.has(vp)) {
@@ -26,7 +40,23 @@ function getViewport(registerIfNotFound: boolean): Viewport | undefined {
       return undefined;
 
     emphasizedViewports.add(vp);
-    vp.onDisposed.addOnce(() => emphasizedViewports.delete(vp));
+    const removeLinkedListener = vp.iModelRefs.isSpatial
+      ? vp.iModelRefs.onLinked.addListener((ref) => {
+        const state = stateByViewport.get(vp);
+        if (!state)
+          return;
+
+        state.anyEmphasized = configureReference(ref, state.emphasize, state.colorize) || state.anyEmphasized;
+        vp.isFadeOutActive = state.anyEmphasized;
+        defaultAppearanceProvider.appearance = state.anyEmphasized ? EmphasizeIModelElements.defaultAppearance : FeatureAppearance.defaults;
+      })
+      : undefined;
+
+    vp.onDisposed.addOnce(() => {
+      removeLinkedListener?.();
+      stateByViewport.delete(vp);
+      emphasizedViewports.delete(vp);
+    });
   }
 
   return vp;
@@ -63,27 +93,14 @@ export class EmphasizeSelectedIModelElementsTool extends Tool {
     if (!vp)
       return true;
 
-    // ###TODO need event listener for newly-linked iModels
-
-    let anyEmphasized = false;
+    const state = { emphasize, colorize, anyEmphasized: false };
+    stateByViewport.set(vp, state);
     for (const ref of vp.iModelRefs) {
-      let emphasizedOrOverridden = false;
-      if (ref.iModel.selectionSet.isActive) {
-        const emph = EmphasizeIModelElements.getOrCreate(ref);
-        if (!colorize || emph.overrideSelectedElements(ref, ColorDef.white, undefined, true, false)) {
-          emphasizedOrOverridden = true;
-          emph.wantEmphasis = emphasize;
-          if (emph.emphasizeSelectedElements(ref, undefined, true))
-            anyEmphasized = true;
-        }
-      }
-
-      if (!emphasizedOrOverridden)
-        ref.featureOverrideProviders.add(defaultAppearanceProvider);
+      state.anyEmphasized = configureReference(ref, emphasize, colorize) || state.anyEmphasized;
     }
 
-    vp.isFadeOutActive = anyEmphasized;
-    defaultAppearanceProvider.appearance = anyEmphasized ? EmphasizeIModelElements.defaultAppearance : FeatureAppearance.defaults;
+    vp.isFadeOutActive = state.anyEmphasized;
+    defaultAppearanceProvider.appearance = state.anyEmphasized ? EmphasizeIModelElements.defaultAppearance : FeatureAppearance.defaults;
 
     return true;
   }

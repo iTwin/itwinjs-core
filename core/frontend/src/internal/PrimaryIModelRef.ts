@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { ModelClipGroups, PlanProjectionSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ModelClipGroups, SubCategoryAppearance, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
-import { BeEvent, Guid, Id64, Id64Set, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { FeatureSymbologyOverrider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
@@ -23,11 +23,12 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
-  readonly [_implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
 
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
   #symbologyOverrides?: FeatureSymbology.Overrides;
+  #removeSubCategoryChangesListener?: () => void;
 
   protected readonly _ovrs: IModelDisplayOverrides;
 
@@ -79,7 +80,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
 
-    ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
+    ovrs.onViewFlagsChanged.addListener(updateViewFlags);
 
     view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
       if (undefined === this.overrides.clipStyle) {
@@ -112,7 +113,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public get modelAppearanceOverrides() {
     return this._view.displayStyle.settings.modelAppearanceOverrides;
-  } 
+  }
 
   public get isAlwaysDrawnExclusive() {
     return this.#alwaysDrawnExclusive;
@@ -145,8 +146,13 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     return this.#resolvedViewFlags;
   }
 
-  [_attachToViewport](_args: AttachToViewportArgs): void { }
-  [_detachFromViewport](): void { }
+  public [_attachToViewport](_args: AttachToViewportArgs): void {
+    this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
+  }
+  public [_detachFromViewport](): void {
+    this.#removeSubCategoryChangesListener?.();
+    this.#removeSubCategoryChangesListener = undefined;
+  }
 
   public getSymbologyOverrides(): FeatureSymbology.Overrides {
     if (!this.#symbologyOverrides) {
@@ -203,8 +209,6 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
       loadViewedCategories(this);
     });
 
-    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
-    listenForSubCategoryChanges(this);
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -212,7 +216,7 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
   }
 
   public override get tileTreeRefs() {
-    return []; // ###TODO
+    return this._view.getModelTreeRefs();
   }
 
   public get viewedModel() {
@@ -259,9 +263,6 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       loadViewedCategories(this);
     });
 
-    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
-    listenForSubCategoryChanges(this);
-
     loadViewedModels(this);
     this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
   }
@@ -304,12 +305,12 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     return this.overrides.hiddenLineSettings ?? this._view.displayStyle.settings.hiddenLineSettings;
   }
 
-  public override [_attachToViewport](args: AttachToViewportArgs): void {
+  public override[_attachToViewport](args: AttachToViewportArgs): void {
     super[_attachToViewport](args);
     this[_treeRefs].attachToViewport(args);
   }
 
-  public override [_detachFromViewport](): void {
+  public override[_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
     super[_detachFromViewport]();
   }
