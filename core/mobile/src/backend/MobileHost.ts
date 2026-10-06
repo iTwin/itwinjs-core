@@ -37,6 +37,9 @@ export interface DownloadTask {
 }
 
 /** @beta */
+export type NativeQueryHandler = (name: string, message: string) => Promise<string>
+
+/** @beta */
 export abstract class MobileDevice {
   public emit(eventName: DeviceEvents, ...args: any[]) {
     switch (eventName) {
@@ -67,6 +70,10 @@ export abstract class MobileDevice {
     }
   }
 
+  public async handleNativeQuery(name: string, message: string): Promise<string> {
+    return MobileHost.handleNativeQuery(name, message);
+  }
+
   public abstract getOrientation(): Orientation;
   public abstract getBatteryState(): BatteryState;
   public abstract getBatteryLevel(): number;
@@ -77,6 +84,7 @@ export abstract class MobileDevice {
   public abstract resumeDownloadInBackground(requestId: number): boolean;
   public abstract reconnect(connection: number): void;
   public abstract authGetAccessToken(callback: (accessToken?: string, expirationDate?: string, err?: string) => void): void;
+  public abstract sendQueryToNative(name: string, message: string, callback: (response?: string, err?: string) => void): void;
 }
 
 class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
@@ -106,6 +114,15 @@ export class MobileHost {
   public static get device() {
     return expectDefined(this._device, "Mobile device is not initialized.");
   }
+
+  private static _nativeQueryHandler: NativeQueryHandler = async () => { throw Error("MobileHost query handler not registered."); };
+  public static get nativeQueryHandler(): NativeQueryHandler {
+    return MobileHost._nativeQueryHandler;
+  }
+  public static set nativeQueryHandler(handler: NativeQueryHandler) {
+    MobileHost._nativeQueryHandler = handler;
+  }
+
   /**
    * Raised when the mobile OS informs a mobile app that it is running low on memory.
    *
@@ -196,6 +213,10 @@ export class MobileHost {
         cancelRequest.cancel = () => this.device.cancelDownloadTask(requestId);
       }
     });
+  }
+
+  public static async handleNativeQuery(name: string, message: string): Promise<string> {
+    return MobileHost._nativeQueryHandler(name, message);
   }
 
   public static get isValid() { return undefined !== this._device; }
