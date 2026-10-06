@@ -88,9 +88,19 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
   } catch {
-    assert(false);
+    // Expected when offline or when the key is rejected - not a programming error.
     return {};
   }
+}
+
+/** Returns the localized detail message to display when a Cesium terrain endpoint cannot be resolved.
+ * Only blames a missing access key when no Cesium access is configured at all; otherwise the failure is
+ * most likely a network or service problem.
+ * @internal
+ */
+export function getCesiumTerrainEndpointErrorDescription(): string {
+  const key = IModelApp.tileAdmin.canAccessCesium ? "TerrainServiceUnavailable" : "MissingCesiumToken";
+  return IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.${key}`);
 }
 
 let notifiedTerrainError = false;
@@ -110,7 +120,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
   const client = getCesiumAccessClient();
   const endpoint = await client.getAssetEndpoint(assetId, opts.iTwinId);
   if (!endpoint) {
-    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
+    notifyTerrainError(getCesiumTerrainEndpointErrorDescription());
     return undefined;
   }
 
