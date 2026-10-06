@@ -10,7 +10,7 @@ import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, O
 import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
@@ -219,7 +219,10 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
    */
   readonly realityModelDisplaySettings: ObservableMap<Id64String, RealityModelDisplaySettings>;
 
-  // ###TODO contour settings - they refer to elements by Id.
+  /** The contour settings that apply to this reference, falling back to the display style when not overridden. */
+  readonly activeContours: ContourDisplay;
+  /** Event dispatched just after [[activeContours]] changes. */
+  readonly onActiveContoursChanged: BeEvent<() => void>;
 
   /** Maps the Ids of plan projection models within this reference to a description of how they should be displayed. */
   readonly planProjectionSettings: ObservableMap<Id64String, PlanProjectionSettings>;

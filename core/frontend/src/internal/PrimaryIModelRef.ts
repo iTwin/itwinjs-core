@@ -251,6 +251,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
   public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public readonly onActiveContoursChanged = new BeEvent<() => void>();
   public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
   public constructor(refs: SpatialIModelDisplayReferences) {
@@ -268,6 +269,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     this._view.displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
+
+    this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent());
+    this._view.displayStyle.settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent());
 
     void loadViewedCategories(this);
     this.viewedCategories.onChanged.addListener(() => {
@@ -315,6 +319,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public get activeHiddenLineSettings() {
     return this.overrides.hiddenLineSettings ?? this._view.displayStyle.settings.hiddenLineSettings;
+  }
+
+  public get activeContours() {
+    return this.overrides.contours ?? this._view.displayStyle.settings.contours;
   }
 
   public override[_attachToViewport](args: AttachToViewportArgs): void {

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { ClipStyle, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayOverrides, IModelDisplayOverridesProps, SpatialIModelDisplayOverrides, SpatialIModelDisplayOverridesProps } from "../IModelDisplayOverrides";
 import { BeEvent } from "@itwin/core-bentley";
@@ -21,7 +21,7 @@ class IModelDisplayOverridesImpl implements IModelDisplayOverrides {
   public readonly onClipStyleChanged = new BeEvent<() => void>();
 
   public constructor(ovrs?: IModelDisplayOverridesProps) {
-    this.#viewFlags = ovrs?.viewFlags ?? { };
+    this.#viewFlags = ovrs?.viewFlags ?? {};
     this.#clipStyle = ovrs?.clipStyle;
   }
 
@@ -48,12 +48,15 @@ class IModelDisplayOverridesImpl implements IModelDisplayOverrides {
 
 class SpatialIModelDisplayOverridesImpl extends IModelDisplayOverridesImpl implements SpatialIModelDisplayOverrides {
   #hline?: HiddenLine.Settings;
+  #contours?: ContourDisplay;
 
   public readonly onHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public readonly onContoursChanged = new BeEvent<() => void>();
 
   public constructor(ovrs?: SpatialIModelDisplayOverridesProps) {
     super(ovrs);
     this.#hline = ovrs?.hiddenLineSettings;
+    this.#contours = ovrs?.contours;
   }
 
   public get hiddenLineSettings() {
@@ -64,6 +67,17 @@ class SpatialIModelDisplayOverridesImpl extends IModelDisplayOverridesImpl imple
     if (hline !== this.#hline) {
       this.#hline = hline;
       this.onHiddenLineSettingsChanged.raiseEvent();
+    }
+  }
+
+  public get contours() {
+    return this.#contours;
+  }
+
+  public set contours(contours: ContourDisplay | undefined) {
+    if (contours !== this.#contours) {
+      this.#contours = contours;
+      this.onContoursChanged.raiseEvent();
     }
   }
 }

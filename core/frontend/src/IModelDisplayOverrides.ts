@@ -8,7 +8,7 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./common/internal/Symbols";
-import { ClipStyle, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 
 /** Selectively overrides applied aspects of a view's [[DisplayStyleState]] when displaying
  * a specific [[IModelDisplayReference]].
@@ -39,6 +39,11 @@ export interface SpatialIModelDisplayOverrides extends IModelDisplayOverrides {
   hiddenLineSettings?: HiddenLine.Settings;
   /** Event dispatched just after assignment to [[hiddenLineSettings]]. */
   readonly onHiddenLineSettingsChanged: BeEvent<() => void>;
+
+  /** If defined, replaces the display style's contour settings for this reference. */
+  contours?: ContourDisplay;
+  /** Event dispatched just after assignment to [[contours]]. */
+  readonly onContoursChanged: BeEvent<() => void>;
 }
 
 /** JSON representation of [[IModelDisplayOverrides]].
@@ -49,4 +54,4 @@ export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "
 /** JSON representation of [[SpatialIModelDisplayOverrides]].
  * @beta
  */
-export type SpatialIModelDisplayOverridesProps = IModelDisplayOverridesProps & Pick<SpatialIModelDisplayOverrides, "hiddenLineSettings">;
+export type SpatialIModelDisplayOverridesProps = IModelDisplayOverridesProps & Pick<SpatialIModelDisplayOverrides, "hiddenLineSettings" | "contours">;

@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
@@ -19,6 +19,8 @@ import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { GraphicBranch } from "../render/GraphicBranch";
+import { Branch } from "../internal/render/webgl/Graphic";
+import { Target } from "../internal/render/webgl/Target";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
@@ -765,6 +767,56 @@ describe("Viewport", () => {
         expect(features.length).to.equal(1);
         expect(features.contains(new Feature("0xa"))).to.be.true;
       });
+    });
+  });
+
+  describe("contour overrides", () => {
+    it("uses reference-specific contours and falls back to the display style", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          const displayStyleContours = ContourDisplay.create({ displayContours: true, groups: [ContourGroup.create()] });
+          const linkedContours = ContourDisplay.create({ displayContours: false, groups: [ContourGroup.create()] });
+          if (!vp.view.isSpatialView())
+            throw new Error("Expected a spatial viewport");
+
+          vp.view.getDisplayStyle3d().settings.contours = displayStyleContours;
+
+          expect(refs.primary.activeContours).toBe(displayStyleContours);
+          expect(linkedRef.activeContours).toBe(displayStyleContours);
+
+          let activeContoursChanged = 0;
+          linkedRef.onActiveContoursChanged.addListener(() => activeContoursChanged++);
+          linkedRef.overrides.contours = linkedContours;
+
+          expect(linkedRef.activeContours).toBe(linkedContours);
+          expect(refs.primary.activeContours).toBe(displayStyleContours);
+          expect(activeContoursChanged).toBe(1);
+
+          vp.renderFrame();
+          const target = vp.target as Target;
+          expect(target.currentContours).toBe(displayStyleContours);
+
+          const graphic = IModelApp.renderSystem.createGraphicBranch(new GraphicBranch(), Transform.identity, { iModelRef: linkedRef });
+          expect(graphic).toBeInstanceOf(Branch);
+          target.pushBranch(graphic as Branch);
+          expect(target.currentContours).toBe(linkedContours);
+          target.popBranch();
+          expect(target.currentContours).toBe(displayStyleContours);
+
+          linkedRef.overrides.contours = undefined;
+          expect(linkedRef.activeContours).toBe(displayStyleContours);
+          expect(activeContoursChanged).toBe(2);
+          refs.unlink(linkedRef);
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
     });
   });
 

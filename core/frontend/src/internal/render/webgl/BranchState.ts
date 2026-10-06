@@ -78,8 +78,8 @@ export class BranchState {
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
   public get inSectionDrawingAttachment() { return this._opts.inSectionDrawingAttachment; }
   public get groupNodeId() { return this._opts.groupNodeId; }
-  public get disableClipStyle() { return this._opts.disableClipStyle;}
-  public get contourLine() { return this._opts.contourLine;}
+  public get disableClipStyle() { return this._opts.disableClipStyle; }
+  public get contourLine() { return this._opts.contourLine; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -109,7 +109,7 @@ export class BranchState {
       edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
       is3d: branch.frustum?.is3d ?? prev.is3d,
       frustumScale: branch.frustum?.scale ?? prev.frustumScale,
-      secondaryClassifiers: branch.secondaryClassifiers?? prev.secondaryClassifiers,
+      secondaryClassifiers: branch.secondaryClassifiers ?? prev.secondaryClassifiers,
       // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
       appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
@@ -117,7 +117,7 @@ export class BranchState {
       inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
       disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
-      contourLine: branch.contourLine ?? prev.contourLine,
+      contourLine: branch.contourLine ?? (branch.iModelRef?.isSpatial() ? branch.iModelRef.activeContours : prev.contourLine),
     });
   }
 

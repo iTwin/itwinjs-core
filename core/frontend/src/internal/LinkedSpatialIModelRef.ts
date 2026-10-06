@@ -75,6 +75,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public readonly planProjectionSettings = new ObservableMap<Id64String, PlanProjectionSettings>();
 
   public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public readonly onActiveContoursChanged = new BeEvent<() => void>();
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
   public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
@@ -150,10 +151,12 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.viewedModels.onChanged.addListener(() => void loadViewedModels(this));
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
+    this.#disposalFunctions.push(this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
 
     this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     }));
+    this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
 
     this.#updateModelClips();
   }
@@ -172,6 +175,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.onModelDisplayTransformProviderChanged.clear();
     this.onActiveViewFlagsChanged.clear();
     this.onActiveClipStyleChanged.clear();
+    this.onActiveContoursChanged.clear();
     this.onViewedCategoriesLoaded.clear();
     this.onSymbologyOverridesInvalidated.clear();
 
@@ -293,6 +297,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
   public get activeHiddenLineSettings() {
     return this.overrides.hiddenLineSettings ?? this.#spatialView.displayStyle.settings.hiddenLineSettings;
+  }
+
+  public get activeContours() {
+    return this.overrides.contours ?? this.#spatialView.displayStyle.settings.contours;
   }
 
   public [_attachToViewport](args: AttachToViewportArgs): void {
