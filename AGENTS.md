@@ -38,6 +38,7 @@ Read only the references relevant to the task:
 When editing `docs/changehistory/NextVersion.md`:
 
 - List the allowed `##` sections with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`. Add each entry as a `###` heading under the section it belongs to, reusing that section when it already exists, and add it to the table of contents.
+- If the table of contents is missing, create it below `# NextVersion` and before the first `##` section, following past release notes such as `docs/changehistory/5.14.0.md`. Use a nested Markdown list of heading links: `NextVersion` at the top level, `##` sections indented two spaces, `###` entries indented four spaces, and deeper headings nested accordingly. Include all existing headings in document order, not just the entry being added. A passing validator does not excuse a missing table of contents.
 - Done when `node .github/workflows/automation-scripts/check-nextversion.mjs` passes. It checks the whole file, so fix any problems already there in the same change, and tell the user what you fixed and why, since it is outside the task you were given.
 
 ## Before remote work
