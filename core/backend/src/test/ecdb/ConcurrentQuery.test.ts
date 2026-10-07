@@ -79,6 +79,19 @@ describe("ConcurrentQuery", () => {
     db.close();
   });
 
+  it("round-trips the page-cache target in KiB and rejects invalid sizes", () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      expect(ConcurrentQuery.resetConfig(db[_nativeDb], {}).cacheSizeInKB).eq(undefined);
+      for (const cacheSizeInKB of [0, 8192, 2147483647])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(cacheSizeInKB);
+      for (const cacheSizeInKB of [-1, 1.5, 2147483648, NaN, Infinity, -Infinity])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(undefined);
+    } finally {
+      db.close();
+    }
+  });
+
   it("resumes finite pages without losing rows, with OFFSET fallback when disabled", async () => {
     const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     try {
