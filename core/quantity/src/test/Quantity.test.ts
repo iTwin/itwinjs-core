@@ -123,6 +123,24 @@ describe("Quantity", () => {
     expect(UnitConversions.convert(Units.LENGTH.M, Units.LENGTH.FT, 1)).toBeCloseTo(3.28084, 5);
   });
 
+  it("UnitConversions converts length ratios using paper-over-model values", () => {
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.DECIMAL_LENGTH_RATIO,
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      0.01,
+    )).toBeCloseTo(0.01);
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO,
+      1 / 48,
+    )).toBeCloseTo(0.25);
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO,
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      0.25,
+    )).toBeCloseTo(1 / 48);
+  });
+
   it("UnitConversions.getConversion supports repeated synchronous conversions", () => {
     const conversion = UnitConversions.getConversion(Units.LENGTH.M, Units.LENGTH.FT);
 
