@@ -72,7 +72,8 @@ import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _queryMetadataCache, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -516,6 +517,8 @@ export abstract class IModelDb extends IModel {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  /** @internal */
+  public readonly [_queryMetadataCache] = new QueryMetadataCache();
   private _codeSpecs?: CodeSpecs;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -626,6 +629,7 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
+    this[_queryMetadataCache].clear();
     this.changeset = this[_nativeDb].getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
@@ -731,6 +735,7 @@ export abstract class IModelDb extends IModel {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
     }
+    this[_queryMetadataCache].clear();
     this[_nativeDb].attachDb(fileName, alias);
   }
   /**
@@ -1052,7 +1057,7 @@ export abstract class IModelDb extends IModel {
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
+        return this[_queryMetadataCache].execute(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -1267,6 +1272,8 @@ export abstract class IModelDb extends IModel {
   */
   public clearCaches(params?: ClearCachesOptions): void;
   public clearCaches(params?: ClearCachesOptions) {
+    // Instance-only clears happen on abandon, undo/redo and merge, which can also change the schema.
+    this[_queryMetadataCache].clear();
     if (!params?.instanceCachesOnly) {
       this._statementCache.clear();
       this._sqliteStatementCache.clear();
