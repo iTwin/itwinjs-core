@@ -21,6 +21,16 @@ Asynchronous iteration can consume rows already buffered before an edit. Setting
 
 Both readers default to indexed rows when collecting results with `reader.toArray()`. They share the [row-format rules](../ECSQLRowFormat.md) and [parameter-binding support](../ECSQLParameterTypes.md). Their prepared statements can be cached independently of result buffering.
 
+## Asynchronous paging
+
+Concurrent queries can retain an unfinished worker statement after a batch reaches its memory or time quota between rows. The next contiguous batch from the same reader can continue stepping that statement instead of re-running the query and discarding all preceding rows. This avoids repeated scans and, for queries that need a sorter, repeated sorting.
+
+Reuse is opportunistic, not a persistent server-side cursor contract. It requires matching ECSQL, typed parameters, offset, and remaining count, and an available owning worker connection. Cache pressure, expiration, or an observed committed data change returns paging to the existing LIMIT/OFFSET path. Queries interrupted while stepping cannot resume. Use a deterministic `ORDER BY` when page ordering matters; do not depend on re-evaluation of nondeterministic expressions for each batch.
+
+Backend concurrent-query configuration provides `enableCursors` (default `true`), `maxCursorsPerWorker`, and `cursorIdleTimeout` (default 30 seconds). A cap of `-1` uses the statement-cache size for a read-only primary or four cursors per worker for a writable WAL database. An explicit non-negative cap is bounded by `statementCacheSizePerWorker`; zero disables retention. `enableCursors: false` restores re-execution for every batch. Primary-connection requests, databases not using WAL, and worker connections with attached data databases do not retain cursors.
+
+A parked statement retains SQLite execution state, which can include sorter memory or temporary files and a read snapshot. Read-only handles do not guarantee that another process cannot modify the file. Retention requires WAL even for read-only handles, since an unfinished rollback-journal reader can block an external writer's commit. An independent connection observes external commits, and idle cursors expire on the monitor's next poll after their timeout. Parked WAL snapshots can delay checkpoint progress, so keep the cursor cap and timeout appropriate for the application's write activity.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.

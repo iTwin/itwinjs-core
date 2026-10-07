@@ -6,8 +6,60 @@
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
 import { Base64 } from "js-base64";
-import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { ECSqlReader } from "../ECSqlReader";
 import { Id64String, ITwinError } from "@itwin/core-bentley";
+
+describe("ECSqlReader cursor hints", () => {
+  function response(status: DbResponseStatus, rows: number[][]): DbQueryResponse {
+    return {
+      kind: DbResponseKind.ECSql, status, data: rows, rowCount: rows.length, meta: [],
+      stats: { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 },
+    };
+  }
+
+  it("keeps one identity across pages and retries, without sharing it with other readers", async () => {
+    const requests: DbQueryRequest[] = [];
+    const executor = {
+      execute: async (request: DbQueryRequest) => {
+        requests.push(request);
+        return requests.length === 1 ? response(DbResponseStatus.Partial, []) :
+          requests.length === 2 ? response(DbResponseStatus.Partial, [[3], [4]]) : response(DbResponseStatus.Done, [[5]]);
+      },
+    };
+    const reader = new ECSqlReader(executor, "SELECT n", undefined, { limit: { offset: 2, count: 3 } });
+    assert.deepEqual(await reader.toArray(), [[3], [4], [5]]);
+    assert.isString(requests[0].cursorId);
+    assert.isNotEmpty(requests[0].cursorId);
+    assert.equal(requests[0].cursorId, requests[1].cursorId);
+    assert.equal(requests[1].cursorId, requests[2].cursorId);
+    assert.deepEqual(requests.map((r) => r.limit), [{ offset: 2, count: 3 }, { offset: 2, count: 3 }, { offset: 4, count: 1 }]);
+
+    const other = new ECSqlReader(executor, "SELECT n");
+    await other.toArray();
+    assert.notEqual(requests[3].cursorId, requests[0].cursorId);
+  });
+
+  it("changes identity when reset or bindings are reset", async () => {
+    const ids: Array<string | undefined> = [];
+    const reader = new ECSqlReader({
+      execute: async (request) => {
+        ids.push(request.cursorId);
+        return response(DbResponseStatus.Done, [[1]]);
+      },
+    }, "SELECT 1");
+    await reader.toArray();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    reader.reset();
+    await reader.toArray();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    reader.reset();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    reader.resetBindings();
+    await reader.toArray();
+    assert.equal(new Set(ids).size, 3);
+  });
+});
 
 describe("QueryBinder", () => {
   it("binds values", async () => {
