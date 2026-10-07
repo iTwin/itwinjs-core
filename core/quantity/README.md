@@ -19,7 +19,6 @@ const feet = UnitConversions.convert(
 
 UnitConversions provides synchronous conversion helpers for the canonical unit set generated from `@bentley/units-schema`.
 `getDefaultPersistenceUnit(...)` returns the package default persistence unit for a supported phenomenon.
-`Phenomena.LENGTH_RATIO` is intentionally not supported by that helper yet because the bundled built-in unit set does not currently provide an agreed default for that phenomenon.
 
 ## Contributing
 
