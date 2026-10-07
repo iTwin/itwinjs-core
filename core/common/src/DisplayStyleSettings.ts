@@ -319,6 +319,7 @@ class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Ov
 
   /** Maps Id64String to its index in the JSON props array, avoiding O(n) scans in set/delete. */
   readonly #indexById = new Map<Id64String, number>();
+  private _preserveArrayOnClear = false;
 
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
@@ -373,15 +374,21 @@ class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Ov
     for (const [id, _ovr] of this)
       this._event.raiseEvent(id, undefined);
 
-    this._json[this._arrayKey] = undefined;
+    if (!this._preserveArrayOnClear)
+      this._json[this._arrayKey] = undefined;
     super._clear();
   }
 
   public populate(): void {
-    super.clear();
+    const ovrs = this._array;
+    this._preserveArrayOnClear = true;
+    try {
+      super.clear();
+    } finally {
+      this._preserveArrayOnClear = false;
+    }
     this.#indexById.clear();
 
-    const ovrs = this._array;
     if (!ovrs)
       return;
 
@@ -420,9 +427,9 @@ class PlanProjectionSettingsMap extends ObservableMap<Id64String, PlanProjection
   readonly #container: DisplayStyle3dSettingsProps;
 
   get #json() { return this.#container.planProjections; }
-  
+
   #obtainJSON() {
-    return this.#json || (this.#container.planProjections = { });
+    return this.#json || (this.#container.planProjections = {});
   }
 
   #deleteJSON() {

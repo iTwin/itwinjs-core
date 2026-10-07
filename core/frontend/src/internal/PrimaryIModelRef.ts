@@ -70,7 +70,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     this.perModelCategoryVisibility.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      this.onViewedCategoriesLoaded.raiseEvent();
     });
 
     const updateViewFlags = () => {

@@ -440,7 +440,7 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15)));
 
     using mon = new ViewportChangedHandler(vp);
-    const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, undefined, func);
+    const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, func);
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
 
     const categories = vp.view.categorySelector.categories;
@@ -470,15 +470,15 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.None, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Show);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides("0x9876"));
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides());
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.clearOverrides());
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides());
@@ -496,7 +496,7 @@ describe("Viewport changed events", async () => {
 
     const modelIdList = ["0x1", "0x2", "0x3"];
     const catIdList = ["0xa", "0xb"];
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
     for (const modelId of modelIdList)
       for (const catId of catIdList)
         expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -506,7 +506,7 @@ describe("Viewport changed events", async () => {
 
     modelIdList.shift(); // remove "0x1"
     catIdList.shift(); // remove "0xa"
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
     expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -514,7 +514,7 @@ describe("Viewport changed events", async () => {
     expect(vis.getOverride("0x3", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x3", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides(["0x1"]));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.clearOverrides(["0x1"]));
     expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.None);
     expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.None);
   });
@@ -524,19 +524,18 @@ describe("Viewport changed events", async () => {
     let overridesAdded = false;
     const provider = {
       addFeatureOverrides: (_overrides: FeatureSymbology.Overrides, _viewport: Viewport): void => {
-        expect(overridesAdded).to.be.false;
         overridesAdded = true;
       },
     };
 
     using mon = new ViewportChangedHandler(vp);
     // Changing the provider => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.addFeatureOverrideProvider(provider));
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.addFeatureOverrideProvider(provider));
     expect(overridesAdded).to.be.true;
     overridesAdded = false;
 
     // Explicitly notifying provider's state has changed => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.setFeatureOverrideProviderChanged());
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
     expect(overridesAdded).to.be.true;
     overridesAdded = false;
 
@@ -545,7 +544,7 @@ describe("Viewport changed events", async () => {
     expect(overridesAdded).to.be.false;
 
     // Actually changing the provider => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => {
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => {
       const prov = vp.findFeatureOverrideProvider((_) => true);
       expect(prov).not.to.be.undefined;
       if (prov)

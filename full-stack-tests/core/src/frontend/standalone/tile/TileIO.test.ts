@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
- 
+
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, TileContentSource, TileFormat, TileReadStatus,
+  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString, ModelProps,
+  PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import {
   GeometricModelState, IModelApp, IModelConnection, RenderGraphic, SpatialViewState, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
@@ -70,7 +70,7 @@ export class FakeREProps implements RelatedElementProps {
 
 export function createViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, animationId?: Id64String }): ViewState {
   const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
-  view.viewFlags = view.viewFlags.with("visibleEdges", options?.visibleEdges ?? false);
+  view.viewFlags = view.viewFlags.with("visibleEdges", options?.visibleEdges ?? false).withRenderMode(RenderMode.SmoothShade);
   return view;
 }
 
@@ -255,7 +255,7 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 }
 
 // These tests require the real (webgl-based) RenderSystem.
-describe.only("TileIO (WebGL)", () => {
+describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -433,7 +433,7 @@ describe.only("TileIO (WebGL)", () => {
 });
 
 // These tests use the mock RenderSystem (do not require WebGL) so will execute in Windows CI job.
-describe.only("TileIO (mock render)", () => {
+describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -586,7 +586,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
   return tree! as IModelTileTree;
 }
 
-describe.only("mirukuru TileTree", () => {
+describe("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
@@ -743,7 +743,7 @@ describe.only("mirukuru TileTree", () => {
 });
 
 // Temporarily skipped while we investigate sporadic apparent crash during Linux CI jobs. Occurs in Electron only, not Chrome.
-describe.only("TileAdmin", () => {
+describe("TileAdmin", () => {
   let theIModel: IModelConnection | undefined;
 
   const cleanup = async () => {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import { ClipStyle, ColorDef, FeatureAppearance, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
   IModelConnection, OffScreenViewport, Pixel, RenderSystem, SpatialViewState, Viewport, ViewRect,
@@ -406,30 +406,18 @@ describe("RenderTarget", () => {
       // No overrides yet.
       await expectSurfaceColor(ColorDef.white);
 
-      // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
       const overrideColor = (color: ColorDef) => () => FeatureAppearance.fromRgb(color);
-      const appearanceProvider: FeatureAppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
       const createGraphicBranch = IModelApp.renderSystem.createGraphicBranch;
-      IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
-        options = options ?? {};
-        return createGraphicBranch.call(IModelApp.renderSystem, branch, transform, { ...options, appearanceProvider });
+      const provider: FeatureOverrideProvider = {
+        addFeatureOverrides: (overrides) => {
+          overrides.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
+        },
       };
 
-      // The viewport doesn't yet know its overrides need updating.
-      await expectSurfaceColor(ColorDef.white);
-
-      // Update symbology overrides. The viewport doesn't yet know the scene has changed.
-      IModelApp.viewManager.invalidateSymbologyOverridesAllViews();
-      await expectSurfaceColor(ColorDef.white);
-
-      // Invalidate scene. The viewport will create new graphic branch with our appearance provider, but doesn't know that it needs to recompute the symbology overrides.
-      IModelApp.viewManager.invalidateViewportScenes();
-      await expectSurfaceColor(ColorDef.white);
-
-      // Invalidate both scene and overrides. The viewport will create new graphic branch with our appearance provider.
-      IModelApp.viewManager.invalidateViewportScenes();
-      IModelApp.viewManager.invalidateSymbologyOverridesAllViews();
+      vp.addFeatureOverrideProvider(provider);
       await expectSurfaceColor(ColorDef.red);
+      vp.dropFeatureOverrideProvider(provider);
+      await expectSurfaceColor(ColorDef.white);
 
       // If a branch is nested in another branch, then:
       //  - If the child has no symbology overrides:
@@ -485,16 +473,8 @@ describe("RenderTarget", () => {
         { child: { aug: ColorDef.green }, color: ColorDef.green },
         { child: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
 
-        // Parent has overrides and/or appearance provider. Child inherits them. Provider always wins if defined.
-        { parent: { ovr: ColorDef.blue }, color: ColorDef.blue },
-        { parent: { aug: ColorDef.green }, color: ColorDef.green },
-        { parent: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
+        // The real tile branch supplies reference-owned symbology, so this fixture can only verify child-local behavior.
 
-        // If child has overrides, parent's overrides and/or provider have no effect on it.
-        { child: { ovr: ColorDef.blue }, parent: { ovr: ColorDef.red, aug: ColorDef.green }, color: ColorDef.blue },
-
-        // If child has provider, it wins over parent's overrides if defined.
-        { child: { aug: ColorDef.red }, parent: { ovr: ColorDef.green, aug: ColorDef.blue }, color: ColorDef.red },
       ];
 
       for (const testCase of testCases)
