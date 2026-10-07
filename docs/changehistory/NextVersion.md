@@ -34,7 +34,7 @@ The change only affects queries at a time exactly equal to a keyframe's time, on
 
 Large ECSQL result sets are returned in pages, and by default each page re-runs the query and steps past `OFFSET` rows, so reading a large result costs O(n²) row steps. The new @beta `QueryOptions.useCursor` (or `QueryOptionsBuilder.setUseCursor(true)`) lets a backend retain the statement for a partial page and resume it for the next page. Resumed pages share the read snapshot of the first page. If the cursor is unavailable (evicted, expired after 30 seconds of inactivity, invalidated by a data change, or the next page is served by a different backend process), paging falls back to the previous offset behavior. Exit a `for await` loop early, or call `ECSqlReader.return()`, to release the cursor promptly.
 
-If a page request is in flight, `return()` waits for it before releasing the returned cursor and discards the page's rows. A failed cursor close is reported to the caller and can be retried by calling `return()` again.
+If a page request is in flight, `return()` waits for it before releasing the returned cursor and discards the page's rows. A failed cursor close is reported to the caller and can be retried by calling `return()` again. Cursor cleanup uses the owning worker connection even if the reader is reset to use primary-connection queries.
 
 ```ts
 const reader = iModelDb.createQueryReader("SELECT ECInstanceId, GeometryStream FROM bis.GeometricElement3d", undefined, { useCursor: true });

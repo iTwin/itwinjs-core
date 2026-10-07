@@ -223,6 +223,33 @@ describe("ECSqlReader cursor paging", () => {
       { cursorId: undefined, closeCursor: undefined },
     ]);
   });
+
+  for (const resume of [false, true]) {
+    it(`closes a worker cursor after switching to primary queries ${resume ? "before the next page" : "on return"}`, async () => {
+      const requests: DbQueryRequest[] = [];
+      const reader = makeReader((request) => {
+        if (request.closeCursor) {
+          assert.isFalse(request.usePrimaryConn);
+          assert.isUndefined(request.restartToken);
+          return response(DbResponseStatus.Done, []);
+        }
+        return request.usePrimaryConn ? response(DbResponseStatus.Done, [[2]]) : response(DbResponseStatus.Partial, [[1]], "worker-cursor");
+      }, requests);
+      assert.isTrue(await reader.step());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      reader.reset({ useCursor: true, usePrimaryConn: true, restartToken: "new-token" });
+      if (resume) {
+        assert.isTrue(await reader.step());
+        assert.deepEqual(reader.getRowInternal(), [2]);
+        assert.isTrue(requests[2].usePrimaryConn);
+        assert.equal(requests[2].restartToken, "new-token");
+      }
+      await reader.return();
+      assert.equal(requests.length, resume ? 3 : 2);
+      assert.equal(requests[1].cursorId, "worker-cursor");
+      assert.isTrue(requests[1].closeCursor);
+    });
+  }
 });
 
 describe("QueryBinder", () => {

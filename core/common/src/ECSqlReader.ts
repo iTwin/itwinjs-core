@@ -347,6 +347,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
         args: this._param,
         cursorId: this._staleCursorIds[0],
         closeCursor: true,
+        usePrimaryConn: false, // retained cursors belong to worker connections, even after reset()
         restartToken: undefined, // a close must not cancel other queries sharing the token
       };
       const response = await this._executor.execute(request);
