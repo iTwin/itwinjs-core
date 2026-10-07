@@ -41,7 +41,9 @@
     "CesiumBathymetryAttribution": "GEBCO_2023 Grid: GEBCO Compilation Group (2023) GEBCO 2023 Grid (doi:10.5285/f98b053b-0cbc-6c23-e053-6c86abc0af7b).\nHigh-resolution depth model for the Great Barrier Reef - 30 m: Portions CC BY 4.0 from Beaman, R.J. 2017.\nHigh-resolution depth model for the Great Barrier Reef - 30 m. Geoscience Australia, Canberra.\nswissBATHY3D: ©swisstopo.",
     "OpenStreetMapContributors": "contributors",
     "CannotObtainTerrain": "Terrain is unavailable",
-    "MissingCesiumToken": "The application must be configured with a valid Cesium ION access key to obtain 3d terrain data."
+    "MissingCesiumToken": "The application must be configured with a valid Cesium ION access key to obtain 3d terrain data.",
+    "InvalidCesiumToken": "The configured Cesium ION access key was rejected or does not have access to this terrain data.",
+    "TerrainServiceUnavailable": "Could not connect to the terrain service. Check your network connection and try again."
   },
   "ExtensionErrors": {
     "Success": "Extension '{{extensionName}}' loaded",

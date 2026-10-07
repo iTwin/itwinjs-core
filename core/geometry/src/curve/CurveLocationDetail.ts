@@ -401,7 +401,22 @@ export class CurveLocationDetail {
     if (detailA) {
       if (!detailB)
         return detailA;
-      return detailA.a <= detailB.a ? detailA : detailB;
+      // tiebreakers (exact comparison!)
+      if (detailA.a === detailB.a) {
+        // prefer interior to exterior
+        const isInteriorA = Geometry.isIn01(detailA.fraction);
+        const isInteriorB = Geometry.isIn01(detailB.fraction);
+        if (isInteriorA && !isInteriorB)
+          return detailA;
+        if (!isInteriorA && isInteriorB)
+          return detailB;
+        if (!isInteriorA && !isInteriorB) { // prefer exterior closer to [0,1]
+          const distFrom01A = detailA.fraction < 0 ? -detailA.fraction : detailA.fraction - 1;
+          const distFrom01B = detailB.fraction < 0 ? -detailB.fraction : detailB.fraction - 1;
+          return (distFrom01A <= distFrom01B) ? detailA : detailB;
+        }
+      }
+      return detailA.a < detailB.a ? detailA : detailB;
     }
     return detailB;
   }

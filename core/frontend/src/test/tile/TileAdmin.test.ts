@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -11,7 +11,7 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { computeCesiumTokenTimeoutInterval, getCesiumAccessClient, getCesiumOSMBuildingsUrl, getCesiumTerrainProvider, GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
+import { CesiumEndpointFailure, computeCesiumTokenTimeoutInterval, getCesiumAccessClient, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, getCesiumTerrainEndpointErrorDescription, getCesiumTerrainProvider, GpuMemoryLimit, GpuMemoryLimits, resolveCesiumTerrainEndpoint, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 import { CesiumAccessClient, CesiumAssetEndpoint } from "../../CesiumAccessClient";
 
@@ -754,6 +754,114 @@ describe("TileAdmin", () => {
       };
       await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
       expect(await getCesiumTerrainProvider(terrainOpts)).toBeUndefined();
+    });
+  });
+
+  describe("getCesiumTerrainEndpointErrorDescription", () => {
+    afterEach(async () => {
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    it("maps each failure to its localized message", async () => {
+      await MockRender.App.startup();
+      const expected: Array<[CesiumEndpointFailure, string]> = [
+        ["missingKey", "MissingCesiumToken"],
+        ["rejected", "InvalidCesiumToken"],
+        ["unavailable", "TerrainServiceUnavailable"],
+      ];
+      for (const [failure, key] of expected)
+        expect(getCesiumTerrainEndpointErrorDescription(failure)).toEqual(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.${key}`));
+    });
+  });
+
+  describe("resolveCesiumTerrainEndpoint", () => {
+    afterEach(async () => {
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    it("reports a missing key when no Cesium access is configured", async () => {
+      await MockRender.App.startup({ tileAdmin: {} });
+      expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ failure: "missingKey" });
+    });
+
+    it("reports the service as unavailable when a custom access client fails", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(): Promise<CesiumAssetEndpoint | undefined> {
+          return undefined;
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key", cesiumAccess: mockAccess } });
+      expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ failure: "unavailable" });
+    });
+
+    it("reports the service as unavailable when a custom access client throws", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(): Promise<CesiumAssetEndpoint | undefined> {
+          throw new TypeError("Failed to fetch");
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ failure: "unavailable" });
+    });
+
+    it("returns the endpoint from a custom access client", async () => {
+      const endpoint: CesiumAssetEndpoint = { accessToken: "tok", url: "https://example.com/" };
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(): Promise<CesiumAssetEndpoint | undefined> {
+          return endpoint;
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ endpoint });
+    });
+  });
+
+  describe("getCesiumAccessTokenAndEndpointUrl", () => {
+    afterEach(async () => {
+      vi.restoreAllMocks();
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    it("reports a missing key when no Cesium Ion key is configured", async () => {
+      await MockRender.App.startup({ tileAdmin: {} });
+      expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "missingKey" });
+    });
+
+    it("reports the service as unavailable when the network request fails", async () => {
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Failed to fetch"));
+      expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "unavailable" });
+    });
+
+    for (const status of [401, 403, 404]) {
+      it(`reports a rejected key for HTTP ${status}`, async () => {
+        await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "bad-key" } });
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status }));
+        expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "rejected" });
+      });
+    }
+
+    for (const body of [{}, { url: null, accessToken: "tok" }, { url: "", accessToken: "tok" }, { url: "https://example.com/", accessToken: "" }, { url: "https://example.com/" }]) {
+      it(`reports the service as unavailable for malformed response ${JSON.stringify(body)}`, async () => {
+        await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+        expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "unavailable" });
+      });
+    }
+
+    it("reports the service as unavailable for a server error", async () => {
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("", { status: 500 }));
+      expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "unavailable" });
+    });
+
+    it("returns the token and url on success", async () => {
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ accessToken: "tok", url: "https://example.com/" }), { status: 200 }));
+      expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ endpoint: { accessToken: "tok", url: "https://example.com/" } });
     });
   });
 });

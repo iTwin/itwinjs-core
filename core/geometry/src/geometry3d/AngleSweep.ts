@@ -11,6 +11,22 @@ import { Angle } from "./Angle";
 import { GrowableFloat64Array } from "./GrowableFloat64Array";
 
 /**
+ * Selector for how to convert an angle outside of a sweep to an exterior fraction.
+ * @see [[AngleSweep.radiansToSignedPeriodicFractionStartEnd]], [[AngleSweep.angleToSignedPeriodicFraction]], [[AngleSweep.radiansToSignedPeriodicFraction]]
+ * @public
+ */
+export enum ExteriorFractionSelector {
+  /** Request [[Positive]] or [[Negative]] based on input sign. */
+  SameSign = -1,
+  /** Request positive exterior fraction within one period of 1. */
+  Positive = 0,
+  /** Request negative exterior fraction within one period of 0. */
+  Negative = 1,
+  /** Request the period-shifted exterior fraction closest to [0,1]. */
+  Closer = 2,
+}
+
+/**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
  * * For stroking purposes, the "included interval" is all angles numerically reached
@@ -399,9 +415,18 @@ export class AngleSweep implements BeJSONFunctions {
    * @param radians0 start angle of sweep (in radians)
    * @param radians1 end angle of sweep (in radians)
    * @param zeroSweepDefault return value when the sweep is empty (default 0)
+   * @param selector how to handle an angle outside of the sweep. Default value is
+   * [[ExteriorFractionSelector.SameSign]], to request a fraction with the same sign
+   * as the unbounded fraction `(radians - radians0) / (radians1 - radians0)`.
    * @returns fraction, or `zeroSweepDefault` if the sweep is empty.
    */
-  public static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
+  public static radiansToSignedPeriodicFractionStartEnd(
+    radians: number,
+    radians0: number,
+    radians1: number,
+    zeroSweepDefault: number = 0.0,
+    selector: ExteriorFractionSelector = ExteriorFractionSelector.SameSign
+  ): number {
     const sweep = radians1 - radians0;
     if (Angle.isAlmostEqualRadiansNoPeriodShift(0, sweep))
       return zeroSweepDefault;
@@ -418,7 +443,14 @@ export class AngleSweep implements BeJSONFunctions {
         return 1.0;
     }
     const fraction = (radians - radians0) / sweep;
-    return this.fractionToSignedPeriodicFractionStartEnd(fraction, radians0, radians1, fraction < 0);
+    let toNegativeFraction: boolean | undefined;
+    if (selector === ExteriorFractionSelector.Negative)
+      toNegativeFraction = true;
+    else if (selector === ExteriorFractionSelector.Positive)
+      toNegativeFraction = false;
+    else if (selector === ExteriorFractionSelector.SameSign)
+      toNegativeFraction = fraction < 0;
+    return this.fractionToSignedPeriodicFractionStartEnd(fraction, radians0, radians1, toNegativeFraction);
   }
   /**
    * Return the fractionalized position of the given angle (as radians) computed with consideration of
@@ -431,10 +463,17 @@ export class AngleSweep implements BeJSONFunctions {
    * *  allows period shift
    * @param radians input angle (in radians)
    * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @param selector how to handle an angle outside of the sweep. Default value is
+   * [[ExteriorFractionSelector.SameSign]], to request a fraction with the same sign
+   * as the unbounded fraction `(radians - startRadians) / sweepRadians`.
    * @returns fraction, or `zeroSweepDefault` if this sweep is empty.
    */
-  public radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault: number = 0.0): number {
-    return AngleSweep.radiansToSignedPeriodicFractionStartEnd(radians, this._radians0, this._radians1, zeroSweepDefault);
+  public radiansToSignedPeriodicFraction(
+    radians: number,
+    zeroSweepDefault: number = 0.0,
+    selector: ExteriorFractionSelector = ExteriorFractionSelector.SameSign
+  ): number {
+    return AngleSweep.radiansToSignedPeriodicFractionStartEnd(radians, this._radians0, this._radians1, zeroSweepDefault, selector);
   }
   /**
    * Return the fractionalized position of the given angle (as Angle) computed with consideration of
@@ -447,10 +486,17 @@ export class AngleSweep implements BeJSONFunctions {
    * *  allows period shift
    * @param theta input angle
    * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @param selector how to handle an angle outside of the sweep. Default value is
+   * [[ExteriorFractionSelector.SameSign]], to request a fraction with the same sign
+   * as the fraction returned by `angleToUnboundedFraction(theta)`.
    * @returns fraction, or `zeroSweepDefault` if this sweep is empty.
    */
-  public angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault: number = 0.0): number {
-    return this.radiansToSignedPeriodicFraction(theta.radians, zeroSweepDefault);
+  public angleToSignedPeriodicFraction(
+    theta: Angle,
+    zeroSweepDefault: number = 0.0,
+    selector: ExteriorFractionSelector = ExteriorFractionSelector.SameSign
+  ): number {
+    return this.radiansToSignedPeriodicFraction(theta.radians, zeroSweepDefault, selector);
   }
 
   /**

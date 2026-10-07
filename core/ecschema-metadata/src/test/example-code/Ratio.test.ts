@@ -1,4 +1,4 @@
-import { Format, Formatter, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
+import { Format, Formatter, FormatterSpec, ParsedQuantity, ParserSpec, Units } from "@itwin/core-quantity";
 import { SchemaContext } from "../../Context";
 import { SchemaFormatsProvider } from "../../Formatting/SchemaFormatsProvider";
 import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
@@ -47,7 +47,7 @@ describe("Ratio formatting examples", () => {
     await format.fromJSON(unitsProvider, formatData);
 
     // define input unit - for scale factors, use a length ratio unit
-    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
+    const persistenceUnit = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO);
 
     // Common metric map scales
     const scale1To100 = 0.01; // 1:100 scale
@@ -93,7 +93,7 @@ describe("Ratio formatting examples", () => {
     await format.fromJSON(unitsProvider, formatData);
 
     // define input unit - for scale factors, use a length ratio unit
-    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
+    const persistenceUnit = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO);
 
     // Common imperial architectural scales (inches to feet)
     const scaleQuarterInch = 1 / 48; // 1/4" = 1'-0"
@@ -139,7 +139,7 @@ describe("Ratio formatting examples", () => {
     await format.fromJSON(unitsProvider, formatData);
 
     // define persistence unit - for scale factors, use a length ratio unit
-    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
+    const persistenceUnit = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO);
 
     // create the parser spec
     const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
@@ -176,8 +176,8 @@ describe("Ratio formatting examples", () => {
     const format = new Format("ImperialScale");
     await format.fromJSON(unitsProvider, formatData);
 
-    // define persistence unit - for scale factors, use a decimal length ratio unit
-    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
+    // define persistence unit - for scale factors, use an inch-to-foot length ratio unit
+    const persistenceUnit = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO);
 
     // create the parser spec
     const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
@@ -211,7 +211,7 @@ describe("Ratio formatting examples", () => {
     const formatMetric = await Format.createFromJSON("MetricScale", unitsProvider, formatPropsMetric!);
 
     // Test formatting
-    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.M_PER_M_LENGTH_RATIO");
+    const persistenceUnit = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO);
     const specMetric = await FormatterSpec.create("MetricScale", formatMetric, unitsProvider, persistenceUnit);
     expect(Formatter.formatQuantity(0.01, specMetric)).toBe("1:100.0");
     // 2. Test Imperial System (USCustom)
@@ -226,7 +226,7 @@ describe("Ratio formatting examples", () => {
     const formatImperial = await Format.createFromJSON("ImperialScale", unitsProvider, formatPropsImperial!);
 
     // Test formatting - value 12.0 in/ft means full scale (12 inches = 1 foot)
-    const persistenceUnitImperial = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
+    const persistenceUnitImperial = await unitsProvider.findUnitByName(Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO);
     const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnitImperial);
     expect(Formatter.formatQuantity(12.0, specImperial)).toBe("12\"=1'");
 
