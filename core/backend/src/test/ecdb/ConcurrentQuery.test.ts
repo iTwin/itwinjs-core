@@ -1,6 +1,8 @@
-import { DbQueryRequest, DbQueryResponse, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
 import { expect } from "chai";
+import { serialize } from "node:v8";
 import * as os from "os";
+import * as sinon from "sinon";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { SnapshotDb } from "../../IModelDb";
 import { _nativeDb } from "../../core-backend";
@@ -37,6 +39,7 @@ describe("ConcurrentQuery", () => {
       requestQueueSize: 2000,
       statementCacheSizePerWorker: 40,
       enableCursors: true,
+      useV8Serialization: false,
       maxCursorsPerWorker: -1,
       cursorIdleTimeout: 30,
       workerThreads: defaultWorkerThreads(),
@@ -61,6 +64,7 @@ describe("ConcurrentQuery", () => {
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 20,
       enableCursors: false,
+      useV8Serialization: false,
       maxCursorsPerWorker: 3,
       cursorIdleTimeout: 10,
       workerThreads: 1,
@@ -68,6 +72,105 @@ describe("ConcurrentQuery", () => {
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], modifiedConfig);
     expect(config).deep.eq(modifiedConfig);
     db.close();
+  });
+
+  it("decodes V8 query responses without changing the reader response shape", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    let stub: sinon.SinonStub | undefined;
+    try {
+      const expected = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { query: "SELECT NULL, 1, NULL" });
+      const payload = { ...expected, data: serialize(expected.data), dataEncoding: "v8" };
+      stub = sinon.stub(db[_nativeDb], "concurrentQueryExecute").callsFake((_request, onResponse) => onResponse(payload));
+      const actual = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { query: "SELECT NULL, 1, NULL" });
+      expect(actual).deep.eq(expected);
+      expect(actual.kind).eq(DbResponseKind.ECSql);
+      expect(actual).not.to.have.property("dataEncoding");
+    } finally {
+      stub?.restore();
+      db.close();
+    }
+  });
+
+  it("rejects malformed V8 query payloads and row-count mismatches", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    let stub: sinon.SinonStub | undefined;
+    try {
+      const expected = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { query: "SELECT 1" });
+      for (const data of [Buffer.from([0xff, 15]), serialize(123), serialize([])]) {
+        const payload = { ...expected, data, dataEncoding: "v8" };
+        stub = sinon.stub(db[_nativeDb], "concurrentQueryExecute").callsFake((_request, onResponse) => onResponse(payload));
+        await expect(ConcurrentQuery.executeQueryRequest(db[_nativeDb], { query: "SELECT 1" })).rejectedWith(Error);
+        stub.restore();
+        stub = undefined;
+      }
+    } finally {
+      stub?.restore();
+      db.close();
+    }
+  });
+
+  it("rejects explicit V8 configuration with an unsupported native addon", () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    const stub = sinon.stub(db[_nativeDb], "concurrentQueryResetConfig").returns({});
+    try {
+      expect(() => ConcurrentQuery.resetConfig(db[_nativeDb], { useV8Serialization: true })).throws("does not support useV8Serialization");
+      expect(ConcurrentQuery.resetConfig(db[_nativeDb], { useV8Serialization: false })).deep.eq({});
+    } finally {
+      stub.restore();
+      db.close();
+    }
+  });
+
+  it("preserves rendered values and finite paging through V8 and JSON transports", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    const text = `${"x".repeat(16384)}"\\\n\t\u00e9`;
+    const requests: DbQueryRequest[] = [
+      { query: "SELECT NULL, 1, NULL" },
+      { query: "SELECT NULL" },
+      { query: "SELECT 1 WHERE 0" },
+      {
+        query: "SELECT ECInstanceId, ECClassId, Model.Id, CodeValue, UserLabel, JsonProperties FROM BisCore.Element ORDER BY ECInstanceId",
+        limit: { count: 10, offset: 0 }, convertClassIdsToClassNames: true,
+      },
+      {
+        query: "WITH sequence(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM sequence WHERE n<4) SELECT n, ?, NULL, ?, NULL FROM sequence ORDER BY n",
+        args: new QueryBinder().bindString(1, text).bindDouble(2, 9.9999999999999995e-21).serialize(),
+      },
+    ];
+    try {
+      const expected: DbQueryResponse[] = [];
+      for (const useV8Serialization of [false, true, false]) {
+        ConcurrentQuery.shutdown(db[_nativeDb]);
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { useV8Serialization }).useV8Serialization).eq(useV8Serialization);
+        for (let i = 0; i < requests.length; ++i) {
+          for (const usePrimaryConn of [false, true]) {
+            const response = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { ...requests[i], usePrimaryConn });
+            expect(response.status).eq(DbResponseStatus.Done);
+            if (expected.length <= i)
+              expected.push(response);
+            expect(response.data).deep.eq(expected[i].data);
+            expect(response.meta).deep.eq(expected[i].meta);
+            expect(response.rowCount).eq(expected[i].rowCount);
+          }
+        }
+      }
+      for (const useV8Serialization of [false, true]) {
+        ConcurrentQuery.shutdown(db[_nativeDb]);
+        ConcurrentQuery.resetConfig(db[_nativeDb], { useV8Serialization, workerThreads: 1, globalQuota: { time: 60, memory: 1 } });
+        for (let offset = 0; offset < 4; ++offset) {
+          const response = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], {
+            query: requests[4].query, args: requests[4].args, cursorId: "serialization-reader", limit: { offset, count: 4 - offset },
+          });
+          expect(response.status).eq(DbResponseStatus.Partial);
+          expect(response.data).deep.eq([expected[4].data[offset]]);
+          expect(response.stats.resumed).eq(offset > 0);
+        }
+      }
+    } finally {
+      ConcurrentQuery.shutdown(db[_nativeDb]);
+      ConcurrentQuery.resetConfig(db[_nativeDb], {});
+      db.close();
+    }
   });
 
   it("workerThreads above hardware concurrency falls back to the default", () => {

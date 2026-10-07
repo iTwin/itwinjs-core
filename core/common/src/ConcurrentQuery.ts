@@ -873,6 +873,12 @@ export interface DbQueryConfig {
    * and primary-connection queries.
    */
   enableCursors?: boolean;
+  /** Opt-in V8 binary transport between native query workers and the backend.
+   * Defaults to false (JSON). Backend readers still receive ordinary row arrays.
+   * Requires a native addon supporting this option; BlobIO responses are unchanged.
+   * Memory quotas apply to the encoded payload, so page boundaries may differ from JSON.
+   */
+  useV8Serialization?: boolean;
   /** Maximum parked cursors per worker, bounded by statementCacheSizePerWorker.
    * Defaults to -1: the statement-cache size for a read-only primary, or 4 for a writable primary.
    * Set to 0 to disable cursor retention.
