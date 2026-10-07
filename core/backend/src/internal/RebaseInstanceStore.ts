@@ -691,6 +691,7 @@ export class RebaseInstanceStore implements Disposable {
     Object.assign(lhs, rhsData);
     lhs.$meta.tables.push(...rhs.$meta.tables);
     lhs.$meta.changeIndexes.push(...rhs.$meta.changeIndexes);
+    lhs.$meta.isIndirectChange = lhs.$meta.isIndirectChange && rhs.$meta.isIndirectChange;
     for (const propName of rhs.$meta.changeFetchedPropNames) {
       if (!lhs.$meta.changeFetchedPropNames.includes(propName))
         lhs.$meta.changeFetchedPropNames.push(propName);
