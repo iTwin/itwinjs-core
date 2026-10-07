@@ -1,6 +1,6 @@
-import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbRequestKind, DbResponse, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
 import { expect } from "chai";
-import { serialize } from "node:v8";
+import { deserialize, serialize } from "node:v8";
 import * as os from "os";
 import * as sinon from "sinon";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
@@ -123,11 +123,12 @@ describe("ConcurrentQuery", () => {
 
   it("preserves rendered values and finite paging through V8 and JSON transports", async () => {
     const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    const retained: { data: Uint8Array; copy: Uint8Array }[] = [];
     const text = `${"x".repeat(16384)}"\\\n\t\u00e9`;
     const requests: DbQueryRequest[] = [
       { query: "SELECT NULL, 1, NULL" },
       { query: "SELECT NULL" },
-      { query: "SELECT 1 WHERE 0" },
+      { query: "SELECT 1 FROM meta.ECClassDef WHERE 1=0" },
       {
         query: "SELECT ECInstanceId, ECClassId, Model.Id, CodeValue, UserLabel, JsonProperties FROM BisCore.Element ORDER BY ECInstanceId",
         limit: { count: 10, offset: 0 }, convertClassIdsToClassNames: true,
@@ -142,10 +143,28 @@ describe("ConcurrentQuery", () => {
       for (const useV8Serialization of [false, true, false]) {
         ConcurrentQuery.shutdown(db[_nativeDb]);
         expect(ConcurrentQuery.resetConfig(db[_nativeDb], { useV8Serialization }).useV8Serialization).eq(useV8Serialization);
+        for (const usePrimaryConn of [false, true]) {
+          const rawRequest: DbQueryRequest = { kind: DbRequestKind.ECSql, query: requests[0].query, usePrimaryConn };
+          const raw = await new Promise<DbResponse>(resolve =>
+            db[_nativeDb].concurrentQueryExecute(rawRequest, resolve));
+          if (!("data" in raw))
+            throw new Error(`Native query returned no data: ${raw.error}`);
+          if (useV8Serialization) {
+            expect("dataEncoding" in raw && raw.dataEncoding).eq("v8");
+            if (!(raw.data instanceof Uint8Array))
+              throw new Error("Expected an owned native binary query response");
+            expect(raw.data.byteLength).eq(raw.stats.memUsed);
+            expect(deserialize(raw.data)).deep.eq([[null, 1]]);
+            retained.push({ data: raw.data, copy: Uint8Array.from(raw.data) });
+          } else {
+            expect(raw).not.to.have.property("dataEncoding");
+            expect(raw.data).deep.eq([[null, 1]]);
+          }
+        }
         for (let i = 0; i < requests.length; ++i) {
           for (const usePrimaryConn of [false, true]) {
             const response = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { ...requests[i], usePrimaryConn });
-            expect(response.status).eq(DbResponseStatus.Done);
+            expect(response.status, `query=${i}, primary=${usePrimaryConn}, v8=${useV8Serialization}: ${response.error}`).eq(DbResponseStatus.Done);
             if (expected.length <= i)
               expected.push(response);
             expect(response.data).deep.eq(expected[i].data);
@@ -171,6 +190,8 @@ describe("ConcurrentQuery", () => {
       ConcurrentQuery.resetConfig(db[_nativeDb], {});
       db.close();
     }
+    for (const { data, copy } of retained)
+      expect([...data]).deep.eq([...copy]);
   });
 
   it("workerThreads above hardware concurrency falls back to the default", () => {
