@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ViewStore.queryViews now validates its query parameters and binds them as SQL parameters.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

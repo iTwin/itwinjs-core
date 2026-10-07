@@ -276,6 +276,31 @@ describe("ViewStore", function (this: Suite) {
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition"] }).length).equal(1);
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition", "BisCore:SheetViewDefinition"] }).length).equal(2);
 
+    // query parameters may come from RPC callers, so values must never be interpreted as SQL
+    const allPublicCount = vs1.queryViewsSync({}).length;
+    const injectClause = "x') OR 1=1 OR className IN('x";
+    expect(vs1.queryViewsSync({ classNames: [injectClause] }).length).equal(0);
+    expect(vs1.queryViewsSync({ classNames: ["foo') UNION SELECT Id,name,owner,private,1 FROM views -- "] }).length).equal(0);
+    expect(vs1.queryViewsSync({ tags: [injectClause] }).length).equal(0);
+    expect(vs1.queryViewsSync({ classNames: ["it's"] }).length).equal(0); // quotes in values must not cause SQL errors
+    expect(vs1.queryViewsSync({ tags: ["it's"] }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "' OR 1=1 --" }).length).equal(0);
+    expect(vs1.queryViewsSync({ group: "group2", offset: 95 }).length).equal(5); // offset without limit
+    const badParams: any[] = [
+      { nameSearch: "x", nameCompare: "= @name OR 1=1 OR name =" },
+      { nameSearch: "x", nameCompare: "like" },
+      { limit: "1 UNION SELECT Id FROM views" },
+      { limit: 1.5 },
+      { limit: -1 },
+      { limit: 10, offset: "1; --" },
+      { classNames: "BisCore:SpatialViewDefinition" },
+      { classNames: [1] },
+      { tags: [{}] },
+    ];
+    for (const params of badParams)
+      expect(() => vs1.queryViewsSync(params), JSON.stringify(params)).throws(/must be|invalid nameCompare/);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
+
     await vs1.renameTag({ oldName: "tag2", newName: "tag2-renamed" });
     views = vs1.queryViewsSync({ tags: ["tag2-renamed"] });
     expect(views.length).equal(3);
