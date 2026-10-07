@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 02 Oct 2026 14:56:23 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 19:49:21 GMT and should not be manually modified.
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+### Updates
+
+- Render schedule timelines using step interpolation now apply each keyframe's value at that keyframe's own time point instead of one keyframe late.
 
 ## 5.14.0
 Fri, 02 Oct 2026 14:55:04 GMT
