@@ -507,7 +507,7 @@ export enum FractionalPrecision {
 }
 
 // @beta
-export function getDefaultPersistenceUnit(phenomenon: Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>): UnitName;
+export function getDefaultPersistenceUnit(phenomenon: PhenomenonName): UnitName;
 
 // @internal (undocumented)
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
@@ -1361,6 +1361,11 @@ export const Units: {
         readonly US_SURVEY_MILE: "Units.US_SURVEY_MILE";
         readonly US_SURVEY_YRD: "Units.US_SURVEY_YRD";
         readonly YRD: "Units.YRD";
+    };
+    readonly LENGTH_RATIO: {
+        readonly DECIMAL_LENGTH_RATIO: "Units.DECIMAL_LENGTH_RATIO";
+        readonly IN_PER_FT_LENGTH_RATIO: "Units.IN_PER_FT_LENGTH_RATIO";
+        readonly M_PER_M_LENGTH_RATIO: "Units.M_PER_M_LENGTH_RATIO";
     };
     readonly LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION: {
         readonly STRAIN_PER_CELSIUS: "Units.STRAIN_PER_CELSIUS";
