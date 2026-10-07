@@ -884,6 +884,11 @@ export interface DbQueryConfig {
   monitorPollInterval?: number;
   /** Set memory map io for each worker connection size in bytes. Default to zero mean do not use mmap io */
   memoryMapFileSize?: number;
+  /** SQLite page-cache target per secondary connection in KiB (1024 bytes).
+   * Must be an integer from 0 to 2147483647. Omit to preserve SQLite's default.
+   * Applies when connections are opened; restart an existing concurrent-query pool to change it.
+   */
+  cacheSizeInKB?: number;
   /** How often to measure progress of a running ECSql statement which is used to enforced time limit */
   progressOpCount?: number;
 }

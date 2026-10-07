@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Allow configuring the concurrent-query SQLite page-cache target per secondary connection in KiB.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

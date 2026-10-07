@@ -37,6 +37,8 @@ Row rendering uses request-local JSON scratch with a reusable 4 KiB buffer and h
 
 `memoryMapFileSize` sets the requested memory-mapped I/O limit in bytes when worker connections are opened; zero disables mmap. SQLite and the file's VFS can restrict or disable mmap, and the requested limit is not a promise of mapped or resident memory. This setting does not change the primary connection. To apply a changed limit to an existing pool, call `ConcurrentQuery.shutdown` and configure the new limit before issuing the next query.
 
+`cacheSizeInKB` sets the SQLite page-cache target in KiB (1024 bytes) for each new secondary connection, including the shared schema-source connection. For example, `{ cacheSizeInKB: 8192 }` requests an approximately 8 MiB cache per connection using `PRAGMA cache_size=-8192`. Omit it to preserve SQLite's default; valid values are integers from 0 to 2147483647, with zero setting SQLite's cache size to zero. This is a per-connection target, not a hard process-memory limit or the query response quota. It does not modify the primary connection. Shut down an existing pool before changing the setting.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.
