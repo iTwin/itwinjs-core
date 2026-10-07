@@ -33,6 +33,8 @@ A parked statement retains SQLite execution state, which can include sorter memo
 
 Worker queries use their own connection for class-name and navigation-property rendering and geometry-stream decompression, even when statements are prepared using the shared schema-source connection. This keeps those rendering operations off the shared connection's mutex. Primary-connection requests continue rendering against the primary.
 
+Row rendering uses request-local JSON scratch with a reusable 4 KiB buffer and heap overflow for larger rows; cached statements do not retain that scratch. The native C++ reader replaces its batch document when fetching another batch, reclaiming the previous batch's JSON allocations. Native row views must not be retained across batch boundaries.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.
