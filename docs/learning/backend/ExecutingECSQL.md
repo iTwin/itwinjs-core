@@ -31,6 +31,8 @@ Backend concurrent-query configuration provides `enableCursors` (default `true`)
 
 A parked statement retains SQLite execution state, which can include sorter memory or temporary files and a read snapshot. Read-only handles do not guarantee that another process cannot modify the file. Retention requires WAL even for read-only handles, since an unfinished rollback-journal reader can block an external writer's commit. An independent connection observes external commits, and idle cursors expire on the monitor's next poll after their timeout. Parked WAL snapshots can delay checkpoint progress, so keep the cursor cap and timeout appropriate for the application's write activity.
 
+Worker queries use their own connection for class-name and navigation-property rendering and geometry-stream decompression, even when statements are prepared using the shared schema-source connection. This keeps those rendering operations off the shared connection's mutex. Primary-connection requests continue rendering against the primary.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.

@@ -1,4 +1,4 @@
-import { DbQueryRequest, DbQueryResponse, DbResponseStatus, QueryBinder } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
 import { expect } from "chai";
 import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
@@ -124,6 +124,32 @@ describe("ConcurrentQuery", () => {
       const rebound = await page("a", 3, 100);
       expect(rebound.stats.resumed).eq(false);
       expect(rebound.data).deep.eq([[104]]);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("preserves class and navigation rendering across worker connections", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: defaultWorkerThreads(), globalQuota: { time: 60, memory: 8388608 } });
+      const query = "SELECT ECClassId, Schema FROM meta.ECClassDef ORDER BY ECInstanceId LIMIT 20";
+      for (const valueFormat of [DbValueFormat.ECSqlNames, DbValueFormat.JsNames]) {
+        const request: DbQueryRequest = {
+          query, valueFormat,
+          convertClassIdsToClassNames: true,
+        };
+        const primary = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { ...request, usePrimaryConn: true });
+        expect(primary.status).eq(DbResponseStatus.Done);
+        expect(primary.data.length).eq(20);
+        const workers = await Promise.all(Array.from({ length: defaultWorkerThreads() * 2 },
+          async () => ConcurrentQuery.executeQueryRequest(db[_nativeDb], request)));
+        for (const worker of workers) {
+          expect(worker.status).eq(DbResponseStatus.Done);
+          expect(worker.data).deep.eq(primary.data);
+          expect(worker.meta).deep.eq(primary.meta);
+        }
+      }
     } finally {
       db.close();
     }
