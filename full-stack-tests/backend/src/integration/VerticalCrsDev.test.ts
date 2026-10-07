@@ -10,7 +10,12 @@ import { Point3d } from "@itwin/core-geometry";
 import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
 import { startupForIntegration } from "./StartupShutdown";
 
-const runDevAcceptance = process.env.IMODELJS_VERTICAL_CRS_DEV_TEST === "1" ? describe : describe.skip;
+const verticalCrsDevTestsEnabled = ((): boolean => {
+  const setting = process.env.ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS?.trim().toLowerCase();
+  return setting === "1" || setting === "true" || setting === "yes";
+})();
+
+const runDevAcceptance = verticalCrsDevTestsEnabled ? describe : describe.skip;
 
 const baseDbProps: GcsDbProps = {
   dbName: "base",

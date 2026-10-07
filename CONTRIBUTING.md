@@ -27,6 +27,7 @@ rushx lint
 ```
 
 > Older Mocha packages test compiled output, so run `rushx build` before `rushx test`. **Use repository-wide Rush commands only when the change spans packages or the package-specific script does not cover the change.**
+
 1. Before pushing, complete the checks required by the final diff.
 
 ### Before you push
@@ -82,7 +83,7 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS` | the extended tier of the schema sync suites - further permutations of behaviour the core tier already covers | `full-stack-tests/backend/src/integration/SchemaSync*.test.ts` |
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
-| `ITWIN_INCLUDE_VERTICAL_CRS_PRODUCTION_TESTS` | vertical CRS enumeration and filtering through shipped production workspace defaults, using a fresh cache without local GCS files | `core/backend/src/test/imodel/VerticalCrsDev.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
 
 Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
 
