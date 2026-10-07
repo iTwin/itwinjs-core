@@ -9,8 +9,8 @@
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
-import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@itwin/core-common";
-import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
+import { ECJsNames, ElementProps, IModelError, QueryBinder, RelatedElementProps, TxnProps } from "@itwin/core-common";
+import { SchemaView, SchemaViewPrimitiveType, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { _activeTxn, _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef } from "./internal/RebaseInstanceStore";
@@ -140,6 +140,12 @@ export interface RebaseConflict {
    */
   brokenRelationships: BrokenRelationship[];
 
+  /** Unexpected referential actions currently applied by deleting this instance, whether the
+   * deletion comes from ours or theirs. Restoring the instance reverses the recorded effects and
+   * removes the entries; deleting it again records fresh entries. Upstream effects are limited to
+   * conflicting local work. Entries must not be retained across full conflict resolutions. */
+  deletionEffects: ReadonlyArray<DeletionEffect>;
+
   /**
    * The conflict recorded for this instance's embedding owner (e.g. an aspect's element, or a child element's
    * parent). The owner is given a conflict entry of its own whenever this instance has one, even if applying
@@ -220,6 +226,37 @@ export interface RebaseConflict {
  */
 export interface RebaseConflictProperties {
   [propertyName: string]: any;
+}
+
+/** A referential action on another instance caused by a conflicting deletion, with the data
+ * needed to reverse the action in EntityProps form.
+ * @beta
+ */
+export type DeletionEffect = DeletionEffectDetails & (
+  | {
+    readonly action: "set-null";
+    /** The referenced entity's id before the navigation property was cleared. */
+    readonly previousValue: Id64String;
+  }
+  | {
+    readonly action: "cascade";
+    /** The entity removed by the referential action. */
+    readonly deletedInstance: RebaseConflictProperties;
+  }
+);
+
+/** The entity and relationship affected by a conflicting deletion.
+ * @beta
+ */
+export interface DeletionEffectDetails {
+  readonly relationshipClass: SchemaView.RelationshipClass;
+  /** Access string on the affected entity, in EntityProps form, e.g. `typeDefinition`. */
+  readonly navigationProperty: string;
+  readonly affectedInstanceKey: string;
+  readonly affectedId: Id64String;
+  readonly affectedClassFullName: string;
+  /** A genuine conflict on the affected entity, if one was independently detected. */
+  readonly affectedConflict: RebaseConflict | undefined;
 }
 
 /** A substitution automatically applied so a conflicting change can be written. */
@@ -382,6 +419,22 @@ interface DependencyNode {
   navigationRefs?: RebaseNavigationRef[];
 }
 
+interface OnDeleteReference {
+  referencingClassFullName: string;
+  navigationProperty: string;
+  navigationPropertyJsName: string;
+  relationshipClass: SchemaView.RelationshipClass;
+  action: "CASCADE" | "SET NULL";
+}
+
+interface AffectedOnDeleteInstance {
+  instanceKey: string;
+  id: Id64String;
+  classFullName: string;
+  theirs: RebaseConflictProperties;
+  reference: OnDeleteReference;
+}
+
 export class InteractiveRebase {
   private _db: BriefcaseDb;
   private _schemaView: SchemaView;
@@ -415,6 +468,9 @@ export class InteractiveRebase {
   /** Captured nodes that reference each provider through a navigation property, keyed by provider instance key. */
   private _referenceDependents = new Map<string, DependencyNode[]>();
 
+  /** Schema-declared CASCADE/SET NULL navigation properties indexed by each concrete target class. */
+  private _onDeleteReferencesByTargetClass = new Map<string, OnDeleteReference[]>();
+
   /** A placeholder value [[orderNodes]] is substituting in for a node's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
    * [[getChange]] so that the substitution is transparent to the rest of replay, and drained by
@@ -432,7 +488,80 @@ export class InteractiveRebase {
     this._schemaView = schemaView;
     this._txns = [];
     this._groups = [];
+    this.buildOnDeleteReferenceIndex();
     this.initializeTxns(txns);
+  }
+
+  /** Builds a reusable reverse index for the small set of FK navigation properties that have
+   * non-blocking ON DELETE actions. SchemaView supplies EC navigation/constraint metadata; one
+   * ECDbMeta query supplies the excluded ECDbMap:ForeignKeyConstraint custom attributes. */
+  private buildOnDeleteReferenceIndex(): void {
+    const actionByPropertyId = new Map<string, string>();
+    this._db.withQueryReader(
+      `SELECT p.ECInstanceId, ca.Instance
+       FROM meta.PropertyCustomAttribute ca
+       JOIN meta.ECPropertyDef p ON ca.Property.Id = p.ECInstanceId
+       JOIN meta.ECClassDef caClass ON ca.CustomAttributeClass.Id = caClass.ECInstanceId
+       WHERE caClass.Name = 'ForeignKeyConstraint'`,
+      (reader) => {
+        for (const row of reader) {
+          const customAttribute = JSON.parse(row[1] as string).ForeignKeyConstraint;
+          const action = typeof customAttribute?.OnDeleteAction === "string"
+            ? customAttribute.OnDeleteAction.toUpperCase().replace(/[^A-Z]/g, "")
+            : "";
+          actionByPropertyId.set(String(Id64.getLocalId(row[0] as Id64String)), action);
+        }
+      },
+    );
+
+    if (actionByPropertyId.size === 0)
+      return;
+
+    const classes = [...this._schemaView.getSchemas()].flatMap((schema) => [...schema.getClasses()]);
+    for (const schemaClass of classes) {
+      for (const property of schemaClass.getOwnProperties()) {
+        if (!property.isNavigation())
+          continue;
+        const configuredAction = actionByPropertyId.get(String(property.ecInstanceId));
+        if (configuredAction === undefined)
+          continue;
+
+        const relationship = property.relationshipClass;
+        const action: OnDeleteReference["action"] | undefined = configuredAction === "CASCADE"
+          ? "CASCADE"
+          : configuredAction === "SETNULL"
+            ? "SET NULL"
+            : configuredAction.length === 0 && relationship.strength === StrengthType.Embedding
+              ? "CASCADE"
+              : configuredAction.length === 0
+                ? "SET NULL"
+                : undefined;
+        if (action === undefined)
+          continue;
+        const constraint = property.direction === StrengthDirection.Backward ? relationship.source : relationship.target;
+        if (constraint === undefined)
+          continue;
+        const constraintClasses = [
+          ...(constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint]),
+          ...constraint.constraintClasses,
+        ];
+        for (const targetClass of classes) {
+          if (!constraintClasses.some((constraintClass) => targetClass.fullName === constraintClass.fullName || (constraint.polymorphic && targetClass.is(constraintClass))))
+            continue;
+
+          let references = this._onDeleteReferencesByTargetClass.get(targetClass.fullName);
+          if (references === undefined)
+            this._onDeleteReferencesByTargetClass.set(targetClass.fullName, references = []);
+          references.push({
+            referencingClassFullName: schemaClass.fullName,
+            navigationProperty: property.name,
+            navigationPropertyJsName: ECJsNames.toJsName(property.name),
+            relationshipClass: relationship,
+            action,
+          });
+        }
+      }
+    }
   }
 
   /** @internal */
@@ -747,6 +876,7 @@ export class InteractiveRebase {
     this.applyDeferredCorrections();
     this.createImplicitOwnerConflicts();
     this.linkConflictOwnership();
+    this.recordExistingDeletionEffects();
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
@@ -1283,8 +1413,16 @@ export class InteractiveRebase {
       return;
     }
 
-    RebaseConflictImpl.recordUpstreamDependent(this, this._conflicts, node.instanceKey, theirs);
+    const owner = node.ownerId === undefined ? undefined : this._ownersById.get(node.ownerId);
+    assert(owner !== undefined, `Missing owner ${node.ownerId} for ${node.instanceKey}; owners: ${[...this._ownersById.keys()].join(",")}`);
+    const reference = this.getDeletionReferences(owner.classFullName).find((candidate) =>
+      candidate.action === "CASCADE" && this._schemaView.findClass(node.classFullName)?.is(candidate.referencingClassFullName));
+    assert(reference !== undefined);
+    const entry = { instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs, reference };
+    this.recordDeletionEffectsForTarget(owner, [entry]);
     this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
+    const conflict = this._conflicts.find((candidate) => candidate.instanceKey === owner.instanceKey) as RebaseConflictImpl;
+    conflict.recordDeletionEffect(entry);
   }
 
   /** Ensures every embedding owner of a conflicted dependent has its own {@link RebaseConflict} entry,
@@ -1327,7 +1465,8 @@ export class InteractiveRebase {
       // `expectedOldValues`/a Delete's check both already confirmed the row matched it), or undefined
       // for a discovered node (which would otherwise have its own upstream-dependent conflict recorded
       // - see [[applyUpstreamDependentDelete]]).
-      RebaseConflictImpl.recordImplicitOwner(this, this._conflicts, ownerNode.instanceKey, ownerNode.id, ownerNode.classFullName, original, original, ours);
+      const theirs = ours !== undefined && this.tryReadCurrentInstance(ownerNode.id, ownerNode.classFullName) === undefined ? undefined : original;
+      RebaseConflictImpl.recordImplicitOwner(this, this._conflicts, ownerNode.instanceKey, ownerNode.id, ownerNode.classFullName, original, theirs, ours);
     }
 
     // Recurse regardless of whether an entry already existed - a pre-existing owner conflict still needs
@@ -1441,7 +1580,8 @@ export class InteractiveRebase {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
     const result = this.applyOrRecordConstraintConflict(instanceKey, oldProps.id, oldProps.classFullName, oldProps, undefined, () =>
-      nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] });
+      this.deleteWithReferentialActionTracking(key, () =>
+        nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] }));
     if (result === undefined || result.deleted) {
       // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
       return;
@@ -1461,7 +1601,140 @@ export class InteractiveRebase {
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
     RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs, result.conflictingProperties);
-    nativeDb.deleteInstance(key, { useJsNames: true });
+    this.deleteWithReferentialActionTracking(key, () => nativeDb.deleteInstance(key, { useJsNames: true }));
+  }
+
+  private deleteWithReferentialActionTracking<T>(key: { id: Id64String, classFullName: string }, deleteInstance: () => T): T {
+    const affected = this.findOnDeleteAffectedInstances(key.id, key.classFullName);
+    const theirs = this.tryReadCurrentInstance(key.id, key.classFullName);
+    const result = deleteInstance();
+    const deleted = typeof result !== "object" || result === null || !("deleted" in result) || Boolean((result as { deleted: boolean }).deleted);
+    const conflict = deleted ? this.recordDeletionEffectsForTarget(key, affected, theirs) : undefined;
+    if (deleted && conflict !== undefined) {
+      for (const entry of affected)
+        conflict.recordDeletionEffect(entry);
+    }
+    return result;
+  }
+
+  private recordDeletionEffectsForTarget(key: { id: Id64String, classFullName: string }, affected: AffectedOnDeleteInstance[], theirs = this.tryReadCurrentInstance(key.id, key.classFullName)): RebaseConflictImpl | undefined {
+    if (affected.length === 0)
+      return undefined;
+    const existing = this._conflicts.find((candidate) => candidate.id === key.id && candidate.classFullName === key.classFullName) as RebaseConflictImpl | undefined;
+    if (existing !== undefined)
+      return existing;
+    const node = [...this._dependencyNodesByInstanceKey.values()].find((candidate) => candidate.id === key.id && candidate.classFullName === key.classFullName);
+    assert(node !== undefined);
+    RebaseConflictImpl.recordImplicitOwner(this, this._conflicts, node.instanceKey, key.id, key.classFullName,
+      node.isCaptured ? this.capturedOriginalProps(node) : undefined, theirs, undefined);
+    return this._conflicts.find((candidate) => candidate.instanceKey === node.instanceKey) as RebaseConflictImpl;
+  }
+
+  private getDeletionReferences(targetClassFullName: string): OnDeleteReference[] {
+    const references = [...(this._onDeleteReferencesByTargetClass.get(targetClassFullName) ?? [])];
+    if (this.isElementOrSubclass(targetClassFullName) && !references.some((reference) => reference.navigationProperty === "Parent")) {
+      const property = resolveSchemaViewProperty(this._schemaView, "BisCore:Element", "Parent");
+      if (property?.isNavigation()) {
+        references.push({
+          referencingClassFullName: "BisCore:Element", navigationProperty: "Parent", navigationPropertyJsName: "parent",
+          relationshipClass: property.relationshipClass, action: "CASCADE"
+        });
+      }
+    }
+    return references;
+  }
+
+  private recordExistingDeletionEffects(): void {
+    const referencingNodes = new Map<Id64String, Set<DependencyNode>>();
+    for (const node of this._dependencyNodesByInstanceKey.values()) {
+      const targetIds = new Set([node.ownerId, ...(node.navigationRefs ?? []).flatMap((reference) => [reference.oldId, reference.newId])]);
+      for (const id of targetIds) {
+        if (id === undefined)
+          continue;
+        let nodes = referencingNodes.get(id);
+        if (nodes === undefined)
+          referencingNodes.set(id, nodes = new Set());
+        nodes.add(node);
+      }
+    }
+    for (const target of this._conflicts as RebaseConflictImpl[]) {
+      if (this.tryReadCurrentInstance(target.id, target.classFullName) !== undefined)
+        continue;
+      const deletingSide = target.getRaw("ours") === undefined && target.getRaw("theirs") !== undefined ? "ours"
+        : target.getRaw("theirs") === undefined && target.getRaw("ours") !== undefined ? "theirs" : undefined;
+      if (deletingSide === undefined)
+        continue;
+      const survivingSide = deletingSide === "ours" ? "theirs" : "ours";
+      for (const node of referencingNodes.get(target.id) ?? []) {
+        if (node.instanceKey === target.instanceKey)
+          continue;
+        const affected = this._conflicts.find((candidate) => candidate.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
+        let before = affected?.getRaw(survivingSide);
+        if (before === undefined && deletingSide === "theirs" && node.isCaptured && !node.isIndirect) {
+          const change = this.getChange(node);
+          if (change.new !== undefined) {
+            const { $meta: _meta, ...props } = change.new;
+            before = props;
+          }
+        }
+        if (before === undefined)
+          continue;
+        for (const reference of this.getDeletionReferences(target.classFullName)) {
+          if (!this._schemaView.findClass(node.classFullName)?.is(reference.referencingClassFullName) ||
+            getPropertyValue(before, `${reference.navigationPropertyJsName}.id`) !== target.id)
+            continue;
+          const after = this.tryReadCurrentInstance(node.id, node.classFullName);
+          if (reference.action === "CASCADE" ? after !== undefined : getPropertyValue(after ?? {}, `${reference.navigationPropertyJsName}.id`) === target.id)
+            continue;
+          target.recordDeletionEffect({ instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs: before, reference });
+        }
+      }
+    }
+  }
+
+  /** Finds live rows that reference `targetId` through the cached set of FK navigation properties
+   * with ON DELETE CASCADE or SET NULL. The dependency graph has already replayed known removals. */
+  private findOnDeleteAffectedInstances(targetId: Id64String, targetClassFullName: string, visited = new Set<string>()): AffectedOnDeleteInstance[] {
+    const key = `${targetId}|${targetClassFullName}`;
+    if (visited.has(key))
+      return [];
+    visited.add(key);
+    const references = this.getDeletionReferences(targetClassFullName);
+
+    const knownInstances = new Set([...this._dependencyNodesByInstanceKey.values()].filter((node) => node.isCaptured).map((node) => `${node.id}|${node.classFullName}`));
+    const targetConflict = this._conflicts.find((conflict) => conflict.id === targetId && conflict.classFullName === targetClassFullName) as RebaseConflictImpl | undefined;
+    const affected: AffectedOnDeleteInstance[] = [];
+    for (const reference of references) {
+      const binder = new QueryBinder().bindId(1, targetId);
+      this._db.withQueryReader(
+        `SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c')
+         FROM ${reference.referencingClassFullName}
+         WHERE [${reference.navigationProperty}].[Id] = ?`,
+        (reader) => {
+          for (const row of reader) {
+            const id = row[0] as Id64String;
+            const classFullName = row[2] as string;
+            if (reference.action === "CASCADE")
+              affected.push(...this.findOnDeleteAffectedInstances(id, classFullName, visited));
+            if (knownInstances.has(`${id}|${classFullName}`) && !targetConflict?.hasTrackedDeletionEffect(id, classFullName) &&
+              !this._conflicts.some((conflict) => conflict.id === id && conflict.classFullName === classFullName))
+              continue;
+            const theirs = this.tryReadCurrentInstance(id, classFullName);
+            if (theirs !== undefined) {
+              affected.push({
+                instanceKey: `${id}-${row[1]}`,
+                id,
+                classFullName,
+                theirs,
+                reference,
+              });
+            }
+          }
+        },
+        binder,
+      );
+    }
+    return affected;
   }
 
   private applyInteractiveInsert(instanceKey: string, newProps: RebaseConflictProperties): void {
@@ -1817,9 +2090,11 @@ export class InteractiveRebase {
       // `ON DELETE CASCADE`), a child element's cascade-on-parent-delete is implemented by the Element
       // API rather than a declared FK action, so a raw instance delete of the owner does not remove it,
       // and would leave a dangling `ParentId` that violates the FK if the owner is deleted first.
-      if (isFullResolution)
-        this.cascadeDeleteToDependents(conflictImpl);
-      this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
+      this.deleteWithReferentialActionTracking(key, () => {
+        if (isFullResolution)
+          this.cascadeDeleteToDependents(conflictImpl);
+        return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
+      });
       conflictImpl.clearSupersededUniqueConstraintViolations(undefined);
       this._db.clearCaches({ instanceCachesOnly: true });
       return;
@@ -1831,10 +2106,34 @@ export class InteractiveRebase {
     conflictImpl.clearSupersededUniqueConstraintViolations(properties);
     this.writeConflictResolution(conflictImpl, props, fullReplace, 0);
 
-    if (isFullResolution)
+    if (isFullResolution) {
       this.restoreDependentClosure(conflictImpl, side);
+      this.restoreDeletionEffects(conflictImpl);
+    }
 
     this._db.clearCaches({ instanceCachesOnly: true });
+  }
+
+  private restoreDeletionEffects(conflict: RebaseConflictImpl): void {
+    if (this.tryReadCurrentInstance(conflict.id, conflict.classFullName) === undefined)
+      return;
+    for (const effect of [...conflict.deletionEffects].reverse()) {
+      if (effect.action === "set-null") {
+        const current = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
+        if (current !== undefined && getPropertyValue(current, `${effect.reference.navigationPropertyJsName}.id`) === undefined) {
+          const propsToWrite = { id: effect.affectedId, classFullName: effect.affectedClassFullName };
+          setPropertyValue(propsToWrite, effect.reference.navigationPropertyJsName, effect.rawPreviousValue);
+          this._db[_nativeDb].updateInstance(propsToWrite, { useJsNames: true });
+        }
+      } else {
+        const affectedConflict = effect.affectedConflict as RebaseConflictImpl | undefined;
+        const selectedProps = affectedConflict !== undefined && affectedConflict._selectedSide !== undefined
+          ? affectedConflict.getRaw(affectedConflict._selectedSide) : effect.rawDeletedInstance;
+        if (selectedProps !== undefined && this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName) === undefined)
+          this.writeRestoredInstance(selectedProps);
+      }
+    }
+    conflict.deletionEffects.length = 0;
   }
 
   /**
@@ -1876,9 +2175,12 @@ export class InteractiveRebase {
   }
 
   private cascadeDeleteDependentNode(node: DependencyNode): void {
-    for (const child of node.dependents)
-      this.cascadeDeleteDependentNode(child);
-    this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
+    const key = { id: node.id, classFullName: node.classFullName };
+    this.deleteWithReferentialActionTracking(key, () => {
+      for (const child of node.dependents)
+        this.cascadeDeleteDependentNode(child);
+      return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
+    });
     const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
     conflict?.clearSupersededUniqueConstraintViolations(undefined);
   }
@@ -1920,6 +2222,8 @@ export class InteractiveRebase {
 
     for (const child of node.dependents)
       this.restoreClosureNode(child, side);
+    if (conflict !== undefined && props !== undefined)
+      this.restoreDeletionEffects(conflict);
   }
 
   /** Writes an instance with no [[RebaseConflict]] of its own (an untouched dependent being restored
@@ -2106,11 +2410,53 @@ function applyResolution(
   rebase.applyConflictResolution(conflict, updateProps, fullReplace, properties, side);
 }
 
-/** Implements {@link RebaseConflict} and provides the `record*` helpers used to build up a conflict for a
- * given instance as it is discovered. Detections for the same instance id are merged into a single entry
- * (e.g. an Update conflict followed by a UNIQUE constraint violation while retrying the write), since
- * {@link RebaseConflict} reports at most one entry per instance.
- */
+abstract class DeletionEffectImpl implements DeletionEffectDetails {
+  public readonly reference: OnDeleteReference;
+  public readonly affectedInstanceKey: string;
+  public readonly affectedId: Id64String;
+  public readonly affectedClassFullName: string;
+
+  public constructor(protected readonly _rebase: InteractiveRebase, entry: AffectedOnDeleteInstance) {
+    this.reference = entry.reference;
+    this.affectedInstanceKey = entry.instanceKey;
+    this.affectedId = entry.id;
+    this.affectedClassFullName = entry.classFullName;
+  }
+
+  public get relationshipClass(): SchemaView.RelationshipClass { return this.reference.relationshipClass; }
+  public get navigationProperty(): string { return this._rebase.iModel.getJsClass<typeof Element>(this.affectedClassFullName).toPropsAccessString(this.reference.navigationPropertyJsName); }
+  public get affectedConflict(): RebaseConflict | undefined { return this._rebase.conflicts.find((conflict) => conflict.instanceKey === this.affectedInstanceKey); }
+
+  protected deserialize(raw: RebaseConflictProperties): RebaseConflictProperties {
+    return this._rebase.iModel.getJsClass<typeof Element>(this.affectedClassFullName).deserialize({ row: raw, iModel: this._rebase.iModel });
+  }
+}
+
+class SetNullDeletionEffectImpl extends DeletionEffectImpl {
+  public readonly action = "set-null";
+  public readonly rawPreviousValue: RelatedElementProps;
+
+  public constructor(rebase: InteractiveRebase, entry: AffectedOnDeleteInstance) {
+    super(rebase, entry);
+    this.rawPreviousValue = getPropertyValue(entry.theirs, entry.reference.navigationPropertyJsName);
+  }
+
+  public get previousValue(): Id64String { return this.rawPreviousValue.id; }
+}
+
+class CascadeDeletionEffectImpl extends DeletionEffectImpl {
+  public readonly action = "cascade";
+  public readonly rawDeletedInstance: RebaseConflictProperties;
+
+  public constructor(rebase: InteractiveRebase, entry: AffectedOnDeleteInstance) {
+    super(rebase, entry);
+    this.rawDeletedInstance = entry.theirs;
+  }
+
+  public get deletedInstance(): RebaseConflictProperties { return this.deserialize(this.rawDeletedInstance); }
+}
+
+/** Implements {@link RebaseConflict}, merging detections for the same instance into a single entry. */
 class RebaseConflictImpl implements RebaseConflict {
   public readonly instanceKey: string;
   public readonly id: Id64String;
@@ -2135,6 +2481,8 @@ class RebaseConflictImpl implements RebaseConflict {
   public readonly differentProperties: string[] = [];
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
   public readonly brokenRelationships: BrokenRelationship[] = [];
+  public readonly deletionEffects: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl)[] = [];
+  private readonly _trackedDeletionEffectInstances = new Set<string>();
   public ownerConflict: RebaseConflict | undefined = undefined;
   public readonly dependentConflicts: RebaseConflict[] = [];
 
@@ -2227,14 +2575,15 @@ class RebaseConflictImpl implements RebaseConflict {
     conflict._ours = ours;
   }
 
-  /** An embedded dependent (aspect or child element) that our local Txn never touched, discovered live
-   * (design doc section 6) only because its owner is about to be deleted - without this, our own
-   * cascade would silently discard it with nothing reported. Has no `original` or `ours`: our Txn has
-   * no knowledge of it at all, only `theirs`.
-   */
-  public static recordUpstreamDependent(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, theirs: RebaseConflictProperties): void {
-    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, theirs.id, theirs.classFullName);
-    conflict._theirs = theirs;
+  public recordDeletionEffect(entry: AffectedOnDeleteInstance): void {
+    this._trackedDeletionEffectInstances.add(`${entry.id}|${entry.classFullName}`);
+    if (!this.deletionEffects.some((effect) => effect.affectedInstanceKey === entry.instanceKey && effect.reference.navigationProperty === entry.reference.navigationProperty))
+      this.deletionEffects.push(entry.reference.action === "SET NULL"
+        ? new SetNullDeletionEffectImpl(this._rebase, entry) : new CascadeDeletionEffectImpl(this._rebase, entry));
+  }
+
+  public hasTrackedDeletionEffect(id: Id64String, classFullName: string): boolean {
+    return this._trackedDeletionEffectInstances.has(`${id}|${classFullName}`);
   }
 
   /** An embedding owner with no conflict of its own - applying its own change, if it even had one,

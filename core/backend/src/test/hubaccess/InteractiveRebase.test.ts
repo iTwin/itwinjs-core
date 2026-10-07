@@ -1121,6 +1121,51 @@ describe("InteractiveRebase", () => {
     chai.expect((child as any).parent).to.be.undefined;
   });
 
+  it("reports deletionEffects for our cascaded delete of their inserted child", async () => {
+    const childId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(5.0, 6.0),
+        parent: new ElementOwnsChildElements(id)
+      } as SomeGraphicalElementProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert child" });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+
+    // Our delete should stand, and it should be cascaded to the new child element as well.
+    chai.expect(conflict.id).to.equal(id);
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].affectedId).to.equal(childId);
+    chai.expect(conflict.deletionEffects[0].action).to.equal("cascade");
+    chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+
+    // Accepting "theirs" should restore both the parent and child elements and clear the DeletionEffect.
+    conflict.acceptTheirs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps(childId).parent?.id).to.equal(id);
+
+    // Accepting "ours" deletes the elements again, and recreates the DeletionEffect.
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+  });
+
   it("reports a foreign key constraint violation when we add an element to a model they deleted", async () => {
     const deletedModelId = await withEditTxn(briefcase1, async (txn) => {
       const code = Code.createEmpty();
@@ -1574,6 +1619,7 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
+
     // The aspect's real conflict gives its owning element a synthetic conflict too - not because the
     // element's own properties conflict (they don't), but because InteractiveRebase always makes an
     // embedding owner resolvable whenever one of its dependents conflicts - see
@@ -1910,7 +1956,7 @@ describe("InteractiveRebase", () => {
     chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
   });
 
-  it("merges an ON DELETE SET NULL side effect without reporting a broken relationship", async () => {
+  it("reports an ON DELETE SET NULL as a DeletionEffect", async () => {
     const typeCode = Code.createEmpty();
     typeCode.value = "SomeGraphicalType";
 
@@ -1943,9 +1989,18 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition?.id).to.equal(typeId);
 
     // They set a property on the referencing element that we never touch.
-    await withEditTxn(briefcase1, async (txn) => {
+    const upstreamReferenceId = await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({ id, userLabel: "TheirLabel" });
       txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User1" });
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "UpstreamReference",
+        somePoint: new Point2d(7.0, 8.0),
+        typeDefinition: { id: typeId, relClassName: "BisCore:GraphicalElement2dIsOfType" },
+      } as SomeGraphicalElementProps);
     });
 
     // We delete the type definition, which SET NULLs TypeDefinitionId on the referencing element.
@@ -1965,18 +2020,157 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-
-    // The SET NULL is applied to the referencing element as an ordinary property update, so it
-    // merges property-wise and is never surfaced as a conflict or a broken relationship.
-    chai.expect(interactive.conflicts.length).to.equal(1);
-    chai.expect(interactive.conflicts[0].id).to.equal(otherId);
-    chai.expect(interactive.conflicts[0].brokenRelationships.length).to.equal(0);
-    chai.expect(interactive.conflicts.some((c) => c.id === id)).to.be.false;
+    const conflictIds = interactive.conflicts.map((conflict) => conflict.id);
+    chai.expect(conflictIds.toSorted()).to.deep.equal([otherId, typeId].toSorted());
+    chai.expect(interactive.conflicts.some((conflict) => conflict.id === otherId)).to.be.true;
+    const typeConflict = interactive.conflicts.find((conflict) => conflict.id === typeId)!;
+    chai.expect(typeConflict).to.not.be.undefined;
+    chai.expect(typeConflict.original?.id).to.equal(typeId);
+    chai.expect(typeConflict.theirs?.id).to.equal(typeId);
+    chai.expect(typeConflict.ours).to.be.undefined;
+    chai.expect(typeConflict.deletionEffects).to.have.length(1);
+    const effect = typeConflict.deletionEffects[0];
+    chai.expect(effect.affectedId).to.equal(upstreamReferenceId);
+    chai.expect(effect.action).to.equal("set-null");
+    chai.expect(effect.navigationProperty).to.equal("typeDefinition");
+    chai.expect(effect.relationshipClass.fullName).to.equal("BisCore:GeometricElement2dHasTypeDefinition");
+    if (effect.action !== "set-null") throw new Error("Expected SET NULL effect");
+    chai.expect(effect.previousValue).to.equal(typeId);
+    chai.expect(effect).not.to.have.property("before");
+    chai.expect(effect).not.to.have.property("after");
+    chai.expect(effect).not.to.have.property("deletedInstance");
+    chai.expect(effect.affectedConflict).to.be.undefined;
+    chai.expect(interactive.conflicts.some((conflict) => conflict.id === id)).to.be.false;
 
     const final = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(final.typeDefinition).to.be.undefined;
     chai.expect(final.userLabel).to.equal("TheirLabel");
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(upstreamReferenceId).typeDefinition).to.be.undefined;
     chai.expect(briefcase2.elements.tryGetElementProps(typeId)).to.be.undefined;
+
+    interactive.editTxn.updateElement({ id: upstreamReferenceId, userLabel: "ResolvedLabel" });
+    typeConflict.acceptTheirs();
+    chai.expect(typeConflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(upstreamReferenceId).typeDefinition?.id).to.equal(typeId);
+    chai.expect(briefcase2.elements.getElementProps(upstreamReferenceId).userLabel).to.equal("ResolvedLabel");
+    typeConflict.acceptOurs();
+    chai.expect(typeConflict.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(upstreamReferenceId).typeDefinition).to.be.undefined;
+    typeConflict.acceptOurs();
+    chai.expect(typeConflict.deletionEffects).to.have.length(1);
+    typeConflict.acceptTheirs();
+    chai.expect(typeConflict.deletionEffects).to.be.empty;
+  });
+
+  it("tracks conflicting SET NULL effects of an upstream deletion without restoring unrelated references", async () => {
+    const [typeId, untouchedId] = await withEditTxn(briefcase1, async (txn) => {
+      const type = txn.insertElement({
+        classFullName: GenericGraphicalType2d.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        userLabel: "OriginalType",
+      });
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        typeDefinition: { id: type }
+      });
+      const untouched = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Untouched",
+        somePoint: new Point2d(5, 6),
+        typeDefinition: { id: type },
+      } as SomeGraphicalElementProps);
+      return [type, untouched];
+    });
+    await briefcase1.pushChanges({ description: "Create typed elements" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => txn.deleteElement(typeId));
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({ id: typeId, userLabel: "LocalType" });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "LocalElement" });
+    });
+    await briefcase1.pushChanges({ description: "Delete type upstream" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    const conflict = interactive.conflicts.find((candidate) => candidate.id === typeId)!;
+    chai.expect(conflict).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].affectedId).to.equal(id);
+    const effect = conflict.deletionEffects[0];
+    chai.expect(effect.action).to.equal("set-null");
+    if (effect.action !== "set-null") throw new Error("Expected SET NULL effect");
+    chai.expect(effect.previousValue).to.equal(typeId);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition).to.be.undefined;
+
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition?.id).to.equal(typeId);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("LocalElement");
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(untouchedId).typeDefinition).to.be.undefined;
+    conflict.acceptTheirs();
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition).to.be.undefined;
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition?.id).to.equal(typeId);
+  });
+
+  it("tracks conflicting CASCADE effects of an upstream deletion without restoring unrelated children", async () => {
+    const [childId, untouchedId] = await withEditTxn(briefcase1, async (txn) => {
+      const insertChild = (foo: string) => txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo,
+        somePoint: new Point2d(5, 6),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps);
+      return [insertChild("EditedChild"), insertChild("UntouchedChild")];
+    });
+    await briefcase1.pushChanges({ description: "Create children" });
+    await briefcase2.pullChanges();
+    await withEditTxn(briefcase1, async (txn) => txn.deleteElement(id));
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "LocalParent" });
+      txn.updateElement<SomeGraphicalElementProps>({ id: childId, foo: "LocalChild" });
+    });
+    await briefcase1.pushChanges({ description: "Delete parent upstream" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    const conflict = interactive.conflicts.find((candidate) => candidate.id === id)!;
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    const effect = conflict.deletionEffects[0];
+    chai.expect(effect.action).to.equal("cascade");
+    chai.expect(effect.affectedId).to.equal(childId);
+    chai.expect(effect.affectedConflict?.id).to.equal(childId);
+    if (effect.action !== "cascade") throw new Error("Expected CASCADE effect");
+    chai.expect(effect.deletedInstance.foo).to.equal("LocalChild");
+    chai.expect(effect).not.to.have.property("before");
+    chai.expect(effect).not.to.have.property("after");
+    chai.expect(effect).not.to.have.property("previousValue");
+
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).foo).to.equal("LocalChild");
+    chai.expect(briefcase2.elements.tryGetElementProps(untouchedId)).to.be.undefined;
+    conflict.acceptTheirs();
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).foo).to.equal("LocalChild");
   });
 
   it("should restore an edited aspect when accepting ours after they deleted the element", async () => {
@@ -2388,11 +2582,64 @@ describe("InteractiveRebase", () => {
 
     chai.expect(interactive.nextGroup()).to.be.true;
 
-    const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
-    chai.expect(aspectConflict).to.not.be.undefined;
-    chai.expect(aspectConflict?.original).to.be.undefined;
-    chai.expect(aspectConflict?.ours).to.be.undefined;
-    chai.expect(aspectConflict?.theirs?.aspectValue).to.equal("FromUpstream");
+    chai.expect(interactive.conflicts).to.have.length(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(id);
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].action).to.equal("cascade");
+    chai.expect(conflict.deletionEffects[0].navigationProperty).to.equal("element");
+    const effect = conflict.deletionEffects[0];
+    if (effect.action !== "cascade") throw new Error("Expected CASCADE effect");
+    chai.expect(effect.deletedInstance.aspectValue).to.equal("FromUpstream");
+    conflict.acceptTheirs();
+    chai.expect(conflict.deletionEffects).to.be.empty;
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("FromUpstream");
+    conflict.acceptOurs();
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.be.empty;
+  });
+
+  it("updates nested deletion effects when restoring and deleting an ancestor", async () => {
+    const childId = await withEditTxn(briefcase1, async (txn) => {
+      const insertedChild = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "UpstreamChild",
+        somePoint: new Point2d(5, 6),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps);
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id: insertedChild },
+        aspectValue: "UpstreamAspect",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+      return insertedChild;
+    });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(id));
+    await briefcase1.pushChanges({ description: "Insert nested dependents upstream" });
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    const root = interactive.conflicts.find((candidate) => candidate.id === id)!;
+    const child = interactive.conflicts.find((candidate) => candidate.id === childId)!;
+    chai.expect(root.deletionEffects).to.have.length(1);
+    chai.expect(child.deletionEffects).to.have.length(1);
+    root.acceptTheirs();
+    chai.expect(root.deletionEffects).to.be.empty;
+    chai.expect(child.deletionEffects).to.be.empty;
+    chai.expect(getUniqueAspect(briefcase2, childId).aspectValue).to.equal("UpstreamAspect");
+    root.acceptOurs();
+    chai.expect(root.deletionEffects.length).to.be.greaterThan(0);
+    chai.expect(child.deletionEffects).to.have.length(1);
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+    root.acceptTheirs();
+    chai.expect(root.deletionEffects).to.be.empty;
+    chai.expect(child.deletionEffects).to.be.empty;
+    chai.expect(getUniqueAspect(briefcase2, childId).aspectValue).to.equal("UpstreamAspect");
   });
 
   it("can rebase a txn that deletes an element and then reuses its federationGuid for a new element", async () => {
