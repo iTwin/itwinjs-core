@@ -98,11 +98,12 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
 
   try {
     const apiResponse = await request(apiUrl, "json");
-    if (undefined === apiResponse?.url || undefined === apiResponse.accessToken) {
-      assert(false);
+    const url: unknown = apiResponse?.url;
+    const accessToken: unknown = apiResponse?.accessToken;
+    if (typeof url !== "string" || !url || typeof accessToken !== "string" || !accessToken)
       return { failure: "unavailable" };
-    }
-    return { endpoint: { accessToken: apiResponse.accessToken, url: apiResponse.url } };
+
+    return { endpoint: { accessToken, url } };
   } catch (err) {
     // Expected when offline or when the key is rejected - not a programming error.
     if (err instanceof HttpResponseError && cesiumRejectedKeyStatuses.includes(err.status))
@@ -134,19 +135,23 @@ export async function resolveCesiumTerrainEndpoint(assetId: string, iTwinId?: Gu
   if (!customClient)
     return getCesiumAccessTokenAndEndpointUrl(assetId);
 
-  const endpoint = await customClient.getAssetEndpoint(assetId, iTwinId);
-  return endpoint ? { endpoint } : { failure: "unavailable" };
+  try {
+    const endpoint = await customClient.getAssetEndpoint(assetId, iTwinId);
+    return endpoint ? { endpoint } : { failure: "unavailable" };
+  } catch {
+    return { failure: "unavailable" };
+  }
 }
 
 let notifiedTerrainError = false;
 
 // Notify - once per session - of failure to obtain Cesium terrain provider.
-function notifyTerrainError(detailedDescription?: string): void {
+function notifyTerrainError(failure: CesiumEndpointFailure): void {
   if (notifiedTerrainError)
     return;
 
   notifiedTerrainError = true;
-  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), getCesiumTerrainEndpointErrorDescription(failure));
 }
 
 /** @internal */
@@ -154,7 +159,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
   const assetId = opts.dataSource || CesiumTerrainAssetId.Default;
   const result = await resolveCesiumTerrainEndpoint(assetId, opts.iTwinId);
   if ("failure" in result) {
-    notifyTerrainError(getCesiumTerrainEndpointErrorDescription(result.failure));
+    notifyTerrainError(result.failure);
     return undefined;
   }
 
@@ -169,12 +174,11 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     const layerUrl = `${baseUrl}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
   } catch {
-    notifyTerrainError();
-    return undefined;
+    layers = undefined;
   }
 
-  if (undefined === layers || undefined === layers.tiles || undefined === layers.version) {
-    notifyTerrainError();
+  if (undefined === layers?.tiles || undefined === layers.version) {
+    notifyTerrainError("unavailable");
     return undefined;
   }
 

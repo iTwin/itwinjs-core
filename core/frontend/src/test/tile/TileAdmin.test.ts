@@ -796,6 +796,16 @@ describe("TileAdmin", () => {
       expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ failure: "unavailable" });
     });
 
+    it("reports the service as unavailable when a custom access client throws", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(): Promise<CesiumAssetEndpoint | undefined> {
+          throw new TypeError("Failed to fetch");
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      expect(await resolveCesiumTerrainEndpoint("1")).toEqual({ failure: "unavailable" });
+    });
+
     it("returns the endpoint from a custom access client", async () => {
       const endpoint: CesiumAssetEndpoint = { accessToken: "tok", url: "https://example.com/" };
       const mockAccess: CesiumAccessClient = {
@@ -831,6 +841,14 @@ describe("TileAdmin", () => {
         await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "bad-key" } });
         vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status }));
         expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "rejected" });
+      });
+    }
+
+    for (const body of [{}, { url: null, accessToken: "tok" }, { url: "", accessToken: "tok" }, { url: "https://example.com/", accessToken: "" }, { url: "https://example.com/" }]) {
+      it(`reports the service as unavailable for malformed response ${JSON.stringify(body)}`, async () => {
+        await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+        expect(await getCesiumAccessTokenAndEndpointUrl("1")).toEqual({ failure: "unavailable" });
       });
     }
 
