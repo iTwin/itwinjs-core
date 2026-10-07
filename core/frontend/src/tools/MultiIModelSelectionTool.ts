@@ -925,7 +925,7 @@ async function getVolumeSelectionCandidatesForIModel(ref: SpatialIModelDisplayRe
 
     resultViewClip.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
       if (ClipPlaneContainment.StronglyOutside !== status)
-        contents.add(candidates[index]);
+        contents.add(requestProps.candidates[index]);
     });
   }
 

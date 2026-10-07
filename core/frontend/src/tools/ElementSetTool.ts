@@ -626,7 +626,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
       resultViewClip.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
         if (ClipPlaneContainment.StronglyOutside !== status)
-          contents.add(candidates[index]);
+          contents.add(requestProps.candidates[index]);
       });
     }
 
