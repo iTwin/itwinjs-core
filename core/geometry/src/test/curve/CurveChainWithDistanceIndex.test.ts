@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveExtendMode } from "../../curve/CurveExtendMode";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../../curve/CurveExtendMode";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -17,11 +18,12 @@ import { Path } from "../../curve/Path";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../GeometrySamples";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 
 // cspell:word XYAB, XYBA
 
@@ -65,6 +67,108 @@ describe("CurveChainWithDistanceIndex", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClosestPointProblem");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("ClosestPointPeriodicFractionSpace", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // all exterior projections below land just beyond a curve end
+    const testPoints: { xyz: Point3d, projectionLocation: "before" | "inside" | "after" }[] = [
+      { xyz: Point3d.create(158206, 392061), projectionLocation: "before" },
+      { xyz: Point3d.create(158243, 392071), projectionLocation: "inside" },
+      { xyz: Point3d.create(158262, 392072), projectionLocation: "inside" },
+      { xyz: Point3d.create(158280, 392080), projectionLocation: "inside" },
+      { xyz: Point3d.create(158301, 392079), projectionLocation: "after" },
+    ];
+    const arc = Arc3d.create(
+      Point3d.create(158250.7536449462, 392111.648837931),
+      Vector3d.create(45.72009144018288),
+      Vector3d.create(0, 45.72009144018288),
+      AngleSweep.createStartEndDegrees(246.62239404404025, 323.01676672815),
+    );
+    const testCurves: (CurvePrimitive | Path)[] = [
+      arc,
+      Path.create(LineSegment3d.create(arc.startPoint(), arc.fractionToPoint(1/3)), arc.clonePartialCurve(1/3, 1)),
+      Path.create(arc.clonePartialCurve(0, 1/3), LineSegment3d.create(arc.fractionToPoint(1/3), arc.fractionToPoint(2/3)), arc.clonePartialCurve(2/3, 1)),
+      Path.create(arc.clonePartialCurve(0, 2/3), LineSegment3d.create(arc.fractionToPoint(2/3), arc.endPoint())),
+      Path.create(LineSegment3d.create(arc.startPoint(), arc.fractionToPoint(1/3)), arc.clonePartialCurve(1/3, 2/3), LineSegment3d.create(arc.fractionToPoint(2/3), arc.endPoint())),
+    ];
+    const createVariantCurves = (curve: CurvePrimitive | Path): (CurvePrimitive | Path)[] => {
+      const variants: (CurvePrimitive | Path)[] = [curve];
+      if (curve instanceof CurvePrimitive) {
+        variants.push(Path.create(curve.clone()));
+        variants.push(CurveChainWithDistanceIndex.createCapture(Path.create(curve.clone())));
+      } else {
+        variants.push(CurveChainWithDistanceIndex.createCapture(curve.clone()));
+      }
+      return variants;
+    };
+    // skip unimplemented CurveExtendMode.OnTangent: for the sake of this test, it functions the same as OnCurve
+    const testModes: VariantCurveExtendParameter[] = [
+      true,
+      false,
+      CurveExtendMode.None,
+      CurveExtendMode.OnCurve,
+      [CurveExtendMode.None, CurveExtendMode.None],
+      [CurveExtendMode.None, CurveExtendMode.OnCurve],
+      [CurveExtendMode.OnCurve, CurveExtendMode.None],
+      [CurveExtendMode.OnCurve, CurveExtendMode.OnCurve],
+    ];
+    const fractionSpaceIsPeriodic = (curve: CurvePrimitive | Path, atStart: boolean): boolean => {
+      if (curve instanceof Arc3d) return true;
+      if (curve instanceof Path) return atStart ? curve.getChild(0) instanceof Arc3d : curve.getChild(curve.children.length - 1) instanceof Arc3d;
+      return false;
+    };
+    const dx = arc.range().xLength() * 2;
+    let x0 = 0;
+    for (const testCurve of testCurves) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, testCurve, x0);
+      for (const pt of testPoints)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pt.xyz, testCurve.closestPoint(pt.xyz, true)!.point], x0);
+      x0 += dx;
+    }
+    for (const testCurve of testCurves) {
+      for (const variantCurve of createVariantCurves(testCurve)) {
+        for (const reversed of [false, true]) {
+          const curve = reversed ? variantCurve.clone().reverse() : variantCurve;
+          for (const testPt of testPoints) {
+            const projectionLocation = (reversed && testPt.projectionLocation !== "inside") ? (testPt.projectionLocation === "before" ? "after" : "before") : testPt.projectionLocation;
+            for (const extendMode of testModes) {
+              const detail = curve.closestPoint(testPt.xyz, extendMode);
+              if (ck.testDefined(detail, "closest point found")) {
+                if (projectionLocation === "inside") {
+                  ck.testNumberInRange1d(detail.fraction, Range1d.createXX(0, 1), "interior projection has fraction in [0,1]");
+                } else {
+                  const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendMode, 0) !== CurveExtendMode.None;
+                  const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendMode, 1) !== CurveExtendMode.None;
+                  if (projectionLocation === "before") {
+                    if (!extend0 && !extend1)
+                      ck.testFraction(detail.fraction, 0, "projection just off start has fraction 0 when not extending");
+                    else if (extend0 && !extend1 && fractionSpaceIsPeriodic(curve, true))
+                      ck.testLT(detail.fraction, 0, "projection just off start has fraction < 0 when extending only start");
+                    else if (!extend0 && extend1 && fractionSpaceIsPeriodic(curve, false))
+                      ck.testLT(1, detail.fraction, "projection just off start has fraction > 1 when extending only end");
+                    else if (extend0 && extend1)
+                      ck.testFalse(Geometry.isIn01(detail.fraction), "projection just off start has exterior fraction when extending both ends");
+                  } else if (projectionLocation === "after") {
+                    if (!extend0 && !extend1)
+                      ck.testFraction(detail.fraction, 1, "projection just off end has fraction 1 when not extending");
+                    else if (!extend0 && extend1 && fractionSpaceIsPeriodic(curve, false))
+                      ck.testLT(1, detail.fraction, "projection just off end has fraction > 1 when extending only end");
+                    else if (extend0 && !extend1 && fractionSpaceIsPeriodic(curve, true))
+                      ck.testLT(detail.fraction, 0, "projection just off end has fraction < 0 when extending only start");
+                    else if (extend0 && extend1)
+                      ck.testFalse(Geometry.isIn01(detail.fraction), "projection just off end has exterior fraction when extending both ends");
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClosestPointPeriodicFractionSpace");
     expect(ck.getNumErrors()).toBe(0);
   });
 
