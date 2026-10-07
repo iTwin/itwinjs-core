@@ -35,6 +35,8 @@ Worker queries use their own connection for class-name and navigation-property r
 
 Row rendering uses request-local JSON scratch with a reusable 4 KiB buffer and heap overflow for larger rows; cached statements do not retain that scratch. The native C++ reader replaces its batch document when fetching another batch, reclaiming the previous batch's JSON allocations. Native row views must not be retained across batch boundaries.
 
+`memoryMapFileSize` sets the requested memory-mapped I/O limit in bytes when worker connections are opened; zero disables mmap. SQLite and the file's VFS can restrict or disable mmap, and the requested limit is not a promise of mapped or resident memory. This setting does not change the primary connection. To apply a changed limit to an existing pool, call `ConcurrentQuery.shutdown` and configure the new limit before issuing the next query.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.
