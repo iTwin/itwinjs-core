@@ -10,6 +10,8 @@ publish: false
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+  - [Quantity](#quantity)
+    - [Async formats provider setter](#async-formats-provider-setter)
 
 ## Backend
 
