@@ -21,10 +21,19 @@ if (fs.existsSync(envFile))
 // Sign-in and settings run in Node, where the credentials are; the browser asks for the results by name.
 const getEnv: BrowserCommand<[]> = () => JSON.stringify(process.env);
 
+// TestUtility keeps one client per user, and the client reuses its token until it nears expiry.
+// Concurrent callers share the sign-in in flight, so the shared test account signs in once.
+const tokenRequests = new Map<string, Promise<string>>();
+
 const getAccessToken: BrowserCommand<[user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration]> = async (_context, user, oidcConfig) => {
-  const token = oidcConfig
-    ? await TestUtility.getAuthorizationClient(user, oidcConfig).getAccessToken()
-    : await TestUtility.getAccessToken(user);
+  const key = JSON.stringify([user.email, oidcConfig]);
+  let request = tokenRequests.get(key);
+  if (!request) {
+    const client = oidcConfig ? TestUtility.getAuthorizationClient(user, oidcConfig) : TestUtility.getAuthorizationClient(user);
+    request = client.getAccessToken().finally(() => tokenRequests.delete(key));
+    tokenRequests.set(key, request);
+  }
+  const token = await request;
   if (!token)
     throw new Error("Failed to get access token");
   return token;

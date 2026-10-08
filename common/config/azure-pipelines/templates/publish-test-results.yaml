@@ -108,7 +108,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish UI Abstract Test Results"
     inputs:
-      testResultsFiles: "ui/abstract/lib/test/junit_results.xml"
+      testResultsFiles: "ui/appui-abstract/lib/test/junit_results.xml"
       testRunTitle: "UI - Abstract Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()

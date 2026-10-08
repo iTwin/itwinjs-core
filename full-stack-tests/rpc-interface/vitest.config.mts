@@ -22,8 +22,22 @@ if (fs.existsSync(envFile))
 // Sign-in and settings run in Node, where the credentials are; the browser asks for the results by name.
 const getEnv: BrowserCommand<[]> = () => JSON.stringify(process.env);
 
+// One client per configuration, so test files reuse its token until it nears expiry.
+// Concurrent callers share the request in flight instead of each fetching a token.
+const serviceClients = new Map<string, ServiceAuthorizationClient>();
+const serviceTokenRequests = new Map<string, Promise<string>>();
+
 const getServiceAuthToken: BrowserCommand<[config: ServiceAuthorizationClientConfiguration]> = async (_context, config) => {
-  const token = await new ServiceAuthorizationClient(config).getAccessToken();
+  const key = JSON.stringify(config);
+  let request = serviceTokenRequests.get(key);
+  if (!request) {
+    let client = serviceClients.get(key);
+    if (!client)
+      serviceClients.set(key, client = new ServiceAuthorizationClient(config));
+    request = client.getAccessToken().finally(() => serviceTokenRequests.delete(key));
+    serviceTokenRequests.set(key, request);
+  }
+  const token = await request;
   if (!token)
     throw new Error("Failed to retrieve access token from ServiceAuthorizationClient.");
   return token;
