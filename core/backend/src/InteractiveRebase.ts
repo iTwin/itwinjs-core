@@ -1437,7 +1437,7 @@ export class InteractiveRebase {
   private createImplicitOwnerConflicts(): void {
     // Each call recurses all the way up its own owner chain, so this only needs to seed the walk from
     // every dependent that already has a real, replay-detected conflict.
-    for (const conflict of [...this._conflicts])
+    for (const conflict of this._conflicts)
       this.ensureImplicitOwnerConflict(conflict.instanceKey);
   }
 
