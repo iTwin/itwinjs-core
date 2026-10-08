@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
+import * as path from "node:path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, QueryOptions, QueryPropertyMetaData, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
@@ -90,6 +90,26 @@ describe("QueryMetadataCache", () => {
 
     expect(exec.requests.every((r) => r.includeMetaData)).to.be.true;
     expect(cache.size).to.equal(variants.length);
+  });
+
+  it("shares one entry across options that do not affect metadata", async () => {
+    const cache = new QueryMetadataCache();
+    const exec = new FakeExecutor(makeMeta("A"));
+    const variants: DbQueryRequest[] = [
+      makeRequest({ args: { 1: { type: "id", value: "0x1" } } }),
+      makeRequest({ args: { 1: { type: "id", value: "0x2" } } }),
+      makeRequest({ limit: { count: 1 } }),
+      makeRequest({ limit: { count: 10, offset: 5 } }),
+      makeRequest({ rowFormat: QueryRowFormat.UseECSqlPropertyIndexes }),
+      makeRequest({ rowFormat: QueryRowFormat.UseECSqlPropertyNames }),
+      makeRequest({ rowFormat: QueryRowFormat.UseJsPropertyNames }), // eslint-disable-line @typescript-eslint/no-deprecated
+      makeRequest({ priority: 5, restartToken: "token", suppressLogErrors: true, quota: { time: 10 }, delay: 1 }),
+    ];
+    for (const request of variants)
+      await cache.executeCachedQueryRequest(request, exec.execute);
+
+    expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, ...variants.slice(1).map(() => false)]);
+    expect(cache.size).to.equal(1);
   });
 
   it("does not let callers mutate cached metadata", async () => {
