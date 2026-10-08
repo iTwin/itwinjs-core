@@ -44,7 +44,8 @@ steps:
 
   # Build every package needed by the integration test suites in a single Rush
   # invocation. Each frontend test package (and @itwin/core-electron) already runs
-  # webpack:test as part of its normal build script, so no separate webpack pass is needed.
+  # webpack:test as part of its normal build script, but cached bundles must be
+  # rebundled below to embed this job's integration-test environment variables.
   #
   # The build cache is READ-ONLY here (RUSH_BUILD_CACHE_WRITE_ALLOWED: 0): these
   # pipelines can be queued manually against arbitrary refs, so they must never
@@ -62,6 +63,9 @@ steps:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
       RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+
+  - script: node ./common/scripts/install-run-rush webpack:test -v
+    displayName: "Rebundle integration tests with current environment"
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
   # Ensure the binary is present before configuring the AppArmor profile.
