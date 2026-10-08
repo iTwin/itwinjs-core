@@ -84,12 +84,11 @@ describe("Generated Units artifacts", () => {
     expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"]).toEqual(["Units.SLOPE", 1, 0, "Units.VERTICAL_PER_HORIZONTAL"]);
   });
 
-  it("emits representative default persistence entries and omits LENGTH_RATIO", () => {
+  it("emits representative default persistence entries including LENGTH_RATIO", () => {
     expect(generatedDefaultPersistenceSource).toContain("[Phenomena.LENGTH]: Units.LENGTH.M");
     expect(generatedDefaultPersistenceSource).toContain("[Phenomena.CURRENCY]: Units.CURRENCY.US_DOLLAR");
     expect(generatedDefaultPersistenceSource).toContain("[Phenomena.SLOPE]: Units.SLOPE.M_PER_M");
-    expect(generatedDefaultPersistenceSource).toContain("Phenomena.LENGTH_RATIO is intentionally omitted");
-    expect(generatedDefaultPersistenceSource).not.toContain("[Phenomena.LENGTH_RATIO]");
+    expect(generatedDefaultPersistenceSource).toContain("[Phenomena.LENGTH_RATIO]: Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO");
   });
 
   it("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
