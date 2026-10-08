@@ -7604,97 +7604,19 @@ export enum ModifyElementSource {
 }
 
 // @beta
-export class MultiIModelSelectionTool extends PrimitiveTool {
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+export class MultiIModelSelectionTool extends SelectionToolBase {
     // (undocumented)
-    autoLockTarget(): void;
+    protected get allowExternalIModels(): boolean;
     // (undocumented)
-    decorate(context: DecorateContext): void;
+    processSelection(elementIds: ElementIdsByIModelConnection, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
-    filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
-    // (undocumented)
-    static hidden: boolean;
-    // (undocumented)
-    static iconSpec: string;
-    // (undocumented)
-    protected initSelectTool(): void;
-    // (undocumented)
-    protected _isSelectByPoints: boolean;
-    // (undocumented)
-    protected _isSuspended: boolean;
-    // (undocumented)
-    onCleanup(): Promise<void>;
-    // (undocumented)
-    onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
-    onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onPostInstall(): Promise<void>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onRestartTool(): Promise<void>;
-    // (undocumented)
-    onSuspend(): Promise<void>;
-    // (undocumented)
-    onTouchCancel(ev: BeTouchEvent): Promise<void>;
-    // (undocumented)
-    onTouchComplete(ev: BeTouchEvent): Promise<void>;
-    // (undocumented)
-    onTouchMove(ev: BeTouchEvent): Promise<void>;
-    // (undocumented)
-    onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
-    // (undocumented)
-    onUnsuspend(): Promise<void>;
-    // (undocumented)
-    protected readonly _points: Point3d[];
-    // (undocumented)
-    processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled>;
-    // (undocumented)
-    protected processMiss(_ev: BeButtonEvent): boolean;
-    // (undocumented)
-    processSelection(elementIds: ElementIds, process: SelectionProcessing): Promise<boolean>;
-    // (undocumented)
-    requireWriteableTarget(): boolean;
-    // (undocumented)
-    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): Promise<boolean>;
-    // (undocumented)
-    protected selectByPointsStart(ev: BeButtonEvent): boolean;
-    // (undocumented)
-    selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled>;
-    // (undocumented)
-    get selectionMethod(): SelectionMethod;
-    set selectionMethod(method: SelectionMethod);
-    // (undocumented)
-    get selectionMode(): SelectionMode_2;
-    set selectionMode(mode: SelectionMode_2);
-    // (undocumented)
-    protected showPrompt(mode: SelectionMode_2, method: SelectionMethod): void;
+    protected processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
     static startTool(): Promise<boolean>;
-    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    updateSelection(elementIds: ElementIds, process: SelectionProcessing): boolean;
-    // (undocumented)
-    protected useOverlapSelection(ev: BeButtonEvent): boolean;
-    // (undocumented)
-    protected wantEditManipulators(): boolean;
-    // (undocumented)
-    protected wantPickableDecorations(): boolean;
-    // (undocumented)
-    protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
-    // (undocumented)
-    protected wantToolSettings(): boolean;
+    updateSelection(elementIds: ElementIdsByIModelConnection, process: SelectionProcessing): boolean;
 }
 
 // @public
@@ -10142,7 +10064,23 @@ export enum SelectionSetEventType {
 }
 
 // @public
-export class SelectionTool extends PrimitiveTool {
+export class SelectionTool extends SelectionToolBase {
+    // (undocumented)
+    processSelection(ids: Id64Arg, process: SelectionProcessing): Promise<boolean>;
+    // @beta (undocumented)
+    protected processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
+    // (undocumented)
+    static startTool(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateSelection(ids: Id64Arg, process: SelectionProcessing): boolean;
+}
+
+// @public
+export abstract class SelectionToolBase extends PrimitiveTool {
+    // (undocumented)
+    protected get allowExternalIModels(): boolean;
     // @beta
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
@@ -10157,6 +10095,10 @@ export class SelectionTool extends PrimitiveTool {
     static iconSpec: string;
     // (undocumented)
     protected initSelectTool(): void;
+    // (undocumented)
+    protected get isAnySelectionSetActive(): boolean;
+    // (undocumented)
+    protected isHitSelected(hit: HitDetail): boolean;
     // (undocumented)
     protected _isSelectByPoints: boolean;
     // (undocumented)
@@ -10197,8 +10139,10 @@ export class SelectionTool extends PrimitiveTool {
     processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled>;
     // (undocumented)
     protected processMiss(_ev: BeButtonEvent): boolean;
-    // (undocumented)
-    processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean>;
+    // @beta
+    protected processSelectionForReference(ids: Id64Arg, ref: IModelDisplayReference, process: SelectionProcessing): Promise<boolean>;
+    // @beta
+    protected abstract processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -10210,6 +10154,8 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled>;
     // (undocumented)
+    protected get selectionIModels(): Iterable<IModelConnection>;
+    // (undocumented)
     get selectionMethod(): SelectionMethod;
     set selectionMethod(method: SelectionMethod);
     // (undocumented)
@@ -10217,14 +10163,10 @@ export class SelectionTool extends PrimitiveTool {
     set selectionMode(mode: SelectionMode_2);
     // (undocumented)
     protected showPrompt(mode: SelectionMode_2, method: SelectionMethod): void;
-    // (undocumented)
-    static startTool(): Promise<boolean>;
     // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
-    // (undocumented)
-    static toolId: string;
-    // (undocumented)
-    updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean;
+    // @internal (undocumented)
+    protected syncSelectionMode(): void;
     // (undocumented)
     protected useOverlapSelection(ev: BeButtonEvent): boolean;
     // (undocumented)

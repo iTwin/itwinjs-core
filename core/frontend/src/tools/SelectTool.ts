@@ -21,7 +21,9 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
-import { ElementSetTool } from "./ElementSetTool";
+import { IModelConnection } from "../IModelConnection";
+import { IModelDisplayReference } from "../IModelDisplayReference";
+import { getAreaOrVolumeSelectionCandidates } from "../internal/DragSelection";
 
 // cSpell:ignore buttongroup
 
@@ -66,12 +68,11 @@ export enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
-/** Tool for picking a set of elements of interest, selected by the user.
+/** Shared interaction and tool settings for element selection tools.
  * @public
  */
-export class SelectionTool extends PrimitiveTool {
+export abstract class SelectionToolBase extends PrimitiveTool {
   public static override hidden = false;
-  public static override toolId = "Select";
   public static override iconSpec = "icon-cursor";
   protected _isSelectByPoints = false;
   protected _isSuspended = false;
@@ -86,6 +87,42 @@ export class SelectionTool extends PrimitiveTool {
   protected wantEditManipulators(): boolean { return SelectionMethod.Pick === this.selectionMethod; }
   protected wantPickableDecorations(): boolean { return this.wantEditManipulators(); } // Allow pickable decorations selection to be independent of manipulators...
   protected wantToolSettings(): boolean { return true; }
+  protected get allowExternalIModels(): boolean { return false; }
+  protected get selectionIModels(): Iterable<IModelConnection> { return this.allowExternalIModels ? this.iModels : [this.iModel]; }
+  protected get isAnySelectionSetActive(): boolean {
+    for (const iModel of this.selectionIModels)
+      if (iModel.selectionSet.isActive)
+        return true;
+
+    return false;
+  }
+
+  protected isHitSelected(hit: HitDetail): boolean {
+    if (!this.allowExternalIModels && hit.iModel !== this.iModel)
+      return false;
+
+    return hit.iModel.selectionSet.elements.has(hit.sourceId);
+  }
+
+  /** Applies a selection operation to geometry displayed through a reference.
+   * @beta
+   */
+  protected async processSelectionForReference(ids: Id64Arg, ref: IModelDisplayReference, process: SelectionProcessing): Promise<boolean> {
+    if (!this.allowExternalIModels) {
+      const primary = this.targetView?.primaryIModelRef;
+      if (!primary || ref.iModel !== primary.iModel)
+        return false;
+
+      ref = primary;
+    }
+
+    return this.processSelections(new Map([[ref, ids]]), process);
+  }
+
+  /** Applies a complete selection operation across display references.
+   * @beta
+   */
+  protected abstract processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
 
   public get selectionMethod(): SelectionMethod { return this._selectionMethodValue.value as SelectionMethod; }
   public set selectionMethod(method: SelectionMethod) { this._selectionMethodValue.value = method; }
@@ -97,7 +134,7 @@ export class SelectionTool extends PrimitiveTool {
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getMethodsDescription(): PropertyDescription {
     return {
-      name: SelectionTool._methodsName,
+      name: SelectionToolBase._methodsName,
       displayLabel: "",
       typename: "enum",
       editor: {
@@ -117,9 +154,9 @@ export class SelectionTool extends PrimitiveTool {
       },
       enum: {
         choices: [
-          { label: SelectionTool.methodsMessage("Pick"), value: SelectionMethod.Pick },
-          { label: SelectionTool.methodsMessage("Line"), value: SelectionMethod.Line },
-          { label: SelectionTool.methodsMessage("Box"), value: SelectionMethod.Box },
+          { label: SelectionToolBase.methodsMessage("Pick"), value: SelectionMethod.Pick },
+          { label: SelectionToolBase.methodsMessage("Line"), value: SelectionMethod.Line },
+          { label: SelectionToolBase.methodsMessage("Box"), value: SelectionMethod.Box },
         ],
       },
     };
@@ -130,7 +167,7 @@ export class SelectionTool extends PrimitiveTool {
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getModesDescription(): PropertyDescription {
     return {
-      name: SelectionTool._modesName,
+      name: SelectionToolBase._modesName,
       displayLabel: "",
       typename: "enum",
       editor: {
@@ -144,7 +181,7 @@ export class SelectionTool extends PrimitiveTool {
               iconSpec: "icon-select-minus",
               isEnabledFunction: () => {
                 const tool = IModelApp.toolAdmin.activeTool;
-                return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false;
+                return tool instanceof SelectionToolBase ? tool.isAnySelectionSetActive : false;
               },
             },
           ],
@@ -156,9 +193,9 @@ export class SelectionTool extends PrimitiveTool {
       },
       enum: {
         choices: [
-          { label: SelectionTool.modesMessage("Replace"), value: SelectionMode.Replace },
-          { label: SelectionTool.modesMessage("Add"), value: SelectionMode.Add },
-          { label: SelectionTool.modesMessage("Remove"), value: SelectionMode.Remove },
+          { label: SelectionToolBase.modesMessage("Replace"), value: SelectionMode.Replace },
+          { label: SelectionToolBase.modesMessage("Add"), value: SelectionMode.Add },
+          { label: SelectionToolBase.modesMessage("Remove"), value: SelectionMode.Remove },
         ],
       },
     };
@@ -238,42 +275,21 @@ export class SelectionTool extends PrimitiveTool {
 
     this.initLocateElements(enableLocate, false, enableLocate ? "default" : IModelApp.viewManager.crossHairCursor, CoordinateLockOverrides.All);
     IModelApp.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
+    IModelApp.locateManager.options.allowExternalIModels = this.allowExternalIModels;
     this.showPrompt(mode, method);
   }
 
   protected processMiss(_ev: BeButtonEvent): boolean {
-    if (!this.iModel.selectionSet.isActive)
-      return false;
-    this.iModel.selectionSet.emptyAll();
-    return true;
-  }
-
-  public updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
-    let returnValue = false;
-    switch (process) {
-      case SelectionProcessing.AddElementToSelection:
-        returnValue = this.iModel.selectionSet.add(elementId);
-        break;
-      case SelectionProcessing.RemoveElementFromSelection:
-        returnValue = this.iModel.selectionSet.remove(elementId);
-        break;
-      case SelectionProcessing.InvertElementInSelection: // (if element is in selection remove it else add it.)
-        returnValue = this.iModel.selectionSet.invert(elementId);
-        break;
-      case SelectionProcessing.ReplaceSelectionWithElement:
-        this.iModel.selectionSet.replace(elementId);
-        returnValue = true;
-        break;
-      default:
-        return false;
+    let changed = false;
+    for (const iModel of this.selectionIModels) {
+      if (iModel.selectionSet.isActive) {
+        iModel.selectionSet.emptyAll();
+        changed = true;
+      }
     }
-    // always force UI to sync display of options since the select option of Remove should only be enabled if the selection set has elements.
-    if (returnValue)
-      this.syncSelectionMode();
-    return returnValue;
-  }
 
-  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(elementId, process); }
+    return changed;
+  }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
     if (undefined === ev.viewport)
@@ -332,7 +348,7 @@ export class SelectionTool extends PrimitiveTool {
       return false;
 
     const filter = (elem: { id: Id64String }) => { return !Id64.isTransient(elem.id); };
-    const contents = await ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
+    const contents = await getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.allowExternalIModels, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
 
     if (0 === contents.size) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) {
@@ -345,14 +361,14 @@ export class SelectionTool extends PrimitiveTool {
     switch (this.selectionMode) {
       case SelectionMode.Replace:
         if (!ev.isControlKey)
-          return this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
-        return this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+          return this.processSelections(contents, SelectionProcessing.ReplaceSelectionWithElement);
+        return this.processSelections(contents, SelectionProcessing.InvertElementInSelection);
 
       case SelectionMode.Add:
-        return this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+        return this.processSelections(contents, SelectionProcessing.AddElementToSelection);
 
       case SelectionMode.Remove:
-        return this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+        return this.processSelections(contents, SelectionProcessing.RemoveElementFromSelection);
     }
   }
 
@@ -411,15 +427,15 @@ export class SelectionTool extends PrimitiveTool {
 
     switch (this.selectionMode) {
       case SelectionMode.Replace:
-        await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
+        await this.processSelectionForReference(hit.sourceId, hit.feature.iModelRef, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
         break;
 
       case SelectionMode.Add:
-        await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+        await this.processSelectionForReference(hit.sourceId, hit.feature.iModelRef, SelectionProcessing.AddElementToSelection);
         break;
 
       case SelectionMode.Remove:
-        await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+        await this.processSelectionForReference(hit.sourceId, hit.feature.iModelRef, SelectionProcessing.RemoveElementFromSelection);
         break;
     }
     return EventHandled.Yes;
@@ -478,7 +494,7 @@ export class SelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : IModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.elements.has(lastHit.sourceId)) {
+    if (lastHit && this.isHitSelected(lastHit)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
@@ -491,11 +507,11 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
-          await this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          await this.processSelectionForReference(lastHit.sourceId, lastHit.feature.iModelRef, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          await this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+          await this.processSelectionForReference(nextHit.sourceId, nextHit.feature.iModelRef, SelectionProcessing.AddElementToSelection);
 
         return EventHandled.Yes;
       }
@@ -557,7 +573,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return LocateFilterStatus.Accept;
 
-    const isSelected = this.iModel.selectionSet.elements.has(hit.sourceId);
+    const isSelected = this.isHitSelected(hit);
     const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
     if (out && LocateFilterStatus.Reject === status)
       out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);
@@ -580,16 +596,15 @@ export class SelectionTool extends PrimitiveTool {
     this.initSelectTool();
   }
 
-  public static async startTool(): Promise<boolean> { return new SelectionTool().run(); }
-
-  private syncSelectionMode(): void {
-    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
+  /** @internal */
+  protected syncSelectionMode(): void {
+    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
       // No selection active resetting selection mode since there is nothing to Remove
       this.selectionMode = SelectionMode.Replace;
       this.initSelectTool();
     }
     if (this.wantToolSettings()) {
-      const syncMode: DialogPropertySyncItem = { value: this._selectionModeValue, propertyName: SelectionTool._modesName };
+      const syncMode: DialogPropertySyncItem = { value: this._selectionModeValue, propertyName: SelectionToolBase._modesName };
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
       this.syncToolSettingsProperties([syncMode]);
     }
@@ -603,21 +618,21 @@ export class SelectionTool extends PrimitiveTool {
       return undefined;
 
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])?.forEach((value) => {
-      if (value.propertyName === SelectionTool._modesName)
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionToolBase._modesName])?.forEach((value) => {
+      if (value.propertyName === SelectionToolBase._modesName)
         this._selectionModeValue = value.value;
     });
 
     // Make sure a mode of SelectionMode.Remove is valid
-    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
+    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
       this.selectionMode = SelectionMode.Replace;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionToolBase._modesName, value: this._selectionModeValue });
     }
 
     const toolSettings = new Array<DialogItem>();
     // generate 3 columns - label will be placed in column 0 and button group editors in columns 1 and 2.
-    toolSettings.push({ value: this._selectionMethodValue, property: SelectionTool._getMethodsDescription(), editorPosition: { rowPriority: 0, columnIndex: 1 } });
-    toolSettings.push({ value: this._selectionModeValue, property: SelectionTool._getModesDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
+    toolSettings.push({ value: this._selectionMethodValue, property: SelectionToolBase._getMethodsDescription(), editorPosition: { rowPriority: 0, columnIndex: 1 } });
+    toolSettings.push({ value: this._selectionModeValue, property: SelectionToolBase._getModesDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
@@ -626,7 +641,7 @@ export class SelectionTool extends PrimitiveTool {
    */
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     let changed = false;
-    if (updatedValue.propertyName === SelectionTool._methodsName) {
+    if (updatedValue.propertyName === SelectionToolBase._methodsName) {
       const saveWantManipulators = this.wantEditManipulators();
       this._selectionMethodValue = updatedValue.value;
       if (this._selectionMethodValue) {
@@ -636,11 +651,11 @@ export class SelectionTool extends PrimitiveTool {
         changed = true;
       }
     }
-    if (updatedValue.propertyName === SelectionTool._modesName) {
+    if (updatedValue.propertyName === SelectionToolBase._modesName) {
       this._selectionModeValue = updatedValue.value;
       if (this._selectionModeValue) {
         if (this.wantToolSettings())
-          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionToolBase._modesName, value: this._selectionModeValue });
         changed = true;
       }
     }
@@ -648,4 +663,54 @@ export class SelectionTool extends PrimitiveTool {
       this.initSelectTool();
     return true; // return true if change is valid
   }
+}
+
+/** Tool for picking a set of elements of interest, selected by the user.
+ * @public
+ */
+export class SelectionTool extends SelectionToolBase {
+  public static override toolId = "Select";
+
+  public updateSelection(ids: Id64Arg, process: SelectionProcessing): boolean {
+    let returnValue = false;
+    switch (process) {
+      case SelectionProcessing.AddElementToSelection:
+        returnValue = this.iModel.selectionSet.add(ids);
+        break;
+      case SelectionProcessing.RemoveElementFromSelection:
+        returnValue = this.iModel.selectionSet.remove(ids);
+        break;
+      case SelectionProcessing.InvertElementInSelection:
+        returnValue = this.iModel.selectionSet.invert(ids);
+        break;
+      case SelectionProcessing.ReplaceSelectionWithElement:
+        this.iModel.selectionSet.replace(ids);
+        returnValue = true;
+        break;
+      default:
+        return false;
+    }
+
+    if (returnValue)
+      this.syncSelectionMode();
+
+    return returnValue;
+  }
+
+  public async processSelection(ids: Id64Arg, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(ids, process); }
+
+  /** @beta */
+  protected override async processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean> {
+    const ref = this.targetView?.primaryIModelRef;
+    if (!ref)
+      return false;
+
+    const ids = elementIds.get(ref);
+    if (undefined === ids)
+      return false;
+
+    return this.processSelection(ids, process);
+  }
+
+  public static async startTool(): Promise<boolean> { return new SelectionTool().run(); }
 }

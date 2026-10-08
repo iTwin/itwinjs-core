@@ -67,6 +67,56 @@ describe("Drag selection", () => {
     expect([...overlaps.get(linked) ?? []]).toEqual(["0x1"]);
   });
 
+  it.each([
+    { viewAttachmentId: "0x9" },
+    { inSectionDrawingAttachment: true },
+    { viewAttachmentId: "0x9", inSectionDrawingAttachment: true },
+  ])("normalizes same-connection attachment pixels for single-model selection: %j", async (attachment) => {
+    const firstRef = Object.create(vp.primaryIModelRef) as IModelDisplayReference;
+    const secondRef = Object.create(vp.primaryIModelRef) as IModelDisplayReference;
+    pixels((x, y) => {
+      if (x === 5 && y === 5)
+        return pixel(vp.primaryIModelRef);
+      if (x === 6 && y === 6)
+        return new Pixel.Data({ feature: pixel(firstRef, "0x4").feature, ...attachment });
+      if (x === 7 && y === 7)
+        return new Pixel.Data({ feature: pixel(secondRef, "0x5").feature, ...attachment });
+
+      return new Pixel.Data();
+    });
+
+    const result = await getAreaOrVolumeSelectionCandidates(vp, origin, corner, SelectionMethod.Box, true, false);
+    expect(result).toEqual(new Map([[vp.primaryIModelRef, new Set(["0x1", "0x4", "0x5"])]]));
+    expect(await ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, SelectionMethod.Box, true)).toEqual(new Set(["0x1", "0x4", "0x5"]));
+
+    const all = await getAreaOrVolumeSelectionCandidates(vp, origin, corner, SelectionMethod.Box, true, true);
+    expect(all.get(vp.primaryIModelRef)).toEqual(new Set(["0x1"]));
+    expect(all.get(firstRef)).toEqual(new Set(["0x4"]));
+    expect(all.get(secondRef)).toEqual(new Set(["0x5"]));
+  });
+
+  it("does not normalize attachment pixels from another connection", async () => {
+    const linkedIModel = createBlankConnection();
+    try {
+      const refs = vp.iModelRefs;
+      expect(refs.isSpatial).toBe(true);
+      if (!refs.isSpatial)
+        return;
+      const linked = refs.link({ iModel: linkedIModel });
+      pixels((x, y) => x === 5 && y === 5 ? new Pixel.Data({
+        feature: pixel(linked).feature,
+        viewAttachmentId: "0x9",
+        inSectionDrawingAttachment: true,
+      }) : new Pixel.Data());
+      expect(await getAreaOrVolumeSelectionCandidates(vp, origin, corner, SelectionMethod.Box, true, false)).toEqual(new Map());
+      const all = await getAreaOrVolumeSelectionCandidates(vp, origin, corner, SelectionMethod.Box, true, true);
+      expect(all.get(linked)).toEqual(new Set(["0x1"]));
+      refs.unlink(linked);
+    } finally {
+      linkedIModel.closeSync();
+    }
+  });
+
   it("ElementSetTool ignores linked pixels even when they use the primary iModel", async () => {
     const linked = Object.create(vp.primaryIModelRef) as IModelDisplayReference;
     IModelApp.locateManager.options.allowExternalIModels = true;

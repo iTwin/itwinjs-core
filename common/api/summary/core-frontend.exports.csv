@@ -626,6 +626,7 @@ public;class;SelectionSet
 public;type;SelectionSetEvent
 public;enum;SelectionSetEventType
 public;class;SelectionTool
+public;class;SelectionToolBase
 public;interface;SelectRemoveEvent
 public;interface;SelectReplaceEvent
 internal;function;setBasicAuthorization

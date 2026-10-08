@@ -85,11 +85,17 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
       if (undefined === feature || !vp.isPixelSelectable(pixel))
         return undefined; // reality model, terrain, etc - not selectable
 
-      if (!allowExternalIModels && feature.iModelRef !== vp.primaryIModelRef)
-        return undefined;
+      if (!allowExternalIModels) {
+        if (feature.iModelRef.iModel !== vp.iModel)
+          return undefined;
+
+        // Attachments use their own view's reference; allow their geometry from the primary connection, but exclude ordinary linked references.
+        if (feature.iModelRef !== vp.primaryIModelRef && !pixel.viewAttachmentId && !pixel.inSectionDrawingAttachment)
+          return undefined;
+      }
 
       const element = {
-        iModelRef: feature.iModelRef,
+        iModelRef: allowExternalIModels ? feature.iModelRef : vp.primaryIModelRef,
         id: pixel.elementId,
       };
 
