@@ -17,7 +17,7 @@ Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
 RpcConfiguration.disableRoutingValidation = true;
 
-function initializeCloud() {
+async function initializeCloud() {
   const mobilePort = mobileBackendPortFor(parseFrontendPort(window.location.port, "The Vitest page port"));
 
   const config = BentleyCloudRpcManager.initializeClient({
@@ -27,11 +27,12 @@ function initializeCloud() {
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
   initializeAttachedInterfacesTest(config);
-  setupMockMobileFrontend(mobilePort);
+  await setupMockMobileFrontend(mobilePort);
 }
 
-function setupMockMobileFrontend(port: number) {
-  window.location.hash = `port=${port}`;
+async function setupMockMobileFrontend(port: number) {
+  const rpcToken = await executeBackendCallback(BackendTestCallbacks.startMockMobileTest);
+  window.location.hash = `port=${port}&rpcToken=${rpcToken}`;
   MobileRpcManager.initializeClient([MobileTestInterface]);
 }
 

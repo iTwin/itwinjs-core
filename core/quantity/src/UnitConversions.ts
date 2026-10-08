@@ -8,7 +8,7 @@
 
 import { QuantityError, QuantityStatus } from "./Exception";
 import { UnitConversionInvert, type UnitConversionProps } from "./Interfaces";
-import { Phenomena, type PhenomenonName, type UnitName } from "./generated/Units.generated";
+import { type PhenomenonName, type UnitName } from "./generated/Units.generated";
 import { basicUnitConversionData } from "./internal/BasicUnitConversions.generated";
 import { defaultPersistenceUnits } from "./internal/DefaultPersistenceUnits.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
@@ -126,14 +126,11 @@ function isCompatible(fromUnit: UnitName, toUnit: UnitName): boolean {
 /** Returns the package's default built-in persistence unit for a supported bundled built-in phenomenon.
  *
  * This helper is intentionally limited to the built-in canonical unit set shipped with `@itwin/core-quantity`.
- * `Phenomena.LENGTH_RATIO` is intentionally excluded because the bundled built-in unit set does not yet provide an agreed default for that phenomenon.
  * For schema-defined, custom, or iModel-specific persistence units, use a `UnitsProvider`-based workflow instead.
  *
  * @beta
  */
-export function getDefaultPersistenceUnit(
-  phenomenon: Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>,
-): UnitName {
+export function getDefaultPersistenceUnit(phenomenon: PhenomenonName): UnitName {
   return defaultPersistenceUnits[phenomenon];
 }
 
