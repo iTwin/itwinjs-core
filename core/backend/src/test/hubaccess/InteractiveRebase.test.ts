@@ -10,7 +10,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, CodeScopeSpec, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
-import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
+import { BriefcaseDb, ChannelControl, DocumentListModel, Drawing, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
 import { InteractiveRebaseError } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
@@ -1219,6 +1219,96 @@ describe("InteractiveRebase", () => {
     const childProps = briefcase2.elements.tryGetElementProps(childId);
     chai.expect(childProps).not.to.be.undefined;
     chai.expect(childProps!.model).to.equal(newModelId);
+  });
+
+  it("links conflicts through models that own elements and other models", async () => {
+    const [parentModelId, childDrawingId, childModelId, childId] = await withEditTxn(briefcase1, async (txn) => {
+      const parentModel = DocumentListModel.insert(txn, IModel.rootSubjectId, "ParentModel");
+      const childDrawing = Drawing.insert(txn, parentModel, "ChildDrawing");
+      const childModel = childDrawing;
+      chai.expect(txn.iModel.models.getModel(childModel).parentModel).to.equal(parentModel);
+
+      const child = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: childModel,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Original",
+        somePoint: new Point2d(5.0, 6.0),
+      } as SomeGraphicalElementProps);
+
+      return [parentModel, childDrawing, childModel, child];
+    });
+    await briefcase1.pushChanges({ description: "Create nested model hierarchy" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const parentModel = txn.iModel.models.getModel(parentModelId);
+      parentModel.isPrivate = false;
+      txn.updateModel(parentModel.toJSON());
+      const childModel = txn.iModel.models.getModel(childModelId);
+      childModel.isPrivate = false;
+      txn.updateModel(childModel.toJSON());
+      txn.updateElement<SomeGraphicalElementProps>({ id: childId, foo: "Upstream" });
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      const childModelPropsBefore = briefcase2.models.tryGetModelProps(childModelId);
+      chai.expect(childModelPropsBefore?.parentModel).to.equal(parentModelId);
+      txn.deleteElement(childId);
+      txn.deleteModel(childModelId);
+      txn.deleteElement(childDrawingId);
+      txn.deleteModel(parentModelId);
+      const childModelProps = briefcase2.models.tryGetModelProps(childModelId);
+      chai.expect(childModelProps).to.be.undefined;
+    });
+    await briefcase1.pushChanges({ description: "Update parent model" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    const elementConflict = interactive.conflicts.find((conflict) => conflict.id === childId);
+    const childModelConflict = interactive.conflicts.find((conflict) => conflict.id === childModelId && conflict.classFullName === "BisCore:DrawingModel");
+    const parentModelConflict = interactive.conflicts.find((conflict) => conflict.id === parentModelId && conflict.classFullName === "BisCore:DocumentListModel");
+    chai.expect(elementConflict).to.not.be.undefined;
+    chai.expect(parentModelConflict).to.not.be.undefined;
+    chai.expect(childModelConflict).to.not.be.undefined;
+    if (!elementConflict || !childModelConflict || !parentModelConflict) return;
+
+    const parentModelExistsAfterReplay = briefcase2.models.tryGetModelProps(parentModelId) !== undefined;
+    const childModelExistsAfterReplay = briefcase2.models.tryGetModelProps(childModelId) !== undefined;
+    let acceptOursError: unknown;
+    try {
+      parentModelConflict.acceptOurs();
+    } catch (error) {
+      acceptOursError = error;
+    }
+
+    chai.expect({
+      elementOwnerLinked: elementConflict.ownerConflict === childModelConflict,
+      childModelOwnerLinked: childModelConflict.ownerConflict === parentModelConflict,
+      parentListsChildModel: parentModelConflict.dependentConflicts.includes(childModelConflict),
+      parentModelExistsAfterReplay,
+      childModelExistsAfterReplay,
+      acceptOursError: acceptOursError === undefined ? undefined : String(acceptOursError),
+      parentModelDeleted: briefcase2.models.tryGetModelProps(parentModelId) === undefined,
+      childModelDeleted: briefcase2.models.tryGetModelProps(childModelId) === undefined,
+      childDrawingDeleted: briefcase2.elements.tryGetElementProps(childDrawingId) === undefined,
+      containedElementDeleted: briefcase2.elements.tryGetElementProps(childId) === undefined,
+    }).to.deep.equal({
+      elementOwnerLinked: true,
+      childModelOwnerLinked: true,
+      parentListsChildModel: true,
+      parentModelExistsAfterReplay: false,
+      childModelExistsAfterReplay: false,
+      acceptOursError: undefined,
+      parentModelDeleted: true,
+      childModelDeleted: true,
+      childDrawingDeleted: true,
+      containedElementDeleted: true,
+    });
   });
 
   it("preserves the previous value when an update to a non-nullable navigation property is invalid", async () => {
