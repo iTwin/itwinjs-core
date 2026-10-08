@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Reuse ECSQL column metadata for cached statements in withQueryReader.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
