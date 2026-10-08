@@ -113,11 +113,12 @@ export class ChangeUnifier implements Disposable {
    *
    * Readers are requested from `readers` one at a time and each is drained completely before the next one is requested,
    * so `readers` can be a generator that opens each reader when requested and disposes it afterward.
-   * All readers must be opened with the same `propFilter` and equivalent `rowOptions`.
+   * All readers must read the same iModel and be opened with the same `propFilter` and equivalent `rowOptions`.
    * @param readers Readers that have not been stepped yet. Each is consumed as described for [[fromReader]].
    * @param args Options controlling projection, memory use and batching.
    * @throws [[IModelError]] if `args` are invalid, if a reader has already been stepped or consumed, if the readers' `propFilter`
-   * or `rowOptions` differ, or if the native layer fails. Readers drained before the error remain consumed.
+   * or `rowOptions` differ, or if the native layer fails (for example when readers read different iModels). Readers drained
+   * before the error remain consumed.
    * @beta
    */
   public static fromReaders(readers: Iterable<ChangesetReader>, args?: ChangeUnifierArgs): ChangeUnifier {
