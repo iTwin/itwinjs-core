@@ -12,7 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, ContourDisplay, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
+import { IModelDisplayReferenceFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "./ViewState";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
@@ -130,7 +130,7 @@ export interface IModelDisplayReference {
    * Whenever the state of your provider changes such that the symbology overrides need to be recalculated,
    * invoke [[invalidateSymbologyOverrides]].
    */
-  readonly featureOverrideProviders: ObservableSet<FeatureSymbologyOverrider>;
+  readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
   /** @internal don't think anybody outside core-frontend should need to access this. */
   getSymbologyOverrides(): FeatureSymbology.Overrides;
   /** Marks this reference's symbology overrides as out of date so that they can be recalculated from its

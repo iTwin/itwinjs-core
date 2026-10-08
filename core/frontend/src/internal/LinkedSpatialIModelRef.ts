@@ -10,7 +10,7 @@ import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProject
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { FeatureSymbologyOverrider } from "../FeatureOverrideProvider";
+import { IModelDisplayReferenceFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
@@ -55,7 +55,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public readonly [_excludedElements]?: Iterable<Id64String>;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
-  public readonly featureOverrideProviders = new ObservableSet<FeatureSymbologyOverrider>();
+  public readonly featureOverrideProviders = new ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>();
 
   public readonly subCategoryOverrides = new ObservableMap<Id64String, SubCategoryOverride>;
   public readonly modelAppearanceOverrides = new ObservableMap<Id64String, FeatureAppearance>;

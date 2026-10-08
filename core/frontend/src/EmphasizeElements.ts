@@ -10,7 +10,7 @@ import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
 import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
 import { IModelDisplayReference } from "./IModelDisplayReference";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FeatureOverrideProvider, FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
+import { FeatureOverrideProvider, IModelDisplayReferenceFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { Viewport } from "./Viewport";
 
 interface EmphasizeElementsState {
@@ -818,10 +818,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 }
 
-/** An implementation of [[FeatureSymbologyOverrider]] for emphasizing selected elements through simple color/transparency appearance overrides.
+/** An implementation of [[IModelDisplayReferenceFeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @beta
  */
-export class EmphasizeIModelElements implements FeatureSymbologyOverrider {
+export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOverrideProvider {
   readonly #iModelRef: IModelDisplayReference;
   readonly #state: EmphasizeElementsState = {
     emphasizedAppearance: FeatureAppearance.fromJSON({ emphasized: true }),

@@ -29,7 +29,7 @@ import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { FeatureOverrideProvider, FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
+import { FeatureOverrideProvider, IModelDisplayReferenceFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
@@ -301,7 +301,7 @@ export interface ReadImageToCanvasOptions {
 
 /** Adapts a viewport-scoped provider to the viewport's current primary display reference.
  */
-class ProxyOverrideProvider implements FeatureSymbologyOverrider {
+class ProxyOverrideProvider implements IModelDisplayReferenceFeatureOverrideProvider {
   constructor(
     public readonly proxiedProvider: FeatureOverrideProvider,
     private readonly _vp: Viewport,
@@ -1622,7 +1622,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
   * The provider is associated with the iModel connection that is primary when it is registered. It follows changes to the primary display reference
-  * for that connection, and is removed if the viewport changes to a different iModel connection. Use a [[FeatureSymbologyOverrider]] when state must be
+  * for that connection, and is removed if the viewport changes to a different iModel connection. Use a [[IModelDisplayReferenceFeatureOverrideProvider]] when state must be
   * associated with a particular display reference.
    * @note A Viewport can have any number of FeatureOverrideProviders. No attempt is made to resolve conflicts between two different providers overriding the same Feature.
    * @param provider The provider to register.
