@@ -103,6 +103,7 @@ describe("Per-model category visibility overrides", () => {
 
   it("overrides category selector", async () => {
     // Turn off all categories
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, false);
     for (const catId of usedCatIds)
       expect(vp.view.viewsCategory(catId)).to.be.false;
@@ -111,6 +112,7 @@ describe("Per-model category visibility overrides", () => {
     expect(vp.view.viewsModel("0x1f"));
 
     // Turn on category 2f for model 1c, and turn off category 17 for model 1f (latter is no-op because already off).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     pmcv.setOverride("0x1c", "0x2f", show);
     pmcv.setOverride("0x1f", "0x17", hide);
@@ -144,10 +146,13 @@ describe("Per-model category visibility overrides", () => {
 
   it("does not override always/never-drawn elements", () => {
     // Category selector contains only 0x31 and 0x2d
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, false);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(["0x31", "0x2d"], true);
 
     // Model 1c turns category 31 off. Model 1f turns category 17 on and category 2d off.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     pmcv.setOverride("0x1c", "0x31", hide);
     pmcv.setOverride("0x1f", "0x17", show);
@@ -156,7 +161,9 @@ describe("Per-model category visibility overrides", () => {
     expect(pmcv.getOverride("0x1f", "0x17")).to.equal(show);
     expect(pmcv.getOverride("0x1f", "0x2d")).to.equal(hide);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.setAlwaysDrawn(new Set<string>(["0xabc"]));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.setNeverDrawn(new Set<string>(["0xdef"]));
 
     const ovrs = new Overrides(vp);
@@ -179,14 +186,21 @@ describe("Per-model category visibility overrides", () => {
 
   it("preserves subcategory appearance overrides", () => {
     // Enable all categories and subcategories except category 2d
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, true, true);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
@@ -201,7 +215,9 @@ describe("Per-model category visibility overrides", () => {
     // If any of those subcategories have appearance overrides they must be loaded.
     // Cat 31 already enabled, but its subcat is invisible. Cat 2f is enabled; its subcat 30 is invisible and green; its subcat 18 is visible and red.
     // Cat 2d is disabled; its subcat 2e is blue.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.perModelCategoryVisibility.setOverride("0x1c", ["0x2f", "0x31", "0x2d"], show);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.perModelCategoryVisibility.setOverride("0x1c", "0x17", hide);
 
     ovrs = new Overrides(vp);
@@ -225,6 +241,7 @@ describe("Per-model category visibility overrides", () => {
   });
 
   it("supports iteration", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     pmcv.setOverride("0x1c", ["0x2f", "0x31"], show);
     pmcv.setOverride("0x1c", ["0x2d"], hide);
@@ -298,6 +315,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
 
   it("overrides category selector", async () => {
     // Turn off all categories
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, false);
     for (const catId of usedCatIds)
       expect(vp.view.viewsCategory(catId)).to.be.false;
@@ -306,6 +324,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     expect(vp.view.viewsModel("0x1f"));
 
     // Turn on category 2f for model 1c, and turn off category 17 for model 1f (latter is no-op because already off).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
     overrides.push({ modelId: "0x1c", categoryIds: "0x2f", visOverride: show });
@@ -341,10 +360,13 @@ describe("Per-model category visibility overrides with setOverrides function", (
 
   it("does not override always/never-drawn elements", async () => {
     // Category selector contains only 0x31 and 0x2d
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, false);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(["0x31", "0x2d"], true);
 
     // Model 1c turns category 31 off. Model 1f turns category 17 on and category 2d off.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
     overrides.push({ modelId: "0x1c", categoryIds: ["0x31"], visOverride: hide });
@@ -355,7 +377,9 @@ describe("Per-model category visibility overrides with setOverrides function", (
     expect(pmcv.getOverride("0x1f", "0x17")).to.equal(show);
     expect(pmcv.getOverride("0x1f", "0x2d")).to.equal(hide);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.setAlwaysDrawn(new Set<string>(["0xabc"]));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.setNeverDrawn(new Set<string>(["0xdef"]));
 
     const ovrs = new Overrides(vp);
@@ -378,14 +402,21 @@ describe("Per-model category visibility overrides with setOverrides function", (
 
   it("preserves subcategory appearance overrides", async () => {
     // Enable all categories and subcategories except category 2d
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(usedCatIds, true, true);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
@@ -405,6 +436,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     const overrides: PerModelCategoryVisibility.Props[] = [];
     overrides.push({ modelId: "0x1c", categoryIds: ["0x2f", "0x31", "0x2d"], visOverride: show });
     overrides.push({ modelId: "0x1c", categoryIds: ["0x17"], visOverride: hide });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await vp.perModelCategoryVisibility.setOverrides(overrides);
 
     ovrs = new Overrides(vp);
@@ -428,6 +460,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
   });
 
   it("supports iteration", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
     overrides.push({ modelId: "0x1c", categoryIds: ["0x2f", "0x31"], visOverride: show });

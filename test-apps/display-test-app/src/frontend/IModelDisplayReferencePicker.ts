@@ -48,7 +48,7 @@ export class IModelDisplayReferencePicker {
     while (this.#element.hasChildNodes())
       this.#element.removeChild(this.#element.firstChild!);
 
-    let selectedIModelRef = undefined;
+    let selectedIModelRef;
     const comboBoxEntries = [];
     for (const ref of vp.iModelRefs) {
       comboBoxEntries.push({ name: getIModelName(ref.iModel), value: ref.guid })

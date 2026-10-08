@@ -5,8 +5,8 @@
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
-import { BeDuration, Id64String } from "@itwin/core-bentley";
-import { IModelTileRpcInterface, RenderMode, ServerTimeoutError, ViewFlags } from "@itwin/core-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, IpcApp, RenderGraphic, RenderMemory, SpatialViewState, Tile, TileLoadStatus,
   TileRequestChannel, Viewport,

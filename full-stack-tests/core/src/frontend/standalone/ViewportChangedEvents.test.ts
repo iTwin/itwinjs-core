@@ -78,43 +78,61 @@ describe("Viewport changed events", async () => {
     // Viewport-changed events are not dispatched immediately - they are accumulated between frames and dispatched from inside Viewport.renderFrame().
     using mon = new ViewportChangedHandler(vp);
     // No event if the set is already empty when we clear it.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Assigning the set always raises an event.
     const idSet = new Set<string>();
     idSet.add("0x123");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, false));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
 
     // Clearing raises event if set was assigned.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
 
     // Clearing again will not re-raise because already cleared.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
 
     // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
     idSet.clear();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
     // Raises even though set was already empty, because this resets the 'exclusive' flag.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
     // Exclusive flag no longer set and set is empty, so no event.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Multiple changes in between frames produce a single event.
     idSet.add("0x123");
     mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, ViewportState.Scene, () => {
       for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.setAlwaysDrawn(idSet);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.clearAlwaysDrawn();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.setNeverDrawn(idSet);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.clearNeverDrawn();
       }
     });
@@ -177,11 +195,13 @@ describe("Viewport changed events", async () => {
     vp.saveViewUndo();
     mon.expect(ChangeFlag.None, undefined, () => {
       // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.overrideSubCategory("0x123", ovr);
     });
 
     // Apply different override to same subcategory
     vp.saveViewUndo();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
   });
 
@@ -300,17 +320,24 @@ describe("Viewport changed events", async () => {
 
     const idSet = new Set<string>();
     idSet.add("0x321");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     idSet.add("0x123");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
 
     mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => vp.changeCategoryDisplay(["0xa", "0xb"], true));
   });
 
@@ -323,10 +350,13 @@ describe("Viewport changed events", async () => {
 
     using mon = new ViewportChangedHandler(vp);
     // changeModelDisplay is no-op for 2d views
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
     const viewedModels = new Set<string>();
     viewedModels.add(id64(0x27));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
 
     // Switching to a different 2d view of the same model should not produce model-changed event
@@ -348,20 +378,26 @@ describe("Viewport changed events", async () => {
 
     using mon = new ViewportChangedHandler(vp);
     // adding a model which is already present produces no event
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
 
     // removing a model not present produces no event
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x9876543", false));
 
     // Assigning to `models` emits an event - it doesn't check if the net contents remain the same afterward.
     let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
     selectedModels = new Set<string>();
     selectedModels.add("0x1c");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
 
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay("0x1c", false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay("0x1f", true);
     });
 
@@ -369,6 +405,7 @@ describe("Viewport changed events", async () => {
     // Replacing viewed models with same set [ 0x1f ] produces event
     selectedModels.clear();
     selectedModels.add("0x1f");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
   });
 
@@ -402,15 +439,19 @@ describe("Viewport changed events", async () => {
     // We're already viewing 0x1, so enabling its display produces no event.
     using mon = new ViewportChangedHandler(vp);
     expect(vp.primaryIModelRef.viewedCategories.has(id64(0x01))).to.be.true;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
 
     // We're not viewing 0x1a, so this will not produce an event.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
     // Two changes which produce no net change still produce event - we do not track net changes
     vp.saveViewUndo();
     mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(id64(0x01), false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(id64(0x01), true);
     });
 
@@ -429,7 +470,9 @@ describe("Viewport changed events", async () => {
 
     // Changing category selector, then switching to a view with same categories enabled produces no event.
     mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(vp.view.categorySelector.categories, false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(view13.categorySelector.categories, true);
     });
 
@@ -461,6 +504,7 @@ describe("Viewport changed events", async () => {
 
   it("should be dispatched when per-model category visibility changes", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const vis = vp.perModelCategoryVisibility;
 
     using mon = new ViewportChangedHandler(vp);
@@ -677,17 +721,21 @@ describe("Viewport changed events", async () => {
     };
 
     // Turning on another category for the first time causes subcategories to be asynchronously loaded if not in cache
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x01), true);
     await waitForSubCats(id64(0x01));
 
     // If we turn on 2 more categories at once, subcategories for both should be loaded asynchronously
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay([id64(0x03), id64(0x05)], true);
     await waitForSubCats([id64(0x03), id64(0x05)]);
 
     // If we turn on 2 more categories in succession, subcategories for both should be loaded asynchronously.
     // The loading of the first category's subcategories should not be interrupted by loading of second category's subcategories.
     // Because these are separate calls, the queue may load them sequentially.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x1a), true);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x1c), true);
     await waitForSubCats([id64(0x1c), id64(0x1a)]);
   });

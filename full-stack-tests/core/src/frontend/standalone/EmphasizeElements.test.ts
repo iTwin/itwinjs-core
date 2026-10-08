@@ -433,6 +433,7 @@ describe("EmphasizeElements tests", () => {
       }
 
       expect(after.wantEmphasis).to.equal(before.wantEmphasis);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp2.isAlwaysDrawnExclusive).to.equal(vp1.isAlwaysDrawnExclusive);
 
       const aApp = after.defaultAppearance;

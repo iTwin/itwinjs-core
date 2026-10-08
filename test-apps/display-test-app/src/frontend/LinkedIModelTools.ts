@@ -5,10 +5,9 @@
 
 import {
   BriefcaseConnection,
-  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
+  IModelApp, Tool,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
-import { Transform } from "@itwin/core-geometry";
 
 /** Attaches an iModel to the active viewport, with all non-private models and categories visible.
  * Only works for spatial views.

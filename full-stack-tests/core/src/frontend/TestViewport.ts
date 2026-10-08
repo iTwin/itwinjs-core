@@ -4,22 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { comparePossiblyUndefined, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import { ColorDef, GeometryClass } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, IModelDisplayFeature, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
   ViewState,
 } from "@itwin/core-frontend";
-
-function compareFeatures(lhs?: Feature, rhs?: Feature): number {
-  if (undefined === lhs && undefined === rhs)
-    return 0;
-  else if (undefined === lhs)
-    return -1;
-  else if (undefined === rhs)
-    return 1;
-  else
-    return lhs.compare(rhs);
-}
 
 export function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
   let diff = lhs.distanceFraction - rhs.distanceFraction;

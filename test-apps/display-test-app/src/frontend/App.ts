@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, MultiIModelSelectionTool, RenderSystem, SelectionTool,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, MultiIModelSelectionTool, RenderSystem,
   SnapMode, TileAdmin, Tool, ToolAdmin,
   ViewManager,
 } from "@itwin/core-frontend";

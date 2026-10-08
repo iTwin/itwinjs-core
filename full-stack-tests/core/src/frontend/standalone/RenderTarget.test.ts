@@ -110,6 +110,7 @@ describe("RenderTarget", () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
       // Turn off all models so we're rendering an empty view.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels([]);
       await vp.drawFrame();
 
@@ -716,6 +717,7 @@ describe("RenderTarget", () => {
         expect(vp.view.is3d());
         const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
@@ -732,6 +734,7 @@ describe("RenderTarget", () => {
         expect(vp.view.is3d());
         const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
