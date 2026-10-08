@@ -3,11 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { Cartographic, EmptyLocalization, ImageMapLayerSettings, MapLayerProps, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ImageryMapLayerTreeReference,
   ImageryMapTileTree,
   MapCartoRectangle,
+  MapLayerAuthenticationFailedError,
+  MapLayerFetchHandler,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   QuadId,
@@ -17,9 +21,9 @@ import {
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
+import { openBlankViewport } from "../../openBlankViewport";
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
 
@@ -47,7 +51,7 @@ describe("WmsMapLayerImageryProvider", () => {
       return "1,2,3,4";
     });
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       return {} as WmsCapabilities;
     });
 
@@ -60,16 +64,16 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
     expect(url).toEqual(`${refUrl}&${param1.toString()}&${param2.toString()}`);
 
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
     settings.unsavedQueryParams.SERVICE = "BAD";
     provider = new WmsMapLayerImageryProvider(settings);
@@ -99,7 +103,7 @@ describe("WmsMapLayerImageryProvider", () => {
       return Point2d.createFrom(point, result);
     });
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       return {featureInfoFormats: ["text/html"] } as WmsCapabilities;
     });
 
@@ -114,9 +118,9 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     await provider.getToolTip([], new QuadId(0,0,0),  Cartographic.createZero(), ({getTileRectangle: ()=> MapCartoRectangle.createZero()} as unknown)as  ImageryMapTileTree);
@@ -130,7 +134,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const createSub = vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    const createSub = vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
@@ -140,12 +144,83 @@ describe("WmsMapLayerImageryProvider", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
+  it.each([false, true])("resetMapLayer recovers failed handler authentication with unchanged settings (overlay: %s)", async (isOverlay) => {
+    const xml = await (await fetch("/assets/wms_capabilities/mapproxy_111.xml")).text();
+    using vp = openBlankViewport();
+    const mapLayerIndex = { index: 0, isOverlay };
+    const settings = ImageMapLayerSettings.fromJSON({
+      ...wmsSampleSource,
+      subLayers: [{ name: "singapore_landlot_wmts", visible: true }],
+    });
+    let token: string | undefined;
+    const handler = vi.fn<MapLayerFetchHandler>(async (request, fetchRequest) => {
+      if (!token)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", `Bearer ${token}`);
+      return fetchRequest({ ...request, headers });
+    });
+    const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(handler);
+    const initialize = vi.spyOn(WmsMapLayerImageryProvider.prototype, "initialize");
+    const send = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      expect(new Headers(init?.headers).get("Authorization")).toEqual("Bearer refreshed-token");
+      const url = new URL(input instanceof Request ? input.url : input);
+      if (url.searchParams.get("request") === "GetCapabilities")
+        return new Response(xml, { headers: { "content-type": "text/xml" } });
+      expect(url.searchParams.get("REQUEST")).toEqual("GetMap");
+      return new Response(new Uint8Array([1, 2, 3]), { headers: { "content-type": "image/png" } });
+    });
+
+    try {
+      vp.displayStyle.attachMapLayer({ settings, mapLayerIndex });
+      const treeRef = new ImageryMapLayerTreeReference({ layerSettings: settings, layerIndex: 0, iModel: vp.iModel });
+      const failedOwner = treeRef.treeOwner;
+      const failedTree = await failedOwner.loadTree();
+      const failedProvider = vp.getMapLayerImageryProvider(mapLayerIndex);
+      expect(failedTree).toBeDefined();
+      expect(failedProvider?.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+      expect(initialize).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(send).not.toHaveBeenCalled();
+
+      // Refresh only the handler's external token, not the settings that identify the cached tree.
+      token = "refreshed-token";
+      vp.displayStyle.detachMapLayerByIndex(mapLayerIndex);
+      vp.displayStyle.attachMapLayer({ settings, mapLayerIndex });
+      expect(vp.getMapLayerImageryProvider(mapLayerIndex)).toBe(failedProvider);
+      expect(treeRef.treeOwner).toBe(failedOwner);
+      expect(await treeRef.treeOwner.loadTree()).toBe(failedTree);
+      expect(await failedProvider!.loadTile(0, 0, 0)).toBeUndefined();
+      expect(initialize).toHaveBeenCalledTimes(1);
+      expect(send).not.toHaveBeenCalled();
+
+      // Use the public recovery API: merely clearing status or re-attaching cannot rerun initialization.
+      vp.resetMapLayer(mapLayerIndex);
+      expect(failedOwner.tileTree).toBeUndefined();
+      expect(treeRef.treeOwner).not.toBe(failedOwner);
+      const recoveredTree = await treeRef.treeOwner.loadTree();
+      const recoveredProvider = vp.getMapLayerImageryProvider(mapLayerIndex);
+      expect(recoveredTree).toBeDefined();
+      expect(recoveredTree).not.toBe(failedTree);
+      expect(recoveredProvider).toBeDefined();
+      expect(recoveredProvider).not.toBe(failedProvider);
+      expect(recoveredProvider!.status).toEqual(MapLayerImageryProviderStatus.Valid);
+      expect(initialize).toHaveBeenCalledTimes(2);
+      expect(send).toHaveBeenCalledTimes(1); // capabilities fetched again through the handler
+      expect(await recoveredProvider!.loadTile(0, 0, 0)).toBeDefined();
+      expect(send).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenCalledTimes(3); // failed initialization, recovered initialization, tile
+    } finally {
+      removeHandler();
+    }
+  });
+
   it("initialize() should handle 401 error from WmtsCapabilities", async () => {
     const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       expect.fail("Could not create settings");
 
-    const createSub = vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    const createSub = vi.spyOn(WmtsCapabilities, "create").mockImplementation(async () => {
       // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
@@ -160,7 +235,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -172,7 +247,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async () => {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);

@@ -75,6 +75,7 @@ describe("MapLayerImageryProvider authorization", () => {
     const opts = fetchMock.mock.calls[callIndex][1] as RequestInit | undefined;
     return opts?.headers as Headers | undefined;
   };
+  const hasAuthorization = (callIndex = 0): boolean => getRequestHeaders(callIndex)?.has("Authorization") ?? false;
 
   it("attaches basic-auth credentials for same-origin requests", async () => {
     const provider = createProvider({ userName: "user", password: "pwd" });
@@ -89,7 +90,7 @@ describe("MapLayerImageryProvider authorization", () => {
     await provider.makeRequest(crossOriginUrl);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(hasAuthorization()).toBe(false);
   });
 
   it("withholds basic-auth credentials for malformed request URLs", async () => {
@@ -97,7 +98,7 @@ describe("MapLayerImageryProvider authorization", () => {
     await provider.makeRequest("not a valid url");
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(hasAuthorization()).toBe(false);
   });
 
   it("withholds basic-auth credentials for opaque request URLs", async () => {
@@ -105,7 +106,7 @@ describe("MapLayerImageryProvider authorization", () => {
     for (const url of ["file:///c:/tiles/0/0/0", "data:text/plain,x", "about:blank", "myapp://tiles/0/0/0"]) {
       const provider = createProvider({ userName: "user", password: "pwd" });
       await provider.makeRequest(url);
-      expect(getRequestHeaders(fetchMock.mock.calls.length - 1), url).toBeUndefined();
+      expect(hasAuthorization(fetchMock.mock.calls.length - 1), url).toBe(false);
     }
   });
 
@@ -114,14 +115,14 @@ describe("MapLayerImageryProvider authorization", () => {
     const provider = createProvider({ userName: "user", password: "pwd", url: "myapp://tiles/wms" });
     await provider.makeRequest("file:///c:/elsewhere/0/0/0");
 
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(hasAuthorization()).toBe(false);
   });
 
   it("withholds basic-auth credentials from an opaque settings URL even for itself", async () => {
     const provider = createProvider({ userName: "user", password: "pwd", url: "myapp://tiles/wms" });
     await provider.makeRequest("myapp://tiles/wms/0/0/0");
 
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(hasAuthorization()).toBe(false);
   });
 
   it("does not retry with SSO credentials for the settings origin unless whitelisted", async () => {
@@ -575,19 +576,19 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
     fetchMock.mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
 
-    const xml = await WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" });
+    const xml = await WmsUtilities.fetchXml(opaqueUrl, { credentials: { user: "user", password: "pwd" } });
 
     expect(xml).toEqual("<xml/>");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const opts = fetchMock.mock.calls[0][1] as RequestInit;
-    expect(opts.headers).toBeUndefined();
+    expect((opts.headers as Headers | undefined)?.has("Authorization") ?? false).toBe(false);
   });
 
   it("fails closed when an opaque/custom-protocol WMS source is challenged after withholding basic credentials", async () => {
     const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
 
-    await expect(WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
+    await expect(WmsUtilities.fetchXml(opaqueUrl, { credentials: { user: "user", password: "pwd" } })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
   });
 
   it("retries with SSO credentials for any origin when restriction is disabled (legacy default)", async () => {

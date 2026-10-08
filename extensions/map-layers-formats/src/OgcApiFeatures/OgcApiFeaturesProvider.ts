@@ -5,7 +5,7 @@
 
 import { base64StringToUint8Array, BentleyError, expectDefined, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
-import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
+import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import Geojson from "geojson";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
@@ -127,6 +127,18 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
   public get staticMode(): boolean { return !!(this._spatialIdx && this._staticData && !this._forceTileMode); }
 
   public override async initialize(): Promise<void> {
+    try {
+      await this.initializeService();
+    } catch (error) {
+      // Keep the provider (and its tile tree) alive so the application can offer re-authentication.
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+      else
+        throw error;
+    }
+  }
+
+  private async initializeService(): Promise<void> {
 
     this._collectionUrl = this._settings.url;
     let layerId: SubLayerId|undefined;
@@ -432,6 +444,8 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       data = filteredData;
     } else {
       // Tiled data mode
+      if (!this._itemsUrl)
+        return undefined;   // initialization did not complete (e.g. awaiting re-authentication)
       const extent4326Str = this.getEPSG4326TileExtentString(row, column, zoomLevel, false);
       const urlObj = new URL(this._itemsUrl);
       urlObj.searchParams.append("bbox", `${extent4326Str}`);

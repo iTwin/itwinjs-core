@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { TileUrlImageryProvider } from "../../../tile/internal";
 import { describe, expect, it } from "vitest";
@@ -17,16 +18,16 @@ describe("TileUrlImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
     provider = new TileUrlImageryProvider(settings);
     url = await provider.constructUrl(0,0,0);
     expect(url).toEqual(`${refUrl}?${param1.toString()}&${param2.toString()}`);
 
     const settings2 = settings.clone({url: "https://sub.service.com/service/{level}/{column}/{row}?test=1"});
-    settings2.savedQueryParams = settings.savedQueryParams;
+    settings2.queryParams = settings.queryParams;
     settings2.unsavedQueryParams = settings.unsavedQueryParams;
     provider = new TileUrlImageryProvider(settings2);
     refUrl = `${refUrl}?test=1`;
