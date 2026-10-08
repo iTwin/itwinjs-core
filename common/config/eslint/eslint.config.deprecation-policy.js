@@ -23,7 +23,7 @@ module.exports = [
         "warn",
         {
           removeOldDates: true,
-          addVersion: "5.14.0"
+          addVersion: "5.14.1"
         }
       ]
     }
