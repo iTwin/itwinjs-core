@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Move Sheet/Drawing sub-model class validation from native into  Element.onSubModelInsert",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
