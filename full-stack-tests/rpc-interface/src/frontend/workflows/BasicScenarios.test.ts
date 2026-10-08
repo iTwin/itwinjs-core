@@ -3,21 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { beforeAll, describe, it } from "vitest";
 import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { QueryRowFormat } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;
 
-chai.use(chaiAsPromised);
-
 describe("Basic Scenarios", async () => {
   let testContext: TestContext;
 
-  before(async () => {
+  beforeAll(async () => {
     testContext = await TestContext.instance();
     const accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);

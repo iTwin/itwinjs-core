@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import * as chai from "chai";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ElementProps, QueryRowFormat } from "@itwin/core-common";
@@ -15,11 +16,15 @@ describe("IModel Elements", () => {
   let iModel: IModelConnection;
   let elements: IModelConnection.Elements;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) {
+      skipSuite = true;
+      return;
+    }
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
     elements = iModel.elements;
@@ -46,11 +51,11 @@ describe("IModel Elements", () => {
 });
 
 describe("Operational: Execute Query", () => {
-  it("should successfully execute a simple query", async function () {
+  it("should successfully execute a simple query", async (context) => {
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+      context.skip();
 
     const iModel = await testContext.iModelWithChangesets!.getConnection();
     const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";

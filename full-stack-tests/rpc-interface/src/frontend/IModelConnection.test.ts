@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import { Buffer } from "buffer";
 import * as chai from "chai";
 import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set, IModelStatus } from "@itwin/core-bentley";
@@ -10,14 +11,14 @@ import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 const expect = chai.expect;
 
-(global as any).btoa = (str: string) => {
+(globalThis as any).btoa = (str: string) => {
   const buffer = Buffer.from(str, "binary");
   return buffer.toString("base64");
 };
@@ -26,11 +27,15 @@ describe("IModel Connection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) {
+      skipSuite = true;
+      return;
+    }
 
     accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
@@ -62,12 +67,16 @@ describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     testContext = await TestContext.instance();
 
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
-    if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests) {
+      skipSuite = true;
+      return;
+    }
     accessToken = testContext.clientAccessToken!;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
@@ -92,11 +101,14 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests) {
-      this.skip();
+      skipSuite = true;
+      return;
     }
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
@@ -387,11 +399,15 @@ describe("Snapping", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) {
+      skipSuite = true;
+      return;
+    }
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;

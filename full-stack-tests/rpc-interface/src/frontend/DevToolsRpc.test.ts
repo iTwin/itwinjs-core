@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import { assert } from "chai";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevTools, IModelConnection } from "@itwin/core-frontend";
@@ -11,11 +12,15 @@ describe("DevTools", () => {
   let iModel: IModelConnection;
   let devTools: DevTools;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runDevToolsRpcTests)
-      this.skip();
+    if (!testContext.settings.runDevToolsRpcTests) {
+      skipSuite = true;
+      return;
+    }
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
     devTools = DevTools.connectToBackendInstance(iModel.getRpcProps());

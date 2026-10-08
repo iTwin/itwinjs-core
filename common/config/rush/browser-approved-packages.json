@@ -400,7 +400,7 @@
     },
     {
       "name": "@vitest/browser-playwright",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@vitest/coverage-v8",
@@ -788,7 +788,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "prettier",
@@ -956,7 +956,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack",

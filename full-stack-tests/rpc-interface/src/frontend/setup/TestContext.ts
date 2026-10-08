@@ -7,11 +7,10 @@ import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
-import { getServiceAuthTokenFromBackend, TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
@@ -34,7 +33,8 @@ export class TestContext {
 
   public static async instance(): Promise<TestContext> {
     if (this._instance === undefined) {
-      this._instance = new TestContext(await getProcessEnvFromBackend());
+      const { getProcessEnv } = await import("./BrowserCommands.mjs");
+      this._instance = new TestContext(await getProcessEnv());
       await this._instance.initialize();
     }
     return this._instance;
@@ -48,6 +48,7 @@ export class TestContext {
   }
 
   private async initialize() {
+    const { getClientAccessToken, getServiceAuthToken } = await import("./BrowserCommands.mjs");
     expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
     expect(this.settings.iModels.length).to.be.gte(1, `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`);
 
@@ -59,7 +60,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     if (this.settings?.clientConfiguration && this.settings.clientConfiguration.clientId) {
-      this.serviceAuthToken = await getServiceAuthTokenFromBackend({
+      this.serviceAuthToken = await getServiceAuthToken({
         clientId: this.settings.clientConfiguration.clientId,
         clientSecret: this.settings.clientConfiguration.clientSecret,
         scope: this.settings.clientConfiguration.scope,
@@ -72,7 +73,7 @@ export class TestContext {
     }
 
     if (undefined !== this.settings.clientConfiguration)
-      this.clientAccessToken = await getClientAccessTokenFromBackend();
+      this.clientAccessToken = await getClientAccessToken();
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

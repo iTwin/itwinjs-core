@@ -2,10 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TestContext } from "./setup/TestContext";
@@ -13,10 +14,13 @@ import { TestContext } from "./setup/TestContext";
 describe("PresentationRpcInterface tests", () => {
   let imodel: IModelConnection;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     const testContext = await TestContext.instance();
     if (!testContext.settings.runPresentationRpcTests) {
-      this.skip();
+      skipSuite = true;
+      return;
     }
 
     await Presentation.initialize();
@@ -28,7 +32,7 @@ describe("PresentationRpcInterface tests", () => {
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  after(() => {
+  afterAll(() => {
     Presentation.terminate();
   });
 

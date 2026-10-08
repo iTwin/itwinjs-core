@@ -9,4 +9,3 @@ lib/**/test/*.js
 lib/**/test/*.d.ts.map
 lib/**/test/*.js.map
 !lib/rulesets/**/*
-!certa.json

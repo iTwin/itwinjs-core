@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import * as chai from "chai";
 import { IModelConnection, SpatialViewState, ViewCreator3d } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
@@ -12,12 +13,15 @@ describe("IModel Views", () => {
   let iModel: IModelConnection;
   let views: IModelConnection.Views;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     // Ensure the singleton is setup
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests) {
-      this.skip();
+      skipSuite = true;
+      return;
     }
 
     iModel = await testContext.iModelWithChangesets!.getConnection();

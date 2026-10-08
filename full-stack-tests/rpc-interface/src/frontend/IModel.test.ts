@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import * as chai from "chai";
 import { FontMap, GeometryContainmentRequestProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -14,11 +15,15 @@ describe("IModel Views", () => {
 
   let iModel: IModelConnection;
 
-  before(async function () {
+  let skipSuite = false;
+  beforeEach((context) => context.skip(skipSuite));
+  beforeAll(async () => {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) {
+      skipSuite = true;
+      return;
+    }
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });
