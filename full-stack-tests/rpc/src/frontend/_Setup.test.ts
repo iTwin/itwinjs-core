@@ -16,7 +16,7 @@ Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
 RpcConfiguration.disableRoutingValidation = true;
 
-function initializeCloud(protocol: string) {
+async function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
   const mobilePort = port + 2000;
 
@@ -27,11 +27,12 @@ function initializeCloud(protocol: string) {
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
   initializeAttachedInterfacesTest(config);
-  setupMockMobileFrontend(mobilePort);
+  await setupMockMobileFrontend(mobilePort);
 }
 
-function setupMockMobileFrontend(port: number) {
-  window.location.hash = `port=${port}`;
+async function setupMockMobileFrontend(port: number) {
+  const rpcToken = await executeBackendCallback(BackendTestCallbacks.startMockMobileTest);
+  window.location.hash = `port=${port}&rpcToken=${rpcToken}`;
   MobileRpcManager.initializeClient([MobileTestInterface]);
 }
 
