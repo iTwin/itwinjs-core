@@ -1503,8 +1503,22 @@ export class BackgroundMapGeometry {
     readonly maxGeometryChordHeight: number;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export const _backingView: unique symbol;
+
+// @public (undocumented)
+export interface BaseIModelDisplayReferences {
+    // @internal (undocumented)
+    readonly [_backingView]: ViewState;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    readonly iModels: Iterable<IModelConnection>;
+    readonly onTimePointChanged: BeEvent<() => void>;
+    readonly primary: IModelDisplayReference;
+    // @internal (undocumented)
+    readonly subcategories: SubCategoriesCache.Queue;
+    timePoint: number | undefined;
+}
 
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
@@ -3094,7 +3108,7 @@ export class ElementLocateManager {
 
 // @public (undocumented)
 export class ElementPicker {
-    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number;
+    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: ReadPixelsArgs["excludedElements"]): number;
     // (undocumented)
     empty(): void;
     getHit(i: number): HitDetail | undefined;
@@ -3136,7 +3150,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     // @internal
-    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
+    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: SelectionCandidate) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
     protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
@@ -3232,9 +3246,11 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean;
     // @internal (undocumented)
-    protected createAppearanceFromKey(key: number): FeatureAppearance;
+    createAppearanceFromKey(key: number): FeatureAppearance;
     createDefaultAppearance(): FeatureAppearance;
     createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    // (undocumented)
+    static get defaultAppearance(): FeatureAppearance;
     get defaultAppearance(): FeatureAppearance | undefined;
     set defaultAppearance(appearance: FeatureAppearance | undefined);
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
@@ -3269,8 +3285,62 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     get unanimatedAppearance(): FeatureAppearance | undefined;
     set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
-    protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
-    wantEmphasis: boolean;
+    updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+    get wantEmphasis(): boolean;
+    set wantEmphasis(value: boolean);
+}
+
+// @beta
+export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOverrideProvider {
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides): void;
+    static clear(ref: IModelDisplayReference, inactiveOnly?: boolean): void;
+    clearAlwaysDrawnElements(): boolean;
+    clearEmphasizedElements(): boolean;
+    clearEmphasizedIsolatedElements(setToAlwaysDrawn: boolean): boolean;
+    clearHiddenElements(): boolean;
+    clearIsolatedElements(): boolean;
+    clearNeverDrawnElements(): boolean;
+    clearOverriddenElements(keyOrIds?: number | Id64Arg): boolean;
+    // @internal (undocumented)
+    createAppearanceFromKey(key: number): FeatureAppearance;
+    createDefaultAppearance(): FeatureAppearance;
+    createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    // (undocumented)
+    static get defaultAppearance(): FeatureAppearance;
+    get defaultAppearance(): FeatureAppearance | undefined;
+    set defaultAppearance(appearance: FeatureAppearance | undefined);
+    emphasizeElements(ids: Id64Arg, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
+    emphasizeSelectedElements(ref: IModelDisplayReference, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
+    fromJSON(props: EmphasizeElementsProps): boolean;
+    static get(ref: IModelDisplayReference): EmphasizeIModelElements | undefined;
+    getAlwaysDrawnElements(): Id64Set | undefined;
+    getEmphasizedElements(): Id64Set | undefined;
+    getEmphasizedIsolatedElements(): Id64Set | undefined;
+    getHiddenElements(): Id64Set | undefined;
+    getIsolatedElements(): Id64Set | undefined;
+    getNeverDrawnElements(): Id64Set | undefined;
+    static getOrCreate(ref: IModelDisplayReference): EmphasizeIModelElements;
+    getOverriddenElements(): Map<number, Id64Set> | undefined;
+    getOverriddenElementsByKey(key: number): Id64Set | undefined;
+    getOverrideFromKey(key: number): {
+        overrideType: FeatureOverrideType;
+        color: ColorDef;
+    };
+    hideElements(ids: Id64Arg, replace?: boolean): boolean;
+    get isActive(): boolean;
+    isolateElements(ids: Id64Arg, replace?: boolean): boolean;
+    isolateSelectedElements(ref: IModelDisplayReference, replace?: boolean, clearSelection?: boolean): boolean;
+    overrideElements(ids: Id64Arg, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
+    overrideSelectedElements(ref: IModelDisplayReference, color: ColorDef, override?: FeatureOverrideType, replace?: boolean, clearSelection?: boolean): boolean;
+    setAlwaysDrawnElements(ids: Id64Arg, exclusive?: boolean, replace?: boolean): boolean;
+    setNeverDrawnElements(ids: Id64Arg, replace?: boolean): boolean;
+    toJSON(): EmphasizeElementsProps;
+    get unanimatedAppearance(): FeatureAppearance | undefined;
+    set unanimatedAppearance(appearance: FeatureAppearance | undefined);
+    // @internal (undocumented)
+    updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+    get wantEmphasis(): boolean;
+    set wantEmphasis(value: boolean);
 }
 
 // @beta @deprecated
@@ -3480,12 +3550,6 @@ export namespace FeatureSymbology {
     export interface Source {
         readonly onSourceDisposed: BeEvent<() => void>;
     }
-}
-
-// @beta
-export interface FeatureSymbologyOverrider {
-    // (undocumented)
-    addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
 }
 
 // @internal
@@ -3965,7 +4029,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
-// @public (undocumented)
+// @internal (undocumented)
 export const _getModelClip: unique symbol;
 
 // @public
@@ -5398,7 +5462,7 @@ export interface IModelDisplayFeature extends ModelFeature {
     iModelRef: IModelDisplayReference;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export namespace IModelDisplayFeature {
     export function compare(lhs: IModelDisplayFeature, rhs: IModelDisplayFeature): number;
     export function create(iModelRef: IModelDisplayReference): IModelDisplayFeature;
@@ -5435,7 +5499,7 @@ export interface IModelDisplayReference {
     changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
     changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
     // (undocumented)
-    readonly featureOverrideProviders: ObservableSet<FeatureSymbologyOverrider>;
+    readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     // @internal
     getSymbologyOverrides(): FeatureSymbology.Overrides;
@@ -5468,25 +5532,28 @@ export interface IModelDisplayReference {
 
 // @beta
 export interface IModelDisplayReference2d extends IModelDisplayReference {
+    // @internal (undocumented)
+    readonly [_invalidateTileTreeRef]: () => void;
     readonly parent: IModelDisplayReferences2d;
     readonly viewedModel: Id64String;
+}
+
+// @beta
+export interface IModelDisplayReferenceFeatureOverrideProvider {
+    // (undocumented)
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
 }
 
 // @beta
 export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;
 
 // @beta
-export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReference2d> {
+export interface IModelDisplayReferences2d extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference2d> {
     // @internal (undocumented)
     readonly [_backingView]: ViewState2d;
-    // @internal (undocumented)
-    readonly [_implementationProhibited]: unknown;
-    readonly iModels: Iterable<IModelConnection>;
     readonly is2d: true;
     readonly isSpatial?: never;
     readonly primary: IModelDisplayReference2d;
-    // @internal (undocumented)
-    readonly subcategories: SubCategoriesCache.Queue;
 }
 
 // @internal (undocumented)
@@ -8253,7 +8320,7 @@ export namespace Pixel {
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
         All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -8649,7 +8716,7 @@ export interface ReadMeshArgs {
 
 // @public
 export interface ReadPixelsArgs {
-    excludedElements?: Iterable<Id64String>;
+    excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
     excludeNonLocatable?: boolean;
     receiver: Pixel.Receiver;
     rect?: ViewRect;
@@ -9645,7 +9712,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     readImageToCanvas(_overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // @internal (undocumented)
-    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
@@ -9800,7 +9867,7 @@ export class SceneContext extends RenderContext {
     get graphicType(): TileGraphicType;
     // @internal (undocumented)
     get hasMissingTiles(): boolean;
-    // (undocumented)
+    // @beta
     readonly iModelRef: IModelDisplayReference;
     insertMissingTile(tile: Tile): void;
     // @internal (undocumented)
@@ -10505,22 +10572,28 @@ export class SpatialClassifiersState extends SpatialClassifiers {
 
 // @beta
 export interface SpatialIModelDisplayOverrides extends IModelDisplayOverrides {
+    contours?: ContourDisplay;
     hiddenLineSettings?: HiddenLine.Settings;
+    readonly onContoursChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<() => void>;
 }
 
 // @beta
-export type SpatialIModelDisplayOverridesProps = IModelDisplayOverridesProps & Pick<SpatialIModelDisplayOverrides, "hiddenLineSettings">;
+export type SpatialIModelDisplayOverridesProps = IModelDisplayOverridesProps & Pick<SpatialIModelDisplayOverrides, "hiddenLineSettings" | "contours">;
 
 // @beta
 export interface SpatialIModelDisplayReference extends IModelDisplayReference {
     // @internal (undocumented)
     [_getModelClip](modelId: Id64String): RenderClipVolume | undefined;
     // @internal (undocumented)
+    [_getPlanarClipMaskState](modelId: Id64String): PlanarClipMaskState | undefined;
+    // @internal (undocumented)
     readonly [_treeRefs]: SpatialTileTreeReferences;
+    readonly activeContours: ContourDisplay;
     readonly activeHiddenLineSettings: HiddenLine.Settings;
     addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void>;
     modelClipGroups: ModelClipGroups;
+    readonly onActiveContoursChanged: BeEvent<() => void>;
     readonly onActiveHiddenLineSettingsChanged: BeEvent<() => void>;
     readonly onModelClipGroupsChanged: BeEvent<() => void>;
     readonly onViewedModelsLoaded: BeEvent<() => void>;
@@ -10533,12 +10606,9 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
 }
 
 // @beta
-export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
+export interface SpatialIModelDisplayReferences extends BaseIModelDisplayReferences, Iterable<SpatialIModelDisplayReference> {
     // @internal (undocumented)
     readonly [_backingView]: SpatialViewState;
-    // @internal (undocumented)
-    readonly [_implementationProhibited]: unknown;
-    readonly iModels: Iterable<IModelConnection>;
     readonly is2d?: never;
     readonly isSpatial: true;
     link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
@@ -10546,8 +10616,6 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
     readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
     readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
     readonly primary: SpatialIModelDisplayReference;
-    // @internal (undocumented)
-    readonly subcategories: SubCategoriesCache.Queue;
     unlink(ref: IModelDisplayReference): void;
 }
 
@@ -10627,6 +10695,7 @@ export class SpatialViewState extends ViewState3d {
     getModelTreeRefs(): Iterable<TileTreeReference>;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @beta
     readonly iModelRefs: SpatialIModelDisplayReferences;
     // (undocumented)
     isSpatialView(): this is SpatialViewState;
@@ -10992,6 +11061,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     freezeRealityTiles: boolean;
     getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined;
     // (undocumented)
+    getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined;
+    // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getRenderCommands(): Array<{
@@ -11039,8 +11110,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
     // (undocumented)
-    get pickExclusions(): Id64.Uint32Set;
-    // (undocumented)
     readonly pickExclusionsSyncTarget: SyncTarget;
     // (undocumented)
     plan: RenderPlan;
@@ -11071,7 +11140,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
-    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
     // (undocumented)
     get readPixelsSelector(): Pixel.Selector;
     // (undocumented)
@@ -14341,6 +14410,7 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @beta
     readonly iModelRefs: IModelDisplayReferences2d;
     is3d(): this is ViewState3d;
     // @internal (undocumented)
@@ -14358,12 +14428,8 @@ export abstract class ViewState2d extends ViewState {
     setOrigin(origin: XAndY): void;
     // (undocumented)
     setRotation(rot: Matrix3d): void;
-    // @internal (undocumented)
-    protected get _tileTreeRef(): TileTreeReference | undefined;
     // (undocumented)
     toJSON(): ViewDefinition2dProps;
-    // @internal (undocumented)
-    protected _treeRef?: TileTreeReference;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }

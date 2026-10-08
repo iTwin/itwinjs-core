@@ -58,7 +58,8 @@ public;class;AuxCoordSystem3dState
 public;class;AuxCoordSystemSpatialState
 public;class;AuxCoordSystemState
 internal;class;BackgroundMapGeometry
-public;const;_backingView
+internal;const;_backingView
+public;interface;BaseIModelDisplayReferences
 beta;class;BaseUnitFormattingSettingsProvider
 public;interface;BatchOptions
 beta;interface;BatchTableProperties
@@ -177,6 +178,7 @@ public;class;ElementState
 beta;interface;ElevationProvider
 public;class;EllipsoidTerrainProvider
 public;class;EmphasizeElements
+beta;class;EmphasizeIModelElements
 beta;class;EngineeringLengthDescription
 deprecated;class;EngineeringLengthDescription
 public;class;EntityState
@@ -197,7 +199,6 @@ public;interface;FeatureOverrideProvider
 internal;interface;FeatureSymbolizedRenderer
 public;namespace;FeatureSymbology
 alpha;interface;Source
-beta;interface;FeatureSymbologyOverrider
 internal;interface;FeatureSymbologyRenderer
 public;class;FitViewTool
 internal;class;Flags
@@ -248,7 +249,7 @@ beta;function;getHeightAverage
 beta;function;getHeightRange
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
-public;const;_getModelClip
+internal;const;_getModelClip
 public;interface;GetPixelDataWorldPointArgs
 public;function;getQuantityTypeKey
 public;interface;GlobalAlignmentOptions
@@ -334,11 +335,12 @@ public;interface;IModelAppOptions
 public;class;IModelConnection
 public;namespace;IModelConnection
 beta;interface;IModelDisplayFeature
-public;namespace;IModelDisplayFeature
+beta;namespace;IModelDisplayFeature
 beta;interface;IModelDisplayOverrides
 beta;type;IModelDisplayOverridesProps
 beta;interface;IModelDisplayReference
 beta;interface;IModelDisplayReference2d
+beta;interface;IModelDisplayReferenceFeatureOverrideProvider
 beta;type;IModelDisplayReferences
 beta;interface;IModelDisplayReferences2d
 internal;class;IModelFrameLifecycle

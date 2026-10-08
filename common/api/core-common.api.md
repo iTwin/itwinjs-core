@@ -2456,7 +2456,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
-    get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
+    get planProjectionSettings(): ObservableMap<Id64String, PlanProjectionSettings>;
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
@@ -2574,6 +2574,7 @@ export class DisplayStyleSettings {
     set monochromeMode(mode: MonochromeMode);
     readonly onAfterClipStyleChanged: BeEvent<() => void>;
     readonly onAfterHiddenLineSettingsChanged: BeEvent<() => void>;
+    readonly onAfterTimePointChanged: BeEvent<() => void>;
     readonly onAfterViewFlagsChanged: BeEvent<() => void>;
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;

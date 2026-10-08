@@ -1411,10 +1411,13 @@ export class ObservableMap<K, V> extends Map<K, V> {
     get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<readonly [K, V]> | undefined);
     clear(): void;
+    protected _clear(): void;
     delete(key: K): boolean;
+    protected _delete(key: K): boolean;
     deleteAll(keys: Iterable<K>): number;
     readonly onChanged: BeEvent<() => void>;
     set(key: K, value: V): this;
+    protected _set(key: K, value: V): this;
     setAll(items: Iterable<readonly [K, V]>): void;
 }
 
