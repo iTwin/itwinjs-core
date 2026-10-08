@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add a beta API for discovering available Vertical Coordinate Reference Systems.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -3,8 +3,10 @@ publish: false
 ---
 # NextVersion
 
+<!-- prettier-ignore -->
 - [NextVersion](#nextversion)
   - [Backend](#backend)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
@@ -15,6 +17,10 @@ publish: false
     - [Mobile RPC authentication](#mobile-rpc-authentication)
 
 ## Backend
+
+### Vertical CRS discovery
+
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
 ### Opt-in fallback for missing navigation relationship class ids
 

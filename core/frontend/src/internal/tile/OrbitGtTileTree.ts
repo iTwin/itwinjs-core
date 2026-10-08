@@ -381,16 +381,16 @@ export async function computeVerticalDatumShift(geoOrigin: Point3d, heightAsElli
 
   // The backend always resolves the vertical datum id. Convert against the iModel's own datum.
   let source: GeographicCRSProps;
-  const verticalDatum = iModel.geographicCoordinateSystem?.verticalCRS?.id;
-  switch (verticalDatum) {
+  const verticalCRS = iModel.geographicCoordinateSystem?.verticalCRS;
+  switch (verticalCRS?.id) {
     // Pair GEOID with a WGS84 horizontal CRS (EPSG:4326).
     case "GEOID":
-      source = { horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "GEOID" } };
+      source = { horizontalCRS: { epsg: 4326 }, verticalCRS: verticalCRS.toJSON() };
       break;
     // Native rejects NAVD88 and NGVD29 with WGS84; pair them with NAD83 (EPSG:4269).
     case "NAVD88":
     case "NGVD29":
-      source = { horizontalCRS: { epsg: 4269 }, verticalCRS: { id: verticalDatum } };
+      source = { horizontalCRS: { epsg: 4269 }, verticalCRS: verticalCRS.toJSON() };
       break;
     default:
       return 0;
