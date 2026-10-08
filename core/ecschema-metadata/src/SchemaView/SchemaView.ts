@@ -9,6 +9,7 @@
 import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "../ECObjects";
+import { ECName } from "../ECName";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
 // core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
@@ -67,8 +68,9 @@ export interface SchemaViewData {
  * stateless wrappers that hold a reference to this view plus an index. They allocate nothing
  * and cache nothing.
  *
- * The view is immutable after construction. Build it via `SchemaViewBuilder` or parse
- * from a binary blob via `fromBinary`.
+ * Use {@link SchemaViewManager} to load schemas incrementally into one view, or parse a standalone
+ * binary blob via {@link (SchemaView:class).fromBinary}. Consumers cannot modify the metadata; a manager
+ * can extend its view with additional schemas while previously obtained view objects remain valid.
  * @beta
  */
 export class SchemaView {
@@ -169,7 +171,8 @@ export class SchemaView {
   }
 
   /** Parse a binary blob into a SchemaView. Synchronous.
-   * @param blob - The binary blob from `PRAGMA schema_view`.
+   * @param blob - The binary blob from `PRAGMA schema_view`, or a standalone `PRAGMA schema_view_fragment`
+   * containing the requested schemas and their references.
    * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA checksum(schema_token)`).
    * @beta
    */
@@ -400,9 +403,10 @@ export namespace SchemaView {
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get alias(): string { return this._ctx[_storage].strings[this._data.aliasStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -505,9 +509,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -619,7 +624,8 @@ export namespace SchemaView {
       return this._ctx.getTransitiveBases(this.idx).has(targetIdx);
     }
 
-    /** Direct derived classes. Expensive on first call (builds reverse map across all classes). */
+    /** Direct derived classes among the currently loaded schemas. A partial view may omit derived
+     * classes from other schemas. Expensive on first call (builds reverse map across all loaded classes). */
     public get derivedClasses(): readonly Class[] {
       const map = this._ctx.buildDerivedClassMap();
       const indices = map.get(this.idx);
@@ -717,11 +723,11 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._ref.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._def.nameStringIdx]; }
-    /** Display label. Falls back to the property name if no explicit label is set.
+    /** Display label, or the decoded property name when the label is absent or empty.
      * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
     public get label(): string {
       const labelStringIdx = this._ref.labelStringIdx;
-      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : this.name;
+      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._def.descriptionStringIdx;
@@ -928,9 +934,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -987,9 +994,10 @@ export namespace SchemaView {
     private get _data() { return this._ctx[_storage].enumerators[this.idx]; }
 
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1057,9 +1065,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1134,9 +1143,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;

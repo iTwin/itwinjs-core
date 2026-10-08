@@ -1939,7 +1939,13 @@ export class UpdateStatementExpr extends StatementExpr {
  * Supported options in ECSQL option clause
  * @alpha
  */
-export type ECSqlSupportedOptions = "NoECClassIdFilter" | "ReadonlyPropertiesAreUpdatable";
+export type ECSqlSupportedOptions =
+  | "DO_NOT_TRUNCATE_BLOB"
+  | "ENABLE_EXPERIMENTAL_FEATURES"
+  | "NAV_REL_CLASSID_FALLBACK"
+  | "NoECClassIdFilter"
+  | "ReadonlyPropertiesAreUpdatable"
+  | "USE_JS_PROP_NAMES";
 
 /**
  * ECSql option name and optionally value pair.

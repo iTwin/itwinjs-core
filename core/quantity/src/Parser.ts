@@ -970,8 +970,8 @@ export class Parser {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const separator = spec.format.ratioSeparator ?? ":";
-    const parts = inString.split(separator);
+    const separator = spec.format.ratioSeparator?.split(" ").join("") || ":";
+    const parts = inString.split(separator).map((p) => p.trim());
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
     // If the string doesn't contain the expected separator but contains other ratio-like separators,

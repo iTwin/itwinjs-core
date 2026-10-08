@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
+import * as sinon from "sinon";
+import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
+import { createFieldFormatting, ResolvedFieldValue } from "../../internal/annotations/fieldSpecs";
+import { Id64, Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -24,6 +26,8 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
+//cspell: ignore classid ecdbmap oldval reqs uppercased
+
 function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String, overrides?: Partial<TestElementProps>, aspectProp = 999): Id64String {
   const props: TestElementProps = {
     classFullName: "Fields:TestElement",
@@ -33,10 +37,17 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
     intProp: 100,
     point: { x: 1, y: 2, z: 3 },
     strings: ["a", "b", `"name": "c"`],
+    dateStrings: ["2025-08-28T13:45:30.123Z"],
     datetime: new Date("2025-08-28T13:45:30.123Z"),
+    lengthProp: 2.5,
     intEnum: 1,
     outerStruct: {
-      innerStruct: { bool: false, doubles: [1, 2, 3] },
+      innerStruct: {
+        bool: false,
+        doubles: [1, 2, 3],
+        json: JSON.stringify({ contactInfo: { email: "duck@pond.example", phoneNumbers: [{ areaCode: 555 }] } }),
+        notJson: JSON.stringify({ contactInfo: { email: "not-indexable" } }),
+      },
       innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
     },
     outerStructs: [{
@@ -51,6 +62,11 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
       stringProp: "abc",
       ints: [10, 11, 12, 13],
       bool: true,
+      // Deliberately present-but-null, to check that a JSON null resolves to no value rather than
+      // to a FieldValue the formatters would have to stringify.
+      nullProp: null,
+      lengthMeters: 2.5,
+      readings: [1.5, null, "text"],
       zoo: {
         address: {
           zipcode: 12345,
@@ -86,7 +102,7 @@ describe("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun): FieldValue | undefined => {
+    getProperty: (field: FieldRun): ResolvedFieldValue | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -182,6 +198,10 @@ const fieldsSchemaXml = `
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
   <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
+  <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+  <ECSchemaReference name="Units"   version="01.00.09" alias="u"/>
+
+  <KindOfQuantity typeName="LENGTH" displayLabel="Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
 
   <ECEnumeration typeName="IntEnum" backingTypeName="int">
     <ECEnumerator name="one" displayLabel="One" value="1" />
@@ -190,6 +210,8 @@ const fieldsSchemaXml = `
 
   <ECStructClass typeName="InnerStruct" modifier="None">
     <ECProperty propertyName="bool" typeName="boolean"/>
+    <ECProperty propertyName="json" typeName="string" extendedTypeName="Json"/>
+    <ECProperty propertyName="notJson" typeName="string"/>
     <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
   </ECStructClass>
 
@@ -204,7 +226,9 @@ const fieldsSchemaXml = `
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECProperty propertyName="maybeNull" typeName="int"/>
     <ECProperty propertyName="datetime" typeName="dateTime"/>
+    <ECProperty propertyName="lengthProp" typeName="double" kindOfQuantity="LENGTH"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="dateStrings" typeName="string" extendedTypeName="DateTime" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
     <ECProperty propertyName="intEnum" typeName="IntEnum"/>
@@ -235,6 +259,8 @@ const fieldsSchemaXml = `
 interface InnerStruct {
   bool: boolean;
   doubles: number[];
+  json?: string;
+  notJson?: string;
 }
 
 interface OuterStruct {
@@ -247,7 +273,9 @@ interface TestElementProps extends PhysicalElementProps {
   point: XYAndZ;
   maybeNull?: number;
   strings: string[];
+  dateStrings: string[];
   datetime: Date;
+  lengthProp: number;
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
   intEnum?: number;
@@ -259,7 +287,9 @@ class TestElement extends PhysicalElement {
   declare public point: XYAndZ;
   declare public maybeNull?: number;
   declare public strings: string[];
+  declare public dateStrings: string[];
   declare public datetime: Date;
+  declare public lengthProp: number;
   declare public outerStruct: OuterStruct;
   declare public outerStructs: OuterStruct[];
 }
@@ -314,7 +344,7 @@ describe("Field evaluation", () => {
     imodel.close();
   });
 
-  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
+  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, formatOptions?: FieldRun["formatOptions"]): ResolvedFieldValue | undefined {
     if (typeof propertyHost === "string") {
       propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
     }
@@ -322,6 +352,7 @@ describe("Field evaluation", () => {
     const field = FieldRun.create({
       propertyPath,
       propertyHost,
+      formatOptions,
     });
 
     const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
@@ -452,7 +483,10 @@ describe("Field evaluation", () => {
 
     it("deduces type for primitive properties", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
+      // "quantity" here is a routing decision, not a claim that this count has units: intProp
+      // names no KindOfQuantity, so it resolves no format and still renders as a bare "100".
+      // Classifying it this way is what lets a field supply its own KindOfQuantity to format it.
+      expect(getPropertyType(propertyHost, "intProp")).to.equal("quantity");
       expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
       expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
       expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
@@ -463,6 +497,16 @@ describe("Field evaluation", () => {
       propertyHost.className = "GeometricElement3d";
       expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
       expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
+    });
+
+    it("deduces the type of an array leaf from the schema rather than from the value", () => {
+      // Regression: the type used to be inferred by sniffing `typeof value` whenever the
+      // terminal EC property was a String primitive reached through accessors. Since a String
+      // *array* property also reports isPrimitive(), legitimate array leaves took the
+      // JSON-in-string branch and lost their schema-declared extended type.
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
+      expect(getPropertyType(propertyHost, { propertyName: "dateStrings", accessors: [0] })).to.equal("datetime");
     });
 
     it("returns undefined for non-primitive properties", () => {
@@ -543,6 +587,192 @@ describe("Field evaluation", () => {
     });
   });
 
+  /** Drives the production format path for a hand-built [[ResolvedFieldValue]]: `updateField` builds a
+   * [FormatterSpec]($core-quantity) from the iModel's schema formats and hands `formatFieldValue`
+   * a magnitude callback bound to it. Returns the resulting cached content.
+   *
+   * Going through `updateField` rather than reimplementing the composition here is the point --
+   * these tests pin how the backend wires spec lookup to formatting, so a change to that wiring
+   * fails them. `onMiss` fires when the field produced candidates but none resolved.
+   */
+  function formatThroughSchema(
+    value: ResolvedFieldValue,
+    options: FieldFormatOptions | undefined,
+    onMiss?: () => void,
+  ): string | undefined {
+    const field = FieldRun.create({
+      propertyHost: { elementId: "0x1", schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "unused" },
+      formatOptions: options,
+    });
+
+    const context: UpdateFieldsContext = {
+      hostElementId: undefined,
+      getProperty: () => value,
+      formatting: createFieldFormatting({ iModel: imodel }),
+    };
+
+    const logWarning = sinon.stub(Logger, "logWarning").callsFake((_category, message) => {
+      if (message.startsWith("No format resolved for text annotation field"))
+        onMiss?.();
+    });
+    try {
+      updateField(field, context);
+    } finally {
+      logWarning.restore();
+    }
+    return field.cachedContent;
+  }
+
+  describe("JSON-in-string properties", () => {
+    // `JsonProperties` is a String column of extended type `Json`; `jsonAccessors` index into the
+    // parsed JSON, so none of these paths have an EC property behind the leaf.
+    function jsonPath(...jsonAccessors: Array<string | number>): FieldPropertyPath {
+      return { propertyName: "JsonProperties", jsonAccessors };
+    }
+
+    function evaluateJson(accessors: Array<string | number>, formatOptions?: FieldRun["formatOptions"]): ResolvedFieldValue | undefined {
+      return evaluateField(jsonPath(...accessors), sourceElementId, false, formatOptions);
+    }
+
+    it("indexes into a deserialized JSON object", () => {
+      expect(evaluateJson(["stringProp"])?.value).to.equal("abc");
+      expect(evaluateJson(["bool"])?.value).to.equal(true);
+      expect(evaluateJson(["zoo", "address", "zipcode"])?.value).to.equal(12345);
+    });
+
+    it("indexes into a deserialized JSON array, including negative indices", () => {
+      expect(evaluateJson(["ints", 0])?.value).to.equal(10);
+      expect(evaluateJson(["ints", 3])?.value).to.equal(13);
+      expect(evaluateJson(["ints", -1])?.value).to.equal(13);
+      expect(evaluateJson(["zoo", "birds", 1, "sound"])?.value).to.equal("scree!");
+    });
+
+    it("returns undefined for a JSON null leaf rather than an unformattable value", () => {
+      // A JSON null is not a FieldPrimitiveValue. Producing one here would yield a
+      // `{ value: null, type: "string" }` FieldValue whose formatter called `null.toString()`.
+      expect(evaluateJson(["nullProp"])).to.be.undefined;
+      expect(evaluateJson(["readings", 1])).to.be.undefined;
+    });
+
+    it("does not throw when a field resolves to a JSON null", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("nullProp"),
+        cachedContent: "stale",
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(() => updateField(fieldRun, context)).to.not.throw();
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    it("returns undefined for a missing key or an out-of-range index", () => {
+      expect(evaluateJson(["nope"])).to.be.undefined;
+      expect(evaluateJson(["toString"])).to.be.undefined;
+      expect(evaluateJson(["zoo", "address", "street"])).to.be.undefined;
+      expect(evaluateJson(["ints", 4])).to.be.undefined;
+      expect(evaluateJson(["ints", -5])).to.be.undefined;
+    });
+
+    it("returns undefined when the path stops on a JSON object or array", () => {
+      expect(evaluateJson(["zoo"])).to.be.undefined;
+      expect(evaluateJson(["ints"])).to.be.undefined;
+    });
+
+    it("returns undefined when indexing past a JSON scalar", () => {
+      expect(evaluateJson(["stringProp", "more"])).to.be.undefined;
+      expect(evaluateJson(["bool", 0])).to.be.undefined;
+    });
+
+    it("keeps the raw string when the property is not indexed", () => {
+      const value = evaluateField({ propertyName: "JsonProperties" }, sourceElementId);
+      expect(value?.type).to.equal("string");
+      expect(value?.value).to.be.a("string").and.to.contain("stringProp");
+    });
+
+    it("does not treat plain accessors as JSON accessors", () => {
+      // A String property cannot be walked with `accessors`; only `jsonAccessors` continue into the JSON.
+      expect(evaluateField({ propertyName: "JsonProperties", accessors: ["stringProp"] }, sourceElementId)).to.be.undefined;
+    });
+
+    it("indexes into a JSON property reached through accessors", () => {
+      const path = (...jsonAccessors: Array<string | number>): FieldPropertyPath => ({
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "json"],
+        jsonAccessors,
+      });
+
+      expect(evaluateField(path("contactInfo", "email"), sourceElementId)?.value).to.equal("duck@pond.example");
+      expect(evaluateField(path("contactInfo", "phoneNumbers", 0, "areaCode"), sourceElementId)?.value).to.equal(555);
+      expect(evaluateField(path("contactInfo", "missing"), sourceElementId)).to.be.undefined;
+    });
+
+    it("requires the property to have the Json extended type", () => {
+      const path: FieldPropertyPath = {
+        propertyName: "outerStruct",
+        accessors: ["innerStruct", "notJson"],
+        jsonAccessors: ["contactInfo", "email"],
+      };
+
+      expect(evaluateField(path, sourceElementId)).to.be.undefined;
+      // Without jsonAccessors the plain string still resolves to itself.
+      expect(evaluateField({ ...path, jsonAccessors: undefined }, sourceElementId)?.value).to.be.a("string").and.to.contain("not-indexable");
+    });
+
+    it("ignores an empty jsonAccessors array", () => {
+      const value = evaluateField({ propertyName: "JsonProperties", jsonAccessors: [] }, sourceElementId);
+      expect(value?.type).to.equal("string");
+    });
+
+    it("types string and boolean leaves from the parsed JSON", () => {
+      expect(evaluateJson(["stringProp"])?.type).to.equal("string");
+      expect(evaluateJson(["bool"])?.type).to.equal("boolean");
+      expect(evaluateJson(["readings", 2])?.type).to.equal("string");
+    });
+
+    it("types a numeric leaf as a quantity", () => {
+      const value = evaluateJson(["lengthMeters"]);
+      expect(value?.type).to.equal("quantity");
+      expect(value?.value).to.equal(2.5);
+    });
+
+    it("renders a numeric leaf as its raw value", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("lengthMeters"),
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(updateField(fieldRun, context)).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("2.5");
+    });
+
+    it("carries no property-side KoQ for a numeric leaf", () => {
+      // There is no EC property behind a JSON leaf, so the only pair the formatter can build is
+      // the one the field supplies.
+      const value = evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } });
+      expect(value?.type).to.equal("quantity");
+      expect(value?.value).to.equal(2.5);
+      expect(value?.kindOfQuantityFullName).to.be.undefined;
+      expect(value?.persistenceUnitFullName).to.be.undefined;
+    });
+
+    it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
+      // "quantity" with no resolvable (KoQ, unit) pair is indistinguishable from the plain string
+      // rendering, and logs no warning.
+      let missed = false;
+      for (const quantity of [undefined, { kindOfQuantity: "Fields.LENGTH" }, { persistenceUnit: "Units.M" }]) {
+        const options = quantity ? { quantity } : undefined;
+        const value = evaluateJson(["lengthMeters"], options);
+        expect(value?.type).to.equal("quantity");
+        expect(formatThroughSchema(value!, options, () => { missed = true; })).to.equal("2.5");
+      }
+
+      expect(missed, "an unformattable JSON leaf is not an unresolved requirement").to.be.false;
+    });
+  });
+
   function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {
     const elem = TextAnnotation3d.fromJSON({
       model,
@@ -570,21 +800,23 @@ describe("Field evaluation", () => {
   }
 
   describe("ElementDrivesTextAnnotation", () => {
-    function expectNumRelationships(expected: number, targetId?: Id64String): void {
-      const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
-      const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      imodel.withPreparedStatement(ecsql, (stmt) => {
-        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-        expect(stmt.getValue(0).getInteger()).to.equal(expected);
-      });
+    /** Counts relationships targeting `targetId`. Deliberately requires a target: a global count
+     * would silently depend on cleanup performed by other describe blocks.
+     */
+    async function expectNumRelationships(expected: number, targetId: Id64String): Promise<void> {
+      const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${targetId}`;
+      const reader = imodel.createQueryReader(ecsql);
+      expect(await reader.step()).to.be.true;
+      expect(reader.current[0]).to.equal(expected);
     }
 
-    it("can be inserted", () => {
-      expectNumRelationships(0);
-
+    it("can be inserted", async () => {
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
+
+      // Scoped to this target rather than the whole iModel: other describe blocks insert
+      // annotations of their own, so a global count would couple this test to their cleanup.
+      await expectNumRelationships(0, targetId);
 
       const target = imodel.elements.getElement(targetId);
       expect(target.classFullName).to.equal("BisCore:TextAnnotation3d");
@@ -597,7 +829,7 @@ describe("Field evaluation", () => {
       const relId = withEditTxn(imodel, (txn) => txn.insertRelationship(rel.toJSON()));
       expect(relId).not.to.equal(Id64.invalid);
 
-      expectNumRelationships(1);
+      await expectNumRelationships(1, targetId);
 
       const relationship = imodel.relationships.getInstance("BisCore:ElementDrivesTextAnnotation", relId);
       expect(relationship.sourceId).to.equal(sourceElementId);
@@ -618,13 +850,13 @@ describe("Field evaluation", () => {
     }
 
     describe("updateFieldDependencies", () => {
-      it("creates exactly one relationship for each unique source element on insert and update", () => {
+      it("creates exactly one relationship for each unique source element on insert and update", async () => {
         const source1 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
 
         const source2 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
@@ -633,23 +865,23 @@ describe("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
 
         const source3 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(3, targetId);
+        await expectNumRelationships(3, targetId);
       });
 
-      it("deletes stale relationships", () => {
+      it("deletes stale relationships", async () => {
         const sourceA = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const sourceB = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
 
@@ -658,7 +890,7 @@ describe("Field evaluation", () => {
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
@@ -672,7 +904,7 @@ describe("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
@@ -681,7 +913,7 @@ describe("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
@@ -693,12 +925,12 @@ describe("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(0, targetId);
+        await expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
       });
 
-      it("ignores invalid source element Ids", () => {
+      it("ignores invalid source element Ids", async () => {
         const source = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(Id64.invalid, "invalid"));
@@ -706,7 +938,7 @@ describe("Field evaluation", () => {
         block.appendRun(createField(source, "valid"));
 
         const targetId = insertAnnotationElement(block);
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
       });
     });
 

@@ -114,6 +114,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatSet } from '@itwin/ecschema-metadata';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -302,6 +303,7 @@ import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -437,6 +439,18 @@ export interface AvailableCoordinateReferenceSystemProps {
     description: string;
     name: string;
     unit?: string;
+}
+
+// @beta
+export interface AvailableVerticalCoordinateReferenceSystemProps {
+    crsName: string;
+    deprecated: boolean;
+    description: string;
+    epsg?: number;
+    extent: Range2dProps;
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    type: string;
+    unit: string;
 }
 
 // @beta (undocumented)
@@ -3026,8 +3040,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    static readonly onFieldFormattingChanged: BeEvent<(args: {
+        iModel: IModelDb;
+    }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
+    static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
@@ -3577,6 +3595,17 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
+// @beta
+export interface FieldFormattingArgs {
+    formatSet?: FormatSet;
+    formatSets?: ReadonlyArray<{
+        id: string;
+        formatSet: FormatSet;
+    }>;
+    iModel: IModelDb;
+    unitSystem?: UnitSystemKey;
+}
+
 // @public @deprecated
 export abstract class FileNameResolver {
     resolveFileName(inFileName: string): string;
@@ -3934,6 +3963,17 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export function getAvailableCRSUnits(): string[];
+
+// @beta
+export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): AvailableVerticalCoordinateReferenceSystemProps[];
+
+// @beta
+export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+    includeIntersecting?: boolean;
+    point?: XAndY;
+    unit?: string;
+}
 
 // @beta
 export interface GetResolvedSettingDefOptions {
@@ -5924,7 +5964,8 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
 export enum PropertyFilter {
     All = 0,
     BisCoreElement = 1,
-    InstanceKey = 2
+    InstanceKey = 2,
+    InstanceKeyAndIdentifiers = 3
 }
 
 // @public @preview

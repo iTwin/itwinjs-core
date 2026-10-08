@@ -1,0 +1,28 @@
+name: Check NextVersion.md
+
+on:
+  pull_request:
+    branches:
+      - master
+      - "release/**"
+    paths:
+      - docs/changehistory/NextVersion.md
+      - .github/workflows/automation-scripts/check-nextversion.mjs
+      - .github/workflows/check-nextversion.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: NextVersion.md structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Check NextVersion.md structure
+        run: node .github/workflows/automation-scripts/check-nextversion.mjs

@@ -7,7 +7,7 @@
  */
 
 /** One schema in a {@link SchemaManifest}: its name, version, and the entries it directly references.
- * @internal
+ * @beta
  */
 export interface SchemaManifestEntry {
   readonly name: string;
@@ -23,7 +23,7 @@ export interface SchemaManifestEntry {
  * @note `ecInstanceId` is a plain number, matching SchemaView's convention for schema-related rows:
  * `ec_` metadata rowids carry no briefcase prefix, so they are exactly representable. It is used
  * only to wire reference edges and is not retained in the manifest.
- * @internal
+ * @beta
  */
 export interface SchemaManifestSchemaRow {
   readonly ecInstanceId: number;
@@ -35,7 +35,7 @@ export interface SchemaManifestSchemaRow {
 
 /** One row of `SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences`,
  * as passed to {@link SchemaManifest.fromRows}.
- * @internal
+ * @beta
  */
 export interface SchemaManifestReferenceRow {
   readonly sourceECInstanceId: number;
@@ -43,15 +43,13 @@ export interface SchemaManifestReferenceRow {
 }
 
 /** The reference graph of every schema in one iModel - names, versions and reference edges, without
- * any schema data. A {@link (SchemaView:class)} husk loads it up front to answer which schemas exist
- * and which dependency-ordered set it must load to satisfy a request.
+ * schema items. A {@link SchemaViewDataProvider} builds it from ECDbMeta rows via
+ * {@link SchemaManifest.fromRows}. It includes schemas excluded from SchemaView's binary data.
  *
- * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link SchemaManifest.fromRows}.
- * The entries are a flat array with no iModel or platform dependency; even the largest iModels hold
- * on the order of a hundred schemas, so the closure and topological walks are plain recursion.
- * @note The manifest does not track which schemas are already loaded. `SchemaViewManager` does that
- * and filters the result of {@link SchemaManifest.getSchemaClosure} itself.
- * @internal
+ * {@link SchemaViewManager} uses this graph to determine which schemas a filtered request needs.
+ * The manifest does not track which schemas are already loaded; the manager filters the result of
+ * {@link SchemaManifest.getSchemaClosure} itself.
+ * @beta
  */
 export class SchemaManifest {
   private readonly _entries: readonly SchemaManifestEntry[];
@@ -69,7 +67,7 @@ export class SchemaManifest {
   /** Build a manifest from raw ECDbMeta query rows, so a `SchemaViewDataProvider` only has to run
    * the two queries and hand the rows over. Reference rows whose endpoints are unknown or
    * self-referential are skipped; that cannot happen for a well-formed iModel.
-   * @internal
+   * @beta
    */
   public static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest {
     // Mutable during the wiring walk below; entries are read-only once handed to the manifest.
@@ -118,8 +116,7 @@ export class SchemaManifest {
   }
 
   /** The transitive reference closure of the requested schemas, as a flat, duplicate-free list of
-   * names: the full set that must be present to use them. The order is unspecified - run
-   * {@link SchemaManifest.sortInDependencyOrder} on the result when a load order is needed.
+   * names: the full set to request in a standalone fragment. The order is unspecified.
    * @note Requested names the iModel does not contain are ignored; check
    * {@link SchemaManifest.findByName} first to detect them.
    */

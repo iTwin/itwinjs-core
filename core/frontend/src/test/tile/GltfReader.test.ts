@@ -390,6 +390,87 @@ describe("GltfReader", () => {
     expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).toBe(true);
   });
 
+  describe("non-indexed points", () => {
+    it("are read as a point cloud", async () => {
+      const gltf = {
+        asset: { version: "2.0" },
+        scene: 0,
+        scenes: [{ nodes: [0] }],
+        nodes: [{ mesh: 0 }],
+        meshes: [{
+          primitives: [{
+            attributes: { POSITION: 0, COLOR_0: 1 },
+            mode: GltfMeshMode.Points,
+          }],
+        }],
+        buffers: [
+          { uri: "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA", byteLength: 36 },
+          { uri: "data:application/octet-stream;base64,/wAAAP8AAAD/", byteLength: 9 },
+        ],
+        bufferViews: [
+          { buffer: 0, byteLength: 36 },
+          { buffer: 1, byteLength: 9 },
+        ],
+        accessors: [
+          { bufferView: 0, componentType: GltfDataType.Float, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] },
+          { bufferView: 1, componentType: GltfDataType.UnsignedByte, normalized: true, count: 3, type: "VEC3" },
+        ],
+      } as unknown as GltfDocument;
+
+      const reader = createReader(gltf)!;
+      const result = await reader.read();
+
+      expect(result.graphic).toBeDefined();
+      expect(result.containsPointCloud).toBe(true);
+    });
+
+    it("are read with implicit EXT_mesh_features feature IDs", async () => {
+      const gltf = {
+        asset: { version: "2.0" },
+        extensionsUsed: ["EXT_structural_metadata", "EXT_mesh_features"],
+        extensions: {
+          EXT_structural_metadata: {
+            schema: { id: "schema", classes: { class0: { properties: {} } } },
+            propertyTables: [{ class: "class0", count: 1, properties: {} }],
+          },
+        },
+        scene: 0,
+        scenes: [{ nodes: [0] }],
+        nodes: [{ mesh: 0 }],
+        meshes: [{
+          primitives: [{
+            attributes: { POSITION: 0 },
+            indices: 1,
+            mode: GltfMeshMode.Points,
+            extensions: {
+              EXT_mesh_features: {
+                featureIds: [{ featureCount: 1, propertyTable: 0 }],
+              },
+            },
+          }],
+        }],
+        buffers: [
+          { uri: "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA", byteLength: 36 },
+          { uri: "data:application/octet-stream;base64,AAABAAIA", byteLength: 6 },
+        ],
+        bufferViews: [
+          { buffer: 0, byteLength: 36 },
+          { buffer: 1, byteLength: 6 },
+        ],
+        accessors: [
+          { bufferView: 0, componentType: GltfDataType.Float, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] },
+          { bufferView: 1, componentType: GltfDataType.UnsignedShort, count: 3, type: "SCALAR" },
+        ],
+      } as unknown as GltfDocument;
+
+      const reader = createReader(gltf, new BatchedTileIdMap(iModel))!;
+      const result = await reader.read();
+
+      expect(result.graphic).toBeDefined();
+      expect((reader as any).readPrimitiveFeatures((gltf as any).meshes[0].primitives[0])).toBeUndefined();
+    });
+  });
+
   describe("textures", () => {
     function expectTextureType(expected: RenderTexture.Type, sampler: GltfSampler | undefined, defaultWrap?: GltfWrapMode): void {
       const reader = createReader(makeGlb(minimalJson, minimalBin))!;

@@ -25,6 +25,9 @@ export enum PropertyFilter {
   BisCoreElement = 1,
   /** Only `ECInstanceId` and `ECClassId`. */
   InstanceKey = 2,
+  /** `ECInstanceId` and `ECClassId`, plus identifiers read only from the changeset, such as an aspect's owning `Element`.
+   * See [the full list]($docs/learning/backend/ChangesetReader.md#identifiers-returned-by-instancekeyandidentifiers). */
+  InstanceKeyAndIdentifiers = 3,
 }
 
 /**
@@ -47,7 +50,7 @@ export interface RowFormatOptions {
    * When `true`, all property keys and struct sub-keys are returned in camelCase
    * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
    * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
-   * @deprecated We should stick to ECProperty names as is instead.
+   * @deprecated in 5.14.0 - will not be removed until after 2027-10-02. We should stick to ECProperty names as is instead.
    */
   useJsName?: boolean;
 }

@@ -123,6 +123,24 @@ describe("Quantity", () => {
     expect(UnitConversions.convert(Units.LENGTH.M, Units.LENGTH.FT, 1)).toBeCloseTo(3.28084, 5);
   });
 
+  it("UnitConversions converts length ratios using paper-over-model values", () => {
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.DECIMAL_LENGTH_RATIO,
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      0.01,
+    )).toBeCloseTo(0.01);
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO,
+      1 / 48,
+    )).toBeCloseTo(0.25);
+    expect(UnitConversions.convert(
+      Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO,
+      Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
+      0.25,
+    )).toBeCloseTo(1 / 48);
+  });
+
   it("UnitConversions.getConversion supports repeated synchronous conversions", () => {
     const conversion = UnitConversions.getConversion(Units.LENGTH.M, Units.LENGTH.FT);
 
@@ -191,7 +209,7 @@ describe("Quantity", () => {
     _testResetResolvedBasicUnitsDataCache();
   });
 
-  it("generated basic conversion data matches provider-backed conversions for every bundled same-phenomenon unit pair", async () => {
+  it("generated conversion data matches provider conversions, and sync provider conversions equal async ones, for every bundled same-phenomenon unit pair", async () => {
     const provider = new BasicUnitsProvider();
     const resolvedUnits = new Map<string, Awaited<ReturnType<BasicUnitsProvider["findUnitByName"]>>>();
     const unitsByPhenomenon = new Map<string, string[]>();
@@ -210,7 +228,9 @@ describe("Quantity", () => {
       for (const fromName of unitNames as UnitName[]) {
         for (const toName of unitNames as UnitName[]) {
           const actual = UnitConversions.getConversion(fromName, toName);
+          const sync = provider.getConversionSync(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
           const expected = await provider.getConversion(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
+          expect(sync).toEqual(expected);
           expect(actual.inversion).toBe(expected.inversion);
           expect(actual.error).toBe(expected.error);
           // The generated built-in conversions are canonicalized for deterministic cross-Node output.

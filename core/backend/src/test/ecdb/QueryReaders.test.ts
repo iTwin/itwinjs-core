@@ -29,6 +29,85 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
     iModel.close();
   });
 
+  it("formats blob results", async () => {
+    using ecdb = ECDbTestHelper.createECDb(KnownTestLocations.outputDir, "ecsql-reader-blobs.ecdb", `<?xml version="1.0" encoding="utf-8"?>
+      <ECSchema schemaName="MySchema" alias="myschema" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="BlobExample">
+          <ECProperty propertyName="Data" typeName="binary" />
+        </ECEntityClass>
+      </ECSchema>`);
+
+    const blob = new Uint8Array([1, 2, 3]);
+    const insertStatus = ecdb.withWriteStatement("INSERT INTO myschema.BlobExample(Data) VALUES(?)", (stmt) => {
+      stmt.bindBlob(1, blob);
+      return stmt.step();
+    });
+    assert.equal(insertStatus, DbResult.BE_SQLITE_DONE);
+    ecdb.saveChanges();
+
+    for (const abbreviateBlobs of [undefined, false, true]) {
+      const query = "SELECT Data FROM myschema.BlobExample";
+      const expected = abbreviateBlobs ? '{"bytes":3}' : blob;
+      const asyncRows = await ecdb.createQueryReader(query, undefined, { abbreviateBlobs }).toArray();
+      const syncRows = ecdb.withQueryReader(query, (reader) => reader.toArray(), undefined, { abbreviateBlobs });
+      assert.deepEqual(asyncRows, [[expected]]);
+      assert.deepEqual(syncRows, [[expected]]);
+    }
+  });
+
+  it("preserves row formats and bindings", async () => {
+    const rootSelect = "SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=?";
+
+    const asyncIndexRows = await iModel.createQueryReader(rootSelect, new QueryBinder().bindId(1, "0x1")).toArray();
+    assert.isArray(asyncIndexRows[0]);
+    assert.equal(asyncIndexRows[0][0], "0x1");
+    assert.isTrue(Id64.isValidId64(asyncIndexRows[0][1]));
+
+    const asyncECSqlNameRows = await iModel.createQueryReader(rootSelect, new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseECSqlPropertyNames }).toArray();
+    assert.equal(asyncECSqlNameRows[0].ECInstanceId, "0x1");
+    assert.isTrue(Id64.isValidId64(asyncECSqlNameRows[0].ECClassId));
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const asyncJsNameRows = await iModel.createQueryReader(rootSelect, new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseJsPropertyNames }).toArray();
+    assert.equal(asyncJsNameRows[0].id, "0x1");
+    assert.equal(asyncJsNameRows[0].className, "BisCore.Subject");
+
+    const syncIndexRows = iModel.withQueryReader(rootSelect, (reader) => reader.toArray(), new QueryBinder().bindId(1, "0x1"));
+    assert.isArray(syncIndexRows[0]);
+    assert.equal(syncIndexRows[0][0], "0x1");
+    assert.isTrue(Id64.isValidId64(syncIndexRows[0][1]));
+
+    const syncECSqlNameRows = iModel.withQueryReader(rootSelect, (reader) => reader.toArray(), new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.equal(syncECSqlNameRows[0].ECInstanceId, "0x1");
+    assert.isTrue(Id64.isValidId64(syncECSqlNameRows[0].ECClassId));
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const syncJsNameRows = iModel.withQueryReader(rootSelect, (reader) => reader.toArray(), new QueryBinder().bindId(1, "0x1"), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    assert.equal(syncJsNameRows[0].id, "0x1");
+    assert.equal(syncJsNameRows[0].className, "BisCore.Subject");
+
+    const asyncReader = iModel.createQueryReader(rootSelect, new QueryBinder().bindId(1, "0x1"));
+    assert.isTrue(await asyncReader.step());
+    const asyncObjectRow = asyncReader.current.toRow();
+    assert.isFalse(Array.isArray(asyncObjectRow));
+    assert.equal(asyncObjectRow.ECInstanceId, "0x1");
+
+    const objectRow = iModel.withQueryReader(rootSelect, (reader) => {
+      assert.isTrue(reader.step());
+      return reader.current.toRow();
+    }, new QueryBinder().bindId(1, "0x1"));
+    assert.isObject(objectRow);
+    assert.equal(objectRow.ECInstanceId, "0x1");
+
+    const arrayRows = iModel.withQueryReader(rootSelect, (reader) => reader.toArray(), new QueryBinder().bindId(1, "0x1"));
+    assert.isArray(arrayRows[0]);
+
+    const idSetRows = await iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element WHERE InVirtualSet(?, ECInstanceId)", new QueryBinder().bindIdSet(1, ["0x1", "0x2"])).toArray();
+    assert.isTrue(idSetRows.some((row) => row[0] === "0x1"));
+    const syncIdSetRows = iModel.withQueryReader("SELECT ECInstanceId FROM bis.Element WHERE InVirtualSet(?, ECInstanceId)", (reader) => reader.toArray(), new QueryBinder().bindIdSet(1, ["0x1", "0x2"]));
+    assert.sameDeepMembers(syncIdSetRows, idSetRows);
+  });
+
   describe("bind Id64 enumerable", async () => {
     const outDir = KnownTestLocations.outputDir;
 

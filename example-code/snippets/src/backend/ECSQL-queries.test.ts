@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
+import { Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
+import { QueryBinder } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
@@ -19,7 +20,7 @@ describe("Useful ECSQL queries", () => {
     iModel.close();
   });
 
-  it("should select by code value", () => {
+  it("should select by code value", async () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-element-by-code-value
     // Suppose an iModel has the following breakdown structure:
     // * The root subject
@@ -30,8 +31,8 @@ describe("Useful ECSQL queries", () => {
     // You could write the following query to find it. This query specifies that the
     // element you want is a PhysicalPartition, it has a code value of "Physical",
     // and it is a child of a Subject named "Subject1".
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const partitionIds: Id64Set = iModel.withPreparedStatement(`
+    const partitionIds: Id64Set = new Set<Id64String>();
+    const reader = iModel.createQueryReader(`
       select
         [partition].ecinstanceid
       from
@@ -39,15 +40,9 @@ describe("Useful ECSQL queries", () => {
         (select ecinstanceid from ${Subject.classFullName} where CodeValue=:parentName) as parent
       where
       [partition].codevalue=:partitionName and [partition].parent.id = parent.ecinstanceid;`,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      (stmt: ECSqlStatement) => {
-        stmt.bindValue("parentName", "Subject1");
-        stmt.bindValue("partitionName", "Physical");
-        const ids: Id64Set = new Set<Id64String>();
-        while (stmt.step() === DbResult.BE_SQLITE_ROW)
-          ids.add(stmt.getValue(0).getId());
-        return ids;
-      });
+      new QueryBinder().bindString("parentName", "Subject1").bindString("partitionName", "Physical"));
+    for await (const row of reader)
+      partitionIds.add(row[0] as Id64String);
 
     assert.isNotEmpty(partitionIds);
     assert.equal(partitionIds.size, 1);
@@ -68,42 +63,33 @@ describe("Useful ECSQL queries", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("should select all elements in a model", () => {
+  it("should select all elements in a model", async () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-elements-in-model
     const modelId: Id64String = IModelDb.repositoryModelId;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
-      }
-    });
+    const reader = iModel.createQueryReader(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`, new QueryBinder().bindId("modelId", modelId));
+    for await (const row of reader) {
+      assert.isString(row[0]);
+    }
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("should select all top-level elements in a model", () => {
+  it("should select all top-level elements in a model", async () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-top-level-elements-in-model
     const modelId: Id64String = IModelDb.repositoryModelId;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
-      }
-    });
+    const reader = iModel.createQueryReader(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, new QueryBinder().bindId("modelId", modelId));
+    for await (const row of reader) {
+      assert.isString(row[0]);
+    }
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("should select all child elements of the specified element", () => {
+  it("should select all child elements of the specified element", async () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-child-elements
     const parentId: Id64String = IModelDb.rootSubjectId;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`, (statement: ECSqlStatement) => {
-      statement.bindId("parentId", parentId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
-      }
-    });
+    const reader = iModel.createQueryReader(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`, new QueryBinder().bindId("parentId", parentId));
+    for await (const row of reader) {
+      assert.isString(row[0]);
+    }
     // __PUBLISH_EXTRACT_END__
   });
 

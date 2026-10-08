@@ -8,7 +8,7 @@
 
 import { bufferCount, defer, from, groupBy, map, mergeMap, Observable, ObservedValueOf, of, range, reduce } from "rxjs";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowProxy } from "@itwin/core-common";
 import {
   ContentDescriptorRequestOptions,
@@ -53,7 +53,7 @@ export function getContentItemsObservableFromElementIds(
             classFullName,
             contentDescriptorGetter,
             contentSetGetter,
-            () => createIdBatches(OrderedId64Iterable.sortArray(ids), batchSize),
+            () => createIdBatches(ids, batchSize),
             batchesParallelism,
           ),
         classParallelism,
@@ -218,44 +218,87 @@ function createClassContentRuleset(fullClassName: string): Ruleset {
   };
 }
 
-/** Given a list of element ids, group them by class name. */
-function getElementClassesFromIds(imodel: IModelDb, elementIds: string[]): Observable<{ classFullName: string; ids: Id64Array }> {
+interface ElementIdWithPrevClassInstance {
+  id: Id64String;
+  /** ID of the previous (by ECInstanceId) element of the same class, if any. */
+  prevClassInstanceId?: Id64String;
+}
+
+/**
+ * Given a list of element ids, group them by class name. In addition, for every element, get ID of the previous
+ * element of the same class, which lets us put requested IDs into ranges without other instances of the same class.
+ *
+ * The query reader re-executes the query for every page, so querying all IDs at once is much slower than querying
+ * them in chunks. Chunks are made of the sorted IDs list and run in parallel. `GROUP_CONCAT` order isn't guaranteed
+ * by SQLite, so each chunk's IDs are sorted individually (usually a no-op check), then stored at the chunk's index.
+ * Concatenating them gives each class its IDs sorted.
+ */
+function getElementClassesFromIds(
+  imodel: IModelDb,
+  elementIds: Id64Array,
+): Observable<{ classFullName: string; ids: ElementIdWithPrevClassInstance[] }> {
   const elementIdsBatchSize = 5000;
-  return range(0, elementIds.length / elementIdsBatchSize).pipe(
-    mergeMap((batchIndex) => {
-      const idsFrom = batchIndex * elementIdsBatchSize;
-      const idsTo = Math.min(idsFrom + elementIdsBatchSize, elementIds.length);
+  const sortedElementIds = OrderedId64Iterable.sortArray([...elementIds]);
+  return range(0, sortedElementIds.length / elementIdsBatchSize).pipe(
+    mergeMap((_, chunkIndex) => {
+      const idsFrom = chunkIndex * elementIdsBatchSize;
+      const idsTo = Math.min(idsFrom + elementIdsBatchSize, sortedElementIds.length);
       return from(
         imodel.createQueryReader(
           `
-            SELECT ec_classname(e.ECClassId) className, GROUP_CONCAT(IdToHex(e.ECInstanceId)) ids
+            SELECT
+              ec_classname(e.ECClassId) className,
+              GROUP_CONCAT(
+                IdToHex(e.ECInstanceId) || ':' || IFNULL((
+                  SELECT IdToHex(MAX(p.ECInstanceId))
+                  FROM bis.Element p
+                  WHERE p.ECClassId = e.ECClassId AND p.ECInstanceId < e.ECInstanceId
+                ), '')
+              ) ids
             FROM bis.Element e
-            WHERE e.ECInstanceId IN (${elementIds.slice(idsFrom, idsTo).join(",")})
+            JOIN IdSet(:elementIds) elementIds ON elementIds.id = e.ECInstanceId
             GROUP BY e.ECClassId
           `,
+          new QueryBinder().bindIdSet("elementIds", sortedElementIds.slice(idsFrom, idsTo)),
         ),
+      ).pipe(
+        map((row: QueryRowProxy) => ({
+          chunkIndex,
+          className: row.className as string,
+          ids: ensureSortedById(
+            (row.ids as string).split(",").map((pair): ElementIdWithPrevClassInstance => {
+              const [id, prevClassInstanceId] = pair.split(":");
+              return { id, ...(prevClassInstanceId ? { prevClassInstanceId } : undefined) };
+            }),
+          ),
+        })),
       );
     }),
-    map((row: QueryRowProxy): { className: string; ids: Id64Array } => ({
-      className: row.className,
-      ids: row.ids.split(","),
-    })),
     groupBy(({ className }) => className),
     mergeMap((groups) =>
       groups.pipe(
-        reduce<ObservedValueOf<typeof groups>, { classFullName: string; ids: Id64Array }>(
+        reduce<ObservedValueOf<typeof groups>, { classFullName: string; chunks: ElementIdWithPrevClassInstance[][] }>(
           (acc, g) => {
-            g.ids.forEach((id) => acc.ids.push(id));
-            return {
-              classFullName: g.className,
-              ids: acc.ids,
-            };
+            acc.chunks[g.chunkIndex] = g.ids;
+            return { classFullName: g.className, chunks: acc.chunks };
           },
-          { classFullName: "", ids: [] },
+          { classFullName: "", chunks: [] },
         ),
       ),
     ),
+    // chunks cover consecutive ID ranges and are sorted individually, so their concatenation is sorted as well;
+    // `flat` skips holes left by chunks that had no elements of the class
+    map(({ classFullName, chunks }) => ({ classFullName, ids: chunks.flat() })),
   );
+}
+
+function ensureSortedById(ids: ElementIdWithPrevClassInstance[]): ElementIdWithPrevClassInstance[] {
+  for (let i = 1; i < ids.length; ++i) {
+    if (OrderedId64Iterable.compare(ids[i - 1].id, ids[i].id) > 0) {
+      return ids.sort((a, b) => OrderedId64Iterable.compare(a.id, b.id));
+    }
+  }
+  return ids;
 }
 
 /** Given a list of full class names, get concrete class names with instances. */
@@ -282,31 +325,25 @@ interface ElementIdBatch {
 }
 
 /**
- * Given a sorted list of ECInstanceIds and a batch size, create a stream of batches. Because the IDs won't necessarily
- * be sequential, a batch is defined a list of from-to pairs. Ranges combine consecutive local IDs within the same briefcase.
- * @internal
+ * Given a list of same-class ECInstanceIds, sorted by ID, and a batch size, create a stream of batches. Because the IDs won't
+ * necessarily be sequential, a batch is defined as a list of from-to pairs. An ID extends the current range if there are no other
+ * instances of the same class between it and the previous requested ID.
  */
-export function createIdBatches(sortedIds: Id64String[], batchSize: number): Observable<ElementIdBatch> {
+function createIdBatches(sortedIds: ElementIdWithPrevClassInstance[], batchSize: number): Observable<ElementIdBatch> {
   return range(0, sortedIds.length / batchSize).pipe(
     map((batchIndex) => {
       const ranges = new Array<{ from: Id64String; to: Id64String }>();
       const startIndex = batchIndex * batchSize;
       const endIndex = Math.min((batchIndex + 1) * batchSize, sortedIds.length) - 1;
-      let fromId = sortedIds[startIndex];
-      let to = {
-        id: sortedIds[startIndex],
-        localId: Id64.getLocalId(sortedIds[startIndex]),
-      };
+      let fromId = sortedIds[startIndex].id;
       for (let i = startIndex + 1; i <= endIndex; ++i) {
-        const currLocalId = Id64.getLocalId(sortedIds[i]);
-        if (Id64.getBriefcaseId(sortedIds[i]) !== Id64.getBriefcaseId(to.id) || currLocalId !== to.localId + 1) {
-          ranges.push({ from: fromId, to: sortedIds[i - 1] });
-          fromId = sortedIds[i];
+        if (sortedIds[i].prevClassInstanceId !== sortedIds[i - 1].id) {
+          ranges.push({ from: fromId, to: sortedIds[i - 1].id });
+          fromId = sortedIds[i].id;
         }
-        to = { id: sortedIds[i], localId: currLocalId };
       }
-      ranges.push({ from: fromId, to: sortedIds[endIndex] });
-      return { ids: sortedIds.slice(startIndex, endIndex + 1), ranges };
+      ranges.push({ from: fromId, to: sortedIds[endIndex].id });
+      return { ids: sortedIds.slice(startIndex, endIndex + 1).map(({ id }) => id), ranges };
     }),
   );
 }

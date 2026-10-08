@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
+import * as path from "node:path";
 import { app } from "electron";
+import { promises as fs } from "node:fs";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/main";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -13,6 +14,8 @@ import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { deleteText, deleteTextStyle, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { clearFormatSets, importFormatSet } from "./FieldFormattingDemo";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -70,6 +73,32 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
     return setScaleFactor(iModelKey, modelId, scaleFactor);
+  }
+
+  public async importFormatSet(iModelKey: string, formatSet: FormatSet, id?: string): Promise<void> {
+    return importFormatSet(iModelKey, formatSet, id);
+  }
+
+  public async clearFormatSets(iModelKey: string): Promise<void> {
+    return clearFormatSets(iModelKey);
+  }
+
+  public async readTextFile(filePath: string): Promise<string> {
+    return fs.readFile(path.resolve(filePath), "utf8");
+  }
+
+  public async writeTextFile(filePath: string, contents: string, overwrite?: boolean): Promise<void> {
+    const resolved = path.resolve(filePath);
+    await fs.mkdir(path.dirname(resolved), { recursive: true });
+    try {
+      // "wx" fails when the file exists, making the check and the write atomic.
+      await fs.writeFile(resolved, contents, { encoding: "utf8", flag: overwrite ? "w" : "wx" });
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "EEXIST")
+        throw new Error(`${resolved} already exists. Re-run with 'force' to overwrite it.`);
+
+      throw err;
+    }
   }
 }
 

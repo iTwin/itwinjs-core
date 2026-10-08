@@ -102,6 +102,8 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+
   if (categoryId)
     text.category = categoryId;
 
@@ -115,7 +117,6 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
     text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
   }
 
-  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 

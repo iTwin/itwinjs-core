@@ -2,87 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { NavigationValue } from "@itwin/core-common";
+import { ECSqlStatement, IModelDb, SnapshotDb } from "@itwin/core-backend";
 
-/* eslint-disable no-console, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 function executeECSql_Binding(iModel: IModelDb) {
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Positional
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?", (stmt: ECSqlStatement) => {
-    stmt.bindString(1, "MyCode");
-    stmt.bindDateTime(2, "2018-01-01T12:00:00");
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Named
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
-    stmt.bindString("code", "MyCode");
-    stmt.bindDateTime("lastmod", "2018-01-01T12:00:00Z");
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Positional
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues(["MyCode", "2018-01-01T12:00:00Z"]);
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Named
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
-    stmt.bindValues({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
     stmt.bindNavigation(1, { id: "0x132" });
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{ id: "0x132" }]);
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId_ByParameter
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, "0x132");
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_NavigationId
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues(["0x132"]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
@@ -95,31 +23,6 @@ function executeECSql_Binding(iModel: IModelDb) {
   });
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Struct
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{ street: "7123 Main Street", zip: 30211 }]);
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_StructMembers_ByParameter
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", (stmt: ECSqlStatement) => {
-    stmt.bindString(1, "7123 Main Street");
-    stmt.bindInteger(2, 32443);
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_StructMembers
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues(["7123 Main Street", 32443]);
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Array_ByParameter
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
@@ -127,98 +30,7 @@ function executeECSql_Binding(iModel: IModelDb) {
     // ...
   });
   // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Array
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([["+16134584201", "+16134584202", "+16134584222"]]);
-    // ...
-  });
-  // __PUBLISH_EXTRACT_END__
-}
-
-function executeECSql_QueryResult(iModel: IModelDb) {
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow_IllustrateRowFormat
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-
-    stmt.bindId(1, "0x113");
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row: any = stmt.getRow();
-      console.log(JSON.stringify(row));
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-
-    stmt.bindId(1, "0x113");
-
-    console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row: any = stmt.getRow();
-      const id: Id64String = row.id;
-      const className: string = row.className;
-      const parent: NavigationValue = row.parent;
-      const lastMod: string = row.lastMod;
-
-      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, "0x113");
-
-    console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
-
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const idValue: ECSqlValue = stmt.getValue(0);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const classIdValue: ECSqlValue = stmt.getValue(1);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const parentValue: ECSqlValue = stmt.getValue(2);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const lastModValue: ECSqlValue = stmt.getValue(3);
-
-      const id: Id64String = idValue.getId();
-      const className: string = classIdValue.getClassNameForClassId();
-      const parent: NavigationValue = parentValue.getNavigation();
-      const lastMod: string = lastModValue.getDateTime();
-
-      console.log(`${id}|${className}|${parent.id}|${parent.relClassName}|${lastMod}`);
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue_PreserveClassIds
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  iModel.withPreparedStatement("SELECT ECClassId,Parent.RelECClassId FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, "0x113");
-
-    console.log("ECClassId | Parent RelECClassId");
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const classIdValue: ECSqlValue = stmt.getValue(0);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const parentRelClassIdValue: ECSqlValue = stmt.getValue(1);
-
-      const classId: string = classIdValue.getId();
-      const parentRelClassId: string = parentRelClassIdValue.getId();
-
-      console.log(`${classId}|${parentRelClassId}`);
-    }
-  });
-  // __PUBLISH_EXTRACT_END__
 }
 
 const dummyIModel = SnapshotDb.openFile("");
 executeECSql_Binding(dummyIModel);
-executeECSql_QueryResult(dummyIModel);

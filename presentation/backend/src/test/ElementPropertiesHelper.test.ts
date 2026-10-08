@@ -71,10 +71,39 @@ describe("content item batching", () => {
     contentSetGetter.resetHistory();
   });
 
+  /**
+   * Creates a row, as returned by the element classes query, for given requested IDs. Each ID is paired with the ID
+   * of the previous instance of the same class. IDs are kept in given order to simulate `GROUP_CONCAT` output.
+   */
+  function createClassRow(ids: string[], classInstanceIds: string[], className = "TestSchema:TestClass") {
+    return {
+      className,
+      ids: ids
+        .map((id) => {
+          const index = classInstanceIds.indexOf(id);
+          return `${id}:${index > 0 ? classInstanceIds[index - 1] : ""}`;
+        })
+        .join(","),
+    };
+  }
+
+  function stubIModelForElementIds(ids: string[], classInstanceIds: string[]) {
+    const createQueryReader = sinon.stub().returns(stubECSqlReader([createClassRow(ids, classInstanceIds)]));
+    return { imodel: { createQueryReader } as unknown as IModelDb, createQueryReader };
+  }
+
+  /** Creates an async iterable of rows that resolves after given delay, to control order of query results. */
+  function delayedReader<TRow>(rows: TRow[], delayMs: number): AsyncIterable<TRow> {
+    return {
+      async *[Symbol.asyncIterator]() {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        yield* rows;
+      },
+    };
+  }
+
   it("uses request-local ranges when loading supplied element IDs", async () => {
-    const imodel = {
-      createQueryReader: sinon.stub().returns(stubECSqlReader([{ className: "TestSchema:TestClass", ids: "0x1,0x2,0x3" }])),
-    } as unknown as IModelDb;
+    const { imodel } = stubIModelForElementIds(["0x1", "0x2", "0x3"], ["0x1", "0x2", "0x3"]);
 
     await firstValueFrom(
       getContentItemsObservableFromElementIds(imodel, contentDescriptorGetter, contentSetGetter, ["0x1", "0x2", "0x3"], 1, 1, 2).itemBatches.pipe(toArray()),
@@ -88,21 +117,83 @@ describe("content item batching", () => {
     expect(contentSetGetter.secondCall.args[0].descriptor.instanceFilter.expression).to.equal("this.ECInstanceId = 0x3");
   });
 
-  for (const { ids, expression } of [
-    { ids: ["0x3"], expression: "this.ECInstanceId = 0x3" },
-    { ids: ["0x1", "0x3", "0x5"], expression: "this.ECInstanceId = 0x1 OR this.ECInstanceId = 0x3 OR this.ECInstanceId = 0x5" },
+  it("queries element classes and previous class instance IDs for sorted chunks of element IDs", async () => {
+    const createQueryReader = sinon.stub().returns(stubECSqlReader([]));
+    const imodel = { createQueryReader } as unknown as IModelDb;
+    const ids = Array.from({ length: 5001 }, (_, i) => `0x${(5001 - i).toString(16)}`);
+    await firstValueFrom(
+      getContentItemsObservableFromElementIds(imodel, contentDescriptorGetter, contentSetGetter, ids, 1, 1, 10).itemBatches.pipe(toArray()),
+    );
+    expect(createQueryReader).to.have.been.calledTwice;
+    expect(createQueryReader.firstCall.args[0]).to.include("WHERE p.ECClassId = e.ECClassId AND p.ECInstanceId < e.ECInstanceId");
+    expect(createQueryReader.firstCall.args[0]).to.include("GROUP BY e.ECClassId");
+    const sortedIds = [...ids].reverse();
+    expect(createQueryReader.firstCall.args[1]).to.deep.equal(new QueryBinder().bindIdSet("elementIds", sortedIds.slice(0, 5000)));
+    expect(createQueryReader.secondCall.args[1]).to.deep.equal(new QueryBinder().bindIdSet("elementIds", sortedIds.slice(5000)));
+  });
+
+  it("combines element IDs of the same class from multiple chunks in ID order, regardless of chunk results order", async () => {
+    const ids = Array.from({ length: 10001 }, (_, i) => `0x${(i + 1).toString(16)}`);
+    const createQueryReader = sinon.stub();
+    // first chunk resolves last
+    createQueryReader.onCall(0).returns(delayedReader([createClassRow(["0x2", "0x1"], ["0x1", "0x2"])], 20));
+    // second chunk has no elements of the class
+    createQueryReader.onCall(1).returns(stubECSqlReader([createClassRow(["0x2000"], ["0x2000"], "TestSchema:Other")]));
+    createQueryReader.onCall(2).returns(stubECSqlReader([createClassRow(["0x2711"], ["0x1", "0x2", "0x2711"])]));
+    const imodel = { createQueryReader } as unknown as IModelDb;
+    await firstValueFrom(
+      getContentItemsObservableFromElementIds(imodel, contentDescriptorGetter, contentSetGetter, ids, 1, 1, 10).itemBatches.pipe(toArray()),
+    );
+    expect(createQueryReader).to.have.been.calledThrice;
+    const testClassRequest = contentSetGetter.getCalls().find((call) => call.args[0].descriptor.instanceFilter.selectClassName === "TestSchema:TestClass");
+    expect(testClassRequest!.args[0].descriptor.instanceFilter.expression).to.equal("this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x2711");
+  });
+
+  for (const { ids, classInstanceIds, expression } of [
+    { ids: ["0x3"], classInstanceIds: ["0x1", "0x3"], expression: "this.ECInstanceId = 0x3" },
+    {
+      ids: ["0x1", "0x3", "0x5"],
+      classInstanceIds: ["0x1", "0x2", "0x3", "0x4", "0x5"],
+      expression: "this.ECInstanceId = 0x1 OR this.ECInstanceId = 0x3 OR this.ECInstanceId = 0x5",
+    },
     {
       ids: ["0x1", "0x2", "0x5", "0x6"],
+      classInstanceIds: ["0x1", "0x2", "0x3", "0x5", "0x6"],
       expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x2 OR this.ECInstanceId >= 0x5 AND this.ECInstanceId <= 0x6",
     },
-    { ids: ["0x10", "0x2", "0x1"], expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x2 OR this.ECInstanceId = 0x10" },
-    { ids: ["0x10000000001", "0x20000000002"], expression: "this.ECInstanceId = 0x10000000001 OR this.ECInstanceId = 0x20000000002" },
-    { ids: ["0x20000000000001", "0x20000000000002"], expression: "this.ECInstanceId >= 0x20000000000001 AND this.ECInstanceId <= 0x20000000000002" },
+    {
+      ids: ["0x10", "0x2", "0x1"],
+      classInstanceIds: ["0x1", "0x2", "0x3", "0x10"],
+      expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x2 OR this.ECInstanceId = 0x10",
+    },
+    {
+      ids: ["0x10000000001", "0x20000000002"],
+      classInstanceIds: ["0x10000000001", "0x10000000002", "0x20000000002"],
+      expression: "this.ECInstanceId = 0x10000000001 OR this.ECInstanceId = 0x20000000002",
+    },
+    {
+      ids: ["0x20000000000001", "0x20000000000002"],
+      classInstanceIds: ["0x20000000000001", "0x20000000000002"],
+      expression: "this.ECInstanceId >= 0x20000000000001 AND this.ECInstanceId <= 0x20000000000002",
+    },
+    {
+      ids: ["0x1", "0x3", "0x5"],
+      classInstanceIds: ["0x1", "0x3", "0x5"],
+      expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x5",
+    },
+    {
+      ids: ["0x1", "0x3", "0x5", "0x7"],
+      classInstanceIds: ["0x1", "0x3", "0x4", "0x5", "0x7"],
+      expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x3 OR this.ECInstanceId >= 0x5 AND this.ECInstanceId <= 0x7",
+    },
+    {
+      ids: ["0x10000000001", "0x20000000002"],
+      classInstanceIds: ["0x10000000001", "0x20000000002"],
+      expression: "this.ECInstanceId >= 0x10000000001 AND this.ECInstanceId <= 0x20000000002",
+    },
   ]) {
-    it(`creates exact ID ranges for ${ids.join(",")}`, async () => {
-      const imodel = {
-        createQueryReader: sinon.stub().returns(stubECSqlReader([{ className: "TestSchema:TestClass", ids: ids.join(",") }])),
-      } as unknown as IModelDb;
+    it(`creates exact ID ranges for ${ids.join(",")} when class instances are ${classInstanceIds.join(",")}`, async () => {
+      const { imodel } = stubIModelForElementIds(ids, classInstanceIds);
       await firstValueFrom(
         getContentItemsObservableFromElementIds(imodel, contentDescriptorGetter, contentSetGetter, ids, 1, 1, 10).itemBatches.pipe(toArray()),
       );
@@ -110,6 +201,29 @@ describe("content item batching", () => {
       expect(contentSetGetter.firstCall.args[0].descriptor.instanceFilter.expression).to.equal(expression);
     });
   }
+
+  it("requests content separately for every class", async () => {
+    const createQueryReader = sinon
+      .stub()
+      .returns(
+        stubECSqlReader([createClassRow(["0x1", "0x3"], ["0x1", "0x3"], "TestSchema:A"), createClassRow(["0x2", "0x4"], ["0x2", "0x4"], "TestSchema:B")]),
+      );
+    const imodel = { createQueryReader } as unknown as IModelDb;
+    await firstValueFrom(
+      getContentItemsObservableFromElementIds(imodel, contentDescriptorGetter, contentSetGetter, ["0x1", "0x2", "0x3", "0x4"], 1, 1, 10).itemBatches.pipe(
+        toArray(),
+      ),
+    );
+    expect(contentSetGetter).to.have.been.calledTwice;
+    expect(contentSetGetter.firstCall.args[0].descriptor.instanceFilter).to.deep.equal({
+      selectClassName: "TestSchema:A",
+      expression: "this.ECInstanceId >= 0x1 AND this.ECInstanceId <= 0x3",
+    });
+    expect(contentSetGetter.secondCall.args[0].descriptor.instanceFilter).to.deep.equal({
+      selectClassName: "TestSchema:B",
+      expression: "this.ECInstanceId >= 0x2 AND this.ECInstanceId <= 0x4",
+    });
+  });
 
   it("does not request content for an empty ID list", async () => {
     const imodel = { createQueryReader: sinon.stub() } as unknown as IModelDb;
@@ -153,8 +267,11 @@ describe("batch aspect field selection", () => {
       if (query.includes("COUNT(e.ECInstanceId)")) {
         return stubECSqlReader([{ elementCount: ids.length }]);
       }
+      if (query.includes("IdSet(:elementIds)")) {
+        return stubECSqlReader([{ className: elementClass.name, ids: ids.map((id, i) => `${id}:${i > 0 ? ids[i - 1] : ""}`).join(",") }]);
+      }
       if (query.includes("ec_classname")) {
-        return stubECSqlReader([{ className: elementClass.name, ids: ids.join(",") }]);
+        return stubECSqlReader([{ className: elementClass.name }]);
       }
       if (query.includes("FROM ONLY [TestSchema].[TestClass]")) {
         return stubECSqlReader(ids.map((id) => ({ id })));

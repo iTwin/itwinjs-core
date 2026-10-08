@@ -3,124 +3,35 @@ publish: false
 ---
 # NextVersion
 
+<!-- prettier-ignore -->
 - [NextVersion](#nextversion)
-  - [@itwin/core-frontend](#itwincore-frontend)
-    - [Download progress for pushChanges](#download-progress-for-pushchanges)
-    - [OPC point clouds without a vertical datum use the iModel's vertical datum](#opc-point-clouds-without-a-vertical-datum-use-the-imodels-vertical-datum)
-  - [@itwin/core-backend](#itwincore-backend)
-    - [Schema sync rework](#schema-sync-rework)
-    - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
-    - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
-    - [ChangesetReader changes](#changesetreader-changes)
-      - [ChangesetReader row options](#changesetreader-row-options)
-      - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
-      - [Native ChangeUnifier](#native-changeunifier)
-  - [@itwin/core-electron](#itwincore-electron)
-    - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
-  - [@itwin/core-geometry](#itwincore-geometry)
-    - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
-  - [Electron 44 support](#electron-44-support)
+  - [Backend](#backend)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
+    - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Native ChangeUnifier](#native-changeunifier)
+  - [Common](#common)
+    - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+  - [Quantity](#quantity)
+    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
+    - [Async formats provider setter](#async-formats-provider-setter)
+  - [Breaking changes](#breaking-changes)
+    - [Mobile RPC authentication](#mobile-rpc-authentication)
 
-## @itwin/core-frontend
+## Backend
 
-### Download progress for pushChanges
+### Vertical CRS discovery
 
-Pushing local changes first pulls, applies, and merges any changesets made by other users. That download could not previously be observed or cancelled. A new `@beta` overload of [BriefcaseConnection.pushChanges]($frontend) accepts [PushChangesOptions]($frontend), mirroring the options already available on [BriefcaseConnection.pullChanges]($frontend):
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
-```ts
-const abortSignal = new AbortController();
-await briefcase.pushChanges("my changes", {
-  downloadProgressCallback: (progress) => console.log(`${progress.loaded} of ${progress.total} bytes`),
-  downloadProgressInterval: 500,
-  abortSignal: abortSignal.signal,
-});
-```
+### Opt-in fallback for missing navigation relationship class ids
 
-Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
+Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties that contain an `Id` but no `RelECClassId`. When enabled, end-table relationship queries and `ECVLib.Relations()` report the relationship declared by the navigation property. Existing behavior is unchanged when the option is omitted, and directly selecting the navigation property's `RelECClassId` still returns its stored `NULL` value.
 
-### OPC point clouds without a vertical datum use the iModel's vertical datum
+The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
-When an OPC point cloud's CRS does not say whether its heights are ellipsoidal or orthometric (relative to the geoid), the point cloud is now assumed to use the same height convention as the iModel it is displayed in. Previously a fixed assumption was made, displacing the point cloud by the local geoid-ellipsoid separation whenever it did not match the iModel. If you applied a manual vertical offset to compensate, remove it.
+The ECSQL version was bumped to `2.0.4.2`.
 
-## @itwin/core-backend
-
-### Schema sync rework
-
-Schema sync lets the briefcases of one iModel import ECSchemas without taking the exclusive schema lock. This new version explicitly splits between updates, which update the sync db, and upgrades which rewrite the sync db and push it with the briefcase at the same time via the new `BriefcaseDb.upgradeSchemas` API.
-
-Updates no longer automatically end up in other users' briefcases when they import schemas. Instead, they only pick the reference closure of what they import, so updates only hit when a briefcase pushes.
-
-A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
-
-SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
-
-### Experimental `Relations()` table valued function
-
-ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. Its native traversal generates SQL from property maps and reads relationship storage directly, avoiding ECSQL preparation for each candidate relationship class. The outer query still goes through ECSQL preparation.
-
-```sql
-ECVLib.Relations(<ECInstanceId>, <ECClassId>[, <direction>])
-```
-
-The `ECInstanceId` and `ECClassId` arguments are mandatory; a query that omits either is rejected rather than silently returning no rows. The optional third argument is the traversal direction — `'forward'`, `'backward'` or `'both'` (the default, also used when the argument is `NULL`). The comparison is case insensitive; any other value is an error. The function may also be written unqualified as `Relations(...)`.
-
-Each row describes one traversed relationship:
-
-| Column                     | Description                                                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `RelatedECInstanceId`      | `ECInstanceId` of the related instance.                                                                                          |
-| `RelatedECClassId`         | `ECClassId` of the related instance.                                                                                             |
-| `Direction`                | `forward` when the seed is the source of the relationship, `backward` when it is the target.                                      |
-| `RelationshipECClassId`    | `ECClassId` of the relationship that was traversed.                                                                              |
-| `RelationshipECInstanceId` | `ECInstanceId` of the relationship instance, which distinguishes two link table rows connecting the same pair of instances.       |
-| `NavPropertyName`          | Name of the navigation property holding the relationship for end table (foreign key) relationships; `NULL` for link tables.       |
-
-Because `Relations()` is experimental it is disabled by default. Enable it with `PRAGMA experimental_features_enabled=true` or per query with `ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`.
-
-**Example** — find the model that contains an element, without knowing that `BisCore:ModelContainsElements` is stored in the `Model` navigation property:
-
-```sql
-SELECT r.RelatedECInstanceId
-FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'backward') r
-  JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId
-WHERE e.ECInstanceId = :elementId AND rc.Name = 'ModelContainsElements'
-ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
-```
-
-Only instances of the primary (`main`) table space are traversed, and the ECSQL version was bumped to `2.0.4.1`.
-
-See the [Relations virtual table reference](../learning/ECSqlReference/Relations.md) for more details.
-
-### Import CSV data into ECDb
-
-CSV data can be imported into an ECClass from in-memory string rows or streamed from a file. Both beta APIs return the number of inserted rows:
-
-```ts
-const options = {
-  className: "Example.Person",
-  mapping: [
-    { columnIndex: 0, propertyName: "Name" },
-    { columnIndex: 1, propertyName: "Age" },
-  ],
-};
-
-ecdb.importCSVData([["Alice", "42"], ["Bob", "37"]], options);
-ecdb.importCSVFile(csvFilePath, { ...options, hasHeader: true });
-```
-
-[ECDb.importCSVData]($backend) uses V8 serialization to cross the JavaScript-to-native boundary once. [ECDb.importCSVFile]($backend) reads and parses the file in native code; its path must be accessible to the backend process. Both reuse one ECSQL statement, convert each CSV string according to its mapped EC property type, ignore unmapped columns, and roll back the complete import if parsing, conversion, or insertion fails.
-
-### ChangesetReader changes
-
-#### ChangesetReader row options
-
-The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
-
-#### SQLite changeset schema sources
-
-The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. A missing table always produces an error for every database type; `disableSchemaCheck` does not relax this requirement. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
-
-#### Native ChangeUnifier
+### Native ChangeUnifier
 
 The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of one or more [ChangesetReader]($backend)s into complete EC instances in native code. Rows no longer cross into JavaScript one at a time, and memory stays bounded: merged data beyond a memory budget is spilled to temporary files. Use `propNames` to keep only the properties you need.
 
@@ -134,39 +45,43 @@ for (const instance of unifier.instances()) {
 
 Unlike [PartialChangeUnifier]($backend), instances are sorted by (root ECClassId, ECInstanceId, stage), `$meta.op` comes from the row of the main table (`"Updated"` if only overflow tables changed), and each reader is consumed when the unifier is created. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory).
 
-## @itwin/core-electron
+## Common
 
-### Process-specific Electron ESM/CommonJS entry points
+### Step-interpolated render schedule keyframes no longer apply one keyframe late
 
-Use the process-specific entry points when importing from `@itwin/core-electron`:
+Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one of its keyframes returned the *preceding* keyframe's value when that preceding keyframe used [RenderSchedule.Interpolation.Step]($common). It now returns the matched keyframe's own value. This affects [RenderSchedule.Timeline.getVisibility]($common), [RenderSchedule.Timeline.getColor]($common), [RenderSchedule.Timeline.getAnimationTransform]($common), and [RenderSchedule.Timeline.getCuttingPlane]($common).
 
-```ts
-import { ElectronApp } from "@itwin/core-electron/renderer";
-import { ElectronHost } from "@itwin/core-electron/main";
-```
+For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
 
-For CommonJS applications, use the same entry-point paths with `require`:
+The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
 
-```js
-const { ElectronApp } = require("@itwin/core-electron/renderer");
-const { ElectronHost } = require("@itwin/core-electron/main");
-```
+## Quantity
 
-`renderer` resolves to the ESM build for `import` and to the CommonJS build for `require`. `main` resolves to the CommonJS build for both. The package now uses an exports map, so subpaths that are not listed are not supported; in particular, `lib/esm/*` paths and `ElectronPreload` are not public package entry points. The existing `@itwin/core-electron/lib/cjs/*` wildcard paths remain available in this release for compatibility with legacy consumers and will be removed in iTwin.js 6.0. New code should use the process-specific entry points. The Electron preload script remains an internal implementation detail configured by `ElectronHost`.
+### Built-in length ratio units for drawing scales
 
-## @itwin/core-geometry
+The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.00.12, which adds three `LENGTH_RATIO` units: `Units.DECIMAL_LENGTH_RATIO`, `Units.M_PER_M_LENGTH_RATIO` (label `m:m`), and `Units.IN_PER_FT_LENGTH_RATIO` (label `in:ft`). These are intended for persisting drawing and sheet scales as paper length divided by model length, so a `1:100` scale is stored as `0.01` and a `1/4" = 1'` scale is stored as `1/48` in `m:m` (or `0.25` in `in:ft`).
 
-### `PlanarRegionProps` refactor
+[UnitConversions]($quantity) can convert between these units, and [getDefaultPersistenceUnit]($quantity) now accepts `Phenomena.LENGTH_RATIO` and returns `Units.M_PER_M_LENGTH_RATIO`. Previously `LENGTH_RATIO` was excluded from that helper because no built-in default existed.
 
-The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBuffers due to an oversight. To address this, the `CurveCollection` class and `PlanarRegionProps` schema have been slightly refactored.
+### Async formats provider setter
 
-`CurveCollection.isInner` is now moved to `Loop.isInner` since `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is a) only set by user code, b) does not effect region processing, and c) was previously accessible to `Loop` by virtue of inheritance, this should not break existing code.
+[IModelApp.setFormatsProvider]($frontend) replaces the formats provider, optionally sets the active unit system through [SetFormatsProviderOptions.unitSystem]($frontend), and returns a promise that resolves after the [QuantityFormatter]($frontend) has rebuilt its formatting and parsing caches. Use it instead of assigning [IModelApp.formatsProvider]($frontend) when you need to know that formatting reflects the new provider.
 
-The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
-  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
-  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
-  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+- The provider and unit system take effect immediately: `IModelApp.formatsProvider` lookups, including `getFormatSync`, use the new provider, and `IModelApp.quantityFormatter.activeUnitSystem` reports the new unit system before the promise settles.
+- If a later `setFormatsProvider` call is made before the reload finishes, the earlier promise rejects. The latest provider wins.
+- If the reload fails, the promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
+- The promise also rejects if the application shuts down before the reload finishes.
 
-## Electron 44 support
+Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).
+## Breaking changes
+
+### Mobile RPC authentication
+
+Mobile RPC WebSocket connections now require a random per-launch token, preventing other applications on the device from accessing the backend through loopback. Connections without the token are rejected before RPC processing or pending-message delivery.
+
+Upgrade the mobile native runtime together with both the frontend and backend copies of `@itwin/core-mobile`. The secured transport cannot use older native runtimes that do not deliver the token, and older frontends cannot connect to the secured backend. There is no unauthenticated fallback. Updated native runtimes remain compatible with older frontend/backend pairs.
+
+No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
+
+Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.

@@ -31,6 +31,9 @@ These packages provide the following functions to support backend operations:
   - [Optimize iModel with SQLite commands](./IModelOptimization.md)
   - [Fonts](./Fonts.md)
 
+- Text Annotations
+  - [Quantity formatting for text annotation fields](./TextAnnotationFields.md)
+
 - Working with Schemas and Elements in TypeScript
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
   - [Data upgrade callbacks when importing Schemas](./SchemaEvolutionCallbacks.md)
@@ -46,8 +49,10 @@ These packages provide the following functions to support backend operations:
 
 - ECSQL
   - [What is ECSQL?](../ECSQL.md)
-  - [Executing ECSQL statements](./ExecutingECSQL.md)
-  - [Code Examples](./ECSQLCodeExamples.md)
+  - [Choosing and executing ECSQL query readers](./ExecutingECSQL.md)
+  - [Asynchronous query examples](../ECSQLCodeExamples.md)
+  - [Synchronous query examples](./WithQueryReaderCodeExamples.md)
+  - [Migrating backend query code](./ECSQLCodeExamples.md)
   - [Frequently used ECSQL queries](./ECSQL-queries.md)
 
 - Dealing with Codes

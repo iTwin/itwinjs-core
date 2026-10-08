@@ -1,6 +1,35 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Tue, 22 Sep 2026 22:39:30 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 19:49:21 GMT and should not be manually modified.
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Clean up the Chrome test webserver when browser tests fail
+- Add support for Electron 44
+- Expose Certa backend callback helpers through a public callbacks entry point.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
 
 ## 5.13.5
 Tue, 22 Sep 2026 22:38:08 GMT

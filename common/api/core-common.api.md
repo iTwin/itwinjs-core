@@ -3717,6 +3717,7 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -3733,6 +3734,7 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
+    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
 
@@ -3769,9 +3771,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
-    // (undocumented)
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
@@ -3865,8 +3865,18 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal (undocumented)
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+// @internal
+export function formatFieldValue(input: FormatFieldValueArgs): string | undefined;
+
+// @internal
+export interface FormatFieldValueArgs {
+    formatMagnitude?: FormatMagnitude;
+    options?: FieldFormatOptions;
+    value: FieldValue;
+}
+
+// @internal
+export type FormatMagnitude = (magnitude: number) => string;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -5817,7 +5827,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal (undocumented)
+// @internal
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
@@ -7850,6 +7860,13 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatSet?: string;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
 }
 
 // @public
@@ -11532,6 +11549,10 @@ export interface VersionedJSON<T> {
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
+    // @beta
+    readonly crsName?: string;
+    // @beta
+    readonly epsg?: number;
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
     readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
@@ -11540,6 +11561,10 @@ export class VerticalCRS implements VerticalCRSProps {
 
 // @public
 export interface VerticalCRSProps {
+    // @beta
+    crsName?: string;
+    // @beta
+    epsg?: number;
     id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 

@@ -1,6 +1,37 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 22 Sep 2026 22:39:30 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Oct 2026 19:49:21 GMT and should not be manually modified.
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+### Updates
+
+- Render schedule timelines using step interpolation now apply each keyframe's value at that keyframe's own time point instead of one keyframe late.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Add `FieldPropertyPath.jsonAccessors` for indexing into a String property of extended type `Json`.
+- Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value.
+- Add download progress reporting and cancellation to pushChanges
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
 
 ## 5.13.5
 Tue, 22 Sep 2026 22:38:08 GMT

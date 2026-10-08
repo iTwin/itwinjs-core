@@ -41,7 +41,7 @@ The list is subject to debate - if a compelling use case emerges for any exclude
 
 ## Obtaining the schema view
 
-The schema view is obtained from [IModelDb]($backend) (backend) or [IModelConnection]($frontend) (frontend). The first call builds the cache; subsequent calls return it instantly.
+Use [IModelDb]($backend) (backend) or [IModelConnection]($frontend) (frontend) to obtain a cached schema view. Hosts with their own query API can use [SchemaViewManager]($ecschema-metadata) directly, as described below.
 
 ```ts
 [[include:SchemaView.obtain]]
@@ -62,6 +62,36 @@ We use a single accumulating `SchemaView`, so if multiple callers request differ
 The trade-off is: you pay only for the schemas you load, but downward schema navigation (`derivedClasses`) will only reflect what is loaded. Reach for the full view when you need a complete picture, but try to limit the scope when possible.
 
 Additional instructions for backend/frontend developers: We strongly advise against loading the "full" SchemaView automatically on every connection. Try and keep this "on-demand" with limited scope, or else every consumer always pays the cost. That said, on backend, even the worst case scenarios should load in less than a second, asynchronously.
+
+### Loading through your own query API
+
+[SchemaViewManager]($ecschema-metadata) supports hosts that use neither `IModelDb` nor `IModelConnection`. Supply a [SchemaViewDataProvider]($ecschema-metadata) that fetches data through your query API, and keep one manager per iModel connection:
+
+```ts
+import { SchemaViewManager } from "@itwin/ecschema-metadata";
+
+const manager = new SchemaViewManager(dataProvider);
+const view = await manager.getSchemaView({ schemas: ["BisCore"] });
+const modelClass = view.findClass("BisCore:Model");
+
+// Additional requests extend the same view. Already-loaded schemas are not fetched again.
+await manager.getSchemaView({ schemas: ["Generic"] });
+```
+
+The provider implements four operations:
+
+| Method | Data to fetch |
+| --- | --- |
+| `fetchFullBlob()` | `PRAGMA schema_view(N)`, where `N` is the exported `schemaViewFormatVersion`. |
+| `fetchFragmentBlob(schemaNames)` | `PRAGMA schema_view_fragment('vN;name,name,...')`, using the same format version and the supplied schema names. |
+| `fetchManifest()` | Build a `SchemaManifest` with `SchemaManifest.fromRows()` from `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef` and `SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences`. Convert the ID strings to numeric row IDs using `Id64.getLocalId`. |
+| `fetchSchemaToken()` | The `sha3_256` column from `PRAGMA checksum(schema_token)`. |
+
+Both blob methods return `{ data, schemaToken }` from the PRAGMA's columns, with `data` as a `Uint8Array`. When using `ECSqlReader`, read PRAGMA results with a single `next()` call: ConcurrentQuery does not paginate PRAGMAs, so iterating a large blob result can repeatedly fetch the same row. Iterate the normal manifest queries to retrieve all their rows.
+
+The manager computes reference closures and omits already-loaded schemas before requesting a fragment. The provider must return only the requested schemas, subject to the binary format's schema exclusions. See [SchemaView fragments](./SchemaViewBinaryFormat.md#fragments-partial-blobs) for the format and reference-resolution rules.
+
+The manager does not monitor schema changes. Call `manager.reset()` after a known change, or await `manager.invalidateIfChanged()` after an operation that may have changed schemas. Obtain a new view through `getSchemaView()` afterwards; previously returned views are marked outdated when discarded.
 
 ## Navigating schemas and classes
 
@@ -207,7 +237,7 @@ You can iterate every schema, class, and property in the schema view efficiently
 
 ## Sync/async contract
 
-All schema, class, and property access is **synchronous**. `getSchemaView()` is the only asynchronous/IO step - it loads the binary blob once - and every read after that is synchronous. This is a key difference from ecschema-metadata, where loading schemas and resolving cross-references requires async calls and results in unpredictable loading behavior.
+All schema, class, and property access is **synchronous**. `getSchemaView()` performs the asynchronous loading: a full request fetches one blob, while filtered requests fetch a schema manifest and the missing fragments. Navigation reads only the metadata already loaded; it never triggers additional queries.
 
 ## View objects and allocation
 
@@ -230,7 +260,7 @@ A diagnostic warning is logged listing all unresolved references. In practice, t
 
 The [ECDbMeta](../ECDbMeta.ecschema.md) schema (`meta.ECClassDef`, `meta.ECPropertyDef`, etc.) exposes the same underlying `ec_` tables via ECSQL. You can query individual classes or properties with SQL filters, joins, and projections. This is powerful for targeted lookups - for example, "find all navigation properties pointing at `BisCore:Element`."
 
-`SchemaView` reads the same `ec_` tables, but caches the curated subset in one shot into an in-memory structure optimized for traversal.
+`SchemaView` reads the same `ec_` tables and caches the requested schemas in an in-memory structure optimized for traversal.
 
 If you need "give me all classes where property X has extended type Y" - use ECSQL. If you need "walk the property list of this class including inherited properties and check each one" - use `SchemaView`.
 

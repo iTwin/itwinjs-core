@@ -43,6 +43,21 @@ updatePackageJson() {
   checkfail
 }
 
+# npmjs.org publish delays have grown dramatically recently, so the platform-specific
+# package fetched by imodeljs-native's postinstall may lag behind the main package.
+NativePackage="@bentley/imodeljs-$(node -p 'process.platform + "-" + process.arch')"
+for ((attempt=1; attempt<=20; attempt++)); do
+  if npm view "$NativePackage@$AddonVersion" version --prefer-online --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+    break
+  fi
+  if [ "$attempt" -eq 20 ]; then
+    >&2 echo "Timed out waiting for $NativePackage@$AddonVersion on npm."
+    exit 1
+  fi
+  echo "Waiting for $NativePackage@$AddonVersion on npm; retrying in 30 seconds..."
+  sleep 30
+done
+
 echo "Updating @bentley/imodeljs-native to $AddonVersion..."
 
 # Update package.json files
