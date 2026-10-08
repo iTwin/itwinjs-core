@@ -170,8 +170,7 @@ export function buildDefaultPersistenceUnitEntries(
   // Default persistence units are generated when a phenomenon has exactly one built-in SI candidate.
   // The explicit policy layer below covers the remaining cases where the built-in schema either has
   // multiple plausible candidates (e.g. FORCE, SLOPE), has no SI-tagged candidate (e.g. CURRENCY,
-  // NUMBER, PERCENTAGE), or has no built-in unit yet (LENGTH_RATIO).
-  const unsupportedPhenomena = new Set(["LENGTH_RATIO"]);
+  // NUMBER, PERCENTAGE).
   const overrides = new Map<string, string>([
     ["CURRENCY", "US_DOLLAR"],
     ["FORCE", "N"],
@@ -210,7 +209,7 @@ export function buildDefaultPersistenceUnitEntries(
   const unresolved: Array<{ phenomenon: string; candidates: string[] }> = [];
 
   for (const [name, item] of Object.entries(source.items).sort(([a], [b]) => a.localeCompare(b))) {
-    if (item.schemaItemType !== "Phenomenon" || unsupportedPhenomena.has(name))
+    if (item.schemaItemType !== "Phenomenon")
       continue;
 
     const qualifiedPhenomenonName = qualifiedSchemaItemName(name);
@@ -310,11 +309,7 @@ export function buildGeneratedDefaultPersistenceModule(
     lines.push(`  [Phenomena.${phenomenonName}]: Units.${phenomenonName}.${unitName},`);
   }
 
-  lines.push(
-    "  // Phenomena.LENGTH_RATIO is intentionally omitted because the bundled built-in unit set does not yet provide an agreed default for that phenomenon.",
-    "} as const satisfies Record<Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>, UnitName>;",
-    "",
-  );
+  lines.push("} as const satisfies Record<PhenomenonName, UnitName>;", "");
   return lines.join("\n");
 }
 
