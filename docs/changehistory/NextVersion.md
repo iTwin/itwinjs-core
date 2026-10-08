@@ -3,12 +3,17 @@ publish: false
 ---
 # NextVersion
 
+<!-- prettier-ignore -->
 - [NextVersion](#nextversion)
   - [Backend](#backend)
     - [Opportunistic cursor reuse for asynchronous ECSQL paging](#opportunistic-cursor-reuse-for-asynchronous-ecsql-paging)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+  - [Quantity](#quantity)
+    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
+    - [Async formats provider setter](#async-formats-provider-setter)
 
 ## Backend
 
@@ -19,6 +24,10 @@ Asynchronous ECSQL readers can now resume unfinished concurrent-query statements
 Backend concurrent-query configuration adds `enableCursors` (default `true`), `maxCursorsPerWorker` (default `-1`, selecting the statement-cache size for read-only primaries or four for writable WAL databases), and `cursorIdleTimeout` (default 30 seconds). Set `enableCursors: false` or `maxCursorsPerWorker: 0` to retain the previous per-batch re-execution behavior. Primary-connection queries, non-WAL databases (including read-only handles), and connections with attached data databases continue using that behavior.
 
 Queries with nondeterministic expressions can now evaluate those expressions once for a retained execution instead of once per batch. Use deterministic queries and ordering for reliable paging, or disable cursor reuse when per-batch re-evaluation is required. Parked statements can retain sorter resources and delay WAL checkpoints until invalidation or expiration.
+
+### Vertical CRS discovery
+
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
 ### Opt-in fallback for missing navigation relationship class ids
 
