@@ -331,7 +331,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!vp)
       return false;
 
-    const filter = (id: Id64String) => { return !Id64.isTransient(id); };
+    const filter = (elem: { id: Id64String }) => { return !Id64.isTransient(elem.id); };
     const contents = await ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
 
     if (0 === contents.size) {
