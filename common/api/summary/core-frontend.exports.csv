@@ -59,7 +59,7 @@ public;class;AuxCoordSystemSpatialState
 public;class;AuxCoordSystemState
 internal;class;BackgroundMapGeometry
 internal;const;_backingView
-public;interface;BaseIModelDisplayReferences
+beta;interface;BaseIModelDisplayReferences
 beta;class;BaseUnitFormattingSettingsProvider
 public;interface;BatchOptions
 beta;interface;BatchTableProperties

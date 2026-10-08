@@ -287,6 +287,7 @@ export interface ReadPixelsArgs {
   excludeNonLocatable?: boolean;
   /** Optional elements that should not be drawn, potentially revealing other geometry they would otherwise obscure.
    * An Id applies only to the primary IModelDisplayReference; a [Id, IModelDisplayReference] pair applies only to that reference.
+   * @beta
    */
   excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
 }

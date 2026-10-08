@@ -161,6 +161,7 @@ export interface HitDetailProps {
   readonly hitSource: HitSource;
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   readonly hitPoint: Point3d;
+  /** @beta */
   readonly feature: IModelDisplayFeature;
   /** The hit geometry priority/classification. */
   readonly priority: HitPriority;
@@ -196,7 +197,9 @@ export class HitDetail {
   public get hitSource(): HitSource { return this._props.hitSource; }
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   public get hitPoint(): Point3d { return this._props.hitPoint; }
-  /** The object from which this hit originated. */
+  /** The object from which this hit originated.
+   * @beta
+   */
   public get feature(): IModelDisplayFeature { return this._props.feature; }
   /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
   public get sourceId(): Id64String { return this._props.feature.elementId; }

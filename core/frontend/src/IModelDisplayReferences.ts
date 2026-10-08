@@ -34,6 +34,9 @@ export interface LinkSpatialIModelArgs {
   overrides?: SpatialIModelDisplayOverridesProps;
 }
 
+/** Common properties of the iModel references displayed by a view.
+ * @beta
+ */
 export interface BaseIModelDisplayReferences {
   /** @internal */
   readonly [_implementationProhibited]: unknown;

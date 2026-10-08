@@ -1506,7 +1506,7 @@ export class BackgroundMapGeometry {
 // @internal (undocumented)
 export const _backingView: unique symbol;
 
-// @public (undocumented)
+// @beta
 export interface BaseIModelDisplayReferences {
     // @internal (undocumented)
     readonly [_backingView]: ViewState;
@@ -4826,6 +4826,7 @@ export class HitDetail {
     get distFraction(): number;
     get distXY(): number;
     draw(_context: DecorateContext): void;
+    // @beta
     get feature(): IModelDisplayFeature;
     get geometryClass(): GeometryClass | undefined;
     getHitType(): HitDetailType;
@@ -4861,7 +4862,7 @@ export class HitDetail {
 export interface HitDetailProps {
     readonly distFraction: number;
     readonly distXY: number;
-    // (undocumented)
+    // @beta (undocumented)
     readonly feature: IModelDisplayFeature;
     readonly hitPoint: Point3d;
     readonly hitSource: HitSource;
@@ -8276,6 +8277,7 @@ export namespace Pixel {
         computeHitPriority(): HitPriority;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
+        // @beta
         readonly feature?: IModelDisplayFeature;
         get geometryClass(): GeometryClass | undefined;
         // @beta
@@ -8302,6 +8304,7 @@ export namespace Pixel {
     }
     export interface HitProps {
         distFraction: number;
+        // @beta
         feature: IModelDisplayFeature;
         // @alpha
         isClassifier?: boolean;
@@ -8716,6 +8719,7 @@ export interface ReadMeshArgs {
 
 // @public
 export interface ReadPixelsArgs {
+    // @beta
     excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
     excludeNonLocatable?: boolean;
     receiver: Pixel.Receiver;

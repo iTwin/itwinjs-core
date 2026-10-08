@@ -20,7 +20,9 @@ import type { Viewport } from "../Viewport";
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    /** The feature that produced the pixel. */
+    /** The feature that produced the pixel.
+     * @beta
+     */
     public readonly feature?: IModelDisplayFeature;
     /** The Id of the model containing this pixel's [[feature]]. */
     public get modelId(): Id64String | undefined { return this.feature?.modelId; }
@@ -164,7 +166,9 @@ export namespace Pixel {
    * @public
    */
   export interface HitProps {
-    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
+    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations.
+     * @beta
+     */
     feature: IModelDisplayFeature;
     /** The hit geometry priority/classification. */
     priority: HitPriority;
