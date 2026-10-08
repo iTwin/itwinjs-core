@@ -6,11 +6,8 @@
 import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { NoRenderApp } from "@itwin/core-frontend";
-import {
-  getAccessTokenFromBackend, TestFrontendAuthorizationClient,
-} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -31,7 +28,8 @@ export class TestContext {
 
   public static async instance(): Promise<TestContext> {
     if (this._instance === undefined) {
-      this._instance = new TestContext(await getProcessEnvFromBackend());
+      const { getProcessEnv } = await import("./BrowserCommands.mjs");
+      this._instance = new TestContext(await getProcessEnv());
       await this._instance.initialize();
     }
     return this._instance;
@@ -45,6 +43,7 @@ export class TestContext {
   }
 
   private async initialize() {
+    const { getAccessToken } = await import("./BrowserCommands.mjs");
     expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
 
     // Print out the configuration
@@ -55,7 +54,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     if (undefined !== this.settings.oidcClientId) {
-      this.adminUserAccessToken = await getAccessTokenFromBackend({
+      this.adminUserAccessToken = await getAccessToken({
         email: this.settings.users[0].email,
         password: this.settings.users[0].password,
       }, {
