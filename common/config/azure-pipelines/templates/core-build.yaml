@@ -90,10 +90,6 @@ steps:
     displayName: Build & run iOS backend unit tests in Simulator
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  - script: node ./common/scripts/install-run-rush webpack:test -v
-    workingDirectory: ${{ parameters.workingDir }}
-    displayName: "rush webpack:test (for rush cover)"
-
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover

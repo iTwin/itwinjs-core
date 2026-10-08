@@ -219,82 +219,6 @@
         "${workspaceFolder}/extensions/frontend-tiles/lib/**/*.js"
       ]
     },
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for Frontend Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/core/frontend/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/frontend/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] Frontend Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] Frontend Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Frontend Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for i18n Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/core/i18n/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/i18n/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] i18n Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] i18n Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/i18n/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for i18n Tests"
-      ]
-    },
     {
       "name": "Geometry Tests",
       "presentation": {
@@ -315,83 +239,6 @@
         "NODE_ENV": "development" // needed for asserts to fire
       }
     },
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for HyperModeling Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/core/hypermodeling/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/hypermodeling/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] HyperModeling Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] HyperModeling Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/hypermodeling/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for HyperModeling Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for Markup Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/core/markup/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js",
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/markup/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] Markup Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] Markup Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Markup Tests"
-      ]
-    },
     {
       "name": "Quantity Tests",
       "presentation": {
@@ -410,46 +257,6 @@
       ]
     },
     // UI TESTS
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for AppUI Abstract Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/ui/appui-abstract/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/frontend/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] AppUI Abstract Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] AppUI Abstract Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for AppUI Abstract Tests"
-      ]
-    },
     // PRESENTATION TESTS
     {
       "name": "[Presentation] Tests: Backend",
@@ -946,10 +753,9 @@
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/core/certa.json
+      "attachSimplePort": 5858,
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] Full Stack Core Tests"
       ]
@@ -961,12 +767,11 @@
       },
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
+      "port": 9223,
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] Full Stack Core Tests"
@@ -990,10 +795,9 @@
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/core/certa.json
+      "attachSimplePort": 5858,
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] Full Stack Core Integration Tests"
       ]
@@ -1005,12 +809,11 @@
       },
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
+      "port": 9223,
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] Full Stack Core Integration Tests"
@@ -1060,33 +863,6 @@
       ]
     },
     { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/rpc-interface/",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:chrome",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/rpc-interface/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BACKEND] Local Backend for Full Stack RPC Interface Tests",
-        "[FRONTEND] Full Stack RPC Interface Tests"
-      ]
-    },
-    { /* PARTIAL */
       "name": "[BACKEND] Local Backend for Full Stack RPC Interface Tests",
       "presentation": {
         "hidden": true
@@ -1098,30 +874,9 @@
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
-        "[FRONTEND] Full Stack RPC Interface Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[FRONTEND] Full Stack RPC Interface Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc-interface/certa.json
-      "timeout": 200000,
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
-        "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
+        "Run Vitest Browser Full Stack RPC Interface"
       ]
     },
     { /* PARTIAL */
@@ -1244,6 +999,81 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Vitest Browser HyperModeling",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/hypermodeling",
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser Markup",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/markup",
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser i18n",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/i18n",
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser AppUI Abstract",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/ui/appui-abstract",
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser Full Stack RPC Interface",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/full-stack-tests/rpc-interface",
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Compile test worker for frontend tests",
       "console": "integratedTerminal",
       "runtimeExecutable": "pnpm",
@@ -1296,8 +1126,8 @@
         "order": 4
       },
       "configurations": [
-        "[BROWSER] HyperModeling Tests",
-        "[NODE] Certa Test Runner for HyperModeling Tests"
+        "Attach to Vitest Browser",
+        "Run Vitest Browser HyperModeling"
       ]
     },
     {
@@ -1307,8 +1137,8 @@
         "order": 6
       },
       "configurations": [
-        "[BROWSER] Markup Tests",
-        "[NODE] Certa Test Runner for Markup Tests"
+        "Attach to Vitest Browser",
+        "Run Vitest Browser Markup"
       ]
     },
     {
@@ -1318,8 +1148,8 @@
         "order": 2
       },
       "configurations": [
-        "[BROWSER] i18n Tests",
-        "[NODE] Certa Test Runner for i18n Tests"
+        "Attach to Vitest Browser",
+        "Run Vitest Browser i18n"
       ]
     },
     {
@@ -1395,9 +1225,9 @@
         "order": 1
       },
       "configurations": [
-        "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
+        "Attach to Vitest Browser",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests",
-        "[FRONTEND] Full Stack RPC Interface Tests"
+        "Run Vitest Browser Full Stack RPC Interface"
       ]
     },
     {
@@ -1407,8 +1237,8 @@
         "order": 2
       },
       "configurations": [
-        "[BROWSER] AppUI Abstract Tests",
-        "[NODE] Certa Test Runner for AppUI Abstract Tests"
+        "Attach to Vitest Browser",
+        "Run Vitest Browser AppUI Abstract"
       ]
     },
   ],

@@ -50,9 +50,8 @@ steps:
     retryCountOnTaskFailure: 1
 
   # Build every package needed by the integration test suites in a single Rush
-  # invocation. Each frontend test package (and @itwin/core-electron) already runs
-  # webpack:test as part of its normal build script, but cached bundles must be
-  # rebundled below to embed this job's integration-test environment variables.
+  # invocation. Vite serves the test files at run time, so there is no test bundle
+  # to build, and the tests read this job's environment when they run.
   #
   # The build cache is READ-ONLY here (RUSH_BUILD_CACHE_WRITE_ALLOWED: 0): these
   # pipelines can be queued manually against arbitrary refs, so they must never
@@ -70,9 +69,6 @@ steps:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
       RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
-
-  - script: node ./common/scripts/install-run-rush webpack:test -v
-    displayName: "Rebundle integration tests with current environment"
 
   # Starting Ubuntu 24.04, unprivileged user namespaces are restricted by default via AppArmor.
   # Electron's sandbox requires user namespaces, so we create an AppArmor profile that grants the 'userns' permission to the Electron binary.
