@@ -1057,7 +1057,7 @@ export abstract class IModelDb extends IModel {
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return this[_queryMetadataCache].execute(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
+        return this[_queryMetadataCache].executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);

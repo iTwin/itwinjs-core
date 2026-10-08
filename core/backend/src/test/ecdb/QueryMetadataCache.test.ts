@@ -54,7 +54,7 @@ describe("QueryMetadataCache", () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("A"));
     const request = makeRequest({ includeMetaData: false });
-    await cache.execute(request, exec.execute);
+    await cache.executeCachedQueryRequest(request, exec.execute);
     expect(exec.requests[0]).to.equal(request);
     expect(cache.size).to.equal(0);
   });
@@ -64,8 +64,8 @@ describe("QueryMetadataCache", () => {
     const exec = new FakeExecutor(makeMeta("A", "B"));
     const request = makeRequest();
 
-    const first = await cache.execute(request, exec.execute);
-    const second = await cache.execute(request, exec.execute);
+    const first = await cache.executeCachedQueryRequest(request, exec.execute);
+    const second = await cache.executeCachedQueryRequest(request, exec.execute);
 
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, false]);
     expect(request.includeMetaData).to.be.true; // caller's request is not modified
@@ -86,7 +86,7 @@ describe("QueryMetadataCache", () => {
       makeRequest({ usePrimaryConn: true }),
     ];
     for (const request of variants)
-      await cache.execute(request, exec.execute);
+      await cache.executeCachedQueryRequest(request, exec.execute);
 
     expect(exec.requests.every((r) => r.includeMetaData)).to.be.true;
     expect(cache.size).to.equal(variants.length);
@@ -96,11 +96,11 @@ describe("QueryMetadataCache", () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("A"));
 
-    const first = await cache.execute(makeRequest(), exec.execute);
+    const first = await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     first.meta[0].name = "changed";
-    const second = await cache.execute(makeRequest(), exec.execute);
+    const second = await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     second.meta[0].name = "changed again";
-    const third = await cache.execute(makeRequest(), exec.execute);
+    const third = await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
 
     expect(third.meta).to.deep.equal(makeMeta("A"));
   });
@@ -110,24 +110,24 @@ describe("QueryMetadataCache", () => {
     const exec = new FakeExecutor(makeMeta("A"));
     for (const status of [DbResponseStatus.Error_ECSql_PreparedFailed, DbResponseStatus.QueueFull, DbResponseStatus.Timeout]) {
       exec.status = status;
-      await cache.execute(makeRequest(), exec.execute);
+      await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
       expect(cache.size).to.equal(0);
     }
 
     exec.status = DbResponseStatus.Done;
-    await cache.execute(makeRequest(), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, true, true, true]);
     expect(cache.size).to.equal(1);
 
     exec.status = DbResponseStatus.QueueFull;
-    const busy = await cache.execute(makeRequest(), exec.execute);
+    const busy = await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     expect(busy.meta).to.deep.equal([]);
   });
 
   it("does not cache metadata from a request that was in flight during clear", async () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("Old"));
-    await cache.execute(makeRequest(), async (request) => {
+    await cache.executeCachedQueryRequest(makeRequest(), async (request) => {
       cache.clear();
       return exec.execute(request);
     });
@@ -137,10 +137,10 @@ describe("QueryMetadataCache", () => {
   it("re-requests metadata when cleared while a cache hit is in flight", async () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("Old"));
-    await cache.execute(makeRequest(), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
 
     exec.meta = makeMeta("New");
-    const response = await cache.execute(makeRequest(), async (request) => {
+    const response = await cache.executeCachedQueryRequest(makeRequest(), async (request) => {
       if (!request.includeMetaData)
         cache.clear();
       return exec.execute(request);
@@ -153,25 +153,25 @@ describe("QueryMetadataCache", () => {
   it("clear drops all entries", async () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("A"));
-    await cache.execute(makeRequest(), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     cache.clear();
     expect(cache.size).to.equal(0);
-    await cache.execute(makeRequest(), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, true]);
   });
 
   it("evicts the least recently used entry when full", async () => {
     const cache = new QueryMetadataCache(2);
     const exec = new FakeExecutor(makeMeta("A"));
-    await cache.execute(makeRequest({ query: "q1" }), exec.execute);
-    await cache.execute(makeRequest({ query: "q2" }), exec.execute);
-    await cache.execute(makeRequest({ query: "q1" }), exec.execute); // hit: q1 becomes most recent
-    await cache.execute(makeRequest({ query: "q3" }), exec.execute); // evicts q2
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q1" }), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q2" }), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q1" }), exec.execute); // hit: q1 becomes most recent
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q3" }), exec.execute); // evicts q2
     expect(cache.size).to.equal(2);
 
     exec.requests.length = 0;
-    await cache.execute(makeRequest({ query: "q1" }), exec.execute);
-    await cache.execute(makeRequest({ query: "q2" }), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q1" }), exec.execute);
+    await cache.executeCachedQueryRequest(makeRequest({ query: "q2" }), exec.execute);
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([false, true]);
   });
 });

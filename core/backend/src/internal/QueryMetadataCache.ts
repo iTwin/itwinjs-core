@@ -64,22 +64,26 @@ export class QueryMetadataCache {
   }
 
   /**
-   * Execute a query request, serving column metadata from the cache when possible.
+   * The cached counterpart of `executeQueryRequest`, serving column metadata from the cache when possible.
+   * On a cache hit, `executeQueryRequest` is called with `includeMetaData: false` and the cached metadata is attached to the response.
+   * On a miss, `executeQueryRequest` is called with the request unchanged and the returned metadata is cached.
    * @param request The request to execute. It is not modified.
-   * @param execute Sends a request to native.
+   * @param executeQueryRequest Sends a request to native without consulting this cache, typically
+   * `ConcurrentQuery.executeQueryRequest` with the database already bound. Called once, or twice if the cache is cleared
+   * while a cache hit is in flight.
    */
-  public async execute(request: DbQueryRequest, execute: (request: DbQueryRequest) => Promise<DbQueryResponse>): Promise<DbQueryResponse> {
+  public async executeCachedQueryRequest(request: DbQueryRequest, executeQueryRequest: (request: DbQueryRequest) => Promise<DbQueryResponse>): Promise<DbQueryResponse> {
     if (!request.includeMetaData)
-      return execute(request);
+      return executeQueryRequest(request);
 
     const key = QueryMetadataCache.makeKey(request);
     const cached = this.get(key);
     if (cached) {
       const hitGeneration = this._generation;
-      const hitResponse = await execute({ ...request, includeMetaData: false });
+      const hitResponse = await executeQueryRequest({ ...request, includeMetaData: false });
       if (hitGeneration !== this._generation) {
         // Invalidated while in flight: the cached metadata may not match the statement that produced the rows.
-        return execute(request);
+        return executeQueryRequest(request);
       }
       if (QueryMetadataCache.hasResult(hitResponse) && (hitResponse.meta === undefined || hitResponse.meta.length === 0))
         hitResponse.meta = QueryMetadataCache.copy(cached);
@@ -87,7 +91,7 @@ export class QueryMetadataCache {
     }
 
     const generation = this._generation;
-    const response = await execute(request);
+    const response = await executeQueryRequest(request);
     if (generation === this._generation && QueryMetadataCache.hasResult(response) && response.meta !== undefined && response.meta.length > 0)
       this.set(key, QueryMetadataCache.copy(response.meta));
     return response;
