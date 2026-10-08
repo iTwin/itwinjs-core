@@ -11,6 +11,8 @@ import {
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
+import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
@@ -192,6 +194,70 @@ describe("Viewport", () => {
         expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
         expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
       });
+    });
+  });
+
+  describe("FeatureOverrideProvider", () => {
+    function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
+      return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);
+    }
+
+    it("moves the proxy across primary references for the same iModel connection", () => {
+      using viewport = openBlankViewport();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const previousRef = viewport.primaryIModelRef;
+      const nextView = SpatialViewState.createBlank(viewport.iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+      const nextRef = nextView.iModelRefs.primary;
+
+      expect(nextRef).not.toBe(previousRef);
+      expect(viewport.addFeatureOverrideProvider(provider)).toBe(true);
+      expect(hasProxy(previousRef, provider)).toBe(true);
+
+      viewport.applyViewState(nextView);
+
+      expect(hasProxy(previousRef, provider)).toBe(false);
+      expect(hasProxy(nextRef, provider)).toBe(true);
+      expect([...viewport.featureOverrideProviders]).toContain(provider);
+      expect(viewport.dropFeatureOverrideProvider(provider)).toBe(true);
+      expect(hasProxy(nextRef, provider)).toBe(false);
+    });
+
+    it("drops providers when the primary iModel connection changes", async () => {
+      const viewport = openBlankViewport();
+      const originalIModel = viewport.iModel;
+      const otherIModel = createBlankConnection();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const previousRef = viewport.primaryIModelRef;
+      const nextView = SpatialViewState.createBlank(otherIModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+      const nextRef = nextView.iModelRefs.primary;
+
+      try {
+        viewport.addFeatureOverrideProvider(provider);
+        viewport.changeView(nextView);
+
+        expect(hasProxy(previousRef, provider)).toBe(false);
+        expect(hasProxy(nextRef, provider)).toBe(false);
+        expect([...viewport.featureOverrideProviders]).not.toContain(provider);
+        expect(viewport.dropFeatureOverrideProvider(provider)).toBe(false);
+      } finally {
+        viewport[Symbol.dispose]();
+        await otherIModel.close();
+        await originalIModel.close();
+      }
+    });
+
+    it("removes proxies when the viewport is disposed", () => {
+      using viewport = openBlankViewport();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const ref = viewport.primaryIModelRef;
+
+      viewport.addFeatureOverrideProvider(provider);
+      expect(hasProxy(ref, provider)).toBe(true);
+
+      viewport[Symbol.dispose]();
+
+      expect(hasProxy(ref, provider)).toBe(false);
+      expect([...viewport.featureOverrideProviders]).toHaveLength(0);
     });
   });
 

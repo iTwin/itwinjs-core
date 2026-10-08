@@ -299,8 +299,7 @@ export interface ReadImageToCanvasOptions {
   omitCanvasDecorations?: boolean;
 }
 
-/** Wraps a deprecated FeatureOverrideProvider (which is registered with a Viewport and operates on Viewport.iModel) with a FeatureSymbologyOverrider
- * (which is registered with and operates upon the viewport's primary IModelDisplayReference), until such time as we can remove FeatureOverrideProvider.
+/** Adapts a viewport-scoped provider to the viewport's current primary display reference.
  */
 class ProxyOverrideProvider implements FeatureSymbologyOverrider {
   constructor(
@@ -311,6 +310,11 @@ class ProxyOverrideProvider implements FeatureSymbologyOverrider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _iModelRef: IModelDisplayReference): void {
     this.proxiedProvider.addFeatureOverrides(overrides, this._vp);
   }
+}
+
+interface FeatureOverrideProviderRegistration {
+  iModelRef: IModelDisplayReference;
+  proxy: ProxyOverrideProvider;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -571,7 +575,7 @@ export abstract class Viewport implements Disposable, TileUser {
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
-  private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
+  private readonly _featureOverrideProviderRegistrations = new Map<FeatureOverrideProvider, FeatureOverrideProviderRegistration>();
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
@@ -1162,6 +1166,7 @@ export abstract class Viewport implements Disposable, TileUser {
     if (this.isDisposed)
       return;
 
+    this.clearFeatureOverrideProviderRegistrations();
     this._target = dispose(this._target);
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
@@ -1182,6 +1187,30 @@ export abstract class Viewport implements Disposable, TileUser {
     this.detachFromView();
     this._view = view;
     this.attachToView();
+    this.updateFeatureOverrideProviderRegistrations(view.iModelRefs.primary);
+  }
+
+  private updateFeatureOverrideProviderRegistrations(iModelRef: IModelDisplayReference): void {
+    for (const [provider, registration] of this._featureOverrideProviderRegistrations) {
+      if (registration.iModelRef.iModel !== iModelRef.iModel) {
+        this.dropFeatureOverrideProvider(provider);
+        continue;
+      }
+
+      if (registration.iModelRef === iModelRef)
+        continue;
+
+      registration.iModelRef.featureOverrideProviders.delete(registration.proxy);
+      registration.iModelRef = iModelRef;
+      iModelRef.featureOverrideProviders.add(registration.proxy);
+    }
+  }
+
+  private clearFeatureOverrideProviderRegistrations(): void {
+    for (const registration of this._featureOverrideProviderRegistrations.values())
+      registration.iModelRef.featureOverrideProviders.delete(registration.proxy);
+
+    this._featureOverrideProviderRegistrations.clear();
   }
 
   /** @internal Invoked when the viewport becomes associated with a new ViewState to register event listeners with the view
@@ -1588,10 +1617,13 @@ export abstract class Viewport implements Disposable, TileUser {
     return this.primaryIModelRef.perModelCategoryVisibility;
   }
 
-  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
+  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport's primary iModel.
    * The provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
+  * The provider is associated with the iModel connection that is primary when it is registered. It follows changes to the primary display reference
+  * for that connection, and is removed if the viewport changes to a different iModel connection. Use a [[FeatureSymbologyOverrider]] when state must be
+  * associated with a particular display reference.
    * @note A Viewport can have any number of FeatureOverrideProviders. No attempt is made to resolve conflicts between two different providers overriding the same Feature.
    * @param provider The provider to register.
    * @returns true if the provider was registered, or false if the provider was already registered.
@@ -1600,11 +1632,13 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[FeatureSymbology.Overrides]].
    */
   public addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
-    if (this._featureOverrideProviders.includes(provider))
+    if (this._featureOverrideProviderRegistrations.has(provider))
       return false;
 
-    this._featureOverrideProviders.push(provider);
-    this.primaryIModelRef.featureOverrideProviders.add(new ProxyOverrideProvider(provider, this));
+    const iModelRef = this.primaryIModelRef;
+    const proxy = new ProxyOverrideProvider(provider, this);
+    this._featureOverrideProviderRegistrations.set(provider, { iModelRef, proxy });
+    iModelRef.featureOverrideProviders.add(proxy);
     this.setFeatureOverrideProviderChanged();
     return true;
   }
@@ -1615,18 +1649,12 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[addFeatureOverrideProvider]].
    */
   public dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
-    const index = this._featureOverrideProviders.indexOf(provider);
-    if (-1 === index)
+    const registration = this._featureOverrideProviderRegistrations.get(provider);
+    if (!registration)
       return false;
 
-    this._featureOverrideProviders.splice(index, 1);
-
-    for (const iModelProvider of this.primaryIModelRef.featureOverrideProviders) {
-      if (iModelProvider instanceof ProxyOverrideProvider && iModelProvider.proxiedProvider === provider) {
-        this.primaryIModelRef.featureOverrideProviders.delete(iModelProvider);
-        break;
-      }
-    }
+    this._featureOverrideProviderRegistrations.delete(provider);
+    registration.iModelRef.featureOverrideProviders.delete(registration.proxy);
 
     this.setFeatureOverrideProviderChanged();
     return true;
@@ -1639,7 +1667,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[addFeatureOverrideProvider]] to register a provider.
    */
   public findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined {
-    for (const provider of this._featureOverrideProviders)
+    for (const provider of this._featureOverrideProviderRegistrations.keys())
       if (predicate(provider))
         return provider;
 
@@ -1652,7 +1680,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[findFeatureOverrideProvider]] or [[findFeatureOverrideProviderOfType]] to find a registered provider.
    */
   public get featureOverrideProviders(): Iterable<FeatureOverrideProvider> {
-    return this._featureOverrideProviders;
+    return this._featureOverrideProviderRegistrations.keys();
   }
 
   /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
@@ -1668,7 +1696,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** @internal */
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
-    for (const provider of this._featureOverrideProviders)
+    for (const provider of this._featureOverrideProviderRegistrations.keys())
       provider.addFeatureOverrides(ovrs, this);
   }
 

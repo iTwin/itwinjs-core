@@ -14,6 +14,9 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
  * When the viewport needs to recreate the symbology overrides, it invokes the provider's [[addFeatureOverrides]] method.
  * If necessary - for example, because of changes to some state from which the provider derives the overrides - the provider
  * can request that the viewport recreate the overrides by calling [[Viewport.setFeatureOverrideProviderChanged]].
+ * The provider follows primary display-reference changes within the same iModel connection. It is removed if the viewport changes to a different connection,
+ * because unqualified element Ids could otherwise identify unrelated elements. Use [[FeatureSymbologyOverrider]] when state must be associated with a
+ * particular display reference.
  *
  * @see [[Viewport.addFeatureOverrideProvider]] to register a provider with a viewport.
  * @public
