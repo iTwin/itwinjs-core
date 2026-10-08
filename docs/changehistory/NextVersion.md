@@ -3,7 +3,24 @@ publish: false
 ---
 # NextVersion
 
+<!-- prettier-ignore -->
+- [NextVersion](#nextversion)
+  - [Backend](#backend)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
+    - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+  - [Common](#common)
+    - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+  - [Quantity](#quantity)
+    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
+    - [Async formats provider setter](#async-formats-provider-setter)
+  - [Breaking changes](#breaking-changes)
+    - [Mobile RPC authentication](#mobile-rpc-authentication)
+
 ## Backend
+
+### Vertical CRS discovery
+
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
 ### Opt-in fallback for missing navigation relationship class ids
 
@@ -41,3 +58,15 @@ The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.
 - The promise also rejects if the application shuts down before the reload finishes.
 
 Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
+
+## Breaking changes
+
+### Mobile RPC authentication
+
+Mobile RPC WebSocket connections now require a random per-launch token, preventing other applications on the device from accessing the backend through loopback. Connections without the token are rejected before RPC processing or pending-message delivery.
+
+Upgrade the mobile native runtime together with both the frontend and backend copies of `@itwin/core-mobile`. The secured transport cannot use older native runtimes that do not deliver the token, and older frontends cannot connect to the secured backend. There is no unauthenticated fallback. Updated native runtimes remain compatible with older frontend/backend pairs.
+
+No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
+
+Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.
