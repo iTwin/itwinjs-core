@@ -46,6 +46,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
   private _partialData: Uint8Array[] = [];
   private _port: number = 0;
+  private _rpcToken: string = "";
   private _transport?: MobilePushTransport;
   private _ipc: MobileIpcTransport;
   public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
@@ -89,9 +90,11 @@ export class MobileRpcProtocol extends RpcProtocol {
     }
 
     this._port = MobileRpcConfiguration.args.port;
+    this.setRpcToken((window as any).__iTwinJsRpcToken ?? MobileRpcConfiguration.args.rpcToken);
     this.connect(this._port, false);
 
-    (window as any)._imodeljs_rpc_reconnect = (port: number) => {
+    (window as any)._imodeljs_rpc_reconnect = (port: number, rpcToken: string) => {
+      this.setRpcToken(rpcToken);
       this.socket.close();
       window.location.hash = window.location.hash.replace(`port=${this._port}`, `port=${port}`);
       this._port = port;
@@ -103,8 +106,15 @@ export class MobileRpcProtocol extends RpcProtocol {
     RpcPushChannel.setup(transport);
   }
 
+  private setRpcToken(rpcToken: unknown) {
+    if (typeof rpcToken !== "string" || !/^[0-9a-f]{64}$/.test(rpcToken))
+      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol requires a native RPC authentication token. Update the mobile native runtime and startup configuration.");
+
+    this._rpcToken = rpcToken;
+  }
+
   private connect(port: number, reset: boolean) {
-    const socket = new WebSocket(`ws://127.0.0.1:${port}`);
+    const socket = new WebSocket(`ws://127.0.0.1:${port}`, `itwin-rpc.${this._rpcToken}`);
     socket.binaryType = "arraybuffer";
     this.connectMessageHandler(socket);
     this.connectOpenHandler(socket, reset);
