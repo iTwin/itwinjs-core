@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { describe, it } from "vitest";
 import { expect } from "chai";
 import { isArrowKey, SpecialKey } from "../../appui-abstract";
 

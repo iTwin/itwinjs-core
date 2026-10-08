@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { beforeAll, describe, it } from "vitest";
 import { assert } from "chai";
 import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
@@ -13,7 +14,7 @@ describe("Markup", () => {
   let svgContainer: Svg;
   let nested: G;
 
-  before(async () => {
+  beforeAll(async () => {
     initSvgExt();
 
     div = document.createElement("div");

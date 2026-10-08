@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { beforeAll, describe, it } from "vitest";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { AbstractMenuItemProps } from "../appui-abstract/items/AbstractMenuItemProps";
@@ -20,7 +21,7 @@ describe("UiAdmin", () => {
 
   let uiAdmin: UiAdmin;
 
-  before(() => {
+  beforeAll(() => {
     uiAdmin = new UiAdmin();
   });
 

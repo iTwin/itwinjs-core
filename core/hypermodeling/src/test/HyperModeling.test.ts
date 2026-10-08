@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, it } from "vitest";
 import { expect } from "chai";
 import { EmptyLocalization, SectionType } from "@itwin/core-common";
 import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
@@ -11,11 +12,11 @@ import { SectionMarkerHandler } from "../SectionMarkerHandler";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
 describe("Package initialization", () => {
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
-  after(async () => {
+  afterAll(async () => {
     expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
     expect(HyperModeling.resources).to.be.undefined;
@@ -40,12 +41,12 @@ describe("Package initialization", () => {
 });
 
 describe("Package configuration", () => {
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup();
     await HyperModeling.initialize();
   });
 
-  after(async () => {
+  afterAll(async () => {
     expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
     expect(HyperModeling.resources).to.be.undefined;

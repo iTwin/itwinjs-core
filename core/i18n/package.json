@@ -12,7 +12,7 @@
     "directory": "core/i18n"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s webpack:test",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
@@ -20,10 +20,7 @@
     "extract-api": "betools extract-api --entry=core-i18n",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "test": "npm run -s test:chrome",
-    "test:chrome": "certa -r chrome",
-    "test:debug": "certa -r chrome --debug",
-    "webpack:test": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "test": "vitest --run",
     "cover": "npm -s test"
   },
   "keywords": [
@@ -44,23 +41,18 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "^7.0.0",
+    "@vitest/browser-playwright": "^4.1.11",
     "chai": "^4.3.10",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
+    "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^5.0.1"
+    "vitest": "^4.1.11"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to core-i18n",

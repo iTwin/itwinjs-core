@@ -18,9 +18,7 @@
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run -s webpackTests && certa -r chrome",
-    "test:debug": "certa -r chrome --debug",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+    "test": "vitest --run"
   },
   "repository": {
     "type": "git",
@@ -49,27 +47,18 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "^7.0.0",
+    "@vitest/browser-playwright": "^4.1.11",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
+    "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@itwin/appui-abstract": "workspace:*"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { describe, it } from "vitest";
 import { expect } from "chai";
 import { SectionType } from "@itwin/core-common";
 import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";

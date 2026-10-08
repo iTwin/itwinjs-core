@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { UiEventDispatcher, UiSyncEventArgs } from "../../appui-abstract";
@@ -9,10 +10,10 @@ import { UiEventDispatcher, UiSyncEventArgs } from "../../appui-abstract";
 const timeToWaitForUiSyncCallback = 60;
 
 describe("UiEventDispatcher", () => {
-  before(async () => {
+  beforeAll(async () => {
   });
 
-  after(() => {
+  afterAll(() => {
   });
 
   beforeEach(() => {

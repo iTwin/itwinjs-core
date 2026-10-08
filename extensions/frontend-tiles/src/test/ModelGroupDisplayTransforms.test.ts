@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { describe, it } from "vitest";
 import { ModelDisplayTransform, ModelDisplayTransformProvider } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { expect } from "chai";

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, it } from "vitest";
 import { expect } from "chai";
 import { Capabilities } from "../Capabilities";
 import {
@@ -55,11 +56,11 @@ class OverriddenFunctions {
 describe("Render Compatibility", () => {
   let overriddenFunctions: OverriddenFunctions;
 
-  before(() => {
+  beforeAll(() => {
     overriddenFunctions = new OverriddenFunctions();
   });
 
-  after(() => {
+  afterAll(() => {
     overriddenFunctions.restore();
   });
 

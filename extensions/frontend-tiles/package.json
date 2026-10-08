@@ -24,8 +24,7 @@
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "test": "npm run -s webpackTests && certa -r chrome",
-    "webpackTests": "webpack --config ./src/test/utils/webpack-config.cjs 1>&2"
+    "test": "vitest --run"
   },
   "repository": {
     "type": "git",
@@ -50,28 +49,23 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@types/sinon": "^17.0.2",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "^7.0.0",
+    "@vitest/browser-playwright": "^4.1.11",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
     "internal-tools": "workspace:*",
-    "mocha": "^11.1.0",
+    "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1"
+    "vitest": "^4.1.11"
   }
 }

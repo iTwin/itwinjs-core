@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { afterAll, beforeAll, describe, it } from "vitest";
 import { IModelApp } from "@itwin/core-frontend";
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -126,8 +127,8 @@ const testArgs = {
 };
 
 describe("queryGraphicRepresentations", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
 
   it("returns no results upon error", async () => {
     await mockFetch(
@@ -192,8 +193,8 @@ describe("queryGraphicRepresentations", () => {
 });
 
 describe("obtainGraphicRepresentationUrl", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
 
   async function fetchSources(resource: URL | RequestInfo): Promise<Response> {
     expect(typeof resource).to.equal("string");
@@ -258,8 +259,8 @@ describe("obtainGraphicRepresentationUrl", () => {
 });
 
 describe("createGraphicRepresentationsQueryUrl", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
 
   it("creates the expected url to query the default number of exports", async () => {
     const url = createGraphicRepresentationsQueryUrl({

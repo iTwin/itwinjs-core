@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { describe, it } from "vitest";
 import { assert } from "chai";
 // based on file https://github.com/microsoft/vscode/blob/master/src/vs/base/test/common/filters.test.ts
 

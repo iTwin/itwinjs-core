@@ -23,9 +23,8 @@
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "extract-api": "betools extract-api --entry=appui-abstract",
-    "test": "npm run -s webpackTests && certa -r chrome",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+    "test": "vitest --run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "Bentley",
@@ -48,25 +47,20 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
-    "@itwin/certa": "workspace:*",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
     "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "^7.0.0",
+    "@vitest/browser-playwright": "^4.1.11",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
-    "mocha": "^11.1.0",
+    "playwright": "~1.56.1",
     "raf": "^3.4.0",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
     "sinon-chai": "^3.7.0",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1"
+    "vitest": "^4.1.11"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

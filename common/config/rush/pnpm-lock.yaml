@@ -948,9 +948,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
@@ -969,15 +966,9 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -987,27 +978,18 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
-      mocha:
-        specifier: ^11.1.0
-        version: 11.8.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/i18n:
     dependencies:
@@ -1024,9 +1006,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
@@ -1039,42 +1018,30 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.1.4(webpack@5.111.1)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/markup:
     dependencies:
@@ -1085,9 +1052,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
@@ -1106,15 +1070,9 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -1124,21 +1082,18 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/mobile:
     dependencies:
@@ -1276,48 +1231,33 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
-      mocha:
-        specifier: ^11.1.0
-        version: 11.8.0
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../domains/analytical/backend:
     devDependencies:
@@ -1578,9 +1518,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../../core/bentley
@@ -1853,9 +1790,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../../core/bentley
@@ -1877,21 +1811,15 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.8
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.4
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -1901,30 +1829,24 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
-      mocha:
-        specifier: ^11.1.0
-        version: 11.8.0
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../extensions/map-layers-auth:
     devDependencies:
@@ -4234,9 +4156,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../../core/bentley
@@ -4246,21 +4165,15 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.4
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.12
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
+      '@vitest/browser-playwright':
+        specifier: ^4.1.11
+        version: 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -4270,12 +4183,9 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
-      mocha:
-        specifier: ^11.1.0
-        version: 11.8.0
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       raf:
         specifier: ^3.4.0
         version: 3.4.1
@@ -4288,15 +4198,12 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.111.1(webpack-cli@5.1.4)
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../utils/workspace-editor:
     dependencies:
@@ -4505,10 +4412,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0
-
-  '@babel/helper-plugin-utils@7.29.7':
-    resolution: {integrity: sha512-G7sHYigPY17oO5SYWnfD/0MTBwVR781S/JI643e/JhUYgVgWE/61SoW3NH9KWUKyKq5LVh3npif99Wkt6j86Jw==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/helper-string-parser@7.29.7':
     resolution: {integrity: sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==}
@@ -6760,17 +6663,6 @@ packages:
     resolution: {integrity: sha512-dl2AXMkXtVlX9s3U3ttIQFFlKwe64k/ugSIVNT4V3qX488Ncw988rIHAs6apgUtfEzyqwtFN9MZp0Foq60Htag==}
     engines: {node: '>=22.0.0', vscode: ^1.39.0}
     hasBin: true
-
-  babel-loader@8.2.5:
-    resolution: {integrity: sha512-OSiFfH89LrEMiWd4pLNqGz4CwJDtbs2ZVc+iGu2HrkRfPxId9F2anQj38IxWpmRfsUY0aBZYi1EFcd3mhtRMLQ==}
-    engines: {node: '>= 8.9'}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-      webpack: '>=2'
-
-  babel-plugin-istanbul@7.0.1:
-    resolution: {integrity: sha512-D8Z6Qm8jCvVXtIRkBnqNHX0zJ37rQcFJ9u8WOS6tkYOsRdHBzypCstaxWiu5ZIlqQtviRYbgnRLSoCEvjqcqbA==}
-    engines: {node: '>=12'}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -9931,10 +9823,6 @@ packages:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
 
-  schema-utils@2.7.1:
-    resolution: {integrity: sha512-SHiNtMOUGWBQJwzISiVYKu82GiV4QYGePp3odlY1tuKO7gPtphAT5R/py0fA6xtbgLL/RvtJZnU9b8s0F1q0Xg==}
-    engines: {node: '>= 8.9.0'}
-
   schema-utils@3.3.0:
     resolution: {integrity: sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==}
     engines: {node: '>= 10.13.0'}
@@ -11352,8 +11240,6 @@ snapshots:
       '@babel/traverse': 7.29.8
     transitivePeerDependencies:
       - supports-color
-
-  '@babel/helper-plugin-utils@7.29.7': {}
 
   '@babel/helper-string-parser@7.29.7': {}
 
@@ -13297,6 +13183,19 @@ snapshots:
       - utf-8-validate
       - vite
 
+  '@vitest/browser-playwright@4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
+    dependencies:
+      '@vitest/browser': 4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+      '@vitest/mocker': 4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
+      playwright: 1.56.1
+      tinyrainbow: 3.2.0
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+    transitivePeerDependencies:
+      - bufferutil
+      - msw
+      - utf-8-validate
+      - vite
+
   '@vitest/browser@4.1.11(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
     dependencies:
       '@blazediff/core': 1.9.1
@@ -13307,6 +13206,23 @@ snapshots:
       sirv: 3.0.2
       tinyrainbow: 3.2.0
       vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      ws: 8.22.0
+    transitivePeerDependencies:
+      - bufferutil
+      - msw
+      - utf-8-validate
+      - vite
+
+  '@vitest/browser@4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
+    dependencies:
+      '@blazediff/core': 1.9.1
+      '@vitest/mocker': 4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
+      '@vitest/utils': 4.1.11
+      magic-string: 0.30.21
+      pngjs: 7.0.0
+      sirv: 3.0.2
+      tinyrainbow: 3.2.0
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
@@ -13346,6 +13262,14 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+
+  '@vitest/mocker@4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))':
+    dependencies:
+      '@vitest/spy': 4.1.11
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -13837,25 +13761,6 @@ snapshots:
       - pg-hstore
       - snowflake-sdk
       - sqlite3
-      - supports-color
-
-  babel-loader@8.2.5(@babel/core@7.29.7)(webpack@5.111.1):
-    dependencies:
-      '@babel/core': 7.29.7
-      find-cache-dir: 3.3.2
-      loader-utils: 2.0.4
-      make-dir: 3.1.0
-      schema-utils: 2.7.1
-      webpack: 5.111.1(webpack-cli@5.1.4)
-
-  babel-plugin-istanbul@7.0.1:
-    dependencies:
-      '@babel/helper-plugin-utils': 7.29.7
-      '@istanbuljs/load-nyc-config': 1.1.0
-      '@istanbuljs/schema': 0.1.6
-      istanbul-lib-instrument: 6.0.3
-      test-exclude: 6.0.0
-    transitivePeerDependencies:
       - supports-color
 
   balanced-match@1.0.2: {}
@@ -17337,12 +17242,6 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
-  schema-utils@2.7.1:
-    dependencies:
-      '@types/json-schema': 7.0.15
-      ajv: 6.15.0
-      ajv-keywords: 3.5.2(ajv@6.15.0)
-
   schema-utils@3.3.0:
     dependencies:
       '@types/json-schema': 7.0.15
@@ -18176,6 +18075,21 @@ snapshots:
       tsx: 4.22.5
       yaml: 2.9.1
 
+  vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
+      postcss: 8.5.28
+      rollup: 4.64.0
+      tinyglobby: 0.2.17
+    optionalDependencies:
+      '@types/node': 26.6.4
+      fsevents: 2.3.3
+      terser: 5.51.2
+      tsx: 4.22.5
+      yaml: 2.9.1
+
   vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1):
     dependencies:
       '@vitest/expect': 4.1.11
@@ -18202,6 +18116,47 @@ snapshots:
       '@opentelemetry/api': 1.9.1
       '@types/node': 20.17.58
       '@vitest/browser-playwright': 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+      '@vitest/coverage-v8': 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
+
+  vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1):
+    dependencies:
+      '@vitest/expect': 4.1.11
+      '@vitest/mocker': 4.1.11(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
+      '@vitest/pretty-format': 4.1.11
+      '@vitest/runner': 4.1.11
+      '@vitest/snapshot': 4.1.11
+      '@vitest/spy': 4.1.11
+      '@vitest/utils': 4.1.11
+      es-module-lexer: 2.3.2
+      expect-type: 1.4.0
+      magic-string: 0.30.21
+      obug: 2.2.1
+      pathe: 2.0.3
+      picomatch: 4.0.7
+      std-env: 4.3.0
+      tinybench: 2.9.0
+      tinyexec: 1.3.1
+      tinyglobby: 0.2.17
+      tinyrainbow: 3.2.0
+      vite: 6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+      '@types/node': 26.6.4
+      '@vitest/browser-playwright': 4.1.11(playwright@1.56.1)(vite@6.4.3(@types/node@26.6.4)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8': 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       jsdom: 26.1.0
     transitivePeerDependencies:

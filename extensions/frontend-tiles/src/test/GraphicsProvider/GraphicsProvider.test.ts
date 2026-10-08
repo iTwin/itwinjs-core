@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, it } from "vitest";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
@@ -118,8 +119,8 @@ interface ObtainUrlArgs {
 }
 
 describe("obtainIModelTilesetUrl", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
 
   const exportProps: ExportProps[] = [
     { id: "a", href: "http://tiles.com/a", changesetId: "aaa" },
@@ -167,8 +168,8 @@ describe("obtainIModelTilesetUrl", () => {
 });
 
 describe("queryMeshExports", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
   const args: ObtainUrlArgs = { id: "imdl", changesetId: "aaa" };
 
   const exportProps: ExportProps[] = [

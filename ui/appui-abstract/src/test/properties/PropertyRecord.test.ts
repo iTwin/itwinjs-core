@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { describe, it } from "vitest";
 import { assert, expect } from "chai";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../appui-abstract";
 import { ArrayValue, PrimitiveValue, StructValue } from "../../appui-abstract/properties/Value";
