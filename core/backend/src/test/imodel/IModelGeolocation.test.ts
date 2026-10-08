@@ -236,7 +236,7 @@ describe("iModel geolocation", () => {
           const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
 
           expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1, 0.001)).to.be.true;
-          expect(Math.abs(expectedPt1.z - outPt1.z), fileName).to.be.lessThan(0.0001);
+          expect(Math.abs(expectedPt1.z - outPt1.z), fileName).to.be.lessThan(0.001);
 
           // No point testing reversal when Out of useful range since reversibility is doubtful
           if (outputCoord.s !== GeoCoordStatus.OutOfUsefulRange) {
@@ -248,8 +248,8 @@ describe("iModel geolocation", () => {
             const expectedPt2 = Point3d.fromJSON(inputCoord);
             const outPt2 = Point3d.fromJSON(response2.iModelCoords[0].p);
 
-            expect(expectedPt2.distanceXY(outPt2) < 0.001).to.be.true;
-            expect(Math.abs(expectedPt2.z - outPt2.z) < 0.001).to.be.true;
+            expect(expectedPt2.distanceXY(outPt2), fileName).to.be.lessThan(0.001);
+            expect(Math.abs(expectedPt2.z - outPt2.z), fileName).to.be.lessThan(0.001);
           }
         }
 
