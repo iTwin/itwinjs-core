@@ -118,7 +118,7 @@ export type AngleProps = {
 export class AngleSweep implements BeJSONFunctions {
     angleToPositivePeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
     angleToSignedFraction(theta: Angle, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
-    angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
+    angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault?: number, selector?: ExteriorFractionSelector): number;
     angleToUnboundedFraction(theta: Angle): number;
     capLatitudeInPlace(): void;
     clampToFullCircle(result?: AngleSweep): AngleSweep;
@@ -160,8 +160,8 @@ export class AngleSweep implements BeJSONFunctions {
     static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
     radiansToSignedFraction(radians: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
     static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
-    radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault?: number): number;
-    static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
+    radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault?: number, selector?: ExteriorFractionSelector): number;
+    static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number, selector?: ExteriorFractionSelector): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
     setFromJSON(json?: any): void;
@@ -2143,6 +2143,14 @@ export enum EllipticalArcSampleMethod {
     NonUniformCurvature = 2,
     UniformCurvature = 1,
     UniformParameter = 0
+}
+
+// @public
+export enum ExteriorFractionSelector {
+    Closer = 2,
+    Negative = 1,
+    Positive = 0,
+    SameSign = -1
 }
 
 // @public
