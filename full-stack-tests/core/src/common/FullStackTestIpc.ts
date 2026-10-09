@@ -24,6 +24,10 @@ export interface FullStackTestCommandIpc extends EditCommandIpc {
 /** Utility IPC interface that does not require EditCommand APIs. */
 export interface FullStackTestIpc {
   closeAndReopenDb(key: string): Promise<void>;
+  /** Copy a closed .bim fixture into a unique temporary directory. */
+  createTempBimCopy(sourcePath: string): Promise<string>;
+  /** Delete a copy created by this backend and its directory, including SQLite sidecar files. */
+  deleteTempBimCopy(filePath: string): Promise<void>;
   insertSheetViewWithAttachment(filePath: string): Promise<Id64String>;
   throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean): Promise<void>;
   throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string): Promise<void>;
