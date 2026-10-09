@@ -1576,7 +1576,7 @@ export class InteractiveRebase {
 
   private applyInteractiveUpdate(instanceKey: string, oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties, changedProperties: string[] | undefined): void {
     const nativeDb = this._db[_nativeDb];
-    const expectedOldValues = pickProperties(withoutIdentityProperties(oldProps), changedProperties);
+    const expectedOldValues = pickProperties(withoutIdentityProperties(withMissingAsNull(oldProps, newProps)), changedProperties);
     // Native always applies `updateInstance` incrementally (properties omitted from the write are left
     // as-is), so restricting the write to just the touched properties avoids clobbering any upstream
     // change to a property our local change never touched.
@@ -1611,21 +1611,21 @@ export class InteractiveRebase {
   private applyInteractiveDelete(instanceKey: string, oldProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
-    const result = this.applyOrRecordConstraintConflict(instanceKey, oldProps.id, oldProps.classFullName, oldProps, undefined, () =>
-      this.deleteWithReferentialActionTracking(key, () =>
-        nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] }));
-    if (result === undefined || result.deleted) {
-      // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
-      return;
-    }
-
-    // Native reports `conflictingProperties` populated with every checked property when the row itself no
-    // longer exists, so existence (not `conflictingProperties.length`) is what distinguishes the two cases.
     // A live read here is exactly this instance's pre-replay "theirs" state - see the analogous comment in
     // [[applyInteractiveUpdate]].
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
       // The incoming changes already deleted it - nothing more to do.
+      return;
+    }
+
+    // The captured baseline omits null properties, so add them explicitly or their upstream change goes unchecked.
+    const expectedOldValues = withoutIdentityProperties(withMissingAsNull(oldProps, theirs));
+    const result = this.applyOrRecordConstraintConflict(instanceKey, oldProps.id, oldProps.classFullName, oldProps, undefined, () =>
+      this.deleteWithReferentialActionTracking(key, () =>
+        nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues }) as { deleted: boolean, conflictingProperties: string[] }));
+    if (result === undefined || result.deleted) {
+      // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
       return;
     }
 
@@ -2348,6 +2348,16 @@ function computeChangedProperties(baseline: RebaseConflictProperties, compare: R
 function withoutIdentityProperties(props: RebaseConflictProperties): RebaseConflictProperties {
   const { id: _id, classFullName: _classFullName, ...rest } = props;
   return rest;
+}
+
+/** Returns a copy of `props` with an explicit `null` for each (non-array) property of `other` that `props` lacks. */
+function withMissingAsNull(props: RebaseConflictProperties, other: RebaseConflictProperties): RebaseConflictProperties {
+  const result = { ...props };
+  for (const [key, value] of Object.entries(other)) {
+    if (!(key in result) && !Array.isArray(value))
+      result[key] = null;
+  }
+  return result;
 }
 
 /** Restricts `props` down to just `keys` (a plain key filter - no value comparison), or returns `props`
