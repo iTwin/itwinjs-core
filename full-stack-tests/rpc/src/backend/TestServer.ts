@@ -5,8 +5,7 @@
 import type { Application } from "express";
 import { WebAppRpcProtocol } from "@itwin/core-common";
 import { IModelJsExpressServer } from "@itwin/express-server";
-import { createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
-import { browserBackendCallbackPath } from "../common/SideChannels";
+import { backendCallbackPath, createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { rpcBackendIdentityHeader } from "./notifyReady";
 
 /** Routes shared by the HTTP and websocket browser test backends.
@@ -17,7 +16,7 @@ export function installBrowserTestRoutes(app: Application, callbackToken: string
     response.setHeader(rpcBackendIdentityHeader, process.env.VITEST_RPC_BACKEND_ID ?? "");
     next();
   });
-  app.post(browserBackendCallbackPath, createHttpBackendCallbackHandler({ token: callbackToken }));
+  app.post(backendCallbackPath, createHttpBackendCallbackHandler({ token: callbackToken }));
 }
 
 export class TestServer extends IModelJsExpressServer {
