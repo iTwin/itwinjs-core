@@ -308,6 +308,17 @@ describe("ViewStore", function (this: Suite) {
       expect(() => vs1.queryViewsSync(params), String(JSON.stringify(params))).throws().that.satisfies((e: unknown) => ViewStoreError.isError(e, "invalid-value"));
     }
     expect(vs1.queryViewsSync({ owner: "", nameSearch: "", group: "" }).length).equal(allPublicCount); // empty strings are treated as absent
+
+    // the query statement is cached, so bindings from one call must not leak into the next
+    expect(vs1.queryViewsSync({ owner: "owner10" }).length).equal(7);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition"], nameSearch: "my%", nameCompare: "LIKE", limit: 1 }).length).equal(1);
+    expect(vs1.queryViewsSync({ nameSearch: "another view" }).length).equal(1);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
+
+    // arrays are bound as a single JSON value, so their size is not limited by SQLite's bound-variable limit
+    const manyClassNames = Array.from({ length: 40000 }, (_, i) => `Fake:Class${i}`);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: [...manyClassNames, "BisCore:DrawingViewDefinition"] }).length).equal(1);
     expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
 
     await vs1.renameTag({ oldName: "tag2", newName: "tag2-renamed" });

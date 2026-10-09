@@ -1324,34 +1324,28 @@ export namespace ViewStore {
       const nameCompare = validateNameCompare(queryParams.nameCompare);
       const limit = validateNonNegativeInteger(queryParams.limit, "limit");
       const offset = validateNonNegativeInteger(queryParams.offset, "offset");
-      const bindList = (prefix: string, count: number) => Array.from({ length: count }, (_, i) => `@${prefix}${i}`).join(",");
 
       const groupId = group ? this.findViewGroup(group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=@groupId ${owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
-      if (classNames)
-        sql += ` AND className IN(${bindList("className", classNames.length)})`;
-      if (nameSearch)
-        sql += ` AND name ${nameCompare} @name`;
-      if (tags)
-        sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${bindList("tag", tags.length)})))`;
-      sql += " ORDER BY name";
-      if (limit)
-        sql += " LIMIT @limit";
-      if (offset)
-        sql += `${limit ? "" : " LIMIT -1"} OFFSET @offset`; // SQLite requires a LIMIT clause before OFFSET; -1 means no limit
+      // Optional filters are disabled by leaving their parameter unbound (NULL); owner=NULL is never true.
+      // The SQL text varies only by the validated nameCompare operator, so the statement can be cached.
+      const sql = `SELECT Id FROM ${tableName.views} WHERE groupId=@groupId AND (private!=1 OR owner=@owner)` +
+        " AND (@classNames IS NULL OR className IN(SELECT value FROM json_each(@classNames)))" +
+        ` AND (@name IS NULL OR name ${nameCompare} @name)` +
+        ` AND (@tags IS NULL OR Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(SELECT value FROM json_each(@tags)))))` +
+        " ORDER BY name LIMIT @limit OFFSET @offset";
 
-      this.withSqliteStatement(sql, (stmt) => {
+      this.withPreparedSqliteStatement(sql, (stmt) => {
         stmt.bindInteger("@groupId", groupId);
-        classNames?.forEach((className, i) => stmt.bindString(`@className${i}`, className));
-        tags?.forEach((tag, i) => stmt.bindString(`@tag${i}`, tag));
-        if (nameSearch)
-          stmt.bindString("@name", nameSearch);
         if (owner)
           stmt.bindString("@owner", owner);
-        if (limit)
-          stmt.bindInteger("@limit", limit);
-        if (offset)
-          stmt.bindInteger("@offset", offset);
+        if (classNames)
+          stmt.bindString("@classNames", JSON.stringify(classNames));
+        if (nameSearch)
+          stmt.bindString("@name", nameSearch);
+        if (tags)
+          stmt.bindString("@tags", JSON.stringify(tags));
+        stmt.bindInteger("@limit", limit ?? -1); // -1 means no limit
+        stmt.bindInteger("@offset", offset ?? 0);
 
         while (stmt.nextRow())
           callback(stmt.getValueInteger(0));
