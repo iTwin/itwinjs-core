@@ -221,6 +221,9 @@ public;class;FrustumAnimator
 public;class;FuzzySearch
 public;interface;FuzzySearchResult
 public;class;FuzzySearchResults
+internal;function;gaussianSplatValidationHtml
+internal;class;GaussianSplatValidationRecorder
+internal;interface;GaussianSplatValidationTrace
 beta;interface;GenericAbortSignal
 public;class;GeoConverter
 internal;interface;GeoConverterOptions

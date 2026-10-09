@@ -106,6 +106,12 @@ export class ClipStack {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
+  /** Capture the active eye-space planes for a draw whose branch state will subsequently be popped. */
+  public getPlaneData(): Float32Array {
+    this.updateTexture();
+    return new Float32Array(this._cpuBuffer.buffer, this._cpuBuffer.byteOffset + this.startIndex * 16, (this.endIndex - this.startIndex) * 4).slice();
+  }
+
   public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle }): void {
     assert(this._stack.length === 1);
 

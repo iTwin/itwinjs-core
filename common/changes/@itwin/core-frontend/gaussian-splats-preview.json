@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add an opt-in native Gaussian splat renderer for compatible reality-model glTF and Cesium ion SPZ content.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "78756012+ben-polinsky@users.noreply.github.com"
+}

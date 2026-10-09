@@ -5,6 +5,8 @@ publish: false
 
 <!-- prettier-ignore -->
 - [NextVersion](#nextversion)
+  - [Frontend](#frontend)
+    - [Native Gaussian splats preview](#native-gaussian-splats-preview)
   - [Backend](#backend)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
@@ -13,6 +15,14 @@ publish: false
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
+
+## Frontend
+
+### Native Gaussian splats preview
+
+Enable the alpha `RenderSystem.Options.enableGaussianSplats` option at startup to display compatible Gaussian splat reality models with the native iTwin.js renderer. The preview loads `KHR_gaussian_splatting` and the established Cesium ion SPZ draft profile through the existing explicit 3D Tiles pipeline, with perspective/orthographic rendering, opaque BIM occlusion, clipping, and approximate model picking.
+
+The option defaults to false. Existing applications require no migration. Applications enabling it must deploy `scripts/gaussian-splats-worker.js` with the frontend public assets. Splats provide no snapping or measurement geometry; implicit tiles, multiple contents, and interleaving with translucent BIM are outside the preview. See [Gaussian splats](../learning/display/GaussianSplats.md) for supported profiles, configuration, and limits.
 
 ## Backend
 

@@ -67,6 +67,24 @@ function expectMaxSSE(expected:number | undefined, useGeometricError?: boolean, 
 }
 
 describe("RealityTileTreeProps", () => {
+  it("uses geometric error for declared splats while preserving ordinary tileset defaults", () => {
+    const root = { boundingVolume: { sphere: [0, 0, 0, 1] }, geometricError: 1, content: { uri: "splats.glb" } };
+    const json = { asset: { version: "1.1" }, root };
+    const source = new Source(false, undefined);
+    const ordinary = new RealityModelTileTreeProps(json, root, source, Transform.createIdentity());
+    expect(ordinary.isGaussianSplat).toBe(false);
+    expect(ordinary.maximumScreenSpaceError).toBeUndefined();
+    for (const declaration of ["extensionsUsed", "extensionsRequired"]) {
+      const splats = { ...json, extensions: { "3DTILES_content_gltf": { [declaration]: ["KHR_gaussian_splatting"] } } };
+      const props = new RealityModelTileTreeProps(splats, root, source, Transform.createIdentity());
+      expect(props.isGaussianSplat).toBe(true);
+      expect(props.usesGeometricError).toBe(true);
+      expect(props.maximumScreenSpaceError).toBe(16);
+      const custom = { ...splats, asset: { ...splats.asset, extras: { maximumScreenSpaceError: 64 } } };
+      expect(new RealityModelTileTreeProps(custom, root, source, Transform.createIdentity()).maximumScreenSpaceError).toBe(64);
+    }
+  });
+
   it("doesn't use geometric error by default", () => {
     expectMaxSSE(undefined);
     expectMaxSSE(undefined, false, undefined);

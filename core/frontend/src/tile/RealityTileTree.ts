@@ -14,6 +14,7 @@ import { Cartographic, ColorDef, GeoCoordStatus, ViewFlagOverrides } from "@itwi
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
+import { recordRealityTileSelection } from "../internal/tile/RealityTileSelection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
@@ -27,11 +28,14 @@ export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
   public childrenSelected = false;
   public shouldSelectParent = false;
+  /** Ready selected content or fallbacks cover all visible regions, independent of pending detail requests. */
+  public hasReadyCoverage = true;
 
   public initialize() {
     this.queuedChildren.length = 0;
     this.childrenSelected = false;
     this.shouldSelectParent = false;
+    this.hasReadyCoverage = true;
   }
 }
 
@@ -55,10 +59,12 @@ export class TraversalChildrenDetails {
     parentDetails.queuedChildren.length = 0;
     parentDetails.childrenSelected = false;
     parentDetails.shouldSelectParent = false;
+    parentDetails.hasReadyCoverage = true;
 
     for (const child of this._childDetails) {
       parentDetails.childrenSelected = parentDetails.childrenSelected || child.childrenSelected;
       parentDetails.shouldSelectParent = parentDetails.shouldSelectParent || child.shouldSelectParent;
+      parentDetails.hasReadyCoverage = parentDetails.hasReadyCoverage && child.hasReadyCoverage;
 
       for (const queuedChild of child.queuedChildren)
         parentDetails.queuedChildren.push(queuedChild);
@@ -77,6 +83,7 @@ export class TraversalSelectionContext {
     tile.selectSecondaryTiles(args, this);
     tile.markUsed(args);
     traversalDetails.shouldSelectParent = true;
+    traversalDetails.hasReadyCoverage = tile.isReady;
 
     if (tile.isReady) {
       args.markReady(tile);
@@ -469,7 +476,11 @@ export class RealityTileTree extends TileTree {
     const debugControl = args.context.target.debugControl;
     const freezeTiles = debugControl && debugControl.freezeRealityTiles;
 
-    rootTile.selectRealityTiles(context, args, new TraversalDetails());
+    const details = new TraversalDetails();
+    rootTile.selectRealityTiles(context, args, details);
+    // Desired content can remain queued even when ready parents or children cover it.
+    // Readiness tracks visible coverage separately from request/fallback bookkeeping.
+    recordRealityTileSelection(args, details.hasReadyCoverage);
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 

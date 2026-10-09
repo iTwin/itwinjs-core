@@ -35,6 +35,7 @@ export const enum RenderPass {
   HilitePlanarClassification,
   PlanarClassification,
   VolumeClassifiedRealityData,
+  GaussianSplats,
   COUNT,
 }
 
@@ -53,6 +54,7 @@ export type Pass =
   "opaque-planar" | // OpaquePlanar
   "translucent" | // Translucent
   "point-clouds" | // PointClouds
+  "gaussian-splats" | // GaussianSplats
   "view-overlay" | // ViewOverlay
   "classification" | // Classification
   "none" | // None
@@ -91,6 +93,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque-planar": return RenderPass.OpaquePlanar;
       case "translucent": return RenderPass.Translucent;
       case "point-clouds": return RenderPass.PointClouds;
+      case "gaussian-splats": return RenderPass.GaussianSplats;
       case "view-overlay": return RenderPass.ViewOverlay;
       case "classification": return RenderPass.Classification;
       case "none": return RenderPass.None;

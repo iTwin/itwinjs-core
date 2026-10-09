@@ -252,6 +252,30 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
+function isGaussianSplatTileset(tileset: any): boolean {
+  const gltf = tileset.extensions?.["3DTILES_content_gltf"];
+  return !!(gltf?.extensionsRequired?.includes("KHR_gaussian_splatting") || gltf?.extensionsUsed?.includes("KHR_gaussian_splatting"));
+}
+
+function validateGaussianSplatTileLayout(tileset: any): void {
+  if (!isGaussianSplatTileset(tileset) || !IModelApp.initialized || !IModelApp.renderSystem.options.enableGaussianSplats)
+    return;
+
+  const pending = [tileset.root];
+  while (pending.length) {
+    const tile = pending.pop();
+    if (!tile)
+      continue;
+
+    if (tile.implicitTiling || tile.extensions?.["3DTILES_implicit_tiling"] || tile.contents)
+      throw new Error("Gaussian splat preview requires explicit tiles with a single content URI; implicit tiling and multiple contents are unsupported");
+
+    if (Array.isArray(tile.children))
+      for (const child of tile.children)
+        pending.push(child);
+  }
+}
+
 /** Exported strictly for tests. */
 export class RealityModelTileTreeProps {
   public location: Transform;
@@ -261,12 +285,16 @@ export class RealityModelTileTreeProps {
   public yAxisUp = false;
   public root: any;
   public readonly maximumScreenSpaceError?: number;
+  /** @internal */
+  public readonly isGaussianSplat: boolean;
 
   public get usesGeometricError(): boolean {
     return undefined !== this.maximumScreenSpaceError;
   }
 
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
+    validateGaussianSplatTileLayout(json);
+    this.isGaussianSplat = isGaussianSplatTileset(json);
     this.tilesetJson = root;
     this.dataSource = rdSource;
     this.location = tilesetToDbTransform;
@@ -278,7 +306,7 @@ export class RealityModelTileTreeProps {
     const maxSSE = json.asset.extras?.maximumScreenSpaceError;
     if (typeof maxSSE === "number") {
       this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
-    } else if (rdSource.usesGeometricError) {
+    } else if (rdSource.usesGeometricError || this.isGaussianSplat) {
       this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 16;
     }
   }
@@ -424,6 +452,7 @@ async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<an
     return root;
 
   const subTree = await rdsource.getTileJson(childUrl);
+  validateGaussianSplatTileLayout(subTree);
   const prefixIndex = childUrl.lastIndexOf("/");
   if (prefixIndex > 0)
     addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
@@ -518,6 +547,21 @@ class RealityModelTileLoader extends RealityTileLoader {
       return undefined;
 
     return this.tree.dataSource.getTileContent(getUrl(foundChild.json.content));
+  }
+
+  protected override async resolveExternalBuffer(tile: RealityTile, url: string): Promise<Uint8Array> {
+    // Ion and ContextShare resolve paths through their data source, without exposing an absolute base URL.
+    // Resolve relative glTF resources against the content's directory, including nested external tilesets.
+    let resource = url;
+    try {
+      new URL(resource);
+    } catch {
+      const base = new URL(tile.contentUrl ?? "", "https://itwin-reality-data.invalid/");
+      const resolved = new URL(resource, base);
+      resource = resolved.origin === "https://itwin-reality-data.invalid" ? resolved.pathname.substring(1) + resolved.search : resolved.toString();
+    }
+
+    return new Uint8Array(await this.tree.dataSource.getTileContent(resource));
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
@@ -740,6 +784,10 @@ export namespace RealityModelTileTree {
           const maxSSE = args.tree.loader.maximumScreenSpaceError;
           if (undefined !== maxSSE)
             args.maximumScreenSpaceError = maxSSE;
+
+          // RealityTile's SSE path does not apply the generic tile-size modifier.
+          if (args.tree.loader instanceof RealityModelTileLoader && args.tree.loader.tree.isGaussianSplat)
+            args.maximumScreenSpaceError *= args.tileSizeModifier;
         }
       }
 

@@ -45,6 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
+import { GaussianSplatRenderer } from "./GaussianSplatRenderer";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -869,6 +870,7 @@ enum PrimitiveDrawState {
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
 class Compositor extends SceneCompositor {
+  private _gaussianSplats?: GaussianSplatRenderer;
   protected _width: number = -1;
   protected _height: number = -1;
   protected _includeOcclusion: boolean = false;
@@ -1283,6 +1285,7 @@ class Compositor extends SceneCompositor {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._gaussianSplats?.collectStatistics(stats);
     if (undefined !== this._depth)
       stats.addTextureAttachment(this._depth.bytesUsed);
     if (undefined !== this._depthMS)
@@ -1477,6 +1480,8 @@ class Compositor extends SceneCompositor {
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
 
+    this.renderGaussianSplats(commands, this.getBackgroundFbo(needComposite), this.useMsBuffers, false);
+
     this.target.frameStatsCollector.endTime("opaqueTime");
 
     this.target.frameStatsCollector.beginTime("translucentTime");
@@ -1530,7 +1535,7 @@ class Compositor extends SceneCompositor {
 
     // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
-    const haveRenderCommands = !commands.isEmpty;
+    const haveRenderCommands = !commands.isEmpty || this._gaussianSplats?.hasDisplayedContent === true;
     if (haveRenderCommands) {
       this.target.beginPerfMetricRecord("Enable Clipping", true);
       this.target.pushViewClip();
@@ -1556,6 +1561,8 @@ class Compositor extends SceneCompositor {
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
+      this.renderGaussianSplats(commands, expectDefined(this._fbos.opaqueAll), false, true);
 
       this.target.beginPerfMetricRecord("Render Translucent Layers", true);
       this.renderLayers(commands, false, RenderPass.TranslucentLayers);
@@ -1664,9 +1671,19 @@ class Compositor extends SceneCompositor {
   }
 
   public [Symbol.dispose]() {
+    this._gaussianSplats = dispose(this._gaussianSplats);
     this.reset();
     dispose(this.solarShadowMap);
     dispose(this.eyeDomeLighting);
+  }
+
+  private renderGaussianSplats(commands: RenderCommands, fbo: FrameBuffer, multisampled: boolean, pick: boolean): void {
+    const splats = commands.getCommands(RenderPass.GaussianSplats);
+    if (!splats.length && !this._gaussianSplats)
+      return;
+
+    this._gaussianSplats ??= new GaussianSplatRenderer(this.target);
+    this._gaussianSplats.draw(splats, fbo, multisampled, pick);
   }
 
   // Resets anything that depends on the dimensions of the render target.

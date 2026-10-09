@@ -794,6 +794,9 @@ importers:
       '@loaders.gl/draco':
         specifier: ^4.4.5
         version: 4.5.2(@loaders.gl/core@4.5.2)
+      '@spz-loader/core':
+        specifier: 0.3.1
+        version: 0.3.1
       fuse.js:
         specifier: ^3.3.0
         version: 3.6.1
@@ -6061,6 +6064,10 @@ packages:
 
   '@spz-loader/core@0.3.0':
     resolution: {integrity: sha512-sbStwMHb/MIE29st7rRuMYWqhX1UmLSFzdpyGtUZUXLkFNIuYKblzjQdtiet8bau8sUf21uL1DQ451zuySGmcA==}
+    engines: {node: '>=16', pnpm: '>=8'}
+
+  '@spz-loader/core@0.3.1':
+    resolution: {integrity: sha512-8qJ1WIBXaJu8HjnJAjYniE0kYcr0kCe5Hp7kDzYiGVvvd7zyrOBwbF5imoW5mvwx1Qba0hxGEK5R9jEoaHKJFA==}
     engines: {node: '>=16', pnpm: '>=8'}
 
   '@standard-schema/spec@1.1.0':
@@ -12797,6 +12804,8 @@ snapshots:
       text-hex: 1.0.0
 
   '@spz-loader/core@0.3.0': {}
+
+  '@spz-loader/core@0.3.1': {}
 
   '@standard-schema/spec@1.1.0': {}
 

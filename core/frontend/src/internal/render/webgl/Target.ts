@@ -15,6 +15,7 @@ import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../../SelectionSet";
 import { SceneContext } from "../../../ViewContext";
+import { changeRealityTileSelection } from "../../tile/RealityTileSelection";
 import { ReadImageBufferArgs, Viewport } from "../../../Viewport";
 import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
@@ -424,6 +425,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public changeScene(scene: Scene) {
+    changeRealityTileSelection(this, scene);
     this.graphics.changeScene(scene);
 
     this.changeTextureDrapes(scene.textureDrapes);

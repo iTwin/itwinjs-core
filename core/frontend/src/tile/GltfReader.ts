@@ -25,6 +25,8 @@ import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { Triangle, TriangleList } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { GaussianSplatData, gaussianSplatError, readGaussianSplatSource } from "../internal/render/GaussianSplatData";
+import { decodeGaussianSplats } from "../internal/render/GaussianSplatWorker";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
@@ -285,7 +287,13 @@ interface GltfPointCloud extends PointCloudArgs {
   pointRange: Range3d;
 }
 
-type GltfPrimitiveData = GltfMeshData | GltfPointCloud;
+interface GltfGaussianSplats {
+  readonly type: "gaussian-splats";
+  readonly splats: GaussianSplatData;
+  readonly pointRange: Range3d;
+}
+
+type GltfPrimitiveData = GltfMeshData | GltfPointCloud | GltfGaussianSplats;
 
 /** A function that returns true if deserialization of the data supplied by the reader should abort.
  * @internal
@@ -423,6 +431,8 @@ export interface GltfReaderArgs {
   /** A table structure to store the Gltf structural metadata if present.
    */
   idMap?: BatchedTileIdMap;
+  /** Resolve external glTF buffers through the owning reality-data transport. */
+  resolveBuffer?: (url: string) => Promise<Uint8Array>;
 }
 
 interface TextureKey {
@@ -532,6 +542,8 @@ export abstract class GltfReader {
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
+  private readonly _gaussianSplats = new Map<GltfMeshPrimitive, GaussianSplatData>();
+  private readonly _resolveBuffer?: GltfReaderArgs["resolveBuffer"];
   private _containsPointCloud = false;
   protected _instanceFeatures: Feature[] = [];
   protected _meshFeatures: Feature[] = [];
@@ -660,6 +672,11 @@ export abstract class GltfReader {
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);
 
+    // Gaussian bounds computed from mesh/node coordinates must follow the graphic's outer transform.
+    // Keep the established range convention for existing mesh content and caller-supplied tile bounds.
+    if (this._computedContentRange && this._gaussianSplats.size > 0 && transform)
+      range = transform.multiplyRange(contentRange);
+
     // The batch range needs to be in tile coordinate space.
     // If we computed the content range ourselves, it's already in tile space.
     // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
@@ -701,6 +718,13 @@ export abstract class GltfReader {
   }
 
   private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean): RenderGeometry | undefined {
+    if ("gaussian-splats" === gltfMesh.type) {
+      if (isInstanced)
+        gaussianSplatError("EXT_mesh_gpu_instancing is unsupported for splats");
+
+      return this._system.createGaussianSplatGeometry(gltfMesh.splats);
+    }
+
     if ("pointcloud" === gltfMesh.type)
       return this._system.createPointCloudGeometry(gltfMesh);
 
@@ -1180,6 +1204,7 @@ export abstract class GltfReader {
     this._iModel = args.iModel;
     this._is3d = true !== args.is2d;
     this._system = args.system ?? IModelApp.renderSystem;
+    this._resolveBuffer = args.resolveBuffer;
     this._type = args.type ?? BatchType.Primary;
     this._canceled = args.shouldAbort;
     this._deduplicateVertices = args.deduplicateVertices ?? false;
@@ -1489,6 +1514,10 @@ export abstract class GltfReader {
   }
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
+    const splats = this._gaussianSplats.get(primitive);
+    if (splats)
+      return { type: "gaussian-splats", splats, pointRange: Range3d.createXYZXYZ(...splats.bounds) };
+
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
 if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
       const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
@@ -2374,6 +2403,29 @@ if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
 
     await Promise.all(decodeMeshoptBuffers);
 
+    if (this._glTF.extensionsRequired?.includes("KHR_spz_gaussian_splats_compression"))
+      gaussianSplatError("the original SPZ extension is unsupported; retile with KHR_gaussian_splatting_compression_spz_2");
+
+    for (const mesh of gltfDictionaryIterator(this._meshes)) {
+      for (const primitive of mesh.primitives ?? []) {
+        if (!primitive.extensions?.KHR_gaussian_splatting)
+          continue;
+
+        if (!this._system.options.enableGaussianSplats)
+          gaussianSplatError("native rendering is disabled; enable RenderSystem.Options.enableGaussianSplats");
+
+        if (this._isCanceled)
+          return;
+
+        const source = readGaussianSplatSource(primitive, this._glTF, this._buffers, this._bufferViews);
+        const decoded = await decodeGaussianSplats(source);
+        if (this._isCanceled)
+          return;
+
+        this._gaussianSplats.set(primitive, decoded);
+      }
+    }
+
     // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
     const dracoMeshes: DracoMeshCompression[] = [];
 
@@ -2409,11 +2461,17 @@ if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
     // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
     // be required for the scene.
     const promises: Array<Promise<void>> = [];
-    try {
-      for (const buffer of gltfDictionaryIterator(this._buffers))
-        if (!buffer.resolvedBuffer)
-          promises.push(this.resolveBuffer(buffer));
+    for (const buffer of gltfDictionaryIterator(this._buffers))
+      if (!buffer.resolvedBuffer)
+        promises.push(this.resolveBuffer(buffer));
 
+    // A supplied transport reports its own failures. Preserve those diagnostics for the tile loader.
+    if (this._resolveBuffer) {
+      await Promise.all(promises);
+      promises.length = 0;
+    }
+
+    try {
       await Promise.all(promises);
       if (this._isCanceled)
         return;
@@ -2470,8 +2528,17 @@ if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
     if (buffer.resolvedBuffer || undefined === buffer.uri)
       return;
 
+    const url = this.resolveUrl(buffer.uri);
+    const resource = url ?? buffer.uri;
+    if (this._resolveBuffer && !resource.startsWith("data:")) {
+      const external = await this._resolveBuffer(resource);
+      if (!this._isCanceled)
+        buffer.resolvedBuffer = external;
+
+      return;
+    }
+
     try {
-      const url = this.resolveUrl(buffer.uri);
       const response = url ? await fetch(url) : undefined;
       if (this._isCanceled)
         return;
@@ -2741,13 +2808,16 @@ export class GltfGraphicsReader extends GltfReader {
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
-  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs & { tileData?: LayerTileData }) {
+  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs & { tileData?: LayerTileData, resolveBuffer?: GltfReaderArgs["resolveBuffer"], system?: RenderSystem, shouldAbort?: ShouldAbortReadGltf }) {
     super({
       props,
       iModel: args.iModel,
       vertexTableRequired: true,
       idMap: args.idMap,
       tileData: args.tileData,
+      resolveBuffer: args.resolveBuffer,
+      system: args.system,
+      shouldAbort: args.shouldAbort,
     });
 
     this._contentRange = args.contentRange;

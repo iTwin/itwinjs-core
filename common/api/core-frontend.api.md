@@ -3777,6 +3777,109 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     results: any[];
 }
 
+// @internal
+export function gaussianSplatValidationHtml(trace: GaussianSplatValidationTrace): string;
+
+// @internal
+export class GaussianSplatValidationRecorder implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(_viewport: ScreenViewport, label: string, mode: "visual" | "timing", cacheState?: "cold" | "warm" | "unknown");
+    // (undocumented)
+    expectation: string;
+    // (undocumented)
+    expectedVisible: boolean;
+    // (undocumented)
+    readonly frames: GaussianSplatValidationFrame[];
+    // (undocumented)
+    readonly issues: GaussianSplatValidationIssue[];
+    // (undocumented)
+    probes: GaussianSplatPixelProbe[];
+    // (undocumented)
+    stop(): void;
+    // (undocumented)
+    trace(): GaussianSplatValidationTrace;
+}
+
+// @internal (undocumented)
+export interface GaussianSplatValidationTrace {
+    // (undocumented)
+    configuration: {
+        label: string;
+        mode: "visual" | "timing";
+        browser: string;
+        renderer: string;
+        viewportSize: number[];
+        framebufferSize: number[];
+        devicePixelRatio: number;
+        tileSizeModifier: number;
+        backgroundRgb: number[];
+        viewFlags: unknown;
+        backgroundMap: {
+            terrain: boolean;
+            depth: boolean;
+            groundBias: number;
+            terrainSettings: unknown;
+        };
+        tileMemoryLimit: string | number;
+        maxTileContentBytes: number | null;
+        longTaskSupported: boolean;
+        cacheState: "cold" | "warm" | "unknown";
+        contentHashes: Array<{
+            name: string;
+            sha256: string;
+        }>;
+        replay?: {
+            seed: number;
+            sortDelayFrames: number;
+            staggeredChildren: boolean;
+        };
+        route?: "recorded-camera-poses";
+    };
+    // (undocumented)
+    frames: GaussianSplatValidationFrame[];
+    // (undocumented)
+    images: Array<{
+        frame: number;
+        url: string;
+    }>;
+    // (undocumented)
+    issues: GaussianSplatValidationIssue[];
+    // (undocumented)
+    pickEvidence?: Array<{
+        frame: number;
+        modelId?: string;
+        elementId?: string;
+    }>;
+    // (undocumented)
+    summary: {
+        nativeFrames: number;
+        completedSelections: number;
+        settledReplacementFrames: number;
+        deepestSelectedTile: number;
+        pendingCandidateFrames: number;
+        peakAtlasBytes: number;
+        peakPackedSplatBytes: number;
+        frameGapP95Ms?: number;
+        frameGapP99Ms?: number;
+        inputP95Ms?: number;
+        longTaskTotalMs: number;
+        submissionContinuity: "pass" | "fail" | "unverified";
+        continuity: "pass" | "fail" | "unverified";
+        fidelity: "observed-refinement" | "unverified";
+    };
+    // (undocumented)
+    timings: {
+        animationFrameMs: number[];
+        inputToNextFrameMs: number[];
+        longTaskMs: number[];
+        pendingInputs: number;
+        oldestPendingInputMs?: number;
+    };
+    // (undocumented)
+    version: 1;
+}
+
 // @beta
 export interface GenericAbortSignal {
     addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
@@ -4242,6 +4345,7 @@ export interface GltfReaderArgs {
     iModel: IModelConnection;
     is2d?: boolean;
     props: GltfReaderProps;
+    resolveBuffer?: (url: string) => Promise<Uint8Array>;
     shouldAbort?: ShouldAbortReadGltf;
     system?: RenderSystem;
     type?: BatchType;
@@ -8725,6 +8829,8 @@ export abstract class RealityTileLoader {
     // (undocumented)
     abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
+    protected resolveExternalBuffer(_tile: RealityTile, url: string): Promise<Uint8Array>;
+    // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
     // (undocumented)
     get wantDeduplicatedVertices(): boolean;
@@ -8869,7 +8975,7 @@ export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
     readonly isInstanceable: boolean;
     noDispose: boolean;
     // (undocumented)
-    readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
+    readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh" | "gaussian-splats";
 }
 
 // @public
@@ -9206,6 +9312,8 @@ export abstract class RenderSystem implements Disposable {
     createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
+    createGaussianSplatGeometry(_args: GaussianSplatData): RenderGeometry | undefined;
+    // @internal (undocumented)
     createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
@@ -9333,6 +9441,8 @@ export namespace RenderSystem {
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
+        // @alpha
+        enableGaussianSplats?: boolean;
         errorOnMissingUniform?: boolean;
         logarithmicDepthBuffer?: boolean;
         planProjections?: boolean;

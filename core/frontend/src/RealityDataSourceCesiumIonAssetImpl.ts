@@ -140,24 +140,27 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    const tileUrl = this._baseUrl + name;
-    const headers = { authorization: this._requestAuthorization };
+    const tileUrl = new URL(name, this._baseUrl);
+    const base = new URL(this._baseUrl);
+    // External glTF buffers may use absolute URIs. Do not forward ion's asset token outside its endpoint.
+    const headers = tileUrl.origin === base.origin && tileUrl.pathname.startsWith(base.pathname) ? { authorization: this._requestAuthorization } : undefined;
 
-    return request(tileUrl, "arraybuffer", { headers });
+    return request(tileUrl.toString(), "arraybuffer", { headers });
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-    const headers = { authorization: this._requestAuthorization };
+    const tileUrl = new URL(name, this._baseUrl);
+    const base = new URL(this._baseUrl);
+    const headers = tileUrl.origin === base.origin && tileUrl.pathname.startsWith(base.pathname) ? { authorization: this._requestAuthorization } : undefined;
 
-    return request(tileUrl, "json", { headers });
+    return request(tileUrl.toString(), "json", { headers });
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
-    return url.endsWith("json") ? "tileset" : "tile";
+    return new URL(url, "https://localhost/").pathname.toLowerCase().endsWith("json") ? "tileset" : "tile";
   }
 
   /**
@@ -181,4 +184,3 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

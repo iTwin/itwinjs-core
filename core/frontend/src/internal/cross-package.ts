@@ -57,6 +57,7 @@ export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
 // Remove once CommonJS is dropped.
 export { DebugShaderFile } from "./render/RenderSystemDebugControl";
 export { IModelTileTree } from "./tile/IModelTileTree";
+export { GaussianSplatValidationRecorder, gaussianSplatValidationHtml, type GaussianSplatValidationTrace } from "./render/GaussianSplatValidation";
 
 // Used by cesium-renderer
 export { type RenderPlan } from "./render/RenderPlan";

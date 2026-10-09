@@ -53,6 +53,8 @@ import { Material } from "./Material";
 import { MeshGraphic, MeshRenderGeometry } from "./Mesh";
 import { PlanarGridGeometry } from "./PlanarGrid";
 import { PointCloudGeometry } from "./PointCloud";
+import { GaussianSplatGeometry } from "./GaussianSplatGeometry";
+import { GaussianSplatData } from "../GaussianSplatData";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
@@ -599,6 +601,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createPointCloudGeometry(args: PointCloudArgs): PointCloudGeometry {
     return new PointCloudGeometry(args);
+  }
+
+  public override createGaussianSplatGeometry(args: GaussianSplatData): GaussianSplatGeometry | undefined {
+    return this.options.enableGaussianSplats ? new GaussianSplatGeometry(args) : undefined;
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {

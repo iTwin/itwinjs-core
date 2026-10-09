@@ -48,6 +48,7 @@ import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphi
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { GaussianSplatData } from "../internal/render/GaussianSplatData";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
@@ -315,6 +316,9 @@ export abstract class RenderSystem implements Disposable {
   public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
   /** @internal */
   public createPointCloudGeometry(_args: PointCloudArgs): RenderGeometry | undefined { return undefined; }
+
+  /** @internal */
+  public createGaussianSplatGeometry(_args: GaussianSplatData): RenderGeometry | undefined { return undefined; }
   /** @internal */
   public createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal = false): RenderGeometry | undefined { return undefined; }
 
@@ -752,6 +756,14 @@ export namespace RenderSystem {
    * @public
    */
   export interface Options {
+    /** Enable the native Gaussian splat preview for compatible glTF content in reality models.
+     * Supports `KHR_gaussian_splatting` and the draft `KHR_gaussian_splatting_compression_spz_2`.
+     * Splats provide approximate model picking, but no snapping or measurement geometry.
+     * Default value: false.
+     * @alpha
+     */
+    enableGaussianSplats?: boolean;
+
     /** WebGL extensions to be explicitly disabled, regardless of whether or not the WebGL implementation supports them.
      * This is chiefly useful for testing code that only executes in the absence of particular extensions, while running on a system that supports those extensions.
      *

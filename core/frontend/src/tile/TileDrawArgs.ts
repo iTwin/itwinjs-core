@@ -19,6 +19,7 @@ import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { outputRealityTileSelection } from "../internal/tile/RealityTileSelection";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -386,6 +387,7 @@ export class TileDrawArgs {
 
   /** Output graphics for all accumulated tiles. */
   public drawGraphics(): void {
+    outputRealityTileSelection(this);
     const graphics = this.produceGraphics();
     if (undefined !== graphics)
       this.context.outputGraphic(graphics);

@@ -36,6 +36,7 @@ import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierT
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { GaussianSplatTraceTool } from "./GaussianSplatTraceTool";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
@@ -410,6 +411,7 @@ export class DisplayTestApp {
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      GaussianSplatTraceTool,
       GenerateElementGraphicsTool,
       GenerateTileContentTool,
       GltfDecorationTool,

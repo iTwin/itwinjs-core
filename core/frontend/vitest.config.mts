@@ -37,6 +37,14 @@ const includePackages: string[] = [
 ];
 
 export default defineConfig({
+  define: {
+    ITWIN_GAUSSIAN_VALIDATION_ENABLED: JSON.stringify(process.env.ITWIN_GAUSSIAN_VALIDATION === "1"),
+    ITWIN_GAUSSIAN_BENCHMARK_ENABLED: JSON.stringify(process.env.ITWIN_GAUSSIAN_BENCHMARK === "1"),
+    ITWIN_GAUSSIAN_SCREENSHOT_ENABLED: JSON.stringify(process.env.ITWIN_GAUSSIAN_SCREENSHOT === "1"),
+    ITWIN_GAUSSIAN_SCREENSHOT_URL: JSON.stringify(process.env.ITWIN_GAUSSIAN_SCREENSHOT_URL || "/GaussianSplats/cesium-cube.glb"),
+    ITWIN_GAUSSIAN_SCREENSHOT_ION_ASSET: JSON.stringify(Number(process.env.ITWIN_GAUSSIAN_SCREENSHOT_ION_ASSET) || 0),
+    ITWIN_GAUSSIAN_SCREENSHOT_COMPARE: JSON.stringify(process.env.ITWIN_GAUSSIAN_SCREENSHOT_COMPARE === "1"),
+  },
   esbuild: {
     target: "es2022",
   },
@@ -45,7 +53,7 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
-      provider: playwright(),
+      provider: playwright({ launchOptions: { args: (process.env.ITWIN_GAUSSIAN_BENCHMARK === "1" || process.env.ITWIN_GAUSSIAN_SCREENSHOT === "1") && process.platform === "darwin" ? ["--use-angle=metal"] : [] } }),
       enabled: true,
       instances: [
         { browser: "chromium" }

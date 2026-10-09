@@ -55,6 +55,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "GaussianSplatTrace": {
+      "keyin": "dta gaussian trace"
+    },
     "OutputShaders": {
       "keyin": "dta output shaders"
     },

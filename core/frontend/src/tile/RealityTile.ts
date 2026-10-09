@@ -372,10 +372,12 @@ export class RealityTile extends Tile {
     } else { // Select children instead of this tile
 
       // With additive refinement it is necessary to display this tile along with any displayed children
-      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
+      const additiveParent = this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren();
+      if (additiveParent)
         context.selectOrQueue(this, args, traversalDetails);
 
       this.selectRealityChildren(context, args, traversalDetails);
+      const childrenCoverage = traversalDetails.hasReadyCoverage;
 
       // Children are not ready: use this tile to avoid leaving a hole
       traversalDetails.shouldSelectParent = traversalDetails.shouldSelectParent || traversalDetails.queuedChildren.length !== 0;
@@ -386,6 +388,8 @@ export class RealityTile extends Tile {
           context.selectOrQueue(this, args, traversalDetails);
         }
       }
+      if (additiveParent)
+        traversalDetails.hasReadyCoverage = this.isReady && childrenCoverage;
     }
   }
 
@@ -397,6 +401,7 @@ export class RealityTile extends Tile {
     if (childrenReady) {
       context.select(scratchLoadedChildren, args);
       traversalDetails.shouldSelectParent = false;
+      traversalDetails.hasReadyCoverage = !this.additiveRefinement || this.isReady;
     }
 
     scratchLoadedChildren.length = 0;
@@ -413,6 +418,7 @@ export class RealityTile extends Tile {
     if (childrenLoadStatus === TileTreeLoadStatus.Loading) {
       args.markChildrenLoading();
       traversalDetails.shouldSelectParent = true;
+      traversalDetails.hasReadyCoverage = false;
       return;
     }
 

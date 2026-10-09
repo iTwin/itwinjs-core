@@ -6,7 +6,8 @@
  * @module Tiles
  */
 
-import { assert, ByteStream } from "@itwin/core-bentley";
+import { assert, ByteStream, Logger } from "@itwin/core-bentley";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, isKnownTileFormat, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -53,6 +54,13 @@ export abstract class RealityTileLoader {
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
+  protected async resolveExternalBuffer(_tile: RealityTile, url: string): Promise<Uint8Array> {
+    const response = await fetch(url);
+    if (!response.ok)
+      throw new Error(`Failed to load glTF buffer: HTTP ${response.status}`);
+
+    return new Uint8Array(await response.arrayBuffer());
+  }
   public get isContentUnbounded(): boolean { return false; }
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
@@ -267,6 +275,9 @@ export abstract class RealityTileLoader {
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
             idMap: this.getBatchIdMap(),
+            system,
+            shouldAbort: isCanceled ? () => isCanceled() : undefined,
+            resolveBuffer: async (url) => this.resolveExternalBuffer(tile, url),
             tileData
           });
         }
@@ -300,7 +311,8 @@ export abstract class RealityTileLoader {
         content = await reader.read();
         if (content.containsPointCloud)
           this._containsPointClouds = true;
-      } catch {
+      } catch (error) {
+        Logger.logError(FrontendLoggerCategory.Render, error instanceof Error ? error.message : String(error));
         // Failure to load should prevent us from trying to load children
         content.isLeaf = true;
       }
