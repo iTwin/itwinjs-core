@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
-import type { BackendCallbackRegistrar } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { ElectronHost } from "@itwin/core-electron/main";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
@@ -12,7 +12,7 @@ import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 import { join } from "path";
 
-export async function commonSetup(registerBackendCallback: BackendCallbackRegistrar): Promise<void> {
+export async function commonSetup(): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
   const cacheDir = process.env.VITEST_BACKEND_CACHE_DIR ?? join(__dirname, ".cache");
