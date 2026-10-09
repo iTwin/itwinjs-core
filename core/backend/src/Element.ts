@@ -467,8 +467,8 @@ export class Element extends Entity {
   protected static get allowedSubModelClasses(): Array<EntityClassType<Model>> | undefined { return undefined; }
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
-   * The default implementation rejects the model unless its class is one of [[allowedSubModelClasses]].
-   * @note throw an exception if model should not be inserted or [[allowedSubModelClasses]] returns undefined.
+   * The default implementation rejects the model unless its class is one of [[allowedSubModelClasses]] or [[allowedSubModelClasses]] returns undefined.
+   * @note throw an exception if model should not be inserted
    * @note `this` is the class of Element to be sub-modeled.
    * @note Overrides must call `super.onSubModelInsert(arg)` to retain inherited class validation.
    * @beta
