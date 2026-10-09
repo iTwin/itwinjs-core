@@ -33,17 +33,7 @@ The ECSQL version was bumped to `2.0.4.2`.
 
 ### Native ChangeUnifier
 
-The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of one or more [ChangesetReader]($backend)s into complete EC instances in native code. Rows no longer cross into JavaScript one at a time, and memory stays bounded: merged data beyond a memory budget is spilled to temporary files. Use `propNames` to keep only the properties you need.
-
-```ts
-using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname, propFilter: PropertyFilter.BisCoreElement });
-using unifier = ChangeUnifier.fromReader(reader, { propNames: ["FederationGuid", "Model"] });
-for (const instance of unifier.instances()) {
-  // ...
-}
-```
-
-Unlike [PartialChangeUnifier]($backend), instances are sorted by (root ECClassId, ECInstanceId, stage), `$meta.op` comes from the row of the main table (`"Updated"` if only overflow tables changed), and each reader is consumed when the unifier is created. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory).
+The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
 
 ## Common
 

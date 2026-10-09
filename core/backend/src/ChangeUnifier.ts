@@ -34,33 +34,10 @@ export interface ChangeUnifierArgs {
 }
 
 /**
- * Merges the partial (per-table) change rows of one or more [ChangesetReader]($backend)s into complete EC instances, natively.
- *
- * Rows from every table an EC instance maps to (the main table of its class family, joined tables and overflow tables) are
- * merged by ECInstanceId, root ECClassId of the class family and stage. An insert produces a `"New"` instance, a delete an
- * `"Old"` instance and an update one of each. Rows of non-EC tables are skipped. The filters and strict mode configured on a
- * reader are honored.
- *
- * All rows are read and merged when the unifier is created. Merged data is held in memory up to [[ChangeUnifierArgs.memoryBudgetBytes]]
- * and spilled to temporary files beyond that, so peak memory stays bounded for large changesets. Use [[ChangeUnifierArgs.propNames]]
- * to keep only the properties you need.
- *
- * Differences from [PartialChangeUnifier]($backend):
- * - [[instances]] are sorted numerically by (root ECClassId, ECInstanceId, stage), with `"Old"` before `"New"`.
- * - `$meta.op` and `$meta.isIndirectChange` come from the row of the class family's main (non-overflow) table. If only overflow
- *   tables contributed, `$meta.op` is `"Updated"` and `$meta.isIndirectChange` comes from the first row.
- *   [PartialChangeUnifier]($backend) takes both from the first row appended.
- * - Rows of one instance are merged even if they report different ECClassIds within the class family; the most-derived
- *   ECClassId is kept.
- * - Readers are consumed: each reader is drained completely when the unifier is created. It must not have been stepped before,
- *   and [ChangesetReader.step]($backend) returns `false` afterward. The reader can be disposed as soon as the unifier is created.
- *
- * **Usage:**
- * ```ts
- * using reader = ChangesetReader.openFile({ db, fileName, propFilter: PropertyFilter.BisCoreElement });
- * using unifier = ChangeUnifier.fromReader(reader, { propNames: ["FederationGuid", "Model", "Source", "Target"] });
- * for (const instance of unifier.instances()) { ... }
- * ```
+ * Merges the per-table rows of one or more [ChangesetReader]($backend)s into complete EC instances in native code, with memory
+ * bounded by spilling to temporary files. Readers are consumed when the unifier is created.
+ * See [ChangeUnifier]($docs/learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and
+ * how it differs from [PartialChangeUnifier]($backend).
  * @beta
  */
 export class ChangeUnifier implements Disposable {
@@ -95,9 +72,7 @@ export class ChangeUnifier implements Disposable {
   }
 
   /**
-   * Create a unifier that merges all rows of `reader`.
-   * The reader is drained completely by this call: it must not have been stepped before, and [ChangesetReader.step]($backend)
-   * returns `false` afterward. The reader remains owned by the caller and can be disposed as soon as this returns.
+   * Create a unifier that merges all rows of `reader`. The reader is drained by this call and can be disposed afterward.
    * @param reader A reader that has not been stepped yet.
    * @param args Options controlling projection, memory use and batching.
    * @throws [[IModelError]] if `args` are invalid, if `reader` has already been stepped or consumed, or if the native layer fails.
@@ -108,13 +83,9 @@ export class ChangeUnifier implements Disposable {
   }
 
   /**
-   * Create a unifier that merges all rows of several readers - e.g. one per changeset - into one set of instances.
-   * Where property values conflict, rows of later readers win.
-   *
-   * Readers are requested from `readers` one at a time and each is drained completely before the next one is requested,
-   * so `readers` can be a generator that opens each reader when requested and disposes it afterward.
-   * All readers must read the same iModel and be opened with the same `propFilter` and equivalent `rowOptions`.
-   * @param readers Readers that have not been stepped yet. Each is consumed as described for [[fromReader]].
+   * Create a unifier that merges all rows of several readers, e.g. one per changeset. Where property values conflict, later readers win.
+   * Each reader is requested and drained before the next, so `readers` can be a generator that opens and disposes them.
+   * @param readers Readers of the same iModel, opened with the same `propFilter` and equivalent `rowOptions`, that have not been stepped yet.
    * @param args Options controlling projection, memory use and batching.
    * @throws [[IModelError]] if `args` are invalid, if a reader has already been stepped or consumed, if the readers' `propFilter`
    * or `rowOptions` differ, or if the native layer fails (for example when readers read different iModels). Readers drained

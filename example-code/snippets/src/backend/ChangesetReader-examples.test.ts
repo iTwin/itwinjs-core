@@ -8,6 +8,7 @@ import * as path from "path";
 import {
   BriefcaseDb,
   ChangesetReader,
+  ChangeUnifier,
   ChangeUnifierCache,
   ChannelControl,
   DrawingCategory,
@@ -32,6 +33,16 @@ async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<voi
   if (txn.isActive)
     txn.saveChanges();
   await txn.iModel.importSchemaStrings(schemas);
+}
+
+/** `false` until the native addon ships `ChangeUnifier` (iTwin/itwinjs-core#9761). */
+function hasNativeChangeUnifier(): boolean {
+  try {
+    ChangeUnifier.fromReaders([])[Symbol.dispose]();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 describe("ChangesetReader Examples", () => {
@@ -534,6 +545,35 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
     void reader;
     void spillReader;
+  });
+
+  it("ChangeUnifier — native merging", function () {
+    if (!hasNativeChangeUnifier())
+      this.skip();
+
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.ChangeUnifier
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath, propFilter: PropertyFilter.BisCoreElement });
+    using unifier = ChangeUnifier.fromReader(reader, { propNames: ["FederationGuid", "Model"] });
+    for (const instance of unifier.instances()) {
+      expect(instance.ECInstanceId).to.exist;
+      expect(instance.$meta.op).to.exist;
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.ChangeUnifierFromReaders
+    // Each reader is opened when the unifier requests it and disposed once it has been drained.
+    function* openReaders(fileNames: string[]): Generator<ChangesetReader> {
+      for (const fileName of fileNames) {
+        using changesetReader = ChangesetReader.openFile({ db, fileName, propFilter: PropertyFilter.BisCoreElement });
+        yield changesetReader;
+      }
+    }
+
+    using merged = ChangeUnifier.fromReaders(openReaders([insertChangesetPath, updateChangesetPath]));
+    for (const instance of merged.instances()) {
+      expect(instance.$meta.stage).to.exist;
+    }
+    // __PUBLISH_EXTRACT_END__
   });
 });
 
