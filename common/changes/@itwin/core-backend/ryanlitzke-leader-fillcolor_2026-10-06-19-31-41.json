@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Bug fix for leader fill color",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

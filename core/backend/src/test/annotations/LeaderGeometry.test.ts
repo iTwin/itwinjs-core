@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, GeometryParams, LineBreakRun, TargetPointShape, targetPointShapes, TerminatorShape, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FillDisplay, GeometryParams, LineBreakRun, TargetPointShape, targetPointShapes, TerminatorShape, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { Arc3d, LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLeaderAttachmentPoint, TextStyleResolver } from "../../core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -211,6 +211,10 @@ describe("LeaderGeometry", () => {
               if (shape.includes("Filled")) {
                 expect(builder.geometries.length).to.equal(3) // One entry for geometry query and another for geometryParams for fill
                 terminatorGeometry = builder.geometries[2];
+
+                const params = builder.params[builder.params.length - 1];
+                expect(params.fillDisplay).to.equal(FillDisplay.Always);
+                expect(params.fillColor).to.equal(params.lineColor);
               }
               if (shape.includes("circle")) {
                 expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
