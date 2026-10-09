@@ -516,9 +516,9 @@ class RealityModelTileLoader extends RealityTileLoader {
     const prefix = thisId.length ? `${thisId}_` : "";
     const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
-      for (let i = 0; i < findResult.json.children.length; i++) {
-        const childId = prefix + i;
-        const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
+      // Resolve the children concurrently: each may fetch its own external tileset.
+      const children = await Promise.all(findResult.json.children.map(async (_child: unknown, i: number) => this.findTileInJson(this.tree.tilesetJson, prefix + i, "", undefined)));
+      for (const foundChild of children) {
         if (undefined !== foundChild) {
           const refine = foundChild.json.refine;
           props.push(new RealityModelTileProps({
