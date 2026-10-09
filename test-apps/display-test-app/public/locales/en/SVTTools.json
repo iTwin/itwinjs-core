@@ -58,6 +58,12 @@
     "GaussianSplatTrace": {
       "keyin": "dta gaussian trace"
     },
+    "GaussianSplatIon": {
+      "keyin": "dta gaussian ion"
+    },
+    "AsyncHoverReadback": {
+      "keyin": "dta async hover"
+    },
     "OutputShaders": {
       "keyin": "dta output shaders"
     },

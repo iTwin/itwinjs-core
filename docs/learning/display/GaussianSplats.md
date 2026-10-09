@@ -20,7 +20,7 @@ viewport.invalidateScene();
 
 For Cesium ion assets, use the application's existing [CesiumAccessClient]($frontend) or `TileAdmin.Props.cesiumIonKey` configuration and reality-data source key. External glTF buffers use the same reality-data transport as their tiles. The renderer does not depend on Cesium's rendering engine.
 
-In Display Test App, set `IMJS_ENABLE_GAUSSIAN_SPLATS=1` and attach the reality model using the existing reality-model tools. The preview defaults to disabled; ordinary geometry rendering is unchanged.
+In Display Test App, set `IMJS_ENABLE_GAUSSIAN_SPLATS=1` and attach the reality model using the existing reality-model tools. For a Cesium ion asset, also set `IMJS_CESIUM_ION_KEY` and key in `dta gaussian ion <assetId>` (for example `dta gaussian ion 4547222` for the Redmond campus). It opens a blank connection centered on the asset, attaches it and aims the view at it; the default blank connection is located elsewhere, so an ion asset attached to it is out of view. Set `IMJS_ASYNC_HOVER_READBACK=1`, or key in `dta async hover [on|off]`, to compare the asynchronous hover-locate readback described below. The preview defaults to disabled; ordinary geometry rendering is unchanged.
 
 ## Supported content
 

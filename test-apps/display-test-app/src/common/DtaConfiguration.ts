@@ -28,6 +28,7 @@ export interface DtaBooleanConfiguration {
   debugShaders?: boolean; // default OFF
   useCesium?: boolean; // default OFF
   enableGaussianSplats?: boolean; // default OFF; native renderer preview
+  asyncHoverReadback?: boolean; // default OFF; experimental asynchronous pick readback for hover locate
   alwaysLoadEdges?: boolean; // default OFF
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   openReadWrite?: boolean; // default false
@@ -160,6 +161,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_ENABLE_GAUSSIAN_SPLATS)
     configuration.enableGaussianSplats = true;
+
+  if (undefined !== process.env.IMJS_ASYNC_HOVER_READBACK)
+    configuration.asyncHoverReadback = true;
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;

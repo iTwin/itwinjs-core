@@ -36,6 +36,7 @@ import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierT
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { AsyncHoverReadbackTool, GaussianSplatIonTool } from "./GaussianSplatIonTool";
 import { GaussianSplatTraceTool } from "./GaussianSplatTraceTool";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
@@ -347,6 +348,8 @@ export class DisplayTestApp {
       await LocalhostIpcApp.startup(opts);
     }
 
+    AccuSnap.asyncHoverReadback = true === configuration.asyncHoverReadback;
+
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
@@ -411,6 +414,8 @@ export class DisplayTestApp {
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      AsyncHoverReadbackTool,
+      GaussianSplatIonTool,
       GaussianSplatTraceTool,
       GenerateElementGraphicsTool,
       GenerateTileContentTool,

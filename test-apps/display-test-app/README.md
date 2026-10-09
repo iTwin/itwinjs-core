@@ -171,6 +171,10 @@ You can use these environment variables to alter the default behavior of various
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
 * IMJS_USE_CESIUM
   * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
+* IMJS_ENABLE_GAUSSIAN_SPLATS
+  * If defined, enables the native Gaussian splat renderer preview (`RenderSystem.Options.enableGaussianSplats`). Use `dta gaussian ion <assetId>` to open a Cesium ion splat asset; it requires IMJS_CESIUM_ION_KEY.
+* IMJS_ASYNC_HOVER_READBACK
+  * If defined, hover locate reads the pick buffers asynchronously instead of waiting for the GPU (experimental `AccuSnap.asyncHoverReadback`). `dta async hover [on|off]` toggles it at run time.
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
