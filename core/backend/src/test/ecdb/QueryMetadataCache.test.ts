@@ -3,19 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as sinon from "sinon";
-import { Guid } from "@itwin/core-bentley";
-import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, QueryOptions, QueryPropertyMetaData, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyError, DbResult, Guid } from "@itwin/core-bentley";
+import {
+  Code, DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, IModel, PhysicalElementProps, QueryOptions, QueryPropertyMetaData,
+  QueryRowFormat, SubCategoryAppearance,
+} from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { ChannelControl } from "../../ChannelControl";
 import { ECDb } from "../../ECDb";
 import { EditTxn, withEditTxn } from "../../EditTxn";
-import { IModelDb, StandaloneDb } from "../../IModelDb";
+import { BriefcaseDb, IModelDb, StandaloneDb } from "../../IModelDb";
+import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SpatialCategory } from "../../Category";
+import { HubMock } from "../../internal/HubMock";
 import { QueryMetadataCache } from "../../internal/QueryMetadataCache";
 import { _queryMetadataCache } from "../../internal/Symbols";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
@@ -154,20 +161,44 @@ describe("QueryMetadataCache", () => {
     expect(cache.size).to.equal(0);
   });
 
-  it("re-requests metadata when cleared while a cache hit is in flight", async () => {
+  it("re-requests metadata without the restart token when cleared while a cache hit is in flight", async () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("Old"));
-    await cache.executeCachedQueryRequest(makeRequest(), exec.execute);
+    const request = makeRequest({ restartToken: "token" });
+    await cache.executeCachedQueryRequest(request, exec.execute);
 
     exec.meta = makeMeta("New");
-    const response = await cache.executeCachedQueryRequest(makeRequest(), async (request) => {
-      if (!request.includeMetaData)
+    const response = await cache.executeCachedQueryRequest(request, async (r) => {
+      if (!r.includeMetaData)
         cache.clear();
-      return exec.execute(request);
+      return exec.execute(r);
     });
 
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, false, true]);
+    // A newer request may already own the token; resubmitting with it would cancel that request.
+    expect(exec.requests.map((r) => r.restartToken)).to.deep.equal(["token", "token", undefined]);
+    expect(request.restartToken).to.equal("token"); // caller's request is not modified
     expect(response.meta).to.deep.equal(makeMeta("New"));
+    expect(cache.size).to.equal(1);
+  });
+
+  it("returns a cancelled or failed cache hit as is, even when cleared while in flight", async () => {
+    for (const status of [DbResponseStatus.Cancel, DbResponseStatus.QueueFull, DbResponseStatus.Error_ECSql_PreparedFailed]) {
+      const cache = new QueryMetadataCache();
+      const exec = new FakeExecutor(makeMeta("A"));
+      const request = makeRequest({ restartToken: "token" });
+      await cache.executeCachedQueryRequest(request, exec.execute);
+
+      exec.status = status;
+      const response = await cache.executeCachedQueryRequest(request, async (r) => {
+        cache.clear();
+        return exec.execute(r);
+      });
+
+      expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, false]);
+      expect(response.status).to.equal(status);
+      expect(response.meta).to.deep.equal([]);
+    }
   });
 
   it("clear drops all entries", async () => {
@@ -294,7 +325,7 @@ describe("createQueryReader metadata cache", () => {
       expect(await readColumnNames(ecdb, ecsql, { usePrimaryConn: true })).to.deep.equal(["ECInstanceId", "ECClassId", "PropA", "PropB"]);
     });
 
-    it("is cleared by clearCaches, saveChanges and abandonChanges", async () => {
+    it("is cleared by clearCaches but kept across saveChanges and abandonChanges", async () => {
       using ecdb = ECDbTestHelper.createECDb(outDir, "query-metadata-cache-clear.ecdb", schemaV1);
       const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
       const ecsql = "SELECT * FROM mct.Foo";
@@ -308,11 +339,61 @@ describe("createQueryReader metadata cache", () => {
       await expectMetadataRequested(false);
       ecdb.clearCaches();
       await expectMetadataRequested(true);
+      ecdb.withCachedWriteStatement("INSERT INTO mct.Foo(PropA) VALUES('a')", (stmt) => stmt.stepForInsert());
       ecdb.saveChanges();
-      await expectMetadataRequested(true);
-      ecdb.abandonChanges();
-      await expectMetadataRequested(true);
       await expectMetadataRequested(false);
+      ecdb.abandonChanges();
+      await expectMetadataRequested(false);
+    });
+
+    it("is cleared by dropSchemas", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "query-metadata-cache-drop.ecdb", schemaV1);
+      const ecsql = "SELECT * FROM mct.Foo";
+      await readMetaData(ecdb, ecsql);
+      ecdb.dropSchemas(["MetaCacheTest"]);
+
+      const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
+      let error: unknown;
+      try {
+        await readMetaData(ecdb, ecsql);
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.not.be.undefined; // the class is gone, so the query must fail to prepare instead of reusing stale metadata
+      expect(spy.args[0][1].includeMetaData).to.be.true;
+    });
+
+    it("does not cancel a newer reader that shares the restart token when cleared during a cache hit", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "query-metadata-cache-restart.ecdb", schemaV1);
+      for (let i = 0; i < 10; ++i)
+        ecdb.withCachedWriteStatement(`INSERT INTO mct.Foo(PropA) VALUES('${i}')`, (stmt) => stmt.stepForInsert());
+      ecdb.saveChanges();
+
+      const ecsql = "SELECT PropA FROM mct.Foo ORDER BY PropA";
+      const config = { restartToken: "shared-token" };
+      const expected = (await ecdb.createQueryReader(ecsql, undefined, config).toArray()).map((row) => row[0]);
+      expect(expected).to.have.length(10);
+
+      // While reader A's cache-hit request is in flight, clear the cache and start reader B with the same token.
+      // Native cancels A in favour of B; A must not then resubmit with the token and cancel B in turn.
+      const executeQueryRequest = ConcurrentQuery.executeQueryRequest.bind(ConcurrentQuery);
+      let readerB: Promise<any[]> | undefined;
+      sinon.stub(ConcurrentQuery, "executeQueryRequest").callsFake(async (db, request) => {
+        const pending = executeQueryRequest(db, request);
+        if (readerB === undefined && !request.includeMetaData && request.restartToken === config.restartToken) {
+          ecdb.clearCaches();
+          readerB = ecdb.createQueryReader(ecsql, undefined, config).toArray();
+        }
+        return pending;
+      });
+
+      const resultA = await ecdb.createQueryReader(ecsql, undefined, config).toArray().then((rows) => rows, (error: Error) => error);
+      expect(readerB).to.not.be.undefined;
+      expect((await readerB!).map((row) => row[0])).to.deep.equal(expected);
+      if (resultA instanceof Error)
+        expect((resultA as BentleyError).errorNumber).to.equal(DbResult.BE_SQLITE_INTERRUPT); // A was cancelled by B
+      else
+        expect(resultA.map((row) => row[0])).to.deep.equal(expected);
     });
   });
 
@@ -360,12 +441,11 @@ describe("createQueryReader metadata cache", () => {
       }
     });
 
-    it("is cleared on commit, undo and redo", async () => {
+    it("is kept on commit and cleared on undo and redo", async () => {
       await populate();
       withEditTxn(imodel, (txn) => insertCategory(txn));
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      expect(imodel[_queryMetadataCache].size).to.equal(1);
 
-      await populate();
       imodel.txns.reverseSingleTxn();
       expect(imodel[_queryMetadataCache].size).to.equal(0);
 
@@ -390,5 +470,106 @@ describe("createQueryReader metadata cache", () => {
       imodel.clearCaches();
       expect(imodel[_queryMetadataCache].size).to.equal(0);
     });
+  });
+});
+
+// HubMock.startup stubs CloudSqlite with sinon, so this suite must not call sinon.restore().
+describe("createQueryReader metadata cache across briefcases", () => {
+  const ecsql = "SELECT * FROM mcbt.Foo ORDER BY PropA";
+  const configs: QueryOptions[] = [{}, { usePrimaryConn: true }];
+
+  before(() => HubMock.startup("QueryMetadataCache", KnownTestLocations.outputDir));
+  after(() => HubMock.shutdown());
+
+  async function insertFoo(db: BriefcaseDb, props: { propA: string, propB?: number }): Promise<void> {
+    await db.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const txn = new EditTxn(db, "insert Foo");
+    txn.start();
+    const [, model] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(txn, IModelTestUtils.getUniqueModelCode(db, "MetaCacheModel"), true);
+    const category = SpatialCategory.insert(txn, IModel.dictionaryId, Guid.createValue(), new SubCategoryAppearance());
+    const element: PhysicalElementProps = { classFullName: "MetaCacheBisTest:Foo", model, category, code: Code.createEmpty() };
+    txn.insertElement({ ...element, ...props });
+    txn.end();
+  }
+
+  /** Verify both the metadata and the rows a fresh reader returns, on the worker and on the primary connection. */
+  async function expectFoo(db: IModelDb, withPropB: boolean, rows: Array<{ propA: string, propB?: number }>) {
+    for (const config of configs) {
+      const reader = db.createQueryReader(ecsql, undefined, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+      const actualRows = await reader.toArray();
+      const names = (await reader.getMetaData()).map((p) => p.name);
+      expect(names).to.include("PropA");
+      expect(names.includes("PropB")).to.equal(withPropB);
+      expect(actualRows.map((row) => ({ propA: row.PropA, propB: row.PropB }))).to.deep.equal(rows.map((row) => ({ propA: row.propA, propB: row.propB })));
+    }
+  }
+
+  async function warm(db: IModelDb) {
+    for (const config of configs)
+      await readMetaData(db, ecsql, config);
+    expect(db[_queryMetadataCache].size).to.equal(configs.length);
+  }
+
+  it("sees new columns after pulling a schema changeset", async () => {
+    const accessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "QueryMetadataCachePull" });
+    const writer = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    const reader = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    try {
+      writer.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await writer.importSchemaStrings([bisSchema("01.00.00", false)]);
+      await insertFoo(writer, { propA: "a" });
+      await writer.pushChanges({ accessToken, description: "schema v1" });
+
+      await reader.pullChanges({ accessToken });
+      await warm(reader);
+      await expectFoo(reader, false, [{ propA: "a" }]);
+
+      await writer.importSchemaStrings([bisSchema("01.00.01", true)]);
+      await insertFoo(writer, { propA: "b", propB: 42 });
+      await writer.pushChanges({ accessToken, description: "schema v2" });
+
+      await reader.pullChanges({ accessToken });
+      await expectFoo(reader, true, [{ propA: "a" }, { propA: "b", propB: 42 }]);
+    } finally {
+      writer.close();
+      reader.close();
+    }
+  });
+
+  it("sees new columns after replaying a schema change made by another connection", async () => {
+    const accessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "QueryMetadataCacheReplay" });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
+
+    const fsWatcher = { callback: () => { }, close: () => { } };
+    const watchStub = sinon.stub(fs, "watch").callsFake(((_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
+      fsWatcher.callback = fn;
+      return fsWatcher;
+    }) as any);
+    let writer: BriefcaseDb | undefined;
+    let reader: BriefcaseDb | undefined;
+    try {
+      writer = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      writer.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      reader = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
+
+      await writer.importSchemaStrings([bisSchema("01.00.00", false)]);
+      await insertFoo(writer, { propA: "a" });
+      fsWatcher.callback();
+      await warm(reader);
+      await expectFoo(reader, false, [{ propA: "a" }]);
+
+      await writer.importSchemaStrings([bisSchema("01.00.01", true)]);
+      await insertFoo(writer, { propA: "b", propB: 42 });
+      fsWatcher.callback();
+      await expectFoo(reader, true, [{ propA: "a" }, { propA: "b", propB: 42 }]);
+    } finally {
+      reader?.close();
+      writer?.close();
+      watchStub.restore();
+    }
   });
 });

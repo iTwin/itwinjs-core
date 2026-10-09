@@ -205,7 +205,6 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public saveChanges(changesetName?: string): void {
-    this._queryMetadataCache.clear();
     const status: DbResult = this[_nativeDb].saveChanges(changesetName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to save changes");
@@ -215,7 +214,6 @@ export class ECDb implements Disposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
-    this._queryMetadataCache.clear();
     const status: DbResult = this[_nativeDb].abandonChanges();
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to abandon changes");

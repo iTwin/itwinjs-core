@@ -13,8 +13,9 @@ import { DbQueryRequest, DbQueryResponse, DbResponseStatus, QueryPropertyMetaDat
  * already-seen ECSQL can skip asking native to build and marshal it again.
  *
  * Column metadata only depends on the prepared statement (i.e. the schema) and the options that influence property naming.
- * The owning database clears the cache on every event that can change the schema seen by the primary or worker connections
- * (commit, abandon, undo/redo, changeset application, external txn replay, clearCaches, attach/detach, close).
+ * The owning database clears the cache on every event that can change the schema seen by the primary or worker connections:
+ * clearCaches (which schema import, schema drop, schema upgrade and changeset revert call), changeset application, undo/redo,
+ * external txn replay, attach/detach and close. Plain commits do not clear it, so code that alternates reads and saves keeps the benefit.
  * A schema change made by another process to a file opened without change watching is not detected; the primary
  * connection's own schema cache has the same limitation.
  * @internal
@@ -70,7 +71,7 @@ export class QueryMetadataCache {
    * @param request The request to execute. It is not modified.
    * @param executeQueryRequest Sends a request to native without consulting this cache, typically
    * `ConcurrentQuery.executeQueryRequest` with the database already bound. Called once, or twice if the cache is cleared
-   * while a cache hit is in flight.
+   * while a successful cache hit is in flight. The second call has no `restartToken`.
    */
   public async executeCachedQueryRequest(request: DbQueryRequest, executeQueryRequest: (request: DbQueryRequest) => Promise<DbQueryResponse>): Promise<DbQueryResponse> {
     if (!request.includeMetaData)
@@ -78,20 +79,29 @@ export class QueryMetadataCache {
 
     const key = QueryMetadataCache.makeKey(request);
     const cached = this.get(key);
+    let missRequest = request;
     if (cached) {
       const hitGeneration = this._generation;
       const hitResponse = await executeQueryRequest({ ...request, includeMetaData: false });
-      if (hitGeneration !== this._generation) {
-        // Invalidated while in flight: the cached metadata may not match the statement that produced the rows.
-        return executeQueryRequest(request);
+      // Cancelled, failed or busy: there are no rows to describe, so hand the status back to the caller as is.
+      if (!QueryMetadataCache.hasResult(hitResponse))
+        return hitResponse;
+
+      if (hitGeneration === this._generation) {
+        if (hitResponse.meta === undefined || hitResponse.meta.length === 0)
+          hitResponse.meta = QueryMetadataCache.copy(cached);
+        return hitResponse;
       }
-      if (QueryMetadataCache.hasResult(hitResponse) && (hitResponse.meta === undefined || hitResponse.meta.length === 0))
-        hitResponse.meta = QueryMetadataCache.copy(cached);
-      return hitResponse;
+
+      // Invalidated while in flight: the cached metadata may not match the statement that produced the rows, so run
+      // the request again with metadata. Drop the restart token: a newer request may already be using it, and
+      // resubmitting with it would cancel that request.
+      missRequest = { ...request };
+      delete missRequest.restartToken;
     }
 
     const generation = this._generation;
-    const response = await executeQueryRequest(request);
+    const response = await executeQueryRequest(missRequest);
     if (generation === this._generation && QueryMetadataCache.hasResult(response) && response.meta !== undefined && response.meta.length > 0)
       this.set(key, QueryMetadataCache.copy(response.meta));
     return response;

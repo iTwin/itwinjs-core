@@ -1069,8 +1069,6 @@ export class TxnManager {
 
   /** @internal */
   protected _onCommitted() {
-    // A commit may include a schema change; cached createQueryReader metadata could then be stale.
-    this._iModel[_queryMetadataCache].clear();
     this.touchWatchFile();
     this.onCommitted.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
