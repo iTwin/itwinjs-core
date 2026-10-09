@@ -467,7 +467,7 @@ export class Element extends Entity {
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
    * The default implementation rejects the model unless its class is one of [[allowedSubModelClasses]].
-   * @note throw an exception if model should not be inserted
+   * @note throw an exception if model should not be inserted or [[allowedSubModelClasses]] returns undefined.
    * @note `this` is the class of Element to be sub-modeled.
    * @beta
    */
