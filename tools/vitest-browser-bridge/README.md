@@ -50,7 +50,7 @@ The callback surfaces are deliberately separate so browser-only code does not im
 - `@itwin/vitest-browser-bridge/callbacks/http` creates a browser callback invoker for an HTTP endpoint backed by `dispatchBackendCallback`.
 - `@itwin/vitest-browser-bridge/electron/frame-routing` provides an internal backend hook for routing iTwin RPC messages to Vitest's tester iframe.
 
-The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. A successful callback that returns `undefined` is represented by an omitted `value`, matching Certa's raw callback result behavior and JSON serialization. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
+The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Every successful response carries a `value`, which may be `undefined`. Because JSON cannot carry `undefined`, the HTTP transport marks an `undefined` result explicitly. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
 
 ```ts
 // Backend init module
