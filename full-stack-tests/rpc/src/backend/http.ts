@@ -23,7 +23,7 @@ async function init() {
   const mobilePort = mobileBackendPortFor(frontendPort);
   await setupMockMobileTest(mobilePort);
 
-  await commonSetup(registerBackendCallback);
+  await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -38,7 +38,7 @@ async function init() {
   initializeAttachedInterfacesTest(rpcConfig);
   initializeWebRoutingTest(rpcConfig.protocol);
 
-  await initializeMockMobileTest(registerBackendCallback);
+  await initializeMockMobileTest();
 
   // eslint-disable-next-line no-console
   console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
