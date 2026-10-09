@@ -12,6 +12,8 @@ The following class diagram depicts the most basic classes from the BisCore sche
 
 Both the `Drawing` and `Sheet` classes mixin the `ISubModeledElement` interface, which advertises the expectation that they will be detailed in a submodel. A `Drawing` instance is expected to be submodeled by a `DrawingModel` while a `Sheet` instance is expected to be submodeled by a `SheetModel`. `Drawing` and `Sheet` instances are contained in one or more `DocumentListModel`s.
 
+Domain-specific classes that implement `ISubModeledElement` can define their own permitted sub-model classes by overriding [Element.allowedSubModelClasses]($backend). This does not change the built-in pairings described above.
+
 ## Drawings
 
 The following class diagram depicts the main classes from the BisCore schema involved in capturing a Drawing in a BIS repository. See [Class-diagram Conventions](../guide/references/class-diagram-conventions.md) for details about the conventions used.

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Move Sheet/Drawing sub-model class validation from native into  Element.onSubModelInsert",
+      "comment": "Move Sheet and Drawing sub-model class validation into Element.onSubModelInsert and allow domain ISubModeledElement classes to define permitted model classes.",
       "type": "none"
     }
   ],
