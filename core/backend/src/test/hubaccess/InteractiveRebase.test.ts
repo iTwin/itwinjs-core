@@ -9,8 +9,8 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, CodeScopeSpec, ElementAspectProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
-import { BriefcaseDb, ChannelControl, DocumentListModel, Drawing, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
+import { Code, CodeScopeSpec, ElementAspectProps, ElementProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { BriefcaseDb, ChannelControl, DocumentListModel, Drawing, DrawingCategory, DrawingModel, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
 import { InteractiveRebaseError } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
@@ -337,6 +337,33 @@ describe("InteractiveRebase", () => {
     conflict.acceptOurs();
     const oursValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
     chai.expect(oursValues).to.be.undefined;
+  });
+
+  it("can present a conflict where we delete something the upstream modified from an unset value", async () => {
+    chai.expect(briefcase1.elements.getElementProps(id).userLabel).to.be.undefined;
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, userLabel: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 sets userLabel" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(id);
+    chai.expect(conflict.ours).to.be.undefined;
+    chai.expect(conflict.theirModifiedProperties).to.include("userLabel");
+    chai.expect(conflict.original!.userLabel).to.be.undefined;
+    chai.expect(conflict.theirs!.userLabel).to.equal("User1");
   });
 
   it("can present a conflict where we modify something the upstream deleted", async () => {
@@ -1221,6 +1248,49 @@ describe("InteractiveRebase", () => {
     chai.expect(childProps!.model).to.equal(newModelId);
   });
 
+  it("preserves a code spec deletion blocked by a required NoAction reference", async () => {
+    const codeSpecId = await withEditTxn(briefcase1, async (txn) =>
+      briefcase1.codeSpecs.insert(txn, "BlockedCodeSpecDelete", CodeScopeSpec.Type.Repository));
+    await briefcase1.pushChanges({ description: "Create code spec for blocked deletion" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.iModel.withSqliteStatement("DELETE FROM bis_CodeSpec WHERE Id=?", (statement) => {
+        statement.bindId(1, codeSpecId);
+        statement.step();
+      });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    let referencingElementId!: Id64String;
+    await withEditTxn(briefcase1, async (txn) => {
+      referencingElementId = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: new Code({ spec: codeSpecId, scope: IModel.rootSubjectId, value: "BlockedCodeSpecReference" }),
+        foo: "Reference",
+        somePoint: new Point2d(8.0, 9.0),
+      } as SomeGraphicalElementProps);
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+    await briefcase1.pushChanges({ description: "Add required code spec reference" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    const codeSpecConflict = interactive.conflicts.find((conflict) => conflict.id === codeSpecId && conflict.classFullName === "BisCore:CodeSpec");
+    chai.expect(codeSpecConflict).to.not.be.undefined;
+    chai.expect(briefcase2.withSqliteStatement("SELECT 1 FROM bis_CodeSpec WHERE Id=?", (statement) => {
+      statement.bindId(1, codeSpecId);
+      return statement.step();
+    })).to.not.equal(0);
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(referencingElementId).code.spec).to.equal(codeSpecId);
+  });
+
   it("links conflicts through models that own elements and other models", async () => {
     const [parentModelId, childDrawingId, childModelId, childId] = await withEditTxn(briefcase1, async (txn) => {
       const parentModel = DocumentListModel.insert(txn, IModel.rootSubjectId, "ParentModel");
@@ -1287,8 +1357,8 @@ describe("InteractiveRebase", () => {
     }
 
     chai.expect({
-      elementOwnerLinked: elementConflict.ownerConflict === childModelConflict,
-      childModelOwnerLinked: childModelConflict.ownerConflict === parentModelConflict,
+      elementOwnerLinked: elementConflict.ownerConflicts.includes(childModelConflict),
+      childModelOwnerLinked: childModelConflict.ownerConflicts.includes(parentModelConflict),
       parentListsChildModel: parentModelConflict.dependentConflicts.includes(childModelConflict),
       parentModelExistsAfterReplay,
       childModelExistsAfterReplay,
@@ -1727,16 +1797,17 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours!.aspectValue).to.equal("User2");
     chai.expect(conflict.theirs!.aspectValue).to.equal("User1");
 
-    chai.expect(conflict.ownerConflict).to.not.be.undefined;
-    chai.expect(interactive.conflicts).to.include(conflict.ownerConflict);
-    chai.expect(conflict.ownerConflict?.id).to.equal(id);
-    chai.expect(conflict.ownerConflict?.brokenRelationships.length).to.equal(0);
-    chai.expect(conflict.ownerConflict?.conflictingProperties.length).to.equal(0);
-    chai.expect(conflict.ownerConflict?.differentProperties.length).to.equal(0);
-    chai.expect(conflict.ownerConflict?.ourModifiedProperties.length).to.equal(0);
-    chai.expect(conflict.ownerConflict?.theirModifiedProperties.length).to.equal(0);
-    chai.expect(conflict.ownerConflict?.dependentConflicts.length).to.equal(1);
-    chai.expect(conflict.ownerConflict?.dependentConflicts[0]).to.equal(conflict);
+    chai.expect(conflict.ownerConflicts.length).to.equal(1);
+    const ownerConflict = conflict.ownerConflicts[0];
+    chai.expect(interactive.conflicts).to.include(ownerConflict);
+    chai.expect(ownerConflict.id).to.equal(id);
+    chai.expect(ownerConflict.brokenRelationships.length).to.equal(0);
+    chai.expect(ownerConflict.conflictingProperties.length).to.equal(0);
+    chai.expect(ownerConflict.differentProperties.length).to.equal(0);
+    chai.expect(ownerConflict.ourModifiedProperties.length).to.equal(0);
+    chai.expect(ownerConflict.theirModifiedProperties.length).to.equal(0);
+    chai.expect(ownerConflict.dependentConflicts.length).to.equal(1);
+    chai.expect(ownerConflict.dependentConflicts[0]).to.equal(conflict);
 
     let aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User2");
@@ -1930,7 +2001,7 @@ describe("InteractiveRebase", () => {
 
     // If we attempt to acceptTheirs on the aspect while its owner does not exist,
     // an exception is thrown.
-    chai.expect(() => conflict.acceptTheirs()).to.throw("Resolve the ownerConflict first");
+    chai.expect(() => conflict.acceptTheirs()).to.throw("Resolve the ownerConflicts first");
 
     // acceptTheirs on the owner also implies acceptTheirs on the dependent.
     ownerConflict?.acceptTheirs();
@@ -2488,7 +2559,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships[0].appliedValue).to.equal(id);
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childC).parent?.id).to.equal(id);
     // Must not also be (mis)reported as a dependent conflict of some owner.
-    chai.expect(conflict.ownerConflict).to.be.undefined;
+    chai.expect(conflict.ownerConflicts).to.be.empty;
   });
 
   it("inserting an element and an aspect on it together replays without a spurious constraint violation", async () => {
@@ -2730,6 +2801,141 @@ describe("InteractiveRebase", () => {
     chai.expect(root.deletionEffects).to.be.empty;
     chai.expect(child.deletionEffects).to.be.empty;
     chai.expect(getUniqueAspect(briefcase2, childId).aspectValue).to.equal("UpstreamAspect");
+  });
+
+  it("cascades our model deletion to an element hierarchy upstream inserted into it", async () => {
+    const [drawingId, modelId, existingId] = await withEditTxn(briefcase1, async (txn) => {
+      const documentList = DocumentListModel.insert(txn, IModel.rootSubjectId, "CascadeDocuments");
+      const drawing = Drawing.insert(txn, documentList, "CascadeDrawing");
+      const existing = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawing,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Existing",
+        somePoint: new Point2d(1, 1),
+      } as SomeGraphicalElementProps);
+      return [drawing, drawing, existing];
+    });
+    await briefcase1.pushChanges({ description: "Create drawing" });
+    await briefcase2.pullChanges();
+
+    const [upstreamParentId, upstreamChildId] = await withEditTxn(briefcase1, async (txn) => {
+      const upstreamParent = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: modelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "UpstreamParent",
+        somePoint: new Point2d(2, 2),
+      } as SomeGraphicalElementProps);
+      const upstreamChild = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: modelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "UpstreamChild",
+        somePoint: new Point2d(3, 3),
+        parent: new ElementOwnsChildElements(upstreamParent),
+      } as SomeGraphicalElementProps);
+      return [upstreamParent, upstreamChild];
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(existingId);
+      txn.deleteModel(modelId);
+      txn.deleteElement(drawingId);
+    });
+    await briefcase1.pushChanges({ description: "Insert elements into drawing" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.models.tryGetModelProps(modelId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(upstreamParentId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(upstreamChildId)).to.be.undefined;
+
+    const modelConflict = interactive.conflicts.find((conflict) => conflict.id === modelId && conflict.classFullName === "BisCore:DrawingModel");
+    const drawingConflict = interactive.conflicts.find((conflict) => conflict.id === drawingId && conflict.classFullName === "BisCore:Drawing");
+    chai.expect(modelConflict).to.not.be.undefined;
+    chai.expect(drawingConflict).to.not.be.undefined;
+    if (!modelConflict || !drawingConflict) return;
+    chai.expect(modelConflict.ownerConflicts).to.include(drawingConflict);
+    chai.expect(modelConflict.deletionEffects.map((effect) => [effect.affectedId, effect.navigationProperty])).to.deep.include([upstreamParentId, "model"]);
+
+    chai.expect(() => modelConflict.acceptTheirs()).to.throw("Resolve the ownerConflicts first");
+    drawingConflict.acceptTheirs();
+    modelConflict.acceptTheirs();
+    chai.expect(briefcase2.models.tryGetModelProps(modelId)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(upstreamParentId)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(upstreamChildId)?.parent?.id).to.equal(upstreamParentId);
+    chai.expect(briefcase2.elements.tryGetElementProps(existingId)).to.not.be.undefined;
+
+    modelConflict.acceptOurs();
+    chai.expect(briefcase2.models.tryGetModelProps(modelId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(upstreamParentId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(upstreamChildId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(existingId)).to.be.undefined;
+  });
+
+  // KNOWN LIMITATION (expected to fail): an upstream-inserted dependent with two deleted owners records its
+  // deletion effect on only one of them, so restoring that owner alone tries to restore the dependent while
+  // the other owner is still deleted, and restoring the other owner later never brings the dependent back.
+  it("restores an upstream-inserted dependent only once all of its deleted owners are restored", async () => {
+    const [listId, drawingId] = await withEditTxn(briefcase1, async (txn) => {
+      const list = DocumentListModel.insert(txn, IModel.rootSubjectId, "LimitationDocuments");
+      const drawing = txn.insertElement({
+        classFullName: Drawing.classFullName,
+        model: list,
+        code: Drawing.createCode(txn.iModel, list, "LimitationDrawing"),
+        userLabel: "Original",
+      });
+      return [list, drawing];
+    });
+    await briefcase1.pushChanges({ description: "Create unmodeled drawing" });
+    await briefcase2.pullChanges();
+
+    // Upstream sub-models the drawing. That sub-model is owned by both the document list model (ParentModel)
+    // and the drawing (ModeledElement), both of which we delete. Upstream also edits the drawing so that it
+    // gets a conflict of its own, independent of the document list model's.
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertModel(txn.iModel.models.createModel({ classFullName: DrawingModel.classFullName, modeledElement: { id: drawingId } }).toJSON());
+      txn.updateElement({ id: drawingId, userLabel: "Upstream" } as ElementProps);
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(drawingId);
+      txn.deleteModel(listId);
+      txn.deleteElement(listId);
+    });
+    await briefcase1.pushChanges({ description: "Sub-model the drawing" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+    const listModelConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName === "BisCore:DocumentListModel");
+    const listElementConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName !== "BisCore:DocumentListModel");
+    const drawingConflict = interactive.conflicts.find((conflict) => conflict.id === drawingId && conflict.classFullName === Drawing.classFullName);
+    chai.expect(listModelConflict).to.not.be.undefined;
+    chai.expect(listElementConflict).to.not.be.undefined;
+    chai.expect(drawingConflict).to.not.be.undefined;
+    if (!listModelConflict || !listElementConflict || !drawingConflict) return;
+
+    // Keep our deletion of the drawing, but restore the document list model (via its partition's closure).
+    drawingConflict.acceptOurs();
+    chai.expect(() => listElementConflict.acceptTheirs()).to.not.throw();
+    chai.expect(() => listModelConflict.acceptTheirs()).to.not.throw();
+    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+
+    // Restoring the drawing too means both of the sub-model's owners exist again, so it comes back.
+    drawingConflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;
   });
 
   it("can rebase a txn that deletes an element and then reuses its federationGuid for a new element", async () => {

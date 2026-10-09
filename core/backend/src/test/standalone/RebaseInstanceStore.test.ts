@@ -47,7 +47,7 @@ describe("RebaseInstanceStore", () => {
     return IModelTestUtils.prepareOutputFile("RebaseInstanceStore", `${Guid.createValue()}.sqlite`);
   }
 
-  it("classifies operation/isElement/ownerId from an Update at capture time", () => {
+  it("classifies operation/ownerKind/owners from an Update at capture time", () => {
     using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);
     const parent = { id: "0x10", relClassName: "BisCore:ElementOwnsChildElements" };
     const oldInst = makeInstance("0x20", "BisCore:PhysicalElement", { parent, userLabel: "before" });
@@ -61,8 +61,8 @@ describe("RebaseInstanceStore", () => {
     chai.expect(metas[0].classFullName).to.equal("BisCore:PhysicalElement");
     chai.expect(metas[0].operation).to.equal("Update");
     chai.expect(metas[0].isIndirect).to.be.false;
-    chai.expect(metas[0].isElement).to.be.true;
-    chai.expect(metas[0].ownerId).to.equal("0x10");
+    chai.expect(metas[0].ownerKind).to.equal("element");
+    chai.expect(metas[0].owners).to.deep.equal([{ kind: "element", id: "0x10" }]);
   });
 
   it("classifies Insert and Delete operations, and non-Element/no-owner classes", () => {
@@ -75,8 +75,8 @@ describe("RebaseInstanceStore", () => {
     chai.expect(metas.get("0x21-0x1")?.operation).to.equal("Insert");
     chai.expect(metas.get("0x22-0x1")?.operation).to.equal("Delete");
     const aspectMeta = metas.get("0x23-0x1");
-    chai.expect(aspectMeta?.isElement).to.be.false;
-    chai.expect(aspectMeta?.ownerId).to.be.undefined;
+    chai.expect(aspectMeta?.ownerKind).to.be.undefined;
+    chai.expect(aspectMeta?.owners).to.be.empty;
   });
 
   it("marks isIndirect from $meta.isIndirectChange", () => {

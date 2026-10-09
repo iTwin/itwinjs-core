@@ -18,6 +18,27 @@ import { _nativeDb } from "./Symbols";
 /** The operation a [[RebaseInstanceChange]] represents, inferred from which of `old`/`new` were captured. */
 export type RebaseInstanceOperation = "Insert" | "Update" | "Delete";
 
+/** The kinds of instance that can be an embedding owner. A Model shares its id with its modeled Element,
+ * so an owner is only identified unambiguously by its kind and id together - see [[rebaseOwnerKey]].
+ * @internal
+ */
+export type RebaseOwnerKind = "element" | "model";
+
+/** A reference to one of an instance's embedding owners.
+ * @internal
+ */
+export interface RebaseOwnerRef {
+  kind: RebaseOwnerKind;
+  id: Id64String;
+}
+
+/** A key that uniquely identifies an embedding owner, even when a Model and its modeled Element share an id.
+ * @internal
+ */
+export function rebaseOwnerKey(kind: RebaseOwnerKind, id: Id64String): string {
+  return `${kind}:${id}`;
+}
+
 /** The old (pre-local-change) and new (post-local-change) snapshots of a single EC instance, as
  * captured by [[RebaseInstanceStore]].
  * @internal
@@ -74,10 +95,10 @@ export interface RebaseInstanceMetadata {
   classFullName: string;
   operation: RebaseInstanceOperation;
   isIndirect: boolean;
-  /** The embedding owner's ECInstanceId, or undefined if this instance has no embedding owner. */
-  ownerId: Id64String | undefined;
-  /** True if `classFullName` is `BisCore:Element` or a subclass of it. */
-  isElement: boolean;
+  /** Every embedding owner this instance references, e.g. an Element's parent Element and its Model. */
+  owners: RebaseOwnerRef[];
+  /** The kind of embedding owner this instance can itself be, or undefined if it is neither an Element nor a Model. */
+  ownerKind: RebaseOwnerKind | undefined;
   /** One entry per schema-declared UNIQUE constraint applicable to `classFullName` (single-property or
    * composite, declared on the class itself or any base class) that has a defined `old` and/or `new`
    * composite value - see [[RebaseInstanceStore.set]]. */
@@ -96,6 +117,9 @@ export interface RebaseNavigationRef {
   /** Whether the relationship's *other*-side constraint allows this property to be null - see
    * [[RebaseInstanceStore.getNavigationProperties]]. */
   nullable: boolean;
+  /** Whether the referenced instance is an Element or a Model, if the relationship's constraint says so -
+   * needed to tell a Model apart from its modeled Element, which shares its id. */
+  targetKind?: RebaseOwnerKind;
   oldId?: Id64String;
   newId?: Id64String;
 }
@@ -143,25 +167,28 @@ export class RebaseInstanceStore implements Disposable {
    * to seed an update's instance snapshots with their unchanged properties (see [[merge]]). */
   private readonly _sourceDb?: AnyDb;
 
-  /** The `SchemaView` used to classify embedding ownership (`ownerId`/`isElement`) as changes are
+  /** The `SchemaView` used to classify embedding ownership (`owners`/`ownerKind`) as changes are
    * appended. Only set on stores created via [[createNew]]; a store opened via [[openExisting]] never
    * writes, so it has no need for one.
    */
   private readonly _schemaView?: SchemaView;
 
-  /** classFullName -> access string of its embedding-owner nav property, or undefined if it has none. */
-  private _embeddingOwnerProperty = new Map<string, string | undefined>();
+  /** classFullName -> its embedding-owner nav properties (access string + kind of owner each points to). */
+  private _embeddingOwnerProperties = new Map<string, { jsName: string, kind: RebaseOwnerKind }[]>();
+
+  /** mixin classFullName -> the kind of entity it applies to - see [[getMixinOwnerKind]]. */
+  private _mixinOwnerKinds = new Map<string, RebaseOwnerKind | undefined>();
 
   /** classFullName -> its navigation properties (jsName + nullability), or an empty array for a
    * relationship class - see [[getNavigationProperties]]. Cached the same way as
-   * [[_embeddingOwnerProperty]], since [[set]] otherwise re-resolves the same schema lookups once per
+   * [[_embeddingOwnerProperties]], since [[set]] otherwise re-resolves the same schema lookups once per
    * instance of the same class.
    */
-  private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean }[]>();
+  private _navigationPropertiesByClass = new Map<string, { jsName: string, nullable: boolean, targetKind?: RebaseOwnerKind }[]>();
 
   /** classFullName -> its schema-declared UNIQUE constraint groups (one entry per constraint, single-
    * property or composite, declared on the class itself or any base class) - see [[getIdentityGroups]].
-   * Cached the same way as [[_embeddingOwnerProperty]]/[[_navigationPropertiesByClass]], since a single
+   * Cached the same way as [[_embeddingOwnerProperties]]/[[_navigationPropertiesByClass]], since a single
    * ECSQL discovery per class is far cheaper than repeating it once per instance.
    */
   private _identityGroupsByClass = new Map<string, IdentityConstraintGroup[]>();
@@ -174,7 +201,7 @@ export class RebaseInstanceStore implements Disposable {
 
   /** Creates a new, empty store at `path`, overwriting any existing file. Used while capturing a Txn's
    * changes. `db` is the db those changes are being captured from; `schemaView` classifies each captured
-   * instance's embedding ownership (see [[getOwnerId]]/[[isElementOrSubclass]]).
+   * instance's embedding ownership (see [[getOwners]]/[[getOwnerKind]]).
    */
   public static createNew(path: string, db: AnyDb, schemaView: SchemaView): RebaseInstanceStore {
     const store = new RebaseInstanceStore(true, db, schemaView);
@@ -188,8 +215,8 @@ export class RebaseInstanceStore implements Disposable {
       [classFullName] TEXT NOT NULL,
       [operation] TEXT NOT NULL,
       [isIndirect] INTEGER NOT NULL,
-      [ownerId] TEXT,
-      [isElement] INTEGER NOT NULL,
+      [owners] TEXT,
+      [ownerKind] TEXT,
       [identityValues] TEXT,
       [navigationRefs] TEXT
     )`);
@@ -285,23 +312,24 @@ export class RebaseInstanceStore implements Disposable {
     assert(this._schemaView !== undefined, "set() requires a store created via createNew");
     // Ownership is taken from `new` when present (Insert/Update), falling back to `old` only for a pure
     // Delete - this is what makes reparenting correct (see [[InteractiveRebase.buildDependencyForest]]).
-    const ownerId = this.getOwnerId(this._schemaView, props.classFullName, props);
-    const isElement = this.isElementOrSubclass(this._schemaView, props.classFullName);
+    const ownerKind = this.getOwnerKind(this._schemaView, props.classFullName);
+    // A model can be its own parent model (e.g. the RepositoryModel).
+    const owners = this.getOwners(this._schemaView, props.classFullName, props).filter((owner) => owner.kind !== ownerKind || owner.id !== props.id);
 
     // Computed fully from the final merged `old`/`new` (not recomputed incrementally per partial-table
-    // merge), matching how `ownerId`/`isElement` are already handled above - see
+    // merge), matching how `owners`/`ownerKind` are already handled above - see
     // [[InteractiveRebase.orderNodes]] for how these are consumed.
     const identityValues = this.extractIdentityValues(props.classFullName, change.old, change.new);
     const navigationRefs = this.getNavigationRefs(this._schemaView, props.classFullName, change.old, change.new);
 
     this._db.withPreparedSqliteStatement(
-      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [identityValues], [navigationRefs])
+      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties], [instanceId], [classFullName], [operation], [isIndirect], [owners], [ownerKind], [identityValues], [navigationRefs])
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT ([instanceKey])
        DO UPDATE SET
          [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties],
          [instanceId] = [excluded].[instanceId], [classFullName] = [excluded].[classFullName], [operation] = [excluded].[operation],
-         [isIndirect] = [excluded].[isIndirect], [ownerId] = [excluded].[ownerId], [isElement] = [excluded].[isElement],
+         [isIndirect] = [excluded].[isIndirect], [owners] = [excluded].[owners], [ownerKind] = [excluded].[ownerKind],
          [identityValues] = [excluded].[identityValues], [navigationRefs] = [excluded].[navigationRefs]`,
       (stmt: SqliteStatement) => {
         stmt.bindString(1, change.instanceKey);
@@ -312,8 +340,8 @@ export class RebaseInstanceStore implements Disposable {
         stmt.bindString(6, props.classFullName);
         stmt.bindString(7, operation);
         stmt.bindInteger(8, isIndirect ? 1 : 0);
-        stmt.maybeBindString(9, ownerId);
-        stmt.bindInteger(10, isElement ? 1 : 0);
+        stmt.maybeBindString(9, owners.length > 0 ? JSON.stringify(owners) : undefined);
+        stmt.maybeBindString(10, ownerKind);
         stmt.maybeBindString(11, identityValues ? JSON.stringify(identityValues) : undefined);
         stmt.maybeBindString(12, navigationRefs ? JSON.stringify(navigationRefs) : undefined);
         stmt.step();
@@ -321,56 +349,80 @@ export class RebaseInstanceStore implements Disposable {
     );
   }
 
-  /** True if `classFullName` is `BisCore:Element` or a subclass of it. */
-  private isElementOrSubclass(schemaView: SchemaView, classFullName: string): boolean {
-    return schemaView.findClass(classFullName)?.is("BisCore:Element") ?? false;
+  /** The kind of embedding owner an instance of `classFullName` can be, or undefined if it is neither an Element nor a Model. */
+  private getOwnerKind(schemaView: SchemaView, classFullName: string): RebaseOwnerKind | undefined {
+    const schemaClass = schemaView.findClass(classFullName);
+    if (schemaClass?.is("BisCore:Element"))
+      return "element";
+    if (schemaClass?.is("BisCore:Model"))
+      return "model";
+    if (schemaClass?.isMixin())
+      return this.getMixinOwnerKind(schemaView, schemaClass.fullName);
+    return undefined;
   }
 
-  /**
-   * Given a classFullName, gets the access string of the class's embedding-owner nav property,
-   * or undefined if it has none. For example, if the class is an aspect, this will be
-   * `"element"`, which is the access string of the navigation property pointing to the
-   * aspect's owning element. If the class is an element, this will be `"parent"`, which is
-   * the access string of the navigation property pointing to owning parent element.
-   */
-  private getEmbeddingOwnerProperty(schemaView: SchemaView, classFullName: string): string | undefined {
-    if (this._embeddingOwnerProperty.has(classFullName))
-      return this._embeddingOwnerProperty.get(classFullName);
+  /** A mixin (e.g. `BisCore:ISubModeledElement`) doesn't derive from the class it applies to, and SchemaView doesn't
+   * expose its `AppliesToEntityClass`, so infer its kind from the entity classes that apply it. */
+  private getMixinOwnerKind(schemaView: SchemaView, mixinFullName: string): RebaseOwnerKind | undefined {
+    if (this._mixinOwnerKinds.has(mixinFullName))
+      return this._mixinOwnerKinds.get(mixinFullName);
 
-    const schemaClassDef = schemaView.findClass(classFullName);
-    let ownerProp: string | undefined;
-    if (schemaClassDef !== undefined) {
-      for (const prop of schemaClassDef.getProperties()) {
-        if (!prop.isNavigation())
+    let kind: RebaseOwnerKind | undefined;
+    for (const schema of schemaView.getSchemas()) {
+      for (const schemaClass of schema.getClasses()) {
+        if (!schemaClass.isEntity() || !schemaClass.is(mixinFullName))
           continue;
-        if (prop.relationshipClass.strength !== StrengthType.Embedding)
-          continue;
-        if (prop.direction !== StrengthDirection.Backward)
-          continue;
-        const sourceConstraintClass = prop.relationshipClass.source?.abstractConstraint?.fullName
-          ?? prop.relationshipClass.source?.constraintClasses[0]?.fullName;
-        // TODO: this currently requires that the owner is an element. But the owner of a model is a model, right?
-        if (sourceConstraintClass === undefined || !this.isElementOrSubclass(schemaView, sourceConstraintClass))
-          continue;
-        ownerProp = ECJsNames.toJsName(prop.name);
+        kind = schemaClass.is("BisCore:Element") ? "element" : schemaClass.is("BisCore:Model") ? "model" : undefined;
         break;
       }
+      if (kind !== undefined)
+        break;
     }
-    this._embeddingOwnerProperty.set(classFullName, ownerProp);
-    return ownerProp;
+    this._mixinOwnerKinds.set(mixinFullName, kind);
+    return kind;
   }
 
   /**
-   * Extracts the embedding-owner id from `props`, or undefined if `classFullName` has no embedding owner
-   * or the nav property has no value.
+   * Given a classFullName, gets the class's navigation properties that point to an embedding owner, along with
+   * the kind of owner each points to. For example, an aspect has `"element"`; an Element has `"parent"` (an
+   * Element) and `"model"` (a Model); and a Model has `"parentModel"` (a Model) and `"modeledElement"` (an
+   * Element, via the `strengthDirection="Backward"` `ModelModelsElement`).
    */
-  private getOwnerId(schemaView: SchemaView, classFullName: string, props: ChangeInstance): Id64String | undefined {
-    const ownerProp = this.getEmbeddingOwnerProperty(schemaView, classFullName);
-    if (ownerProp === undefined)
-      return undefined;
-    const navValue = props[ownerProp];
-    const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : Id64.invalid);
-    return Id64.isValidId64(navId) ? navId : undefined;
+  private getEmbeddingOwnerProperties(schemaView: SchemaView, classFullName: string): { jsName: string, kind: RebaseOwnerKind }[] {
+    const cached = this._embeddingOwnerProperties.get(classFullName);
+    if (cached !== undefined)
+      return cached;
+
+    const ownerProps: { jsName: string, kind: RebaseOwnerKind }[] = [];
+    for (const prop of schemaView.findClass(classFullName)?.getProperties() ?? []) {
+      if (!prop.isNavigation())
+        continue;
+      const relationship = prop.relationshipClass;
+      if (relationship.strength !== StrengthType.Embedding)
+        continue;
+      // The property points at the owner only when it points against the relationship's strength direction.
+      if (prop.direction === relationship.strengthDirection)
+        continue;
+      const ownerConstraint = prop.direction === StrengthDirection.Backward ? relationship.source : relationship.target;
+      const ownerConstraintClass = ownerConstraint?.abstractConstraint?.fullName ?? ownerConstraint?.constraintClasses[0]?.fullName;
+      const kind = ownerConstraintClass === undefined ? undefined : this.getOwnerKind(schemaView, ownerConstraintClass);
+      if (kind !== undefined)
+        ownerProps.push({ jsName: ECJsNames.toJsName(prop.name), kind });
+    }
+    this._embeddingOwnerProperties.set(classFullName, ownerProps);
+    return ownerProps;
+  }
+
+  /** Extracts every embedding owner referenced by `props` (see [[getEmbeddingOwnerProperties]]). */
+  private getOwners(schemaView: SchemaView, classFullName: string, props: ChangeInstance): RebaseOwnerRef[] {
+    const owners: RebaseOwnerRef[] = [];
+    for (const { jsName, kind } of this.getEmbeddingOwnerProperties(schemaView, classFullName)) {
+      const navValue = props[jsName];
+      const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : Id64.invalid);
+      if (Id64.isValidId64(navId))
+        owners.push({ kind, id: navId });
+    }
+    return owners;
   }
 
   /** The composite old/new value of every schema-declared UNIQUE constraint applicable to
@@ -584,12 +636,12 @@ export class RebaseInstanceStore implements Disposable {
    * into `bis_Element`, so no existence edge could ever be needed for one. Cached per class since [[set]]
    * would otherwise re-resolve the same schema lookups once per instance of the same class.
    */
-  private getNavigationProperties(schemaView: SchemaView, classFullName: string): { jsName: string, nullable: boolean }[] {
+  private getNavigationProperties(schemaView: SchemaView, classFullName: string): { jsName: string, nullable: boolean, targetKind?: RebaseOwnerKind }[] {
     const cached = this._navigationPropertiesByClass.get(classFullName);
     if (cached !== undefined)
       return cached;
 
-    const navProperties: { jsName: string, nullable: boolean }[] = [];
+    const navProperties: { jsName: string, nullable: boolean, targetKind?: RebaseOwnerKind }[] = [];
     const schemaClassDef = schemaView.findClass(classFullName);
     if (schemaClassDef !== undefined && !schemaClassDef.isRelationship()) {
       for (const prop of schemaClassDef.getProperties()) {
@@ -597,7 +649,9 @@ export class RebaseInstanceStore implements Disposable {
           continue;
         const jsName = ECJsNames.toJsName(prop.name);
         const relConstraint = prop.direction === StrengthDirection.Backward ? prop.relationshipClass.source : prop.relationshipClass.target;
-        navProperties.push({ jsName, nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0 });
+        const targetClass = relConstraint?.abstractConstraint?.fullName ?? relConstraint?.constraintClasses[0]?.fullName;
+        const targetKind = targetClass === undefined ? undefined : this.getOwnerKind(schemaView, targetClass);
+        navProperties.push({ jsName, nullable: relConstraint === undefined || relConstraint.multiplicityLower === 0, targetKind });
       }
     }
     this._navigationPropertiesByClass.set(classFullName, navProperties);
@@ -614,9 +668,10 @@ export class RebaseInstanceStore implements Disposable {
     if (navProperties.length === 0)
       return undefined;
 
-    return navProperties.map(({ jsName, nullable }) => ({
+    return navProperties.map(({ jsName, nullable, targetKind }) => ({
       jsName,
       nullable,
+      targetKind,
       oldId: old !== undefined ? this.getReferencedId(old, jsName) : undefined,
       newId: newInstance !== undefined ? this.getReferencedId(newInstance, jsName) : undefined,
     }));
@@ -641,7 +696,7 @@ export class RebaseInstanceStore implements Disposable {
    */
   public *allMetadata(): IterableIterator<RebaseInstanceMetadata> {
     using stmt = this._db.prepareSqliteStatement(
-      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [ownerId], [isElement], [identityValues], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
+      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [owners], [ownerKind], [identityValues], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
@@ -649,8 +704,8 @@ export class RebaseInstanceStore implements Disposable {
         classFullName: stmt.getValueString(2),
         operation: stmt.getValueString(3) as RebaseInstanceOperation,
         isIndirect: stmt.getValueBoolean(4),
-        ownerId: stmt.getValueStringMaybe(5),
-        isElement: stmt.getValueBoolean(6),
+        owners: stmt.isValueNull(5) ? [] : JSON.parse(stmt.getValueString(5)) as RebaseOwnerRef[],
+        ownerKind: stmt.getValueStringMaybe(6) as RebaseOwnerKind | undefined,
         identityValues: stmt.isValueNull(7) ? undefined : JSON.parse(stmt.getValueString(7)) as RebaseIdentityValue[],
         navigationRefs: stmt.isValueNull(8) ? undefined : JSON.parse(stmt.getValueString(8)) as RebaseNavigationRef[],
       };
