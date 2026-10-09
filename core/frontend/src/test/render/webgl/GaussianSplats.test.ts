@@ -655,6 +655,34 @@ describe("Native Gaussian splats", () => {
     expect(gl.getError()).toBe(gl.NO_ERROR);
   });
 
+  it("reads the pick buffer asynchronously with the same result as the synchronous read", async () => {
+    await addSplat({ id: "0x1", depth: 0.5 });
+    expect(pick()).toBe("0x1");
+    const x = Math.floor(viewport.viewRect.width / 2), y = Math.floor(viewport.viewRect.height / 2);
+    viewport.renderFrame();
+    const pixels = await viewport.readPixelsAsync(new ViewRect(x, y, x + 1, y + 1), Pixel.Selector.All);
+    expect(pixels?.getPixel(x, y).feature?.elementId).toBe("0x1");
+    expect(pixels?.getPixel(x, y).distanceFraction).toBeGreaterThan(0);
+    const gl = System.instance.context;
+    expect(gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING)).toBeNull();
+    expect(gl.getError()).toBe(gl.NO_ERROR);
+    expect(pick()).toBe("0x1"); // synchronous reads still work afterwards
+  });
+
+  it("locates splats through the asynchronous element pick", async () => {
+    await addSplat({ id: "0x1", depth: 0.5 });
+    expect(pick()).toBe("0x1");
+    const picker = IModelApp.locateManager.picker;
+    const world = viewport.npcToWorld(new Point3d(0.5, 0.5, 0.5));
+    const options = IModelApp.locateManager.options.clone();
+    picker.empty();
+    expect(await picker.doPickAsync(viewport, world, 4, options)).toBeGreaterThan(0);
+    expect(picker.getHit(0)?.sourceId).toBe("0x1");
+    picker.empty();
+    expect(picker.doPick(viewport, world, 4, options)).toBeGreaterThan(0);
+    expect(picker.getHit(0)?.sourceId).toBe("0x1");
+  });
+
   it("leaves splats out of the pick buffer while the cursor is moving", async () => {
     await addSplat({ id: "0x1", depth: 0.5 });
     expect(pick()).toBe("0x1");

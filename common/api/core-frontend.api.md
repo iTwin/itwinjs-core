@@ -1044,6 +1044,8 @@ export class AccuSnap implements Decorator {
     adjustPointIfHot(pt: Point3d, view: Viewport): void;
     readonly areFlashed: Set<Viewport>;
     aSnapHits?: HitList<HitDetail>;
+    // @internal
+    static asyncHoverReadback: boolean;
     clear(): void;
     // @internal (undocumented)
     clearIfElement(sourceId: string): void;
@@ -3071,7 +3073,10 @@ export class ElementLocateManager {
 
 // @public (undocumented)
 export class ElementPicker {
+    // (undocumented)
     doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number;
+    // @internal
+    doPickAsync(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): Promise<number>;
     // (undocumented)
     empty(): void;
     getHit(i: number): HitDetail | undefined;
@@ -9524,6 +9529,8 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     readImageToCanvas(_overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // @internal (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    // @internal
+    readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined>;
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
@@ -10900,6 +10907,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined>;
     // (undocumented)
     get readPixelsSelector(): Pixel.Selector;
     // (undocumented)
@@ -12119,6 +12127,8 @@ export class ToolAdmin {
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
     protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean;
+    // @internal
+    get isCursorMoving(): boolean;
     protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
@@ -13737,6 +13747,8 @@ export abstract class Viewport implements Disposable, TileUser {
     readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     readPixels(args: ReadPixelsArgs): void;
+    // @internal
+    readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined>;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     removeScreenSpaceEffects(): void;

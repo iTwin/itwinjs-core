@@ -2775,6 +2775,16 @@ export abstract class Viewport implements Disposable, TileUser {
     );
   }
 
+  /** Read pick data as [[readPixels]] does, resolving once the GPU has produced it rather than waiting on the GPU.
+   * @internal
+   */
+  public async readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined> {
+    if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect))
+      return undefined;
+
+    return this.target.readPixelsAsync(rect, selector, excludeNonLocatable ?? false, excludedElements);
+  }
+
   private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
     if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect)) {
       receiver(undefined);

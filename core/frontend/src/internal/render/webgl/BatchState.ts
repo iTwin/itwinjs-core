@@ -27,6 +27,42 @@ import { Batch } from "./Graphic";
  * Features from the Batch's FeatureTables.
  * @internal
  */
+/** One batch's identity as assigned during a render, captured so that pixels read back after
+ * the live [[BatchState]] has been reset can still resolve their features. @internal */
+export interface BatchSnapshotEntry {
+  batchId: number;
+  nextBatchId: number;
+  featureTable: Batch["featureTable"];
+  iModel: IModelConnection | undefined;
+  transformFromIModel: Batch["transformFromBatchIModel"];
+  tileId: string | undefined;
+  viewAttachmentId: Id64String | undefined;
+  inSectionDrawingAttachment: boolean | undefined;
+}
+
+/** The batch IDs of one render, valid after the live state is reset. @internal */
+export class BatchSnapshot {
+  public constructor(private readonly _entries: BatchSnapshotEntry[]) { }
+
+  public find(featureId: number): BatchSnapshotEntry | undefined {
+    if (featureId <= 0)
+      return undefined;
+
+    const found = lowerBound(featureId, this._entries, (lhs: number, rhs: BatchSnapshotEntry) => lhs < rhs.batchId ? -1 : (lhs < rhs.nextBatchId ? 0 : 1));
+    return found.index < this._entries.length ? this._entries[found.index] : undefined;
+  }
+
+  public getFeature(featureId: number, result: ModelFeature): ModelFeature | undefined {
+    const entry = this.find(featureId);
+    if (undefined === entry)
+      return undefined;
+
+    const featureIndex = featureId - entry.batchId;
+    assert(featureIndex >= 0);
+    return entry.featureTable.findFeature(featureIndex, result);
+  }
+}
+
 export class BatchState {
   private readonly _stack: BranchStack;
   private _batches: Batch[] = []; // NB: this list is ordered - but *not* indexed - by batch ID.
@@ -83,6 +119,18 @@ export class BatchState {
     assert(featureIndex >= 0);
 
     return batch.featureTable.findFeature(featureIndex, result);
+  }
+
+  /** Capture the current batch IDs for pixels that are read back later. */
+  public snapshot(): BatchSnapshot {
+    return new BatchSnapshot(this._batches.map((batch) => {
+      const numFeatures = batch.featureTable.numFeatures;
+      return {
+        batchId: batch.batchId, nextBatchId: batch.batchId + (numFeatures > 0 ? numFeatures : 1), featureTable: batch.featureTable,
+        iModel: batch.batchIModel, transformFromIModel: batch.transformFromBatchIModel, tileId: batch.tileId,
+        viewAttachmentId: batch.viewAttachmentId, inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
+      };
+    }));
   }
 
   public get numFeatureIds() { return this.nextBatchId; }

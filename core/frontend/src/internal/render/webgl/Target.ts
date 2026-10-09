@@ -48,7 +48,7 @@ import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
-import { SceneCompositor } from "./SceneCompositor";
+import { PendingPixelRead, SceneCompositor } from "./SceneCompositor";
 import { freeDrawParams } from "./ScratchDrawParams";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { SolarShadowMap } from "./SolarShadowMap";
@@ -933,6 +933,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    this.renderForReadPixels(rect, selector);
+
+    this.beginPerfMetricRecord("Read Pixels", true);
+    const result = this.compositor.readPixels(rect, selector);
+    this.endPerfMetricRecord(true);
+
+    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.endFrame();
+      if (this.performanceMetrics)
+        this.performanceMetrics.endFrame();
+    }
+
+    return result;
+  }
+
+  /** Render the scene into the pick buffers for `rect`, leaving the batch state for the caller to read against. */
+  private renderForReadPixels(rect: ViewRect, selector: Pixel.Selector): void {
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
     let rectFrust;
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
@@ -989,19 +1007,69 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
     this.endReadPixels(true);
+  }
 
-    this.beginPerfMetricRecord("Read Pixels", true);
-    const result = this.compositor.readPixels(rect, selector);
-    this.endPerfMetricRecord(true);
+  /** Render the pick buffers as [[readPixels]] does, but copy them into pack buffers behind a fence and
+   * resolve once the GPU has produced them, without blocking the main thread.
+   */
+  public override async readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined> {
+    if (!this.assignDC())
+      return undefined;
 
-    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
-      if (this.renderSystem.isGLTimerSupported)
-        this.renderSystem.glTimer.endFrame();
-      if (this.performanceMetrics)
-        this.performanceMetrics.endFrame();
+    rect = this.cssViewRectToDeviceViewRect(rect);
+    const gl = this.renderSystem.context;
+    const viewRect = this.viewRect;
+    gl.viewport(0, 0, viewRect.width, viewRect.height);
+
+    const resources = this.createOrReuseReadPixelResources(rect);
+    if (resources === undefined)
+      return undefined;
+
+    let pending: PendingPixelRead | undefined;
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      let updatedExclusions = false;
+      if (excludedElements) {
+        const swap = this._swapPickExclusions;
+        swap.clear();
+        for (const exclusion of excludedElements)
+          swap.addId(exclusion);
+
+        if (!this._currPickExclusions.equals(swap)) {
+          this._swapPickExclusions = this._currPickExclusions;
+          this._currPickExclusions = swap;
+          updatedExclusions = true;
+          desync(this.pickExclusionsSyncTarget);
+        }
+      }
+
+      this._drawNonLocatable = !excludeNonLocatable;
+      this.renderForReadPixels(rect, selector);
+      pending = this.compositor.beginReadPixelsAsync(rect, selector);
+      this._drawNonLocatable = true;
+
+      if (updatedExclusions) {
+        this._currPickExclusions.clear();
+        desync(this.pickExclusionsSyncTarget);
+      }
+    });
+
+    this.disposeOrReuseReadPixelResources(resources);
+    // The pending read holds a snapshot of the batch IDs; the live state is free for the next frame.
+    this.uniforms.batch.resetBatchState();
+
+    if (!pending)
+      return undefined;
+
+    const read: PendingPixelRead = pending;
+    const deadline = performance.now() + 2000;
+    while (!read.isReady) {
+      if (performance.now() > deadline || this.isDisposed) {
+        read.cancel();
+        return undefined;
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 2));
     }
-
-    return result;
+    return read.finish();
   }
 
   public override queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {

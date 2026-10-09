@@ -964,6 +964,51 @@ export class AccuSnap implements Decorator {
     return AccuSnap.requestSnap(hit, snapModes, this._hotDistanceInches, this.keypointDivisor);
   }
 
+  /** When true, hover locate reads the pick buffer asynchronously so mouse motion never waits for the GPU.
+   * Experimental; measured against synchronous reads over heavy GPU content such as Gaussian splat fields.
+   * @internal
+   */
+  public static asyncHoverReadback = false;
+
+  /** Asynchronous counterpart of [[findHits]] for hover locate. */
+  private async findHitsAsync(ev: BeButtonEvent, force: boolean = false): Promise<SnapStatus> {
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return SnapStatus.NoElements;
+
+    const testPoint = this.isLocateEnabled ? ev.point : ev.rawPoint;
+    const picker = IModelApp.locateManager.picker;
+    const options = IModelApp.locateManager.options.clone();
+    options.hitSource = this.isSnapEnabled ? HitSource.AccuSnap : HitSource.MotionLocate;
+
+    let aperture = (vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+    this.initializeForCheckMotion();
+    aperture *= this._searchDistance;
+
+    if (0 === await picker.doPickAsync(vp, testPoint, aperture, options)) {
+      this.aSnapHits = undefined;
+      return SnapStatus.NoElements;
+    }
+
+    this.aSnapHits = picker.getHitList(true);
+    this.keepStickyHit(force);
+    return SnapStatus.Success;
+  }
+
+  private keepStickyHit(force: boolean): void {
+    const canBeSticky = !force && this.aSnapHits && this.aSnapHits.length > 1 && this.currHit && (HitDetailType.Intersection !== this.currHit.getHitType() && this.currHit.priority < HitPriority.PlanarSurface);
+    if (canBeSticky && this.aSnapHits) {
+      for (let iHit = 1; iHit < this.aSnapHits.length; ++iHit) {
+        const thisHit = this.aSnapHits.hits[iHit];
+        if (!thisHit.isSameHit(this.currHit))
+          continue;
+        this.aSnapHits.removeHit(iHit);
+        this.aSnapHits.insertHit(0, thisHit);
+        break;
+      }
+    }
+  }
+
   private findHits(ev: BeButtonEvent, force: boolean = false): SnapStatus {
     // When using AccuSnap to locate elements, we have to start with the datapoint adjusted
     // for locks and not the raw point. Otherwise, when grid/unit lock are on, we locate elements by
@@ -1014,7 +1059,7 @@ export class AccuSnap implements Decorator {
     if (newSearch) {
       this.aSnapHits = undefined;
       // search for new hits, but if the cursor is still close to the current hit, don't throw away list.
-      if (SnapStatus.Success !== (out.snapStatus = this.findHits(ev)))
+      if (SnapStatus.Success !== (out.snapStatus = AccuSnap.asyncHoverReadback ? await this.findHitsAsync(ev) : this.findHits(ev)))
         return undefined;
     } else {
       if (!this.aSnapHits) {

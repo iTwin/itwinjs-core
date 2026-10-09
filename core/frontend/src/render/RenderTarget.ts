@@ -132,6 +132,15 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+  /** Like [[readPixels]], but resolves once the GPU has produced the pixels instead of waiting for it.
+   * The default implementation reads synchronously.
+   * @internal
+   */
+  public async readPixelsAsync(rect: ViewRect, selector: Pixel.Selector, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): Promise<Pixel.Buffer | undefined> {
+    let result: Pixel.Buffer | undefined;
+    this.readPixels(rect, selector, (pixels) => { result = pixels; }, excludeNonLocatable, excludedElements);
+    return result;
+  }
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */

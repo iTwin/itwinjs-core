@@ -19,7 +19,7 @@ import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { BranchState } from "./BranchState";
-import { BatchState } from "./BatchState";
+import { BatchSnapshot } from "./BatchState";
 import {
   AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
@@ -628,7 +628,7 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _selector: Pixel.Selector;
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
-  private readonly _batchState: BatchState;
+  private readonly _batches: BatchSnapshot;
   private readonly _scratchModelFeature = ModelFeature.create();
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
@@ -653,7 +653,7 @@ class PixelBuffer implements Pixel.Buffer {
 
   private getFeature(pixelIndex: number, result: ModelFeature): ModelFeature | undefined {
     const featureId = this.getFeatureId(pixelIndex);
-    return undefined !== featureId ? this._batchState.getFeature(featureId, result) : undefined;
+    return undefined !== featureId ? this._batches.getFeature(featureId, result) : undefined;
   }
 
   private getFeatureId(pixelIndex: number): number | undefined {
@@ -663,12 +663,12 @@ class PixelBuffer implements Pixel.Buffer {
   private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
-      const batch = this._batchState.find(featureId);
+      const batch = this._batches.find(featureId);
       if (undefined !== batch) {
         return {
           featureTable: batch.featureTable,
-          iModel: batch.batchIModel,
-          transformFromIModel: batch.transformFromBatchIModel,
+          iModel: batch.iModel,
+          transformFromIModel: batch.transformFromIModel,
           tileId: batch.tileId,
           viewAttachmentId: batch.viewAttachmentId,
           inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
@@ -785,13 +785,12 @@ class PixelBuffer implements Pixel.Buffer {
     });
   }
 
-  private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
+  private constructor(rect: ViewRect, selector: Pixel.Selector, batches: BatchSnapshot, depthAndOrderBytes?: Uint8Array, features?: Uint8Array) {
     this._rect = rect.clone();
     this._selector = selector;
-    this._batchState = compositor.target.uniforms.batch.state;
+    this._batches = batches;
 
     if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance)) {
-      const depthAndOrderBytes = compositor.readDepthAndOrder(rect);
       if (undefined !== depthAndOrderBytes)
         this._depthAndOrder = new Uint32Array(depthAndOrderBytes.buffer);
       else
@@ -799,7 +798,6 @@ class PixelBuffer implements Pixel.Buffer {
     }
 
     if (Pixel.Selector.None !== (selector & Pixel.Selector.Feature)) {
-      const features = compositor.readFeatureIds(rect);
       if (undefined !== features)
         this._featureId = new Uint32Array(features.buffer);
       else
@@ -810,8 +808,92 @@ class PixelBuffer implements Pixel.Buffer {
   public get isEmpty(): boolean { return Pixel.Selector.None === this._selector; }
 
   public static create(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor): Pixel.Buffer | undefined {
-    const pdb = new PixelBuffer(rect, selector, compositor);
+    const wantDepth = Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance);
+    const wantFeatures = Pixel.Selector.None !== (selector & Pixel.Selector.Feature);
+    return PixelBuffer.fromBytes(rect, selector, compositor.target.uniforms.batch.state.snapshot(), wantDepth ? compositor.readDepthAndOrder(rect) : undefined, wantFeatures ? compositor.readFeatureIds(rect) : undefined);
+  }
+
+  public static fromBytes(rect: ViewRect, selector: Pixel.Selector, batches: BatchSnapshot, depthAndOrderBytes?: Uint8Array, features?: Uint8Array): Pixel.Buffer | undefined {
+    const pdb = new PixelBuffer(rect, selector, batches, depthAndOrderBytes, features);
     return pdb.isEmpty ? undefined : pdb;
+  }
+}
+
+/** A pick-buffer read in flight: the pixels were copied into pixel pack buffers and a fence
+ * signals when the GPU has produced them, so the main thread never waits on the GPU.
+ * @internal
+ */
+export class PendingPixelRead {
+  private _sync?: WebGLSync;
+  private readonly _buffers: Array<{ buffer: WebGLBuffer, bytes: Uint8Array }> = [];
+  private _done = false;
+
+  public constructor(private readonly _rect: ViewRect, private readonly _selector: Pixel.Selector, private readonly _batches: BatchSnapshot) { }
+
+  /** Enqueue a copy of the currently bound framebuffer's rect into a pack buffer. Call inside a framebuffer scope. */
+  public enqueue(gl: WebGL2RenderingContext, left: number, bottom: number): boolean {
+    const buffer = gl.createBuffer();
+    if (!buffer)
+      return false;
+
+    const bytes = new Uint8Array(this._rect.width * this._rect.height * 4);
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buffer);
+    gl.bufferData(gl.PIXEL_PACK_BUFFER, bytes.byteLength, gl.STREAM_READ);
+    gl.readPixels(left, bottom, this._rect.width, this._rect.height, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+    this._buffers.push({ buffer, bytes });
+    return true;
+  }
+
+  /** Place the fence after the copies and push the commands to the GPU. */
+  public fence(gl: WebGL2RenderingContext): void {
+    this._sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0) ?? undefined;
+    gl.flush();
+  }
+
+  /** True once the GPU has signaled; `undefined` while still pending. */
+  public get isReady(): boolean {
+    if (this._done)
+      return true;
+
+    const gl = System.instance.context;
+    if (!this._sync)
+      return true;
+
+    return gl.getSyncParameter(this._sync, gl.SYNC_STATUS) === gl.SIGNALED;
+  }
+
+  /** Copy the pixels out and release GPU resources. Only call once `isReady`. */
+  public finish(): Pixel.Buffer | undefined {
+    const gl = System.instance.context;
+    this._done = true;
+    const data: Uint8Array[] = [];
+    for (const { buffer, bytes } of this._buffers) {
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buffer);
+      gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, bytes);
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+      gl.deleteBuffer(buffer);
+      data.push(bytes);
+    }
+    this._buffers.length = 0;
+    if (this._sync) {
+      gl.deleteSync(this._sync);
+      this._sync = undefined;
+    }
+    const wantDepth = Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance);
+    const wantFeatures = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
+    const depth = wantDepth ? data.shift() : undefined;
+    const features = wantFeatures ? data.shift() : undefined;
+    return PixelBuffer.fromBytes(this._rect, this._selector, this._batches, depth, features);
+  }
+
+  public cancel(): void {
+    const gl = System.instance.context;
+    for (const { buffer } of this._buffers) gl.deleteBuffer(buffer);
+    this._buffers.length = 0;
+    if (this._sync) gl.deleteSync(this._sync);
+    this._sync = undefined;
+    this._done = true;
   }
 }
 
@@ -832,6 +914,8 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  /** Start reading the pick buffers without waiting for the GPU. The caller polls the result. */
+  public abstract beginReadPixelsAsync(rect: ViewRect, selector: Pixel.Selector): PendingPixelRead | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
@@ -1614,6 +1698,31 @@ class Compositor extends SceneCompositor {
 
   public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined {
     return this.readFrameBuffer(rect, this._fbos.depthAndOrder);
+  }
+
+  public beginReadPixelsAsync(rect: ViewRect, selector: Pixel.Selector): PendingPixelRead | undefined {
+    const pending = new PendingPixelRead(rect, selector, this.target.uniforms.batch.state.snapshot());
+    const gl = System.instance.context;
+    const bottom = this.fullHeight - rect.bottom;
+    let ok = true;
+    const copy = (fbo: FrameBuffer | undefined) => {
+      if (undefined === fbo || !Debug.isValidFrameBuffer) { ok = false; return; }
+      System.instance.frameBufferStack.execute(fbo, true, false, () => { ok = pending.enqueue(gl, rect.left, bottom) && ok; });
+    };
+    if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance))
+      copy(this._fbos.depthAndOrder);
+    if (ok && Pixel.Selector.None !== (selector & Pixel.Selector.Feature)) {
+      const tex = this._textures.featureId;
+      const fbo = tex ? FrameBuffer.create([tex]) : undefined;
+      copy(fbo);
+      dispose(fbo);
+    }
+    if (!ok) {
+      pending.cancel();
+      return undefined;
+    }
+    pending.fence(gl);
+    return pending;
   }
 
   public readFeatureIds(rect: ViewRect): Uint8Array | undefined {

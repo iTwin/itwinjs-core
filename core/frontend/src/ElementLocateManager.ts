@@ -196,7 +196,8 @@ export class ElementPicker {
    * @param excludedElements Optional ids to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number {
+  /** Shared preparation for [[doPick]] and [[doPickAsync]]: returns the cached hit count, or the read rectangle. */
+  private beginPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number): number | { rect: ViewRect, testPointView: Point2d, pixelRadius: number } {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -208,13 +209,50 @@ export class ElementPicker {
 
     const pickPointView = vp.worldToView(pickPointWorld);
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
-    let pixelRadius = Math.floor(pickRadiusView + 0.5);
+    const pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
-    if (rect.isNull)
-      return 0;
+    return rect.isNull ? 0 : { rect, testPointView, pixelRadius };
+  }
+
+  /** Like [[doPick]], but reads the pick buffer without waiting for the GPU. Hits are available once the promise resolves.
+   * @internal
+   */
+  public async doPickAsync(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): Promise<number> {
+    const begun = this.beginPick(vp, pickPointWorld, pickRadiusView);
+    if (typeof begun === "number")
+      return begun;
+
+    const pixels = await vp.readPixelsAsync(begun.rect, Pixel.Selector.All, !options.allowNonLocatable, excludedElements);
+    return this.collectHits(pixels, vp, pickPointWorld, begun.testPointView, begun.pixelRadius, options);
+  }
+
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number {
+    const begun = this.beginPick(vp, pickPointWorld, pickRadiusView);
+    if (typeof begun === "number")
+      return begun;
+
+    const { rect, testPointView, pixelRadius } = begun;
     const receiver = (pixels: Pixel.Buffer | undefined) => {
+      result = this.collectHits(pixels, vp, pickPointWorld, testPointView, pixelRadius, options);
+    };
+
+    const args = {
+      receiver,
+      rect,
+      selector: Pixel.Selector.All,
+      excludeNonLocatable: !options.allowNonLocatable,
+      excludedElements,
+    };
+    let result: number = 0;
+    vp.readPixels(args);
+
+    return result;
+  }
+
+  private collectHits(pixels: Pixel.Buffer | undefined, vp: ScreenViewport, pickPointWorld: Point3d, testPointView: Point2d, pixelRadius: number, options: LocateOptions): number {
+    {
       if (undefined === pixels)
-        return;
+        return 0;
 
       testPointView.x = vp.cssPixelsToDevicePixels(testPointView.x);
       testPointView.y = vp.cssPixelsToDevicePixels(testPointView.y);
@@ -242,7 +280,7 @@ export class ElementPicker {
         }
       }
       if (0 === elmHits.size)
-        return;
+        return 0;
 
       for (const elmPoint of elmHits.values()) {
         const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
@@ -274,20 +312,8 @@ export class ElementPicker {
           hitList.hits.length = options.maxHits; // truncate array...
       }
 
-      result = expectDefined(this.hitList).length;
-    };
-
-    const args = {
-      receiver,
-      rect,
-      selector: Pixel.Selector.All,
-      excludeNonLocatable: !options.allowNonLocatable,
-      excludedElements,
-    };
-    let result: number = 0;
-    vp.readPixels(args);
-
-    return result;
+      return expectDefined(this.hitList).length;
+    }
   }
 
   public testHit(hit: HitDetail, vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
