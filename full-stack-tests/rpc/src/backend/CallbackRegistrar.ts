@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { setupFrontend, teardownFrontend } from "./testSetup";
+import { registerBackendCallback as registerCertaBackendCallbackImpl } from "@itwin/certa/lib/utils/CallbackUtils";
 
-before(setupFrontend);
-after(teardownFrontend);
+export type RegisterBackendCallback = (name: string, callback: (...args: any[]) => any) => void;
+
+export const registerCertaBackendCallback: RegisterBackendCallback = registerCertaBackendCallbackImpl;
