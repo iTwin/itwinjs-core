@@ -173,27 +173,29 @@ describe("Sub-model insert validation", () => {
     }
   });
 
-  it("rejects sub-model insertion when required domain behavior is not registered", () => {
-    const hostId = insertHost(TestRestrictedDocument.classFullName);
-    Schemas.unregisterSchema(TestSubModelSchema.schemaName);
+  describe("missing required behavior", () => {
+    it("rejects sub-model insertion", () => {
+      const hostId = insertHost(TestRestrictedDocument.classFullName);
+      Schemas.unregisterSchema(TestSubModelSchema.schemaName);
 
-    try {
-      let error: unknown;
       try {
-        insertSubModel(DefinitionModel.classFullName, hostId);
-      } catch (err) {
-        error = err;
-      }
+        let error: unknown;
+        try {
+          insertSubModel(DefinitionModel.classFullName, hostId);
+        } catch (err) {
+          error = err;
+        }
 
-      expect(error).to.be.instanceOf(IModelError);
-      expect((error as IModelError).errorNumber).to.equal(IModelStatus.WrongHandler);
-      expect(imodel.models.tryGetModel(hostId)).to.be.undefined;
-    } finally {
-      Schemas.registerSchema(TestSubModelSchema);
-      ClassRegistry.register(TestSheetSpy, TestSubModelSchema);
-      ClassRegistry.register(TestSheetWidened, TestSubModelSchema);
-      ClassRegistry.register(TestSheetUnvalidated, TestSubModelSchema);
-      ClassRegistry.register(TestRestrictedDocument, TestSubModelSchema);
-    }
+        expect(error).to.be.instanceOf(IModelError);
+        expect((error as IModelError).errorNumber).to.equal(IModelStatus.WrongHandler);
+        expect(imodel.models.tryGetModel(hostId)).to.be.undefined;
+      } finally {
+        Schemas.registerSchema(TestSubModelSchema);
+        ClassRegistry.register(TestSheetSpy, TestSubModelSchema);
+        ClassRegistry.register(TestSheetWidened, TestSubModelSchema);
+        ClassRegistry.register(TestSheetUnvalidated, TestSubModelSchema);
+        ClassRegistry.register(TestRestrictedDocument, TestSubModelSchema);
+      }
+    });
   });
 });
