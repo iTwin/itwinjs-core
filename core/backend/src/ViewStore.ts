@@ -203,6 +203,15 @@ export namespace ViewStore {
     return value;
   };
 
+  /** Returns undefined for undefined, null, or empty strings, matching the previous truthiness checks. */
+  const validateOptionalString = (value: unknown, memberName: string): string | undefined => {
+    if (value === undefined || value === null || value === "")
+      return undefined;
+    if (typeof value !== "string")
+      ViewStoreError.throwError("invalid-value", { message: `${memberName} must be a string` });
+    return value;
+  };
+
   export const defaultViewGroupId = 1;
 
   export interface ViewDbCtorArgs {
@@ -1305,6 +1314,11 @@ export namespace ViewStore {
     private iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
       // queryParams may come directly from an RPC request, so every value must be validated at runtime and
       // bound as a parameter. Never concatenate caller-supplied values into the SQL string.
+      if (typeof queryParams !== "object" || (queryParams as unknown) === null)
+        ViewStoreError.throwError("invalid-value", { message: "queryParams must be an object" });
+      const group = validateOptionalString(queryParams.group, "group");
+      const owner = validateOptionalString(queryParams.owner, "owner");
+      const nameSearch = validateOptionalString(queryParams.nameSearch, "nameSearch");
       const classNames = validateStringArray(queryParams.classNames, "classNames");
       const tags = validateStringArray(queryParams.tags, "tags");
       const nameCompare = validateNameCompare(queryParams.nameCompare);
@@ -1312,11 +1326,11 @@ export namespace ViewStore {
       const offset = validateNonNegativeInteger(queryParams.offset, "offset");
       const bindList = (prefix: string, count: number) => Array.from({ length: count }, (_, i) => `@${prefix}${i}`).join(",");
 
-      const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=@groupId ${queryParams.owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
+      const groupId = group ? this.findViewGroup(group) : defaultViewGroupId;
+      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=@groupId ${owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
       if (classNames)
         sql += ` AND className IN(${bindList("className", classNames.length)})`;
-      if (queryParams.nameSearch)
+      if (nameSearch)
         sql += ` AND name ${nameCompare} @name`;
       if (tags)
         sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${bindList("tag", tags.length)})))`;
@@ -1330,10 +1344,10 @@ export namespace ViewStore {
         stmt.bindInteger("@groupId", groupId);
         classNames?.forEach((className, i) => stmt.bindString(`@className${i}`, className));
         tags?.forEach((tag, i) => stmt.bindString(`@tag${i}`, tag));
-        if (queryParams.nameSearch)
-          stmt.bindString("@name", queryParams.nameSearch);
-        if (queryParams.owner)
-          stmt.bindString("@owner", queryParams.owner);
+        if (nameSearch)
+          stmt.bindString("@name", nameSearch);
+        if (owner)
+          stmt.bindString("@owner", owner);
         if (limit)
           stmt.bindInteger("@limit", limit);
         if (offset)

@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
-import { ThumbnailFormatProps } from "@itwin/core-common";
+import { ThumbnailFormatProps, ViewStoreError } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -296,9 +296,18 @@ describe("ViewStore", function (this: Suite) {
       { classNames: "BisCore:SpatialViewDefinition" },
       { classNames: [1] },
       { tags: [{}] },
+      { owner: 1 },
+      { nameSearch: { $ne: "" } },
+      { group: 5 },
+      { group: ["group2"] },
+      null,
+      undefined,
     ];
-    for (const params of badParams)
-      expect(() => vs1.queryViewsSync(params), JSON.stringify(params)).throws(/must be|invalid nameCompare/);
+    for (const params of badParams) {
+      // must be rejected by validation with a ViewStoreError, not fail later with a generic or native error
+      expect(() => vs1.queryViewsSync(params), String(JSON.stringify(params))).throws().that.satisfies((e: unknown) => ViewStoreError.isError(e, "invalid-value"));
+    }
+    expect(vs1.queryViewsSync({ owner: "", nameSearch: "", group: "" }).length).equal(allPublicCount); // empty strings are treated as absent
     expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
 
     await vs1.renameTag({ oldName: "tag2", newName: "tag2-renamed" });
