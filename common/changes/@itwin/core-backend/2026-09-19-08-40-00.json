@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix `VersionedSqliteDb.openDb` throwing a native \"db not open\" error instead of the `incompatible-version` SqliteError when the database's required version range is not satisfied.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

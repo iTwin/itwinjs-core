@@ -402,10 +402,10 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
     if (semver.satisfies(this.myVersion, range))
       return;
 
+    const filePath = this[_nativeDb].getFilePath();
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    SqliteError.throwError("incompatible-version", `requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`, this[_nativeDb].getFilePath());
-
+    SqliteError.throwError("incompatible-version", `requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`, filePath);
   }
 
   /**

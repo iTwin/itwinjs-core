@@ -8,8 +8,9 @@ import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SnapshotDb } from "../../IModelDb";
-import { SQLiteDb } from "../../SQLiteDb";
+import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb";
 import { SqliteChangesetReader } from "../../SqliteChangesetReader";
+import { SqliteError } from "@itwin/core-common";
 import "../TestUtils"; // registers the global mocha before/after hooks that start/stop the backend
 
 describe("SQLiteDb", () => {
@@ -71,6 +72,26 @@ describe("SQLiteDb", () => {
         expect(val.minor).equal(0, "read minor version");
       });
     });
+  });
+
+  it("should throw incompatible-version error when VersionedSqliteDb version is not satisfied", () => {
+    class TestVersionedDb extends VersionedSqliteDb {
+      public override readonly myVersion = "0.2.0";
+      protected override createDDL() { }
+    }
+    class OldVersionDb extends VersionedSqliteDb {
+      public override readonly myVersion = "0.1.0";
+      protected override createDDL() { }
+    }
+
+    const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "versioned.db");
+    TestVersionedDb.createNewDb(fileName);
+
+    const db = new OldVersionDb();
+    expect(() => db.openDb(fileName, OpenMode.Readonly)).to.throw().that.satisfies((err: unknown) => {
+      return SqliteError.isError(err, "incompatible-version") && err.dbName === fileName && err.message.includes("requires newer version of OldVersionDb for read");
+    });
+    expect(db.isOpen).false;
   });
 
   it("supports reading an iModel changeset with SQLiteDb", () => {
