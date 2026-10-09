@@ -31,16 +31,17 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
     const responses: string[] = [];
 
-    const a = socket.invoke("itwin.rpc-test-a", "a");
-    const b = socket.invoke("itwin.rpc-test-b", "b");
-    const c = socket.invoke("itwin.rpc-test-c", "c");
+    const immediateFirst = socket.invoke("itwin.rpc-test-immediate-first", "immediateFirst");
+    const delayed = socket.invoke("itwin.rpc-test-delayed", "delayed");
+    const immediateSecond = socket.invoke("itwin.rpc-test-immediate-second", "immediateSecond");
 
-    onResponse(a, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
-    onResponse(b, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
-    onResponse(c, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(immediateFirst, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(delayed, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(immediateSecond, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    await Promise.all([a, b, c]);
-    assert.deepEqual(responses, ["a", "c", "b"]);
+    await Promise.all([immediateFirst, delayed, immediateSecond]);
+    // A delayed handler must not hold back responses from handlers invoked after it.
+    assert.deepEqual(responses, ["immediateFirst", "immediateSecond", "delayed"]);
   });
 }
 
