@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
@@ -31,7 +31,7 @@ async function initializeCloud() {
 }
 
 async function setupMockMobileFrontend(port: number) {
-  const rpcToken = await executeBackendCallback(BackendTestCallbacks.startMockMobileTest);
+  const rpcToken = await invokeBackendCallback(BackendTestCallbacks.startMockMobileTest) as string;
   window.location.hash = `port=${port}&rpcToken=${rpcToken}`;
   MobileRpcManager.initializeClient([MobileTestInterface]);
 }
@@ -62,7 +62,7 @@ export const configuredEnvironment = process.env.VITEST_RPC_ENVIRONMENT;
 export let currentEnvironment: string;
 
 export async function setupFrontend(electronStartup?: () => Promise<void>) {
-  currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
+  currentEnvironment = await invokeBackendCallback(BackendTestCallbacks.getEnvironment) as string;
   // Test skips use the configured environment, so it must match the backend that actually started.
   if (currentEnvironment !== configuredEnvironment)
     throw new Error(`RPC test environment mismatch: configured "${configuredEnvironment}", but the backend reported "${currentEnvironment}".`);

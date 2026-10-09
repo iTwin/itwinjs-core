@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { RpcProtocolEvent, RpcRequest } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";
@@ -43,7 +43,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       const threshold = client.configuration.protocol.transferChunkThreshold;
 
       let size = 2 * 1024 * 1024;
-      assert(await executeBackendCallback(BackendTestCallbacks.setChunkThreshold, size));
+      assert(await invokeBackendCallback(BackendTestCallbacks.setChunkThreshold, size));
       let data = await client.op2(size * 2, true);
       assert.equal(data.byteLength, size * 2);
 
@@ -52,11 +52,11 @@ if (ProcessDetector.isElectronAppFrontend) {
       }
 
       size = 48 * 1024 * 1024;
-      assert(await executeBackendCallback(BackendTestCallbacks.setChunkThreshold, size));
+      assert(await invokeBackendCallback(BackendTestCallbacks.setChunkThreshold, size));
       data = await client.op2(size * 2, false);
       assert.equal(data.byteLength, size * 2);
 
-      assert(await executeBackendCallback(BackendTestCallbacks.setChunkThreshold, threshold));
+      assert(await invokeBackendCallback(BackendTestCallbacks.setChunkThreshold, threshold));
     });
   });
 }

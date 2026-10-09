@@ -46,8 +46,8 @@ This foundation intentionally does not implement Vitest browser automation comma
 The callback surfaces are deliberately separate so browser-only code does not import Electron:
 
 - `@itwin/vitest-browser-bridge/callbacks/backend` registers and dispatches narrow test callbacks in the backend process.
-- `@itwin/vitest-browser-bridge/callbacks/browser` invokes the Electron preload-exposed callback bridge without importing Electron.
-- `@itwin/vitest-browser-bridge/callbacks/http` creates a browser callback invoker for an HTTP endpoint backed by `dispatchBackendCallback`.
+- `@itwin/vitest-browser-bridge/callbacks/browser` invokes a callback from a browser test. In Electron it uses the preload-exposed IPC bridge without importing Electron; in other browsers it calls the backend's HTTP endpoint.
+- `@itwin/vitest-browser-bridge/callbacks/http` holds the HTTP endpoint handler, the per-run token helpers, and an explicit invoker for backends that do not follow the shared port layout.
 - `@itwin/vitest-browser-bridge/electron/frame-routing` provides an internal backend hook for routing iTwin RPC messages to Vitest's tester iframe.
 
 The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Every successful response carries a `value`, which may be `undefined`. Because JSON cannot carry `undefined`, the HTTP transport marks an `undefined` result explicitly. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
@@ -60,13 +60,13 @@ registerBackendCallback("example:add", (a: number, b: number) => a + b);
 ```
 
 ```ts
-// Electron renderer test
+// Browser test, in Electron or Chromium
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 
 const result = await invokeBackendCallback("example:add", 2, 5);
 ```
 
-HTTP callbacks accept JSON arguments and results: `null`, booleans, finite numbers, strings, arrays, and plain objects containing those values. A top-level `undefined` result is also supported. Unsupported values, including `undefined` arguments or object fields, are rejected rather than silently converted or omitted. The Electron transport is unchanged.
+Callback arguments and results must be JSON values in every runtime: `null`, booleans, finite numbers, strings, arrays, and plain objects containing those values. A top-level `undefined` result is also supported. Unsupported values, including `undefined` arguments or object fields, are rejected rather than silently converted or omitted, so a callback that works in Electron also works over HTTP.
 
 HTTP callbacks need a per-run token, so only the test page can call the backend. Vitest's global setup creates the token, passes it to the backend process through an environment variable, and provides it to the browser:
 
@@ -92,24 +92,26 @@ declare module "vitest" {
 }
 ```
 
-The consuming backend must mount the HTTP handler. The bridge does not create a server or choose a route. The handler rejects callers that are not on a loopback address or that do not send the token. For cross-origin tests, the server must also allow the test origin through CORS. For example, an Express backend can register the endpoint before starting its server:
+The consuming backend must mount the HTTP handler at `backendCallbackPath` on the port `backendPortFor` derives from the page port. The bridge does not create a server. The handler rejects callers that are not on a loopback address or that do not send the token. For cross-origin tests, the server must also allow the test origin through CORS. For example, an Express backend can register the endpoint before starting its server:
 
 ```ts
 import express from "express";
-import { createHttpBackendCallbackHandler, readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { backendCallbackPath, createHttpBackendCallbackHandler, readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
+import { backendPortFor, loopbackHost } from "@itwin/vitest-browser-bridge/ports";
 
 const app = express();
-app.post("/test-callback", express.text(), createHttpBackendCallbackHandler({ token: readBackendCallbackToken(process.env) }));
-app.listen(5020, "127.0.0.1");
+app.post(backendCallbackPath, express.text(), createHttpBackendCallbackHandler({ token: readBackendCallbackToken(process.env) }));
+app.listen(backendPortFor(3020), loopbackHost);
 ```
 
+A backend with a different layout can still be reached with an explicit invoker:
+
 ```ts
-// Chromium test using the endpoint mounted above
 import { inject } from "vitest";
 import { backendCallbackTokenKey, createHttpBackendCallbackInvoker } from "@itwin/vitest-browser-bridge/callbacks/http";
 
 const invokeBackendCallback = createHttpBackendCallbackInvoker({
-  url: "http://localhost:5020/test-callback",
+  url: "http://localhost:5020/custom-callback-route",
   token: () => inject(backendCallbackTokenKey),
 });
 const result = await invokeBackendCallback("example:add", 2, 5);
