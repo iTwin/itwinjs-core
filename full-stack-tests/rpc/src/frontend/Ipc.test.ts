@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IpcWebSocketFrontend } from "@itwin/core-common";
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { beforeAll } from "vitest";
@@ -53,7 +53,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     let socket: IpcWebSocketFrontend;
 
     beforeAll(async () => {
-      assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
+      assert(await invokeBackendCallback(BackendTestCallbacks.startIpcTest));
       socket = new IpcWebSocketFrontend();
     });
 
@@ -68,7 +68,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
         socket.send("test", 1, 2, 3);
 
-        assert(await executeBackendCallback(BackendTestCallbacks.sendIpcMessage));
+        assert(await invokeBackendCallback(BackendTestCallbacks.sendIpcMessage));
       });
     });
 

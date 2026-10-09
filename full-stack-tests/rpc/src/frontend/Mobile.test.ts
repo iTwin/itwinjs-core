@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { MobileRpcProtocol } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { MobileTestInterface } from "../common/TestRpcInterface";
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { currentEnvironment } from "./testSetup";
 
 if (!ProcessDetector.isElectronAppFrontend) {
@@ -42,7 +42,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
       if (currentEnvironment !== "http")
         return;
 
-      const { port, rpcToken } = JSON.parse(await executeBackendCallback(BackendTestCallbacks.restartMockMobileTest));
+      const { port, rpcToken } = JSON.parse(await invokeBackendCallback(BackendTestCallbacks.restartMockMobileTest) as string);
       (window as any)._imodeljs_rpc_reconnect(port, rpcToken);
       const protocol = MobileTestInterface.getClient().configuration.protocol as MobileRpcProtocol;
       await new Promise<void>((resolve, reject) => {
