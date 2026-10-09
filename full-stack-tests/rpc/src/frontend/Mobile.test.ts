@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { assert } from "chai";
 import { MobileRpcProtocol } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { MobileTestInterface } from "../common/TestRpcInterface";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { currentEnvironment } from "./testSetup";
 
 if (!ProcessDetector.isElectronAppFrontend) {
@@ -42,7 +42,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
       if (currentEnvironment !== "http")
         return;
 
-      const { port, rpcToken } = JSON.parse(await executeBackendCallback(BackendTestCallbacks.restartMockMobileTest));
+      const { port, rpcToken } = JSON.parse(await invokeBackendCallback(BackendTestCallbacks.restartMockMobileTest) as string);
       (window as any)._imodeljs_rpc_reconnect(port, rpcToken);
       const protocol = MobileTestInterface.getClient().configuration.protocol as MobileRpcProtocol;
       await new Promise<void>((resolve, reject) => {

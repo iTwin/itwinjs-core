@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { MobileHost, MobileRpcConfiguration, MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { MobileRpcServer } from "@itwin/core-mobile/lib/cjs/backend/MobileRpcServer";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { MobileTestInterface } from "../common/TestRpcInterface";
 import { setupIpcTest } from "./ipc";
@@ -35,5 +35,5 @@ export async function initializeMockMobileTest() {
     }
   });
 
-  await setupIpcTest(async () => MobileRpcManager.ready());
+  await setupIpcTest(async () => MobileRpcManager.ready(), undefined);
 }

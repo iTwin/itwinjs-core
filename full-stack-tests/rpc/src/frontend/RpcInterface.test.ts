@@ -5,8 +5,8 @@
 import { Buffer } from "buffer";
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { BentleyError } from "@itwin/core-bentley";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
@@ -17,7 +17,10 @@ import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
   TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./testSetup";
+import { configuredEnvironment } from "./testSetup";
+
+const itIfNotWebsocket = configuredEnvironment === "websocket" ? it.skip : it;
+const itIfHttp = configuredEnvironment === "http" ? it : it.skip;
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -96,7 +99,7 @@ describe("RpcInterface", () => {
     assert.isTrue(receivedPending);
     removeListener();
 
-    assert(await executeBackendCallback(BackendTestCallbacks.resetOp8Initializer));
+    assert(await invokeBackendCallback(BackendTestCallbacks.resetOp8Initializer));
   });
 
   it("should support supplied RPC implementation instances", async () => {
@@ -107,17 +110,17 @@ describe("RpcInterface", () => {
       assert(true);
     }
 
-    assert(await executeBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class));
+    assert(await invokeBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class));
 
     const response1 = await TestRpcInterface2.getClient().op1(1);
     assert.equal(response1, 1);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance));
+    assert(await invokeBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance));
 
     const response2 = await TestRpcInterface2.getClient().op1(2);
     assert.equal(response2, 2);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
+    assert(await invokeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
   });
 
   it("should allow access to request and invocation objects and allow a custom request id", async () => {
@@ -154,21 +157,13 @@ describe("RpcInterface", () => {
     }
   });
 
-  it("should allow void return values when using RpcDirectProtocol", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
+  itIfNotWebsocket("should allow void return values when using RpcDirectProtocol", async () => {
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
   });
 
-  it("should allow terminating interfaces", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
+  itIfNotWebsocket("should allow terminating interfaces", async () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
@@ -222,10 +217,6 @@ describe("RpcInterface", () => {
   });
 
   it("should describe available RPC endpoints from the frontend", async () => {
-    // if (currentEnvironment !== "http") {
-    //  return;
-    // }
-
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     controlChannel.initialize();
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
@@ -257,7 +248,7 @@ describe("RpcInterface", () => {
         IModelReadRpcInterface.interfaceVersion = originalVersion;
       }
     });
-    assert(await executeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
+    assert(await invokeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
@@ -265,7 +256,7 @@ describe("RpcInterface", () => {
 
     controlPolicy.sentCallback = () => { };
     Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
-    assert(await executeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
+    assert(await invokeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
 
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
@@ -455,11 +446,7 @@ describe("RpcInterface", () => {
     await Promise.all(promises);
   });
 
-  it("should be able to send large requests as get requests", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
+  itIfNotWebsocket("should be able to send large requests as get requests", async () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
     // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
@@ -480,14 +467,7 @@ describe("RpcInterface", () => {
       assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
-  it("should set cache-control headers when applicable", async function () {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
-    // Cache-control headers are not applicable to electron apps.
-    if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
-      return;
+  itIfHttp("should set cache-control headers when applicable", async function () {
     const input = "test";
     let response: any;
     TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
@@ -640,11 +620,7 @@ describe("RpcInterface", () => {
     assert.equal(completed, 3);
   });
 
-  it("should support multiple clients per interface", async () => {
-    if (currentEnvironment !== "http") {
-      return;
-    }
-
+  itIfHttp("should support multiple clients per interface", async () => {
     const config1 = MultipleClientsInterface.config1;
     const client1 = MultipleClientsInterface.getClientWithRouting(config1);
     assert.isTrue(await client1.check(config1.id));
@@ -654,11 +630,7 @@ describe("RpcInterface", () => {
     assert.isTrue(await client2.check(config2.id));
   });
 
-  it("should support attaching interfaces to existing configurations", async () => {
-    if (currentEnvironment !== "http") {
-      return;
-    }
-
+  itIfHttp("should support attaching interfaces to existing configurations", async () => {
     const ping = await AttachedInterface.getClient().ping();
     assert.isTrue(ping);
   });

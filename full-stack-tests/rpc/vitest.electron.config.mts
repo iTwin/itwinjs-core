@@ -9,11 +9,12 @@ import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
 import { defineConfig } from "vitest/config";
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+const isDebug = process.env.VITEST_RPC_DEBUG === "1";
 
 export default defineConfig({
+  define: { "process.env.VITEST_RPC_ENVIRONMENT": JSON.stringify("electron") },
   resolve: {
     alias: {
-      "@itwin/certa/lib/utils/CallbackUtils": path.resolve(packageRoot, "src/frontend/vitestCallbackUtils.ts"),
       "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(packageRoot, "../../core/mobile/src/MobileFrontend.ts"),
     },
   },
@@ -36,24 +37,27 @@ export default defineConfig({
   test: {
     dir: "src/frontend",
     include: ["**/*.test.ts"],
-    exclude: ["**/Mobile.test.ts", "**/Routing.test.ts", "**/Rpc.HttpProtocol.test.ts", "**/_Setup.test.ts"],
+    exclude: ["**/Mobile.test.ts", "**/Routing.test.ts", "**/security.test.ts"],
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,
-    testTimeout: 120000,
-    hookTimeout: 120000,
+    testTimeout: isDebug ? 0 : 120000,
+    hookTimeout: isDebug ? 0 : 120000,
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/junit_results.xml" }],
+      ["junit", { outputFile: "lib/test/electron_junit_results.xml" }],
     ],
     browser: {
       enabled: true,
       provider: electron({
         backendInitModule: path.resolve(packageRoot, "lib/backend/vitest-electron.js"),
         preloadModule: path.resolve(packageRoot, "../../core/electron/lib/cjs/backend/ElectronPreload.js"),
+        remoteDebuggingPort: isDebug ? 9223 : undefined,
+        // A breakpoint in backend initialization or page loading must not time out startup.
+        startupTimeout: isDebug ? 0 : undefined,
       }),
       instances: [{ browser: "electron" }],
-      headless: true,
+      headless: !isDebug,
       screenshotFailures: false,
     },
   },
