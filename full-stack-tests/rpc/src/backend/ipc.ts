@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { BackendCallbackRegistrar } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { IpcHost } from "@itwin/core-backend";
 import { BentleyError, ITwinError } from "@itwin/core-bentley";
 import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
@@ -40,7 +40,7 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
   });
 }
 
-export function setupIpcTestElectron(registerBackendCallback: BackendCallbackRegistrar) {
+export function setupIpcTestElectron() {
   orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-require-imports
 
   // Return immediately and deliver result on responseChannel to avoid deadlocks
@@ -64,7 +64,6 @@ export function setupIpcTestElectron(registerBackendCallback: BackendCallbackReg
 export async function setupIpcTest(
   before = async () => { },
   socketOverride: IpcWebSocketBackend | undefined,
-  registerBackendCallback: BackendCallbackRegistrar,
 ) {
   let socket: IpcWebSocketBackend;
   let ready: () => void;

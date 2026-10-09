@@ -5,7 +5,7 @@
 
 import { MobileHost, MobileRpcConfiguration, MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { MobileRpcServer } from "@itwin/core-mobile/lib/cjs/backend/MobileRpcServer";
-import type { BackendCallbackRegistrar } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { MobileTestInterface } from "../common/TestRpcInterface";
 import { setupIpcTest } from "./ipc";
@@ -17,7 +17,7 @@ export async function setupMockMobileTest(port: number) {
   };
 }
 
-export async function initializeMockMobileTest(registerBackendCallback: BackendCallbackRegistrar) {
+export async function initializeMockMobileTest() {
   await MobileHost.startup();
   MobileRpcManager.initializeImpl([MobileTestInterface]);
 
@@ -35,5 +35,5 @@ export async function initializeMockMobileTest(registerBackendCallback: BackendC
     }
   });
 
-  await setupIpcTest(async () => MobileRpcManager.ready(), undefined, registerBackendCallback);
+  await setupIpcTest(async () => MobileRpcManager.ready(), undefined);
 }
