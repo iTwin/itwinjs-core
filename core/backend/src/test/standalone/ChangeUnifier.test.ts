@@ -337,7 +337,7 @@ describe("ChangeUnifier", () => {
   });
 
   it("matches PartialChangeUnifier for inserts, updates and deletes", () => {
-    const propFilters = [PropertyFilter.All, PropertyFilter.BisCoreElement, PropertyFilter.InstanceKey];
+    const propFilters = [PropertyFilter.All, PropertyFilter.BisCoreElement, PropertyFilter.InstanceKey, PropertyFilter.InstanceKeyAndIdentifiers];
     const rowOptionsList: Array<RowFormatOptions | undefined> = [undefined, { classIdsToClassNames: true }, { abbreviateBlobs: false }];
     for (const fileName of [changesets.inserts, changesets.updates, changesets.deletes]) {
       for (const propFilter of propFilters) {
