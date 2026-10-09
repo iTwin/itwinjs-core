@@ -8,7 +8,9 @@ so a compromised/republished transitive dependency of Rush can't get pulled in a
 release time.
 
 The script also asserts this lockfile's pinned `@microsoft/rush` version matches `rushVersion` in
-`rush.json` before it runs Rush, and fails the release if they've drifted apart.
+`rush.json` before it runs Rush, and fails the release if they've drifted apart. `../audit-rush-lockfile.mjs`
+runs `npm audit` against this lockfile at PR time and release time, and fails on high/critical
+advisories.
 
 ## Regenerating after a `rushVersion` bump
 
@@ -29,6 +31,7 @@ cat > package.json << 'EOF'
 }
 EOF
 npm install --package-lock-only
+npm audit --audit-level=high
 cp package-lock.json <repo>/.github/workflows/automation-scripts/rush-lockfile/package-lock.json
 ```
 

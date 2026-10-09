@@ -20,6 +20,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { assertRushLockfileAuditClean } from "./audit-rush-lockfile.mjs";
 import { assertRushLockfileMatches } from "./check-rush-lockfile.mjs";
 
 const repoRoot = process.cwd();
@@ -169,12 +170,16 @@ if (commitMessage.endsWith(".0")) {
   // File says "master" (never released a minor) or a prior release/X.Y.z; only one matches.
   editFileInPlaceSynchronously(docsYamlPath, /master|release\/\d+\.\d+\.\w+/g, currentBranch);
   git("add", docsYamlPath);
-  git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
+  // An already-correct value (e.g. a rerun) stages nothing, and git commit would fail.
+  if (git("diff", "--cached", "--name-only", "--", docsYamlPath))
+    git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
   pushRef(`${currentBranch}:${currentBranch}`);
 }
 
 targetBranch = targetBranch.replace("origin/", "");
 git("checkout", targetBranch);
+// The target branch's lockfile is the one that bootstraps Rush, so audit it now.
+assertRushLockfileAuditClean(repoRoot);
 
 const targetMap = collectChangelogs();
 

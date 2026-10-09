@@ -3,6 +3,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 export function assertRushLockfileMatches(repoRoot) {
   const lockfilePath = path.join(repoRoot, ".github", "workflows", "automation-scripts", "rush-lockfile", "package-lock.json");
@@ -19,7 +20,7 @@ export function assertRushLockfileMatches(repoRoot) {
 }
 
 // if the script file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   assertRushLockfileMatches(process.cwd());
   console.log("Rush bootstrap lockfile matches rush.json.");
 }
