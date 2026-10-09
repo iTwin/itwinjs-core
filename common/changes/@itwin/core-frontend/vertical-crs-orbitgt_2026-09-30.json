@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Preserve named and EPSG vertical CRS identifiers when computing OrbitGT point-cloud height corrections.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
