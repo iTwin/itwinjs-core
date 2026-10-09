@@ -143,6 +143,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@cesium/wasm-splats",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },

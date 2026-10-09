@@ -11,20 +11,27 @@ vec3 linearFromDisplay(vec3 color) {
 /** Private shaders for the sorted Gaussian pass. Metadata rows describe visible tile instances.
  * @internal
  */
-export const gaussianSplatVertex = `#version 300 es
+export function gaussianSplatVertex(pick: boolean): string {
+  return `#version 300 es
+#define PICK_PASS ${pick ? 1 : 0}
 precision highp float;
 precision highp int;
 precision highp sampler2DArray;
+precision highp usampler2DArray;
 layout(location=0) in uvec2 a_instance;
-uniform sampler2DArray u_splats;
+uniform usampler2DArray u_splats;
+uniform sampler2DArray u_auxiliary;
 uniform sampler2D u_tiles;
 uniform mat4 u_projection;
 uniform vec2 u_viewport;
 uniform vec3 u_frustum;
+const bool u_pick = ${pick ? "true" : "false"};
 out vec2 v_gaussian;
 out vec3 v_eye;
 flat out vec4 v_color;
+#if PICK_PASS
 flat out vec4 v_feature;
+#endif
 flat out ivec2 v_clip;
 flat out vec4 v_inside;
 flat out vec4 v_outside;
@@ -32,20 +39,23 @@ flat out int v_space;
 ${linearFromDisplay}
 
 vec4 metadata(int n) { return texelFetch(u_tiles, ivec2(n, int(a_instance.y)), 0); }
-vec4 splat(int n) {
+uvec4 splat(int n) {
   int page = int(a_instance.x) / 16384;
-  int texel = (int(a_instance.x) % 16384) * 15 + n;
-  return texelFetch(u_splats, ivec3(texel % 1920, texel / 1920, page), 0);
+  int texel = (int(a_instance.x) % 16384) * 2 + n;
+  return texelFetch(u_splats, ivec3(texel % 256, texel / 256, page), 0);
 }
-float shFloat(int n) {
-  vec4 v = splat(3 + n / 4);
-  return v[n % 4];
+float auxiliary(int n) {
+  vec4 storage = metadata(11);
+  int localIndex = int(a_instance.x) - int(metadata(12).x);
+  int index = int(storage.y) + localIndex * int(storage.z) + n;
+  int texel = index / 4;
+  return texelFetch(u_auxiliary, ivec3(texel % 256, (texel / 256) % 128, texel / 32768), 0)[index % 4];
 }
-vec3 sh(int n) { return vec3(shFloat(n*3), shFloat(n*3+1), shFloat(n*3+2)); }
+vec3 sh(int n) { return vec3(auxiliary(n*3), auxiliary(n*3+1), auxiliary(n*3+2)); }
 vec3 lighting(vec3 d, int degree) {
   float x=d.x, y=d.y, z=d.z;
   float xx=x*x, yy=y*y, zz=z*z;
-  vec3 color = vec3(0.5) + 0.2820947917738781 * sh(0);
+  vec3 color = degree==0 ? vec3(0.0) : vec3(0.5) + 0.2820947917738781 * sh(0);
   if (degree > 0)
     color += -0.4886025119029199*y*sh(1) + 0.4886025119029199*z*sh(2) - 0.4886025119029199*x*sh(3);
   if (degree > 1)
@@ -60,13 +70,32 @@ vec3 lighting(vec3 d, int degree) {
   return max(color, vec3(0.0));
 }
 void main() {
-  vec4 mean = splat(0), c0 = splat(1), c1 = splat(2);
+  uvec4 base = splat(0), packed = splat(1);
+  vec3 position = uintBitsToFloat(base.xyz);
+  vec2 h0=unpackHalf2x16(packed.x), h1=unpackHalf2x16(packed.y), h2=unpackHalf2x16(packed.z);
+  vec4 rgba=vec4(packed.w & 255u,(packed.w>>8u)&255u,(packed.w>>16u)&255u,packed.w>>24u)/255.0;
+  int flags=int(metadata(11).w);
+  int degree=int(metadata(4).z);
+  int shCount=degree>0 ? (degree+1)*(degree+1)*3 : 0;
+  if ((flags & 2)!=0) {
+    int start=shCount+((flags & 1)!=0 ? 6 : 0);
+    rgba=vec4(auxiliary(start),auxiliary(start+1),auxiliary(start+2),auxiliary(start+3));
+  }
+  vec4 mean=vec4(position,rgba.a);
+  vec4 c0=vec4(h0,h1)*exp2(uintBitsToFloat(base.w))*0.25;
+  vec2 c1=h2*exp2(uintBitsToFloat(base.w))*0.25;
+  if ((flags & 1)!=0) {
+    c0=vec4(auxiliary(shCount),auxiliary(shCount+1),auxiliary(shCount+2),auxiliary(shCount+3));
+    c1=vec2(auxiliary(shCount+4),auxiliary(shCount+5));
+  }
   vec4 r0=metadata(0), r1=metadata(1), r2=metadata(2);
   mat3 a = transpose(mat3(r0.xyz, r1.xyz, r2.xyz));
   vec3 eye = a*mean.xyz + vec3(r0.w,r1.w,r2.w);
   vec4 clip = u_projection * vec4(eye, 1.0);
   v_gaussian=vec2(0.0); v_eye=eye; v_color=vec4(0.0);
+#if PICK_PASS
   v_feature=metadata(3);
+#endif
   vec4 options=metadata(4);
   v_clip=ivec2(options.xy); v_space=int(options.w);
   v_inside=metadata(6); v_outside=metadata(7);
@@ -90,8 +119,19 @@ void main() {
   float middle=0.5*(xx+yy);
   vec2 e0=abs(xy)>1e-8 ? normalize(vec2(xy,middle+delta-xx)) : (xx>=yy ? vec2(1,0) : vec2(0,1));
   vec2 e1=vec2(-e0.y,e0.x);
-  const vec2 corners[6]=vec2[6](vec2(-1,-1),vec2(1,-1),vec2(-1,1),vec2(-1,1),vec2(1,-1),vec2(1,1));
-  v_gaussian=3.0*corners[gl_VertexID];
+  vec4 appearance=metadata(5);
+  float compensation = metadata(11).x>0.0 ? sqrt(max(0.0,((xx-0.3)*(yy-0.3)-xy*xy)/(xx*yy-xy*xy))) : 1.0;
+  float peakAlpha=mean.w*appearance.x*compensation;
+  float threshold=u_pick ? 0.1 : 1.0/255.0;
+  if (peakAlpha<threshold) {
+    gl_Position=vec4(2.0,2.0,2.0,1.0);
+    return;
+  }
+  // Bound only fragments already rejected by the existing alpha threshold. Keep a
+  // small margin around the analytic radius for interpolation/threshold rounding.
+  float radius=min(3.0,sqrt(max(0.0,2.0*log(peakAlpha/threshold)))+0.001);
+  const vec2 corners[4]=vec2[4](vec2(-1,-1),vec2(1,-1),vec2(-1,1),vec2(1,1));
+  v_gaussian=radius*corners[gl_VertexID];
   // Cesium's 1024-unit axis cap becomes 512 pixels after the NDC-to-pixel
   // conversion. Bound our three-sigma semi-axes to the same screen extent.
   // Use the same sigma limit in color and pick passes despite their different
@@ -104,42 +144,51 @@ void main() {
   v_eye.xy += 2.0*pixels/u_viewport*clip.w/vec2(u_projection[0][0],u_projection[1][1]);
   mat3 inverseView=transpose(mat3(metadata(8).xyz,metadata(9).xyz,metadata(10).xyz));
   vec3 direction=normalize(inverseView*(u_frustum.z==2.0 ? eye : vec3(0,0,-1)));
-  vec4 appearance=metadata(5);
-  vec3 color=appearance.y>=0.0 ? appearance.yzw : lighting(direction,int(options.z));
+  vec3 color=appearance.y>=0.0 ? appearance.yzw : (degree==0 ? max(rgba.rgb,vec3(0.0)) : lighting(direction,degree));
   if (appearance.y>=0.0 && v_space==1) color=linearFromDisplay(color);
-  float compensation = metadata(11).x>0.0 ? sqrt(max(0.0,((xx-0.3)*(yy-0.3)-xy*xy)/(xx*yy-xy*xy))) : 1.0;
-  v_color=vec4(color, mean.w*appearance.x*compensation);
+  v_color=vec4(color, peakAlpha);
 }`;
+}
 
 /** @internal */
-export const gaussianSplatFragment = `#version 300 es
+export function gaussianSplatFragment(pick: boolean): string {
+  return `#version 300 es
+#define PICK_PASS ${pick ? 1 : 0}
 precision highp float;
 precision highp int;
 uniform sampler2D u_planes;
 uniform vec3 u_frustum;
 uniform vec2 u_logZ;
 uniform bool u_useLogZ;
-uniform bool u_pick;
+const bool u_pick = ${pick ? "true" : "false"};
 uniform int u_space;
 in vec2 v_gaussian;
 in vec3 v_eye;
 flat in vec4 v_color;
+#if PICK_PASS
 flat in vec4 v_feature;
+#endif
 flat in ivec2 v_clip;
 flat in vec4 v_inside;
 flat in vec4 v_outside;
 flat in int v_space;
 layout(location=0) out vec4 out_color;
+#if PICK_PASS
 layout(location=1) out vec4 out_feature;
 layout(location=2) out vec4 out_depth;
+#endif
 ${linearFromDisplay}
+#if PICK_PASS
 vec3 encodeDepth(float d) {
   vec3 enc=fract(vec3(1.0,255.0,65025.0)*min(d,16777215.0/16777216.0));
   enc.xy-=enc.yz/255.0;
   return enc;
 }
+#endif
 void main() {
-  if (u_pick && v_feature==vec4(0.0)) discard;
+#if PICK_PASS
+  if (v_feature==vec4(0.0)) discard;
+#endif
   if (!u_pick && v_space!=u_space) discard;
   float distance2=dot(v_gaussian,v_gaussian);
   float alpha=min(0.99,v_color.a*exp(-0.5*distance2));
@@ -172,9 +221,12 @@ void main() {
   else
     gl_FragDepth = gl_FragCoord.z;
   out_color=vec4(color*alpha,alpha);
+#if PICK_PASS
   out_feature=v_feature;
   out_depth=vec4(3.0/16.0,encodeDepth(1.0-(-v_eye.z-u_frustum.x)/(u_frustum.y-u_frustum.x)));
+#endif
 }`;
+}
 
 /** @internal */
 export const gaussianSplatCompositeVertex = `#version 300 es

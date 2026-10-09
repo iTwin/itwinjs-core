@@ -19,7 +19,8 @@ import { createRealityTileTreeReference, RealityModelTileTree } from "../../../t
 import { RealityTile } from "../../../tile/RealityTile";
 import { TiledGraphicsProvider } from "../../../tile/TiledGraphicsProvider";
 import { GaussianSplatWorker } from "../../../internal/render/GaussianSplatWorker";
-import { GaussianSplatSortRequest, gaussianSplatsPerPage, sortGaussianSplats } from "../../../internal/render/GaussianSplatSort";
+import { sortGaussianSplats } from "../../../workers/GaussianSplats/Sorting";
+import { GaussianSplatSortRequest, gaussianSplatsPerPage } from "../../../internal/render/GaussianSplatSort";
 import { GaussianSplatValidationRecorder, GaussianSplatValidationTrace, gaussianSplatValidationHtml } from "../../../internal/render/GaussianSplatValidation";
 import { GaussianSplatRenderer } from "../../../internal/render/webgl/GaussianSplatRenderer";
 import { getGaussianSplatAtlas } from "../../../internal/render/webgl/GaussianSplatAtlas";

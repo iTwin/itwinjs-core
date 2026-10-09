@@ -6,6 +6,7 @@
 import { Range3d } from "@itwin/core-geometry";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../RenderGeometry";
+import { gaussianSplatAuxiliaryStride } from "./GaussianSplatAtlas";
 import { GaussianSplatData } from "../GaussianSplatData";
 import { CachedGeometry } from "./CachedGeometry";
 import { Pass, RenderOrder } from "./RenderFlags";
@@ -50,7 +51,7 @@ export class GaussianSplatGeometry extends CachedGeometry implements RenderGeome
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     // Account for resident CPU data and its worst-case GPU page allocation in tile-cache budgeting.
-    stats.addPointCloud(this.splats.data.byteLength);
-    stats.addTexture(Math.ceil(this.splats.count / 16384) * 16384 * 60 * 4);
+    stats.addPointCloud(this.splats.data.byteLength + this.splats.sh.byteLength + (this.splats.covariance?.byteLength ?? 0) + (this.splats.appearance?.byteLength ?? 0));
+    stats.addTexture(Math.ceil(this.splats.count / 16384) * 16384 * 32 + this.splats.count * gaussianSplatAuxiliaryStride(this.splats) * 4);
   }
 }

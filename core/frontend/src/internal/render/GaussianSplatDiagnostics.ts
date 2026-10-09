@@ -32,6 +32,8 @@ export interface GaussianSplatFrameState {
   /** Packed arrays leased by this viewport, including current and completed fields; excludes worker/GPU buffers. */
   packedSplatBytes: number;
   failed: boolean;
+  memoryLimited?: boolean;
+  workerWasmBytes?: number;
 }
 
 /** @internal */

@@ -91,6 +91,7 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@cesium/wasm-splats": "0.1.0-alpha.2",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^4.4.5",

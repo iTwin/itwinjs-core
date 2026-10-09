@@ -4,24 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, GltfDocument, GltfId, GltfMeshPrimitive } from "../../common/gltf/GltfSchema";
-import { Geometry } from "@itwin/core-geometry";
 
-/** Packed splat layout: mean/opacity, symmetric covariance (six floats), padding, and 16 RGB SH coefficients.
+/** Two RGBA32UI texels per splat: float means, covariance normalization, half covariance and RGBA8.
  * Means are relative to origin; origin and bounds retain double precision.
  * @internal
  */
 export interface GaussianSplatData {
-  data: Float32Array;
+  data: Uint32Array;
+  /** Degree-aware float coefficients, including DC when degree is nonzero. */
+  sh: Float32Array;
+  /** Full precision covariance only when half precision cannot preserve the smallest axis. */
+  covariance?: Float32Array;
+  /** Exact color/opacity when the byte representation would change supported semantics. */
+  appearance?: Float32Array;
   count: number;
   shDegree: number;
   colorSpace: "srgb_rec709_display" | "lin_rec709_display";
   origin: [number, number, number];
   bounds: [number, number, number, number, number, number];
   antialiased?: boolean;
+  /** Draft Cesium SPZ content uses depth; ratified content defaults to cameraDistance. */
+  sortingMethod?: "cameraDistance" | "viewDepth";
 }
 
 /** @internal */
-export const gaussianSplatStride = 60;
+export const gaussianSplatStride = 8;
 
 /** @internal */
 export interface GaussianSplatSource {
@@ -33,6 +40,8 @@ export interface GaussianSplatSource {
   shDegree: number;
   colorSpace: GaussianSplatData["colorSpace"];
   antialiased?: boolean;
+  /** Draft Cesium SPZ content uses depth; ratified content defaults to cameraDistance. */
+  sortingMethod?: "cameraDistance" | "viewDepth";
 }
 
 /** @internal */
@@ -219,13 +228,14 @@ export function readGaussianSplatSource(primitive: GltfMeshPrimitive, document: 
     if (Object.keys(primitive.attributes).some((name) => name.startsWith(`KHR_gaussian_splatting:SH_DEGREE_${degree}_`)))
       shDegree = degree;
 
-  const sh = new Float32Array(positionAccessor.count * 48);
+  const stride = (shDegree + 1) ** 2 * 3;
+  const sh = new Float32Array(positionAccessor.count * stride);
   let coefficient = 0;
   for (let degree = 0; degree <= shDegree; degree++)
     for (let c = 0; c < 2 * degree + 1; c++, coefficient++) {
       const values = read(`KHR_gaussian_splatting:SH_DEGREE_${degree}_COEF_${c}`, 3, [5126]);
       for (let i = 0; i < positionAccessor.count; i++)
-        sh.set(values.subarray(i * 3, i * 3 + 3), i * 48 + coefficient * 3);
+        sh.set(values.subarray(i * 3, i * 3 + 3), i * stride + coefficient * 3);
     }
 
   const shNames = Object.keys(primitive.attributes).filter((name) => name.startsWith("KHR_gaussian_splatting:SH_"));
@@ -233,67 +243,4 @@ export function readGaussianSplatSource(primitive: GltfMeshPrimitive, document: 
     gaussianSplatError("incomplete or unsupported spherical harmonics");
 
   return { positions, rotations, scales, opacities, sh, shDegree, colorSpace: colorSpace as GaussianSplatData["colorSpace"] };
-}
-
-/** Pack normalized splats and derive a conservative three-sigma local range.
- * @internal
- */
-export function packGaussianSplats(source: GaussianSplatSource): GaussianSplatData {
-  const count = source.opacities.length;
-  if (!count || source.positions.length !== count * 3 || source.rotations.length !== count * 4 || source.scales.length !== count * 3 ||
-    source.sh.length !== count * 48 || !Number.isInteger(source.shDegree) || source.shDegree < 0 || source.shDegree > 3)
-    gaussianSplatError("invalid decoded array lengths");
-
-  const min = [Infinity, Infinity, Infinity];
-  const max = [-Infinity, -Infinity, -Infinity];
-  for (let i = 0; i < count; i++)
-    for (let c = 0; c < 3; c++) {
-      const p = source.positions[i * 3 + c];
-      if (!Number.isFinite(p))
-        gaussianSplatError("non-finite mean");
-
-      min[c] = Math.min(min[c], p);
-      max[c] = Math.max(max[c], p);
-    }
-
-  const origin: GaussianSplatData["origin"] = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
-  const data = new Float32Array(count * gaussianSplatStride);
-  for (let i = 0; i < count; i++) {
-    const o = i * gaussianSplatStride;
-    const opacity = source.opacities[i];
-    if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1)
-      gaussianSplatError("opacity must be in [0, 1]");
-
-    data[o + 3] = opacity;
-    const q = source.rotations.subarray(i * 4, i * 4 + 4);
-    const norm = Geometry.hypotenuseXYZW(q[0], q[1], q[2], q[3]);
-    if (!Number.isFinite(norm) || norm < 1e-10 || Math.abs(norm - 1) > 0.01)
-      gaussianSplatError("rotation must be a unit xyzw quaternion");
-
-    const [x, y, z, w] = Array.from(q, (v) => v / norm);
-    const r = [1 - 2 * (y*y + z*z), 2 * (x*y - z*w), 2 * (x*z + y*w),
-      2 * (x*y + z*w), 1 - 2 * (x*x + z*z), 2 * (y*z - x*w),
-      2 * (x*z - y*w), 2 * (y*z + x*w), 1 - 2 * (x*x + y*y)];
-    const s = source.scales.subarray(i * 3, i * 3 + 3);
-    if (s.some((v) => !Number.isFinite(v) || v < 0))
-      gaussianSplatError("scale must be finite and nonnegative");
-
-    const covariance = (a: number, b: number) => r[a*3] * r[b*3] * s[0]*s[0] + r[a*3+1] * r[b*3+1] * s[1]*s[1] + r[a*3+2] * r[b*3+2] * s[2]*s[2];
-    data.set([covariance(0, 0), covariance(0, 1), covariance(0, 2), covariance(1, 1), covariance(1, 2), covariance(2, 2)], o + 4);
-    for (let c = 0; c < 3; c++) {
-      const p = source.positions[i * 3 + c];
-      const extent = 3 * Math.sqrt(covariance(c, c));
-      data[o + c] = p - origin[c];
-      min[c] = Math.min(min[c], p - extent);
-      max[c] = Math.max(max[c], p + extent);
-    }
-
-    const coefficients = source.sh.subarray(i * 48, i * 48 + 48);
-    if (coefficients.some((v) => !Number.isFinite(v)) || data.subarray(o, o + 10).some((v) => !Number.isFinite(v)))
-      gaussianSplatError("non-finite covariance or spherical harmonic");
-
-    data.set(coefficients, o + 12);
-  }
-
-  return { data, count, origin, bounds: [...min, ...max] as GaussianSplatData["bounds"], shDegree: source.shDegree, colorSpace: source.colorSpace, antialiased: source.antialiased };
 }

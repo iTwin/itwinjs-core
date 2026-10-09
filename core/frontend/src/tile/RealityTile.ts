@@ -6,6 +6,7 @@
  * @module Tiles
  */
 
+import { gaussianTileDetailModifier } from "../internal/tile/RealityTileSelection";
 import { BeTimePoint, dispose, expectDefined } from "@itwin/core-bentley";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
@@ -544,10 +545,10 @@ export class RealityTile extends Tile {
       const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
 
       const sse = this._geometricError / pixelSize;
-      return args.maximumScreenSpaceError / sse;
+      return args.maximumScreenSpaceError * gaussianTileDetailModifier(args.context.viewport.target, args.tree) / sse;
     }
 
-    return this.maximumSize / args.getPixelSize(this);
+    return this.maximumSize * gaussianTileDetailModifier(args.context.viewport.target, args.tree) / args.getPixelSize(this);
   }
 
   /** @internal */

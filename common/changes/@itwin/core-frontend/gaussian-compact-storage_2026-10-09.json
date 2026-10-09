@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use compact Gaussian splat storage and WASM worker kernels with bounded residency and native detail feedback.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

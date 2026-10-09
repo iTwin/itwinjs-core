@@ -3,32 +3,95 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization } from "@itwin/core-common";
 import { loadSpz } from "@spz-loader/core";
 import { IModelApp } from "../../IModelApp";
 import { GltfAccessor, GltfMeshPrimitive } from "../../common/gltf/GltfSchema";
-import { packGaussianSplats, readGaussianSplatAccessor, readGaussianSplatSource } from "../../internal/render/GaussianSplatData";
-import { sortGaussianSplats } from "../../internal/render/GaussianSplatSort";
-import { GaussianSplatWorker } from "../../internal/render/GaussianSplatWorker";
+import { readGaussianSplatAccessor, readGaussianSplatSource } from "../../internal/render/GaussianSplatData";
+import { sortGaussianSplats } from "../../workers/GaussianSplats/Sorting";
+import { packGaussianSplats } from "../../workers/GaussianSplats/Packing";
+import * as gaussianWasm from "../../workers/GaussianSplats/Wasm";
+import { decodeGaussianSplats, GaussianSplatWorker } from "../../internal/render/GaussianSplatWorker";
 import { GltfReaderProps } from "../../tile/internal";
 import { gaussianSplatFixture, gaussianSplatGlb, gaussianSplatSpz } from "./GaussianSplatFixtures";
 
+vi.mock("../../workers/GaussianSplats/Wasm", { spy: true });
+
+// Decode the compact texture independently of the renderer's shader.
+function covarianceFromTexture(data: Uint32Array, splat = 0): number[] {
+  const offset = splat * 8;
+  const exponent = new Float32Array(data.buffer, data.byteOffset, data.length)[offset + 3];
+  const half = (bits: number) => {
+    const sign = bits & 0x8000 ? -1 : 1;
+    const e = (bits >>> 10) & 31;
+    const mantissa = bits & 1023;
+    return sign * (e === 0 ? mantissa * 2 ** -24 : (1 + mantissa / 1024) * 2 ** (e - 15));
+  };
+  return Array.from({ length: 6 }, (_, i) => half((data[offset + 4 + Math.floor(i / 2)] >>> (i % 2 * 16)) & 0xffff) * 2 ** exponent / 4);
+}
+
 describe("Gaussian splat data", () => {
   it("packs linear scales, opacity, xyzw rotation, SH and three-sigma bounds", () => {
-    const source = gaussianSplatFixture();
+    const source = gaussianSplatFixture(1, 3);
     source.positions.set([1000000, 2, 3]);
     source.scales.set([1, 2, 3]);
     source.rotations.set([0, 0, Math.SQRT1_2, Math.SQRT1_2]);
     source.opacities[0] = 0.25;
     const packed = packGaussianSplats(source);
     expect(packed.origin).toEqual([1000000, 2, 3]);
-    expect(Array.from(packed.data.subarray(0, 4))).toEqual([0, 0, 0, 0.25]);
-    expect(packed.data[4]).toBeCloseTo(4);
-    expect(packed.data[7]).toBeCloseTo(1);
-    expect(packed.data[9]).toBeCloseTo(9);
+    expect(packed.data).toBeInstanceOf(Uint32Array);
+    expect(packed.data.length).toBe(8);
+    expect(Array.from(new Float32Array(packed.data.buffer).subarray(0, 4))).toEqual([0, 0, 0, 2]);
+    expect(covarianceFromTexture(packed.data)).toEqual([4, 0, 0, 1, 0, 9].map((n) => expect.closeTo(n)));
+    expect(packed.data[7]).toBe(0x400000ff);
+    expect(packed.appearance![3]).toBe(0.25);
     expect(packed.bounds).toEqual([999994, -1, -6, 1000006, 5, 12].map((n) => expect.closeTo(n)));
-    expect(Array.from(packed.data.subarray(12, 60))).toEqual(Array.from(source.sh));
+    expect(Array.from(packed.sh)).toEqual(Array.from(source.sh));
+  });
+
+  it.each([0.000045, 128])("preserves covariance for scale %s through exponent normalization", (scale) => {
+    const source = gaussianSplatFixture();
+    source.scales.fill(scale);
+    const packed = packGaussianSplats(source);
+    const expected = source.scales[0] ** 2;
+    const covariance = covarianceFromTexture(packed.data);
+    for (const i of [0, 3, 5])
+      expect(Math.abs(covariance[i] / expected - 1)).toBeLessThan(0.001);
+    expect(packed.covariance).toBeUndefined();
+  });
+
+  it("retains float covariance for anisotropic splats and exact appearance when bytes lose precision", () => {
+    const source = gaussianSplatFixture();
+    source.scales.set([1, 0.000045, 128]);
+    source.opacities[0] = 0.001;
+    source.sh.set([4, -4, 0]);
+    const packed = packGaussianSplats(source);
+    expect(Array.from(packed.covariance!)).toEqual([1, 0, 0, source.scales[1] ** 2, 0, 16384].map((n) => expect.closeTo(n, 12)));
+    expect(packed.appearance).toEqual(new Float32Array([0.5 + 4 * 0.2820947917738781, 0.5 - 4 * 0.2820947917738781, 0.5, source.opacities[0]]));
+    expect(packed.data[7]).toBe(0x008000ff);
+    expect(packed.sh.length).toBe(0);
+  });
+
+  it("retains exactly the active SH bands including DC", () => {
+    for (let degree = 0; degree <= 3; degree++) {
+      const source = gaussianSplatFixture(2, degree);
+      source.sh.set(Array.from({ length: 96 }, (_, i) => i / 100));
+      const packed = packGaussianSplats(source);
+      const coefficients = degree > 0 ? (degree + 1) ** 2 * 3 : 0;
+      expect(Array.from(packed.sh)).toEqual([...source.sh.subarray(0, coefficients), ...source.sh.subarray(48, 48 + coefficients)]);
+    }
+  });
+
+  it("rejects invalid array lengths before entering WASM", () => {
+    const generate = vi.mocked(gaussianWasm.generateGaussianSplatTexture);
+    generate.mockClear();
+    for (const field of ["positions", "scales", "rotations", "opacities", "sh"] as const) {
+      const source = gaussianSplatFixture();
+      source[field] = new Float32Array(source[field].length - 1);
+      expect(() => packGaussianSplats(source)).toThrow(/array lengths/);
+    }
+    expect(generate).not.toHaveBeenCalled();
   });
 
   it("reads strided normalized data from an unaligned buffer and applies sparse values", () => {
@@ -100,6 +163,39 @@ describe("Gaussian splat data", () => {
     positions.delete(1);
     expect(() => sortGaussianSplats(request, positions)).toThrow(/stale/);
   });
+
+  it("sorts large negative depths without signed key overflow", () => {
+    const positions = new Map([[1, new Float32Array([0, 0, -600000, 0, 0, -700000, 0, 0, -100])]]);
+    const request = { perspective: false, tiles: [{ id: 1, count: 3, pages: [0], transform: [1,0,0,0, 0,1,0,0, 0,0,1,0] }] };
+    expect(Array.from(sortGaussianSplats(request, positions))).toEqual([1, 0, 0, 0, 2, 0]);
+  });
+
+  it("honors perspective viewDepth content and repeated tile occurrences", () => {
+    const positions = new Map([[1, new Float32Array([10, 0, 0, 0, 0, -4])]]);
+    const tile = { id: 1, count: 2, pages: [0], transform: [1,0,0,0, 0,1,0,0, 0,0,1,-2], sortingMethod: "viewDepth" as const };
+    expect(Array.from(sortGaussianSplats({ perspective: true, tiles: [tile] }, positions))).toEqual([1, 0, 0, 0]);
+    const repeated = { ...tile, pages: [2], transform: [1,0,0,0, 0,1,0,0, 0,0,1,-20] };
+    expect(Array.from(sortGaussianSplats({ perspective: true, tiles: [tile, repeated] }, positions))).toEqual([32769, 1, 32768, 1, 1, 0, 0, 0]);
+  });
+
+  it("maps the first splat after a page boundary to its own page", () => {
+    const positions = new Float32Array(16385 * 3);
+    for (let i = 0; i < 16385; i++)
+      positions[i * 3 + 2] = -1;
+    positions[2] = -3;
+    positions[16384 * 3 + 2] = -2;
+    const tile = { id: 1, count: 16385, pages: [3, 7], transform: [1,0,0,0, 0,1,0,0, 0,0,1,0] };
+    const sorted = sortGaussianSplats({ perspective: false, tiles: [tile] }, new Map([[1, positions]]));
+    expect(sorted.length).toBe(16385 * 2);
+    expect(Array.from(sorted.subarray(0, 6))).toEqual([49152, 0, 114688, 0, 49153, 0]);
+    expect(Array.from(sorted.subarray(-2))).toEqual([65535, 0]);
+  });
+  it("refines colliding normalized keys without reversing adjacent splats in a wide scene", () => {
+    const request = { perspective: false, tiles: [{ id: 1, pages: [0], count: 3, transform: [1,0,0,0,0,1,0,0,0,0,1,0] }] };
+    const positions = new Map([[1, new Float32Array([0,0,-700000, 0,0,-100, 0,0,-100.001])]]);
+    expect(Array.from(sortGaussianSplats(request, positions))).toEqual([0,0,2,0,1,0]);
+  });
+
 });
 
 describe("Gaussian splat worker", () => {
@@ -111,15 +207,14 @@ describe("Gaussian splat worker", () => {
     const result = await worker.decode({ spz: await gaussianSplatSpz(), count: 1, colorSpace: "srgb_rec709_display" });
     expect(result.count).toBe(1);
     expect(result.shDegree).toBe(1);
-    expect(result.data[3]).toBeCloseTo(128/255);
-    expect(result.data[4]).toBeCloseTo(1);
-    expect(result.data[7]).toBeCloseTo(1);
-    expect(result.data[9]).toBeCloseTo(1);
-    expect(result.data[12]).toBeCloseTo((140/255-0.5)/0.15);
-    expect(result.data[13]).toBeCloseTo((128/255-0.5)/0.15);
-    expect(result.data[14]).toBeCloseTo((116/255-0.5)/0.15);
+    expect(result.data.length).toBe(8);
+    expect(result.data[7] >>> 24).toBe(128);
+    expect(covarianceFromTexture(result.data)).toEqual([1, 0, 0, 1, 0, 1].map((n) => expect.closeTo(n)));
+    expect(result.sh[0]).toBeCloseTo((140/255-0.5)/0.15);
+    expect(result.sh[1]).toBeCloseTo((128/255-0.5)/0.15);
+    expect(result.sh[2]).toBeCloseTo((116/255-0.5)/0.15);
     expect(result.origin).toEqual([-1, 2, -3]);
-    expect(Array.from(result.data.subarray(15, 24))).toEqual(Array.from({ length: 9 }, (_, i) => expect.closeTo((i + 1)/128 * (i < 3 ? 1 : -1))));
+    expect(Array.from(result.sh.subarray(3, 12))).toEqual(Array.from({ length: 9 }, (_, i) => expect.closeTo((i + 1)/128 * (i < 3 ? 1 : -1))));
   });
 
   it("matches Cesium 1.146's decode of its official degree-three SPZ cube", async () => {
@@ -139,13 +234,14 @@ describe("Gaussian splat worker", () => {
     const native = await worker.decode(request);
     expect(native.count).toBe(27);
     expect(native.shDegree).toBe(3);
+    const positions = new Float32Array(native.data.buffer);
     for (let i = 0; i < native.count; i++) {
       for (let c = 0; c < 3; c++) {
-        expect(native.data[i * 60 + c] + native.origin[c]).toBeCloseTo(cesium.positions[i * 3 + c]);
-        expect(native.data[i * 60 + 12 + c] * 0.282 + 0.5).toBeCloseTo(cesium.colors[i * 3 + c], 4);
+        expect(positions[i * 8 + c] + native.origin[c]).toBeCloseTo(cesium.positions[i * 3 + c]);
+        expect(native.sh[i * 48 + c] * 0.282 + 0.5).toBeCloseTo(cesium.colors[i * 3 + c], 4);
       }
-      expect(native.data[i * 60 + 3]).toBeCloseTo(cesium.alphas[i]);
-      expect(Array.from(native.data.subarray(i * 60 + 15, i * 60 + 60))).toEqual(Array.from(cesium.sh.subarray(i * 45, i * 45 + 45)));
+      expect(native.appearance![i * 4 + 3]).toBeCloseTo(cesium.alphas[i]);
+      expect(Array.from(native.sh.subarray(i * 48 + 3, i * 48 + 48))).toEqual(Array.from(cesium.sh.subarray(i * 45, i * 45 + 45)));
     }
   });
 
@@ -162,7 +258,7 @@ describe("Gaussian splat worker", () => {
     const source = gaussianSplatFixture();
     const decoded = await worker.decode(source);
     expect(source.positions.byteLength).toBe(0);
-    expect(decoded.data[3]).toBeCloseTo(0.8);
+    expect(decoded.data[7] >>> 24).toBe(204);
     await worker.register(1, new Float32Array([0,0,0]));
     const request = { perspective: true, tiles: [{ id: 1, pages: [0], count: 1, transform: [1,0,0,0,0,1,0,0,0,0,1,-1] }] };
     expect(Array.from(await worker.sort(request))).toEqual([0,0]);
@@ -171,5 +267,82 @@ describe("Gaussian splat worker", () => {
     const pending = worker.sort(request);
     worker[Symbol.dispose]();
     await expect(pending).rejects.toThrow(/disposed/);
+  });
+});
+
+describe("Shared Gaussian decoder recovery", () => {
+  beforeEach(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterEach(async () => {
+    await IModelApp.shutdown();
+    vi.restoreAllMocks();
+  });
+
+  it.each(["error", "messageerror"])("replaces the decoder after %s without replaying transferred requests", async (eventType) => {
+    const posts = vi.spyOn(Worker.prototype, "postMessage");
+    const terminate = vi.spyOn(Worker.prototype, "terminate");
+    const listeners = IModelApp.onBeforeShutdown.numberOfListeners;
+    expect((await decodeGaussianSplats(gaussianSplatFixture())).count).toBe(1);
+    const failedWorker = posts.mock.contexts[0] as Worker;
+
+    // One request transfers immediately; the queued request still owns its buffers.
+    const sources = [gaussianSplatFixture(), gaussianSplatFixture()];
+    const pending = Promise.allSettled(sources.map(async (source) => decodeGaussianSplats(source)));
+    expect(sources.map((source) => source.positions.byteLength === 0)).toEqual([true, false]);
+    const fail = (worker: Worker) => worker.dispatchEvent(eventType === "error"
+      ? new ErrorEvent("error", { message: "decoder test failure", cancelable: true })
+      : new MessageEvent("messageerror"));
+    fail(failedWorker);
+    const results = await pending;
+    for (const result of results) {
+      expect(result.status).toBe("rejected");
+      if (result.status === "rejected")
+        expect(String(result.reason)).toContain(eventType === "error" ? "decoder test failure" : "invalid response");
+    }
+    expect(posts).toHaveBeenCalledTimes(2); // No retry of the detached inputs.
+    expect(terminate.mock.contexts).toEqual([failedWorker]);
+
+    const recovered = await Promise.all([decodeGaussianSplats(gaussianSplatFixture()), decodeGaussianSplats(gaussianSplatFixture())]);
+    expect(recovered.map((result) => result.count)).toEqual([1, 1]);
+    const replacement = posts.mock.contexts[2] as Worker;
+    expect(replacement).not.toBe(failedWorker);
+    expect(posts.mock.contexts[3]).toBe(replacement);
+    expect(IModelApp.onBeforeShutdown.numberOfListeners).toBe(listeners + 1);
+
+    // Further replacements still use one shutdown listener, which closes the latest worker.
+    fail(replacement);
+    expect((await decodeGaussianSplats(gaussianSplatFixture())).count).toBe(1);
+    const latest = posts.mock.contexts[4] as Worker;
+    expect(latest).not.toBe(replacement);
+    expect(IModelApp.onBeforeShutdown.numberOfListeners).toBe(listeners + 1);
+    await IModelApp.shutdown();
+    expect(terminate.mock.contexts).toEqual([failedWorker, replacement, latest]);
+
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    expect((await decodeGaussianSplats(gaussianSplatFixture())).count).toBe(1);
+    expect(posts.mock.contexts[5]).not.toBe(latest);
+  });
+
+  it("drains a burst whose combined packing peaks exceed the decoder budget", async () => {
+    using worker = new GaussianSplatWorker();
+    const posts = vi.spyOn(Worker.prototype, "postMessage");
+    const sources = Array.from({ length: 3 }, () => ({ spz: new Uint8Array([1, 2, 3]), count: 500000, colorSpace: "srgb_rec709_display" as const }));
+    const results = Promise.allSettled(sources.map(async (source) => worker.decode(source)));
+    expect(posts).toHaveBeenCalledTimes(1);
+    expect(sources.map((source) => source.spz.byteLength)).toEqual([0, 3, 3]);
+    expect(worker.bytesUsed).toBe(500000 * 544 + 6);
+    for (const result of await results) {
+      expect(result.status).toBe("rejected");
+      if (result.status === "rejected") expect(String(result.reason)).not.toContain("budget");
+    }
+    expect(posts).toHaveBeenCalledTimes(3);
+    expect(worker.isIdle).toBe(true);
+    expect((await worker.decode(gaussianSplatFixture())).count).toBe(1);
+  });
+
+  it("keeps the shared worker after a malformed payload", async () => {
+    const posts = vi.spyOn(Worker.prototype, "postMessage");
+    await expect(decodeGaussianSplats({ spz: new Uint8Array([1, 2, 3]), count: 1, colorSpace: "srgb_rec709_display" })).rejects.toThrow();
+    expect((await decodeGaussianSplats(gaussianSplatFixture())).count).toBe(1);
+    expect(posts.mock.contexts[1]).toBe(posts.mock.contexts[0]);
   });
 });

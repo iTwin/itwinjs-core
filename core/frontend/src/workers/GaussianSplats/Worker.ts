@@ -4,8 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { loadSpz } from "@spz-loader/core";
-import { GaussianSplatDecodeRequest, gaussianSplatError, packGaussianSplats } from "../../internal/render/GaussianSplatData";
-import { GaussianSplatSortRequest, sortGaussianSplats } from "../../internal/render/GaussianSplatSort";
+import { GaussianSplatDecodeRequest, gaussianSplatError } from "../../internal/render/GaussianSplatData";
+import { GaussianSplatSortRequest } from "../../internal/render/GaussianSplatSort";
+
+import { gaussianSplatWasmBytes } from "./Wasm";
+import { packGaussianSplats } from "./Packing";
+import { sortGaussianSplats } from "./Sorting";
 
 const positions = new Map<number, Float32Array>();
 
@@ -33,11 +37,11 @@ async function validateSpz(request: Extract<GaussianSplatDecodeRequest, { spz: U
   const count = view.getUint32(8, true), degree = header[12];
   const version = view.getUint32(4, true);
   const validVersion = version === 2 || (version === 3 && request.coordinateSystem === "UNSPECIFIED");
-  if (view.getUint32(0, true) !== 0x5053474e || !validVersion || count !== request.count || degree > 3 || header[13] > 24)
+  if (view.getUint32(0, true) !== 0x5053474e || !validVersion || count !== request.count || count > 2 * 1024 * 1024 || degree > 3 || header[13] > 24)
     gaussianSplatError("invalid SPZ header, count or SH degree");
 
   const estimatedBytes = count * (14 + ((degree + 1) ** 2 - 1) * 3) * 4 * 2;
-  if (estimatedBytes > 1.6 * 1024 ** 3)
+  if (estimatedBytes > 512 * 1024 ** 2 || count * (((degree + 1) ** 2 * 3) * 8 + 160) > 512 * 1024 ** 2)
     gaussianSplatError("SPZ tile exceeds the decoder memory limit; split it into smaller tiles");
 }
 
@@ -51,26 +55,26 @@ async function decode(request: GaussianSplatDecodeRequest) {
   if (cloud.numPoints !== request.count || cloud.shDegree < 0 || cloud.shDegree > 3)
     gaussianSplatError("invalid SPZ count or unsupported SH degree");
 
-  const sh = new Float32Array(cloud.numPoints * 48);
+  const sh = new Float32Array(cloud.numPoints * (cloud.shDegree + 1) ** 2 * 3);
   const higher = ((cloud.shDegree + 1) ** 2 - 1) * 3;
   if (cloud.colors.length !== cloud.numPoints * 3 || cloud.sh.length !== cloud.numPoints * higher)
     gaussianSplatError("invalid SPZ spherical harmonics");
 
   for (let i = 0; i < cloud.numPoints; i++) {
     for (let c = 0; c < 3; c++)
-      sh[i * 48 + c] = cloud.colors[i * 3 + c] - 0.5;
+      sh[i * (higher + 3) + c] = cloud.colors[i * 3 + c] - 0.5;
 
-    sh.set(cloud.sh.subarray(i * higher, (i + 1) * higher), i * 48 + 3);
+    sh.set(cloud.sh.subarray(i * higher, (i + 1) * higher), i * (higher + 3) + 3);
   }
 
   return packGaussianSplats({
     positions: cloud.positions, scales: cloud.scales, rotations: cloud.rotations, opacities: cloud.alphas,
-    sh, shDegree: cloud.shDegree, colorSpace: request.colorSpace, antialiased: cloud.antialiased,
+    sh, sortingMethod: request.coordinateSystem === "UNSPECIFIED" ? "viewDepth" : "cameraDistance", shDegree: cloud.shDegree, colorSpace: request.colorSpace, antialiased: cloud.antialiased,
   });
 }
 
 // Keep RPC local to this worker: errors, including failure to instantiate WASM, always settle the caller.
-self.onmessage = async (event: MessageEvent) => {
+async function handleMessage(event: MessageEvent): Promise<void> {
   const { id, operation, payload } = event.data;
   try {
     let result: unknown;
@@ -79,7 +83,9 @@ self.onmessage = async (event: MessageEvent) => {
       case "decode": {
         const decoded = await decode(payload);
         result = decoded;
-        transfer = [decoded.data.buffer];
+        transfer = [decoded.data.buffer, decoded.sh.buffer];
+        if (decoded.covariance) transfer.push(decoded.covariance.buffer);
+        if (decoded.appearance) transfer.push(decoded.appearance.buffer);
         break;
       }
       case "register":
@@ -99,8 +105,14 @@ self.onmessage = async (event: MessageEvent) => {
         gaussianSplatError("unknown worker operation");
     }
 
-    self.postMessage({ id, result }, { transfer });
+    self.postMessage({ id, result, wasmBytes: gaussianSplatWasmBytes() }, { transfer });
   } catch (error) {
-    self.postMessage({ id, error: error instanceof Error ? error.message : String(error) });
+    self.postMessage({ id, wasmBytes: gaussianSplatWasmBytes(), error: error instanceof Error ? error.message : String(error) });
   }
+}
+
+// Serialize codec work: simultaneous async SPZ decodes must not multiply cloud/packing peaks.
+let queue = Promise.resolve();
+self.onmessage = (event: MessageEvent) => {
+  queue = queue.then(async () => handleMessage(event));
 };

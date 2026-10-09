@@ -22,6 +22,8 @@ publish: false
 
 Enable the alpha `RenderSystem.Options.enableGaussianSplats` option at startup to display compatible Gaussian splat reality models with the native iTwin.js renderer. The preview loads `KHR_gaussian_splatting` and the established Cesium ion SPZ draft profile through the existing explicit 3D Tiles pipeline, with perspective/orthographic rendering, opaque BIM occlusion, clipping, and approximate model picking.
 
+The preview uses compact base storage, degree-aware spherical harmonics, and the embedded `@cesium/wasm-splats` worker kernels. Under memory pressure it automatically requests coarser native Gaussian tiles while retaining the completed field, then restores detail when capacity permits. Applications that previously forced a large tile-size modifier can reevaluate that setting. Ratified content keeps its camera-distance sorting contract; the established Cesium draft uses view depth. Deploy the rebuilt worker asset together with the frontend package. Individual tiles above 2,097,152 splats, or the bounded packing memory estimate, are rejected before decoding; split such content into smaller tiles.
+
 The option defaults to false. Existing applications require no migration. Applications enabling it must deploy `scripts/gaussian-splats-worker.js` with the frontend public assets. Splats provide no snapping or measurement geometry; implicit tiles, multiple contents, and interleaving with translucent BIM are outside the preview. See [Gaussian splats](../learning/display/GaussianSplats.md) for supported profiles, configuration, and limits.
 
 ## Backend

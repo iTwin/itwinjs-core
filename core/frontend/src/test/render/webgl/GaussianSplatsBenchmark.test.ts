@@ -31,20 +31,21 @@ describe.skipIf(!enabled)("Gaussian splat visible-content benchmark", () => {
       viewport.viewFlags = viewport.viewFlags.copy({ grid: false, acsTriad: false, lighting: false });
       viewport.renderFrame();
       const center = viewport.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 });
-      const data = new Float32Array(count * 60);
+      const data = new Uint32Array(count * 8);
+      const floats = new Float32Array(data.buffer);
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
         const x = (i % 1000) / 1000 - 0.5, y = (Math.floor(i / 1000) % 1000) / 1000 - 0.5;
         const z = ((i * 1664525 >>> 0) % 1000) / 1000 - 0.5;
-        data[i * 60] = x; data[i * 60 + 1] = y; data[i * 60 + 2] = z;
+        floats[i * 8] = x; floats[i * 8 + 1] = y; floats[i * 8 + 2] = z;
         positions.set([x,y,z], i * 3);
-        data[i * 60 + 3] = 0.2;
-        data[i * 60 + 4] = data[i * 60 + 7] = data[i * 60 + 9] = 0.000001;
-        data.set([1,0,-1], i * 60 + 12);
+        floats[i * 8 + 3] = -20;
+        data[i * 8 + 4] = 0x4432; data[i * 8 + 5] = 0x44320000; data[i * 8 + 6] = 0x44320000;
+        data[i * 8 + 7] = 0x333880c7;
       }
 
       const splats: GaussianSplatData = {
-        count, data, shDegree: 0, colorSpace: "srgb_rec709_display", origin: [center.x,center.y,center.z],
+        count, data, sh: new Float32Array(), shDegree: 0, colorSpace: "srgb_rec709_display", origin: [center.x,center.y,center.z],
         bounds: [center.x-0.51,center.y-0.51,center.z-0.51,center.x+0.51,center.y+0.51,center.z+0.51],
       };
       using worker = new GaussianSplatWorker();

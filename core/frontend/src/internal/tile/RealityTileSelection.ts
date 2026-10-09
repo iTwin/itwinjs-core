@@ -50,3 +50,38 @@ export function changeRealityTileSelection(target: RenderTarget, scene: Scene): 
 export function hasIncompleteRealityTileSelection(target: RenderTarget, tree: object): boolean {
   return selections.get(target)?.get(tree as TileTree) === false;
 }
+
+const gaussianDetail = new WeakMap<RenderTarget, WeakMap<object, number>>();
+
+/** Internal memory feedback affects only trees that supplied Gaussian content. @internal */
+export function gaussianTileDetailModifier(target: RenderTarget, tree: object): number {
+  return gaussianDetail.get(target)?.get(tree) ?? 1;
+}
+
+/** Request coarser native traversal while retaining the completed display. @internal */
+export function reduceGaussianTileDetail(target: RenderTarget, trees: Iterable<object>): boolean {
+  let modifiers = gaussianDetail.get(target);
+  if (!modifiers) { modifiers = new WeakMap(); gaussianDetail.set(target, modifiers); }
+  let changed = false;
+  for (const tree of trees) {
+    const previous = modifiers.get(tree) ?? 1;
+    const next = Math.min(64, previous * 2);
+    changed ||= next !== previous;
+    modifiers.set(tree, next);
+  }
+  return changed;
+}
+
+/** Restore requested detail gradually after sustained spare capacity. @internal */
+export function recoverGaussianTileDetail(target: RenderTarget, trees: Iterable<object>): boolean {
+  const modifiers = gaussianDetail.get(target);
+  let changed = false;
+  for (const tree of trees) {
+    const previous = modifiers?.get(tree) ?? 1;
+    if (previous > 1) {
+      modifiers?.set(tree, Math.max(1, previous / 2));
+      changed = true;
+    }
+  }
+  return changed;
+}
