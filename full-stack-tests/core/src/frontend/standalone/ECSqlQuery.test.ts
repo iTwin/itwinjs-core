@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "vitest";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: () => unknown) {
   if (cond()) {
     return it.skip(`${title} [${skipMsg}]`, callback);
   }
   return it(title, callback);
 }
-function skipIfWeb(title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+function skipIfWeb(title: string, callback: () => unknown) {
   return skipIf(() => ProcessDetector.isBrowserProcess, "skipping for browser", title, callback);
 }
 
@@ -26,7 +26,7 @@ describe("ECSql Query", () => {
   let imodel4: IModelConnection;
   let imodel5: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel1 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
@@ -35,7 +35,7 @@ describe("ECSql Query", () => {
     imodel5 = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel1?.close();
     await imodel2?.close();
     await imodel3?.close();
@@ -74,34 +74,34 @@ describe("ECSql Query", () => {
     }
     await Promise.all(queries);
     // We expect at least one query to be cancelled
-    assert.isAtLeast(cancelled, 1);
-    assert.isAtLeast(successful, 1);
-    assert.isAtLeast(rowCount, 1);
+    expect(cancelled).toBeGreaterThanOrEqual(1);
+    expect(successful).toBeGreaterThanOrEqual(1);
+    expect(rowCount).toBeGreaterThanOrEqual(1);
   });
 
   it("concurrent query use primary connection", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
     let props = await reader.getMetaData();
-    assert.equal(props.length, 11);
+    expect(props.length).toBe(11);
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 46);
+    expect(rows).toBe(46);
     props = await reader.getMetaData();
-    assert.equal(props.length, 11);
+    expect(props.length).toBe(11);
   });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
     let props = await reader.getMetaData();
-    assert.equal(props.length, 11);
+    expect(props.length).toBe(11);
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 46);
+    expect(rows).toBe(46);
     props = await reader.getMetaData();
-    assert.equal(props.length, 11);
+    expect(props.length).toBe(11);
   });
   it("concurrent query quota", async () => {
     let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
@@ -109,13 +109,13 @@ describe("ECSql Query", () => {
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 4);
+    expect(rows).toBe(4);
     reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
     rows = 0;
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 4);
+    expect(rows).toBe(4);
   });
   it("Paging Results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
@@ -141,9 +141,9 @@ describe("ECSql Query", () => {
 
     const rowCounts = pendingRowCount;
     const expected = [46, 62, 7, 7, 28];
-    assert.equal(rowCounts.length, expected.length);
+    expect(rowCounts.length).toBe(expected.length);
     for (let i = 0; i < expected.length; i++) {
-      assert.equal(rowCounts[i], expected[i]);
+      expect(rowCounts[i]).toBe(expected[i]);
     }
     // verify row per page
     for (const db of dbs) {
@@ -151,7 +151,7 @@ describe("ECSql Query", () => {
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
         const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray();
-        assert.equal(result.length, rowPerPage[k]);
+        expect(result.length).toBe(rowPerPage[k]);
       }
     }
 
@@ -162,17 +162,17 @@ describe("ECSql Query", () => {
       for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         resultSet.push(row);
-        assert.isTrue(Reflect.has(row, "id"));
+        expect(Reflect.has(row, "id")).toBe(true);
         if (Reflect.ownKeys(row).length > 1) {
-          assert.isTrue(Reflect.has(row, "parentId"));
+          expect(Reflect.has(row, "parentId")).toBe(true);
           const parentId: string = row.parentId;
-          assert.isTrue(parentId.startsWith("0x"));
+          expect(parentId.startsWith("0x")).toBe(true);
         }
         const id: string = row.id;
-        assert.isTrue(id.startsWith("0x"));
+        expect(id.startsWith("0x")).toBe(true);
       }
       const entry = dbs.indexOf(db);
-      assert.equal(rowCounts[entry], resultSet.length);
+      expect(rowCounts[entry]).toBe(resultSet.length);
     }
   });
 });

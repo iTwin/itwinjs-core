@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
@@ -44,13 +44,13 @@ describe("Viewport changed events", async () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     testBim = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     testImodel = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (undefined !== testBim)
       await testBim.close();
 
@@ -338,11 +338,11 @@ describe("Viewport changed events", async () => {
 
     using mon = new ViewportChangedHandler(vp);
     // changeModelDisplay is no-op for 2d views
-    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
-    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
+    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).toBe(false));
+    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).toBe(false));
     const viewedModels = new Set<string>();
     viewedModels.add(id64(0x27));
-    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
+    mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).toBe(false));
 
     // Switching to a different 2d view of the same model should not produce model-changed event
     const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
@@ -483,22 +483,22 @@ describe("Viewport changed events", async () => {
     const vis = vp.perModelCategoryVisibility;
 
     using mon = new ViewportChangedHandler(vp);
-    expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+    expect(vis.getOverride("0x1c", "0x1234")).toBe(PerModelCategoryVisibility.Override.None);
 
     // No net change => no event
     mon.expect(ChangeFlag.None, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
-    expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+    expect(vis.getOverride("0x1c", "0x1234")).toBe(PerModelCategoryVisibility.Override.None);
 
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
-    expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Show);
+    expect(vis.getOverride("0x1c", "0x1234")).toBe(PerModelCategoryVisibility.Override.Show);
 
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
-    expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Hide);
+    expect(vis.getOverride("0x1c", "0x1234")).toBe(PerModelCategoryVisibility.Override.Hide);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides("0x9876"));
 
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides());
-    expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+    expect(vis.getOverride("0x1c", "0x1234")).toBe(PerModelCategoryVisibility.Override.None);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides());
 
@@ -518,7 +518,7 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
     for (const modelId of modelIdList)
       for (const catId of catIdList)
-        expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
+        expect(vis.getOverride(modelId, catId)).toBe(PerModelCategoryVisibility.Override.Show);
 
     // No net change
     mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
@@ -526,16 +526,16 @@ describe("Viewport changed events", async () => {
     modelIdList.shift(); // remove "0x1"
     catIdList.shift(); // remove "0xa"
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
-    expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-    expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
-    expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-    expect(vis.getOverride("0x2", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
-    expect(vis.getOverride("0x3", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-    expect(vis.getOverride("0x3", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
+    expect(vis.getOverride("0x1", "0xa")).toBe(PerModelCategoryVisibility.Override.Show);
+    expect(vis.getOverride("0x1", "0xb")).toBe(PerModelCategoryVisibility.Override.Show);
+    expect(vis.getOverride("0x2", "0xa")).toBe(PerModelCategoryVisibility.Override.Show);
+    expect(vis.getOverride("0x2", "0xb")).toBe(PerModelCategoryVisibility.Override.Hide);
+    expect(vis.getOverride("0x3", "0xa")).toBe(PerModelCategoryVisibility.Override.Show);
+    expect(vis.getOverride("0x3", "0xb")).toBe(PerModelCategoryVisibility.Override.Hide);
 
     mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides(["0x1"]));
-    expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.None);
-    expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.None);
+    expect(vis.getOverride("0x1", "0xa")).toBe(PerModelCategoryVisibility.Override.None);
+    expect(vis.getOverride("0x1", "0xb")).toBe(PerModelCategoryVisibility.Override.None);
   });
 
   it("should be dispatched when feature override provider changes", async () => {
@@ -543,7 +543,7 @@ describe("Viewport changed events", async () => {
     let overridesAdded = false;
     const provider = {
       addFeatureOverrides: (_overrides: FeatureSymbology.Overrides, _viewport: Viewport): void => {
-        expect(overridesAdded).to.be.false;
+        expect(overridesAdded).toBe(false);
         overridesAdded = true;
       },
     };
@@ -551,26 +551,26 @@ describe("Viewport changed events", async () => {
     using mon = new ViewportChangedHandler(vp);
     // Changing the provider => event
     mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.addFeatureOverrideProvider(provider));
-    expect(overridesAdded).to.be.true;
+    expect(overridesAdded).toBe(true);
     overridesAdded = false;
 
     // Explicitly notifying provider's state has changed => event
     mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.setFeatureOverrideProviderChanged());
-    expect(overridesAdded).to.be.true;
+    expect(overridesAdded).toBe(true);
     overridesAdded = false;
 
     // Setting provider to same value => no event
     mon.expect(ChangeFlag.None, undefined, () => vp.addFeatureOverrideProvider(provider));
-    expect(overridesAdded).to.be.false;
+    expect(overridesAdded).toBe(false);
 
     // Actually changing the provider => event
     mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => {
       const prov = vp.findFeatureOverrideProvider((_) => true);
-      expect(prov).not.to.be.undefined;
+      expect(prov).not.toBeUndefined();
       if (prov)
         vp.dropFeatureOverrideProvider(prov);
     });
-    expect(overridesAdded).to.be.false;
+    expect(overridesAdded).toBe(false);
   });
 
   it("should be dispatched when changing ViewState", async () => {
@@ -608,15 +608,15 @@ describe("Viewport changed events", async () => {
 
     // Same ViewState reference => no event
     changeView(vp, vp.view);
-    expect(numEvents).to.equal(0);
+    expect(numEvents).toBe(0);
 
     // Different ViewState reference => event
     changeView(vp, view2d20.clone());
-    expect(numEvents).to.equal(1);
+    expect(numEvents).toBe(1);
 
     // Different ViewState reference to an logically identical ViewState => event
     changeView(vp, view2d20);
-    expect(numEvents).to.equal(2);
+    expect(numEvents).toBe(2);
 
     removeListener();
   });
@@ -660,17 +660,17 @@ describe("Viewport changed events", async () => {
 
     vp.renderFrame();
     vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
+    expect(vp.renderPlanValid).toBe(true);
+    expect(vp2.renderPlanValid).toBe(true);
 
     vp.viewFlags = vp.viewFlags.with("transparency", !vp.viewFlags.transparency);
-    expect(vp.renderPlanValid).to.be.false;
-    expect(vp2.renderPlanValid).to.be.false;
+    expect(vp.renderPlanValid).toBe(false);
+    expect(vp2.renderPlanValid).toBe(false);
 
     vp.renderFrame();
     vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
+    expect(vp.renderPlanValid).toBe(true);
+    expect(vp2.renderPlanValid).toBe(true);
 
     vp2[Symbol.dispose]();
     document.body.removeChild(div2);
@@ -683,15 +683,15 @@ describe("Viewport changed events", async () => {
 
     // View 0x17 views category 0x07 - expect subcategories already loaded by ViewState.load()
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x17)));
-    expect(vp.view.viewsCategory(id64(0x07))).to.be.true;
-    expect(subcats.getSubCategories(id64(0x07))).not.to.be.undefined;
+    expect(vp.view.viewsCategory(id64(0x07))).toBe(true);
+    expect(subcats.getSubCategories(id64(0x07))).not.toBeUndefined();
 
     // Other categories not yet viewed therefore subcategories not yet loaded
-    expect(vp.view.viewsCategory(id64(0x01))).to.be.false;
-    expect(vp.view.viewsCategory(id64(0x03))).to.be.false;
-    expect(vp.view.viewsCategory(id64(0x05))).to.be.false;
-    expect(vp.view.viewsCategory(id64(0x1a))).to.be.false;
-    expect(vp.view.viewsCategory(id64(0x1c))).to.be.false;
+    expect(vp.view.viewsCategory(id64(0x01))).toBe(false);
+    expect(vp.view.viewsCategory(id64(0x03))).toBe(false);
+    expect(vp.view.viewsCategory(id64(0x05))).toBe(false);
+    expect(vp.view.viewsCategory(id64(0x1a))).toBe(false);
+    expect(vp.view.viewsCategory(id64(0x1c))).toBe(false);
 
     // Wait for requested categories to reach the cache and for any queued subcategory work to drain.
     // The implementation guarantees eventual loading, but not that multiple categories become visible
@@ -699,7 +699,7 @@ describe("Viewport changed events", async () => {
     const waitForSubCats = async (catIds: Id64Arg): Promise<void> => {
       const expectedCount = Id64.sizeOf(catIds);
       for (const catId of Id64.iterable(catIds))
-        expect(subcats.getSubCategories(catId)).to.be.undefined;
+        expect(subcats.getSubCategories(catId)).toBeUndefined();
 
       let numLoaded = 0;
 
@@ -719,11 +719,11 @@ describe("Viewport changed events", async () => {
         await BeDuration.wait(50);
       }
 
-      expect(vp.subcategories.isEmpty).to.be.true;
-      expect(numLoaded).to.equal(expectedCount);
+      expect(vp.subcategories.isEmpty).toBe(true);
+      expect(numLoaded).toBe(expectedCount);
 
       for (const catId of Id64.iterable(catIds))
-        expect(subcats.getSubCategories(catId)).not.to.be.undefined;
+        expect(subcats.getSubCategories(catId)).not.toBeUndefined();
     };
 
     // Turning on another category for the first time causes subcategories to be asynchronously loaded if not in cache

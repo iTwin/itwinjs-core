@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
@@ -73,12 +73,12 @@ class MockTree extends TileTree {
 describe("TileTreeSupplier", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -110,11 +110,11 @@ describe("TileTreeSupplier", () => {
 
     const ecefTree = (await ecefOwner.loadTree())!;
     const nonEcefTree = (await nonEcefOwner.loadTree())!;
-    expect(ecefTree).not.to.be.undefined;
-    expect(nonEcefTree).not.to.be.undefined;
+    expect(ecefTree).not.toBeUndefined();
+    expect(nonEcefTree).not.toBeUndefined();
 
-    expect(ecefTree.isDisposed).to.be.false;
-    expect(nonEcefTree.isDisposed).to.be.false;
+    expect(ecefTree.isDisposed).toBe(false);
+    expect(nonEcefTree.isDisposed).toBe(false);
 
     imodel.setEcefLocation({
       origin: [0, 0, 0],
@@ -125,19 +125,19 @@ describe("TileTreeSupplier", () => {
       },
     });
 
-    expect(ecefTree.isDisposed).to.be.true;
-    expect(nonEcefTree.isDisposed).to.be.false;
+    expect(ecefTree.isDisposed).toBe(true);
+    expect(nonEcefTree.isDisposed).toBe(false);
 
     const ecefTree2 = (await ecefOwner.loadTree())!;
     const nonEcefTree2 = (await nonEcefOwner.loadTree())!;
-    expect(ecefTree2).not.to.be.undefined;
-    expect(nonEcefTree2).not.to.be.undefined;
+    expect(ecefTree2).not.toBeUndefined();
+    expect(nonEcefTree2).not.toBeUndefined();
 
-    expect(ecefTree2.isDisposed).to.be.false;
-    expect(nonEcefTree2.isDisposed).to.be.false;
+    expect(ecefTree2.isDisposed).toBe(false);
+    expect(nonEcefTree2.isDisposed).toBe(false);
 
-    expect(ecefTree2).not.to.equal(ecefTree);
-    expect(nonEcefTree2).to.equal(nonEcefTree);
+    expect(ecefTree2).not.toBe(ecefTree);
+    expect(nonEcefTree2).toBe(nonEcefTree);
   });
 });
 
@@ -146,13 +146,13 @@ describe("requestTileTreeProps", () => {
   let imodel2: IModelConnection | undefined;
   const maxActiveTileTreePropsRequests = 2;
 
-  before(async () => {
+  beforeAll(async () => {
     const tileAdmin = { maxActiveTileTreePropsRequests };
     await TestUtility.startFrontend({ tileAdmin });
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     overrideRequestTileTreeProps(undefined);
 
     if (imodel)
@@ -187,9 +187,9 @@ describe("requestTileTreeProps", () => {
       promises.push(makePromise(id));
 
     await Promise.all(promises);
-    expect(processed.length).to.equal(numRequests);
+    expect(processed.length).toBe(numRequests);
     for (let i = 0; i < numRequests; i++)
-      expect(processed[i]).to.equal(i);
+      expect(processed[i]).toBe(i);
 
     overrideRequestTileTreeProps(undefined);
   });
@@ -207,8 +207,8 @@ describe("requestTileTreeProps", () => {
 
     const promises = [getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c")];
     await Promise.all(promises);
-    expect(fulfilled.length).to.equal(3);
-    expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
+    expect(fulfilled.length).toBe(3);
+    expect(fulfilled.every((x) => x === "0x1c")).toBe(true);
   });
 
   it("should throttle requests", async () => {
@@ -219,12 +219,12 @@ describe("requestTileTreeProps", () => {
 
       const numRemaining = numRequests - index;
       const expectedNumActive = Math.min(maxActiveTileTreePropsRequests, numRemaining);
-      expect(stats.numActiveTileTreePropsRequests).to.equal(expectedNumActive);
+      expect(stats.numActiveTileTreePropsRequests).toBe(expectedNumActive);
 
       const expectedNumPending = numRemaining - expectedNumActive;
 
       // ###TODO The following occasionally fails with 'expected 1 to equal 0'.
-      expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
+      expect(stats.numPendingTileTreePropsRequests).toBe(expectedNumPending);
     };
 
     const promises = [];
@@ -251,16 +251,16 @@ describe("requestTileTreeProps", () => {
     await imodel.close();
 
     const results = await Promise.all(promises);
-    expect(results.length).to.equal(numRequests);
+    expect(results.length).toBe(numRequests);
 
     for (let i = 0; i < numRequests; i++) {
       const result = results[i];
       if (i < maxActiveTileTreePropsRequests) {
         // ###TODO the following occassionally fails with "expected 'object' to equal 'number'"
-        expect(typeof result).to.equal("number");
-        expect(result).to.equal(i);
+        expect(typeof result).toBe("number");
+        expect(result).toBe(i);
       } else {
-        expect(result).instanceof(ServerTimeoutError);
+        expect(result).toBeInstanceOf(ServerTimeoutError);
       }
     }
 

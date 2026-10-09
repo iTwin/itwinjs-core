@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, TileAdmin } from "@itwin/core-frontend";
 import { ThreeDTileFormatInterpreter } from "@itwin/core-frontend/lib/cjs/internal/tile/ThreeDTileFormatInterpreter";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { EcefLocation, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
@@ -32,7 +32,7 @@ describe("RealityDataAccess (#integration)", () => {
     baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
   };
   let realityDataAccess: RealityDataAccessClient;
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     realityDataAccess = new RealityDataAccessClient(realityDataClientOptions);
     const options = TestUtility.iModelAppOptions;
@@ -49,7 +49,7 @@ describe("RealityDataAccess (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -175,8 +175,8 @@ describe("RealityDataAccess (#integration)", () => {
       if (isSupportedType(rd.type)){
         const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
-        expect(rdSource).not.undefined;
-        expect(rdSource?.isContextShare).to.be.true;
+        expect(rdSource).not.toBeUndefined();
+        expect(rdSource?.isContextShare).toBe(true);
       }
     }
   });
@@ -188,12 +188,12 @@ describe("RealityDataAccess (#integration)", () => {
       if (isSupportedDisplayType(rd.type)){
         const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
-        expect(rdSource).not.undefined;
-        expect(rdSource?.isContextShare).to.be.true;
+        expect(rdSource).not.toBeUndefined();
+        expect(rdSource?.isContextShare).toBe(true);
         const pInfo = await rdSource?.getPublisherProductInfo();
         // We expect to be able to return this info for all 3dTile, but it may contain empty string
         if (keyFromInput.format === RealityDataFormat.ThreeDTile)
-          expect(pInfo).not.undefined;
+          expect(pInfo).not.toBeUndefined();
       }
     }
   });
@@ -205,13 +205,13 @@ describe("RealityDataAccess (#integration)", () => {
       if (isSupportedDisplayType(rd.type)){
         const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
-        expect(rdSource).not.undefined;
-        expect(rdSource?.isContextShare).to.be.true;
+        expect(rdSource).not.toBeUndefined();
+        expect(rdSource?.isContextShare).toBe(true);
         // We expect to be able to return this info for all 3dTile
         if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
           const rootDocument = await rdSource.getRootDocument(undefined);
           const fileInfo = ThreeDTileFormatInterpreter.getFileInfo(rootDocument);
-          expect(fileInfo).not.undefined;
+          expect(fileInfo).not.toBeUndefined();
         }
       }
     }
@@ -224,10 +224,10 @@ describe("RealityDataAccess (#integration)", () => {
       if (isSupportedDisplayType(rd.type)){
         const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
-        expect(rdSource).not.undefined;
-        expect(rdSource?.isContextShare).to.be.true;
+        expect(rdSource).not.toBeUndefined();
+        expect(rdSource?.isContextShare).toBe(true);
         const spatialLocation = await rdSource?.getSpatialLocationAndExtents();
-        expect(spatialLocation).not.undefined;
+        expect(spatialLocation).not.toBeUndefined();
         if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
           // special check to ensure that position are computed the same way as in other Bentley product
           // using the transform matrix in the reality data 3dTile root file that is used to set ECEFLocation
@@ -238,35 +238,35 @@ describe("RealityDataAccess (#integration)", () => {
           const worldToEcefTransformComputed = ecefLocation?.getTransform();
           // when defined and not identity, the computed transform should be almost equal to rd transform
           if (worldToEcefTransformInput && !worldToEcefTransformInput.isIdentity)
-            expect(worldToEcefTransformInput.isAlmostEqual(worldToEcefTransformComputed));
+            expect(worldToEcefTransformInput.isAlmostEqual(worldToEcefTransformComputed)).toBe(true);
         }
       }
     }
   });
 
   it("should get RealityDataSource for reality data attachment in iModel", async () => {
-    assert.isTrue(imodel !== undefined);
+    expect(imodel !== undefined).toBe(true);
     const modelRealityDataInfos = await getAttachedRealityDataModelInfoSet(imodel);
-    expect(modelRealityDataInfos.size).to.equal(3);
+    expect(modelRealityDataInfos.size).toBe(3);
     for (const entry of modelRealityDataInfos) {
       const rdSource = await RealityDataSource.fromKey(entry.key, iTwinId);
-      expect(rdSource).not.undefined;
-      expect(rdSource?.isContextShare).to.be.true;
+      expect(rdSource).not.toBeUndefined();
+      expect(rdSource?.isContextShare).toBe(true);
     }
   });
 
   it("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
-    assert.isTrue(imodel !== undefined);
+    expect(imodel !== undefined).toBe(true);
     const rdSourceKey = getOSMBuildingsKey();
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iTwinId);
     // NOTE: This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file;
     const cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
-    assert.isDefined(cesiumIonKey, "This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file");
+    expect(cesiumIonKey).toBeDefined();
     if (cesiumIonKey !== undefined) {
-      expect(rdSource).not.undefined;
-      expect(rdSource?.isContextShare).to.be.false;
+      expect(rdSource).not.toBeUndefined();
+      expect(rdSource?.isContextShare).toBe(false);
     } else {
-      expect(rdSource).to.be.undefined;
+      expect(rdSource).toBeUndefined();
     }
   });
 });

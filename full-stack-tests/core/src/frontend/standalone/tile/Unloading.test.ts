@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
@@ -27,12 +27,12 @@ describe("Tile unloading", async () => {
     useLargerTiles: false,
   };
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({ tileAdmin: tileOpts });
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -42,7 +42,7 @@ describe("Tile unloading", async () => {
   function getTileTree(vp: Viewport): TileTree {
     const trees = new DisclosedTileTreeSet();
     vp.discloseTileTrees(trees);
-    expect(trees.size).to.equal(1);
+    expect(trees.size).toBe(1);
     let tree: TileTree | undefined;
     for (const t of trees)
       tree = t;
@@ -65,35 +65,35 @@ describe("Tile unloading", async () => {
 
     const marker = new TileUsageMarker();
     const admin = IModelApp.tileAdmin;
-    expect(admin.isTileInUse(marker)).to.be.false;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.true;
+    expect(admin.isTileInUse(marker)).toBe(false);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(true);
 
     marker.mark(vp1, now);
-    expect(admin.isTileInUse(marker)).to.be.true;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.false;
+    expect(admin.isTileInUse(marker)).toBe(true);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(false);
 
     admin.clearUsageForUser(vp1);
-    expect(admin.isTileInUse(marker)).to.be.false;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.true;
+    expect(admin.isTileInUse(marker)).toBe(false);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(true);
 
     marker.mark(vp1, now);
     marker.mark(vp2, now);
-    expect(admin.isTileInUse(marker)).to.be.true;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.false;
+    expect(admin.isTileInUse(marker)).toBe(true);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(false);
 
     admin.clearUsageForUser(vp1);
-    expect(admin.isTileInUse(marker)).to.be.true;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.false;
+    expect(admin.isTileInUse(marker)).toBe(true);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(false);
 
     admin.clearUsageForUser(vp2);
-    expect(admin.isTileInUse(marker)).to.be.false;
-    expect(marker.isExpired(now)).to.be.false;
-    expect(marker.isExpired(later)).to.be.true;
+    expect(admin.isTileInUse(marker)).toBe(false);
+    expect(marker.isExpired(now)).toBe(false);
+    expect(marker.isExpired(later)).toBe(true);
   });
 
   it("should not dispose of displayed tiles", async () => {
@@ -102,30 +102,30 @@ describe("Tile unloading", async () => {
 
       const tree = getTileTree(vp) as IModelTileTree;
       tree.debugMaxDepth = 1;
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
 
       vp.invalidateScene();
       await vp.waitForAllTilesToRender();
 
       const expectLoadedChildren = () => {
         let children = tree.rootTile.children!;
-        expect(children).not.to.be.undefined;
-        expect(children.length).to.equal(1);
+        expect(children).not.toBeUndefined();
+        expect(children.length).toBe(1);
 
         children = children[0].children!;
-        expect(children).not.to.be.undefined;
-        expect(children.length).to.equal(8);
+        expect(children).not.toBeUndefined();
+        expect(children.length).toBe(8);
         for (const child of children)
-          expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+          expect(child.loadStatus).toBe(TileLoadStatus.Ready);
 
-        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).toBe(false);
       };
 
       expectLoadedChildren();
 
       await waitForExpiration(vp);
 
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
       expectLoadedChildren();
     });
   });
@@ -135,11 +135,11 @@ describe("Tile unloading", async () => {
       await vp.waitForAllTilesToRender();
 
       const tree = getTileTree(vp);
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
 
       await waitForExpiration(vp);
 
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
     });
   });
 
@@ -148,13 +148,13 @@ describe("Tile unloading", async () => {
       await vp.waitForAllTilesToRender();
 
       const tree = getTileTree(vp);
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
 
       vp.changeViewedModels([]);
 
       await waitForExpiration(vp);
 
-      expect(tree.isDisposed).to.be.true;
+      expect(tree.isDisposed).toBe(true);
     });
   });
 
@@ -163,7 +163,7 @@ describe("Tile unloading", async () => {
       // vp1 loads+renders all tiles, then sits idle.
       await vp1.waitForAllTilesToRender();
       const tree = getTileTree(vp1);
-      expect(tree.isDisposed).to.be.false;
+      expect(tree.isDisposed).toBe(false);
 
       // vp2 renders continuously.
       await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
@@ -174,8 +174,8 @@ describe("Tile unloading", async () => {
         await waitForExpiration(vp2);
 
         // vp2 no longers views this tile tree, but vp1 still does.
-        expect(tree.isDisposed).to.be.false;
-        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+        expect(tree.isDisposed).toBe(false);
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).toBe(false);
       });
     });
   });
@@ -198,16 +198,16 @@ describe("Tile unloading", async () => {
 
         const expectLoadedChildren = () => {
           let children = tree.rootTile.children!;
-          expect(children).not.to.be.undefined;
-          expect(children.length).to.equal(1);
+          expect(children).not.toBeUndefined();
+          expect(children.length).toBe(1);
 
           children = children[0].children!;
-          expect(children).not.to.be.undefined;
-          expect(children.length).to.equal(8);
+          expect(children).not.toBeUndefined();
+          expect(children.length).toBe(8);
           for (const child of children)
-            expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+            expect(child.loadStatus).toBe(TileLoadStatus.Ready);
 
-          expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+          expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).toBe(false);
         };
 
         expectLoadedChildren();
@@ -241,7 +241,7 @@ describe("Tile unloading", async () => {
 
   function getSelectedTiles(vp: Viewport): Tile[] {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)!;
-    expect(tiles).not.to.be.undefined;
+    expect(tiles).not.toBeUndefined();
     return Array.from(tiles.selected);
   }
 
@@ -250,16 +250,16 @@ describe("Tile unloading", async () => {
       await vp.waitForAllTilesToRender();
 
       const selectedTiles = getSelectedTiles(vp);
-      expect(selectedTiles.length).greaterThan(0);
+      expect(selectedTiles.length).toBeGreaterThan(0);
 
       // Unload content for all parents.
       const parents = collectLoadedParents(selectedTiles);
-      expect(parents.size).greaterThan(0);
+      expect(parents.size).toBeGreaterThan(0);
       for (const parent of parents) {
-        expect(parent.isReady).to.be.true;
+        expect(parent.isReady).toBe(true);
         parent.disposeContents();
-        expect(parent.isReady).to.be.false;
-        expect(parent.hasGraphics).to.be.false;
+        expect(parent.isReady).toBe(false);
+        expect(parent.hasGraphics).toBe(false);
       }
 
       // Recreate the scene.
@@ -268,13 +268,13 @@ describe("Tile unloading", async () => {
 
       // Confirm we selected same tiles without reloading parent tiles' content.
       const reselectedTiles = getSelectedTiles(vp);
-      expect(reselectedTiles.length).to.equal(selectedTiles.length);
+      expect(reselectedTiles.length).toBe(selectedTiles.length);
       for (let i = 0; i < reselectedTiles.length; i++)
-        expect(reselectedTiles[i].contentId).to.equal(selectedTiles[i].contentId);
+        expect(reselectedTiles[i].contentId).toBe(selectedTiles[i].contentId);
 
       for (const parent of parents) {
-        expect(parent.hasGraphics).to.be.false;
-        expect(parent.isReady).to.be.false;
+        expect(parent.hasGraphics).toBe(false);
+        expect(parent.isReady).toBe(false);
       }
     });
   });

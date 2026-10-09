@@ -6,7 +6,7 @@
  * @module ECSqlExpr
  */
 
-import { assert } from "chai";
+import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
   AssignmentExpr,
@@ -83,12 +83,12 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       printTree(child, indent);
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     conn = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await conn.close();
     await TestUtility.shutdownFrontend();
   });
@@ -101,8 +101,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse DATE, TIME & TIMESTAMP", async () => {
@@ -121,8 +121,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse NULL, NUMBER, STRING, TRUE, FALSE & ||", async () => {
@@ -153,8 +153,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse (!=, =, >, <, >=, <=, OR, AND)", async () => {
@@ -165,8 +165,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CASE-WHEN-THEN", async () => {
@@ -177,8 +177,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] LIKE", async () => {
@@ -198,8 +198,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] IN(select|list)", async () => {
@@ -219,8 +219,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse IS [NOT] NULL", async () => {
@@ -239,8 +239,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse IS [NOT] (type[,...])", async () => {
@@ -255,8 +255,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse (NOT expr)", async () => {
@@ -271,8 +271,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] EXISTS (<subquery>)", async () => {
@@ -287,8 +287,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])", async () => {
@@ -315,8 +315,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT DISTINCT|ALL/SUM(DISTINCT|ALL <expr>) ", async () => {
@@ -347,8 +347,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse func(args...)", async () => {
@@ -359,8 +359,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ECSQLOPTIONS", async () => {
@@ -371,8 +371,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse Subquery", async () => {
@@ -383,8 +383,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse LIMIT <expr> [OFFSET <expr>]", async () => {
@@ -399,8 +399,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse GROUP BY [expr...] HAVING [expr...]", async () => {
@@ -415,8 +415,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ORDER BY [expr...]", async () => {
@@ -431,8 +431,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CTE", async () => {
@@ -455,8 +455,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   // experimental feature cannot be set from frontend as of now.
@@ -480,8 +480,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ?, :<param-name>", async () => {
@@ -496,8 +496,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> JOIN <to> USING rel [FORWARD|BACKWARD]", async () => {
@@ -516,8 +516,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> [INNER] [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -532,8 +532,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> RIGHT [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -548,8 +548,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> FULL [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -564,8 +564,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse UNION | UNION ALL | INTERSECT | EXCEPT", async () => {
@@ -589,8 +589,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT (<subquery>) FROM", async () => {
@@ -610,8 +610,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ALL | ONLY <classname>", async () => {
@@ -639,8 +639,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse tablevalue function FROM json1.json_tree()", async () => {
@@ -655,8 +655,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT, WHERE, FROM, GROUP BY, HAVING, ORDER BY, LIMIT & ECSQLOPTIONS", async () => {
@@ -667,8 +667,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   // require read/write connection from frontend.
@@ -680,8 +680,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   // require read/write connection from frontend.
@@ -693,8 +693,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   // require read/write connection from frontend.
@@ -706,8 +706,8 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.orignalECSql));
+      expect(test.expectedECSql).toBe(await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse complex query", async () => {
@@ -838,7 +838,7 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
         ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3
      */
     const expected = "WITH RECURSIVE [f0]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [f0] WHERE ([i] < 10) ORDER BY 1), [f1]([i]) AS (SELECT 3.14159265358), [f2]([i]) AS (SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [i]), [f3]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] FORWARD), [f4]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] BACKWARD), [f5]([i]) AS (SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId]) WHERE ([ECClassDef].[ECInstanceId] = :param1)) SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45)) [c0], TIMESTAMP '2013-02-09T12:00:00' [c1], DATE '2012-01-18' [c2], TIME '13:35:16' [c3], TRUE [c4], FALSE [c5], 3.14159265358 [c6], 314159 [c7], 'Hello, World' [c8], (('Hello' || ',') || 'World') [c9], IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [c10], CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END [c11], IIF('Hello, World' LIKE '\\%World' ESCAPE '\\', 2, 3) [c12], IIF('Hello, World' LIKE '%World', 2, 3) [c13], IIF('Hello, World' NOT LIKE '%World', 2, 3) [c14], IIF(3 IN (SELECT 1 [N] UNION SELECT 2), 'True', 'False') [c15], IIF(3 IN (1, 2, 3), 'True', 'False') [c16], IIF(3 NOT IN (1, 2, 3), 'True', 'False') [c17], IIF((NULL IS NULL), 'True', 'False') [c18], IIF((NULL IS NOT NULL), 'True', 'False') [c19], IIF((1 IS NOT NULL), 'True', 'False') [c20], IIF(3 IS (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c21], IIF(3 IS NOT (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c22], IIF((NOT 3), 'True', 'False') [c23], IIF((NOT (NOT (NOT (NOT 3)))), 'True', 'False') [c24], IIF(EXISTS(SELECT 1), 'True', 'False') [c25], IIF((NOT EXISTS(SELECT 1)), 'True', 'False') [c26], CAST(1 AS TEXT) [c27], CAST(1 AS INTEGER) [c28], CAST(1 AS REAL) [c29], CAST(1 AS BLOB) [c30], CAST(1 AS TIMESTAMP) [c31], INSTR('First', 'Second') [c32], [f0].[i] [c33], [f1].[i] [c34], [f2].[i] [c35], [k0].[ECInstanceId] [c36] FROM [f0], [f1], [f2], [f3], [f4], [f5], [ECDbMeta].[ECClassDef] [k0], (SELECT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION SELECT DISTINCT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION ALL SELECT ALL [ECInstanceId] FROM [ECDbMeta].[ECClassDef] EXCEPT SELECT SUM(DISTINCT [ECInstanceId]) FROM [ECDbMeta].[ECClassDef] INTERSECT SELECT SUM([ECInstanceId]) FROM [ECDbMeta].[ECClassDef] GROUP BY [ECClassId] HAVING (COUNT(*) > 1)) [k1] WHERE (([f0].[i] = [f1].[i]) AND ([k0].[ECInstanceId] = (? + 2))) GROUP BY [k0].[ECClassId], [k0].[DisplayLabel] HAVING (COUNT(*) > 1) ORDER BY [k0].[Name] ASC, [k0].[ECInstanceId] DESC LIMIT 33 OFFSET (? + :param2) ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3";
-    assert.equal(expected, await toNormalizeECSql(ecsql));
+    expect(expected).toBe(await toNormalizeECSql(ecsql));
   });
   describe("test methods", () => {
     it("test Expr.findInstancesOf<T>()", async () => {
@@ -860,16 +860,16 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
               new LiteralExpr(LiteralValueType.Raw, "1")))),
       );
       const expected = "SELECT ALL [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = 1)";
-      assert.equal(stmt.toECSql(), expected);
-      assert.equal(stmt.findInstancesOf<SelectExpr>(SelectExpr).length, 1);
-      assert.equal(stmt.findInstancesOf<SelectionClauseExpr>(SelectionClauseExpr).length, 1);
-      assert.equal(stmt.findInstancesOf<DerivedPropertyExpr>(DerivedPropertyExpr).length, 2);
-      assert.equal(stmt.findInstancesOf<PropertyNameExpr>(PropertyNameExpr).length, 3);
-      assert.equal(stmt.findInstancesOf<WhereClauseExp>(WhereClauseExp).length, 1);
-      assert.equal(stmt.findInstancesOf<BinaryBooleanExpr>(BinaryBooleanExpr).length, 1);
-      assert.equal(stmt.findInstancesOf<LiteralExpr>(LiteralExpr).length, 1);
-      assert.equal(stmt.findInstancesOf<ClassNameExpr>(ClassNameExpr).length, 1);
-      assert.equal(stmt.findInstancesOf<FromClauseExpr>(FromClauseExpr).length, 1);
+      expect(stmt.toECSql()).toBe(expected);
+      expect(stmt.findInstancesOf<SelectExpr>(SelectExpr).length).toBe(1);
+      expect(stmt.findInstancesOf<SelectionClauseExpr>(SelectionClauseExpr).length).toBe(1);
+      expect(stmt.findInstancesOf<DerivedPropertyExpr>(DerivedPropertyExpr).length).toBe(2);
+      expect(stmt.findInstancesOf<PropertyNameExpr>(PropertyNameExpr).length).toBe(3);
+      expect(stmt.findInstancesOf<WhereClauseExp>(WhereClauseExp).length).toBe(1);
+      expect(stmt.findInstancesOf<BinaryBooleanExpr>(BinaryBooleanExpr).length).toBe(1);
+      expect(stmt.findInstancesOf<LiteralExpr>(LiteralExpr).length).toBe(1);
+      expect(stmt.findInstancesOf<ClassNameExpr>(ClassNameExpr).length).toBe(1);
+      expect(stmt.findInstancesOf<FromClauseExpr>(FromClauseExpr).length).toBe(1);
     });
     it("test Expr.traverse()", async () => {
       const stmt = new SelectStatementExpr(
@@ -890,71 +890,71 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
               new ParameterExpr()))),
       );
       const expected = "SELECT [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = ?)";
-      assert.equal(stmt.toECSql(), expected);
+      expect(stmt.toECSql()).toBe(expected);
       const exprs: Expr[] = [];
       stmt.traverse((expr) => {
         exprs.push(expr);
       });
-      assert.equal(exprs[0].expType, ExprType.SelectStatement);
-      assert.equal(exprs[1].expType, ExprType.Select);
-      assert.equal(exprs[2].expType, ExprType.SelectionClause);
-      assert.equal(exprs[3].expType, ExprType.DerivedProperty);
-      assert.equal(exprs[4].expType, ExprType.PropertyName);
-      assert.equal(exprs[5].expType, ExprType.DerivedProperty);
-      assert.equal(exprs[6].expType, ExprType.PropertyName);
-      assert.equal(exprs[7].expType, ExprType.FromClause);
-      assert.equal(exprs[8].expType, ExprType.ClassName);
-      assert.equal(exprs[9].expType, ExprType.WhereClause);
-      assert.equal(exprs[10].expType, ExprType.BinaryBoolean);
-      assert.equal(exprs[11].expType, ExprType.PropertyName);
-      assert.equal(exprs[12].expType, ExprType.Parameter);
-      assert.equal(exprs.length, 13);
+      expect(exprs[0].expType).toBe(ExprType.SelectStatement);
+      expect(exprs[1].expType).toBe(ExprType.Select);
+      expect(exprs[2].expType).toBe(ExprType.SelectionClause);
+      expect(exprs[3].expType).toBe(ExprType.DerivedProperty);
+      expect(exprs[4].expType).toBe(ExprType.PropertyName);
+      expect(exprs[5].expType).toBe(ExprType.DerivedProperty);
+      expect(exprs[6].expType).toBe(ExprType.PropertyName);
+      expect(exprs[7].expType).toBe(ExprType.FromClause);
+      expect(exprs[8].expType).toBe(ExprType.ClassName);
+      expect(exprs[9].expType).toBe(ExprType.WhereClause);
+      expect(exprs[10].expType).toBe(ExprType.BinaryBoolean);
+      expect(exprs[11].expType).toBe(ExprType.PropertyName);
+      expect(exprs[12].expType).toBe(ExprType.Parameter);
+      expect(exprs.length).toBe(13);
     });
     it("test Expr.type", async () => {
-      assert.equal(ExprType.Assignment, AssignmentExpr.type);
-      assert.equal(ExprType.Between, BetweenExpr.type);
-      assert.equal(ExprType.BinaryBoolean, BinaryBooleanExpr.type);
-      assert.equal(ExprType.BinaryValue, BinaryValueExpr.type);
-      assert.equal(ExprType.Cast, CastExpr.type);
-      assert.equal(ExprType.ClassName, ClassNameExpr.type);
-      assert.equal(ExprType.Cte, CteExpr.type);
-      assert.equal(ExprType.CteBlock, CteBlockExpr.type);
-      assert.equal(ExprType.CteBlockRef, CteBlockRefExpr.type);
-      assert.equal(ExprType.DeleteStatement, DeleteStatementExpr.type);
-      assert.equal(ExprType.DerivedProperty, DerivedPropertyExpr.type);
-      assert.equal(ExprType.ECSqlOptionsClause, ECSqlOptionsClauseExpr.type);
-      assert.equal(ExprType.FromClause, FromClauseExpr.type);
-      assert.equal(ExprType.FuncCall, FuncCallExpr.type);
-      assert.equal(ExprType.GroupByClause, GroupByClauseExpr.type);
-      assert.equal(ExprType.HavingClause, HavingClauseExpr.type);
-      assert.equal(ExprType.IIF, IIFExpr.type);
-      assert.equal(ExprType.In, InExpr.type);
-      assert.equal(ExprType.InsertStatement, InsertStatementExpr.type);
-      assert.equal(ExprType.IsNull, IsNullExpr.type);
-      assert.equal(ExprType.IsOfType, IsOfTypeExpr.type);
-      assert.equal(ExprType.Like, LikeExpr.type);
-      assert.equal(ExprType.LimitClause, LimitClauseExpr.type);
-      assert.equal(ExprType.Literal, LiteralExpr.type);
-      assert.equal(ExprType.MemberFuncCall, MemberFuncCallExpr.type);
-      assert.equal(ExprType.Not, NotExpr.type);
-      assert.equal(ExprType.OrderByClause, OrderByClauseExpr.type);
-      assert.equal(ExprType.OrderBySpec, OrderBySpecExpr.type);
-      assert.equal(ExprType.Parameter, ParameterExpr.type);
-      assert.equal(ExprType.PropertyName, PropertyNameExpr.type);
-      assert.equal(ExprType.QualifiedJoin, QualifiedJoinExpr.type);
-      assert.equal(ExprType.SearchCase, SearchCaseExpr.type);
-      assert.equal(ExprType.Select, SelectExpr.type);
-      assert.equal(ExprType.SelectionClause, SelectionClauseExpr.type);
-      assert.equal(ExprType.SelectStatement, SelectStatementExpr.type);
-      assert.equal(ExprType.SetClause, SetClauseExpr.type);
-      assert.equal(ExprType.Subquery, SubqueryExpr.type);
-      assert.equal(ExprType.SubqueryRef, SubqueryRefExpr.type);
-      assert.equal(ExprType.SubqueryTest, SubqueryTestExpr.type);
-      assert.equal(ExprType.TableValuedFunc, TableValuedFuncExpr.type);
-      assert.equal(ExprType.Unary, UnaryValueExpr.type);
-      assert.equal(ExprType.UpdateStatement, UpdateStatementExpr.type);
-      assert.equal(ExprType.UsingRelationshipJoin, UsingRelationshipJoinExpr.type);
-      assert.equal(ExprType.WhereClause, WhereClauseExp.type);
+      expect(ExprType.Assignment).toBe(AssignmentExpr.type);
+      expect(ExprType.Between).toBe(BetweenExpr.type);
+      expect(ExprType.BinaryBoolean).toBe(BinaryBooleanExpr.type);
+      expect(ExprType.BinaryValue).toBe(BinaryValueExpr.type);
+      expect(ExprType.Cast).toBe(CastExpr.type);
+      expect(ExprType.ClassName).toBe(ClassNameExpr.type);
+      expect(ExprType.Cte).toBe(CteExpr.type);
+      expect(ExprType.CteBlock).toBe(CteBlockExpr.type);
+      expect(ExprType.CteBlockRef).toBe(CteBlockRefExpr.type);
+      expect(ExprType.DeleteStatement).toBe(DeleteStatementExpr.type);
+      expect(ExprType.DerivedProperty).toBe(DerivedPropertyExpr.type);
+      expect(ExprType.ECSqlOptionsClause).toBe(ECSqlOptionsClauseExpr.type);
+      expect(ExprType.FromClause).toBe(FromClauseExpr.type);
+      expect(ExprType.FuncCall).toBe(FuncCallExpr.type);
+      expect(ExprType.GroupByClause).toBe(GroupByClauseExpr.type);
+      expect(ExprType.HavingClause).toBe(HavingClauseExpr.type);
+      expect(ExprType.IIF).toBe(IIFExpr.type);
+      expect(ExprType.In).toBe(InExpr.type);
+      expect(ExprType.InsertStatement).toBe(InsertStatementExpr.type);
+      expect(ExprType.IsNull).toBe(IsNullExpr.type);
+      expect(ExprType.IsOfType).toBe(IsOfTypeExpr.type);
+      expect(ExprType.Like).toBe(LikeExpr.type);
+      expect(ExprType.LimitClause).toBe(LimitClauseExpr.type);
+      expect(ExprType.Literal).toBe(LiteralExpr.type);
+      expect(ExprType.MemberFuncCall).toBe(MemberFuncCallExpr.type);
+      expect(ExprType.Not).toBe(NotExpr.type);
+      expect(ExprType.OrderByClause).toBe(OrderByClauseExpr.type);
+      expect(ExprType.OrderBySpec).toBe(OrderBySpecExpr.type);
+      expect(ExprType.Parameter).toBe(ParameterExpr.type);
+      expect(ExprType.PropertyName).toBe(PropertyNameExpr.type);
+      expect(ExprType.QualifiedJoin).toBe(QualifiedJoinExpr.type);
+      expect(ExprType.SearchCase).toBe(SearchCaseExpr.type);
+      expect(ExprType.Select).toBe(SelectExpr.type);
+      expect(ExprType.SelectionClause).toBe(SelectionClauseExpr.type);
+      expect(ExprType.SelectStatement).toBe(SelectStatementExpr.type);
+      expect(ExprType.SetClause).toBe(SetClauseExpr.type);
+      expect(ExprType.Subquery).toBe(SubqueryExpr.type);
+      expect(ExprType.SubqueryRef).toBe(SubqueryRefExpr.type);
+      expect(ExprType.SubqueryTest).toBe(SubqueryTestExpr.type);
+      expect(ExprType.TableValuedFunc).toBe(TableValuedFuncExpr.type);
+      expect(ExprType.Unary).toBe(UnaryValueExpr.type);
+      expect(ExprType.UpdateStatement).toBe(UpdateStatementExpr.type);
+      expect(ExprType.UsingRelationshipJoin).toBe(UsingRelationshipJoinExpr.type);
+      expect(ExprType.WhereClause).toBe(WhereClauseExp.type);
     });
     it.skip("test print tree", async () => {
       const ecsql = "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
@@ -963,34 +963,34 @@ describeChrome("ECSql Abstract Syntax Tree", () => {
 
     });
     it("test ClassNameExpr.fromECSql()", async () => {
-      assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+all Bis:Element").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+only Bis.Element").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+only Bis:Element").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + all  Bis.Element ").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + all  Bis:Element ").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element ").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element ").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" all  Bis.Element ").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" all  Bis:Element ").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" only  Bis.Element ").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" only  Bis:Element ").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("all Bis.Element").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("all Bis:Element").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("only Bis.Element").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("only Bis:Element").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("Bis:Element").toECSql(), "[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("Bis.Element").toECSql(), "[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("[Bis]:[Element]").toECSql(), "[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("[Bis].[Element]").toECSql(), "[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("tbl.Bis:Element").toECSql(), "[tbl].[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("tbl.Bis.Element").toECSql(), "[tbl].[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("[tbl].[Bis]:[Element]").toECSql(), "[tbl].[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("[tbl]:[Bis].[Element]").toECSql(), "[tbl].[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element as el").toECSql(), "+ONLY [Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element  el ").toECSql(), "+ONLY [Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis.Element as el").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis:Element  el ").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
+      expect(ClassNameExpr.fromECSql("+all Bis.Element").toECSql()).toBe("+ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("+all Bis:Element").toECSql()).toBe("+ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("+only Bis.Element").toECSql()).toBe("+ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("+only Bis:Element").toECSql()).toBe("+ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" + all  Bis.Element ").toECSql()).toBe("+ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" + all  Bis:Element ").toECSql()).toBe("+ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" + only  Bis.Element ").toECSql()).toBe("+ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" + only  Bis:Element ").toECSql()).toBe("+ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" all  Bis.Element ").toECSql()).toBe("ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" all  Bis:Element ").toECSql()).toBe("ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" only  Bis.Element ").toECSql()).toBe("ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" only  Bis:Element ").toECSql()).toBe("ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("all Bis.Element").toECSql()).toBe("ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("all Bis:Element").toECSql()).toBe("ALL [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("only Bis.Element").toECSql()).toBe("ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("only Bis:Element").toECSql()).toBe("ONLY [Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("Bis:Element").toECSql()).toBe("[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("Bis.Element").toECSql()).toBe("[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("[Bis]:[Element]").toECSql()).toBe("[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("[Bis].[Element]").toECSql()).toBe("[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("tbl.Bis:Element").toECSql()).toBe("[tbl].[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("tbl.Bis.Element").toECSql()).toBe("[tbl].[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("[tbl].[Bis]:[Element]").toECSql()).toBe("[tbl].[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql("[tbl]:[Bis].[Element]").toECSql()).toBe("[tbl].[Bis].[Element]");
+      expect(ClassNameExpr.fromECSql(" + only  Bis.Element as el").toECSql()).toBe("+ONLY [Bis].[Element] [el]");
+      expect(ClassNameExpr.fromECSql(" + only  Bis:Element  el ").toECSql()).toBe("+ONLY [Bis].[Element] [el]");
+      expect(ClassNameExpr.fromECSql(" + only  tbl:Bis.Element as el").toECSql()).toBe("+ONLY [tbl].[Bis].[Element] [el]");
+      expect(ClassNameExpr.fromECSql(" + only  tbl:Bis:Element  el ").toECSql()).toBe("+ONLY [tbl].[Bis].[Element] [el]");
     });
   });
 });

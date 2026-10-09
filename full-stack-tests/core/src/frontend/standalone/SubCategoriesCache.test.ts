@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -28,12 +28,12 @@ describeChrome("SubCategoriesCache", () => {
   describe("read-only", () => {
     let imodel: IModelConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, true);
       imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     });
 
-    after(async () => {
+    afterAll(async () => {
       if (undefined !== imodel)
         await imodel.close();
 
@@ -48,17 +48,17 @@ describeChrome("SubCategoriesCache", () => {
       // Request the categories and await the result
       const subcats = new SubCategoriesCache(imodel);
       const req1 = subcats.load(catIds);
-      expect(req1).not.to.be.undefined;
-      expect(req1!.missingCategoryIds.size).to.equal(catIds.size);
+      expect(req1).not.toBeUndefined();
+      expect(req1!.missingCategoryIds.size).toBe(catIds.size);
       for (const catId of catIds)
-        expect(req1!.missingCategoryIds.has(catId)).to.be.true;
+        expect(req1!.missingCategoryIds.has(catId)).toBe(true);
 
       const res1 = await req1!.promise;
-      expect(res1).to.be.true; // indicates all info loaded
+      expect(res1).toBe(true); // indicates all info loaded
 
       // Request the same categories again - should be a no-op as they are already loaded.
       const req2 = subcats.load(catIds);
-      expect(req2).to.be.undefined;
+      expect(req2).toBeUndefined();
 
       // Now request some "categories" using Ids that do not identify category elements
       catIds.clear();
@@ -67,23 +67,23 @@ describeChrome("SubCategoriesCache", () => {
       catIds.add("lalala"); // is an invalid Id64String
 
       const req3 = subcats.load(catIds);
-      expect(req3).not.to.be.undefined;
-      expect(req3!.missingCategoryIds.size).to.equal(catIds.size);
+      expect(req3).not.toBeUndefined();
+      expect(req3!.missingCategoryIds.size).toBe(catIds.size);
       for (const catId of catIds)
-        expect(req3!.missingCategoryIds.has(catId)).to.be.true;
+        expect(req3!.missingCategoryIds.has(catId)).toBe(true);
 
       const res3 = await req3!.promise;
-      expect(res3).to.be.true;
+      expect(res3).toBe(true);
 
       // Repeat the request - should be a no-op - we should cache the result even if the query returned no subcategory info
       const req4 = subcats.load(catIds);
-      expect(req4).to.be.undefined;
+      expect(req4).toBeUndefined();
     });
 
     function expectEqualIdSets(idSet: Id64Set, ids: Id64Arg): void {
-      expect(idSet.size).to.equal(Id64.sizeOf(ids));
+      expect(idSet.size).toBe(Id64.sizeOf(ids));
       for (const id of Id64.iterable(ids))
-        expect(idSet.has(id)).to.be.true;
+        expect(idSet.has(id)).toBe(true);
     }
 
     class Queue extends SubCategoriesCache.Queue {
@@ -100,20 +100,20 @@ describeChrome("SubCategoriesCache", () => {
       }
 
       public expectMembers(current: boolean, next: boolean, request: boolean, disposed = false): void {
-        expect(this.current !== undefined).to.equal(current);
-        expect(this.next !== undefined).to.equal(next);
-        expect(this.request !== undefined).to.equal(request);
-        expect(this.disposed).to.equal(disposed);
+        expect(this.current !== undefined).toBe(current);
+        expect(this.next !== undefined).toBe(next);
+        expect(this.request !== undefined).toBe(request);
+        expect(this.disposed).toBe(disposed);
       }
 
       public expectNotLoaded(catIds: Id64Arg): void {
         for (const catId of Id64.iterable(catIds))
-          expect(this.cache.getSubCategories(catId)).to.be.undefined;
+          expect(this.cache.getSubCategories(catId)).toBeUndefined();
       }
 
       public expectLoaded(catId: Id64String, subcatIds: Id64Arg): void {
         const subcats = this.cache.getSubCategories(catId);
-        expect(subcats).not.to.be.undefined;
+        expect(subcats).not.toBeUndefined();
         expectEqualIdSets(subcats!, subcatIds);
       }
 
@@ -129,12 +129,12 @@ describeChrome("SubCategoriesCache", () => {
 
       public expectEmpty(disposed = false): void {
         this.expectMembers(false, false, false, disposed);
-        expect(this.isEmpty).to.be.true;
+        expect(this.isEmpty).toBe(true);
       }
 
       public expectFull(): void {
         this.expectMembers(true, true, true);
-        expect(this.isEmpty).to.be.false;
+        expect(this.isEmpty).toBe(false);
       }
     }
 
@@ -151,8 +151,8 @@ describeChrome("SubCategoriesCache", () => {
       let proc = 0;
       q.q(new Set<string>(), () => ++proc);
 
-      expect(proc).to.equal(1);
-      expect(q.request).to.be.undefined;
+      expect(proc).toBe(1);
+      expect(q.request).toBeUndefined();
 
       q.expectEmpty();
     });
@@ -187,8 +187,8 @@ describeChrome("SubCategoriesCache", () => {
       q.expectLoaded("0x17", "0x18");
       q.expectEmpty();
 
-      expect(processedFirst).to.equal(1);
-      expect(processedSecond).to.equal(1);
+      expect(processedFirst).toBe(1);
+      expect(processedSecond).toBe(1);
     });
 
     it("should process consecutive requests asynchronously", async () => {
@@ -199,7 +199,7 @@ describeChrome("SubCategoriesCache", () => {
 
       // becomes current
       q.q("0x17", () => {
-        expect(lastProcessed++).to.equal(0);
+        expect(lastProcessed++).toBe(0);
 
         // Only the first request has been processed so far.
         q.expectLoaded("0x17", "0x18");
@@ -208,7 +208,7 @@ describeChrome("SubCategoriesCache", () => {
 
       // becomes next
       q.q("0x2f", () => {
-        expect(lastProcessed++).to.equal(1);
+        expect(lastProcessed++).toBe(1);
 
         // The second and third requests were processed together
         q.expectLoaded("0x2f", ["0x30", "0x33"]);
@@ -217,7 +217,7 @@ describeChrome("SubCategoriesCache", () => {
 
       // categories are merged with next; function is appended to next
       q.q("0x2d", () => {
-        expect(lastProcessed++).to.equal(2);
+        expect(lastProcessed++).toBe(2);
       });
 
       q.expectFull();
@@ -232,33 +232,33 @@ describeChrome("SubCategoriesCache", () => {
 
       // Requesting already-loaded categories should be processed immediately
       q.q(["0x17", "0x2f", "0x2d"], () => {
-        expect(lastProcessed++).to.equal(3);
+        expect(lastProcessed++).toBe(3);
       });
 
       q.expectEmpty();
-      expect(lastProcessed).to.equal(4);
+      expect(lastProcessed).toBe(4);
 
       // Requesting same 3 categories individually also processes immediately, in order.
       lastProcessed = 0;
       q.q("0x17", () => {
-        expect(lastProcessed++).to.equal(0);
+        expect(lastProcessed++).toBe(0);
       });
       q.q("0x2f", () => {
-        expect(lastProcessed++).to.equal(1);
+        expect(lastProcessed++).toBe(1);
       });
       q.q("0x2d", () => {
-        expect(lastProcessed++).to.equal(2);
+        expect(lastProcessed++).toBe(2);
       });
 
       q.expectEmpty();
-      expect(lastProcessed).to.equal(3);
+      expect(lastProcessed).toBe(3);
     });
 
     it("should process loaded categories immediately, then unloaded categories asynchronously", async () => {
       const q = new Queue(imodel);
 
       const load = q.cache.load("0x17");
-      expect(load).not.to.be.undefined;
+      expect(load).not.toBeUndefined();
       await load!.promise;
 
       q.expectLoaded("0x17", "0x18");
@@ -266,21 +266,21 @@ describeChrome("SubCategoriesCache", () => {
       // Request a loaded category, then an unloaded category.
       let lastProcessed = 0;
       q.q("0x17", () => {
-        expect(lastProcessed++).to.equal(0);
+        expect(lastProcessed++).toBe(0);
         q.expectNotLoaded("0x2d");
       });
 
       q.q("0x2d", () => {
-        expect(lastProcessed++).to.equal(1);
+        expect(lastProcessed++).toBe(1);
         q.expectLoaded("0x2d", "0x2e");
       });
 
       q.expectMembers(true, false, true);
-      expect(lastProcessed).to.equal(1);
+      expect(lastProcessed).toBe(1);
       q.expectNotLoaded("0x2d");
 
       await q.waitUntilEmpty();
-      expect(lastProcessed).to.equal(2);
+      expect(lastProcessed).toBe(2);
       q.expectLoaded("0x2d", "0x2e");
     });
 
@@ -291,7 +291,7 @@ describeChrome("SubCategoriesCache", () => {
       let processed = false;
       q.q("0x17", () => processed = true);
 
-      expect(q.request).not.to.be.undefined;
+      expect(q.request).not.toBeUndefined();
       const promise = q.request!.promise;
       let promiseFulfilled = false;
 
@@ -304,8 +304,8 @@ describeChrome("SubCategoriesCache", () => {
 
       // The promise will fulfill. The results will be added to the cache, but our processing function will not execute.
       await promise;
-      expect(promiseFulfilled).to.be.true;
-      expect(processed).to.be.false;
+      expect(promiseFulfilled).toBe(true);
+      expect(processed).toBe(false);
       q.expectNotLoaded("0x17");
     });
 
@@ -322,7 +322,7 @@ describeChrome("SubCategoriesCache", () => {
       q[Symbol.dispose]();
       q.q("0x17", () => processed = true);
       q.expectEmpty(true);
-      expect(processed).to.be.false;
+      expect(processed).toBe(false);
     });
 
     it("should not process pending asynchronous requests after disposal", async () => {
@@ -333,7 +333,7 @@ describeChrome("SubCategoriesCache", () => {
       q.q("0x2d", () => processedPending = true);
 
       await q.waitUntilEmpty();
-      expect(processedPending).to.be.false;
+      expect(processedPending).toBe(false);
       q.expectLoaded("0x17", "0x18");
       q.expectNotLoaded("0x2d");
     });
@@ -351,7 +351,7 @@ describeChrome("SubCategoriesCache", () => {
       await q.waitUntilEmpty();
 
       // Should not process second request after disposal.
-      expect(processedPending).to.be.false;
+      expect(processedPending).toBe(false);
       q.expectLoaded("0x17", "0x18");
     });
 
@@ -368,7 +368,7 @@ describeChrome("SubCategoriesCache", () => {
     let dictId: Id64String;
     let pullChanges: () => Id64String[];
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
 
@@ -396,14 +396,14 @@ describeChrome("SubCategoriesCache", () => {
       };
     });
 
-    after(async () => {
+    afterAll(async () => {
       await bc.close();
       await TestUtility.shutdownFrontend();
     });
 
     function expectChanges(changedElementIds: Id64String[]): void {
       const actual = pullChanges();
-      expect(actual).to.deep.equal(changedElementIds);
+      expect(actual).toEqual(changedElementIds);
     }
 
     async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
@@ -421,7 +421,7 @@ describeChrome("SubCategoriesCache", () => {
 
     function getDefaultSubCategoryId(categoryId: string): string {
       const parts = Id64.getUint32Pair(categoryId);
-      expect(parts.upper).to.equal(0);
+      expect(parts.upper).toBe(0);
       parts.lower += 1;
       return Id64.fromUint32PairObject(parts);
     }
@@ -429,19 +429,19 @@ describeChrome("SubCategoriesCache", () => {
     function expectCachedSubCategories(categoryId: Id64String, expectedSubCategories: Id64String[] | undefined): void {
       const actual = bc.subcategories.getSubCategories(categoryId);
       if (!expectedSubCategories) {
-        expect(actual).to.be.undefined;
+        expect(actual).toBeUndefined();
       } else {
-        expect(actual).not.to.be.undefined;
-        expect(Array.from(actual!)).to.deep.equal(expectedSubCategories);
+        expect(actual).not.toBeUndefined();
+        expect(Array.from(actual!)).toEqual(expectedSubCategories);
       }
     }
 
     function expectAppearance(subCatId: string, expected: ColorDef | undefined): void {
       const app = bc.subcategories.getSubCategoryAppearance(subCatId);
       if (undefined === expected) {
-        expect(app).to.be.undefined;
+        expect(app).toBeUndefined();
       } else {
-        expect(app?.color?.toJSON()).to.equal(expected.toJSON());
+        expect(app?.color?.toJSON()).toBe(expected.toJSON());
       }
     }
 
@@ -453,7 +453,7 @@ describeChrome("SubCategoriesCache", () => {
       expectAppearance(subcat, undefined);
 
       const req = bc.subcategories.load(cat);
-      expect(req?.promise).not.to.be.undefined;
+      expect(req?.promise).not.toBeUndefined();
       await req?.promise;
       expectCachedSubCategories(cat, [subcat]);
       expectAppearance(subcat, ColorDef.blue);

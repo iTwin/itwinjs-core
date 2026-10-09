@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
   Atmosphere, AuthorizationClient, BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode,
@@ -32,13 +32,13 @@ describe("DisplayStyle", () => {
     getAccessToken: async () => { return userToken; },
   };
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({ authorizationClient }, true);
     azuriteUsers = await TestRpcInterface.getClient().startViewStore();
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -49,7 +49,7 @@ describe("DisplayStyle", () => {
   it("should clone correctly", () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
     const style2 = style1.clone(imodel);
-    expect(JSON.stringify(style1)).to.equal(JSON.stringify(style2));
+    expect(JSON.stringify(style1)).toBe(JSON.stringify(style2));
 
     // ###TODO More substantial tests (change style properties)
   });
@@ -59,32 +59,32 @@ describe("DisplayStyle", () => {
 
     // bad token should be unauthorized
     userToken = "bad guy";
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejects.toThrow("unauthorized");
 
     // valid readonly token should fail too
     userToken = azuriteUsers.readOnly;
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejects.toThrow("unauthorized");
 
     // should save correctly with valid readwrite token
     userToken = azuriteUsers.readWrite;
     const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
-    expect(id).equal("@1");
+    expect(id).toBe("@1");
 
     userToken = azuriteUsers.readOnly;
     const style2 = await imodel.views.viewsStoreReader.getDisplayStyle({ id });
-    expect(style2.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
+    expect(style2.jsonProperties?.styles).toEqual(style1.settings.toJSON());
   });
 
   it("should preserve sun direction", async () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
-    expect(style1.sunDirection).not.to.be.undefined;
+    expect(style1.sunDirection).not.toBeUndefined();
 
     style1.setSunTime(Date.now());
-    expect(style1.sunDirection).not.to.be.undefined;
+    expect(style1.sunDirection).not.toBeUndefined();
 
     const style2 = style1.clone(imodel);
-    expect(style2.sunDirection).not.to.be.undefined;
-    expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).to.be.true;
+    expect(style2.sunDirection).not.toBeUndefined();
+    expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).toBe(true);
   });
 
   it("should read sun direction from json", () => {
@@ -93,24 +93,24 @@ describe("DisplayStyle", () => {
     props.jsonProperties = { styles: { sceneLights: { sunDir } } };
 
     const style = new DisplayStyle3dState(props, imodel);
-    expect(style.sunDirection).not.to.be.undefined;
-    expect(style.sunDirection.x).to.equal(sunDir.x);
-    expect(style.sunDirection.y).to.equal(sunDir.y);
-    expect(style.sunDirection.z).to.equal(sunDir.z);
+    expect(style.sunDirection).not.toBeUndefined();
+    expect(style.sunDirection.x).toBe(sunDir.x);
+    expect(style.sunDirection.y).toBe(sunDir.y);
+    expect(style.sunDirection.z).toBe(sunDir.z);
   });
 
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
-    expect(style.settings.thematic.range.low).to.equal(1);
-    expect(style.settings.thematic.range.high).to.equal(100);
+    expect(style.settings.thematic.range.low).toBe(1);
+    expect(style.settings.thematic.range.high).toBe(100);
 
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height } });
-    expect(style.settings.thematic.range.low).to.equal(imodel.projectExtents.zLow);
-    expect(style.settings.thematic.range.high).to.equal(imodel.projectExtents.zHigh);
+    expect(style.settings.thematic.range.low).toBe(imodel.projectExtents.zLow);
+    expect(style.settings.thematic.range.high).toBe(imodel.projectExtents.zHigh);
 
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Slope } });
-    expect(style.settings.thematic.range.isNull).to.be.true;
+    expect(style.settings.thematic.range.isNull).toBe(true);
   });
 
   it("should override selected settings", async () => {
@@ -122,11 +122,11 @@ describe("DisplayStyle", () => {
 
       const expected = { ...overrides, changed };
       for (const key of Object.keys(expected) as Array<keyof DisplayStyle3dSettingsProps>)
-        expect(output[key]).to.deep.equal(expected[key]);
+        expect(output[key]).toEqual(expected[key]);
 
       for (const key of Object.keys(output) as Array<keyof DisplayStyle3dSettingsProps>)
         if (undefined === expected[key])
-          expect(output[key]).to.deep.equal(originalSettings[key]);
+          expect(output[key]).toEqual(originalSettings[key]);
 
       if (undefined !== expected.contextRealityModels)
         compareRealityModels(style, expected);
@@ -139,41 +139,41 @@ describe("DisplayStyle", () => {
       const models: ContextRealityModelState[] = [];
       style3d.forEachRealityModel((model) => models.push(model));
       if (undefined !== expected.contextRealityModels) {
-        expect(models.length).to.equal(expected.contextRealityModels.length);
+        expect(models.length).toBe(expected.contextRealityModels.length);
         for (let i = 0; i < models.length; i++) {
           const a = models[i];
           const e = expected.contextRealityModels[i];
-          expect(a.name).to.equal(e.name);
-          expect(a.url).to.equal(e.tilesetUrl);
-          expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
-          expect(a.realityDataId).to.equal(e.realityDataId);
-          expect(a.description).to.equal(e.description);
-          expect(a.treeRef).not.to.be.undefined;
+          expect(a.name).toBe(e.name);
+          expect(a.url).toBe(e.tilesetUrl);
+          expect(a.orbitGtBlob).toBe(e.orbitGtBlob);
+          expect(a.realityDataId).toBe(e.realityDataId);
+          expect(a.description).toBe(e.description);
+          expect(a.treeRef).not.toBeUndefined();
 
-          expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
+          expect(undefined === a.classifiers).toBe(undefined === e.classifiers);
           if (undefined !== a.classifiers && undefined !== e.classifiers)
-            expect(a.classifiers.size).to.equal(e.classifiers.length);
+            expect(a.classifiers.size).toBe(e.classifiers.length);
 
-          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMask);
+          expect(undefined === a.planarClipMaskSettings).toBe(undefined === e.planarClipMask);
           if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMask)
-            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
+            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask))).toBe(true);
 
           const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
-          expect(foundIndex).to.equal(i);
+          expect(foundIndex).toBe(i);
         }
         // Detach all.
         style3d.settings.contextRealityModels.clear();
-        style3d.forEachRealityModel((_model) => expect(false));
+        style3d.forEachRealityModel((_model) => expect(false).toBe(true));
       } else {
-        expect(models.length).to.equal(0);
+        expect(models.length).toBe(0);
       }
     }
 
     function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       if (undefined !== style3d.scheduleScript) {
-        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
+        expect(JSON.stringify(style3d.scheduleScript.toJSON())).toBe(JSON.stringify(expected.scheduleScript));
       } else {
-        expect(expected.scheduleScript).to.be.undefined;
+        expect(expected.scheduleScript).toBeUndefined();
       }
     }
 
@@ -313,10 +313,10 @@ describe("DisplayStyle", () => {
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
     userToken = azuriteUsers.readWrite;
     const s2 = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "newStyle", className: newStyle.classFullName, settings: newStyle.settings.toJSON() });
-    expect(s2).not.to.be.undefined;
+    expect(s2).not.toBeUndefined();
 
     await newStyle.load();
-    expect(newStyle.equals(style)).to.be.true;
+    expect(newStyle.equals(style)).toBe(true);
     compareRealityModels(newStyle, style.settings.toJSON());
     compareScheduleScripts(newStyle, style.settings.toJSON());
   });
