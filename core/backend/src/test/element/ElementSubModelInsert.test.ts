@@ -12,7 +12,7 @@ import { Document, Drawing, OnSubModelPropsArg, SectionDrawing, Sheet, TemplateR
 import { EntityClassType } from "../../Entity";
 import { GenericSchema } from "../../domains/GenericSchema";
 import { SnapshotDb } from "../../IModelDb";
-import { DocumentListModel, DrawingModel, Model, SectionDrawingModel, SheetModel } from "../../Model";
+import { DefinitionModel, DocumentListModel, DrawingModel, Model, SectionDrawingModel, SheetModel } from "../../Model";
 import { Schema, Schemas } from "../../Schema";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -48,7 +48,10 @@ class TestRestrictedDocument extends Document {
 
 const testSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestSubModel" alias="tsm" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-  <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+  <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+  <ECCustomAttributes>
+    <SchemaHasBehavior xmlns="BisCore.01.00.00"/>
+  </ECCustomAttributes>
   <ECEntityClass typeName="TestSheetModel">
     <BaseClass>bis:SheetModel</BaseClass>
   </ECEntityClass>
@@ -167,6 +170,30 @@ describe("Sub-model insert validation", () => {
       expect(spy.getCall(1).threw()).to.be.true;
     } finally {
       spy.restore();
+    }
+  });
+
+  it("rejects sub-model insertion when required domain behavior is not registered", () => {
+    const hostId = insertHost(TestRestrictedDocument.classFullName);
+    Schemas.unregisterSchema(TestSubModelSchema.schemaName);
+
+    try {
+      let error: unknown;
+      try {
+        insertSubModel(DefinitionModel.classFullName, hostId);
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).to.be.instanceOf(IModelError);
+      expect((error as IModelError).errorNumber).to.equal(IModelStatus.WrongHandler);
+      expect(imodel.models.tryGetModel(hostId)).to.be.undefined;
+    } finally {
+      Schemas.registerSchema(TestSubModelSchema);
+      ClassRegistry.register(TestSheetSpy, TestSubModelSchema);
+      ClassRegistry.register(TestSheetWidened, TestSubModelSchema);
+      ClassRegistry.register(TestSheetUnvalidated, TestSubModelSchema);
+      ClassRegistry.register(TestRestrictedDocument, TestSubModelSchema);
     }
   });
 });

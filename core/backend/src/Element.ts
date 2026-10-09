@@ -189,7 +189,7 @@ export interface OnElementDependencyArg extends OnElementArg {
 export class Element extends Entity {
   public static override get className(): string { return "Element"; }
   /** @internal */
-  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete", "onSubModelInsert"]; }
 
   /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
@@ -457,8 +457,9 @@ export class Element extends Entity {
     arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
-  /** The [[Model]] classes that may *sub-model* an instance of this class, or `undefined` if any class is acceptable.
-   * A sub-model is accepted if its class is, or derives from, one of these classes.
+  /** The [[Model]] classes that may *sub-model* an instance of this class.
+   * A sub-model is accepted if its class is, or derives from, one of these classes, including generated JavaScript classes for unregistered EC subclasses.
+   * The default is `undefined`, which permits any Model class.
    * Domain classes implementing `bis:ISubModeledElement` should override this to restrict their sub-model class.
    * @note `this` is the class of Element to be sub-modeled.
    * @beta
@@ -469,6 +470,7 @@ export class Element extends Entity {
    * The default implementation rejects the model unless its class is one of [[allowedSubModelClasses]].
    * @note throw an exception if model should not be inserted
    * @note `this` is the class of Element to be sub-modeled.
+   * @note Overrides must call `super.onSubModelInsert(arg)` to retain inherited class validation.
    * @beta
    */
   protected static onSubModelInsert(arg: OnSubModelPropsArg): void {
