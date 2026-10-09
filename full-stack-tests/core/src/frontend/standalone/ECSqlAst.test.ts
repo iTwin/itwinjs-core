@@ -7,6 +7,7 @@
  */
 
 import { assert } from "chai";
+import { ProcessDetector } from "@itwin/core-bentley";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -60,7 +61,8 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("ECSql Abstract Syntax Tree", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("ECSql Abstract Syntax Tree", () => {
   let conn: IModelConnection;
 
   async function toNormalizeECSql(ecsql: string) {

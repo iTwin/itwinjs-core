@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Plan projections (#integration)", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
 
   before(async () => {

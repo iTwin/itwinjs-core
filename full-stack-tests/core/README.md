@@ -3,13 +3,18 @@
 This package contains tests of standard iTwin.js RPC interfaces using a local client and server side.
 Every test in this directory should test frontend APIs with an actual backend.
 
-The tests run in both Electron and Chrome, using [Certa](https://www.npmjs.com/package/@itwin/certa), and should only include one test RPC interface.
+The tests share source between Electron and Chrome and should only include one test RPC interface. Chrome runs through Certa; Electron normal, integration, and performance runs use Vitest, with an explicit Electron Certa fallback. The runtime matrix is intentional: common frontend behavior is not duplicated when the other runtime adds no coverage, while Electron-specific IPC/native behavior and Chrome-specific browser behavior remain explicit. See [TEST_MATRIX.md](./TEST_MATRIX.md) for the current suite-level ownership.
 
-There are two types of tests;
+There are three types of tests:
 
-- A set of unit tests that use all local files and do not need an internet connection or the iModelHub
-- A second set of integration tests which use the iModelHub, and other parts of the iTwin Platform.
-  - See [How to setup and run](#how-to-setup-and-run-integration-tests)
+- A set of normal tests that use local files and do not need an internet connection or the iModelHub.
+- A set of integration tests which use the iModelHub and other parts of the iTwin Platform.
+  - See [How to setup and run](#how-to-setup-and-run-integration-tests).
+- A set of performance tests, which remain separately selectable for each runtime.
+
+The Certa commands and their `#integration`/`#performance` filters remain available for Chrome and the explicit Electron Certa fallback; the normal, integration, and performance Electron commands use Vitest.
+
+`npm run debug:electron` starts Azurite and a visible Electron test window with renderer debugging on port 9223. Test and hook timeouts are disabled in this debug mode.
 
 > Note: webpack sometimes runs out of memory, particularly on Linux, when TypeScript sourcemaps are generated for this package. If you need them for debugging purposes, uncomment the block marked "UNCOMMENT THIS BLOCK FOR SOURCE MAPS" in webpack.config.js. Make sure to revert that change before committing.
 
