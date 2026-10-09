@@ -196,7 +196,7 @@ export namespace ViewStore {
   };
 
   const validateNonNegativeInteger = (value: unknown, memberName: string): number | undefined => {
-    if (value === undefined || value === null || value === 0)
+    if (value === undefined || value === null)
       return undefined;
     if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0)
       ViewStoreError.throwError("invalid-value", { message: `${memberName} must be a non-negative integer` });
@@ -1326,9 +1326,10 @@ export namespace ViewStore {
       const offset = validateNonNegativeInteger(queryParams.offset, "offset");
 
       const groupId = group ? this.findViewGroup(group) : defaultViewGroupId;
-      // Optional filters are disabled by leaving their parameter unbound (NULL); owner=NULL is never true.
+      // Public views are always returned; private views only when @owner is supplied and matches.
+      // Each other filter is skipped when its parameter is left unbound (NULL), via its "@param IS NULL OR" check.
       // The SQL text varies only by the validated nameCompare operator, so the statement can be cached.
-      const sql = `SELECT Id FROM ${tableName.views} WHERE groupId=@groupId AND (private!=1 OR owner=@owner)` +
+      const sql = `SELECT Id FROM ${tableName.views} WHERE groupId=@groupId AND (private!=1 OR (@owner IS NOT NULL AND owner=@owner))` +
         " AND (@classNames IS NULL OR className IN(SELECT value FROM json_each(@classNames)))" +
         ` AND (@name IS NULL OR name ${nameCompare} @name)` +
         ` AND (@tags IS NULL OR Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(SELECT value FROM json_each(@tags)))))` +
@@ -1344,7 +1345,7 @@ export namespace ViewStore {
           stmt.bindString("@name", nameSearch);
         if (tags)
           stmt.bindString("@tags", JSON.stringify(tags));
-        stmt.bindInteger("@limit", limit ?? -1); // -1 means no limit
+        stmt.bindInteger("@limit", limit || -1); // absent or 0 means no limit
         stmt.bindInteger("@offset", offset ?? 0);
 
         while (stmt.nextRow())

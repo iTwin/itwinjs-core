@@ -309,6 +309,18 @@ describe("ViewStore", function (this: Suite) {
     }
     expect(vs1.queryViewsSync({ owner: "", nameSearch: "", group: "" }).length).equal(allPublicCount); // empty strings are treated as absent
 
+    // owner is optional: without it only public views are returned; with it, that owner's private views are added
+    expect(vs1.queryViewsSync({ group: "/" }).every((view) => !view.isPrivate)).to.be.true;
+    expect(vs1.queryViewsSync({ group: "/", owner: "someoneElse" }).every((view) => !view.isPrivate)).to.be.true;
+    expect(vs1.queryViewsSync({ group: "/", owner: "owner10" }).filter((view) => view.isPrivate).length).equal(4);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2" }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2", owner: "someoneElse" }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2", owner: "owner10" }).length).equal(1);
+
+    // a limit of 0 means no limit
+    expect(vs1.queryViewsSync({ group: "group2", limit: 0 }).length).equal(100);
+    expect(vs1.queryViewsSync({ group: "group2", limit: 0, offset: 0 }).length).equal(100);
+
     // the query statement is cached, so bindings from one call must not leak into the next
     expect(vs1.queryViewsSync({ owner: "owner10" }).length).equal(7);
     expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
