@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
@@ -265,7 +265,80 @@ async function main() {
     log(`Reusing already-booted simulator: ${device.name}`);
   }
 
-  // Install the app
+  /** @type {[string, (simctl: SimctlWithOpts) => Promise<boolean>][]} */
+  const runs = [
+    ["Integration tests", runIntegrationTests],
+    ["App launch", runApp]
+  ];
+
+  /** @type {Record<string, boolean>} */
+  const testResults = {};
+  for (const [name, startRun] of runs) {
+    try {
+      testResults[name] = await startRun(simctl);
+    } catch (err) {
+      log(`${name} test error: ${err}`);
+      testResults[name] = false;
+    }
+  }
+
+  for (const [name, passed] of Object.entries(testResults))
+    log(`${name}: ${passed ? "SUCCESS" : "FAIL"}`);
+
+  if (Object.values(testResults).every((passed) => passed))
+    process.exitCode = 0;
+
+  // Shut down simulator
+  log("Shutting down simulator");
+  await simctl.shutdownDevice();
+}
+
+/**
+ * @param {string} action
+ * @param {string} scheme
+ * @param {SimctlWithOpts} simctl
+ * @param {string[]} [options]
+ */
+function runXcode(action, scheme, simctl, options = []) {
+  const timeoutMs = 10 * 60 * 1000;
+  const result = spawnSync("xcrun", [
+    "xcodebuild",
+    action,
+    "-derivedDataPath", "./build/DerivedData",
+    "-scheme", scheme,
+    "-destination", `id=${simctl.udid}`,
+    "-configuration", "Debug",
+    "-sdk", "iphonesimulator",
+    "CODE_SIGN_STYLE=Manual",
+    "CODE_SIGN_IDENTITY=",
+    "CODE_SIGNING_REQUIRED=NO",
+    "PROVISIONING_PROFILE_SPECIFIER=",
+    ...options,
+  ], { cwd: `${dtaRootDir}/ios/${appName}`, stdio: "inherit", timeout: timeoutMs });
+  if (result.error) {
+    log(`Xcode ${action} for ${scheme} did not complete: ${result.error}`);
+    return false;
+  }
+  return result.status === 0;
+}
+
+/**
+ * Runs the mobile backend integration tests (imodeljs-test-app-tests) on the booted simulator.
+ * @param {SimctlWithOpts} simctl
+ */
+async function runIntegrationTests(simctl) {
+  log("Running mobile backend integration tests");
+  return runXcode("test", `${appName}-tests`, simctl, [
+    "-only-testing:imodeljs-test-app-tests",
+    "-parallel-testing-enabled", "NO",
+  ]);
+}
+
+/**
+ * Opens a model and waits for its first render.
+ * @param {SimctlWithOpts} simctl
+ */
+async function runApp(simctl) {
   const appPath = `${dtaRootDir}/ios/${appName}/build/DerivedData/Build/Products/Debug-iphonesimulator/${appName}.app`;
   log("Installing app");
   await simctl.installApp(appPath);
@@ -300,16 +373,12 @@ async function main() {
   const launchOutput = await simctl.launchAppWithOptions(bundleId, ["--console", "--terminate-running-process"], args);
   // Note: the exit code from the app isn't passed back through simctl so we need to look for a specific string in the output.
   if (launchOutput.includes("First render finished.")) {
-    process.exitCode = 0;
     log("Success!");
-  } else {
-    log("Failed.");
-    log(`launchOutput:\n${launchOutput}`);
+    return true;
   }
-
-  // Shut down simulator
-  log("Shutting down simulator");
-  await simctl.shutdownDevice();
+  log("Failed.");
+  log(`launchOutput:\n${launchOutput}`);
+  return false;
 }
 
 main();

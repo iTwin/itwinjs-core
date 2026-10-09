@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -54,7 +54,12 @@
 		415D589B23E38D0C00907B7B /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "imodeljs-test-app-Bridging-Header.h"; sourceTree = "<group>"; };
 		415D58B623E4ACAA00907B7B /* AssetHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetHandler.swift; sourceTree = "<group>"; };
+		F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "imodeljs-test-app-tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "imodeljs-test-app-tests"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		415D587D23E37F5200907B7B /* Frameworks */ = {
@@ -68,6 +73,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F103E5D23077A3B00074BFFB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -76,6 +89,7 @@
 			children = (
 				415D589B23E38D0C00907B7B /* Config.xcconfig */,
 				415D588223E37F5200907B7B /* imodeljs-test-app */,
+				F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */,
 				415D588123E37F5200907B7B /* Products */,
 				415D589823E38CCF00907B7B /* Frameworks */,
 			);
@@ -85,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				415D588023E37F5200907B7B /* imodeljs-test-app.app */,
+				F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,19 +159,46 @@
 			productReference = 415D588023E37F5200907B7B /* imodeljs-test-app.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F103E5D43077A3B00074BFFB /* imodeljs-test-app-tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F103E5D93077A3B00074BFFB /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests" */;
+			buildPhases = (
+				F103E5D13077A3B00074BFFB /* Sources */,
+				F103E5D23077A3B00074BFFB /* Frameworks */,
+				F103E5D33077A3B00074BFFB /* Resources */,
+				F105816B3077A6930026DB5B /* Run Script */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */,
+			);
+			name = "imodeljs-test-app-tests";
+			packageProductDependencies = (
+				F4A4D85F28A599050015ED63 /* IModelJsNative */,
+			);
+			productName = "imodeljs-test-app-tests";
+			productReference = F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		415D587823E37F5200907B7B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1130;
+				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Bentley Systems Inc.";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
 						CreatedOnToolsVersion = 11.3;
 						LastSwiftMigration = 1130;
+					};
+					F103E5D43077A3B00074BFFB = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -178,6 +220,7 @@
 			projectRoot = "";
 			targets = (
 				415D587F23E37F5200907B7B /* imodeljs-test-app */,
+				F103E5D43077A3B00074BFFB /* imodeljs-test-app-tests */,
 			);
 		};
 /* End PBXProject section */
@@ -190,6 +233,13 @@
 				415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */,
 				415D588D23E37F5300907B7B /* Assets.xcassets in Resources */,
 				415D588B23E37F5200907B7B /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F103E5D33077A3B00074BFFB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +265,26 @@
 			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/lib/ $AppBundleRoot/Assets/www/\n";
 			showEnvVarsInLog = 0;
 		};
+		F105816B3077A6930026DB5B /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "AssetsRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME/Assets\"\n\n# Only the backend is needed; the bridge tests run without a frontend.\nrm -rf \"$AssetsRoot\"\nmkdir -p \"$AssetsRoot/www\"\ncp -L -R \"$PROJECT_DIR/../../lib/mobile\" \"$AssetsRoot/www/\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -230,6 +300,13 @@
 				1F3CA70228BEB7320096B6D6 /* DtaAuthorizationClient.swift in Sources */,
 				1F3CA70628BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift in Sources */,
 				415D588623E37F5200907B7B /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F103E5D13077A3B00074BFFB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +495,53 @@
 			};
 			name = Release;
 		};
+		F103E5DA3077A3B00074BFFB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F103E5DB3077A3B00074BFFB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -435,6 +559,15 @@
 			buildConfigurations = (
 				415D589523E37F5300907B7B /* Debug */,
 				415D589623E37F5300907B7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F103E5D93077A3B00074BFFB /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F103E5DA3077A3B00074BFFB /* Debug */,
+				F103E5DB3077A3B00074BFFB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
