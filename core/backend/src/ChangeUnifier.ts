@@ -137,7 +137,8 @@ export class ChangeUnifier implements Disposable {
     const { propFilter, rowOptions } = reader[_readerOptions];
     if (!this._hasReader) {
       this._propFilter = propFilter;
-      this._rowOptions = rowOptions;
+      // Copied: the reader keeps the caller's object, which may change before later readers are compared with it.
+      this._rowOptions = rowOptions === undefined ? undefined : { ...rowOptions };
       this._hasReader = true;
     } else if (propFilter !== this._propFilter || !areEquivalentRowOptions(rowOptions, this._rowOptions)) {
       throw new IModelError(IModelStatus.BadArg, "ChangeUnifier: all readers must be opened with the same propFilter and rowOptions.");

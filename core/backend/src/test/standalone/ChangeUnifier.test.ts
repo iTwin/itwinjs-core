@@ -512,6 +512,18 @@ describe("ChangeUnifier", () => {
       expect(() => ChangeUnifier.fromReaders([inserts, updates])).to.throw(IModelError, "same propFilter and rowOptions");
     }
     {
+      // An options object shared by the readers and changed between them is compared as it was for the first reader.
+      const rowOptions: RowFormatOptions = { classIdsToClassNames: true };
+      function* readers(): Generator<ChangesetReader> {
+        using inserts = openReader(changesets.inserts, { rowOptions });
+        yield inserts;
+        rowOptions.classIdsToClassNames = false;
+        using updates = openReader(changesets.updates, { rowOptions });
+        yield updates;
+      }
+      expect(() => ChangeUnifier.fromReaders(readers())).to.throw(IModelError, "same propFilter and rowOptions");
+    }
+    {
       // Omitted row options are equivalent to their defaults.
       using inserts = openReader(changesets.inserts, { rowOptions: { abbreviateBlobs: true, classIdsToClassNames: false } });
       using updates = openReader(changesets.updates);
