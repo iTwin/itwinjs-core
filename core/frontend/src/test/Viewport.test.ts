@@ -5,20 +5,24 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d, Point3d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
-import { DisplayStyle3dState } from "../DisplayStyleState";
+import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
+import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, SceneContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { Branch } from "../internal/render/webgl/Graphic";
+import { Target } from "../internal/render/webgl/Target";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
@@ -26,27 +30,6 @@ import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
-
-  describe("subcategory reload category collection", () => {
-    it("includes per-model override categories outside the category selector", () => {
-      const viewport = {
-        view: {
-          categorySelector: {
-            categories: new Set(["0x1", "0x2"]),
-          },
-        },
-        perModelCategoryVisibility: {
-          *[Symbol.iterator]() {
-            yield { modelId: "0xa", categoryId: "0x3", visible: true };
-            yield { modelId: "0xb", categoryId: "0x2", visible: false };
-          },
-        },
-      };
-
-      const categoryIds = (Viewport.prototype as any).getSubCategoryReloadCategoryIds.call(viewport) as Set<string>;
-      expect([...categoryIds]).toEqual(["0x1", "0x2", "0x3"]);
-    });
-  });
 
   describe("constructor", () => {
     it("invokes initialize method", () => {
@@ -90,6 +73,7 @@ describe("Viewport", () => {
 
     function expectFlashedId(viewport: ScreenViewport, expectedId: string | undefined, expectedEvent: ChangedEvent | undefined, func: () => void): void {
       let event: ChangedEvent | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
         expect(vp).to.equal(viewport);
         expect(event).to.be.undefined;
@@ -99,33 +83,46 @@ describe("Viewport", () => {
       func();
       removeListener();
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewport.flashedId).toEqual(expectedId);
       expect(event).toEqual(expectedEvent);
     }
 
     it("dispatches events when flashed Id changes", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x123", [undefined, "0x123"], () => viewport.flashedId = "0x123");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x456", ["0x123", "0x456"], () => viewport.flashedId = "0x456");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x456", undefined, () => viewport.flashedId = "0x456");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x456", undefined], () => viewport.flashedId = undefined);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = undefined);
       });
     });
 
     it("treats invalid Id as undefined", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = "0");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = undefined);
       });
     });
 
     it("rejects malformed Ids", () => {
       testBlankViewport((viewport) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = "not an id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.flashedId = "0x123";
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         expectFlashedId(viewport, "0x123", undefined, () => viewport.flashedId = "not an id");
       });
     });
@@ -133,8 +130,10 @@ describe("Viewport", () => {
     it("prohibits assignment from within event callback", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -148,7 +147,6 @@ describe("Viewport", () => {
           expect(viewport.onChangeView.numberOfListeners).toEqual(expectedNum);
 
           // The viewport registers its own listener for each of these.
-          expect(viewport.view.onDisplayStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
           expect(viewport.displayStyle.settings.onAnalysisStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
         }
 
@@ -182,9 +180,7 @@ describe("Viewport", () => {
 
         const b = AnalysisStyle.fromJSON({ normalChannelName: "b" });
         expectChangedEvent(b, () => {
-          const style = viewport.displayStyle.clone();
-          style.settings.analysisStyle = b;
-          viewport.displayStyle = style;
+          viewport.displayStyle.settings.analysisStyle = b;
         });
 
         const c = AnalysisStyle.fromJSON({ normalChannelName: "c" });
@@ -198,6 +194,70 @@ describe("Viewport", () => {
         expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
         expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
       });
+    });
+  });
+
+  describe("FeatureOverrideProvider", () => {
+    function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
+      return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);
+    }
+
+    it("moves the proxy across primary references for the same iModel connection", () => {
+      using viewport = openBlankViewport();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const previousRef = viewport.primaryIModelRef;
+      const nextView = SpatialViewState.createBlank(viewport.iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+      const nextRef = nextView.iModelRefs.primary;
+
+      expect(nextRef).not.toBe(previousRef);
+      expect(viewport.addFeatureOverrideProvider(provider)).toBe(true);
+      expect(hasProxy(previousRef, provider)).toBe(true);
+
+      viewport.applyViewState(nextView);
+
+      expect(hasProxy(previousRef, provider)).toBe(false);
+      expect(hasProxy(nextRef, provider)).toBe(true);
+      expect([...viewport.featureOverrideProviders]).toContain(provider);
+      expect(viewport.dropFeatureOverrideProvider(provider)).toBe(true);
+      expect(hasProxy(nextRef, provider)).toBe(false);
+    });
+
+    it("drops providers when the primary iModel connection changes", async () => {
+      const viewport = openBlankViewport();
+      const originalIModel = viewport.iModel;
+      const otherIModel = createBlankConnection();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const previousRef = viewport.primaryIModelRef;
+      const nextView = SpatialViewState.createBlank(otherIModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+      const nextRef = nextView.iModelRefs.primary;
+
+      try {
+        viewport.addFeatureOverrideProvider(provider);
+        viewport.changeView(nextView);
+
+        expect(hasProxy(previousRef, provider)).toBe(false);
+        expect(hasProxy(nextRef, provider)).toBe(false);
+        expect([...viewport.featureOverrideProviders]).not.toContain(provider);
+        expect(viewport.dropFeatureOverrideProvider(provider)).toBe(false);
+      } finally {
+        viewport[Symbol.dispose]();
+        await otherIModel.close();
+        await originalIModel.close();
+      }
+    });
+
+    it("removes proxies when the viewport is disposed", () => {
+      using viewport = openBlankViewport();
+      const provider: FeatureOverrideProvider = { addFeatureOverrides: () => undefined };
+      const ref = viewport.primaryIModelRef;
+
+      viewport.addFeatureOverrideProvider(provider);
+      expect(hasProxy(ref, provider)).toBe(true);
+
+      viewport[Symbol.dispose]();
+
+      expect(hasProxy(ref, provider)).toBe(false);
+      expect([...viewport.featureOverrideProviders]).toHaveLength(0);
     });
   });
 
@@ -223,29 +283,21 @@ describe("Viewport", () => {
     });
 
     afterEach(() => {
-      viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
-      expectBackgroundMap(false);
-      expectTerrain(false);
       viewport[Symbol.dispose]();
     });
 
     it("updates when display style is assigned to", () => {
-      let style = viewport.displayStyle.clone();
-      style.viewFlags = style.viewFlags.with("backgroundMap", false);
-      viewport.displayStyle = style;
+      viewport.viewFlags = viewport.viewFlags.with("backgroundMap", false);
       expectBackgroundMap(false);
       expectTerrain(false);
 
-      style = style.clone();
+      const style = viewport.displayStyle;
       style.viewFlags = style.viewFlags.with("backgroundMap", true);
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: true } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(true);
 
-      style = style.clone();
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: false } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(false);
     });
@@ -627,6 +679,75 @@ describe("Viewport", () => {
       });
     });
 
+    it("scopes excluded elements to their IModelDisplayReference", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          try {
+            const createSquare = (z: number) => {
+              const points = [
+                new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
+              ];
+              vp.viewToWorldArray(points);
+
+              const builder = IModelApp.renderSystem.createGraphic({
+                type: GraphicType.WorldDecoration,
+                pickable: { id: "0xa" },
+                computeChordTolerance: () => 0,
+              });
+              builder.addShape(points);
+              return IModelApp.renderSystem.createGraphicOwner(builder.finish());
+            };
+
+            const primaryGraphic = createSquare(0);
+            const linkedBranch = new GraphicBranch(true);
+            linkedBranch.add(createSquare(-10));
+            const linkedGraphic = IModelApp.renderSystem.createGraphicBranch(linkedBranch, Transform.identity, { iModelRef: linkedRef });
+
+            addDecorator({
+              decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, primaryGraphic),
+            });
+            addDecorator({
+              decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, linkedGraphic),
+            });
+
+            vp.renderFrame();
+
+            const readVisibleReference = (excludedElements?: ReadPixelsArgs["excludedElements"]) => {
+              let feature: Pixel.Data["feature"];
+              vp.readPixels({
+                selector: Pixel.Selector.Feature,
+                excludedElements,
+                receiver: (pixels) => {
+                  if (pixels) {
+                    const coordinate = vp.cssPixelsToDevicePixels(1);
+                    feature = pixels.getPixel(coordinate, coordinate).feature;
+                  }
+                },
+              });
+              return feature?.iModelRef;
+            };
+
+            expect(readVisibleReference()).toBe(vp.iModelRefs.primary);
+            expect(readVisibleReference(["0xa"])).toBe(linkedRef);
+            expect(readVisibleReference([["0xa", linkedRef]])).toBe(vp.iModelRefs.primary);
+            expect(readVisibleReference([["0xa", refs.primary]])).toBe(linkedRef);
+            expect(readVisibleReference([["0xa", refs.primary], ["0xa", linkedRef]])).toBeUndefined();
+            expect(readVisibleReference()).toBe(refs.primary);
+          } finally {
+            refs.unlink(linkedRef);
+          }
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
+    });
+
     it("can filter out specified elements within a single batch", () => {
       testBlankViewport((vp) => {
         const frontPts = [
@@ -715,6 +836,85 @@ describe("Viewport", () => {
     });
   });
 
+  describe("contour overrides", () => {
+    it("keeps planar classifiers distinct for references with the same model Id", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          const classifier = { setSource: vi.fn() } as any;
+          vi.spyOn(vp.target, "getPlanarClassifier").mockReturnValue(undefined);
+          vi.spyOn(vp.target, "createPlanarClassifier").mockReturnValue(classifier);
+
+          const primaryContext = new SceneContext(vp);
+          const linkedContext = new SceneContext({ viewport: vp, iModelRef: linkedRef });
+          primaryContext.addPlanarClassifier("0x123");
+          linkedContext.addPlanarClassifier("0x123");
+
+          expect(primaryContext.planarClassifiers.size).toBe(1);
+          expect(linkedContext.planarClassifiers.size).toBe(1);
+          expect([...primaryContext.planarClassifiers.keys()][0]).not.toBe([...linkedContext.planarClassifiers.keys()][0]);
+
+          refs.unlink(linkedRef);
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
+    });
+
+    it("uses reference-specific contours and falls back to the display style", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          const displayStyleContours = ContourDisplay.create({ displayContours: true, groups: [ContourGroup.create()] });
+          const linkedContours = ContourDisplay.create({ displayContours: false, groups: [ContourGroup.create()] });
+          if (!vp.view.isSpatialView())
+            throw new Error("Expected a spatial viewport");
+
+          vp.view.getDisplayStyle3d().settings.contours = displayStyleContours;
+
+          expect(refs.primary.activeContours).toBe(displayStyleContours);
+          expect(linkedRef.activeContours).toBe(displayStyleContours);
+
+          let activeContoursChanged = 0;
+          linkedRef.onActiveContoursChanged.addListener(() => activeContoursChanged++);
+          linkedRef.overrides.contours = linkedContours;
+
+          expect(linkedRef.activeContours).toBe(linkedContours);
+          expect(refs.primary.activeContours).toBe(displayStyleContours);
+          expect(activeContoursChanged).toBe(1);
+
+          vp.renderFrame();
+          const target = vp.target as Target;
+          expect(target.currentContours).toBe(displayStyleContours);
+
+          const graphic = IModelApp.renderSystem.createGraphicBranch(new GraphicBranch(), Transform.identity, { iModelRef: linkedRef });
+          expect(graphic).toBeInstanceOf(Branch);
+          target.pushBranch(graphic as Branch);
+          expect(target.currentContours).toBe(linkedContours);
+          target.popBranch();
+          expect(target.currentContours).toBe(displayStyleContours);
+
+          linkedRef.overrides.contours = undefined;
+          expect(linkedRef.activeContours).toBe(displayStyleContours);
+          expect(activeContoursChanged).toBe(2);
+          refs.unlink(linkedRef);
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
+    });
+  });
+
   describe("Map layers", () => {
     // Issue #4436
     it("ignores map layer with invalid format Id", async () => {
@@ -764,7 +964,7 @@ describe("Viewport", () => {
     class PixelCanvasDecoration implements CanvasDecoration {
       public drawDecoration(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = "red";
-        ctx.fillRect(0,0,1,1);
+        ctx.fillRect(0, 0, 1, 1);
       }
     }
 
@@ -806,10 +1006,10 @@ describe("Viewport", () => {
       const ctx = canvas.getContext("2d");
       const pixel = ctx!.getImageData(0, 0, 1, 1).data;
       const rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
-      });
+    });
 
 
     it("should include canvas decorations if omitCanvasDecorations is false or undefined", () => {
@@ -827,7 +1027,7 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       readImageOptions = {
         omitCanvasDecorations: undefined,
@@ -837,7 +1037,7 @@ describe("Viewport", () => {
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
     });
@@ -861,18 +1061,18 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       expect(vp2.rendersToScreen).to.be.false;
       canvas = vp2.readImageToCanvas(readImageOptions);
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
+      expect(rgb).toEqual([0, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
-      });
+    });
 
 
     it("should include canvas decorations if omitCanvasDecorations is false or undefined with multiple viewports", () => {
@@ -894,7 +1094,7 @@ describe("Viewport", () => {
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       readImageOptions = {
         omitCanvasDecorations: undefined,
@@ -905,7 +1105,7 @@ describe("Viewport", () => {
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
+      expect(rgb).toEqual([255, 0, 0]);
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
@@ -960,27 +1160,47 @@ describe("Viewport", () => {
         return new Set<string>([id]);
       }
 
-      test(false, () => {});
+      test(false, () => { });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearNeverDrawn());
       // No-op because never-drawn is already empty.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearNeverDrawn());
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearAlwaysDrawn());
       // No-op because always-drawn is already empty
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearAlwaysDrawn());
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123"), true));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp.isAlwaysDrawnExclusive).to.be.true;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(true, () => vp.clearAlwaysDrawn());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp.isAlwaysDrawnExclusive).to.be.false;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       test(false, () => vp.clearAlwaysDrawn());
+
+      test(true, () => vp.primaryIModelRef.neverDrawnElements.add("0x123"));
+      test(true, () => vp.primaryIModelRef.neverDrawnElements.delete("0x123"));
+      test(true, () => vp.primaryIModelRef.alwaysDrawnElements.add("0x123"));
+      test(true, () => vp.primaryIModelRef.alwaysDrawnElements.delete("0x123"));
+      test(true, () => vp.primaryIModelRef.isAlwaysDrawnExclusive = true);
+      test(true, () => vp.primaryIModelRef.isAlwaysDrawnExclusive = false);
     });
 
     it("are invalidated when symbology overrides change", () => {

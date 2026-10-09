@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
 import { testBlankViewportAsync } from "../../openBlankViewport";
-import { Feature } from "@itwin/core-common";
+import { Feature, GeometryClass } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
 describe("TileTreeReference.createFromRenderGraphic", () => {
@@ -66,26 +66,35 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
         getReferences: () => [ref],
       });
 
+      const feature = {
+        elementId: elemId,
+        modelId,
+        iModelRef: vp.view.iModelRefs.primary,
+        subCategoryId: "0",
+        geometryClass: GeometryClass.Primary,
+      };
+
       const hitProps: HitDetailProps = {
+        feature,
         testPoint: new Point3d(),
         viewport: vp,
         hitSource: HitSource.DataPoint,
         hitPoint: new Point3d(),
-        sourceId: elemId,
         priority: HitPriority.Unknown,
         distXY: 0,
         distFraction: 0,
-        modelId,
       };
 
       let tooltip = await vp.getToolTip(new HitDetail(hitProps));
       expect(tooltip).toEqual(`hi, ${elemId}!`);
 
       // getToolTip is not invoked if the hit's modelId is not equal to the tile tree's model Id.
-      tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: vp.iModel.transientIds.getNext() }));
+      hitProps.feature.modelId = vp.iModel.transientIds.getNext();
+      tooltip = await vp.getToolTip(new HitDetail(hitProps));
       expect(tooltip).toEqual("");
 
-      tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: undefined }));
+      hitProps.feature.modelId = "0";
+      tooltip = await vp.getToolTip(new HitDetail(hitProps));
       expect(tooltip).toEqual("");
     });
   });

@@ -237,9 +237,6 @@ export class EnvironmentEditor {
       this._removeDisplayStyleListener();
       this._removeDisplayStyleListener = undefined;
     }
-
-    if (this._vp.view.is3d())
-      this._removeDisplayStyleListener = this._vp.view.onDisplayStyleChanged.addListener(() => this.listen());
   }
 
   private listenForEnvironment(): void {

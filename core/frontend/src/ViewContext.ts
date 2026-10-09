@@ -30,6 +30,7 @@ import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator
 import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 import { GraphicType } from "./common/render/GraphicType";
 import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
+import { IModelDisplayReference } from "./IModelDisplayReference";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -373,6 +374,10 @@ export class SceneContext extends RenderContext {
   private _missingChildTiles = false;
   /** The graphics comprising the scene. */
   public readonly scene = new Scene();
+  /** The iModel reference from which this context's graphics originate.
+   * @beta
+   */
+  public readonly iModelRef: IModelDisplayReference;
 
   /** @internal */
   public readonly missingTiles = new Set<Tile>();
@@ -390,8 +395,37 @@ export class SceneContext extends RenderContext {
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
-  public constructor(vp: Viewport, frustum?: Frustum) {
-    super(vp, frustum);
+  public constructor(vp: Viewport, frustum?: Frustum);
+
+  /** @internal */
+  public constructor(args: {
+    viewport: Viewport,
+    frustum?: Frustum,
+    iModelRef?: IModelDisplayReference,
+  });
+
+  /** @internal */
+  public constructor(
+    arg0: {
+      viewport: Viewport,
+      frustum?: Frustum,
+      iModelRef?: IModelDisplayReference,
+    } | Viewport,
+    arg1?: Frustum
+  ) {
+    let frustum, viewport, iModelRef;
+    if (arg0 instanceof Viewport) {
+      viewport = arg0;
+      frustum = arg1;
+    } else {
+      ({ viewport, frustum, iModelRef } = arg0);
+    }
+
+    if (!iModelRef)
+      iModelRef = viewport.iModelRefs.primary;
+
+    super(viewport, frustum);
+    this.iModelRef = iModelRef;
   }
 
   /** The viewed volume containing the scene. */
@@ -435,14 +469,15 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined {
+    const key = this.referenceModelKey(classifiedModelId);
     // Target may have the classifier from a previous frame; if not we must create one.
-    let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
+    let classifier = this.viewport.target.getPlanarClassifier(key);
     if (undefined === classifier)
       classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
-      this.planarClassifiers.set(classifiedModelId, classifier);
+      this.planarClassifiers.set(key, classifier);
       classifier.setSource(classifierTree, planarClipMask);
     }
 
@@ -451,7 +486,11 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
-    return this.planarClassifiers.get(modelId);
+    return this.planarClassifiers.get(this.referenceModelKey(modelId));
+  }
+
+  private referenceModelKey(modelId: Id64String): string {
+    return `${this.iModelRef.guid}:${modelId}`;
   }
 
   /** @internal */
@@ -460,7 +499,7 @@ export class SceneContext extends RenderContext {
     if (undefined === drapedTree)
       return undefined;
 
-    const id = drapedTree.modelId;
+    const id = this.referenceModelKey(drapedTree.modelId);
     let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
       return drape;

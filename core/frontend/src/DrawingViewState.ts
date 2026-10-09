@@ -510,9 +510,16 @@ export class DrawingViewState extends ViewState2d {
 
   /** @beta */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for drawings.
-    // Should probably call super or have super call us.
-    const attach = args.inSectionDrawingAttachment ? this._attachment : undefined;
-    return attach?.toDrawing.clone(args.output);
+    if (!args.inSectionDrawingAttachment)
+      return super.computeDisplayTransform(args);
+
+    const attachment = this._attachment;
+    if (!attachment)
+      return undefined;
+
+    const spatialTransform = attachment.viewport.view.computeDisplayTransform({ ...args, output: undefined });
+    return spatialTransform
+      ? attachment.toDrawing.multiplyTransformTransform(spatialTransform, args.output)
+      : attachment.toDrawing.clone(args.output);
   }
 }

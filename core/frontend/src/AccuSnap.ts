@@ -555,7 +555,7 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     for (const vp of this.areFlashed)
-      vp.flashedId = undefined;
+      vp.flashedElement = undefined;
 
     this.areFlashed.clear();
   }
@@ -757,7 +757,7 @@ export class AccuSnap implements Decorator {
 
     hitVp = hitVp ?? thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
-      const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
+      const appearance = thisHit.feature.iModelRef.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
@@ -779,6 +779,7 @@ export class AccuSnap implements Decorator {
         snapModes.push(SnapMode.Nearest);
     }
 
+    const modelToWorld = thisHit.isExternalIModelHit ? thisHit.feature.iModelRef.linearTransformToParent : undefined;
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
@@ -790,7 +791,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
-      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
+      modelToWorld: modelToWorld?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));

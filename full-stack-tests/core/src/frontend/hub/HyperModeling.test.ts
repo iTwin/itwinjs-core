@@ -296,18 +296,22 @@ describe("HyperModeling (#integration)", () => {
       dec.requestSync();
       test(3, (m) => m.state.model !== "mymod" && m.state.category !== "mycat");
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay("mymod", true);
       vp.renderFrame();
       test(4, (m) => m.state.category !== "mycat");
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay("mycat", true);
       vp.renderFrame();
       test(6, (_) => true);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(modelId, false);
       vp.renderFrame();
       test(2, (m) => m.state.model === "mymod");
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(catId, false);
       vp.renderFrame();
       test(1, (m) => m.state.model === "mymod" && m.state.category === "mycat");
@@ -328,7 +332,9 @@ describe("HyperModeling (#integration)", () => {
       test(1, (m) => m === firstMarker);
 
       dec.replaceConfiguration({ hiddenSectionTypes: [firstMarker!.state.sectionType] });
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(["mymod", modelId], false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(["mycat", catId], false);
       vp.renderFrame();
       test(1, (m) => m === firstMarker);
@@ -374,19 +380,23 @@ describe("HyperModeling (#integration)", () => {
       expectVisible(true);
 
       const model = marker.state.model;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(model, false);
       dec.requestSync();
       expectVisible(false);
 
       const cat = marker.state.category;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(cat, false);
       dec.requestSync();
       expectVisible(false);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(model, true);
       dec.requestSync();
       expectVisible(false);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(model, false);
       dec.updateConfiguration({ ignoreModelSelector: true, ignoreCategorySelector: true });
       dec.requestSync();
@@ -412,7 +422,9 @@ describe("HyperModeling (#integration)", () => {
       expectVisible(false);
 
       dec.updateConfiguration({ ignoreModelSelector: false, ignoreCategorySelector: false });
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay(model, true);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(cat, true);
       dec.requestSync();
       expectVisible(false);

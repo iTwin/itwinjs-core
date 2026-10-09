@@ -189,9 +189,7 @@ describe("Schedule script (#integration)", () => {
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
     expect(countTileTrees(view)).to.equal(2);
 
-    const style = view.displayStyle.clone();
-    style.settings.scheduleScriptProps = undefined;
-    view.displayStyle = style;
+    view.displayStyle.settings.scheduleScriptProps = undefined;
     expect(countTileTrees(view)).to.equal(1);
   });
 

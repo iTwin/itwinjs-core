@@ -393,7 +393,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   public pickDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
     if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
-      ev.viewport.flashedId = undefined;
+      ev.viewport.flashedElement = undefined;
 
     this.clearDepthPoint();
     if (isPreview && this.inDynamicUpdate)
@@ -552,7 +552,7 @@ export abstract class ViewManip extends ViewTool {
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
-        ev.viewport.flashedId = currSourceId;
+        ev.viewport.flashedElement = undefined !== currSourceId ? { id: currSourceId, iModel: ev.viewport.iModel } : undefined;
 
       ev.viewport.invalidateDecorations();
     }
@@ -851,9 +851,10 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean> {
-    if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
+    const ref = viewport.primaryIModelRef;
+    if (!ref.isAlwaysDrawnExclusive || 0 === ref.alwaysDrawnElements.size)
       return false;
-    await viewport.zoomToElements(viewport.alwaysDrawn, options);
+    await viewport.zoomToElements(ref.alwaysDrawnElements, options);
     return true;
   }
 

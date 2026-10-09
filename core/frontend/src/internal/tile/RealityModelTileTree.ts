@@ -20,12 +20,12 @@ import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometr
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
+import { _getPlanarClipMaskState } from "../../common/internal/Symbols";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   GeometryTileTreeReferenceOptions,
@@ -35,6 +35,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { IModelDisplayReference } from "../../IModelDisplayReference";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -551,7 +552,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   }
 }
 
-export type RealityModelSource = ViewState | DisplayStyleState;
+export type RealityModelSource = IModelDisplayReference | DisplayStyleState;
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
@@ -697,7 +698,7 @@ export namespace RealityModelTileTree {
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
-      const planarClipMask = this._planarClipMask ?? context.viewport.displayStyle.getPlanarClipMaskState(this.modelId);
+      const planarClipMask = this._planarClipMask ?? (context.iModelRef.isSpatial() ? context.iModelRef[_getPlanarClipMaskState](this.modelId) : undefined);
       if (!classifierTree && !planarClipMask)
         return;
 
@@ -891,7 +892,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   private get _wantWiremesh(): boolean {
-    return this._source.viewFlags.wiremesh;
+    return this._source.activeViewFlags.wiremesh;
   }
 
   public override get castsShadows() {
@@ -1007,7 +1008,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-    /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
       cards.dataset.openStreetMapLogoCard = "true";

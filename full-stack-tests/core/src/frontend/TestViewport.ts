@@ -3,23 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import { comparePossiblyUndefined, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
+import { ColorDef, GeometryClass } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+  IModelApp, IModelConnection, IModelDisplayFeature, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
   ViewState,
 } from "@itwin/core-frontend";
-
-function compareFeatures(lhs?: Feature, rhs?: Feature): number {
-  if (undefined === lhs && undefined === rhs)
-    return 0;
-  else if (undefined === lhs)
-    return -1;
-  else if (undefined === rhs)
-    return 1;
-  else
-    return lhs.compare(rhs);
-}
 
 export function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
   let diff = lhs.distanceFraction - rhs.distanceFraction;
@@ -28,7 +17,7 @@ export function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
     if (0 === diff) {
       diff = lhs.planarity - rhs.planarity;
       if (0 === diff) {
-        diff = compareFeatures(lhs.feature, rhs.feature);
+        diff = comparePossiblyUndefined(IModelDisplayFeature.compare, lhs.feature, rhs.feature);
       }
     }
   }

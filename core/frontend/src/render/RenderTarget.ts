@@ -10,9 +10,9 @@ import { Id64String } from "@itwin/core-bentley";
 import { ImageBuffer } from "@itwin/core-common";
 import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
-import { HiliteSet } from "../SelectionSet";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../Viewport";
+import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
@@ -104,7 +104,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public [Symbol.dispose](): void { }
   /** @internal */
-  public reset(_realityMapLayerChanged?: boolean): void { }
+  public reset(_realityMapLayerChanged?: boolean, _primaryIModelRef?: IModelDisplayReference): void { }
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */
@@ -118,9 +118,9 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   /** @internal */
-  public setHiliteSet(_hilited: HiliteSet): void { }
+  public invalidateHilites(): void { }
   /** @internal */
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public setFlashed(_element: IModelAndElementId | undefined, _intensity: number): void { }
   /** @internal */
   public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
   /** @internal */
@@ -131,7 +131,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */

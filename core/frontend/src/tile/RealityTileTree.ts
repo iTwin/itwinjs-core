@@ -351,7 +351,7 @@ export class RealityTileTree extends TileTree {
 
   /** @internal */
   protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
-    const classifier = args.context.planarClassifiers.get(this.modelId);
+    const classifier = args.context.getPlanarClassifierForModel(this.modelId);
     if (classifier)
       classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
   }
