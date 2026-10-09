@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "BriefcaseManager.deleteBriefcaseFiles now refuses to delete files that are neither valid iModels nor inside the briefcase cache, and only deletes the briefcase's known associated files.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "108895074+MichaelSwigerAtBentley@users.noreply.github.com"
+}
