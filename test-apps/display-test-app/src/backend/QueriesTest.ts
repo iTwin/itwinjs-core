@@ -41,7 +41,7 @@ interface NativeReply {
 }
 
 async function runQueriesFromBackendTest(): Promise<{ cases: string[], failures: string[] }> {
-  const cases: string[] = []
+  const cases: string[] = [];
   const failures: string[] = [];
 
   async function runCase(name: string, body: () => Promise<void>, timeoutMs = testCaseTimeoutMs): Promise<void> {

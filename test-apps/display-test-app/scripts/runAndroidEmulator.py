@@ -261,7 +261,7 @@ def prepare_imodel_and_run_app(env_json: dict[str, str]) -> bool:
     '''
     bim_file = get_bim_file(env_json)
     download = should_download(env_json)
-    if bim_file == None and not download:
+    if bim_file is None and not download:
         raise Exception('Environment not configured for standalone or download mode!')
     if download:
         log(f'Will download iModel.')
