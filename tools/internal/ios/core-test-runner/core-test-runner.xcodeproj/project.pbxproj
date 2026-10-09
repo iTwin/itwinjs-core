@@ -554,11 +554,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
 				version = 5.14.47;
-=======
-				version = 5.15.11;
->>>>>>> 71c6de2 (Move Sheet/Drawing sub-model class validation from native into  Element.onSubModelInsert (#9814))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

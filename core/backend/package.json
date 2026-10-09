@@ -110,11 +110,7 @@
     "vite": "^6.4.3"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "5.14.47",
-=======
-    "@bentley/imodeljs-native": "5.15.11",
->>>>>>> 71c6de2 (Move Sheet/Drawing sub-model class validation from native into  Element.onSubModelInsert (#9814))
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.6",
