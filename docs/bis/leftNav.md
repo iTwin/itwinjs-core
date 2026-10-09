@@ -39,6 +39,7 @@ defaultState: activeOpen
   - [Spatial Composition](./guide/data-organization/spatial-composition.md)
   - [Modeling Systems](./guide/data-organization/modeling-systems.md)
   - [Organizing Definition Elements](./guide/data-organization/organizing-definition-elements.md)
+  - [Catalogs](./guide/data-organization/catalogs.md)
 
 - #### Physical Modeling Perspective
 
