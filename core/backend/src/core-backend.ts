@@ -89,6 +89,7 @@ export * from "./ChangesetECAdaptor";
 export * from "./ChangesetReader";
 export * from "./ChangesetReaderTypes";
 export * from "./PartialChangeUnifier";
+export * from "./ChangeUnifier";
 
 export * from "./internal/cross-package";
 

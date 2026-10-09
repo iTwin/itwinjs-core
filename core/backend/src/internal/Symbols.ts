@@ -34,3 +34,7 @@ export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));
 export const _activeTxn = Symbol.for(sym("activeTxn"));
 export const _resetIModelDb = Symbol.for(sym("resetIModelDb"));
 export const _onReservedElementInsert = Symbol.for(sym("onReservedElementInsert"));
+/** @internal */
+export const _readerOptions = Symbol.for(sym("readerOptions"));
+/** @internal */
+export const _appendToNativeUnifier = Symbol.for(sym("appendToNativeUnifier"));
