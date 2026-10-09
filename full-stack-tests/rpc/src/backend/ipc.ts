@@ -25,18 +25,18 @@ function describeRebuiltError(error: any) {
 }
 
 function orderTest(socket: { handle(channel: string, listener: (event: any, ...args: any[]) => Promise<any>): void }) {
-  socket.handle("itwin.rpc-test-a", async (_event: Event, methodName: string, ..._args: any[]) => {
-    return [methodName, "a"];
+  socket.handle("itwin.rpc-test-immediate-first", async (_event: Event, methodName: string, ..._args: any[]) => {
+    return [methodName];
   });
 
-  socket.handle("itwin.rpc-test-b", async (_event: Event, methodName: string, ..._args: any[]) => {
+  socket.handle("itwin.rpc-test-delayed", async (_event: Event, methodName: string, ..._args: any[]) => {
     return new Promise((resolve) => {
-      setTimeout(() => resolve([methodName, "b"]), 1000);
+      setTimeout(() => resolve([methodName]), 1000);
     });
   });
 
-  socket.handle("itwin.rpc-test-c", async (_event: Event, methodName: string, ..._args: any[]) => {
-    return [methodName, "c"];
+  socket.handle("itwin.rpc-test-immediate-second", async (_event: Event, methodName: string, ..._args: any[]) => {
+    return [methodName];
   });
 }
 
