@@ -102,3 +102,21 @@ export function unwrapCallbackResponse(response: unknown, source = "backend call
     error.stack = responseError.stack;
   throw error;
 }
+
+/** Reject values that the HTTP transport cannot send, so a callback behaves the same in every runtime.
+ * @internal
+ */
+export function assertJsonValue(value: unknown, ancestors = new Set<object>()): void {
+  if (value === null || typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)))
+    return;
+
+  if (typeof value !== "object" || ancestors.has(value)
+    || (!Array.isArray(value) && Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
+    || Object.getOwnPropertySymbols(value).length > 0)
+    throw new TypeError("Backend callback arguments and defined results must contain only JSON values.");
+
+  ancestors.add(value);
+  for (const item of Array.isArray(value) ? value : Object.values(value))
+    assertJsonValue(item, ancestors);
+  ancestors.delete(value);
+}

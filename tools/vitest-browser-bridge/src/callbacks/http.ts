@@ -4,12 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { dispatchBackendCallback } from "./backend.js";
-import { type CallbackRequest, unwrapCallbackResponse } from "./protocol.js";
+import { assertJsonValue, type CallbackRequest, unwrapCallbackResponse } from "./protocol.js";
 
 /** Environment variable that carries the per-run callback token to a test backend process.
  * @internal
  */
 export const backendCallbackTokenEnvVar = "VITEST_BACKEND_CALLBACK_TOKEN";
+
+/** Path where a test backend mounts its HTTP callback handler. The browser derives the backend origin
+ * from the page with `backendOriginFor`, so every consumer uses the same route.
+ * @internal
+ */
+export const backendCallbackPath = "/__vitest_backend_callback";
 
 /** Vitest `provide`/`inject` key that carries the per-run callback token to the browser.
  * Consumers declare it on Vitest's `ProvidedContext` as `backendCallbackToken: string`.
@@ -82,21 +88,6 @@ export interface HttpBackendCallbackResponse {
   status(statusCode: number): {
     json(body: unknown): unknown;
   };
-}
-
-function assertJsonValue(value: unknown, ancestors = new Set<object>()): void {
-  if (value === null || typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)))
-    return;
-
-  if (typeof value !== "object" || ancestors.has(value)
-    || (!Array.isArray(value) && Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
-    || Object.getOwnPropertySymbols(value).length > 0)
-    throw new TypeError("HTTP backend callback arguments and defined results must contain only JSON values.");
-
-  ancestors.add(value);
-  for (const item of Array.isArray(value) ? value : Object.values(value))
-    assertJsonValue(item, ancestors);
-  ancestors.delete(value);
 }
 
 // JSON drops `value: undefined`, so the HTTP transport marks a successful undefined result explicitly.
