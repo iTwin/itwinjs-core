@@ -5212,6 +5212,8 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     readonly geoServices: GeoServices;
+    // @internal
+    static getFiniteGeoPoint(props: XYZProps): Point3d;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
     // @internal (undocumented)

@@ -269,6 +269,11 @@ export interface GeoConverterOptions {
 }
 
 /** An object capable of communicating with the backend to convert between coordinates in a geographic coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
+ * Conversion results retain the backend's per-point status, including failed vertical conversions. Check each status
+ * before using elevations; [[GeoCoordStatus.VerticalDatumConvertError]] does not provide a reliable converted Z.
+ * Results, including failures, are cached in this converter. Loading grids does not invalidate those cached results.
+ * To retry after resources become available, finish outstanding requests and acquire a fresh converter from
+ * [[GeoServices.getConverter]] instead of reusing the retained instance.
  * @see [[GeoServices.getConverter]] to obtain a converter.
  * @see [GeographicCRS]($common) for more information about geographic coordinate reference systems.
  * @public

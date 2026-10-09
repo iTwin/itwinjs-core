@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, IModelReadRpcInterface } from "@itwin/core-common";
+import { GeoServiceStatus } from "@itwin/core-bentley";
+import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, GeoCoordStatus, IModelReadRpcInterface } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { getHeightAverage, getHeightRange } from "../GeoProviders";
@@ -19,6 +21,57 @@ function makeEmptyDoneResponse() {
     stats: { cpuTime: 0, totalTime: 0, memUsed: 0, prepareTime: 0, timeLimit: 0, memLimit: 0 },
   };
 }
+
+describe("IModelConnection vertical conversion failures", () => {
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([10, 15, Number.NaN])("rejects status 26 without consuming unreliable elevation %s", async (height) => {
+    const imodel = createBlankConnection();
+    vi.spyOn(imodel, "noGcsDefined", "get").mockReturnValue(false);
+    vi.spyOn(imodel, "isOpen", "get").mockReturnValue(true);
+    const point = { p: { x: 23.7, y: 37.9, z: height }, s: GeoCoordStatus.VerticalDatumConvertError };
+    vi.spyOn(imodel.geoServices, "getConverter").mockReturnValue({
+      getGeoCoordinatesFromIModelCoordinates: async () => ({ geoCoords: [point], fromCache: 0 }),
+      getIModelCoordinatesFromGeoCoordinates: async () => ({ iModelCoords: [point], fromCache: 0 }),
+    } as unknown as ReturnType<typeof imodel.geoServices.getConverter>);
+    const cartographic = Cartographic.fromDegrees({ longitude: 23.7, latitude: 37.9, height: 10 });
+    const output = Point3d.create(1, 2, 3);
+
+    await expect(imodel.spatialToCartographicFromGcs(output)).rejects.toMatchObject({ errorNumber: GeoServiceStatus.VerticalDatumConvertError });
+    await expect(imodel.cartographicToSpatialFromGcs(cartographic, output)).rejects.toMatchObject({ errorNumber: GeoServiceStatus.VerticalDatumConvertError });
+    expect(output.toJSON()).toEqual([1, 2, 3]);
+    await expect(imodel.cartographicFromSpatial([output])).rejects.toMatchObject({ errorNumber: GeoServiceStatus.VerticalDatumConvertError });
+    await expect(imodel.spatialFromCartographic([cartographic])).rejects.toMatchObject({ errorNumber: GeoServiceStatus.VerticalDatumConvertError });
+  });
+
+  it.each([
+    { x: Number.NaN, y: 37.9, z: 10 },
+    { x: 23.7, y: Number.POSITIVE_INFINITY, z: 10 },
+    { x: 23.7, y: 37.9, z: Number.NaN },
+    { x: 23.7, y: 37.9, z: Number.NEGATIVE_INFINITY },
+    [23.7, 37.9, Number.NaN],
+  ])("rejects non-finite coordinates even when conversion reports success: %j", async (coordinates) => {
+    const imodel = createBlankConnection();
+    vi.spyOn(imodel, "noGcsDefined", "get").mockReturnValue(false);
+    vi.spyOn(imodel, "isOpen", "get").mockReturnValue(true);
+    const point = { p: coordinates, s: GeoCoordStatus.Success };
+    vi.spyOn(imodel.geoServices, "getConverter").mockReturnValue({
+      getGeoCoordinatesFromIModelCoordinates: async () => ({ geoCoords: [point], fromCache: 0 }),
+      getIModelCoordinatesFromGeoCoordinates: async () => ({ iModelCoords: [point], fromCache: 0 }),
+    } as unknown as ReturnType<typeof imodel.geoServices.getConverter>);
+    const cartographic = Cartographic.fromDegrees({ longitude: 23.7, latitude: 37.9, height: 10 });
+    const output = Point3d.create(1, 2, 3);
+    const error = { errorNumber: GeoServiceStatus.CSMapError };
+
+    await expect(imodel.spatialToCartographicFromGcs(output)).rejects.toMatchObject(error);
+    await expect(imodel.cartographicToSpatialFromGcs(cartographic, output)).rejects.toMatchObject(error);
+    expect(output.toJSON()).toEqual([1, 2, 3]);
+    await expect(imodel.cartographicFromSpatial([output])).rejects.toMatchObject(error);
+    await expect(imodel.spatialFromCartographic([cartographic])).rejects.toMatchObject(error);
+  });
+});
 
 describe("IModelConnection geo-elevation getters on non-geolocated iModels", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

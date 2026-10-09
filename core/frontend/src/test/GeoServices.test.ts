@@ -157,6 +157,33 @@ describe("GeoServices", () => {
   });
 
   for (const direction of ["geoToIModel", "iModelToGeo"] as const) {
+    it(`preserves mixed vertical failure results in the ${direction} cache and retries with a fresh converter`, async () => {
+      const inputs = [0, 1, 2, 3].map((x) => ({ x, y: 1, z: 10 }));
+      const results: PointWithStatus[] = [
+        { p: { x: 20, y: 30, z: 40 }, s: GeoCoordStatus.Success },
+        { p: { x: 21, y: 30, z: 10 }, s: GeoCoordStatus.VerticalDatumConvertError },
+        { p: { x: 22, y: 30, z: 15 }, s: GeoCoordStatus.VerticalDatumConvertError },
+        { p: { x: 23, y: 30, z: Number.NaN }, s: GeoCoordStatus.VerticalDatumConvertError },
+      ];
+      const requestPoints = vi.fn(async () => results);
+      const gs = makeGeoServices({ toIModelCoords: requestPoints, fromIModelCoords: requestPoints });
+      const converter = gs.getConverter()!;
+      const convert = async (cv: typeof converter) => direction === "geoToIModel"
+        ? cv.getIModelCoordinatesFromGeoCoordinates(inputs).then((response) => ({ points: response.iModelCoords, fromCache: response.fromCache }))
+        : cv.getGeoCoordinatesFromIModelCoordinates(inputs).then((response) => ({ points: response.geoCoords, fromCache: response.fromCache }));
+
+      expect(await convert(converter)).toEqual({ points: results, fromCache: 0 });
+      const recovered = results.map(({ p }) => ({ p: { ...p, z: 40 }, s: GeoCoordStatus.Success }));
+      requestPoints.mockResolvedValue(recovered);
+      expect(await convert(converter)).toEqual({ points: results, fromCache: inputs.length });
+      expect(requestPoints).toHaveBeenCalledTimes(1);
+
+      const fresh = gs.getConverter()!;
+      expect(fresh).not.toBe(converter);
+      expect(await convert(fresh)).toEqual({ points: recovered, fromCache: 0 });
+      expect(requestPoints).toHaveBeenCalledTimes(2);
+    });
+
     for (const message of ["Server error (-1): Server connection error", "Server error (401): Unknown server response code"]) {
       it(`logs safe per-batch context and retains the original error for ${direction}: ${message}`, async () => {
         const error = new Error(message);

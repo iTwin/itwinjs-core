@@ -382,6 +382,21 @@ export abstract class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
   }
 
+  /** Constructs a point after validating raw ordinates, before JSON normalization can conceal NaN.
+   * Omitted ordinates default to zero.
+   * @throws IModelError with GeoServiceStatus.CSMapError if any supplied ordinate is non-finite.
+   * @internal
+   */
+  public static getFiniteGeoPoint(props: XYZProps): Point3d {
+    const coordinates = Array.isArray(props) ? props : [props.x, props.y, props.z];
+    for (let index = 0; index < 3; ++index) {
+      if (!Number.isFinite(coordinates[index] ?? 0))
+        throw new IModelError(GeoServiceStatus.CSMapError, "Non-finite coordinate returned by geographic conversion");
+    }
+
+    return Point3d.fromJSON(props);
+  }
+
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
@@ -404,7 +419,7 @@ export abstract class IModelConnection extends IModel {
       throw new IModelError(geoServiceStatus, "Error converting spatial to cartographic");
     }
 
-    const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    const longLatHeight = IModelConnection.getFiniteGeoPoint(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
@@ -468,7 +483,7 @@ export abstract class IModelConnection extends IModel {
         case GeoCoordStatus.NoGCSDefined:
           throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
         case GeoCoordStatus.Success:
-          const llh = Point3d.fromJSON(coord.p);
+          const llh = IModelConnection.getFiniteGeoPoint(coord.p);
           return Cartographic.fromDegrees({ longitude: llh.x, latitude: llh.y, height: llh.z });
         default:
           throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting spatial to cartographic");
@@ -500,7 +515,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     result = result ? result : Point3d.createZero();
-    result.setFromJSON(coordResponse.iModelCoords[0].p);
+    result.setFrom(IModelConnection.getFiniteGeoPoint(coordResponse.iModelCoords[0].p));
     return result;
   }
 
@@ -560,7 +575,7 @@ export abstract class IModelConnection extends IModel {
         case GeoCoordStatus.NoGCSDefined:
           throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
         case GeoCoordStatus.Success:
-          return Point3d.fromJSON(coord.p);
+          return IModelConnection.getFiniteGeoPoint(coord.p);
         default:
           throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting cartographic to spatial");
       }

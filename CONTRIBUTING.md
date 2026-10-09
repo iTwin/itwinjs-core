@@ -84,8 +84,11 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | macOS production workspace prefetch and fresh-process offline vertical CRS acceptance using `sandbox-exec` to deny networking | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
 Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
+
+The offline Vertical CRS test runs only on macOS. From `full-stack-tests/backend`, run `rushx build`, then `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ./node_modules/.bin/mocha lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 650000`. It downloads both default production GCS databases into a temporary cache, verifies cold-offline failure, then checks discovery and bidirectional EGM96 conversion in a fresh network-blocked process. The cache is removed afterward.
 
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 
