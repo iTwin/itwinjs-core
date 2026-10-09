@@ -20,7 +20,7 @@ async function init() {
   const frontendPort = parseFrontendPort(process.env[frontendPortEnvVar], frontendPortEnvVar);
   const port = backendPortFor(frontendPort);
 
-  await commonSetup(registerBackendCallback);
+  await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "websocket");
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -35,7 +35,7 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
-  await setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket, registerBackendCallback);
+  await setupIpcTest(async () => Promise.resolve(), LocalhostIpcHost.socket);
   notifyReady("websocket");
 
   return () => {
