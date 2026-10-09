@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
-import { ThumbnailFormatProps } from "@itwin/core-common";
+import { ThumbnailFormatProps, ViewStoreError } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -275,6 +275,63 @@ describe("ViewStore", function (this: Suite) {
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition", "BisCore:OrthographicViewDefinition"] }).length).equal(2);
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition"] }).length).equal(1);
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition", "BisCore:SheetViewDefinition"] }).length).equal(2);
+
+    // query parameters may come from RPC callers, so values must never be interpreted as SQL
+    const allPublicCount = vs1.queryViewsSync({}).length;
+    const injectClause = "x') OR 1=1 OR className IN('x";
+    expect(vs1.queryViewsSync({ classNames: [injectClause] }).length).equal(0);
+    expect(vs1.queryViewsSync({ classNames: ["foo') UNION SELECT Id,name,owner,private,1 FROM views -- "] }).length).equal(0);
+    expect(vs1.queryViewsSync({ tags: [injectClause] }).length).equal(0);
+    expect(vs1.queryViewsSync({ classNames: ["it's"] }).length).equal(0); // quotes in values must not cause SQL errors
+    expect(vs1.queryViewsSync({ tags: ["it's"] }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "' OR 1=1 --" }).length).equal(0);
+    expect(vs1.queryViewsSync({ group: "group2", offset: 95 }).length).equal(5); // offset without limit
+    const badParams: any[] = [
+      { nameSearch: "x", nameCompare: "= @name OR 1=1 OR name =" },
+      { nameSearch: "x", nameCompare: "like" },
+      { limit: "1 UNION SELECT Id FROM views" },
+      { limit: 1.5 },
+      { limit: -1 },
+      { limit: 10, offset: "1; --" },
+      { classNames: "BisCore:SpatialViewDefinition" },
+      { classNames: [1] },
+      { tags: [{}] },
+      { owner: 1 },
+      { nameSearch: { $ne: "" } },
+      { group: 5 },
+      { group: ["group2"] },
+      null,
+      undefined,
+    ];
+    for (const params of badParams) {
+      // must be rejected by validation with a ViewStoreError, not fail later with a generic or native error
+      expect(() => vs1.queryViewsSync(params), String(JSON.stringify(params))).throws().that.satisfies((e: unknown) => ViewStoreError.isError(e, "invalid-value"));
+    }
+    expect(vs1.queryViewsSync({ owner: "", nameSearch: "", group: "" }).length).equal(allPublicCount); // empty strings are treated as absent
+
+    // owner is optional: without it only public views are returned; with it, that owner's private views are added
+    expect(vs1.queryViewsSync({ group: "/" }).every((view) => !view.isPrivate)).to.be.true;
+    expect(vs1.queryViewsSync({ group: "/", owner: "someoneElse" }).every((view) => !view.isPrivate)).to.be.true;
+    expect(vs1.queryViewsSync({ group: "/", owner: "owner10" }).filter((view) => view.isPrivate).length).equal(4);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2" }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2", owner: "someoneElse" }).length).equal(0);
+    expect(vs1.queryViewsSync({ nameSearch: "my private 2", owner: "owner10" }).length).equal(1);
+
+    // a limit of 0 means no limit
+    expect(vs1.queryViewsSync({ group: "group2", limit: 0 }).length).equal(100);
+    expect(vs1.queryViewsSync({ group: "group2", limit: 0, offset: 0 }).length).equal(100);
+
+    // the query statement is cached, so bindings from one call must not leak into the next
+    expect(vs1.queryViewsSync({ owner: "owner10" }).length).equal(7);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition"], nameSearch: "my%", nameCompare: "LIKE", limit: 1 }).length).equal(1);
+    expect(vs1.queryViewsSync({ nameSearch: "another view" }).length).equal(1);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
+
+    // arrays are bound as a single JSON value, so their size is not limited by SQLite's bound-variable limit
+    const manyClassNames = Array.from({ length: 40000 }, (_, i) => `Fake:Class${i}`);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: [...manyClassNames, "BisCore:DrawingViewDefinition"] }).length).equal(1);
+    expect(vs1.queryViewsSync({}).length).equal(allPublicCount);
 
     await vs1.renameTag({ oldName: "tag2", newName: "tag2-renamed" });
     views = vs1.queryViewsSync({ tags: ["tag2-renamed"] });
