@@ -24,11 +24,11 @@ import { NullRenderSystem } from "../../../NoRenderApp";
 import { GaussianSplatAtlas, getGaussianSplatAtlas } from "../../../internal/render/webgl/GaussianSplatAtlas";
 import { GaussianSplatRenderer } from "../../../internal/render/webgl/GaussianSplatRenderer";
 import { Target } from "../../../internal/render/webgl/Target";
-import { reduceGaussianTileDetail } from "../../../internal/tile/RealityTileSelection";
+import { gaussianTileDetailModifier, recoverGaussianTileDetail, reduceGaussianTileDetail } from "../../../internal/tile/RealityTileSelection";
 import { GaussianSplatGeometry } from "../../../internal/render/webgl/GaussianSplatGeometry";
 import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
 import { packGaussianSplats } from "../../../workers/GaussianSplats/Packing";
-import { observeGaussianSplats } from "../../../internal/render/GaussianSplatDiagnostics";
+import { GaussianSplatAtlasUpload, observeGaussianSplats } from "../../../internal/render/GaussianSplatDiagnostics";
 import { GaussianSplatWorker } from "../../../internal/render/GaussianSplatWorker";
 import { System } from "../../../internal/render/webgl/System";
 import { createBlankConnection } from "../../createBlankConnection";
@@ -216,6 +216,47 @@ describe("Native Gaussian splats", () => {
     expect(System.instance.context.getError()).toBe(System.instance.context.NO_ERROR);
   });
 
+  it("preserves SH, exact opacity and covariance across auxiliary pages and tile offsets", async () => {
+    let drawn = 0;
+    const remove = observeGaussianSplats(viewport.target, (state) => { drawn = state.drawnInstances; });
+    const center = viewport.npcToWorld(new Point3d(0.5, 0.5, 0.5));
+    const add = async (count: number, id: string) => {
+      const source = gaussianSplatFixture(count, 3);
+      source.opacities.fill(0);
+      source.opacities[count - 1] = 0.731;
+      for (let i = 0; i < count; i++) {
+        source.positions.set([center.x, center.z, -center.y], i * 3);
+        source.scales.set([0.12, 0.00001, 0.08], i * 3);
+      }
+      source.sh.set([-0.5 / 0.2820947917738781, 0.5 / 0.2820947917738781, -0.5 / 0.2820947917738781], (count - 1) * 48);
+      source.sh[(count - 1) * 48 + 10] = 0.15;
+      const packed = packGaussianSplats(source);
+      expect(packed.covariance).toBeDefined();
+      expect(packed.appearance).toBeDefined();
+      const graphic = (await readGltfGraphics({ gltf: gaussianSplatGlb(source), iModel: imodel, pickableOptions: { id } }))!;
+      graphics.push(graphic);
+      new Splats(graphic);
+      viewport.invalidateScene();
+    };
+    try {
+      await add(1, "0xabc");
+      const expected = color();
+      expect(expected[1]).toBeGreaterThan(100);
+      expect(pick()).toBe("0xabc");
+      TestDecorator.dropAll();
+      // A second tile gives the large tile a nonzero atlas offset. Its invisible
+      // leading splats place the visible value beyond both base and auxiliary pages.
+      await addSplat({ opacity: 0 });
+      await add(16385, "0xdef");
+      await expect.poll(() => { color(); return drawn; }, { timeout: 10000 }).toBe(16386);
+      expect(color()).toEqual(expected);
+      expect(pick()).toBe("0xdef");
+      expect(System.instance.context.getError()).toBe(System.instance.context.NO_ERROR);
+    } finally {
+      remove();
+    }
+  });
+
   it("computes native world bounds for transformed Gaussian graphics", async () => {
     const source = gaussianSplatFixture();
     source.positions.set([1, 2, 3]);
@@ -311,6 +352,108 @@ describe("Native Gaussian splats", () => {
     }
   });
 
+  it("measures growth headroom from this user's resident bytes and chooses a recovery step that fits", () => {
+    const budget = 9 * 1024 * 1024;
+    using atlas = new GaussianSplatAtlas(budget);
+    const owner = {}, other = {};
+    const geometry = new GaussianSplatGeometry(packGaussianSplats(gaussianSplatFixture()));
+    const second = new GaussianSplatGeometry(packGaussianSplats(gaussianSplatFixture()));
+    try {
+      expect(atlas.growthHeadroom(owner)).toBe(Infinity);
+      atlas.update(owner, [geometry]);
+      const bytes = atlas.bytesUsed;
+      expect(bytes).toBeGreaterThan(0);
+      // Resident content may use the whole budget, less what other views hold.
+      const alone = atlas.growthHeadroom(owner);
+      expect(alone).toBeCloseTo(budget / atlas.bytesRequired, 5);
+      atlas.update(other, [second]);
+      expect(atlas.growthHeadroom(owner)).toBeLessThan(alone);
+      atlas.release(other);
+      // A large reservation of the user's own worker memory scales with the selection and caps growth.
+      atlas.reserveWorker(owner, 520 * 1024 * 1024, [geometry]);
+      expect(atlas.growthHeadroom(owner)).toBeLessThan(1);
+      atlas.release(owner);
+      expect(atlas.growthHeadroom(owner)).toBe(Infinity);
+    } finally {
+      geometry[Symbol.dispose]();
+      second[Symbol.dispose]();
+    }
+
+    const tree = {};
+    const target = viewport.target;
+    reduceGaussianTileDetail(target, [tree]);
+    reduceGaussianTileDetail(target, [tree]);
+    expect(gaussianTileDetailModifier(target, tree)).toBe(4);
+    expect(recoverGaussianTileDetail(target, [tree], 2 ** 0.25)).toBe(true);
+    expect(gaussianTileDetailModifier(target, tree)).toBeCloseTo(4 / 2 ** 0.25, 6);
+    expect(recoverGaussianTileDetail(target, [tree], Math.SQRT2)).toBe(true);
+    expect(gaussianTileDetailModifier(target, tree)).toBeCloseTo(2 ** 1.25, 6);
+    expect(recoverGaussianTileDetail(target, [tree], 2)).toBe(true);
+    expect(gaussianTileDetailModifier(target, tree)).toBeCloseTo(2 ** 0.25, 6);
+    // A step past full detail snaps to the unmodified tolerance.
+    expect(recoverGaussianTileDetail(target, [tree], 2)).toBe(true);
+    expect(gaussianTileDetailModifier(target, tree)).toBe(1);
+    expect(recoverGaussianTileDetail(target, [tree], 2)).toBe(false);
+
+    const renderer = new GaussianSplatRenderer(target as Target);
+    const steps = renderer as unknown as Record<"_detailTrees", Set<object>> & { detailRecoveryStep: () => number | undefined };
+    try {
+      steps._detailTrees.add(tree);
+      expect(steps.detailRecoveryStep()).toBeUndefined();
+      reduceGaussianTileDetail(target, [tree]);
+      expect(steps.detailRecoveryStep()).toBe(2);
+      const headroom = vi.spyOn(getGaussianSplatAtlas(), "growthHeadroom");
+      headroom.mockReturnValue(1.6);
+      expect(steps.detailRecoveryStep()).toBe(2 ** 0.25);
+      headroom.mockReturnValue(2.5);
+      expect(steps.detailRecoveryStep()).toBe(Math.SQRT2);
+      headroom.mockReturnValue(1.2);
+      expect(steps.detailRecoveryStep()).toBeUndefined();
+      headroom.mockRestore();
+    } finally {
+      renderer[Symbol.dispose]();
+      recoverGaussianTileDetail(target, [tree], 64);
+    }
+  });
+
+  it("uploads only new tiles into spare capacity, reuses freed ranges, and compacts once mostly empty", () => {
+    using atlas = new GaussianSplatAtlas();
+    const owner = {};
+    const geometries = Array.from({ length: 6 }, () => new GaussianSplatGeometry(packGaussianSplats(gaussianSplatFixture())));
+    const statistics: GaussianSplatAtlasUpload[] = [];
+    try {
+      atlas.update(owner, geometries.slice(0, 4));
+      const texture = atlas.texture, auxiliary = atlas.auxiliaryTexture, capacity = atlas.bytesUsed;
+      expect(capacity).toBeGreaterThan(atlas.bytesRequired);
+      const addresses = geometries.slice(0, 4).map((g) => [atlas.pages(g.id).slice(), atlas.auxiliaryOffset(g.id)]);
+      // A fifth tile fits the spare capacity: no rebuild, existing addresses untouched, one tile uploaded.
+      atlas.collectUploadStatistics(statistics, () => atlas.update(owner, geometries.slice(0, 5)));
+      expect(atlas.texture).toBe(texture);
+      expect(atlas.auxiliaryTexture).toBe(auxiliary);
+      expect(atlas.bytesUsed).toBe(capacity);
+      expect(statistics[0]).toMatchObject({ succeeded: true, splats: 5, retainedSplats: 4, allocatedBytes: 0 });
+      expect(statistics[0].uploadedBytes).toBeGreaterThan(0);
+      expect(statistics[0].uploadedBytes).toBeLessThan(capacity / 2);
+      expect(geometries.slice(0, 4).map((g) => [atlas.pages(g.id).slice(), atlas.auxiliaryOffset(g.id)])).toEqual(addresses);
+      // Dropping the second tile and adding a sixth reuses the freed range without growing.
+      const freed = atlas.pages(geometries[1].id)[0];
+      atlas.update(owner, [geometries[0], ...geometries.slice(2, 6)]);
+      expect(atlas.texture).toBe(texture);
+      expect(atlas.pages(geometries[5].id)[0]).toBe(freed);
+      expect(atlas.numPages).toBe(5);
+      // Under half in use: compact into smaller arrays.
+      atlas.update(owner, [geometries[0]]);
+      expect(atlas.texture).not.toBe(texture);
+      expect(atlas.bytesUsed).toBeLessThan(capacity);
+      expect(atlas.numPages).toBe(1);
+      expect(() => atlas.pages(geometries[1].id)).toThrow(/missing GPU tile allocation/);
+      expect(System.instance.context.getError()).toBe(System.instance.context.NO_ERROR);
+    } finally {
+      atlas.release(owner);
+      for (const geometry of geometries) geometry[Symbol.dispose]();
+    }
+  });
+
   it("isolates rejected candidates and keeps another view's active sort charged", () => {
     using atlas = new GaussianSplatAtlas();
     const active = {}, candidate = {}, other = {};
@@ -357,6 +500,37 @@ describe("Native Gaussian splats", () => {
     }
   });
 
+  it("records atlas uploads only within an observed scope, including failed replacements", () => {
+    using atlas = new GaussianSplatAtlas();
+    const owner = {};
+    const geometry = new GaussianSplatGeometry(packGaussianSplats(gaussianSplatFixture()));
+    const other = new GaussianSplatGeometry(packGaussianSplats(gaussianSplatFixture()));
+    const statistics: GaussianSplatAtlasUpload[] = [];
+    try {
+      atlas.collectUploadStatistics(statistics, () => atlas.update(owner, [geometry]));
+      expect(statistics).toHaveLength(1);
+      expect(statistics[0]).toMatchObject({ succeeded: true, splats: 1, retainedSplats: 0, allocatedBytes: atlas.bytesUsed });
+      expect(statistics[0].uploadedBytes).toBeGreaterThan(0);
+      expect(statistics[0].uploadedBytes).toBeLessThanOrEqual(statistics[0].allocatedBytes);
+      atlas.collectUploadStatistics(statistics, () => atlas.update(owner, [geometry]));
+      expect(statistics).toHaveLength(1); // unchanged residency performs no uploads
+      const error = vi.spyOn(System.instance.context, "getError").mockReturnValueOnce(System.instance.context.OUT_OF_MEMORY);
+      try {
+        expect(() => atlas.collectUploadStatistics(statistics, () => atlas.update(owner, [geometry, other]))).toThrow();
+        expect(statistics[1]).toMatchObject({ succeeded: false, splats: 2, retainedSplats: 1 });
+        expect(atlas.numPages).toBe(1);
+      } finally {
+        error.mockRestore();
+      }
+      atlas.release(owner);
+      expect(statistics).toHaveLength(2); // instrumentation restored even after failure
+    } finally {
+      atlas.release(owner);
+      geometry[Symbol.dispose]();
+      other[Symbol.dispose]();
+    }
+  });
+
   it("reserves enough atlas capacity to stage and retire a near-budget field", () => {
     using atlas = new GaussianSplatAtlas(9 * 1024 * 1024);
     const owner = {};
@@ -366,7 +540,9 @@ describe("Native Gaussian splats", () => {
       expect(atlas.canAdmit(owner, initial)).toBe(true);
       atlas.update(owner, initial);
       const initialBytes = atlas.bytesUsed;
-      expect(initialBytes).toBe(3 * 1024 * 1024);
+      expect(initialBytes).toBeGreaterThanOrEqual(3 * 1024 * 1024);
+      expect(initialBytes).toBeLessThanOrEqual(9 * 1024 * 1024);
+      expect(atlas.bytesRequired).toBe(3 * 1024 * 1024);
       expect(atlas.canAdmit(owner, coarse)).toBe(true);
       expect(atlas.canUpdate(owner, [...initial, ...coarse])).toBe(true);
       atlas.update(owner, [...initial, ...coarse]);
@@ -395,7 +571,7 @@ describe("Native Gaussian splats", () => {
       atlas.update(other, [initial[0]]);
       const texture = atlas.texture;
       error.mockReturnValueOnce(gl.OUT_OF_MEMORY);
-      expect(() => atlas.update(owner, [...initial, ...coarse])).toThrow(/GPU atlas allocation failed/);
+      expect(() => atlas.update(owner, [...initial, ...coarse])).toThrow(/GPU atlas/);
       expect(atlas.texture).toBe(texture);
       expect(atlas.numPages).toBe(5);
       expect(atlas.canUpdate(owner, [...initial, ...coarse])).toBe(false);
@@ -477,6 +653,19 @@ describe("Native Gaussian splats", () => {
     expect(color()[0]).toBeGreaterThan(150);
     expect(getGaussianSplatAtlas().bytesUsed).toBeGreaterThan(0);
     expect(gl.getError()).toBe(gl.NO_ERROR);
+  });
+
+  it("leaves splats out of the pick buffer while the cursor is moving", async () => {
+    await addSplat({ id: "0x1", depth: 0.5 });
+    expect(pick()).toBe("0x1");
+    const moving = vi.spyOn(IModelApp.toolAdmin, "isCursorMoving", "get").mockReturnValue(true);
+    try {
+      expect(pick()).toBeUndefined();
+      expect(color()[0]).toBeGreaterThan(150); // color draws are unaffected
+    } finally {
+      moving.mockRestore();
+    }
+    expect(pick()).toBe("0x1");
   });
 
   it("uses Gaussian alpha threshold for picking", async () => {

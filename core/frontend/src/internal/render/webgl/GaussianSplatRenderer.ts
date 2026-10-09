@@ -13,14 +13,15 @@ import { _scheduleScriptReference } from "../../../common/internal/Symbols";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { gaussianTileDetailModifier, hasIncompleteRealityTileSelection, recoverGaussianTileDetail, reduceGaussianTileDetail } from "../../tile/RealityTileSelection";
 import { GaussianSplatSortRequest, GaussianSplatSortTile, gaussianSplatsPerPage } from "../GaussianSplatSort";
+import { InstanceTile, remapSortedInstances } from "../GaussianSplatInstances";
 import { GaussianSplatWorker } from "../GaussianSplatWorker";
-import { GaussianSplatFrameState, gaussianSplatObservers } from "../GaussianSplatDiagnostics";
+import { GaussianSplatAtlasUpload, GaussianSplatFrameState, gaussianSplatObservers } from "../GaussianSplatDiagnostics";
 import { DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PushBatchCommand, PushCommand } from "./DrawCommand";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GaussianSplatGeometry } from "./GaussianSplatGeometry";
 import { Batch, Graphic, GraphicOwner } from "./Graphic";
-import { gaussianSplatAuxiliaryStride, getGaussianSplatAtlas, withGaussianSplatBindings } from "./GaussianSplatAtlas";
+import { getGaussianSplatAtlas, withGaussianSplatBindings } from "./GaussianSplatAtlas";
 import { gaussianSplatCompositeFragment, gaussianSplatCompositeVertex, gaussianSplatFragment, gaussianSplatVertex } from "./glsl/GaussianSplats";
 import { RenderState } from "./RenderState";
 import { System } from "./System";
@@ -45,41 +46,6 @@ interface CompletedTile {
   modelKey?: string;
   tree?: object;
   coverageComplete: boolean;
-}
-
-interface InstanceTile {
-  identity: string;
-  pages: number[];
-}
-
-function remapSortedInstances(instances: Uint32Array, previous: InstanceTile[], current: InstanceTile[]): Uint32Array {
-  const occurrences = new Map<string, number[]>();
-  for (let t = 0; t < current.length; t++) {
-    const rows = occurrences.get(current[t].identity) ?? [];
-    rows.push(t);
-    occurrences.set(current[t].identity, rows);
-  }
-
-  const matches = previous.map((tile) => {
-    const t = occurrences.get(tile.identity)?.shift();
-    if (t === undefined)
-      return undefined;
-
-    const pages = new Map(tile.pages.map((page, p) => [page, current[t].pages[p]]));
-    return { t, pages };
-  });
-  const remapped = new Uint32Array(instances.length);
-  let count = 0;
-  for (let i = 0; i < instances.length; i += 2) {
-    const match = matches[instances[i + 1]];
-    const page = match?.pages.get(Math.floor(instances[i] / gaussianSplatsPerPage));
-    if (match && page !== undefined) {
-      remapped[count++] = page * gaussianSplatsPerPage + instances[i] % gaussianSplatsPerPage;
-      remapped[count++] = match.t;
-    }
-  }
-
-  return count === remapped.length ? remapped : remapped.slice(0, count);
 }
 
 interface PendingSort {
@@ -135,6 +101,8 @@ export class GaussianSplatRenderer implements Disposable {
   private _activeSortCount = 0;
   private _detailFeedbackTime = 0;
   private _detailRecoveryTimer?: ReturnType<typeof setTimeout>;
+  private _detailRecoveryDelay = 5000;
+  private _detailRecoveryPending = false;
   private _memoryLimited = false;
   private _detailTrees = new Set<object>();
   private readonly _registered = new Set<number>();
@@ -396,15 +364,29 @@ export class GaussianSplatRenderer implements Disposable {
     this._detailRecoveryTimer = undefined;
   }
 
+  /** The largest tolerance step whose expected growth fits the atlas headroom, or undefined.
+   * Selected splats grow about with the inverse square of the tolerance, so a step of 2
+   * needs roughly 4x the resident bytes while a quarter-octave step needs about 1.4x.
+   */
+  private detailRecoveryStep(): number | undefined {
+    if (![...this._detailTrees].some((tree) => gaussianTileDetailModifier(this._target, tree) > 1))
+      return undefined;
+    const headroom = this._atlas.growthHeadroom(this) / 1.1;
+    for (const step of [2, Math.SQRT2, 2 ** 0.25])
+      if (step * step <= headroom)
+        return step;
+    return undefined;
+  }
+
   private scheduleDetailRecovery(): void {
-    if (this._disposed || this._completedContent !== this._content || !this._atlas.hasSpareCapacity || ![...this._detailTrees].some((tree) => gaussianTileDetailModifier(this._target, tree) > 1))
+    if (this._disposed || this._completedContent !== this._content || this.detailRecoveryStep() === undefined)
       return;
     // Wake a settled viewport once, without a continuous redraw loop. A later
     // admitted frame schedules the next gradual recovery step if needed.
     this._detailRecoveryTimer = setTimeout(() => {
       this._detailRecoveryTimer = undefined;
       if (!this._disposed) this._target.screenSpaceEffectContext.viewport.invalidateScene();
-    }, Math.max(1, 5000 - (performance.now() - this._detailFeedbackTime)));
+    }, Math.max(1, this._detailRecoveryDelay - (performance.now() - this._detailFeedbackTime)));
   }
 
   private reserveOwnedMemory(): void {
@@ -455,6 +437,11 @@ export class GaussianSplatRenderer implements Disposable {
     const prospective = { bytes: Math.max(positionsBytes, this._worker.bytesUsed - this._worker.wasmBytes) + Math.max(this._worker.wasmBytes, scratchCount * 32) + scratchCount * 40 + this._instances.byteLength + (this._readySort?.instances.byteLength ?? 0), geometries: [...new Map([...this._retained, ...geometries].map((g) => [g.id, g])).values()] };
     this._memoryLimited = !this._atlas.canAdmit(this, tiles.map((t) => t.geometry)) || !this._atlas.canUpdate(this, [...new Map(tiles.map((t) => [t.geometry.id, t.geometry])).values()], prospective);
     if (this._memoryLimited) {
+      if (this._detailRecoveryPending) {
+        // The last recovery step did not fit. Back off before retrying that level.
+        this._detailRecoveryPending = false;
+        this._detailRecoveryDelay = Math.min(60000, this._detailRecoveryDelay * 2);
+      }
       if (performance.now() - this._detailFeedbackTime >= 250) {
         this._detailFeedbackTime = performance.now();
         if (reduceGaussianTileDetail(this._target, this._detailTrees))
@@ -468,10 +455,22 @@ export class GaussianSplatRenderer implements Disposable {
       this.remapCompleted();
       return this.completedTiles();
     }
-    if (this._completedContent === this._content && performance.now() - this._detailFeedbackTime >= 5000 && this._atlas.hasSpareCapacity) {
-      this._detailFeedbackTime = performance.now();
-      if (recoverGaussianTileDetail(this._target, this._detailTrees))
-        this._target.screenSpaceEffectContext.viewport.invalidateScene();
+    if (this._completedContent === this._content) {
+      if (this._detailRecoveryPending) {
+        // The finer selection was admitted and completed; recover at the normal cadence again.
+        this._detailRecoveryPending = false;
+        this._detailRecoveryDelay = 5000;
+      }
+      if (performance.now() - this._detailFeedbackTime >= this._detailRecoveryDelay) {
+        const step = this.detailRecoveryStep();
+        if (step !== undefined) {
+          this._detailFeedbackTime = performance.now();
+          if (recoverGaussianTileDetail(this._target, this._detailTrees, step)) {
+            this._detailRecoveryPending = true;
+            this._target.screenSpaceEffectContext.viewport.invalidateScene();
+          }
+        }
+      }
     }
     this._awaitingCoverage = this._completed.some((tile) => tile.coverageComplete && tile.tree && hasIncompleteRealityTileSelection(this._target, tile.tree));
     if (gaussianSplatObservers(this._target)) {
@@ -666,9 +665,12 @@ export class GaussianSplatRenderer implements Disposable {
     for (let t = 0; t < tiles.length; t++) {
       const splats = tiles[t].geometry.splats;
       tiles[t].metadata[45] = this._atlas.auxiliaryOffset(tiles[t].geometry.id);
-      tiles[t].metadata[46] = gaussianSplatAuxiliaryStride(splats);
+      tiles[t].metadata[46] = splats.sh.length / splats.count;
       tiles[t].metadata[47] = (splats.covariance ? 1 : 0) | (splats.appearance ? 2 : 0);
+      // Auxiliary blocks are contiguous SH, covariance, then appearance arrays.
       tiles[t].metadata[48] = this._atlas.pages(tiles[t].geometry.id)[0] * gaussianSplatsPerPage;
+      tiles[t].metadata[49] = tiles[t].metadata[45] + splats.sh.length;
+      tiles[t].metadata[50] = tiles[t].metadata[49] + (splats.covariance?.length ?? 0);
       tiles[t].metadata[16] = start / 4;
       metadata.set(tiles[t].metadata, t * 64);
       planes.set(tiles[t].planes, start);
@@ -740,11 +742,21 @@ export class GaussianSplatRenderer implements Disposable {
   }
 
   public draw(commands: DrawCommands, destination: FrameBuffer, multisampled: boolean, pick: boolean): void {
+    // Hover locate reads the pick buffer on every mouse motion event, and each read waits for
+    // the GPU. While the cursor is moving, leave splats out of the pick buffer; the tool
+    // re-evaluates once the cursor rests, and that pick includes them. First-pass mitigation
+    // until pick readback is asynchronous.
+    if (pick && IModelApp.toolAdmin.isCursorMoving)
+      return;
     const observers = pick ? undefined : gaussianSplatObservers(this._target);
+    const atlasUploads: GaussianSplatAtlasUpload[] | undefined = observers ? [] : undefined;
     if (observers)
       this._debugDraw = { ids: [], pendingIds: [], count: 0, calls: 0, submitted: 0 };
     try {
-      this.drawContent(commands, destination, multisampled, pick);
+      if (atlasUploads)
+        this._atlas.collectUploadStatistics(atlasUploads, () => this.drawContent(commands, destination, multisampled, pick));
+      else
+        this.drawContent(commands, destination, multisampled, pick);
       this._lastError = "";
     } catch (error) {
       // Failure of opt-in content must not prevent the rest of the iModel from rendering.
@@ -765,6 +777,7 @@ export class GaussianSplatRenderer implements Disposable {
           sortAgeMs: this._sorting && this._sortStarted ? performance.now() - this._sortStarted : undefined,
           candidateAgeMs: this._content !== this._completedContent && this._candidateStarted ? performance.now() - this._candidateStarted : undefined,
           atlasPages: this._atlas.numPages, atlasBytes: this._atlas.bytesUsed,
+          atlasUploads,
           memoryLimited: this._memoryLimited, workerWasmBytes: this._worker.wasmBytes,
           packedSplatBytes: [...this._retained].reduce((sum, geometry) => sum + (geometry.splats.data.byteLength + geometry.splats.sh.byteLength + (geometry.splats.covariance?.byteLength ?? 0) + (geometry.splats.appearance?.byteLength ?? 0)), 0), failed: !!this._lastError,
         };
@@ -807,8 +820,13 @@ export class GaussianSplatRenderer implements Disposable {
         this.remapCompleted();
       }
     }
-    if (pick || tiles.length !== this._instanceTiles.length || tiles.some((tile, t) => tile.identity !== this._instanceTiles[t].identity))
+    if (pick || tiles.length !== this._instanceTiles.length || tiles.some((tile, t) => tile.identity !== this._instanceTiles[t].identity)) {
       temporaryInstances = remapSortedInstances(this._instances, this._instanceTiles, this.rows(tiles));
+      // An unchanged order (the common pick) reuses the resident buffer instead of
+      // uploading it for the pick and again for the next color frame.
+      if (temporaryInstances === this._instances)
+        temporaryInstances = undefined;
+    }
     if (!tiles.length) {
       if (preparationError)
         throw preparationError;
@@ -833,7 +851,9 @@ export class GaussianSplatRenderer implements Disposable {
       if (!this._field || this._field.width !== width || this._field.height !== height || this._fieldFbo?.depthBuffer !== destination.depthBuffer) {
         this._fieldFbo = dispose(this._fieldFbo);
         this._field = dispose(this._field);
-        const dataType = gl.getExtension("EXT_color_buffer_float") && gl.getExtension("EXT_float_blend") ? GL.Texture.DataType.Float : GL.Texture.DataType.UnsignedByte;
+        // Half float keeps dark linear values without 32-bit float's doubled blend bandwidth;
+        // blending into RGBA16F needs only EXT_color_buffer_float, not EXT_float_blend.
+        const dataType = gl.getExtension("EXT_color_buffer_float") ? gl.HALF_FLOAT as GL.Texture.DataType : GL.Texture.DataType.UnsignedByte;
         this._field = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, dataType);
         if (this._field)
           this._fieldFbo = FrameBuffer.create([this._field], destination.depthBuffer);

@@ -5,6 +5,18 @@
 
 import type { RenderTarget } from "../../render/RenderTarget";
 
+/** Wall timings include driver calls, not asynchronous GPU completion. @internal */
+export interface GaussianSplatAtlasUpload {
+  durationMs: number;
+  allocationMs: number;
+  uploadMs: number;
+  uploadedBytes: number;
+  allocatedBytes: number;
+  splats: number;
+  retainedSplats: number;
+  succeeded: boolean;
+}
+
 /** Diagnostic state of an actual Gaussian color draw. No images or credentials are included. @internal */
 export interface GaussianSplatFrameState {
   phase: "draw" | "dispose";
@@ -29,6 +41,8 @@ export interface GaussianSplatFrameState {
   candidateAgeMs?: number;
   atlasPages: number;
   atlasBytes: number;
+  /** Atlas work performed synchronously during this draw; absent when not recorded. */
+  atlasUploads?: GaussianSplatAtlasUpload[];
   /** Packed arrays leased by this viewport, including current and completed fields; excludes worker/GPU buffers. */
   packedSplatBytes: number;
   failed: boolean;

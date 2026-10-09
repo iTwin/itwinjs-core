@@ -25,6 +25,8 @@ uniform sampler2D u_tiles;
 uniform mat4 u_projection;
 uniform vec2 u_viewport;
 uniform vec3 u_frustum;
+uniform vec2 u_logZ;
+uniform bool u_useLogZ;
 const bool u_pick = ${pick ? "true" : "false"};
 out vec2 v_gaussian;
 out vec3 v_eye;
@@ -44,14 +46,16 @@ uvec4 splat(int n) {
   int texel = (int(a_instance.x) % 16384) * 2 + n;
   return texelFetch(u_splats, ivec3(texel % 256, texel / 256, page), 0);
 }
-float auxiliary(int n) {
-  vec4 storage = metadata(11);
+float auxiliary(int offset, int stride, int n) {
   int localIndex = int(a_instance.x) - int(metadata(12).x);
-  int index = int(storage.y) + localIndex * int(storage.z) + n;
+  int index = offset + localIndex * stride + n;
   int texel = index / 4;
   return texelFetch(u_auxiliary, ivec3(texel % 256, (texel / 256) % 128, texel / 32768), 0)[index % 4];
 }
-vec3 sh(int n) { return vec3(auxiliary(n*3), auxiliary(n*3+1), auxiliary(n*3+2)); }
+vec3 sh(int n) {
+  vec4 storage = metadata(11);
+  return vec3(auxiliary(int(storage.y),int(storage.z),n*3), auxiliary(int(storage.y),int(storage.z),n*3+1), auxiliary(int(storage.y),int(storage.z),n*3+2));
+}
 vec3 lighting(vec3 d, int degree) {
   float x=d.x, y=d.y, z=d.z;
   float xx=x*x, yy=y*y, zz=z*z;
@@ -76,17 +80,17 @@ void main() {
   vec4 rgba=vec4(packed.w & 255u,(packed.w>>8u)&255u,(packed.w>>16u)&255u,packed.w>>24u)/255.0;
   int flags=int(metadata(11).w);
   int degree=int(metadata(4).z);
-  int shCount=degree>0 ? (degree+1)*(degree+1)*3 : 0;
   if ((flags & 2)!=0) {
-    int start=shCount+((flags & 1)!=0 ? 6 : 0);
-    rgba=vec4(auxiliary(start),auxiliary(start+1),auxiliary(start+2),auxiliary(start+3));
+    int start=int(metadata(12).z);
+    rgba=vec4(auxiliary(start,4,0),auxiliary(start,4,1),auxiliary(start,4,2),auxiliary(start,4,3));
   }
   vec4 mean=vec4(position,rgba.a);
   vec4 c0=vec4(h0,h1)*exp2(uintBitsToFloat(base.w))*0.25;
   vec2 c1=h2*exp2(uintBitsToFloat(base.w))*0.25;
   if ((flags & 1)!=0) {
-    c0=vec4(auxiliary(shCount),auxiliary(shCount+1),auxiliary(shCount+2),auxiliary(shCount+3));
-    c1=vec2(auxiliary(shCount+4),auxiliary(shCount+5));
+    int start=int(metadata(12).y);
+    c0=vec4(auxiliary(start,6,0),auxiliary(start,6,1),auxiliary(start,6,2),auxiliary(start,6,3));
+    c1=vec2(auxiliary(start,6,4),auxiliary(start,6,5));
   }
   vec4 r0=metadata(0), r1=metadata(1), r2=metadata(2);
   mat3 a = transpose(mat3(r0.xyz, r1.xyz, r2.xyz));
@@ -140,6 +144,12 @@ void main() {
   vec2 pixels=e0*sigma.x*v_gaussian.x + e1*sigma.y*v_gaussian.y;
   gl_Position=clip;
   gl_Position.xy += 2.0*pixels/u_viewport*clip.w;
+  // The quad faces the camera at the mean's depth, so log depth is constant across it. Writing it
+  // here instead of gl_FragDepth keeps early depth rejection and tile-GPU depth optimizations.
+  if (u_useLogZ) {
+    float depth=u_logZ.x==0.0 ? -eye.z/u_logZ.y : log(-eye.z*u_logZ.x)/u_logZ.y;
+    gl_Position.z=(2.0*clamp(depth,0.0,1.0)-1.0)*clip.w;
+  }
   // The approximate picking/clipping surface is the camera-facing plane through the mean.
   v_eye.xy += 2.0*pixels/u_viewport*clip.w/vec2(u_projection[0][0],u_projection[1][1]);
   mat3 inverseView=transpose(mat3(metadata(8).xyz,metadata(9).xyz,metadata(10).xyz));
@@ -158,8 +168,6 @@ precision highp float;
 precision highp int;
 uniform sampler2D u_planes;
 uniform vec3 u_frustum;
-uniform vec2 u_logZ;
-uniform bool u_useLogZ;
 const bool u_pick = ${pick ? "true" : "false"};
 uniform int u_space;
 in vec2 v_gaussian;
@@ -216,10 +224,6 @@ void main() {
       color=v_space==1 ? linearFromDisplay(v_inside.rgb) : v_inside.rgb;
     }
   }
-  if (u_useLogZ)
-    gl_FragDepth = u_logZ.x==0.0 ? -v_eye.z/u_logZ.y : log(-v_eye.z*u_logZ.x)/u_logZ.y;
-  else
-    gl_FragDepth = gl_FragCoord.z;
   out_color=vec4(color*alpha,alpha);
 #if PICK_PASS
   out_feature=v_feature;

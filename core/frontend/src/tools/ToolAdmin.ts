@@ -365,6 +365,11 @@ export class ToolAdmin {
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
   private _mouseMoveOverTimeout?: ReturnType<typeof setTimeout>;
+  /** True from a mouse motion event until motion has stopped for 100 ms, at which point the
+   * tool is re-evaluated at the resting cursor position. Expensive hover work can be deferred to that re-evaluation.
+   * @internal
+   */
+  public get isCursorMoving(): boolean { return undefined !== this._mouseMoveOverTimeout; }
   private _editCommandHandler?: EditCommandHandler;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
@@ -1141,6 +1146,7 @@ export class ToolAdmin {
     }
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
+      this._mouseMoveOverTimeout = undefined;
       await this.onMotionEnd(vp, pt2d, inputSource);
       // Evaluate drag at the nominal timeout fire time, not the frozen event timestamp.
       await processMotion(eventTime !== undefined ? eventTime + 100 : undefined);

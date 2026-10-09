@@ -72,14 +72,18 @@ export function reduceGaussianTileDetail(target: RenderTarget, trees: Iterable<o
   return changed;
 }
 
-/** Restore requested detail gradually after sustained spare capacity. @internal */
-export function recoverGaussianTileDetail(target: RenderTarget, trees: Iterable<object>): boolean {
+/** Restore requested detail gradually after sustained spare capacity. The step divides the
+ * tolerance; the caller chooses it from the headroom it measured.
+ * @internal
+ */
+export function recoverGaussianTileDetail(target: RenderTarget, trees: Iterable<object>, step = 2): boolean {
   const modifiers = gaussianDetail.get(target);
   let changed = false;
   for (const tree of trees) {
     const previous = modifiers?.get(tree) ?? 1;
     if (previous > 1) {
-      modifiers?.set(tree, Math.max(1, previous / 2));
+      const next = previous / step;
+      modifiers?.set(tree, next < 1.001 ? 1 : next);
       changed = true;
     }
   }
