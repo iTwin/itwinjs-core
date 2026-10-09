@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 export const getTokenCallbackName = "setBackendAccessToken";
-export const browserBackendCallbackPath = "/__vitest_core_backend_callback";
 
 declare module "vitest" {
   interface ProvidedContext {

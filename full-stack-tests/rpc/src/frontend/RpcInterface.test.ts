@@ -6,7 +6,7 @@ import { Buffer } from "buffer";
 import { assert } from "chai";
 import * as semver from "semver";
 import { BentleyError } from "@itwin/core-bentley";
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
@@ -99,7 +99,7 @@ describe("RpcInterface", () => {
     assert.isTrue(receivedPending);
     removeListener();
 
-    assert(await executeBackendCallback(BackendTestCallbacks.resetOp8Initializer));
+    assert(await invokeBackendCallback(BackendTestCallbacks.resetOp8Initializer));
   });
 
   it("should support supplied RPC implementation instances", async () => {
@@ -110,17 +110,17 @@ describe("RpcInterface", () => {
       assert(true);
     }
 
-    assert(await executeBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class));
+    assert(await invokeBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class));
 
     const response1 = await TestRpcInterface2.getClient().op1(1);
     assert.equal(response1, 1);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance));
+    assert(await invokeBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance));
 
     const response2 = await TestRpcInterface2.getClient().op1(2);
     assert.equal(response2, 2);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
+    assert(await invokeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
   });
 
   it("should allow access to request and invocation objects and allow a custom request id", async () => {
@@ -248,7 +248,7 @@ describe("RpcInterface", () => {
         IModelReadRpcInterface.interfaceVersion = originalVersion;
       }
     });
-    assert(await executeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
+    assert(await invokeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
@@ -256,7 +256,7 @@ describe("RpcInterface", () => {
 
     controlPolicy.sentCallback = () => { };
     Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
-    assert(await executeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
+    assert(await invokeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
 
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);

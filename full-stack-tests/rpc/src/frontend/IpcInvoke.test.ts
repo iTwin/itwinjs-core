@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, IModelStatus, ITwinError, ProcessDetector } from "@itwin/core-bentley";
-import { executeBackendCallback } from "./executeBackendCallback";
+import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 import { IpcApp, IpcHandler } from "@itwin/core-frontend";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
@@ -116,7 +116,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         const response = new Promise<IpcInvokeReturn>((resolve) => {
           const off = IpcApp.addListener("test-result-channel", (_e, r: IpcInvokeReturn) => { off(); resolve(r); });
         });
-        await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "test-result-channel", "ping");
+        await invokeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "test-result-channel", "ping");
         assert.equal((await response).result, "pong:ping");
       } finally {
         remove();
@@ -131,7 +131,7 @@ if (ProcessDetector.isElectronAppFrontend) {
           const off = IpcApp.addListener(responseChannel, (_e, r: IpcInvokeReturn) => { off(); resolve(r); });
         });
 
-        await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-error-forwarding-test", responseChannel, methodName);
+        await invokeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-error-forwarding-test", responseChannel, methodName);
         const callbackResult = await response as any;
         assert.exists(callbackResult.result);
         assert.exists(callbackResult.result.error);
@@ -143,7 +143,7 @@ if (ProcessDetector.isElectronAppFrontend) {
           const off = IpcApp.addListener(responseChannel, (_e, r: any) => { off(); resolve(r); });
         });
 
-        await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-error-forwarding-test", responseChannel, methodName);
+        await invokeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-error-forwarding-test", responseChannel, methodName);
         const callbackResult = await response;
         assert.isFalse(callbackResult.ok, "expected the proxy call to reject on the backend");
         return callbackResult.errorInfo;
@@ -154,14 +154,14 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("IpcApp/IpcHost (WebSocket)", () => {
     beforeAll(async () => {
       assert.equal(currentEnvironment, "websocket");
-      assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
+      assert(await invokeBackendCallback(BackendTestCallbacks.startIpcTest));
       assert.isTrue(IpcApp.isValid, "Expected IpcApp to be initialized by LocalhostIpcApp");
     });
 
     it("can handle invoke in websocket mode", async () => {
       const remove = IpcApp.handle("ipc-app-handle-test", async (msg: string) => `pong:${msg}`);
       try {
-        const result = await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "ping");
+        const result = await invokeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "ping");
         assert.equal(result, "pong:ping");
       } finally {
         remove();
@@ -175,7 +175,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       }
       const remove = WsHandler.register();
       try {
-        const callbackResult = JSON.parse(await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-proxy-test", "echo", "ping") as string);
+        const callbackResult = JSON.parse(await invokeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-proxy-test", "echo", "ping") as string);
         assert.isTrue(callbackResult.ok);
         assert.equal(callbackResult.result, "pong:ping");
       } finally {
@@ -186,12 +186,12 @@ if (ProcessDetector.isElectronAppFrontend) {
     addErrorForwardingTests({
       registerErrorHandler: () => TestErrorIpcHandler.register(),
       invokeError: async (methodName) => {
-        const callbackResult = await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-error-forwarding-test", methodName);
+        const callbackResult = await invokeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-error-forwarding-test", methodName) as { error?: unknown };
         assert.exists(callbackResult.error, "expected the invoke to resolve with a serialized error envelope");
         return callbackResult.error;
       },
       invokeProxyError: async (methodName) => {
-        const callbackResult = JSON.parse(await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-error-forwarding-test", methodName) as string);
+        const callbackResult = JSON.parse(await invokeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-error-forwarding-test", methodName) as string);
         assert.isFalse(callbackResult.ok, "expected the proxy call to reject on the backend");
         return callbackResult.errorInfo;
       },
