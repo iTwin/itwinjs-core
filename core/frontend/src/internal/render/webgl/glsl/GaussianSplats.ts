@@ -70,8 +70,11 @@ void main() {
   vec4 options=metadata(4);
   v_clip=ivec2(options.xy); v_space=int(options.w);
   v_inside=metadata(6); v_outside=metadata(7);
-  // Cull centers outside the depth interval before division. Quad bounds provide lateral culling.
-  if (eye.z >= -u_frustum.x || eye.z <= -u_frustum.y || clip.w <= 0.0) {
+  // Like Cesium, reject centers outside a padded screen boundary before projecting
+  // covariance. Near the camera plane, off-screen centers can otherwise expand
+  // into enormous ellipses that cover the entire view.
+  if (eye.z >= -u_frustum.x || eye.z <= -u_frustum.y || clip.w <= 0.0 ||
+      abs(clip.x) > 1.2*clip.w || abs(clip.y) > 1.2*clip.w) {
     gl_Position=vec4(2.0,2.0,2.0,1.0);
     return;
   }
@@ -89,7 +92,12 @@ void main() {
   vec2 e1=vec2(-e0.y,e0.x);
   const vec2 corners[6]=vec2[6](vec2(-1,-1),vec2(1,-1),vec2(-1,1),vec2(-1,1),vec2(1,-1),vec2(1,1));
   v_gaussian=3.0*corners[gl_VertexID];
-  vec2 pixels=e0*sqrt(max(0.0,middle+delta))*v_gaussian.x + e1*sqrt(max(0.0,middle-delta))*v_gaussian.y;
+  // Cesium's 1024-unit axis cap becomes 512 pixels after the NDC-to-pixel
+  // conversion. Bound our three-sigma semi-axes to the same screen extent.
+  // Use the same sigma limit in color and pick passes despite their different
+  // alpha thresholds, so picking still describes the displayed Gaussian.
+  vec2 sigma=min(sqrt(max(vec2(0.0),vec2(middle+delta,middle-delta))),vec2(512.0/3.0));
+  vec2 pixels=e0*sigma.x*v_gaussian.x + e1*sigma.y*v_gaussian.y;
   gl_Position=clip;
   gl_Position.xy += 2.0*pixels/u_viewport*clip.w;
   // The approximate picking/clipping surface is the camera-facing plane through the mean.

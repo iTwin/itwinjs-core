@@ -25,6 +25,7 @@ import { getGaussianSplatAtlas } from "../../../internal/render/webgl/GaussianSp
 import { GaussianSplatGeometry } from "../../../internal/render/webgl/GaussianSplatGeometry";
 import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
 import { packGaussianSplats } from "../../../internal/render/GaussianSplatData";
+import { observeGaussianSplats } from "../../../internal/render/GaussianSplatDiagnostics";
 import { GaussianSplatWorker } from "../../../internal/render/GaussianSplatWorker";
 import { System } from "../../../internal/render/webgl/System";
 import { createBlankConnection } from "../../createBlankConnection";
@@ -79,11 +80,11 @@ describe("Native Gaussian splats", () => {
     await IModelApp.shutdown();
   });
 
-  async function addSplat(options: { id?: string, modelId?: string, opacity?: number, depth?: number, xFraction?: number, linear?: boolean, blue?: boolean, red?: number, decorate?: boolean } = {}): Promise<RenderGraphic> {
+  async function addSplat(options: { id?: string, modelId?: string, opacity?: number, depth?: number, xFraction?: number, linear?: boolean, blue?: boolean, red?: number, decorate?: boolean, center?: Point3d, scale?: number } = {}): Promise<RenderGraphic> {
     const source = gaussianSplatFixture();
-    const center = viewport.npcToWorld(new Point3d(options.xFraction ?? 0.5, 0.5, options.depth ?? 0.5));
+    const center = options.center ?? viewport.npcToWorld(new Point3d(options.xFraction ?? 0.5, 0.5, options.depth ?? 0.5));
     source.positions.set([center.x, center.z, -center.y]); // inverse of glTF y-up -> iModel z-up
-    source.scales.fill(0.08);
+    source.scales.fill(options.scale ?? 0.08);
     source.opacities.fill(options.opacity ?? 0.8);
     if (options.red !== undefined)
       source.sh[0] = (options.red - 0.5)/0.2820947917738781;
@@ -103,10 +104,10 @@ describe("Native Gaussian splats", () => {
     return graphic!;
   }
 
-  function color(): number[] {
+  function color(xFraction = 0.5): number[] {
     viewport.requestRedraw();
     viewport.renderFrame();
-    const x = Math.floor(viewport.viewRect.width / 2), y = Math.floor(viewport.viewRect.height / 2);
+    const x = Math.floor(viewport.viewRect.width * xFraction), y = Math.floor(viewport.viewRect.height / 2);
     const image = viewport.readImageBuffer({ rect: new ViewRect(x, y, x + 1, y + 1) })!;
     expect(image).toBeDefined();
     return Array.from(image.data.subarray(0, 3));
@@ -158,6 +159,41 @@ describe("Native Gaussian splats", () => {
     await addSplat();
     expect(color()[0]).toBeGreaterThan(150);
     expect(pick()).toBe("0x123");
+  });
+
+  it("rejects off-screen splats near the camera in color and pick passes", async () => {
+    expect((viewport.view as SpatialViewState).lookAt({ eyePoint: new Point3d(0.5, 0.5, 3), targetPoint: new Point3d(0.5, 0.5, 0.5), upVector: Vector3d.unitY(), frontDistance: 0.1, backDistance: 10 })).toBe(ViewStatus.Success);
+    viewport.setupFromView();
+    viewport.renderFrame();
+    await addSplat({ blue: true });
+    const background = color();
+    expect(pick()).toBe("0x123");
+    // The center is far to the side, but its depth variance produces a huge
+    // projected ellipse that used to cover (and be picked across) the view.
+    await addSplat({ id: "0x456", center: new Point3d(2, 0.5, 2.8), scale: 1 });
+    let submitted = 0;
+    const stop = observeGaussianSplats(viewport.target, (frame) => submitted = frame.drawnInstances);
+    try {
+      await expect.poll(() => { color(); return submitted; }, { timeout: 5000 }).toBe(2);
+      expect(color()).toEqual(background);
+      expect(pick()).toBe("0x123");
+    } finally {
+      stop();
+    }
+  });
+
+  it("bounds oversized projected splats in color and pick passes", async () => {
+    div.style.position = "relative";
+    div.style.width = "1200px";
+    viewport.renderFrame();
+    await addSplat({ scale: 100 });
+    expect(color()[0]).toBeGreaterThan(150);
+    expect(pick()).toBe("0x123");
+    // Beyond the 512-pixel semi-axis limit, neither color nor picking may
+    // receive the splat even though its unbounded projection fills the view.
+    expect(viewport.viewRect.width).toBe(1200);
+    expect(color(0.99)).toEqual([0, 0, 0]);
+    expect(pick(0.99)).toBeUndefined();
   });
 
   it("loads, draws and picks Cesium's official compressed degree-three fixture", async () => {
