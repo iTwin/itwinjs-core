@@ -23,6 +23,7 @@ internal;interface;MobileRpcGateway
 internal;class;MobileRpcManager
 internal;class;MobileRpcProtocol
 internal;class;MobileRpcRequest
+beta;type;NativeQueryHandler
 beta;enum;Orientation
 internal;enum;RpcMobilePlatform
 internal;class;SasUrlExpired
