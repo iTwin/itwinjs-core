@@ -6,6 +6,7 @@ publish: false
 <!-- prettier-ignore -->
 - [NextVersion](#nextversion)
   - [Backend](#backend)
+    - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
   - [Common](#common)
@@ -18,6 +19,16 @@ publish: false
     - [Mobile RPC authentication](#mobile-rpc-authentication)
 
 ## Backend
+
+### Faster asynchronous ECSQL paging and result conversion
+
+Asynchronous ECSQL readers can now resume unfinished concurrent-query statements between contiguous batches, avoiding repeated scans through preceding rows and repeated sorting. A continuation briefly waits for a busy owning worker before falling back to another available worker. Reuse is temporary and bounded; expiration, cache eviction, or an observed committed data change returns paging to the existing LIMIT/OFFSET path.
+
+Concurrent queries also reduce repeated metadata lookups and temporary JSON allocations when converting supported scalar and composite results. Point-coordinate reuse and more efficient ID formatting reduce per-row work without changing the documented result formats.
+
+Reuse is automatic for eligible worker queries in WAL databases. Primary-connection queries, non-WAL databases (including read-only handles), and connections with attached data databases continue re-executing each batch. Nondeterministic expressions may be evaluated once for a retained execution instead of once per batch, so use deterministic queries and ordering rather than depending on batch boundaries for re-evaluation. Retained statements can hold sorter resources and delay WAL checkpoints until released.
+
+See [Asynchronous paging](../learning/backend/ExecutingECSQL.md#asynchronous-paging) for behavior and resource considerations.
 
 ### Vertical CRS discovery
 

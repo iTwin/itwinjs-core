@@ -2209,12 +2209,15 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    cursorIdleTimeout?: number;
     // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
+    enableCursors?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
     ignoreDelay?: boolean;
     ignorePriority?: boolean;
+    maxCursorsPerWorker?: number;
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
@@ -2239,6 +2242,7 @@ export class DbQueryError extends BentleyError {
 export interface DbQueryRequest extends DbRequest, QueryOptions {
     // (undocumented)
     args?: object;
+    cursorId?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -2321,6 +2325,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     memUsed: number;
     prepareTime: number;
+    // @internal
+    resumed?: boolean;
     timeLimit: number;
     totalTime: number;
 }

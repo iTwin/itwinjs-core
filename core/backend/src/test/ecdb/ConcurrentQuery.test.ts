@@ -1,4 +1,4 @@
-import { DbQueryRequest, DbQueryResponse, DbResponseStatus } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
 import { expect } from "chai";
 import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
@@ -36,6 +36,9 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 5000,
       requestQueueSize: 2000,
       statementCacheSizePerWorker: 40,
+      enableCursors: true,
+      maxCursorsPerWorker: -1,
+      cursorIdleTimeout: 30,
       workerThreads: defaultWorkerThreads(),
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], {});
@@ -57,6 +60,9 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 6000,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 20,
+      enableCursors: false,
+      maxCursorsPerWorker: 3,
+      cursorIdleTimeout: 10,
       workerThreads: 1,
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], modifiedConfig);
@@ -71,6 +77,95 @@ describe("ConcurrentQuery", () => {
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: requested });
     expect(config.workerThreads).eq(defaultWorkerThreads());
     db.close();
+  });
+
+  it("round-trips the page-cache target in KiB and rejects invalid sizes", () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      expect(ConcurrentQuery.resetConfig(db[_nativeDb], {}).cacheSizeInKB).eq(undefined);
+      for (const cacheSizeInKB of [0, 8192, 2147483647])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(cacheSizeInKB);
+      for (const cacheSizeInKB of [-1, 1.5, 2147483648, NaN, Infinity, -Infinity])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(undefined);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("resumes finite pages without losing rows, with OFFSET fallback when disabled", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      for (const enableCursors of [false, true]) {
+        ConcurrentQuery.shutdown(db[_nativeDb]);
+        ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: 1, enableCursors, globalQuota: { time: 60, memory: 1 } });
+        const rows: number[] = [];
+        let resumed = 0;
+        while (rows.length < 20) {
+          const resp = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], {
+            query: "WITH sequence(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM sequence WHERE n<50) SELECT n FROM sequence ORDER BY n DESC",
+            cursorId: "finite-reader",
+            limit: { offset: 5 + rows.length, count: 20 - rows.length },
+          });
+          expect(resp.status).eq(DbResponseStatus.Partial);
+          expect(resp.data).deep.eq([[45 - rows.length]]);
+          rows.push(resp.data[0][0]);
+          if (resp.stats.resumed)
+            ++resumed;
+        }
+        expect(rows).deep.eq(Array.from({ length: 20 }, (_, i) => 45 - i));
+        expect(resumed).eq(enableCursors ? 19 : 0);
+      }
+    } finally {
+      db.close();
+    }
+  });
+
+  it("isolates readers and bindings and falls back after cursor eviction", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: 1, maxCursorsPerWorker: 1, globalQuota: { time: 60, memory: 1 } });
+      const query = "WITH sequence(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM sequence WHERE n<10) SELECT n+? FROM sequence ORDER BY n";
+      const page = async (cursorId: string, offset: number, value: number) => ConcurrentQuery.executeQueryRequest(db[_nativeDb], {
+        query, cursorId, args: new QueryBinder().bindInt(1, value).serialize(), limit: { offset, count: -1 },
+      });
+      expect((await page("a", 0, 0)).data).deep.eq([[1]]);
+      expect((await page("a", 1, 0)).stats.resumed).eq(true);
+      expect((await page("b", 0, 100)).data).deep.eq([[101]]);
+      const evicted = await page("a", 2, 0);
+      expect(evicted.stats.resumed).eq(false);
+      expect(evicted.data).deep.eq([[3]]);
+      const rebound = await page("a", 3, 100);
+      expect(rebound.stats.resumed).eq(false);
+      expect(rebound.data).deep.eq([[104]]);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("preserves class and navigation rendering across worker connections", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: defaultWorkerThreads(), globalQuota: { time: 60, memory: 8388608 } });
+      const query = "SELECT ECClassId, Schema FROM meta.ECClassDef ORDER BY ECInstanceId LIMIT 20";
+      for (const valueFormat of [DbValueFormat.ECSqlNames, DbValueFormat.JsNames]) {
+        const request: DbQueryRequest = {
+          query, valueFormat,
+          convertClassIdsToClassNames: true,
+        };
+        const primary = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { ...request, usePrimaryConn: true });
+        expect(primary.status).eq(DbResponseStatus.Done);
+        expect(primary.data.length).eq(20);
+        const workers = await Promise.all(Array.from({ length: defaultWorkerThreads() * 2 },
+          async () => ConcurrentQuery.executeQueryRequest(db[_nativeDb], request)));
+        for (const worker of workers) {
+          expect(worker.status).eq(DbResponseStatus.Done);
+          expect(worker.data).deep.eq(primary.data);
+          expect(worker.meta).deep.eq(primary.meta);
+        }
+      }
+    } finally {
+      db.close();
+    }
   });
 
   it("time limit check", async () => {

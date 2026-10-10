@@ -4,6 +4,8 @@ See [ECSQL](../ECSQL.md) for the query language.
 
 Use [IModelConnection.createQueryReader]($frontend) for asynchronous queries. It returns an [ECSqlReader]($common) immediately; consume results with `for await...of`, `await reader.step()`, or `await reader.toArray()`. Query execution starts when the reader is consumed, and results are fetched in batches.
 
+Eligible queries can resume unfinished execution between batches instead of repeating earlier scans and sorts. See [Asynchronous paging](../backend/ExecutingECSQL.md#asynchronous-paging) for reuse, ordering, and resource considerations.
+
 The synchronous `withQueryReader` API is available only on the backend. See [Choosing a query reader](../backend/ExecutingECSQL.md#choosing-a-query-reader) for the execution and lifetime differences.
 
 > On the frontend, only ECSQL SELECT statements can be executed. Data modification must be done through the API.

@@ -21,6 +21,20 @@ Asynchronous iteration can consume rows already buffered before an edit. Setting
 
 Both readers default to indexed rows when collecting results with `reader.toArray()`. They share the [row-format rules](../ECSQLRowFormat.md) and [parameter-binding support](../ECSQLParameterTypes.md). Their prepared statements can be cached independently of result buffering.
 
+## Asynchronous paging
+
+Concurrent queries can retain an unfinished worker statement after a batch reaches its memory or time quota between rows. The next contiguous batch from the same reader can continue stepping that statement instead of re-running the query and discarding all preceding rows. This avoids repeated scans and, for queries that need a sorter, repeated sorting.
+
+Reuse is automatic for eligible queries, but opportunistic rather than a persistent server-side cursor contract. The reader must continue with the next contiguous batch of the same query and parameters. If the owning worker is busy, the request briefly waits in the queue while other eligible requests can proceed, then falls back to another available worker. Queued requests remain cancellable. Cache pressure, expiration, or an observed committed data change also returns paging to the existing LIMIT/OFFSET path. Queries interrupted while stepping cannot resume.
+
+Use a deterministic `ORDER BY` when page ordering matters. Nondeterministic expressions may be evaluated once for a retained execution rather than once per batch; do not rely on batch boundaries to re-evaluate them. Reuse does not guarantee a single read snapshot for the lifetime of the reader, since a later batch can fall back to re-execution.
+
+Primary-connection requests, databases not using WAL, and worker connections with attached data databases do not retain cursors. The WAL requirement also applies to read-only handles: another process can still modify the file, and an unfinished rollback-journal reader could block that writer's commit.
+
+A retained statement can hold sorter memory, temporary files, and a read snapshot between batches. Retention is bounded, idle statements expire automatically, and observed external commits invalidate retained statements. Retained WAL snapshots can temporarily delay checkpoint progress. These resource costs are a tradeoff for avoiding repeated query execution, not a promise of lower overall memory use.
+
+Result conversion reduces repeated metadata lookups and temporary JSON allocations for supported scalars, navigation properties, points, structs, and arrays. Point-coordinate reuse and more efficient ID formatting reduce per-row work. Unsupported result shapes continue using the existing conversion path. The documented [row-format](../ECSQLRowFormat.md) and null-handling rules are unchanged.
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.
