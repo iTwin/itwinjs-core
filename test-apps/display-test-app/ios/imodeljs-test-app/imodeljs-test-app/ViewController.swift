@@ -185,8 +185,8 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         webView.addUserContentController(ModelOpenedHandler())
         webView.addUserContentController(FirstRenderFinishedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
-        webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
+        webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
     }
 
     func showAlert(message: String, completionHandler: @escaping () -> Void = {}) {

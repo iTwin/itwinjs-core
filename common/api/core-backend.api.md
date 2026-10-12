@@ -441,6 +441,18 @@ export interface AvailableCoordinateReferenceSystemProps {
     unit?: string;
 }
 
+// @beta
+export interface AvailableVerticalCoordinateReferenceSystemProps {
+    crsName: string;
+    deprecated: boolean;
+    description: string;
+    epsg?: number;
+    extent: Range2dProps;
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    type: string;
+    unit: string;
+}
+
 // @beta (undocumented)
 export interface AzureBlobStorageCredentials {
     // (undocumented)
@@ -2360,6 +2372,8 @@ export class Downloads {
 // @public @preview
 export class Drawing extends Document_2 {
     protected constructor(props: DrawingProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -2845,6 +2859,8 @@ export class EditTxn {
 // @public @preview
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>> | undefined;
     // (undocumented)
     static get className(): string;
     code: Code;
@@ -2922,7 +2938,7 @@ class Element_2 extends Entity {
     // @beta
     protected static onSubModelDeleted(arg: OnSubModelIdArg): void;
     // @beta
-    protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
+    protected static onSubModelInsert(arg: OnSubModelPropsArg): void;
     // @beta
     protected static onSubModelInserted(arg: OnSubModelIdArg): void;
     // @beta
@@ -3929,6 +3945,17 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export function getAvailableCRSUnits(): string[];
+
+// @beta
+export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): AvailableVerticalCoordinateReferenceSystemProps[];
+
+// @beta
+export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+    includeIntersecting?: boolean;
+    point?: XAndY;
+    unit?: string;
+}
 
 // @beta
 export interface GetResolvedSettingDefOptions {
@@ -6527,6 +6554,8 @@ export class SectionCallout extends Callout {
 // @public @preview
 export class SectionDrawing extends Drawing {
     protected constructor(props: SectionDrawingProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     displaySpatialView: boolean;
@@ -6725,6 +6754,8 @@ export const settingsWorkspaceDbName: WorkspaceDbName;
 // @public @preview
 export class Sheet extends Document_2 {
     protected constructor(props: SheetProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     // (undocumented)
@@ -7537,6 +7568,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;

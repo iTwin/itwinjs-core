@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import {
-  GeographicCRSInterpretRequestProps, GeographicCRSProps,
-  Helmert2DWithZOffset,
+  GeoCoordStatus, GeographicCRSInterpretRequestProps, GeographicCRSProps,
+  Helmert2DWithZOffset, IModelProps,
 } from "@itwin/core-common";
-import { GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, IModelNative } from "@itwin/core-backend";
+import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SnapshotDb } from "@itwin/core-backend";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
@@ -805,6 +807,114 @@ describe("GeoServices", () => {
       };
 
       await interpretWKTTest('COMPD_CS["UTM84-18N",PROJCS["UTM84-18N",GEOGCS["LL84",DATUM["WGS84",SPHEROID["WGS84",6378137.000,298.25722293]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Universal Transverse Mercator System"],PARAMETER["UTM Zone Number (1 - 60)",18.0],PARAMETER["Hemisphere, North or South",1.0],UNIT["Meter",1.00000000000000]],VERT_CS["Geoid Height",VERT_DATUM["EGM96 geoid",2005],UNIT["METER",1.000000]]]', utm84Zone18NGeoid);
+    });
+  });
+
+  describe("Vertical CRS production workspace acceptance", function () {
+    this.timeout(120_000);
+
+    before(() => IModelNative.platform.enableLocalGcsFiles(false));
+    after(() => IModelNative.platform.enableLocalGcsFiles(true));
+
+    it("enumerates every definition in the production Vertical Datum dictionary", async () => {
+      const defaults = IModelHost.appWorkspace.settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases);
+      const baseProps = defaults?.find((entry) => entry.dbName === "base");
+      assert.isDefined(baseProps, "shipped defaults must include the base workspace");
+      const baseDb = await IModelHost.appWorkspace.getWorkspaceDb(baseProps!);
+      const dictionaryBlob = baseDb.getBlob("VerticalDatumDefinitions.json");
+      assert.isDefined(dictionaryBlob, "VerticalDatumDefinitions.json is missing from the PROD base workspace");
+      const dictionary = JSON.parse(new TextDecoder().decode(dictionaryBlob)) as {
+        definitions: Array<{ verticalCRS: { crsName: string } }>;
+      };
+      assert.isNotEmpty(dictionary.definitions);
+      assert.sameMembers(
+        getAvailableVerticalCoordinateReferenceSystems().map((entry) => entry.crsName),
+        dictionary.definitions.map((entry) => entry.verticalCRS.crsName),
+      );
+    });
+
+    it("enumerates vertical systems using the shipped defaults", () => {
+      const systems = getAvailableVerticalCoordinateReferenceSystems();
+      assert.isNotEmpty(systems);
+      const egm96 = systems.find((entry) => entry.crsName === "EGM96 height");
+      assert.isDefined(egm96);
+      assert.equal(egm96!.id, "GEOID");
+      assert.equal(egm96!.epsg, 5773);
+      assert.equal(egm96!.unit, "Meter");
+      for (const system of systems) {
+        assert.isString(system.description);
+        assert.isBoolean(system.deprecated);
+        assert.isString(system.type);
+        assert.isFalse(Range2d.fromJSON(system.extent).isNull);
+      }
+    });
+
+    it("filters vertical systems by geographic point", () => {
+      const point = { x: 23.700523, y: 37.944210 };
+      const allSystems = getAvailableVerticalCoordinateReferenceSystems();
+      const systems = getAvailableVerticalCoordinateReferenceSystems({ point });
+      assert.isNotEmpty(systems);
+      const names = systems.map((entry) => entry.crsName);
+      assert.include(names, "EGM96 height");
+      assert.include(names, "EGM2008 height");
+      assert.notInclude(names, "NAVD88 height");
+      assert.notInclude(names, "NGVD29 height");
+      assert.isBelow(systems.length, allSystems.length);
+    });
+
+    it("filters vertical systems by containing or intersecting extent", () => {
+      const extent: Range2dProps = { low: { x: -10, y: 40 }, high: { x: 10, y: 60 } };
+      const contained = getAvailableVerticalCoordinateReferenceSystems({ extent });
+      const intersecting = getAvailableVerticalCoordinateReferenceSystems({ extent, includeIntersecting: true });
+      assert.isNotEmpty(contained);
+      const containedNames = contained.map((entry) => entry.crsName);
+      assert.include(containedNames, "EGM96 height");
+      assert.notInclude(containedNames, "NAVD88 height");
+      assert.notInclude(containedNames, "NGVD29 height");
+      assert.includeMembers(intersecting.map((entry) => entry.crsName), containedNames);
+      assert.isAbove(intersecting.length, contained.length);
+    });
+
+    it("filters vertical systems by canonical unit name case-insensitively", () => {
+      const allSystems = getAvailableVerticalCoordinateReferenceSystems();
+      const meters = getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
+      assert.isNotEmpty(meters);
+      assert.sameMembers(
+        meters.map((entry) => entry.crsName),
+        allSystems.filter((entry) => entry.unit === "Meter").map((entry) => entry.crsName),
+      );
+      assert.isEmpty(getAvailableVerticalCoordinateReferenceSystems({ unit: "not-a-unit" }));
+    });
+
+    it("rejects mutually exclusive point and extent filters", () => {
+      assert.throws(() => getAvailableVerticalCoordinateReferenceSystems({
+        point: { x: 0, y: 0 },
+        extent: { low: { x: -1, y: -1 }, high: { x: 1, y: 1 } },
+      }));
+    });
+
+    it("converts EGM96 height to ellipsoid height using production resources", async () => {
+      const iModelFileName = path.join(IModelHost.cacheDir, "VerticalCrsProduction.bim");
+      const iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Vertical CRS PROD acceptance" } });
+      try {
+        const modelCrs: GeographicCRSProps = {
+          horizontalCRS: { id: "LL84" },
+          verticalCRS: { id: "GEOID", crsName: "EGM96 height" },
+        };
+        iModel[_nativeDb].updateIModelProps({ geographicCoordinateSystem: modelCrs } as IModelProps);
+        const response = await iModel.getGeoCoordinatesFromIModelCoordinates({
+          target: JSON.stringify({ horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }),
+          iModelCoords: [{ x: 23.700523, y: 37.944210, z: 0 }],
+        });
+        assert.equal(response.geoCoords[0].s, GeoCoordStatus.Success);
+        const result = Point3d.fromJSON(response.geoCoords[0].p);
+        assert.closeTo(result.x, 23.700523, 0.000001);
+        assert.closeTo(result.y, 37.944210, 0.000001);
+        assert.closeTo(result.z, 38.3, 0.5);
+      } finally {
+        iModel.close();
+        fs.rmSync(iModelFileName, { force: true });
+      }
     });
   });
 
