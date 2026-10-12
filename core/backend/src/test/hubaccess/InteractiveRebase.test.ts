@@ -2879,9 +2879,6 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.tryGetElementProps(existingId)).to.be.undefined;
   });
 
-  // KNOWN LIMITATION (expected to fail): an upstream-inserted dependent with two deleted owners records its
-  // deletion effect on only one of them, so restoring that owner alone tries to restore the dependent while
-  // the other owner is still deleted, and restoring the other owner later never brings the dependent back.
   it("restores an upstream-inserted dependent only once all of its deleted owners are restored", async () => {
     const [listId, drawingId] = await withEditTxn(briefcase1, async (txn) => {
       const list = DocumentListModel.insert(txn, IModel.rootSubjectId, "LimitationDocuments");
@@ -2933,6 +2930,119 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
 
     // Restoring the drawing too means both of the sub-model's owners exist again, so it comes back.
+    drawingConflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;
+  });
+
+  it("restores a multi-owner dependent after re-deleting its owners starting with the parent model", async () => {
+    const [listId, drawingId] = await withEditTxn(briefcase1, async (txn) => {
+      const list = DocumentListModel.insert(txn, IModel.rootSubjectId, "ReDeleteDocuments");
+      const drawing = txn.insertElement({
+        classFullName: Drawing.classFullName,
+        model: list,
+        code: Drawing.createCode(txn.iModel, list, "ReDeleteDrawing"),
+        userLabel: "Original",
+      });
+      return [list, drawing];
+    });
+    await briefcase1.pushChanges({ description: "Create unmodeled drawing" });
+    await briefcase2.pullChanges();
+
+    // Same setup as above: an upstream sub-model owned by both the list model (ParentModel) and the drawing (ModeledElement).
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertModel(txn.iModel.models.createModel({ classFullName: DrawingModel.classFullName, modeledElement: { id: drawingId } }).toJSON());
+      txn.updateElement({ id: drawingId, userLabel: "Upstream" } as ElementProps);
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(drawingId);
+      txn.deleteModel(listId);
+      txn.deleteElement(listId);
+    });
+    await briefcase1.pushChanges({ description: "Sub-model the drawing" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    const listModelConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName === "BisCore:DocumentListModel");
+    const listElementConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName !== "BisCore:DocumentListModel");
+    const drawingConflict = interactive.conflicts.find((conflict) => conflict.id === drawingId && conflict.classFullName === Drawing.classFullName);
+    chai.expect(listModelConflict).to.not.be.undefined;
+    chai.expect(listElementConflict).to.not.be.undefined;
+    chai.expect(drawingConflict).to.not.be.undefined;
+    if (!listModelConflict || !listElementConflict || !drawingConflict) return;
+
+    // Restore everything, so the sub-model exists again.
+    listElementConflict.acceptTheirs();
+    listModelConflict.acceptTheirs();
+    drawingConflict.acceptTheirs();
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;
+
+    // Re-delete starting with the parent model, which takes the drawing and the sub-model with it.
+    listModelConflict.acceptOurs();
+    drawingConflict.acceptOurs();
+    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+
+    // Restore the list model alone: the drawing stays deleted, so the sub-model must too.
+    listModelConflict.acceptTheirs();
+    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+
+    // Restoring the drawing means both of the sub-model's owners exist again, so it comes back.
+    drawingConflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;
+  });
+
+  it("restores an upstream-inserted sub-modeled drawing after re-deleting its parent model", async () => {
+    const listId = await withEditTxn(briefcase1, async (txn) => DocumentListModel.insert(txn, IModel.rootSubjectId, "DiscoveredDocuments"));
+    await briefcase1.pushChanges({ description: "Create document list" });
+    await briefcase2.pullChanges();
+
+    // Upstream inserts both the drawing and its sub-model, so neither is captured locally - both are discovered.
+    const drawingId = await withEditTxn(briefcase1, async (txn) => Drawing.insert(txn, listId, "DiscoveredDrawing"));
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteModel(listId);
+      txn.deleteElement(listId);
+    });
+    await briefcase1.pushChanges({ description: "Insert sub-modeled drawing" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+    const listModelConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName === "BisCore:DocumentListModel");
+    const listElementConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName !== "BisCore:DocumentListModel");
+    const drawingConflict = interactive.conflicts.find((conflict) => conflict.id === drawingId && conflict.classFullName === Drawing.classFullName);
+    chai.expect(listModelConflict).to.not.be.undefined;
+    chai.expect(listElementConflict).to.not.be.undefined;
+    chai.expect(drawingConflict).to.not.be.undefined;
+    if (!listModelConflict || !listElementConflict || !drawingConflict) return;
+
+    listElementConflict.acceptTheirs();
+    listModelConflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;
+
+    // Re-delete via the parent model, then keep the drawing deleted while restoring the parent model alone.
+    listModelConflict.acceptOurs();
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+    drawingConflict.acceptOurs();
+    listModelConflict.acceptTheirs();
+    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+
+    // The drawing recorded the sub-model when the cascade reached it, so restoring the drawing brings it back.
     drawingConflict.acceptTheirs();
     chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
     chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;

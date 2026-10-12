@@ -997,6 +997,7 @@ export class InteractiveRebase {
 
     // Link each node to its owners only now, since a discovered node's owners may be discovered after it.
     // Used for reporting/cascade - see [[DependencyNode.dependents]] - not for replay ordering.
+    // Insertion order matters: a cascade must reach a modeled element before its sub-model, so the element records it.
     for (const node of this._dependencyNodesByInstanceKey.values()) {
       for (const owner of this.getOwnerNodes(node))
         owner.dependents.push(node);
@@ -1437,17 +1438,24 @@ export class InteractiveRebase {
       return;
     }
 
-    // Attribute the cascade to an owner that is being deleted - there is always at least the one that discovered it.
-    const owner = this.getOwnerNodes(node).find((candidate) => candidate.operation === "Delete");
-    assert(owner !== undefined, `Missing deleted owner for ${node.instanceKey}`);
-    const reference = this.getDeletionReferences(owner.classFullName).find((candidate) =>
-      candidate.action === "CASCADE" && this._schemaView.findClass(node.classFullName)?.is(candidate.referencingClassFullName));
-    assert(reference !== undefined);
-    const entry = { instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs, reference };
-    this.recordDeletionEffectsForTarget(owner, [entry]);
+    // Attribute the cascade to every owner being deleted, so restoring any one of them alone can't lose track of it.
+    const deletedOwners = this.getOwnerNodes(node).filter((candidate) => candidate.operation === "Delete");
+    assert(deletedOwners.length > 0, `Missing deleted owner for ${node.instanceKey}`);
+    const nodeClass = this._schemaView.findClass(node.classFullName);
+    const entries = deletedOwners.map((owner) => {
+      const reference = this.getDeletionReferences(owner.classFullName).find((candidate) =>
+        candidate.action === "CASCADE" && nodeClass?.is(candidate.referencingClassFullName) &&
+        getPropertyValue(theirs, `${candidate.navigationPropertyJsName}.id`) === owner.id);
+      assert(reference !== undefined);
+      const entry = { instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs, reference };
+      this.recordDeletionEffectsForTarget(owner, [entry]);
+      return { owner, entry };
+    });
     this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
-    const conflict = this._conflicts.find((candidate) => candidate.instanceKey === owner.instanceKey) as RebaseConflictImpl;
-    conflict.recordDeletionEffect(entry);
+    for (const { owner, entry } of entries) {
+      const conflict = this._conflicts.find((candidate) => candidate.instanceKey === owner.instanceKey) as RebaseConflictImpl;
+      conflict.recordDeletionEffect(entry);
+    }
   }
 
   /** Ensures every embedding owner of a conflicted dependent has its own {@link RebaseConflict} entry,
@@ -2155,6 +2163,7 @@ export class InteractiveRebase {
   private restoreDeletionEffects(conflict: RebaseConflictImpl): void {
     if (this.tryReadCurrentInstance(conflict.id, conflict.classFullName) === undefined)
       return;
+    const pending: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl)[] = [];
     for (const effect of [...conflict.deletionEffects].reverse()) {
       if (effect.action === "set-null") {
         const current = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
@@ -2164,14 +2173,38 @@ export class InteractiveRebase {
           this._db[_nativeDb].updateInstance(propsToWrite, { useJsNames: true });
         }
       } else {
+        // The dependent can't come back until every one of its owners exists - the last owner restored brings it back.
+        if (this.hasMissingOwner(effect.affectedInstanceKey)) {
+          pending.push(effect);
+          continue;
+        }
         const affectedConflict = effect.affectedConflict as RebaseConflictImpl | undefined;
         const selectedProps = affectedConflict !== undefined && affectedConflict._selectedSide !== undefined
           ? affectedConflict.getRaw(affectedConflict._selectedSide) : effect.rawDeletedInstance;
         if (selectedProps !== undefined && this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName) === undefined)
           this.writeRestoredInstance(selectedProps);
+        this.removeCascadeEffectsFromOtherConflicts(effect.affectedInstanceKey, conflict);
       }
     }
     conflict.deletionEffects.length = 0;
+    conflict.deletionEffects.push(...pending.reverse());
+  }
+
+  private hasMissingOwner(instanceKey: string): boolean {
+    const node = this._dependencyNodesByInstanceKey.get(instanceKey);
+    return node !== undefined && this.getOwnerNodes(node).some((owner) => this.tryReadCurrentInstance(owner.id, owner.classFullName) === undefined);
+  }
+
+  private removeCascadeEffectsFromOtherConflicts(affectedInstanceKey: string, except: RebaseConflictImpl): void {
+    for (const other of this._conflicts as RebaseConflictImpl[]) {
+      if (other === except)
+        continue;
+      for (let i = other.deletionEffects.length - 1; i >= 0; --i) {
+        const effect = other.deletionEffects[i];
+        if (effect.action === "cascade" && effect.affectedInstanceKey === affectedInstanceKey)
+          other.deletionEffects.splice(i, 1);
+      }
+    }
   }
 
   /**
