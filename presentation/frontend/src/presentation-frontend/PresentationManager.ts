@@ -590,7 +590,7 @@ export class PresentationManager implements Disposable {
         formatsProvider: IModelApp.formatsProvider,
       });
       koqPropertyFormatter.defaultFormats = this._defaultFormats;
-      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
+      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter.createCachedFormatter(), unitSystem });
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
