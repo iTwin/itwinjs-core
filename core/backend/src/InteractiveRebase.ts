@@ -2141,7 +2141,7 @@ export class InteractiveRebase {
           this.cascadeDeleteToDependents(conflictImpl);
         return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
       });
-      conflictImpl.clearSupersededUniqueConstraintViolations(undefined);
+      conflictImpl.clearSupersededConstraintFixes(undefined);
       this._db.clearCaches({ instanceCachesOnly: true });
       return;
     }
@@ -2149,7 +2149,7 @@ export class InteractiveRebase {
     if (isFullResolution)
       this.ensureOwnersExist(conflictImpl);
 
-    conflictImpl.clearSupersededUniqueConstraintViolations(properties);
+    conflictImpl.clearSupersededConstraintFixes(properties);
     this.writeConflictResolution(conflictImpl, props, fullReplace, 0);
 
     if (isFullResolution) {
@@ -2257,7 +2257,7 @@ export class InteractiveRebase {
       return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
     });
     const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
-    conflict?.clearSupersededUniqueConstraintViolations(undefined);
+    conflict?.clearSupersededConstraintFixes(undefined);
   }
 
   /**
@@ -2299,7 +2299,7 @@ export class InteractiveRebase {
     } else if (props === undefined) {
       this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
     } else if (conflict !== undefined) {
-      conflict.clearSupersededUniqueConstraintViolations(undefined);
+      conflict.clearSupersededConstraintFixes(undefined);
       this.writeConflictResolution(conflict, props, true, 0);
     } else {
       this.writeRestoredInstance(props);
@@ -2336,6 +2336,20 @@ export class InteractiveRebase {
         this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
       }
     } catch (err: any) {
+      if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
+        const brokenRelationships = this.findBrokenRelationships(props);
+        if (brokenRelationships.length === 0)
+          throw err;
+        conflict.addBrokenRelationships(brokenRelationships);
+        const current = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
+        // A broken non-nullable relationship on an instance that doesn't exist leaves it unapplied, as during replay.
+        if (current === undefined && brokenRelationships.some((relationship) => !relationship.nullable))
+          return;
+        const fallbackProps = this.fixBrokenNavigationProperties(props, brokenRelationships, current)!;
+        this.writeConflictResolution(conflict, fallbackProps, fullReplace, attempt);
+        conflict.recordBrokenRelationshipFix(brokenRelationships, fallbackProps);
+        return;
+      }
       if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY)
         throw err;
       if (attempt >= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS)
@@ -2729,16 +2743,19 @@ class RebaseConflictImpl implements RebaseConflict {
       conflict._ours = ours;
     }
 
+    conflict.addBrokenRelationships(brokenRelationships);
+    return conflict;
+  }
+
+  public addBrokenRelationships(brokenRelationships: BrokenRelationship[]): void {
     for (const broken of brokenRelationships) {
-      if (!conflict.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass === broken.relationshipClass)) {
-        conflict.brokenRelationships.push({
+      if (!this.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass === broken.relationshipClass)) {
+        this.brokenRelationships.push({
           navigationProperty: broken.navigationProperty,
           relationshipClass: broken.relationshipClass,
         });
       }
     }
-
-    return conflict;
   }
 
   /** Records the navigation substitutions that were successfully written while replaying this conflict. */
@@ -2782,18 +2799,23 @@ class RebaseConflictImpl implements RebaseConflict {
     return violation;
   }
 
-  /** Discards the violations that `properties` (all of them, when it is undefined or empty) is about to overwrite,
-   * so that {@link uniqueConstraintViolations} keeps describing the substitutions currently in effect. A violation
-   * whose substituted property is left untouched still holds, and one that was never fixed describes a write that
-   * was abandoned, so it is dropped and re-reported if it recurs.
+  /** Discards the violations and broken relationships that `properties` (all of them, when it is undefined or empty)
+   * is about to overwrite, so that {@link uniqueConstraintViolations} and {@link brokenRelationships} keep describing
+   * the substitutions currently in effect. One whose property is left untouched still holds, and one that was never
+   * fixed describes a write that was abandoned, so it is dropped and re-reported if it recurs.
    */
-  public clearSupersededUniqueConstraintViolations(properties: string[] | undefined): void {
-    const survives = (violation: UniqueConstraintViolation) =>
-      violation.appliedFix !== undefined && properties !== undefined && properties.length > 0 && !properties.includes(violation.appliedFix.property);
+  public clearSupersededConstraintFixes(properties: string[] | undefined): void {
+    const partial = properties !== undefined && properties.length > 0 ? properties : undefined;
+    const survives = (property: string | undefined) => partial !== undefined && property !== undefined && !partial.includes(property);
 
     for (let i = this.uniqueConstraintViolations.length - 1; i >= 0; --i) {
-      if (!survives(this.uniqueConstraintViolations[i]))
+      if (!survives(this.uniqueConstraintViolations[i].appliedFix?.property))
         this.uniqueConstraintViolations.splice(i, 1);
+    }
+    for (let i = this.brokenRelationships.length - 1; i >= 0; --i) {
+      const relationship = this.brokenRelationships[i];
+      if (!survives(relationship.appliedValue !== undefined ? relationship.navigationProperty : undefined))
+        this.brokenRelationships.splice(i, 1);
     }
   }
 

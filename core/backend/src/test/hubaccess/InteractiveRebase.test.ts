@@ -2562,6 +2562,71 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ownerConflicts).to.be.empty;
   });
 
+  it("reports a broken relationship when accepting ours restores a child whose untouched parent they deleted", async () => {
+    const grandparent = id;
+    const [parent, child] = await withEditTxn(briefcase1, async (txn) => {
+      const p = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Parent",
+        somePoint: new Point2d(1.0, 1.0),
+        parent: new ElementOwnsChildElements(grandparent),
+      } as SomeGraphicalElementProps);
+      const c = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(2.0, 2.0),
+        parent: new ElementOwnsChildElements(p),
+      } as SomeGraphicalElementProps);
+      return [p, c];
+    });
+    await briefcase1.pushChanges({ description: "setup parent+child" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(grandparent);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id: grandparent, foo: "User2" });
+      txn.updateElement<SomeGraphicalElementProps>({ id: child, foo: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1 deletes grandparent" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(interactive.conflicts.some((c) => c.id === parent)).to.be.false;
+    const conflict = interactive.conflicts.find((c) => c.id === child);
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+    chai.expect(conflict.brokenRelationships).to.be.empty;
+
+    conflict.acceptOurs();
+
+    const childProps = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(child);
+    chai.expect(childProps).to.not.be.undefined;
+    chai.expect(childProps?.foo).to.equal("User2");
+    chai.expect(childProps?.parent).to.be.undefined;
+    chai.expect(conflict.brokenRelationships.length).to.equal(1);
+    chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
+    chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
+    chai.expect(conflict.brokenRelationships[0].appliedValue).to.be.null;
+
+    conflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(child)).to.be.undefined;
+    chai.expect(conflict.brokenRelationships).to.be.empty;
+  });
+
   it("inserting an element and an aspect on it together replays without a spurious constraint violation", async () => {
     let elementId: Id64String;
     let aspectId: Id64String;
