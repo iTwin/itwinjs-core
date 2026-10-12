@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as sinon from "sinon";
-import { BentleyError, DbResult, Guid } from "@itwin/core-bentley";
+import { Guid, IModelStatus } from "@itwin/core-bentley";
 import {
   Code, DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, DbValueFormat, IModel, PhysicalElementProps, QueryOptions, QueryPropertyMetaData,
   QueryRowFormat, SubCategoryAppearance,
@@ -21,7 +21,6 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SpatialCategory } from "../../Category";
 import { HubMock } from "../../internal/HubMock";
 import { QueryMetadataCache } from "../../internal/QueryMetadataCache";
-import { _queryMetadataCache } from "../../internal/Symbols";
 import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -257,6 +256,17 @@ async function readColumnNames(db: ECDb | IModelDb, ecsql: string, config?: Quer
   return (await readMetaData(db, ecsql, config)).map((p) => p.name);
 }
 
+/** Read the metadata of a fresh reader and check whether it had to ask native for it, i.e. whether the cache missed. */
+async function expectMetadataRequested(db: ECDb | IModelDb, ecsql: string, requested: boolean, config?: QueryOptions): Promise<void> {
+  const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
+  try {
+    await readMetaData(db, ecsql, config);
+    expect(spy.args[0][1].includeMetaData).to.equal(requested);
+  } finally {
+    spy.restore();
+  }
+}
+
 describe("createQueryReader metadata cache", () => {
   afterEach(() => sinon.restore());
 
@@ -327,23 +337,17 @@ describe("createQueryReader metadata cache", () => {
 
     it("is cleared by clearCaches but kept across saveChanges and abandonChanges", async () => {
       using ecdb = ECDbTestHelper.createECDb(outDir, "query-metadata-cache-clear.ecdb", schemaV1);
-      const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
       const ecsql = "SELECT * FROM mct.Foo";
-      const expectMetadataRequested = async (requested: boolean) => {
-        spy.resetHistory();
-        await readMetaData(ecdb, ecsql);
-        expect(spy.args[0][1].includeMetaData).to.equal(requested);
-      };
 
-      await expectMetadataRequested(true);
-      await expectMetadataRequested(false);
+      await expectMetadataRequested(ecdb, ecsql, true);
+      await expectMetadataRequested(ecdb, ecsql, false);
       ecdb.clearCaches();
-      await expectMetadataRequested(true);
+      await expectMetadataRequested(ecdb, ecsql, true);
       ecdb.withCachedWriteStatement("INSERT INTO mct.Foo(PropA) VALUES('a')", (stmt) => stmt.stepForInsert());
       ecdb.saveChanges();
-      await expectMetadataRequested(false);
+      await expectMetadataRequested(ecdb, ecsql, false);
       ecdb.abandonChanges();
-      await expectMetadataRequested(false);
+      await expectMetadataRequested(ecdb, ecsql, false);
     });
 
     it("is cleared by dropSchemas", async () => {
@@ -374,26 +378,33 @@ describe("createQueryReader metadata cache", () => {
       const expected = (await ecdb.createQueryReader(ecsql, undefined, config).toArray()).map((row) => row[0]);
       expect(expected).to.have.length(10);
 
-      // While reader A's cache-hit request is in flight, clear the cache and start reader B with the same token.
-      // Native cancels A in favour of B; A must not then resubmit with the token and cancel B in turn.
+      // Once reader A's cache-hit request has returned rows, clear the cache and start reader B with the same token, then
+      // let A see its response. A must re-request metadata without the token: native cancels the older of two requests
+      // sharing a token, so resubmitting with it would cancel B.
+      // (Clearing while A's request is still in flight is not tested here: native then answers A with ShuttingDown and
+      // ECSqlReader retries the original request, token included, exactly as it does without the metadata cache.)
       const executeQueryRequest = ConcurrentQuery.executeQueryRequest.bind(ConcurrentQuery);
       let readerB: Promise<any[]> | undefined;
+      const requests: DbQueryRequest[] = [];
       sinon.stub(ConcurrentQuery, "executeQueryRequest").callsFake(async (db, request) => {
-        const pending = executeQueryRequest(db, request);
+        requests.push(request);
+        const response = await executeQueryRequest(db, request);
         if (readerB === undefined && !request.includeMetaData && request.restartToken === config.restartToken) {
           ecdb.clearCaches();
           readerB = ecdb.createQueryReader(ecsql, undefined, config).toArray();
         }
-        return pending;
+        return response;
       });
 
-      const resultA = await ecdb.createQueryReader(ecsql, undefined, config).toArray().then((rows) => rows, (error: Error) => error);
+      const resultA = await ecdb.createQueryReader(ecsql, undefined, config).toArray();
       expect(readerB).to.not.be.undefined;
       expect((await readerB!).map((row) => row[0])).to.deep.equal(expected);
-      if (resultA instanceof Error)
-        expect((resultA as BentleyError).errorNumber).to.equal(DbResult.BE_SQLITE_INTERRUPT); // A was cancelled by B
-      else
-        expect(resultA.map((row) => row[0])).to.deep.equal(expected);
+      expect(resultA.map((row) => row[0])).to.deep.equal(expected);
+      expect(requests.map((r) => ({ includeMetaData: r.includeMetaData, restartToken: r.restartToken }))).to.have.deep.members([
+        { includeMetaData: false, restartToken: config.restartToken }, // A's cache hit
+        { includeMetaData: true, restartToken: config.restartToken }, // B
+        { includeMetaData: true, restartToken: undefined }, // A's re-request after the clear
+      ]);
     });
   });
 
@@ -407,10 +418,7 @@ describe("createQueryReader metadata cache", () => {
 
     afterEach(() => imodel.close());
 
-    async function populate() {
-      await readMetaData(imodel, "SELECT * FROM mcbt.Foo");
-      expect(imodel[_queryMetadataCache].size).to.equal(1);
-    }
+    const fooEcsql = "SELECT * FROM mcbt.Foo";
 
     function insertCategory(txn: EditTxn) {
       SpatialCategory.insert(txn, IModelDb.dictionaryId, Guid.createValue(), new SubCategoryAppearance());
@@ -441,34 +449,46 @@ describe("createQueryReader metadata cache", () => {
       }
     });
 
-    it("is kept on commit and cleared on undo and redo", async () => {
-      await populate();
+    it("is kept on commit, undo and redo", async () => {
+      await readMetaData(imodel, fooEcsql);
       withEditTxn(imodel, (txn) => insertCategory(txn));
-      expect(imodel[_queryMetadataCache].size).to.equal(1);
+      await expectMetadataRequested(imodel, fooEcsql, false);
 
-      imodel.txns.reverseSingleTxn();
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
+      await expectMetadataRequested(imodel, fooEcsql, false);
 
-      await populate();
-      imodel.txns.reinstateTxn();
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
+      await expectMetadataRequested(imodel, fooEcsql, false);
     });
 
-    it("is cleared on abandon and clearCaches", async () => {
-      await populate();
+    it("never needs clearing on undo because undo cannot cross a schema import", async () => {
+      withEditTxn(imodel, (txn) => insertCategory(txn));
+      await imodel.importSchemaStrings([bisSchema("01.00.01", true)]);
+      expect(await readColumnNames(imodel, fooEcsql)).to.include("PropB");
+
+      // Saving a schema txn starts a new undo session, so neither the import nor anything before it can be undone.
+      expect(imodel.txns.isUndoPossible).to.be.false;
+      expect(imodel.txns.reverseAll()).to.equal(IModelStatus.NothingToUndo);
+      withEditTxn(imodel, (txn) => insertCategory(txn));
+      expect(imodel.txns.reverseAll()).to.equal(IModelStatus.Success);
+      expect(imodel.txns.isUndoPossible).to.be.false;
+      expect(await readColumnNames(imodel, fooEcsql)).to.include("PropB");
+      expect(await readColumnNames(imodel, fooEcsql, { usePrimaryConn: true })).to.include("PropB");
+    });
+
+    it("is kept on abandon and instance-only clearCaches, and cleared by a full clearCaches", async () => {
+      await readMetaData(imodel, fooEcsql);
       const txn = new EditTxn(imodel, "abandon");
       txn.start();
       insertCategory(txn);
       txn.end("abandon");
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      await expectMetadataRequested(imodel, fooEcsql, false);
 
-      await populate();
       imodel.clearCaches({ instanceCachesOnly: true });
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      await expectMetadataRequested(imodel, fooEcsql, false);
 
-      await populate();
       imodel.clearCaches();
-      expect(imodel[_queryMetadataCache].size).to.equal(0);
+      await expectMetadataRequested(imodel, fooEcsql, true);
     });
   });
 });
@@ -505,9 +525,10 @@ describe("createQueryReader metadata cache across briefcases", () => {
   }
 
   async function warm(db: IModelDb) {
-    for (const config of configs)
+    for (const config of configs) {
       await readMetaData(db, ecsql, config);
-    expect(db[_queryMetadataCache].size).to.equal(configs.length);
+      await expectMetadataRequested(db, ecsql, false, config);
+    }
   }
 
   it("sees new columns after pulling a schema changeset", async () => {

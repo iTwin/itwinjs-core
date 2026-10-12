@@ -699,6 +699,11 @@ export class BriefcaseManager {
         Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
         this.dropRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
       }
+
+      // Local schema txns were reversed and reinstated without a full clear (semantic rebase clears per schema txn,
+      // but the regular rebase does not), so caches filled during the merge may describe the schema without them.
+      if (hasLocalSchemaTxn)
+        db.clearCaches();
     }
     // notify listeners
     db.notifyChangesetApplied();

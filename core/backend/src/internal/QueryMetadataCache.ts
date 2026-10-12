@@ -13,11 +13,12 @@ import { DbQueryRequest, DbQueryResponse, DbResponseStatus, QueryPropertyMetaDat
  * already-seen ECSQL can skip asking native to build and marshal it again.
  *
  * Column metadata only depends on the prepared statement (i.e. the schema) and the options that influence property naming.
- * The owning database clears the cache on every event that can change the schema seen by the primary or worker connections:
- * clearCaches (which schema import, schema drop, schema upgrade and changeset revert call), changeset application, undo/redo,
- * external txn replay, attach/detach and close. Plain commits do not clear it, so code that alternates reads and saves keeps the benefit.
- * A schema change made by another process to a file opened without change watching is not detected; the primary
- * connection's own schema cache has the same limitation.
+ * The owning database clears it only in a full `clearCaches()`, together with its statement cache, so it stays exactly as
+ * fresh as the metadata [ECSqlStatement]($backend) caches for `withPreparedStatement` and `withQueryReader`. Every path that
+ * changes the schema must therefore do a full `clearCaches()`. Undo and redo never need to, because saving a schema txn
+ * starts a new undo session, so undo/redo cannot cross a schema change.
+ * A schema change made by another process to a file opened without change watching is not detected; the statement
+ * cache has the same limitation.
  * @internal
  */
 export class QueryMetadataCache {

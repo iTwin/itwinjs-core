@@ -61,8 +61,6 @@ import { DbCloudContainerInfo } from '@itwin/core-common';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbConflictResolution } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
-import { DbQueryRequest } from '@itwin/core-common';
-import { DbQueryResponse } from '@itwin/core-common';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
@@ -4101,8 +4099,6 @@ export abstract class IModelDb extends IModel {
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
-    // @internal (undocumented)
-    readonly [_queryMetadataCache]: QueryMetadataCache;
     // @internal (undocumented)
     [_resetIModelDb](): void;
     // @internal

@@ -17,7 +17,7 @@ import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb, _queryMetadataCache } from "./internal/Symbols";
+import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1082,7 +1082,6 @@ export class TxnManager {
 
   /** @internal */
   protected _onReplayedExternalTxns() {
-    this._iModel[_queryMetadataCache].clear();
     this.onReplayedExternalTxns.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
   }
@@ -1104,7 +1103,6 @@ export class TxnManager {
 
   /** @internal */
   protected _onAfterUndoRedo(isUndo: boolean) {
-    this._iModel[_queryMetadataCache].clear();
     this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);

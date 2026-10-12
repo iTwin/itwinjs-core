@@ -124,7 +124,6 @@ export class ECDb implements Disposable {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
     }
-    this._queryMetadataCache.clear();
     this[_nativeDb].attachDb(fileName, alias);
   }
   /**
