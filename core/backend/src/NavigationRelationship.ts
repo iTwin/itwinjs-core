@@ -266,6 +266,26 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
   }
 }
 
+/** Relates a [[Sheet]] to the [[SheetPrototype]] it was created from.
+ * @beta
+ */
+export class SheetHasSheetPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetHasSheetPrototype";
+  public constructor(sheetPrototypeId: Id64String, relClassName: string = SheetHasSheetPrototype.classFullName) {
+    super({ id: sheetPrototypeId, relClassName });
+  }
+}
+
+/** Relates a [[SheetPrototype]] to the [[SheetBorderPrototype]] that supplies its border and title-block content.
+ * @beta
+ */
+export class SheetPrototypeHasSheetBorderPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetPrototypeHasSheetBorderPrototype";
+  public constructor(sheetBorderPrototypeId: Id64String, relClassName: string = SheetPrototypeHasSheetBorderPrototype.classFullName) {
+    super({ id: sheetBorderPrototypeId, relClassName });
+  }
+}
+
 /** Relates a [[Subject]] to the [[ProjectInformationRecord]] that describes its project-level properties.
  * @beta
  */

@@ -12,7 +12,7 @@ import {
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, IModelError, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, Rank, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
+  SheetBorderPrototypeProps, SheetBorderTemplateProps, SheetProps, SheetPrototypeProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity, EntityClassType } from "./Entity";
@@ -20,7 +20,7 @@ import { EditTxn } from "./EditTxn";
 import { IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, GraphicalModel3d, Model, PhysicalModel, SectionDrawingModel, SheetModel } from "./Model";
-import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
+import { SheetPrototypeHasSheetBorderPrototype, SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onReservedElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
@@ -1609,6 +1609,10 @@ export class Sheet extends Document {
   public width: number;
   public scale?: number;
   public sheetTemplate?: Id64String;
+  /** The [[SheetPrototype]] this sheet was created from, if any.
+   * @beta
+   */
+  public sheetPrototype?: RelatedElement;
 
   protected constructor(props: SheetProps, iModel: IModelDb) {
     super(props, iModel);
@@ -1616,12 +1620,15 @@ export class Sheet extends Document {
     this.width = JsonUtils.asDouble(props.width);
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
+    this.sheetPrototype = RelatedElement.fromJSON(props.sheetPrototype);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     if (undefined !== this.sheetTemplate)
       referenceIds.addElement(this.sheetTemplate);
+    if (undefined !== this.sheetPrototype)
+      referenceIds.addElement(this.sheetPrototype.id);
   }
 
   /** A Sheet must be sub-modeled by a [[SheetModel]].
@@ -2052,6 +2059,171 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
     return txn.insertModel(modelProps); // will be the same value as modeledElementId
   }
 
+}
+
+/** Arguments supplied to [[SheetBorderPrototype.create]].
+ * @beta
+ */
+export interface SheetBorderPrototypeCreateArgs {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The Id of the [[DefinitionModel]] that will contain the new element. */
+  definitionModelId: Id64String;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** Height of the sheet border, in meters. */
+  height?: number;
+  /** Width of the sheet border, in meters. */
+  width?: number;
+  /** Whether the new element is private to the application that creates it. */
+  isPrivate?: boolean;
+}
+
+const minimumSheetPrototypeBisCoreVersion = new ECVersion(1, 0, 27);
+
+/** A reusable, catalog-shareable border and title-block definition. A SheetBorderPrototype is sub-modeled by a [[DrawingModel]]
+ * holding the border line-art and title-block content that is copied into every [[Sheet]] whose [[SheetPrototype]] references this border.
+ * @note Requires BisCore schema version 01.00.27 or newer.
+ * @beta
+ */
+export class SheetBorderPrototype extends DefinitionElement {
+  public static override get className(): string { return "SheetBorderPrototype"; }
+  /** Height of the sheet border, in meters. */
+  public height?: number;
+  /** Width of the sheet border, in meters. */
+  public width?: number;
+
+  protected constructor(props: SheetBorderPrototypeProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.height = props.height;
+    this.width = props.width;
+  }
+
+  /** A SheetBorderPrototype must be sub-modeled by a [[DrawingModel]]. */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [DrawingModel]; }
+
+  /** Create a new SheetBorderPrototype element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.27.
+   */
+  public static create(args: SheetBorderPrototypeCreateArgs): SheetBorderPrototype {
+    args.iModel.requireMinimumSchemaVersion("BisCore", minimumSheetPrototypeBisCoreVersion, this.className);
+    const props: SheetBorderPrototypeProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: args.code ?? Code.createEmpty(),
+      height: args.height,
+      width: args.width,
+      isPrivate: args.isPrivate,
+    };
+    return new this(props, args.iModel);
+  }
+
+  /** Insert a SheetBorderPrototype and the [[DrawingModel]] that sub-models it.
+   * @returns The Id of the newly inserted SheetBorderPrototype, which is also the Id of its sub-model.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.27.
+   * @throws [[IModelError]] if there is a problem inserting the element or its sub-model.
+   */
+  public static insert(txn: EditTxn, args: Omit<SheetBorderPrototypeCreateArgs, "iModel">): Id64String {
+    const element = this.create({ ...args, iModel: txn.iModel });
+    const modeledElementId = element.insert(txn);
+    const modelProps: GeometricModel2dProps = {
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: modeledElementId },
+      isTemplate: true,
+    };
+    return txn.insertModel(modelProps);
+  }
+}
+
+/** Arguments supplied to [[SheetPrototype.create]].
+ * @beta
+ */
+export interface SheetPrototypeCreateArgs {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The Id of the [[DefinitionModel]] that will contain the new element. */
+  definitionModelId: Id64String;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** The drawing scale applied to sheets created from this prototype. */
+  scale?: number;
+  /** Height of sheets created from this prototype, in meters. */
+  height?: number;
+  /** Width of sheets created from this prototype, in meters. */
+  width?: number;
+  /** The Id of the [[SheetBorderPrototype]] that supplies the border and title-block content, if any. */
+  borderId?: Id64String;
+  /** Whether the new element is private to the application that creates it. */
+  isPrivate?: boolean;
+}
+
+/** A reusable, catalog-shareable definition of a sheet layout. A SheetPrototype is sub-modeled by a [[SheetModel]] holding
+ * the sheet-level content (such as view attachment placeholders and annotations) that is copied into every [[Sheet]] created from it.
+ * A [[Sheet]] records the prototype it was created from via [[Sheet.sheetPrototype]].
+ * @note Requires BisCore schema version 01.00.27 or newer.
+ * @beta
+ */
+export class SheetPrototype extends DefinitionElement {
+  public static override get className(): string { return "SheetPrototype"; }
+  /** The drawing scale applied to sheets created from this prototype. */
+  public scale?: number;
+  /** Height of sheets created from this prototype, in meters. */
+  public height?: number;
+  /** Width of sheets created from this prototype, in meters. */
+  public width?: number;
+  /** The [[SheetBorderPrototype]] that supplies the border and title-block content, if any. */
+  public border?: RelatedElement;
+
+  protected constructor(props: SheetPrototypeProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.scale = props.scale;
+    this.height = props.height;
+    this.width = props.width;
+    this.border = RelatedElement.fromJSON(props.border);
+  }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.border)
+      referenceIds.addElement(this.border.id);
+  }
+
+  /** A SheetPrototype must be sub-modeled by a [[SheetModel]]. */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [SheetModel]; }
+
+  /** Create a new SheetPrototype element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.27.
+   */
+  public static create(args: SheetPrototypeCreateArgs): SheetPrototype {
+    args.iModel.requireMinimumSchemaVersion("BisCore", minimumSheetPrototypeBisCoreVersion, this.className);
+    const props: SheetPrototypeProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: args.code ?? Code.createEmpty(),
+      scale: args.scale,
+      height: args.height,
+      width: args.width,
+      border: args.borderId ? new SheetPrototypeHasSheetBorderPrototype(args.borderId) : undefined,
+      isPrivate: args.isPrivate,
+    };
+    return new this(props, args.iModel);
+  }
+
+  /** Insert a SheetPrototype and the [[SheetModel]] that sub-models it.
+   * @returns The Id of the newly inserted SheetPrototype, which is also the Id of its sub-model.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.27.
+   * @throws [[IModelError]] if there is a problem inserting the element or its sub-model.
+   */
+  public static insert(txn: EditTxn, args: Omit<SheetPrototypeCreateArgs, "iModel">): Id64String {
+    const element = this.create({ ...args, iModel: txn.iModel });
+    const modeledElementId = element.insert(txn);
+    const modelProps: GeometricModel2dProps = {
+      classFullName: SheetModel.classFullName,
+      modeledElement: { id: modeledElementId },
+      isTemplate: true,
+    };
+    return txn.insertModel(modelProps);
+  }
 }
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.

@@ -255,12 +255,14 @@ import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
 import type { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
+import { SheetBorderPrototypeProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
 import { SheetIndexReferenceProps } from '@itwin/core-common';
 import { SheetInformation } from '@itwin/core-common';
 import { SheetInformationAspectProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
+import { SheetPrototypeProps } from '@itwin/core-common';
 import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
 import { SnapRequestProps } from '@itwin/core-common';
@@ -6765,10 +6767,34 @@ export class Sheet extends Document_2 {
     height: number;
     // (undocumented)
     scale?: number;
+    // @beta
+    sheetPrototype?: RelatedElement;
     // (undocumented)
     sheetTemplate?: Id64String;
     // (undocumented)
     width: number;
+}
+
+// @beta
+export class SheetBorderPrototype extends DefinitionElement {
+    protected constructor(props: SheetBorderPrototypeProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
+    // (undocumented)
+    static get className(): string;
+    static create(args: SheetBorderPrototypeCreateArgs): SheetBorderPrototype;
+    height?: number;
+    static insert(txn: EditTxn, args: Omit<SheetBorderPrototypeCreateArgs, "iModel">): Id64String;
+    width?: number;
+}
+
+// @beta
+export interface SheetBorderPrototypeCreateArgs {
+    code?: Code;
+    definitionModelId: Id64String;
+    height?: number;
+    iModel: IModelDb;
+    isPrivate?: boolean;
+    width?: number;
 }
 
 // @public @preview
@@ -6780,6 +6806,13 @@ export class SheetBorderTemplate extends Document_2 {
     height?: number;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export class SheetHasSheetPrototype extends RelatedElement {
+    constructor(sheetPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6910,6 +6943,41 @@ export class SheetModel extends GraphicalModel2d {
 // @beta
 export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
     constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class SheetPrototype extends DefinitionElement {
+    protected constructor(props: SheetPrototypeProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
+    border?: RelatedElement;
+    // (undocumented)
+    static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(args: SheetPrototypeCreateArgs): SheetPrototype;
+    height?: number;
+    static insert(txn: EditTxn, args: Omit<SheetPrototypeCreateArgs, "iModel">): Id64String;
+    scale?: number;
+    width?: number;
+}
+
+// @beta
+export interface SheetPrototypeCreateArgs {
+    borderId?: Id64String;
+    code?: Code;
+    definitionModelId: Id64String;
+    height?: number;
+    iModel: IModelDb;
+    isPrivate?: boolean;
+    scale?: number;
+    width?: number;
+}
+
+// @beta
+export class SheetPrototypeHasSheetBorderPrototype extends RelatedElement {
+    constructor(sheetBorderPrototypeId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }

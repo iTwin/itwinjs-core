@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add SheetPrototypeProps, SheetBorderPrototypeProps and SheetProps.sheetPrototype",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

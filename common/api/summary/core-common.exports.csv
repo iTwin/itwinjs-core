@@ -884,6 +884,7 @@ beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
+beta;interface;SheetBorderPrototypeProps
 beta;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
 beta;type;SheetIndexFolderProps
@@ -893,6 +894,7 @@ beta;type;SheetInformationAspectProps
 beta;interface;SheetInformationProps
 public;interface;SheetProps
 preview;interface;SheetProps
+beta;interface;SheetPrototypeProps
 beta;interface;SheetReferenceProps
 beta;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
