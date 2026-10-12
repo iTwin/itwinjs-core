@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 06 Oct 2026 19:48:29 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Oct 2026 17:37:54 GMT and should not be manually modified.
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+### Updates
+
+- Move Sheet and Drawing sub-model class validation into Element.onSubModelInsert and allow domain ISubModeledElement classes to define permitted model classes.
 
 ## 5.14.2
 Tue, 06 Oct 2026 19:48:29 GMT
