@@ -26,7 +26,7 @@ Asynchronous ECSQL readers can now resume unfinished concurrent-query statements
 
 Concurrent queries also reduce repeated metadata lookups and temporary JSON allocations when converting supported scalar and composite results. Point-coordinate reuse and more efficient ID formatting reduce per-row work without changing the documented result formats.
 
-Reuse is automatic for eligible worker queries in WAL databases. Primary-connection queries, non-WAL databases (including read-only handles), and connections with attached data databases continue re-executing each batch. Nondeterministic expressions may be evaluated once for a retained execution instead of once per batch, so use deterministic queries and ordering rather than depending on batch boundaries for re-evaluation. Retained statements can hold sorter resources and delay WAL checkpoints until released.
+Reuse is automatic for eligible worker queries in WAL databases. Primary-connection queries, databases not using WAL journal mode (even when opened read-only), and connections with attached data databases continue re-executing each batch. Nondeterministic expressions may be evaluated once for a retained execution instead of once per batch, so use deterministic queries and ordering rather than depending on batch boundaries for re-evaluation. Retained statements can hold sorter resources and delay WAL checkpoints until released.
 
 See [Asynchronous paging](../learning/backend/ExecutingECSQL.md#asynchronous-paging) for behavior and resource considerations.
 

@@ -794,7 +794,10 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
   valueFormat?: DbValueFormat;
   query: string;
   args?: object;
-  /** Reader identity used as a hint for opportunistic native cursor reuse. */
+  /** Reader identity used as a hint for opportunistic native cursor reuse.
+   * Requests sharing an id are assumed to come from one reader issuing one batch at a time; a non-contiguous
+   * request with the same id releases that reader's earlier retained cursor.
+   */
   cursorId?: string;
 }
 
@@ -875,10 +878,10 @@ export interface DbQueryConfig {
   enableCursors?: boolean;
   /** Maximum parked cursors per worker, bounded by statementCacheSizePerWorker.
    * Defaults to -1: the statement-cache size for a read-only primary, or 4 for a writable primary.
-   * Set to 0 to disable cursor retention.
+   * Set to 0 to disable cursor retention. Non-integer values are ignored.
    */
   maxCursorsPerWorker?: number;
-  /** Positive idle timeout in seconds for parked cursors. Defaults to 30; cleanup uses monitorPollInterval. */
+  /** Positive integer idle timeout in seconds for parked cursors. Defaults to 30; cleanup uses monitorPollInterval. */
   cursorIdleTimeout?: number;
   /* Monitor poll interval in milliseconds. Its responsible for cancelling queries that pass quota. It can be set between 1000 and Max time quota for query */
   monitorPollInterval?: number;
