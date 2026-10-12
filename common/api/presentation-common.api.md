@@ -1295,6 +1295,9 @@ export class KoqPropertyValueFormatter {
     // @deprecated
     constructor(schemaContext: SchemaContext, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider);
     constructor(props: KoqPropertyValueFormatterProps);
+    createCachedFormatter(): {
+        format(value: number, options: FormatOptions): Promise<string | undefined>;
+    };
     // @internal (undocumented)
     get defaultFormats(): FormatsMap | undefined;
     set defaultFormats(value: FormatsMap | undefined);
