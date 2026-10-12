@@ -338,86 +338,65 @@ export class BriefcaseManager {
       return IModelHost[_hubAccess].releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
   }
 
-  /** Suffixes of the files that are created alongside a briefcase (SQLite journals, the local locks db, and the tile cache)
-   * and that are deleted together with it by [[deleteBriefcaseFiles]].
-   */
-  private static readonly _briefcaseSidecarSuffixes = [
-    "-wal", "-shm", "-journal",
-    "-locks", "-locks-wal", "-locks-shm", "-locks-journal",
-    ".Tiles", ".Tiles-wal", ".Tiles-shm", ".Tiles-journal",
-  ];
-
-  /** Determine whether the supplied (already resolved) path is located inside the briefcase cache directory. */
-  private static isInCacheDir(resolvedPath: string): boolean {
-    if (!this._cacheDir)
-      return false;
-
-    const cacheRoot = path.resolve(this._cacheDir) + path.sep;
-    return process.platform === "win32"
-      ? resolvedPath.toLowerCase().startsWith(cacheRoot.toLowerCase())
-      : resolvedPath.startsWith(cacheRoot);
-  }
-
   /**
    * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
-   * Then, if an accessToken is supplied, it releases the BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
-   * its associated files (e.g. `-wal`, `-shm`, `-locks`, and `.Tiles` files with the same name).
+   * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
+   * associated files (that is, files in the same directory named `<briefcase file name>-*` or `<briefcase file name>.*`,
+   * e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles").
    * @param filePath the full file name of the Briefcase to delete
    * @param accessToken for releasing the briefcaseId
-   * @throws [IModelError]($common) with [IModelStatus.BadRequest]($bentley) if `filePath` exists but is neither a valid iModel nor located inside
-   * the briefcase cache directory. In that case, no files are deleted.
-   * @note If `filePath` does not exist and is outside the briefcase cache directory, this method does nothing.
    */
   public static async deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void> {
-    const resolvedPath = path.resolve(filePath);
-    const isInCache = this.isInCacheDir(resolvedPath);
-    const fileExists = IModelJsFs.existsSync(resolvedPath);
+    try {
+      const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
+      const briefcase: BriefcaseProps = {
+        iModelId: db.getIModelId(),
+        briefcaseId: db.getBriefcaseId(),
+      };
+      db.closeFile();
 
-    let briefcase: BriefcaseProps | undefined;
-    if (fileExists) {
-      try {
-        const db = IModelDb.openDgnDb({ path: resolvedPath }, OpenMode.Readonly);
-        briefcase = {
-          iModelId: db.getIModelId(),
-          briefcaseId: db.getBriefcaseId(),
-        };
-        db.closeFile();
-      } catch {
-        // not a valid iModel (e.g. corrupt or partially downloaded)
-      }
-    }
+      if (this.isValidBriefcaseId(briefcase.briefcaseId))
+        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId); // cleanup rebase folders
 
-    // Only delete files that are valid iModels, or that are located inside the briefcase cache.
-    if (undefined === briefcase && !isInCache) {
-      if (!fileExists)
-        return; // nothing to delete. Don't touch any similarly-named files outside of the briefcase cache.
-      throw new IModelError(IModelStatus.BadRequest, `cannot delete "${filePath}": it is not a valid iModel and is not in the briefcase cache`);
-    }
-
-    if (undefined !== briefcase && this.isValidBriefcaseId(briefcase.briefcaseId)) {
-      try {
-        this.cleanupRebaseFolders(resolvedPath, briefcase.briefcaseId);
-        if (accessToken)
+      if (accessToken) {
+        if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
-      } catch (err) {
-        Logger.logWarning(loggerCategory, `Failed to clean up rebase folders or release briefcaseId for ${resolvedPath}: ${String(err)}`);
+        }
       }
-    }
+    } catch { }
 
     // first try to delete the briefcase file
     try {
-      if (fileExists)
-        IModelJsFs.unlinkSync(resolvedPath);
+      if (IModelJsFs.existsSync(filePath))
+        IModelJsFs.unlinkSync(filePath);
     } catch (err) {
       throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${String(err)}`);
     }
 
     // next, delete the briefcase's associated files (e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles", etc.)
-    for (const suffix of this._briefcaseSidecarSuffixes) {
-      const sidecar = `${resolvedPath}${suffix}`;
-      if (IModelJsFs.existsSync(sidecar))
-        this.deleteFile(sidecar); // don't throw on error
+    try {
+      const dirName = path.dirname(filePath);
+      const fileName = path.basename(filePath);
+      const files = IModelJsFs.readdirSync(dirName);
+      for (const file of files) {
+        const sidecar = path.join(dirName, file);
+        if (this.isBriefcaseSidecar(file, fileName) && !IModelJsFs.lstatSync(sidecar)?.isDirectory)
+          this.deleteFile(sidecar); // don't throw on error
+      }
+    } catch { }
+  }
+
+  /** Determine whether `fileName` is a file associated with the briefcase named `briefcaseName`. That is, whether it is named
+   * `<briefcaseName>-*` or `<briefcaseName>.*` (e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles", "a.bim.HierarchyCache.db").
+   * Several native modules create their own files alongside a briefcase, so this is a naming rule rather than a fixed list.
+   */
+  private static isBriefcaseSidecar(fileName: string, briefcaseName: string): boolean {
+    if (process.platform === "win32") {
+      fileName = fileName.toLowerCase();
+      briefcaseName = briefcaseName.toLowerCase();
     }
+    const separator = fileName[briefcaseName.length];
+    return fileName.length > briefcaseName.length + 1 && fileName.startsWith(briefcaseName) && (separator === "-" || separator === ".");
   }
 
   /** Deletes a file

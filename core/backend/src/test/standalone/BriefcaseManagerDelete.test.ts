@@ -10,9 +10,10 @@ import { IModelError } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
+import { checkFrontendBriefcaseDelete } from "../../internal/NativeAppDeleteBriefcase";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("BriefcaseManager.deleteBriefcaseFiles", () => {
+describe("Deleting briefcase files", () => {
   let outsideDir: string;
   let insideDir: string;
 
@@ -22,19 +23,10 @@ describe("BriefcaseManager.deleteBriefcaseFiles", () => {
   };
 
   const createIModel = (fileName: string) => {
-    StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteBriefcaseFiles" } }).close();
-    return fileName;
-  };
-
-  const expectBadRequest = async (filePath: string) => {
-    let error: unknown;
-    try {
-      await BriefcaseManager.deleteBriefcaseFiles(filePath);
-    } catch (err) {
-      error = err;
-    }
-    expect(error).instanceOf(IModelError);
-    expect((error as IModelError).errorNumber).equal(IModelStatus.BadRequest);
+    const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteBriefcaseFiles" } });
+    const pathName = db.pathName; // native appends ".bim" if fileName has no extension
+    db.close();
+    return pathName;
   };
 
   beforeEach(() => {
@@ -53,103 +45,99 @@ describe("BriefcaseManager.deleteBriefcaseFiles", () => {
     IModelJsFs.removeSync(path.dirname(insideDir));
   });
 
-  it("refuses to delete a file outside the cache that is not an iModel", async () => {
-    const notes = writeFile(path.join(outsideDir, "notes.txt"));
-    const notesWal = writeFile(`${notes}-wal`);
+  describe("BriefcaseManager.deleteBriefcaseFiles", () => {
+    it("deletes a briefcase along with its associated files, but not other files", async () => {
+      const bim = createIModel(path.join(insideDir, "1.bim"));
+      const sidecars = ["-wal", "-shm", "-journal", "-locks", "-locks-wal", "-locks-shm", ".Tiles", ".Tiles-journal", "-hierarchies", ".HierarchyCache.db", ".keep.txt"]
+        .map((suffix) => writeFile(`${bim}${suffix}`));
+      const unrelated = [writeFile(path.join(insideDir, "1.bim2")), writeFile(path.join(insideDir, "1.bimx.txt")), writeFile(path.join(insideDir, "x1.bim-wal"))];
+      const sidecarDir = path.join(insideDir, "1.bim.dir");
+      IModelJsFs.recursiveMkDirSync(sidecarDir);
 
-    await expectBadRequest(notes);
+      await BriefcaseManager.deleteBriefcaseFiles(bim);
 
-    expect(IModelJsFs.existsSync(notes)).to.be.true;
-    expect(IModelJsFs.existsSync(notesWal)).to.be.true;
+      expect(IModelJsFs.existsSync(bim)).to.be.false;
+      for (const sidecar of sidecars)
+        expect(IModelJsFs.existsSync(sidecar), sidecar).to.be.false;
+      for (const file of unrelated)
+        expect(IModelJsFs.existsSync(file), file).to.be.true;
+      expect(IModelJsFs.existsSync(sidecarDir), "directories are not deleted").to.be.true;
+    });
+
+    it("deletes a corrupt file at any location, but not files that merely share a prefix", async () => {
+      const a = writeFile(path.join(outsideDir, "a"), "this is not an iModel");
+      const wal = writeFile(`${a}-wal`);
+      const unrelated = [writeFile(path.join(outsideDir, "abc.txt")), writeFile(path.join(outsideDir, "ab-c.txt"))];
+
+      await BriefcaseManager.deleteBriefcaseFiles(a);
+
+      expect(IModelJsFs.existsSync(a)).to.be.false;
+      expect(IModelJsFs.existsSync(wal)).to.be.false;
+      for (const file of unrelated)
+        expect(IModelJsFs.existsSync(file), file).to.be.true;
+    });
+
+    it("deletes stale associated files when the briefcase file is missing", async () => {
+      const bim = path.join(insideDir, "3.bim");
+      const wal = writeFile(`${bim}-wal`);
+      const locks = writeFile(`${bim}-locks`);
+
+      await BriefcaseManager.deleteBriefcaseFiles(bim);
+
+      expect(IModelJsFs.existsSync(wal)).to.be.false;
+      expect(IModelJsFs.existsSync(locks)).to.be.false;
+    });
   });
 
-  it("does not delete files that merely share a prefix with a missing file outside the cache", async () => {
-    const abc = writeFile(path.join(outsideDir, "abc.txt"));
-    const docx = writeFile(path.join(outsideDir, "a.docx"));
-    const wal = writeFile(path.join(outsideDir, "a-wal"));
+  describe("checkFrontendBriefcaseDelete", () => {
+    const expectBadRequest = (filePath: string) => {
+      let error: unknown;
+      try {
+        checkFrontendBriefcaseDelete(filePath);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).instanceOf(IModelError);
+      expect((error as IModelError).errorNumber).equal(IModelStatus.BadRequest);
+    };
 
-    await BriefcaseManager.deleteBriefcaseFiles(path.join(outsideDir, "a"));
+    it("rejects a file outside the cache that is not an iModel", () => {
+      const notes = writeFile(path.join(outsideDir, "notes.txt"));
+      expectBadRequest(notes);
+      expect(IModelJsFs.existsSync(notes)).to.be.true;
+    });
 
-    expect(IModelJsFs.existsSync(abc)).to.be.true;
-    expect(IModelJsFs.existsSync(docx)).to.be.true;
-    expect(IModelJsFs.existsSync(wal)).to.be.true;
-  });
+    it("rejects paths that use '..' to escape the cache", () => {
+      const notes = writeFile(path.join(outsideDir, "notes.txt"));
+      const escapingPath = `${insideDir}${path.sep}${path.relative(insideDir, notes)}`;
+      expect(escapingPath.startsWith(insideDir)).to.be.true;
+      expectBadRequest(escapingPath);
+    });
 
-  it("does not delete files that share a prefix with a non-iModel file outside the cache", async () => {
-    const a = writeFile(path.join(outsideDir, "a"));
-    const abc = writeFile(path.join(outsideDir, "abc.txt"));
-    const docx = writeFile(path.join(outsideDir, "a.docx"));
+    it("returns undefined for a missing file outside the cache, so its associated files are not deleted", () => {
+      writeFile(path.join(outsideDir, "a.docx"));
+      expect(checkFrontendBriefcaseDelete(path.join(outsideDir, "a"))).to.be.undefined;
+    });
 
-    await expectBadRequest(a);
+    it("allows a valid iModel outside the cache", () => {
+      const bim = createIModel(path.join(outsideDir, "valid.bim"));
+      expect(checkFrontendBriefcaseDelete(bim)).equal(path.resolve(bim));
+    });
 
-    expect(IModelJsFs.existsSync(a)).to.be.true;
-    expect(IModelJsFs.existsSync(abc)).to.be.true;
-    expect(IModelJsFs.existsSync(docx)).to.be.true;
-  });
+    it("allows any file, or missing file, inside the cache", () => {
+      const corrupt = writeFile(path.join(insideDir, "2.bim"), "this is not an iModel");
+      expect(checkFrontendBriefcaseDelete(corrupt)).equal(path.resolve(corrupt));
 
-  it("rejects paths that use '..' to escape the cache", async () => {
-    const notes = writeFile(path.join(outsideDir, "notes.txt"));
-    const escapingPath = `${insideDir}${path.sep}${path.relative(insideDir, notes)}`;
-    expect(escapingPath.startsWith(insideDir)).to.be.true;
+      const missing = path.join(insideDir, "3.bim");
+      expect(checkFrontendBriefcaseDelete(missing)).equal(path.resolve(missing));
+    });
 
-    await expectBadRequest(escapingPath);
+    it("treats the cache directory case-insensitively on Windows", function () {
+      if (process.platform !== "win32")
+        this.skip();
 
-    expect(IModelJsFs.existsSync(notes)).to.be.true;
-  });
-
-  it("deletes a valid briefcase in the cache along with its associated files, but not other files", async () => {
-    const bim = createIModel(path.join(insideDir, "1.bim"));
-    const sidecars = ["-wal", "-shm", "-journal", "-locks", "-locks-wal", "-locks-shm", ".Tiles", ".Tiles-journal"].map((suffix) => writeFile(`${bim}${suffix}`));
-    const unrelated = [writeFile(`${bim}.keep.txt`), writeFile(path.join(insideDir, "1.bim2"))];
-
-    await BriefcaseManager.deleteBriefcaseFiles(bim);
-
-    expect(IModelJsFs.existsSync(bim)).to.be.false;
-    for (const sidecar of sidecars)
-      expect(IModelJsFs.existsSync(sidecar), sidecar).to.be.false;
-    for (const file of unrelated)
-      expect(IModelJsFs.existsSync(file), file).to.be.true;
-  });
-
-  it("deletes a corrupt briefcase file in the cache", async () => {
-    const bim = writeFile(path.join(insideDir, "2.bim"), "this is not an iModel");
-    const wal = writeFile(`${bim}-wal`);
-
-    await BriefcaseManager.deleteBriefcaseFiles(bim);
-
-    expect(IModelJsFs.existsSync(bim)).to.be.false;
-    expect(IModelJsFs.existsSync(wal)).to.be.false;
-  });
-
-  it("deletes stale associated files in the cache when the briefcase file is missing", async () => {
-    const bim = path.join(insideDir, "3.bim");
-    const wal = writeFile(`${bim}-wal`);
-    const locks = writeFile(`${bim}-locks`);
-
-    await BriefcaseManager.deleteBriefcaseFiles(bim);
-
-    expect(IModelJsFs.existsSync(wal)).to.be.false;
-    expect(IModelJsFs.existsSync(locks)).to.be.false;
-  });
-
-  it("deletes a valid iModel outside the cache along with its associated files", async () => {
-    const bim = createIModel(path.join(outsideDir, "valid.bim"));
-    const shm = writeFile(`${bim}-shm`);
-
-    await BriefcaseManager.deleteBriefcaseFiles(bim);
-
-    expect(IModelJsFs.existsSync(bim)).to.be.false;
-    expect(IModelJsFs.existsSync(shm)).to.be.false;
-  });
-
-  it("treats the cache directory case-insensitively on Windows", async function () {
-    if (process.platform !== "win32")
-      this.skip();
-
-    const bim = writeFile(path.join(insideDir, "4.bim"), "this is not an iModel");
-
-    await BriefcaseManager.deleteBriefcaseFiles(bim.toUpperCase());
-
-    expect(IModelJsFs.existsSync(bim)).to.be.false;
+      const corrupt = writeFile(path.join(insideDir, "4.bim"), "this is not an iModel");
+      expect(checkFrontendBriefcaseDelete(corrupt.toUpperCase())).equal(path.resolve(corrupt.toUpperCase()));
+    });
   });
 });

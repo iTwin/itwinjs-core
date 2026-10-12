@@ -8,7 +8,7 @@ publish: false
   - [Backend](#backend)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
-    - [Stricter file deletion in BriefcaseManager.deleteBriefcaseFiles](#stricter-file-deletion-in-briefcasemanagerdeletebriefcasefiles)
+    - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
@@ -31,11 +31,11 @@ The option adds compatibility predicates that can result in less efficient query
 
 The ECSQL version was bumped to `2.0.4.2`.
 
-### Stricter file deletion in BriefcaseManager.deleteBriefcaseFiles
+### Stricter briefcase file deletion
 
-[BriefcaseManager.deleteBriefcaseFiles]($backend) (and therefore [NativeApp.deleteBriefcase]($frontend)) now only deletes files that are valid iModels or that are located inside the briefcase cache directory. If the supplied path refers to an existing file that is neither, it now throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
+[NativeApp.deleteBriefcase]($frontend) now only deletes files that are inside the briefcase cache directory or that are valid iModels. If the supplied path refers to an existing file that is neither, it throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
 
-The method also no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only the briefcase's associated files (`-wal`, `-shm`, `-journal`, `-locks`, `.Tiles`, and their SQLite journal files) are deleted.
+[BriefcaseManager.deleteBriefcaseFiles]($backend) no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only files named `<briefcase file name>-*` or `<briefcase file name>.*` (e.g. `-wal`, `-shm`, `-locks`, `.Tiles`) are deleted along with the briefcase.
 
 ## Common
 
