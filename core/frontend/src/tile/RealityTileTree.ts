@@ -66,10 +66,24 @@ export class TraversalChildrenDetails {
   }
 }
 
+/** How completely a traversal's selected tiles cover a [[RealityTileTree]]'s visible region with ready content.
+ * @internal
+ */
+export interface RealityTileCoverage {
+  /** Ready content covers every visible region, whatever more detailed content is still pending. Content that failed to load
+   * counts as covering its region, so that nothing waits for it forever.
+   */
+  readonly complete: boolean;
+  /** The traversal is waiting on tile content or children that are still loading. */
+  readonly loading: boolean;
+}
+
 /** @internal */
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
+  /** Some tile's children were still loading. */
+  public childrenLoading = false;
   public get selectionCountExceeded() { return this._maxSelectionCount === undefined ? false : (this.missing.length + this.selected.length) > this._maxSelectionCount; }   // Avoid selecting excessive number of tiles.
   constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private _maxSelectionCount?: number) { }
 
@@ -91,6 +105,12 @@ export class TraversalSelectionContext {
       if (!tile.isLoaded)
         this.missing.push(tile);
     }
+  }
+
+  /** Note that a tile's children are still loading. */
+  public markChildrenLoading(args: TileDrawArgs): void {
+    this.childrenLoading = true;
+    args.markChildrenLoading();
   }
 
   public preload(tile: RealityTile, args: TileDrawArgs): void {
@@ -237,6 +257,13 @@ export class RealityTileTree extends TileTree {
   public override get isContentUnbounded() { return this.loader.isContentUnbounded; }
   /** @internal */
   public get isTransparent() { return false; }
+  /** True if a tile is replaced by its children only once all of them are ready, so that it stays displayed meanwhile, as CesiumJS refines without skipping levels of detail. A tile and its children are then never drawn together, as
+   * content that cannot be clipped to a tile's region (e.g. Gaussian splats) requires. Otherwise, ready children are drawn while
+   * their parent fills the regions of children still loading.
+   * @see [[RealityTile.selectRefiningWhenChildrenReady]].
+   * @internal
+   */
+  public get refinesWhenChildrenReady(): boolean { return false; }
 
   /** @internal */
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
@@ -469,7 +496,13 @@ export class RealityTileTree extends TileTree {
     const debugControl = args.context.target.debugControl;
     const freezeTiles = debugControl && debugControl.freezeRealityTiles;
 
-    rootTile.selectRealityTiles(context, args, new TraversalDetails());
+    if (this.refinesWhenChildrenReady) {
+      // Only such trees draw Gaussian splats, and only splat rendering waits for coverage (see GaussianSplatField).
+      const complete = rootTile.selectRefiningWhenChildrenReady(context, args);
+      args.realityTileCoverage = { complete, loading: context.missing.length > 0 || context.childrenLoading };
+    } else {
+      rootTile.selectRealityTiles(context, args, new TraversalDetails());
+    }
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
@@ -477,7 +510,8 @@ export class RealityTileTree extends TileTree {
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
-      if (!freezeTiles)
+      // Refining only when children are ready already requests every tile the selection needs, including tiles outside the view.
+      if (!freezeTiles && !this.refinesWhenChildrenReady)
         rootTile.preloadProtectedTiles(args, context);
     }
 
