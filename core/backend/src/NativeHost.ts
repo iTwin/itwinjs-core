@@ -19,7 +19,7 @@ import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./Ip
 import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
 import { setOnlineStatus } from "./internal/OnlineStatus";
-import { checkFrontendBriefcaseDelete } from "./internal/NativeAppDeleteBriefcase";
+import { checkFrontendBriefcaseDelete } from "./internal/BriefcaseUtils";
 
 /**
  * Implementation of NativeAppFunctions
@@ -76,7 +76,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
     // fileName comes from the frontend. Only allow deleting files in the briefcase cache, or valid iModels.
-    const filePath = checkFrontendBriefcaseDelete(fileName);
+    const filePath = checkFrontendBriefcaseDelete(fileName, BriefcaseManager.cacheDir);
     if (undefined !== filePath)
       await BriefcaseManager.deleteBriefcaseFiles(filePath, await IModelHost.getAccessToken());
   }

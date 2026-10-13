@@ -28,6 +28,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { isBriefcaseSidecar } from "./internal/BriefcaseUtils";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 
@@ -391,23 +392,10 @@ export class BriefcaseManager {
       const files = IModelJsFs.readdirSync(dirName);
       for (const file of files) {
         const sidecar = path.join(dirName, file);
-        if (this.isBriefcaseSidecar(file, fileName) && !IModelJsFs.lstatSync(sidecar)?.isDirectory)
+        if (isBriefcaseSidecar(file, fileName) && !IModelJsFs.lstatSync(sidecar)?.isDirectory)
           this.deleteFile(sidecar); // don't throw on error
       }
     } catch { }
-  }
-
-  /** Determine whether `fileName` is a file associated with the briefcase named `briefcaseName`. That is, whether it is named
-   * `<briefcaseName>-*` or `<briefcaseName>.*` (e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles", "a.bim.HierarchyCache.db").
-   * Several native modules create their own files alongside a briefcase, so this is a naming rule rather than a fixed list.
-   */
-  private static isBriefcaseSidecar(fileName: string, briefcaseName: string): boolean {
-    if (process.platform === "win32") {
-      fileName = fileName.toLowerCase();
-      briefcaseName = briefcaseName.toLowerCase();
-    }
-    const separator = fileName[briefcaseName.length];
-    return fileName.length > briefcaseName.length + 1 && fileName.startsWith(briefcaseName) && (separator === "-" || separator === ".");
   }
 
   /** Deletes a file

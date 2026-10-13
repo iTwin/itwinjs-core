@@ -11,7 +11,7 @@ import { IModelError } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
-import { checkFrontendBriefcaseDelete } from "../../internal/NativeAppDeleteBriefcase";
+import { checkFrontendBriefcaseDelete, isBriefcaseSidecar } from "../../internal/BriefcaseUtils";
 import { IModelNative } from "../../internal/NativePlatform";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -126,11 +126,20 @@ describe("Deleting briefcase files", () => {
     });
   });
 
+  describe("isBriefcaseSidecar", () => {
+    it("matches only <name>-* and <name>.*", () => {
+      for (const file of ["a.bim-wal", "a.bim-locks-shm", "a.bim.Tiles", "a.bim.HierarchyCache.db", "a.bim-hierarchies"])
+        expect(isBriefcaseSidecar(file, "a.bim"), file).to.be.true;
+      for (const file of ["a.bim", "a.bim-", "a.bim.", "a.bim2", "a.bimx.txt", "a.bim_wal", "xa.bim-wal", "b.bim-wal"])
+        expect(isBriefcaseSidecar(file, "a.bim"), file).to.be.false;
+    });
+  });
+
   describe("checkFrontendBriefcaseDelete", () => {
     const expectBadRequest = (filePath: string) => {
       let error: unknown;
       try {
-        checkFrontendBriefcaseDelete(filePath);
+        checkFrontendBriefcaseDelete(filePath, BriefcaseManager.cacheDir);
       } catch (err) {
         error = err;
       }
@@ -153,20 +162,20 @@ describe("Deleting briefcase files", () => {
 
     it("returns undefined for a missing file outside the cache, so its associated files are not deleted", () => {
       writeFile(path.join(outsideDir, "a.docx"));
-      expect(checkFrontendBriefcaseDelete(path.join(outsideDir, "a"))).to.be.undefined;
+      expect(checkFrontendBriefcaseDelete(path.join(outsideDir, "a"), BriefcaseManager.cacheDir)).to.be.undefined;
     });
 
     it("allows a valid iModel outside the cache", () => {
       const bim = createIModel(path.join(outsideDir, "valid.bim"));
-      expect(checkFrontendBriefcaseDelete(bim)).equal(path.resolve(bim));
+      expect(checkFrontendBriefcaseDelete(bim, BriefcaseManager.cacheDir)).equal(path.resolve(bim));
     });
 
     it("allows any file, or missing file, inside the cache", () => {
       const corrupt = writeFile(path.join(insideDir, "2.bim"), "this is not an iModel");
-      expect(checkFrontendBriefcaseDelete(corrupt)).equal(path.resolve(corrupt));
+      expect(checkFrontendBriefcaseDelete(corrupt, BriefcaseManager.cacheDir)).equal(path.resolve(corrupt));
 
       const missing = path.join(insideDir, "3.bim");
-      expect(checkFrontendBriefcaseDelete(missing)).equal(path.resolve(missing));
+      expect(checkFrontendBriefcaseDelete(missing, BriefcaseManager.cacheDir)).equal(path.resolve(missing));
     });
 
     it("treats the cache directory case-insensitively on Windows", function () {
@@ -174,7 +183,7 @@ describe("Deleting briefcase files", () => {
         this.skip();
 
       const corrupt = writeFile(path.join(insideDir, "4.bim"), "this is not an iModel");
-      expect(checkFrontendBriefcaseDelete(corrupt.toUpperCase())).equal(path.resolve(corrupt.toUpperCase()));
+      expect(checkFrontendBriefcaseDelete(corrupt.toUpperCase(), BriefcaseManager.cacheDir)).equal(path.resolve(corrupt.toUpperCase()));
     });
   });
 });
