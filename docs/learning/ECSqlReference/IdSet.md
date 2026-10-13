@@ -29,6 +29,7 @@ WITH my_cte AS (SELECT id FROM IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURE
 - `IdSet` also accepts a valid string JSON array with valid decimal ids like `[21, 24, 25]`
 - `IdSet` also accepts a valid string JSON array with valid decimal ids being passed on as string like `["21", "24", "25"]`
 - Decimal ids are unsigned 64-bit values. A negative integer such as `-1` is read as the id with the same bits (`0xffffffffffffffff`). `0` and non-integer numbers are rejected.
+- JavaScript numbers cannot represent ids above 2^53 exactly. From JavaScript, pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
 
 ## BindIdSet support
 
