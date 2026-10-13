@@ -432,7 +432,7 @@ export class PresentationManager implements Disposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          items: this._localizationHelper.getLocalizedNodes(result.items),
+          items: this._localizationHelper.localizeNodes(result.items),
         };
       },
     });
@@ -488,7 +488,7 @@ export class PresentationManager implements Disposable {
       const rpcOptions = this.toRpcTokenOptions({ ...options });
       const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
       const descriptor = Descriptor.fromJSON(result);
-      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+      return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
     } finally {
       await ensureIModelInitialized(requestOptions.imodel);
     }
@@ -506,7 +506,7 @@ export class PresentationManager implements Disposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /**
@@ -520,7 +520,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /* eslint-enable @typescript-eslint/no-deprecated */
@@ -550,7 +550,7 @@ export class PresentationManager implements Disposable {
       });
       const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
       const descriptor = Descriptor.fromJSON(result);
-      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+      return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
     } finally {
       await ensureIModelInitialized(requestOptions.imodel);
     }
@@ -600,7 +600,7 @@ export class PresentationManager implements Disposable {
       if (!firstPageResponse?.descriptor || !firstPageResponse.contentSet) {
         return undefined;
       }
-      descriptor = Descriptor.fromJSON(firstPageResponse?.descriptor);
+      descriptor = this._localizationHelper.localizeContentDescriptor(Descriptor.fromJSON(firstPageResponse.descriptor)!);
       firstPage = firstPageResponse?.contentSet;
     }
 
@@ -608,8 +608,6 @@ export class PresentationManager implements Disposable {
     if (!descriptor) {
       return undefined;
     }
-
-    descriptor = this._localizationHelper.getLocalizedContentDescriptor(descriptor);
 
     const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
       let contentSet = requestIndex === 0 ? firstPage : undefined;
@@ -620,7 +618,7 @@ export class PresentationManager implements Disposable {
         items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
-      items = this._localizationHelper.getLocalizedContentItems(items);
+      items = this._localizationHelper.localizeContentItems(items);
       return {
         total: contentSet.total,
         items,
@@ -699,7 +697,7 @@ export class PresentationManager implements Disposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(x)),
+          items: response.items.map((x) => this._localizationHelper.localizeDisplayValueGroup(x)),
         };
       },
     });
@@ -793,7 +791,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
-    return this._localizationHelper.getLocalizedLabelDefinition(result);
+    return this._localizationHelper.localizeLabelDefinition(result);
   }
 
   /** Retrieves display label definition of specific items. */
@@ -807,7 +805,7 @@ export class PresentationManager implements Disposable {
       getBatch: async (page) => {
         const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
         const result = await this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
-        result.items = this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+        result.items = this._localizationHelper.localizeLabelDefinitions(result.items);
         return result;
       },
     });

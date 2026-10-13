@@ -457,7 +457,7 @@ export class PresentationManager {
   ): Promise<Node[]> {
     const serializedHierarchyLevel = await this._detail.getNodes(requestOptions);
     const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
-    return this._localizationHelper.getLocalizedNodes(hierarchyLevel.nodes);
+    return this._localizationHelper.localizeNodes(hierarchyLevel.nodes);
   }
 
   /**
@@ -483,7 +483,7 @@ export class PresentationManager {
   ): Promise<Descriptor | undefined> {
     const response = await this._detail.getNodesDescriptor(requestOptions);
     const descriptor = Descriptor.fromJSON(JSON.parse(response));
-    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
   }
 
   /**
@@ -497,7 +497,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
     const result = await this._detail.getNodePaths(requestOptions);
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /**
@@ -511,7 +511,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
     const result = await this._detail.getFilteredNodePaths(requestOptions);
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /* eslint-enable @typescript-eslint/no-deprecated */
@@ -536,7 +536,7 @@ export class PresentationManager {
   ): Promise<Descriptor | undefined> {
     const response = await this._detail.getContentDescriptor(requestOptions);
     const descriptor = Descriptor.fromJSON(JSON.parse(response));
-    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
   }
 
   /**
@@ -578,7 +578,7 @@ export class PresentationManager {
       items = await formatter.formatContentItems(items, requestOptions.descriptor);
     }
 
-    return this._localizationHelper.getLocalizedContentItems(items);
+    return this._localizationHelper.localizeContentItems(items);
   }
 
   /**
@@ -599,7 +599,7 @@ export class PresentationManager {
       await formatter.formatContent(content);
     }
 
-    return this._localizationHelper.getLocalizedContent(content);
+    return this._localizationHelper.localizeContent(content);
   }
 
   /**
@@ -615,7 +615,7 @@ export class PresentationManager {
     const result = await this._detail.getPagedDistinctValues(requestOptions);
     return {
       ...result,
-      items: result.items.map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
+      items: result.items.map((g) => this._localizationHelper.localizeDisplayValueGroup(g)),
     };
   }
 
@@ -761,7 +761,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute,
   ): Promise<LabelDefinition> {
     const labelDefinition = await this._detail.getDisplayLabelDefinition(requestOptions);
-    return this._localizationHelper.getLocalizedLabelDefinition(labelDefinition);
+    return this._localizationHelper.localizeLabelDefinition(labelDefinition);
   }
 
   /**
@@ -772,7 +772,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute,
   ): Promise<LabelDefinition[]> {
     const labelDefinitions = await this._detail.getDisplayLabelDefinitions(requestOptions);
-    return this._localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
+    return this._localizationHelper.localizeLabelDefinitions(labelDefinitions);
   }
 
   /**
