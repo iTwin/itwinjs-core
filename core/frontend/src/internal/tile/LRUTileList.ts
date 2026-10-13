@@ -8,7 +8,12 @@
 
 import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { RenderMemory } from "../../render/RenderMemory";
-import { Tile } from "../../tile/internal";
+import { RealityTile, Tile } from "../../tile/internal";
+
+/** Whether memory pressure can coarsen `tile` (see TileAdmin.memoryScreenSpaceErrorFactor). */
+function isCoarsenable(tile: Tile): boolean {
+  return tile instanceof RealityTile && tile.selectsByGeometricError;
+}
 
 /** Maintains in sorted order a set of [[TileUser]] Ids for which a given tile has been selected for display. The number of users in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.
@@ -212,10 +217,22 @@ export class LRUTileList {
   protected _head: LRUTileListNode;
   protected _tail: LRUTileListNode;
   protected _totalBytesUsed = 0;
+  protected _bytesInUse = 0;
+  protected _coarsenableBytesInUse = 0;
 
   /** The amount of GPU memory, in bytes, allocated to all tiles in the list. */
   public get totalBytesUsed(): number {
     return this._totalBytesUsed;
+  }
+
+  /** The amount of GPU memory, in bytes, allocated to tiles in use by any TileUser: memory that [[freeMemory]] cannot free. */
+  public get bytesInUse(): number {
+    return this._bytesInUse;
+  }
+
+  /** The part of [[bytesInUse]] allocated to reality tiles selected by geometric error, which memory pressure can coarsen. */
+  public get coarsenableBytesInUse(): number {
+    return this._coarsenableBytesInUse;
   }
 
   public constructor() {
@@ -235,6 +252,8 @@ export class LRUTileList {
 
     this._head = this._tail = this._sentinel;
     this._totalBytesUsed = 0;
+    this._bytesInUse = 0;
+    this._coarsenableBytesInUse = 0;
     this._userIdSets.clear();
   }
 
@@ -275,6 +294,8 @@ export class LRUTileList {
     assert(tile.bytesUsed > 0);
     this._totalBytesUsed -= tile.bytesUsed;
     assert(this._totalBytesUsed >= 0);
+    if (undefined !== tile.tileUserIds)
+      this.removeFromInUse(tile);
 
     this.unlink(tile);
     tile.tileUserIds = undefined;
@@ -292,6 +313,9 @@ export class LRUTileList {
       assert(isLinked(tile));
 
       if (isLinked(tile)) {
+        if (undefined === tile.tileUserIds)
+          this.addToInUse(tile);
+
         tile.tileUserIds = this._userIdSets.plus(userId, tile.tileUserIds);
         this.moveToEnd(tile);
       }
@@ -307,12 +331,30 @@ export class LRUTileList {
     while (prev && prev.next) {
       const tile = prev.next as Tile;
       assert(tile !== this._sentinel);
+      const wasInUse = undefined !== tile.tileUserIds;
       tile.tileUserIds = this._userIdSets.minus(userId, tile.tileUserIds);
-      if (undefined === tile.tileUserIds)
-        this.moveBeforeSentinel(tile);
-      else
+      if (undefined !== tile.tileUserIds) {
         prev = tile;
+        continue;
+      }
+
+      if (wasInUse)
+        this.removeFromInUse(tile);
+
+      this.moveBeforeSentinel(tile);
     }
+  }
+
+  private addToInUse(tile: Tile): void {
+    this._bytesInUse += tile.bytesUsed;
+    if (isCoarsenable(tile))
+      this._coarsenableBytesInUse += tile.bytesUsed;
+  }
+
+  private removeFromInUse(tile: Tile): void {
+    this._bytesInUse -= tile.bytesUsed;
+    if (isCoarsenable(tile))
+      this._coarsenableBytesInUse -= tile.bytesUsed;
   }
 
   /** Dispose of the contents of tiles currently not selected for display until the total amount of memory consumed is no more than `maxBytes`

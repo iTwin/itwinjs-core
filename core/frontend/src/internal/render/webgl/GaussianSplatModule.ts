@@ -7,4 +7,6 @@
 // implementation imports only types from it, and reaches the rest through this module, so that it stays out of the main bundle.
 
 export { readGaussianSplatSource } from "../GaussianSplatData";
-export { decodeGaussianSplats } from "../GaussianSplatWorker";
+export { decodeGaussianSplats, gaussianSplatDecoderBytes } from "../GaussianSplatWorker";
+export { GaussianSplatAtlas } from "./GaussianSplatAtlas";
+export { GaussianSplatGeometry } from "./GaussianSplatGeometry";

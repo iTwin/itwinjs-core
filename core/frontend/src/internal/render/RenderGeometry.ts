@@ -13,7 +13,7 @@ import { Range3d } from "@itwin/core-geometry";
  * @internal
  */
 export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
-  readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
+  readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh" | "gaussian-splats";
   readonly isInstanceable: boolean;
   readonly isDisposed: boolean;
   /** If true, this geometry is intended for reuse. Its `dispose` method will do nothing. Instead, we will rely on the JS garbage collector

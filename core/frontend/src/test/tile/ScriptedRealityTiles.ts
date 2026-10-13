@@ -6,6 +6,7 @@
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { RenderMemory } from "../../render/RenderMemory";
 import {
   RealityTile, RealityTileLoader, RealityTileTree, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TraversalSelectionContext,
 } from "../../tile/internal";
@@ -27,6 +28,8 @@ export interface ScriptedTileOptions {
   ready?: boolean;
   culled?: boolean;
   notFound?: boolean;
+  /** True for a tile selected by its size on screen rather than its geometric error, which memory pressure does not coarsen. */
+  selectedBySize?: boolean;
 }
 
 /** A reality tile with a scripted screen-space error, visibility and children. */
@@ -34,6 +37,8 @@ export class ScriptedTile extends RealityTile {
   public readonly kids: ScriptedTile[] = [];
   public readonly sse: number;
   public readonly culled: boolean;
+  /** Bytes reported to the tile cache. */
+  public bytes = 0;
 
   public constructor(tree: RealityTileTree, id: string, options: ScriptedTileOptions, parent?: ScriptedTile, isLeaf = false) {
     super({
@@ -42,7 +47,7 @@ export class ScriptedTile extends RealityTile {
       maximumSize: 1,
       parent,
       isLeaf,
-      geometricError: 1,
+      geometricError: options.selectedBySize ? undefined : 1,
     }, tree);
     this.sse = options.sse;
     this.culled = true === options.culled;
@@ -60,6 +65,10 @@ export class ScriptedTile extends RealityTile {
 
   public loadScriptedChildren(): void {
     this.loadChildren();
+  }
+
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addTexture(this.bytes);
   }
 
   protected override isBoundingVolumeCulled(): boolean {

@@ -166,6 +166,10 @@ export class RealityTile extends Tile {
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
   /** @internal */
   public get copyright(): string | undefined { return this._copyright; }
+  /** True if the tile is selected by its geometric error, which [[TileAdmin.memoryScreenSpaceErrorFactor]] coarsens.
+   * @internal
+   */
+  public get selectsByGeometricError(): boolean { return undefined !== this._geometricError; }
 
   /** @internal */
   public override get isDisplayable(): boolean {
@@ -751,8 +755,11 @@ export class RealityTile extends Tile {
 
   /** The tile's error tolerance relative to its error on screen: below 1, the tile is too coarse for the view. */
   private computeDetailFactor(args: TileDrawArgs): number {
-    if (undefined !== this._geometricError)
-      return args.maximumScreenSpaceError / this.computeScreenSpaceError(this._geometricError, args);
+    if (undefined !== this._geometricError) {
+      // As CesiumJS does, coarsen while the tiles in use exceed the memory limit (TileAdmin.memoryScreenSpaceErrorFactor).
+      const tolerance = args.maximumScreenSpaceError * IModelApp.tileAdmin.memoryScreenSpaceErrorFactor;
+      return tolerance / this.computeScreenSpaceError(this._geometricError, args);
+    }
 
     return this.maximumSize / args.getPixelSize(this);
   }
