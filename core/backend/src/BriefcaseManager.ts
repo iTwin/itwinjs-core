@@ -803,6 +803,8 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
     }
 
+    await db.txns.onPrePushValidation.raiseEvent();
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
