@@ -7,10 +7,15 @@ import { createWorkerProxy, WorkerProxy } from "../../common/WorkerProxy";
 import { IModelApp } from "../../IModelApp";
 import { RetryableTileContentError } from "../tile/RetryableTileContentError";
 import { GaussianSplatData, gaussianSplatDecodeBytes, GaussianSplatDecodeRequest, gaussianSplatRequestInputBytes } from "./GaussianSplatData";
+import { GaussianSplatSortRequest } from "./GaussianSplatSort";
 
 /** The operations of the Gaussian splat worker script, `scripts/gaussian-splats-worker.js`. @internal */
 export interface GaussianSplatWorkerOperations {
   decode(request: GaussianSplatDecodeRequest): GaussianSplatData;
+  register(tile: { id: number, positions: Float32Array }): void;
+  release(ids: number[]): void;
+  /** Logical slots, back to front. */
+  sort(request: GaussianSplatSortRequest): Uint32Array;
 }
 
 /** A call that has not settled after this long means the worker is stuck. */
@@ -18,6 +23,56 @@ const callTimeout = 30000;
 
 function createGaussianSplatWorker(): WorkerProxy<GaussianSplatWorkerOperations> {
   return createWorkerProxy(`${IModelApp.publicPath}scripts/gaussian-splats-worker.js`, { callTimeout });
+}
+
+/** One viewport's sort worker: it holds the sort positions of the tiles the viewport draws, and sorts them on request. A worker that
+ * fails or is disposed loses its registrations; [[isDisposed]] tells its owner to replace it.
+ * @internal
+ */
+export class GaussianSplatWorker implements Disposable {
+  private readonly _worker = createGaussianSplatWorker();
+  private readonly _positionBytes = new Map<number, number>();
+  /** Bytes of sort positions on their way to the worker. */
+  private _registeringBytes = 0;
+
+  public get isDisposed(): boolean { return this._worker.isTerminated; }
+
+  /** The sort positions the worker holds or is receiving. */
+  public get bytesUsed(): number {
+    if (this.isDisposed)
+      return 0;
+
+    let positionBytes = this._registeringBytes;
+    for (const bytes of this._positionBytes.values())
+      positionBytes += bytes;
+
+    return positionBytes;
+  }
+
+  public async register(id: number, positions: Float32Array): Promise<void> {
+    const bytes = positions.byteLength;
+    this._registeringBytes += bytes;
+    try {
+      await this._worker.register({ id, positions }, [positions.buffer]);
+      this._positionBytes.set(id, bytes);
+    } finally {
+      this._registeringBytes -= bytes;
+    }
+  }
+
+  public async release(ids: number[]): Promise<void> {
+    await this._worker.release(ids);
+    for (const id of ids)
+      this._positionBytes.delete(id);
+  }
+
+  public async sort(request: GaussianSplatSortRequest): Promise<Uint32Array> {
+    return this._worker.sort(request);
+  }
+
+  public [Symbol.dispose](): void {
+    this._worker.terminate();
+  }
 }
 
 /** The arrays a decode request transfers to the worker, and the bytes the decode reserves while it runs. */

@@ -7,11 +7,16 @@ import {
   checkGaussianSplatDecodeLimits, GaussianSplatDecodeRequest, GaussianSplatSpzRequest, spzBodyBytesPerSplat, usesCesiumIonDraftAdapter,
 } from "../../internal/render/GaussianSplatData";
 import { gaussianSplatError } from "../../internal/render/GaussianSplatError";
+import { GaussianSplatSortRequest } from "../../internal/render/GaussianSplatSort";
 import type { GaussianSplatWorkerOperations } from "../../internal/render/GaussianSplatWorker";
 import { registerWorker } from "../RegisterWorker";
 import { readGaussianSplatAttributes } from "./Accessors";
 import { packGaussianSplats } from "./Packing";
+import { sortGaussianSplats } from "./Sorting";
 import { inflateSpz, SpzHeader, unpackSpz } from "./Spz";
+
+/** The sort positions of each tile registered by the main thread, by tile id. */
+const registeredPositions = new Map<number, Float32Array>();
 
 /** How to decode and sort an SPZ payload. */
 function spzConventions(header: SpzHeader, request: GaussianSplatSpzRequest) {
@@ -49,5 +54,16 @@ registerWorker<GaussianSplatWorkerOperations>({
   decode: async (request: GaussianSplatDecodeRequest) => {
     const decoded = await decode(request);
     return { result: decoded, transfer: [decoded.data.buffer, decoded.sh.buffer] };
+  },
+  register: ({ id, positions }) => {
+    registeredPositions.set(id, positions);
+  },
+  release: (ids: number[]) => {
+    for (const id of ids)
+      registeredPositions.delete(id);
+  },
+  sort: (request: GaussianSplatSortRequest) => {
+    const order = sortGaussianSplats(request, registeredPositions);
+    return { result: order, transfer: [order.buffer] };
   },
 });

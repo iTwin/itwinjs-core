@@ -22,7 +22,7 @@ import { TextureOwnership } from "../../../render/CreateTextureArgs";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 /** @internal */
-export type Texture2DData = Uint8Array | Float32Array;
+export type Texture2DData = Uint8Array | Float32Array | Uint32Array;
 
 function computeBytesUsed(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType): number {
   const bytesPerComponent = GL.Texture.DataType.UnsignedByte === dataType ? 1 : 4;
@@ -61,6 +61,8 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
       internalFormat = context2.RGBA32F;
     else if (context2.HALF_FLOAT === params.dataType)
       internalFormat = context2.RGBA16F;
+  } else if (GL.Texture.Format.RgbaInteger === params.format) {
+    internalFormat = context2.RGBA32UI;
   } else if (GL.Texture.Format.DepthStencil === params.format)
     internalFormat = context2.DEPTH24_STENCIL8;
 
@@ -173,7 +175,10 @@ export class Texture extends RenderTexture implements WebGLDisposable {
 }
 
 function getDataType(data: Texture2DData): GL.Texture.DataType {
-  return data instanceof Float32Array ? GL.Texture.DataType.Float : GL.Texture.DataType.UnsignedByte;
+  if (data instanceof Float32Array)
+    return GL.Texture.DataType.Float;
+
+  return data instanceof Uint32Array ? GL.Texture.DataType.UnsignedInt : GL.Texture.DataType.UnsignedByte;
 }
 
 /** Parameters used internally to define how to create a texture for use with WebGL. */
@@ -489,8 +494,8 @@ export class Texture2DHandle extends TextureHandle {
     return this.replaceTextureData(this._dataBytes);
   }
 
-  /** Replace the 2D texture contents. */
-  public replaceTextureData(data: Texture2DData): boolean {
+  /** Replace the 2D texture contents, or only its first `rows` rows. */
+  public replaceTextureData(data: Texture2DData, rows = this.height): boolean {
     assert((GL.Texture.DataType.Float === this._dataType) === (data instanceof Float32Array));
 
     const tex = expectDefined(this.getHandle());
@@ -502,7 +507,7 @@ export class Texture2DHandle extends TextureHandle {
 
     // Go through System to ensure we don't interfere with currently-bound textures!
     System.instance.activateTexture2d(TextureUnit.Zero, tex);
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, data);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, rows, this._format, this._dataType, data);
     System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 
     return true;
@@ -800,8 +805,8 @@ export class Texture2DArrayHandle extends TextureHandle {
     System.instance.bindTexture2dArray(texUnit, glTex);
   }
 
-  /** Bind the specified texture to a uniform usampler2DArray. */
-  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+  /** Bind the specified texture, or none, to a uniform usampler2DArray. */
+  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture | undefined, unit: TextureUnit): void {
     assert(!(tex instanceof TextureHandle));
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit - TextureUnit.Zero);

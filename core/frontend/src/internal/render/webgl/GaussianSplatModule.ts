@@ -10,3 +10,5 @@ export { readGaussianSplatSource } from "../GaussianSplatData";
 export { decodeGaussianSplats, gaussianSplatDecoderBytes } from "../GaussianSplatWorker";
 export { GaussianSplatAtlas } from "./GaussianSplatAtlas";
 export { GaussianSplatGeometry } from "./GaussianSplatGeometry";
+export { gaussianSplatTechniques } from "./GaussianSplatPrograms";
+export { GaussianSplatRenderer } from "./GaussianSplatRenderer";
