@@ -27,6 +27,7 @@ export interface DtaBooleanConfiguration {
   errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
   useCesium?: boolean; // default OFF
+  enableGaussianSplats?: boolean; // default OFF; native renderer preview
   alwaysLoadEdges?: boolean; // default OFF
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   openReadWrite?: boolean; // default false
@@ -156,6 +157,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_USE_CESIUM)
     configuration.useCesium = true;
+
+  if (undefined !== process.env.IMJS_ENABLE_GAUSSIAN_SPLATS)
+    configuration.enableGaussianSplats = true;
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
