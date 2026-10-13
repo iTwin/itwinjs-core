@@ -55,6 +55,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "GaussianSplatIon": {
+      "keyin": "dta gaussian ion"
+    },
     "OutputShaders": {
       "keyin": "dta output shaders"
     },
