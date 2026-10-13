@@ -561,7 +561,7 @@ export class PresentationManager {
     });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
-    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
+    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter.createCachedFormatter(), unitSystem });
   }
 
   /**
