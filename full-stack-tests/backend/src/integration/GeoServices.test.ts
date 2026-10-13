@@ -1023,7 +1023,7 @@ describe("GeoServices", () => {
       beforeEach(() => HubMock.startup("VerticalCrsPersistence", IModelHost.cacheDir));
       afterEach(() => HubMock.shutdown());
 
-      it("preserves named metadata through briefcase copy, readonly open, and changeset push/pull", async () => {
+      it("refreshes named CRS identity and conversion after changeset pull, reversal, and replay without reopening", async () => {
         const writerToken = "vertical writer";
         const readerToken = "vertical reader";
         const iTwinId = HubMock.iTwinId;
@@ -1057,6 +1057,7 @@ describe("GeoServices", () => {
           await reader.pullChanges({ accessToken: readerToken });
           assert.equal(reader.changeset.index, namedIndex);
           assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(reader);
           reader.close();
           reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
           await verifyPersistedVerticalCrs(reader);
@@ -1070,17 +1071,20 @@ describe("GeoServices", () => {
           await reader.pullChanges({ accessToken: readerToken });
           assert.equal(reader.changeset.index, legacyIndex);
           assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), legacyMetadata);
+          await verifyPersistedVerticalCrs(reader, false);
           reader.close();
           reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
           await verifyPersistedVerticalCrs(reader, false);
 
           await reader.pullChanges({ accessToken: readerToken, toIndex: namedIndex });
           assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(reader);
           reader.close();
           reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
           await verifyPersistedVerticalCrs(reader);
           await reader.pullChanges({ accessToken: readerToken, toIndex: legacyIndex });
           assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), legacyMetadata);
+          await verifyPersistedVerticalCrs(reader, false);
           reader.close();
           reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
           await verifyPersistedVerticalCrs(reader, false);
