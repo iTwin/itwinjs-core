@@ -97,6 +97,28 @@ export interface GpuMemoryLimits {
   nonMobile?: GpuMemoryLimit;
 }
 
+/** Each frame, [[TileAdmin.memoryScreenSpaceErrorFactor]] grows or shrinks by this ratio, as CesiumJS adjusts its
+ * `memoryAdjustedScreenSpaceError`.
+ */
+const memoryErrorStep = 1.02;
+/** The memory factor is lowered only while tiles in use take less than this share of the memory limit, so that the finer tiles
+ * one step adds are unlikely to exceed the limit again, and the tile cache keeps room for some unused tiles. CesiumJS restores
+ * detail below half of its default limits (`cacheBytes`, of `cacheBytes + maximumCacheOverflowBytes`). Here the factor is not
+ * lowered again to a value already found too fine for the same views (see [[TileAdmin.memoryScreenSpaceErrorFactor]]), so a
+ * narrower margin settles too: on a Gaussian splat orbit at 60% of the bytes full detail needs, 80% kept 70% more splats than
+ * half did, with as many tiles reloaded as the earlier splat memory controller.
+ */
+const memoryRecoveryShare = 0.8;
+/** The memory factor never exceeds this, so that coarsenable content whose coarsest tiles do not fit does not raise it without
+ * bound.
+ */
+const maxMemoryErrorFactor = 64;
+/** Coarsenable tiles in use may always take at least this share of the memory limit, however much other content in use takes.
+ * Other content (such as iModel tiles) cannot be coarsened: coarsening reality tiles because of it would lose their detail without
+ * bringing the total within the limit.
+ */
+const minCoarsenableShare = 0.5;
+
 /** Manages [[Tile]]s and [[TileTree]]s on behalf of [[IModelApp]]. Its responsibilities include scheduling requests for tile content via a priority queue;
  * keeping track of and imposing limits upon the amount of GPU memory consumed by tiles; and notifying listeners of tile-related events.
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
@@ -114,6 +136,17 @@ export class TileAdmin {
   private readonly _tileUserSetsForRequests = new UniqueTileUserSets();
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
+  private _memoryScreenSpaceErrorFactor = 1;
+  /** A memory factor found to select more than the limit holds since the last change of views, users or limit; detail is not
+   * restored to it again. Without it, a view whose next finer level exceeds the limit by more than the recovery margin would
+   * alternate between the two levels, reloading the finer tiles each time.
+   */
+  private _memoryFactorFloor = 0;
+  /** The last change to the memory factor restored detail. */
+  private _memoryFactorRestored = false;
+  /** Since the last frame, the render system failed to allocate memory for content of tiles in use. */
+  private _contentAllocationFailed = false;
+  private readonly _removeViewChangedListeners = new Map<TileUser, () => void>();
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   /** @internal */
@@ -377,6 +410,18 @@ export class TileAdmin {
     }
   }
 
+  /** The factor by which the screen-space error tolerance of reality tiles selected by geometric error is raised, so that the
+   * tiles in use by any [[TileUser]] fit within [[maxTotalTileContentBytes]]. Only those tiles are compared, with what the limit
+   * leaves after the other tiles in use, but at least half of the limit. While they exceed it, the factor grows by 2% per frame;
+   * once they take less than 80% of it and no tile content is loading, it shrinks again by 2% per frame, down to 1, but not to a
+   * factor found to exceed it since a viewport's view, the tile users or the limit last changed.
+   * Freeing unused tiles ([[freeMemory]]) cannot reduce memory below what the tiles in use hold; coarsening them can.
+   * @internal
+   */
+  public get memoryScreenSpaceErrorFactor(): number {
+    return this._memoryScreenSpaceErrorFactor;
+  }
+
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
    * @see [[gpuMemoryLimit]] to impose limits on how high this can grow.
    */
@@ -427,6 +472,7 @@ export class TileAdmin {
 
     this._gpuMemoryLimit = limit;
     this._maxTotalTileContentBytes = maxBytes;
+    this.forgetMemoryFactorFloor();
   }
 
   /** Returns whether or not preloading for context (reality and map tiles) is currently allowed.
@@ -450,6 +496,73 @@ export class TileAdmin {
 
     // Free up any additional memory as required to keep within our limit.
     this.freeMemory();
+
+    // If the coarsenable tiles in use exceed their share of the limit, coarsen; restore detail once they are well within it.
+    this.adjustMemoryScreenSpaceErrorFactor();
+  }
+
+  private adjustMemoryScreenSpaceErrorFactor(): void {
+    const coarsenableLimit = this.coarsenableTileContentLimit();
+    const coarsenableBytes = this._lruList.coarsenableBytesInUse;
+    const allocationFailed = this._contentAllocationFailed;
+    this._contentAllocationFailed = false;
+
+    // The device holds less than the limit allows: free all content no user needs, and coarsen as if over the limit.
+    if (allocationFailed)
+      this._lruList.freeMemory(0);
+
+    const current = this._memoryScreenSpaceErrorFactor;
+    if (allocationFailed || coarsenableBytes > coarsenableLimit) {
+      if (this._memoryFactorRestored)
+        this._memoryFactorFloor = Math.max(this._memoryFactorFloor, current);
+
+      this.changeMemoryScreenSpaceErrorFactor(Math.min(maxMemoryErrorFactor, current * memoryErrorStep));
+    } else if (coarsenableBytes < coarsenableLimit * memoryRecoveryShare && !this.isLoadingTileContent()) {
+      const restored = Math.max(1, current / memoryErrorStep);
+      if (restored > this._memoryFactorFloor)
+        this.changeMemoryScreenSpaceErrorFactor(restored);
+    }
+  }
+
+  /** The bytes that coarsenable tiles in use may take: what [[maxTotalTileContentBytes]] leaves after the other tiles in use, but
+   * at least a share of it.
+   */
+  private coarsenableTileContentLimit(): number {
+    const limit = this._maxTotalTileContentBytes ?? Infinity;
+    const otherBytesInUse = this._lruList.bytesInUse - this._lruList.coarsenableBytesInUse;
+    return Math.max(limit - otherBytesInUse, limit * minCoarsenableShare);
+  }
+
+  private changeMemoryScreenSpaceErrorFactor(factor: number): void {
+    if (factor === this._memoryScreenSpaceErrorFactor)
+      return;
+
+    this._memoryFactorRestored = factor < this._memoryScreenSpaceErrorFactor;
+    this._memoryScreenSpaceErrorFactor = factor;
+    IModelApp.viewManager.invalidateScenes();
+  }
+
+  /** What the tiles in use need may have changed: detail may be restored to any factor again. */
+  private forgetMemoryFactorFloor(): void {
+    this._memoryFactorFloor = 0;
+  }
+
+  /** Called by the render system when it cannot allocate memory for the content of tiles in use, although the tiles in use are
+   * within [[maxTotalTileContentBytes]] (a device limit was reached). At the next [[process]], tiles no user needs are freed and
+   * reality tiles selected by geometric error are coarsened, as when the tiles in use exceed the limit.
+   * @internal
+   */
+  public onTileContentAllocationFailed(): void {
+    this._contentAllocationFailed = true;
+  }
+
+  /** Whether any tile content request is pending or active. Until they complete, the tiles in use do not yet include them. */
+  private isLoadingTileContent(): boolean {
+    for (const channel of this.channels)
+      if (channel.size > 0)
+        return true;
+
+    return false;
   }
 
   /** Iterate over the tiles that have content loaded but are not in use by any [[TileUser]].
@@ -560,6 +673,9 @@ export class TileAdmin {
   public forgetUser(user: TileUser): void {
     this.onUserIModelClosed(user);
     this._users.delete(user);
+    this._removeViewChangedListeners.get(user)?.();
+    this._removeViewChangedListeners.delete(user);
+    this.forgetMemoryFactorFloor();
   }
 
   /** Indicates that the TileAdmin should track tile requests for the specified TileUser.
@@ -568,6 +684,10 @@ export class TileAdmin {
    */
   public registerUser(user: TileUser): void {
     this._users.add(user);
+    if (user instanceof Viewport)
+      this._removeViewChangedListeners.set(user, user.onViewChanged.addListener(() => this.forgetMemoryFactorFloor()));
+
+    this.forgetMemoryFactorFloor();
   }
 
   /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewport]]s.

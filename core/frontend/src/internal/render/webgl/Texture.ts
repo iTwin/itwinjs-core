@@ -765,6 +765,143 @@ export class TextureCubeHandle extends TextureHandle {
   }
 }
 
+/** A copy of consecutive rows from one [[Texture2DArrayHandle]] to another.
+ * @internal
+ */
+export interface Texture2DArrayRowCopy {
+  sourceRow: number;
+  targetRow: number;
+  rowCount: number;
+}
+
+/** A 2D array texture of unsigned integer RGBA texels (RGBA32UI) that holds data rather than images, so it is never filtered.
+ * Its texels are addressed by row: rows of `width` texels are numbered through the layers (`layer * height + y`), so that a
+ * run of rows may span layers. Its storage is immutable: a larger array is a new texture, filled by [[copyRows]].
+ * @internal
+ */
+export class Texture2DArrayHandle extends TextureHandle {
+  private readonly _width: number;
+  private readonly _height: number;
+  public readonly layers: number;
+
+  public get width(): number { return this._width; }
+  public get height(): number { return this._height; }
+  public get format(): GL.Texture.Format { return GL.Texture.Format.RgbaInteger; }
+  public get dataType(): GL.Texture.DataType { return GL.Texture.DataType.UnsignedInt; }
+  public get dataBytes(): Uint8Array | undefined { return undefined; }
+  /** 32-bit words in a row: four per texel. */
+  public get rowWords(): number { return this._width * 4; }
+  /** Rows in all layers. */
+  public get rowCount(): number { return this._height * this.layers; }
+
+  /** Bind specified 2D array texture handle to specified texture unit. */
+  public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
+    assert(!(glTex instanceof TextureHandle));
+    System.instance.bindTexture2dArray(texUnit, glTex);
+  }
+
+  /** Bind the specified texture to a uniform usampler2DArray. */
+  public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
+    assert(!(tex instanceof TextureHandle));
+    this.bindTexture(unit, tex);
+    uniform.setUniform1i(unit - TextureUnit.Zero);
+  }
+
+  public bind(texUnit: TextureUnit): boolean {
+    if (undefined === this._glTexture)
+      return false;
+
+    Texture2DArrayHandle.bindTexture(texUnit, this._glTexture);
+    return true;
+  }
+
+  public bindSampler(uniform: UniformHandle, unit: TextureUnit): void {
+    if (undefined !== this._glTexture)
+      Texture2DArrayHandle.bindSampler(uniform, this._glTexture, unit);
+  }
+
+  /** Allocate `layers` layers of `width` x `height` texels, with undefined contents. */
+  public static createForIntegerData(width: number, height: number, layers: number): Texture2DArrayHandle | undefined {
+    const gl = System.instance.context;
+    const glTexture = gl.createTexture();
+    if (null === glTexture)
+      return undefined;
+
+    // Go through System to ensure we don't interfere with currently-bound textures!
+    System.instance.activateTexture2dArray(TextureUnit.Zero, glTexture);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA32UI, width, height, layers);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    System.instance.bindTexture2dArray(TextureUnit.Zero, undefined);
+
+    return new Texture2DArrayHandle(glTexture, width, height, layers);
+  }
+
+  /** Replace the rows from `firstRow` with `data`, which holds whole rows. */
+  public replaceRows(firstRow: number, data: Uint32Array): void {
+    assert(0 === data.length % this.rowWords && firstRow * this.rowWords + data.length <= this.rowCount * this.rowWords);
+    const tex = this.getHandle();
+    if (undefined === tex)
+      return;
+
+    const gl = System.instance.context;
+    System.instance.activateTexture2dArray(TextureUnit.Zero, tex);
+    for (const span of this.layerSpans(firstRow, data.length / this.rowWords))
+      gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, span.y, span.layer, this._width, span.rows, 1, gl.RGBA_INTEGER, gl.UNSIGNED_INT, data, span.offset * this.rowWords);
+
+    System.instance.bindTexture2dArray(TextureUnit.Zero, undefined);
+  }
+
+  /** Copy rows from `source`, whose rows must be as wide, on the GPU. */
+  public copyRows(source: Texture2DArrayHandle, copies: Iterable<Texture2DArrayRowCopy>): void {
+    assert(source.width === this.width);
+    const sourceTex = source.getHandle(), tex = this.getHandle();
+    if (undefined === sourceTex || undefined === tex)
+      return;
+
+    // Each source layer is read through a framebuffer of our own; the caller's read framebuffer is restored after.
+    const gl = System.instance.context;
+    const callerReadFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const readFramebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readFramebuffer);
+    System.instance.activateTexture2dArray(TextureUnit.Zero, tex);
+    for (const { sourceRow, targetRow, rowCount } of copies) {
+      // Each copy must lie within one layer of both textures.
+      for (const target of this.layerSpans(targetRow, rowCount)) {
+        for (const from of source.layerSpans(sourceRow + target.offset, target.rows)) {
+          gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, sourceTex, 0, from.layer);
+          gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, target.y + from.offset, target.layer, 0, from.y, this._width, from.rows);
+        }
+      }
+    }
+
+    System.instance.bindTexture2dArray(TextureUnit.Zero, undefined);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, callerReadFramebuffer);
+    gl.deleteFramebuffer(readFramebuffer);
+  }
+
+  /** The parts of the `rowCount` rows from `firstRow` that lie in each layer, with each part's offset from `firstRow`. */
+  private *layerSpans(firstRow: number, rowCount: number): Iterable<{ layer: number, y: number, rows: number, offset: number }> {
+    for (let offset = 0; offset < rowCount;) {
+      const row = firstRow + offset;
+      const y = row % this._height;
+      const rows = Math.min(rowCount - offset, this._height - y);
+      yield { layer: Math.floor(row / this._height), y, rows, offset };
+      offset += rows;
+    }
+  }
+
+  private constructor(glTexture: WebGLTexture, width: number, height: number, layers: number) {
+    super(glTexture);
+    this._width = width;
+    this._height = height;
+    this.layers = layers;
+    this.bytesUsed = width * height * layers * 16;
+  }
+}
+
 /** @internal */
 export class Texture2DDataUpdater {
   public data: Uint8Array;
