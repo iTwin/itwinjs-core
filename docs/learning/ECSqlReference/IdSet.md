@@ -28,6 +28,7 @@ WITH my_cte AS (SELECT id FROM IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURE
 - `IdSet` accepts a valid string JSON array with valid string hex ids like `["0x15", "0x18", "0x19"]`
 - `IdSet` also accepts a valid string JSON array with valid decimal ids like `[21, 24, 25]`
 - `IdSet` also accepts a valid string JSON array with valid decimal ids being passed on as string like `["21", "24", "25"]`
+- Decimal ids are unsigned 64-bit values. A negative integer such as `-1` is read as the id with the same bits (`0xffffffffffffffff`). `0` and non-integer numbers are rejected.
 
 ## BindIdSet support
 
