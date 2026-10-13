@@ -23,6 +23,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBran
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { loadGaussianSplatModule } from "../GaussianSplatModuleLoader";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
@@ -825,6 +826,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
     canvas.addEventListener("webglcontextlost", async () => RenderSystem.contextLossHandler(), false);
+
+    // Start loading the splat module now, so that it is usually ready before the first splat tile arrives. A tile that needs it
+    // while it cannot load reports the failure.
+    if (options.enableGaussianSplats)
+      loadGaussianSplatModule().catch(() => { });
   }
 
   /** Exposed strictly for tests. */

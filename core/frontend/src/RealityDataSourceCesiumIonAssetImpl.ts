@@ -12,6 +12,15 @@ import { CesiumIonAssetProvider, getCesiumAccessClient, getCesiumAccessTokenAndE
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { CesiumAssetEndpoint } from "./CesiumAccessClient";
 
+/** The origin of an absolute URL, or undefined for a relative one. */
+function absoluteUrlOrigin(url: string): string | undefined {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data whether it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
@@ -140,24 +149,34 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    const tileUrl = this._baseUrl + name;
-    const headers = { authorization: this._requestAuthorization };
-
-    return request(tileUrl, "arraybuffer", { headers });
+    const tileUrl = this.resolveTileUrl(name);
+    return request(tileUrl, "arraybuffer", { headers: this.tileRequestHeaders(tileUrl) });
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-    const headers = { authorization: this._requestAuthorization };
+    const tileUrl = this.resolveTileUrl(name);
+    return request(tileUrl, "json", { headers: this.tileRequestHeaders(tileUrl) });
+  }
 
-    return request(tileUrl, "json", { headers });
+  /** The URL of `name`: an absolute URL as is (an external glTF buffer may have one), and anything else appended to the base URL,
+   * as tile paths always have been, including one that begins with "/" or a base URL that is empty.
+   */
+  private resolveTileUrl(name: string): string {
+    return undefined !== absoluteUrlOrigin(name) ? name : this._baseUrl + name;
+  }
+
+  /** The token goes only to the endpoint's own origin, never to another origin that an absolute URL names. */
+  private tileRequestHeaders(tileUrl: string): { authorization?: string } | undefined {
+    const isWithinEndpoint = absoluteUrlOrigin(tileUrl) === absoluteUrlOrigin(this._baseUrl);
+    return isWithinEndpoint ? { authorization: this._requestAuthorization } : undefined;
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
-    return url.endsWith("json") ? "tileset" : "tile";
+    const path = url.split(/[?#]/, 1)[0];
+    return path.toLowerCase().endsWith("json") ? "tileset" : "tile";
   }
 
   /**
@@ -181,4 +200,3 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

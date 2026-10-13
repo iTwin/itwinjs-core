@@ -6,7 +6,9 @@
  * @module Tiles
  */
 
-import { assert, ByteStream } from "@itwin/core-bentley";
+import { assert, ByteStream, Logger } from "@itwin/core-bentley";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
+import { RetryableTileContentError } from "./RetryableTileContentError";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, isKnownTileFormat, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -21,6 +23,29 @@ import {
 import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
+
+/** Content failures are logged at most this often (milliseconds): a broken or unreachable tileset can fail every tile it requests. */
+const contentFailureLogInterval = 10000;
+let lastContentFailureLogTime: number | undefined;
+let unloggedContentFailures = 0;
+
+/** Warn that a tile's content failed to load, at most once per [[contentFailureLogInterval]], with the number of failures since. */
+function logContentFailure(tile: RealityTile, error: unknown): void {
+  const now = Date.now();
+  const loggedRecently = undefined !== lastContentFailureLogTime && now - lastContentFailureLogTime < contentFailureLogInterval;
+  if (loggedRecently) {
+    ++unloggedContentFailures;
+    return;
+  }
+
+  // The path only: a query string can hold credentials.
+  const content = tile.contentUrl?.split(/[?#]/, 1)[0] ?? tile.contentId;
+  const reason = error instanceof Error ? error.message : String(error);
+  const since = unloggedContentFailures > 0 ? ` (${unloggedContentFailures} more since the last report)` : "";
+  Logger.logWarning(FrontendLoggerCategory.RealityData, `Failed to load reality tile content ${content}: ${reason}${since}`);
+  lastContentFailureLogTime = now;
+  unloggedContentFailures = 0;
+}
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
@@ -60,6 +85,19 @@ export abstract class RealityTileLoader {
   public get maximumScreenSpaceError(): number | undefined { return undefined; }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
+
+  /** True if the tree's tiles are Gaussian splats drawn natively; otherwise splat primitives are read as points.
+   * @see [[GltfReaderArgs.drawsGaussianSplats]].
+   */
+  public get rendersGaussianSplats(): boolean { return false; }
+
+  /** Fetches the external buffers of a glTF tile's content whose URIs are relative while the tile has no absolute URL to resolve them
+   * against, so that only the owner of the tile's data knows where they are (see [[GltfReaderArgs.resolveBuffer]]). Undefined if
+   * the loader cannot, which leaves such buffers unresolved. Only glTF content uses it; b3dm and i3dm content does not.
+   */
+  protected gltfBufferResolver(_tile: RealityTile): ((uri: string) => Promise<Uint8Array>) | undefined {
+    return undefined;
+  }
 
   // NB: The isCanceled arg is chiefly for tests...in usual case it just returns false if the tile is no longer in 'loading' state.
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<RealityTileContent> {
@@ -267,6 +305,10 @@ export abstract class RealityTileLoader {
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
             idMap: this.getBatchIdMap(),
+            system,
+            shouldAbort: isCanceled,
+            resolveBuffer: this.gltfBufferResolver(tile),
+            drawsGaussianSplats: this.rendersGaussianSplats,
             tileData
           });
         }
@@ -300,7 +342,12 @@ export abstract class RealityTileLoader {
         content = await reader.read();
         if (content.containsPointCloud)
           this._containsPointClouds = true;
-      } catch {
+      } catch (error) {
+        // A transient failure leaves the tile to be requested again.
+        if (error instanceof RetryableTileContentError)
+          throw error;
+
+        logContentFailure(tile, error);
         // Failure to load should prevent us from trying to load children
         content.isLeaf = true;
       }

@@ -10,6 +10,7 @@ import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bent
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
+import { RetryableTileContentError } from "../internal/tile/RetryableTileContentError";
 import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
@@ -145,10 +146,16 @@ export class TileRequest {
     this.tile.request = undefined;
   }
 
-  private setFailed() {
+  /** @param retryable If true, the tile is left unloaded, to be requested again if it is selected again, rather than marked not
+   * found. The thrower bounds such retries, so they need no backoff here: e.g. the Gaussian splat decoder makes the failure
+   * permanent after three consecutive worker failures.
+   */
+  private setFailed(retryable = false) {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
-    this.tile.setNotFound();
+    if (!retryable)
+      this.tile.setNotFound();
+
     this.channel.recordFailure();
   }
 
@@ -189,8 +196,8 @@ export class TileRequest {
       this.tile.setContent(content);
       this.notifyAndClear();
       this.channel.recordCompletion(this.tile, content, Date.now() - start);
-    } catch {
-      this.setFailed();
+    } catch (error) {
+      this.setFailed(error instanceof RetryableTileContentError);
     }
   }
 }
