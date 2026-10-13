@@ -15,18 +15,20 @@ chai.use(chaiAsPromised);
 /**
  * Repro for Bug 2115705: "DbTable 'bis_ElementMultiAspect' has N non-virtual columns, but the physical table has M columns."
  *
- * No semantic rebase and no schema sync involved. A dynamic schema adds an ElementMultiAspect subclass wide enough to
+ * No semantic rebase, schema sync or dynamic schema involved. A schema adds an ElementMultiAspect subclass wide enough to
  * ALTER TABLE ADD shared columns to bis_ElementMultiAspect. discardChanges() then reverses the EcSchema txn (ec_* rows)
  * but skips the Ddl txn (TxnManager::ApplyTxnChanges returns early for TxnType::Ddl), so the physical columns remain
  * with no ec_Column rows. The next regular schema import validates strictly and fails.
+ *
+ * The dynamic-schema tests show that deleting properties/classes (allowed for dynamic schemas) is not a cause.
  */
-describe("Dynamic schema discard leaves orphan physical columns (Bug 2115705)", function (this: Suite) {
+describe("Schema import discard leaves orphan physical columns (Bug 2115705)", function (this: Suite) {
   this.timeout(90000);
   const tableName = "bis_ElementMultiAspect";
   const extraColumns = 6;
   let briefcase: BriefcaseDb | undefined;
 
-  before(() => HubMock.startup("DynamicSchemaOrphanColumns", KnownTestLocations.outputDir));
+  before(() => HubMock.startup("SchemaImportOrphanColumns", KnownTestLocations.outputDir));
   after(() => HubMock.shutdown());
   afterEach(() => {
     briefcase?.close();
@@ -49,13 +51,9 @@ describe("Dynamic schema discard leaves orphan physical columns (Bug 2115705)", 
         return stmt.getValue(0).getInteger();
       });
 
-  const dynamicSchemaWithWideMultiAspect = (propCount: number) => `<?xml version="1.0" encoding="UTF-8"?>
-    <ECSchema schemaName="DynTest" alias="dyn" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  const schemaWithWideMultiAspect = (propCount: number) => `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="WideAspect" alias="wa" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
-      <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
-      <ECCustomAttributes>
-        <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
-      </ECCustomAttributes>
       <ECEntityClass typeName="WideMultiAspect">
         <BaseClass>bis:ElementMultiAspect</BaseClass>
         ${Array.from({ length: propCount }, (_, i) => `<ECProperty propertyName="P${i + 1}" typeName="string"/>`).join("\n        ")}
@@ -136,27 +134,27 @@ describe("Dynamic schema discard leaves orphan physical columns (Bug 2115705)", 
     }
   });
 
-  it("discardChanges after a dynamic schema import breaks the next schema import", async () => {
+  it("discardChanges after a schema import that added columns breaks the next schema import", async () => {
     const accessToken = "user1";
-    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId: HubMock.iTwinId, iModelName: "DynOrphan" });
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId: HubMock.iTwinId, iModelName: "DiscardOrphan" });
     briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId: HubMock.iTwinId, iModelId });
 
     const baselineColumns = physicalColumns(briefcase);
     chai.expect(baselineColumns.length).to.equal(mappedNonVirtualColumnCount(briefcase), "baseline must be consistent");
 
-    // Dynamic schema whose aspect needs more shared columns than the table has -> ALTER TABLE ADD COLUMN.
+    // Plain (non-dynamic) schema whose aspect needs more shared columns than the table has -> ALTER TABLE ADD COLUMN.
     const sharedColumnCount = baselineColumns.filter((name) => /^ps\d+$/i.test(name)).length;
-    await briefcase.importSchemaStrings([dynamicSchemaWithWideMultiAspect(sharedColumnCount + extraColumns)]);
+    await briefcase.importSchemaStrings([schemaWithWideMultiAspect(sharedColumnCount + extraColumns)]);
     chai.expect(physicalColumns(briefcase).length).to.equal(baselineColumns.length + extraColumns, "import should add physical columns");
     chai.expect(mappedNonVirtualColumnCount(briefcase)).to.equal(baselineColumns.length + extraColumns);
 
-    // Abandon the un-pushed dynamic schema: ec_* is reverted, the DDL is not.
+    // Abandon the un-pushed schema import: ec_* is reverted, the DDL is not.
     await briefcase.discardChanges();
-    const dynSchemaCount = briefcase.withSqliteStatement("SELECT COUNT(*) FROM ec_Schema WHERE Name = 'DynTest'", (stmt) => {
+    const schemaCount = briefcase.withSqliteStatement("SELECT COUNT(*) FROM ec_Schema WHERE Name = 'WideAspect'", (stmt) => {
       stmt.step();
       return stmt.getValue(0).getInteger();
     });
-    chai.expect(dynSchemaCount).to.equal(0, "dynamic schema should be gone after discardChanges");
+    chai.expect(schemaCount).to.equal(0, "schema should be gone after discardChanges");
 
     const mapped = mappedNonVirtualColumnCount(briefcase);
     const physical = physicalColumns(briefcase).length;
