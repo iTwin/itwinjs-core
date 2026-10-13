@@ -6,20 +6,20 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DefinitionSetProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, Rank, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, IModelError, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, Rank, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
-import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity, EntityClassType } from "./Entity";
 import { EditTxn } from "./EditTxn";
 import { IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
+import { DefinitionModel, DrawingModel, GraphicalModel3d, Model, PhysicalModel, SectionDrawingModel, SheetModel } from "./Model";
 import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onReservedElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
@@ -189,7 +189,7 @@ export interface OnElementDependencyArg extends OnElementArg {
 export class Element extends Entity {
   public static override get className(): string { return "Element"; }
   /** @internal */
-  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete", "onSubModelInsert"]; }
 
   /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
@@ -457,12 +457,34 @@ export class Element extends Entity {
     arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
-  /** Called when an instance of this class is being *sub-modeled* by a new Model.
-   * @note throw an exception if model should not be inserted
+  /** The [[Model]] classes that may *sub-model* an instance of this class.
+   * A sub-model is accepted if its class is, or derives from, one of these classes, including generated JavaScript classes for unregistered EC subclasses.
+   * The default is `undefined`, which permits any Model class.
+   * Domain classes implementing `bis:ISubModeledElement` should override this to restrict their sub-model class.
    * @note `this` is the class of Element to be sub-modeled.
    * @beta
    */
-  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
+  protected static get allowedSubModelClasses(): Array<EntityClassType<Model>> | undefined { return undefined; }
+
+  /** Called when an instance of this class is being *sub-modeled* by a new Model.
+   * The default implementation rejects the model unless its class is one of [[allowedSubModelClasses]] or [[allowedSubModelClasses]] returns undefined.
+   * @note throw an exception if model should not be inserted
+   * @note `this` is the class of Element to be sub-modeled.
+   * @note Overrides must call `super.onSubModelInsert(arg)` to retain inherited class validation.
+   * @beta
+   */
+  protected static onSubModelInsert(arg: OnSubModelPropsArg): void {
+    const allowed = this.allowedSubModelClasses;
+    if (!allowed)
+      return;
+
+    const modelClassName = arg.subModelProps.classFullName.replace(".", ":");
+    const modelClass = arg.iModel.getJsClass<typeof Model>(modelClassName);
+    if (!allowed.some((allowedClass) => modelClass === allowedClass || modelClass.prototype instanceof allowedClass)) {
+      const allowedNames = allowed.map((allowedClass) => allowedClass.name).join(" or ");
+      throw new IModelError(IModelStatus.WrongModel, `A ${this.className} must be sub-modeled by a ${allowedNames}, not a ${modelClassName}`);
+    }
+  }
 
   /** Called after an instance of this class was *sub-modeled* by a new Model.
    * @note `this` is the class of Element that is now sub-modeled.
@@ -1417,6 +1439,11 @@ export class Drawing extends Document {
   /** The name of the DrawingModel class modeled by this element type. */
   protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
 
+  /** A Drawing must be sub-modeled by a [[DrawingModel]].
+   * @beta
+   */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [DrawingModel]; }
+
   /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
@@ -1491,6 +1518,11 @@ export class SectionDrawing extends Drawing {
   public static override get className(): string { return "SectionDrawing"; }
 
   protected static override get drawingModelFullClassName(): string { return SectionDrawingModel.classFullName; }
+
+  /** A SectionDrawing may be sub-modeled by a [[DrawingModel]] (including [[SectionDrawingModel]]) or a [[GraphicalModel3d]].
+   * @beta
+   */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [DrawingModel, GraphicalModel3d]; }
 
   protected constructor(props: SectionDrawingProps, iModel: IModelDb) {
     super(props, iModel);
@@ -1591,6 +1623,11 @@ export class Sheet extends Document {
     if (undefined !== this.sheetTemplate)
       referenceIds.addElement(this.sheetTemplate);
   }
+
+  /** A Sheet must be sub-modeled by a [[SheetModel]].
+   * @beta
+   */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [SheetModel]; }
 
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
@@ -1961,6 +1998,11 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 export class TemplateRecipe2d extends RecipeDefinitionElement {
   public static override get className(): string { return "TemplateRecipe2d"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** A TemplateRecipe2d must be sub-modeled by a [[DrawingModel]].
+   * @beta
+   */
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> { return [DrawingModel]; }
 
   /** Create a Code for a TemplateRecipe2d given a name that is meant to be unique within the scope of its Model.
    * @param iModelDb The IModelDb
