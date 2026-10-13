@@ -45,13 +45,20 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
     assert.equal(insertStatus, DbResult.BE_SQLITE_DONE);
     ecdb.saveChanges();
 
-    for (const abbreviateBlobs of [undefined, false, true]) {
-      const query = "SELECT Data FROM myschema.BlobExample";
-      const expected = abbreviateBlobs ? '{"bytes":3}' : blob;
-      const asyncRows = await ecdb.createQueryReader(query, undefined, { abbreviateBlobs }).toArray();
-      const syncRows = ecdb.withQueryReader(query, (reader) => reader.toArray(), undefined, { abbreviateBlobs });
-      assert.deepEqual(asyncRows, [[expected]]);
-      assert.deepEqual(syncRows, [[expected]]);
+    for (const usePrimaryConn of [false, true]) {
+      for (const abbreviateBlobs of [undefined, false, true, false, false]) {
+        const query = "SELECT Data FROM myschema.BlobExample";
+        const expected = abbreviateBlobs ? '{"bytes":3}' : blob;
+        const reader = ecdb.createQueryReader(query, undefined, { abbreviateBlobs, usePrimaryConn });
+        const metadata = await reader.getMetaData();
+        assert.equal(metadata[0].name, "Data");
+        assert.equal(metadata[0].typeName, abbreviateBlobs ? "string" : "binary");
+        const asyncRows = await reader.toArray();
+        const syncRows = ecdb.withQueryReader(query, (syncReader) => syncReader.toArray(), undefined, { abbreviateBlobs });
+        assert.deepEqual(asyncRows, [[expected]]);
+        assert.deepEqual(syncRows, [[expected]]);
+        metadata[0].name = "mutated";
+      }
     }
   });
 
@@ -1554,5 +1561,4 @@ describe("createQueryReader vs withQueryReader ", () => {
     });
   });
 });
-
 

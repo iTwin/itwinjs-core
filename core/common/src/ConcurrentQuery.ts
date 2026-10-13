@@ -846,7 +846,8 @@ export class DbQueryError extends BentleyError {
 
 /** @internal */
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-  execute(request: TRequest): Promise<TResponse>;
+  /** Primary-connection execution may return its response immediately; worker execution remains asynchronous. */
+  execute(request: TRequest): TResponse | Promise<TResponse>;
 }
 
 /** @internal */
