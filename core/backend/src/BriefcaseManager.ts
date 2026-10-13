@@ -347,23 +347,34 @@ export class BriefcaseManager {
    * @param accessToken for releasing the briefcaseId
    */
   public static async deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void> {
+    let briefcase: BriefcaseProps | undefined;
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
-      const briefcase: BriefcaseProps = {
+      briefcase = {
         iModelId: db.getIModelId(),
         briefcaseId: db.getBriefcaseId(),
       };
       db.closeFile();
+    } catch {
+      // not a valid iModel (e.g. missing, corrupt, or partially downloaded). Just delete the files below.
+    }
 
-      if (this.isValidBriefcaseId(briefcase.briefcaseId))
-        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId); // cleanup rebase folders
+    // Clean up the rebase folders and release the briefcaseId independently, so a failure in one doesn't prevent the other.
+    if (undefined !== briefcase && this.isValidBriefcaseId(briefcase.briefcaseId)) {
+      try {
+        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId);
+      } catch (err) {
+        Logger.logWarning(loggerCategory, `Failed to clean up rebase folders for ${filePath}: ${String(err)}`);
+      }
 
       if (accessToken) {
-        if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
+        try {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
+        } catch (err) {
+          Logger.logWarning(loggerCategory, `Failed to release briefcaseId ${briefcase.briefcaseId} for ${filePath}: ${String(err)}`);
         }
       }
-    } catch { }
+    }
 
     // first try to delete the briefcase file
     try {

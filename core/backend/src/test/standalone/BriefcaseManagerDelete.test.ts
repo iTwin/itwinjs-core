@@ -5,12 +5,14 @@
 
 import { expect } from "chai";
 import * as path from "node:path";
-import { Guid, IModelStatus } from "@itwin/core-bentley";
+import * as sinon from "sinon";
+import { Guid, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { checkFrontendBriefcaseDelete } from "../../internal/NativeAppDeleteBriefcase";
+import { IModelNative } from "../../internal/NativePlatform";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Deleting briefcase files", () => {
@@ -41,11 +43,46 @@ describe("Deleting briefcase files", () => {
   });
 
   afterEach(() => {
+    sinon.restore();
     IModelJsFs.removeSync(outsideDir);
     IModelJsFs.removeSync(path.dirname(insideDir));
   });
 
   describe("BriefcaseManager.deleteBriefcaseFiles", () => {
+    /** Create an iModel with an assigned (valid) briefcaseId, so deleteBriefcaseFiles tries to clean up rebase folders and release it. */
+    const createAssignedBriefcase = (fileName: string) => {
+      const pathName = createIModel(fileName);
+      const nativeDb = new IModelNative.platform.DgnDb();
+      nativeDb.openIModel(pathName, OpenMode.ReadWrite);
+      nativeDb.resetBriefcaseId(2);
+      nativeDb.saveChanges();
+      nativeDb.closeFile();
+      return pathName;
+    };
+
+    it("releases the briefcaseId and deletes the file even if cleaning up rebase folders fails", async () => {
+      const bim = createAssignedBriefcase(path.join(insideDir, "5.bim"));
+      sinon.stub(BriefcaseManager as any, "cleanupRebaseFolders").throws(new Error("EBUSY"));
+      const release = sinon.stub(BriefcaseManager, "releaseBriefcase").resolves();
+
+      await BriefcaseManager.deleteBriefcaseFiles(bim, "access token");
+
+      expect(release.calledOnce).to.be.true;
+      expect(release.firstCall.args[1].briefcaseId).equal(2);
+      expect(IModelJsFs.existsSync(bim)).to.be.false;
+    });
+
+    it("cleans up rebase folders and deletes the file even if releasing the briefcaseId fails", async () => {
+      const bim = createAssignedBriefcase(path.join(insideDir, "6.bim"));
+      const rebaseDir = path.join(insideDir, ".rebasing", "2");
+      IModelJsFs.recursiveMkDirSync(rebaseDir);
+      sinon.stub(BriefcaseManager, "releaseBriefcase").rejects(new Error("hub unavailable"));
+
+      await BriefcaseManager.deleteBriefcaseFiles(bim, "access token");
+
+      expect(IModelJsFs.existsSync(rebaseDir)).to.be.false;
+      expect(IModelJsFs.existsSync(bim)).to.be.false;
+    });
     it("deletes a briefcase along with its associated files, but not other files", async () => {
       const bim = createIModel(path.join(insideDir, "1.bim"));
       const sidecars = ["-wal", "-shm", "-journal", "-locks", "-locks-wal", "-locks-shm", ".Tiles", ".Tiles-journal", "-hierarchies", ".HierarchyCache.db", ".keep.txt"]
