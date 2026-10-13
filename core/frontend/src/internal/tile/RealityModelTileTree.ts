@@ -35,6 +35,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { gaussianSplatError } from "../render/GaussianSplatError";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -252,6 +253,27 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
+function isGaussianSplatTileset(tileset: any): boolean {
+  const gltf = tileset.extensions?.["3DTILES_content_gltf"];
+  return !!(gltf?.extensionsRequired?.includes("KHR_gaussian_splatting") || gltf?.extensionsUsed?.includes("KHR_gaussian_splatting"));
+}
+
+function gaussianSplatsEnabled(): boolean {
+  return IModelApp.initialized && true === IModelApp.renderSystem.options.enableGaussianSplats;
+}
+
+/** Reject the tiles from `root` down if the preview cannot draw them as splats. */
+function validateGaussianSplatTileLayout(root: any): void {
+  const pending = [root];
+  for (let tile = pending.pop(); tile; tile = pending.pop()) {
+    if (tile.implicitTiling || tile.extensions?.["3DTILES_implicit_tiling"] || tile.contents)
+      gaussianSplatError("the preview requires explicit tiles with a single content URI; implicit tiling and multiple contents are unsupported");
+
+    if (Array.isArray(tile.children))
+      pending.push(...tile.children);
+  }
+}
+
 /** Exported strictly for tests. */
 export class RealityModelTileTreeProps {
   public location: Transform;
@@ -261,12 +283,20 @@ export class RealityModelTileTreeProps {
   public yAxisUp = false;
   public root: any;
   public readonly maximumScreenSpaceError?: number;
+  /** True if the tileset declares Gaussian splat content and the render system draws splats natively.
+   * @internal
+   */
+  public readonly rendersGaussianSplats: boolean;
 
   public get usesGeometricError(): boolean {
     return undefined !== this.maximumScreenSpaceError;
   }
 
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
+    this.rendersGaussianSplats = isGaussianSplatTileset(json) && gaussianSplatsEnabled();
+    if (this.rendersGaussianSplats)
+      validateGaussianSplatTileLayout(root);
+
     this.tilesetJson = root;
     this.dataSource = rdSource;
     this.location = tilesetToDbTransform;
@@ -278,7 +308,7 @@ export class RealityModelTileTreeProps {
     const maxSSE = json.asset.extras?.maximumScreenSpaceError;
     if (typeof maxSSE === "number") {
       this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
-    } else if (rdSource.usesGeometricError) {
+    } else if (rdSource.usesGeometricError || this.rendersGaussianSplats) {
       this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 16;
     }
   }
@@ -418,6 +448,19 @@ function addUrlPrefix(subTree: any, prefix: string) {
       addUrlPrefix(child, prefix);
 }
 
+/** The path within a reality data source of `uri`, relative to the content at `contentUrl` (itself a path within the source, which
+ * may be in a nested external tileset). The source resolves such paths against a base URL it does not expose, so they are resolved
+ * here against a placeholder origin that stands for it.
+ */
+function pathWithinDataSource(uri: string, contentUrl: string): string {
+  const placeholderOrigin = "https://reality-data-source.invalid";
+  const resolved = new URL(uri, new URL(contentUrl, `${placeholderOrigin}/`));
+  if (resolved.origin !== placeholderOrigin)
+    throw new Error(`${uri} is not a path within the reality data source`);
+
+  return resolved.pathname.substring(1) + resolved.search;
+}
+
 async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
   if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
@@ -457,6 +500,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
+  public override get rendersGaussianSplats(): boolean { return this.tree.rendersGaussianSplats; }
   public override get wantDeduplicatedVertices() { return this._deduplicateVertices; }
 
   public get maxDepth(): number { return Number.MAX_SAFE_INTEGER; }
@@ -520,6 +564,11 @@ class RealityModelTileLoader extends RealityTileLoader {
     return this.tree.dataSource.getTileContent(getUrl(foundChild.json.content));
   }
 
+  /** Data sources such as ion and ContextShare give tiles no absolute URL, so a glTF buffer relative to its tile is fetched through the data source. */
+  protected override gltfBufferResolver(tile: RealityTile): (uri: string) => Promise<Uint8Array> {
+    return async (uri) => new Uint8Array(await this.tree.dataSource.getTileContent(pathWithinDataSource(uri, tile.contentUrl ?? "")));
+  }
+
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
     if (id.length === 0)
       return new FindChildResult(id, tilesetJson, transformToRoot);    // Root.
@@ -545,9 +594,12 @@ class RealityModelTileLoader extends RealityTileLoader {
       return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId, transformToRoot);
     }
 
-    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.dataSource);
+    const child = tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.dataSource);
+    const isExternalTilesetRoot = child !== foundChild;
+    if (isExternalTilesetRoot && this.tree.rendersGaussianSplats)
+      validateGaussianSplatTileLayout(child);
 
-    return new FindChildResult(thisParentId, tilesetJson.children[childIndex], transformToRoot);
+    return new FindChildResult(thisParentId, child, transformToRoot);
   }
 }
 
