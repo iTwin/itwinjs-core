@@ -341,10 +341,14 @@ export class FrameBufferStack {
 
   public get isEmpty(): boolean { return 0 === this._stack.length; }
 
+  /** Bind `fbo` while `func` runs. It is unbound, and the framebuffer it replaced bound again, even if `func` throws. */
   public execute(fbo: FrameBuffer, withAttachments: boolean, withMultSampling: boolean, func: () => void) {
     this.push(fbo, withAttachments, withMultSampling);
-    func();
-    this.pop();
+    try {
+      func();
+    } finally {
+      this.pop();
+    }
   }
 
   public markTargetsDirty(): void {

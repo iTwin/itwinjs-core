@@ -995,6 +995,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public compileAllShaders(): boolean {
+    // The splat techniques are registered on first use; register them now so that they compile with the others. If the splat
+    // module has not loaded yet, they still compile on first use.
+    if (this.options.enableGaussianSplats)
+      loadedGaussianSplatModule()?.gaussianSplatTechniques(this.techniques);
+
     return this.techniques.compileShaders();
   }
 
