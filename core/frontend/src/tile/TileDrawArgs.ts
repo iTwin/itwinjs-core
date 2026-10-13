@@ -17,7 +17,7 @@ import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifie
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
-import { Tile, TileGraphicType, TileTree } from "./internal";
+import { RealityTileCoverage, Tile, TileGraphicType, TileTree } from "./internal";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 
 const scratchRange = new Range3d();
@@ -115,6 +115,13 @@ export class TileDrawArgs {
   public readonly touchedTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
   private readonly _nearFrontCenter?: Point3d;
+  /** The size of one pixel at the center of the near plane, and that center's distance from the eye in perspective views. */
+  private _frontPixel?: { size: number, distanceFromEye?: number };
+  /** How completely the selected reality tiles cover the tree's visible region, if the tree's traversal reports it. It is
+   * output into the scene with the graphics, so that the render target that accepts the scene knows it.
+   * @internal
+   */
+  public realityTileCoverage?: RealityTileCoverage;
   /** Overrides applied to the view's [ViewFlags]($common) when drawing the tiles. */
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
   /** If defined, replaces the view's own symbology overrides when drawing the tiles. */
@@ -208,6 +215,30 @@ export class TileDrawArgs {
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+  }
+
+  /** Compute the size in meters of one pixel at `distance` from the eye, as CesiumJS measures screen-space error: in a
+   * perspective view it grows linearly with the distance; in an orthographic view it is the same everywhere.
+   * The pixel is one of the view these args describe, even where [[worldToViewMap]] is overridden (e.g. for a shadow map).
+   * @internal
+   */
+  public computePixelSizeInMetersAtDistance(distance: number): number {
+    const front = this._frontPixel ??= this.measureFrontPixel();
+    if (undefined === front.distanceFromEye)
+      return front.size;
+
+    // Never zero, even with the eye inside a tile's bounding volume.
+    const minimumDistance = 1e-7;
+    return front.size * Math.max(distance, minimumDistance) / front.distanceFromEye;
+  }
+
+  private measureFrontPixel(): { size: number, distanceFromEye?: number } {
+    const frontCenter = this.viewingSpace.getFrustum().frontCenter;
+    const map = this.viewingSpace.worldToViewMap;
+    const viewPoint = map.transform0.multiplyPoint3dQuietNormalize(frontCenter);
+    const nextPixel = new Point3d(viewPoint.x + 1.0, viewPoint.y, viewPoint.z);
+    const size = map.transform1.multiplyPoint3dQuietNormalize(viewPoint).distance(map.transform1.multiplyPoint3dQuietNormalize(nextPixel));
+    return { size, distanceFromEye: this.viewingSpace.eyePoint?.distance(frontCenter) };
   }
 
   /** Compute this size of a sphere on screen in pixels */
@@ -386,9 +417,26 @@ export class TileDrawArgs {
 
   /** Output graphics for all accumulated tiles. */
   public drawGraphics(): void {
+    this.outputRealityTileCoverage();
     const graphics = this.produceGraphics();
     if (undefined !== graphics)
       this.context.outputGraphic(graphics);
+  }
+
+  /** Add [[realityTileCoverage]] to the scene's. Every reference to a tree in a scene must cover its region for the tree's
+   * coverage to be complete. Collectors that override [[drawGraphics]] (shadow maps, drapes) do not output their coverage,
+   * so that it remains that of the displayed graphics.
+   */
+  private outputRealityTileCoverage(): void {
+    if (!this.realityTileCoverage)
+      return;
+
+    const sceneCoverage = this.context.scene.realityTileCoverage;
+    const otherReference = sceneCoverage.get(this.tree);
+    sceneCoverage.set(this.tree, otherReference ? {
+      complete: otherReference.complete && this.realityTileCoverage.complete,
+      loading: otherReference.loading || this.realityTileCoverage.loading,
+    } : this.realityTileCoverage);
   }
 
   /** Output graphics of the specified type for all accumulated tiles. */
