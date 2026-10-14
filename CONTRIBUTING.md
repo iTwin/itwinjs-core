@@ -84,13 +84,35 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
-| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | macOS/Linux production workspace prefetch and fresh-process offline vertical CRS acceptance using OS-level network isolation | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | macOS/Linux/Windows production workspace prefetch and fresh-process offline vertical CRS acceptance using OS-level network isolation | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
 Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
 
-The offline Vertical CRS test runs on macOS and Linux with a matching native addon for the Node.js architecture. macOS uses `sandbox-exec`; Linux requires `unshare` (util-linux), `ip` (iproute2), and permission to create unprivileged user and network namespaces. Verify Linux prerequisites with `unshare --user --map-root-user --net -- ip -j link show`; it must succeed with only the isolated loopback interface, initially down. A namespace setup failure fails the test rather than running without isolation.
+The offline Vertical CRS test runs on macOS, Linux, and Windows with a matching native addon for the Node.js architecture. macOS uses `sandbox-exec`; Linux requires `unshare` (util-linux), `ip` (iproute2), and permission to create unprivileged user and network namespaces. Windows uses an outbound Windows Defender Firewall block rule for a dedicated copy of Node; it requires an already elevated, policy-approved session, enabled firewall profiles permitting local rules, NetSecurity cmdlets, and a PowerShell host whose execution policy permits the helper script (see the Windows setup below). Verify Linux prerequisites with `unshare --user --map-root-user --net -- ip -j link show`; it must succeed with only the isolated loopback interface, initially down. An isolation setup failure fails the test rather than running without isolation.
 
 From `full-stack-tests/backend`, run `rushx build`, then `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ./node_modules/.bin/mocha lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 650000` from an ordinary online shell. It downloads both default production GCS databases into a temporary cache, verifies cold-offline failure, then checks discovery and bidirectional EGM96 conversion in a fresh network-blocked process. Linux offline workers verify a distinct network namespace, loopback-only interfaces, empty IPv4/IPv6 route tables, and a routing failure before native startup. Only the offline workers are isolated; prefetch retains network access. Worker output includes the loaded addon path and SHA-256. The cache is removed afterward.
+
+On Windows, use an already elevated, policy-approved PowerShell session. Windows Defender Firewall must be running, all effective profiles must be enabled and allow local rules, and NetSecurity cmdlets must be available. The selected PowerShell host's execution policy must permit `src/integration/VerticalCrsOffline.windows.ps1`; if signing is required, have the helper signed through your organization's approved process. The default host is Windows PowerShell 5.1. Set `ITWIN_VERTICAL_CRS_OFFLINE_POWERSHELL` to an absolute host path to use PowerShell 7 instead; the hosts can have different execution policies. The harness does not request elevation or bypass execution policy. From `full-stack-tests/backend`:
+
+```powershell
+rushx build
+if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+$previousOptIn = $env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS
+$previousPowerShell = $env:ITWIN_VERTICAL_CRS_OFFLINE_POWERSHELL
+try {
+	$env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS = '1'
+	$env:ITWIN_VERTICAL_CRS_OFFLINE_POWERSHELL = (Get-Process -Id $PID).Path
+	node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 650000
+	if ($LASTEXITCODE -ne 0) { throw 'Offline acceptance failed' }
+} finally {
+	$env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS = $previousOptIn
+	$env:ITWIN_VERTICAL_CRS_OFFLINE_POWERSHELL = $previousPowerShell
+}
+```
+
+Windows copies the current Node executable into a unique temporary directory and applies an outbound block rule only to that copy. It verifies the copy's hash/version, effective rule, a successful production-host TCP control before blocking, matched blocked connections inside each offline worker, parent connectivity, and restored connectivity after rule removal. Reachable IPv6 endpoints are checked too; unavailable IPv6 is reported. The worker must use a daemonless workspace cache. This proves blocked direct resource egress, not isolation of loopback, delegated DNS, or separate helper processes. The rule and executable directory are owned and cleaned up by the parent; a cleanup failure fails the run. Before creating a rule, the harness prints its identity and an exact recovery command for interrupted runs. Run that command only after the test has stopped; it terminates owned workers before removing their rule and directory. The Windows parent timeout allows each bounded worker and its cleanup to finish.
+
+The installed addon is the default. For a separately labeled local-build run, set `ITWIN_VERTICAL_CRS_OFFLINE_ADDON` to the absolute `imodeljs.node` path with its matching platform libraries/assets alongside it, then restore the prior environment value afterward. This does not replace installed dependencies. To validate cleanup after an intentional worker failure, temporarily set `ITWIN_VERTICAL_CRS_OFFLINE_FAIL_PHASE` to `cold-offline`; the worker fails after proving network denial and before native startup. Expect a failing test, restored connectivity, and no remaining owned rule/directory/cache. Restore the variable afterward. Windows acceptance, including failure cleanup, must be run on an approved host; compilation alone is not acceptance. Changes to shared worker lifecycle also require Linux and macOS runtime reruns.
 
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 
