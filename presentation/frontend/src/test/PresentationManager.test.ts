@@ -993,6 +993,56 @@ describe("PresentationManager", () => {
         sinon.match(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), omitFormattedValues: true })),
       );
     });
+
+    it("localizes fetched content using the active locale of each request", async () => {
+      i18nMock.getLocalizedString.withArgs("EN:Label", sinon.match({ lng: "lt" })).returns("LT label");
+      i18nMock.getLocalizedString.withArgs("EN:Label", sinon.match({ lng: "de" })).returns("DE label");
+      // each request gets freshly deserialized data, as it does over RPC
+      rpcRequestsHandlerMock.getPagedContent.callsFake(async () => ({
+        descriptor: createTestContentDescriptor({ fields: [createTestSimpleContentField({ label: "@EN:Label@" })] }).toJSON(),
+        contentSet: {
+          total: 1,
+          items: [
+            createTestContentItem({
+              label: createTestLabelDefinition({ rawValue: "@EN:Label@", displayValue: "@EN:Label@" }),
+              values: {},
+              displayValues: {},
+            }).toJSON(),
+          ],
+        },
+      }));
+      const options = {
+        imodel: testData.imodel,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor: createTestContentDescriptor({ fields: [] }).createDescriptorOverrides(),
+        keys: new KeySet(),
+      };
+
+      manager.activeLocale = "lt";
+      const ltContent = await manager.getContent(options);
+      manager.activeLocale = "de";
+      const deContent = await manager.getContent(options);
+
+      expect(ltContent!.descriptor.fields[0].label).to.eq("LT label");
+      expect(ltContent!.contentSet[0].label.displayValue).to.eq("LT label");
+      expect(deContent!.descriptor.fields[0].label).to.eq("DE label");
+      expect(deContent!.contentSet[0].label.displayValue).to.eq("DE label");
+    });
+
+    it("does not modify a caller-supplied descriptor", async () => {
+      const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField({ label: "@EN:Label@" })] });
+      rpcRequestsHandlerMock.getPagedContentSet.resolves({ total: 0, items: [] });
+      const actualResult = await manager.getContent({
+        imodel: testData.imodel,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor,
+        keys: new KeySet(),
+      });
+      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(descriptor.fields[0].label).to.eq("@EN:Label@");
+    });
   });
 
   describe("getContentAndContentSize", () => {
