@@ -212,6 +212,8 @@ describe("ChangeUnifier", () => {
   const changesets = { inserts: "", updates: "", deletes: "", bulkInserts: "" };
   /** Ids of CuTest:CuElements `e[0]`..`e[4]`, CuTest:CuWideElements `w0` and `w1` and CuTest:CuRefersTo relationships `r0` and `r1`. */
   const ids = { e: [] as Id64String[], w0: "", w1: "", r0: "", r1: "" };
+  /** Label of e4: a string that starts with the header BeJsValue uses for binary data. */
+  const base64LikeLabel = "encoding=base64;SGVsbG8=";
 
   function db(): BriefcaseDb {
     assert.isDefined(rwIModel);
@@ -287,7 +289,7 @@ describe("ChangeUnifier", () => {
     await waitForDistinctLastMod();
     await iModel.locks.acquireLocks({ shared: drawingModelId });
     for (let i = 0; i < 5; ++i)
-      ids.e.push(insertElement("CuTest:CuElement", { Label: `e${i}`, Num: i, Pt: { x: i, y: -i }, Bin: new Uint8Array([i, i + 1, i + 2]) }));
+      ids.e.push(insertElement("CuTest:CuElement", { Label: i === 4 ? base64LikeLabel : `e${i}`, Num: i, Pt: { x: i, y: -i }, Bin: new Uint8Array([i, i + 1, i + 2]) }));
     ids.w0 = insertElement("CuTest:CuWideElement", wideProps("w0", wideElementPropCount));
     ids.w1 = insertElement("CuTest:CuWideElement", wideProps("w1", wideElementPropCount));
     editTxn.saveChanges("insert elements");
@@ -414,6 +416,13 @@ describe("ChangeUnifier", () => {
       for (const instance of actual)
         assert.equal(instance.$meta.op, "Updated");
     }
+  });
+
+  it("keeps strings that start with the base64 header as strings", () => {
+    const instances = unifyNatively(openReaders([changesets.inserts], { rowOptions: { abbreviateBlobs: false } }));
+    const e4 = instances.find((instance) => instance.ECInstanceId === ids.e[4]);
+    assert.strictEqual(e4?.Label, base64LikeLabel);
+    assert.instanceOf(e4?.Bin, Uint8Array);
   });
 
   it("keeps only the requested properties", () => {
