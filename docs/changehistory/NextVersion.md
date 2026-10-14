@@ -9,6 +9,7 @@ publish: false
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
     - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
+    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
@@ -37,6 +38,12 @@ The ECSQL version was bumped to `2.0.4.2`.
 [NativeApp.deleteBriefcase]($frontend) now only deletes files that are inside the briefcase cache directory or that are valid iModels. If the supplied path refers to an existing file that is neither, it throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
 
 [BriefcaseManager.deleteBriefcaseFiles]($backend) no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only files named `<briefcase file name>-*` or `<briefcase file name>.*` (e.g. `-wal`, `-shm`, `-locks`, `.Tiles`) are deleted along with the briefcase.
+
+### IdSet accepts ids with the high bit set
+
+The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
+
+Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
 
 ## Common
 
