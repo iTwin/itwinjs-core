@@ -389,7 +389,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
 
-    const key = `${args.abbreviateBlobs}|${args.classIdsToClassNames}|${args.useJsName}|${args.doNotConvertClassIdsToClassNamesWhenAliased}`;
+    const key = `${args.abbreviateBlobs}|${args.classIdsToClassNames}|${args.useJsNames}|${args.doNotConvertClassIdsToClassNamesWhenAliased}`;
     this._metadataCache ??= new Map();
     let properties = this._metadataCache.get(key);
     if (!properties) {
