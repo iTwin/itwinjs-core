@@ -630,4 +630,80 @@ export class Relationships {
     const relationshipProps = this.tryGetInstanceProps<RelationshipProps>(relClassFullName, criteria);
     return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
+
+  /** Get the props of multiple Relationship instances of the same class using batched queries.
+   * This is equivalent to calling [[tryGetInstanceProps]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @returns An array with the same length and order as `criteria`. Each entry holds the RelationshipProps matching the corresponding criterion, or `undefined` if no such relationship was found.
+   * @see tryGetInstanceProps
+   * @see tryGetInstances
+   * @beta
+   */
+  public tryGetInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
+    const ids = new Set<Id64String>();
+    const sourceIds = new Set<Id64String>();
+    const targetIds = new Set<Id64String>();
+    for (const criterion of criteria) {
+      if (typeof criterion === "string") {
+        if (Id64.isValidId64(criterion))
+          ids.add(criterion);
+      } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
+        sourceIds.add(criterion.sourceId);
+        targetIds.add(criterion.targetId);
+      }
+    }
+
+    const toProps = (row: any): T => {
+      const props = { ...row } as T;
+      props.classFullName = row.className.replace(".", ":");
+      return props;
+    };
+    const pairKey = (sourceId: Id64String, targetId: Id64String) => `${sourceId}|${targetId}`;
+
+    const propsById = new Map<Id64String, T>();
+    if (ids.size > 0) {
+      this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, ECInstanceId)`, (reader) => {
+        while (reader.step()) {
+          const row = reader.current.toRow();
+          propsById.set(row.id, toProps(row));
+        }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+      }, new QueryBinder().bindIdSet(1, ids), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    }
+
+    const propsBySourceAndTarget = new Map<string, T>();
+    if (sourceIds.size > 0) {
+      const wanted = new Set<string>();
+      for (const criterion of criteria)
+        if (typeof criterion !== "string")
+          wanted.add(pairKey(criterion.sourceId, criterion.targetId));
+
+      // The query may also return relationships whose source and target are each requested but not as a pair; those are filtered out here.
+      this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, SourceECInstanceId) AND InVirtualSet(?, TargetECInstanceId)`, (reader) => {
+        while (reader.step()) {
+          const row = reader.current.toRow();
+          const key = pairKey(row.sourceId, row.targetId);
+          if (wanted.has(key) && !propsBySourceAndTarget.has(key))
+            propsBySourceAndTarget.set(key, toProps(row));
+        }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+      }, new QueryBinder().bindIdSet(1, sourceIds).bindIdSet(2, targetIds), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    }
+
+    return criteria.map((criterion) => typeof criterion === "string" ? propsById.get(criterion) : propsBySourceAndTarget.get(pairKey(criterion.sourceId, criterion.targetId)));
+  }
+
+  /** Get multiple Relationship instances of the same class using batched queries.
+   * This is equivalent to calling [[tryGetInstance]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @returns An array with the same length and order as `criteria`. Each entry holds the relationship matching the corresponding criterion, or `undefined` if no such relationship was found.
+   * @see tryGetInstance
+   * @see tryGetInstancesProps
+   * @beta
+   */
+  public tryGetInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
+    return this.tryGetInstancesProps<RelationshipProps>(relClassFullName, criteria).map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
+  }
 }
