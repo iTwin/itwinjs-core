@@ -16,7 +16,7 @@ describe("BeAsyncEvent", () => {
       };
 
       const remove = event.addListener(listener);
-      event.raiseEvent(42);
+      await event.raiseEvent(42);
       expect(results).toEqual([42]);
 
       remove();
@@ -272,21 +272,21 @@ describe("BeAsyncEvent", () => {
     it("invokes listeners serially", async () => {
       let resolve1;
       let started1 = false;
-      const listener1 = () => {
+      const listener1 = async () => {
         started1 = true;
         return new Promise<void>((resolve) => { resolve1 = resolve; });
       };
 
       let resolve2;
       let started2 = false;
-      const listener2 = () => {
+      const listener2 = async () => {
         started2 = true;
         return new Promise<void>((resolve) => { resolve2 = resolve; });
       };
 
       let resolve3;
       let started3 = false;
-      const listener3 = () => {
+      const listener3 = async () => {
         started3 = true;
         return new Promise<void>((resolve) => { resolve3 = resolve; });
       };
@@ -319,21 +319,21 @@ describe("BeAsyncEvent", () => {
     it("invokes listeners concurrently", async () => {
       let resolve1;
       let started1 = false;
-      const listener1 = () => {
+      const listener1 = async () => {
         started1 = true;
         return new Promise<void>((resolve) => { resolve1 = resolve; });
       };
 
       let resolve2;
       let started2 = false;
-      const listener2 = () => {
+      const listener2 = async () => {
         started2 = true;
         return new Promise<void>((resolve) => { resolve2 = resolve; });
       };
 
       let resolve3;
       let started3 = false;
-      const listener3 = () => {
+      const listener3 = async () => {
         started3 = true;
         return new Promise<void>((resolve) => { resolve3 = resolve; });
       };
@@ -357,7 +357,7 @@ describe("BeAsyncEvent", () => {
     it("runs concurrent listeners to completion even if one rejects", async () => {
       let started1 = false;
       let ended1 = false;
-      const listener1 = () => {
+      const listener1 = async () => {
         started1 = true;
         return new Promise<void>(resolve => setTimeout(resolve, 1)).then(() => { ended1 = true; });
       };
@@ -370,7 +370,7 @@ describe("BeAsyncEvent", () => {
 
       let started3 = false;
       let ended3 = false;
-      const listener3 = () => {
+      const listener3 = async () => {
         started3 = true;
         return new Promise<void>(resolve => setTimeout(resolve, 1)).then(() => { ended3 = true; });
       };
@@ -396,7 +396,7 @@ describe("BeAsyncEvent", () => {
     it("stops after the first serial listener that rejects", async () => {
       let started1 = false;
       let ended1 = false;
-      const listener1 = () => {
+      const listener1 = async () => {
         started1 = true;
         return new Promise<void>(resolve => setTimeout(resolve, 1)).then(() => { ended1 = true; });
       };
@@ -409,7 +409,7 @@ describe("BeAsyncEvent", () => {
 
       let started3 = false;
       let ended3 = false;
-      const listener3 = () => {
+      const listener3 = async () => {
         started3 = true;
         return new Promise<void>(resolve => setTimeout(resolve, 1)).then(() => { ended3 = true; });
       };

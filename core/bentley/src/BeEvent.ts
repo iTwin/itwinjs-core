@@ -387,7 +387,8 @@ export class BeAsyncEvent<T extends AsyncListener> {
     // allowed to propagate as an exception. A well-behaved Promise-returning function should never throw, but
     // this defends against the poorly-behaved ones. In Node 23+ we could use `Promise.try` instead.
     const invoke = async (ctx: UnorderedAsyncEventContext, args: Parameters<T>[]) => {
-      await ctx.listener!.apply(ctx.scope, args);
+      if (!ctx.listener) return;
+      await ctx.listener.apply(ctx.scope, args);
     };
 
     try {
