@@ -192,3 +192,15 @@ export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProv
   }
 
 }
+
+/** Wraps a units provider so `findUnitByName` returns units with an empty label, the way `SchemaUnitProvider` reports
+ * units that have no label in the Units schema. Useful for testing units whose labels differ between providers.
+ */
+export function withEmptyUnitLabels(provider: UnitsProvider): UnitsProvider {
+  return {
+    findUnit: async (unitLabel, schemaName, phenomenon, unitSystem) => provider.findUnit(unitLabel, schemaName, phenomenon, unitSystem),
+    getUnitsByFamily: async (phenomenon) => provider.getUnitsByFamily(phenomenon),
+    getConversion: async (fromUnit, toUnit) => provider.getConversion(fromUnit, toUnit),
+    findUnitByName: async (unitName) => ({ ...(await provider.findUnitByName(unitName)), label: "" }),
+  };
+}
