@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, CategorySelectorProps, Code, ColorDef, ContourDisplay, ContourGroup, DisplayStyleProps, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance, ViewDefinition2dProps,
+  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
@@ -409,20 +409,21 @@ describe("Viewport", () => {
     it("exposes its viewed model", () => {
       const iModel = createBlankConnection();
       try {
-        const modelProps = { model: { id: "0x1" }, code: Code.createEmpty().toJSON() };
-        const categorySelector = new CategorySelectorState({ ...modelProps, id: "0x2" } as CategorySelectorProps, iModel);
-        const displayStyle = new DisplayStyle2dState({ ...modelProps, id: "0x3" } as DisplayStyleProps, iModel);
+        const modelProps = { model: "0x1", code: Code.createEmpty().toJSON() };
+        const categorySelector = new CategorySelectorState({ ...modelProps, id: "0x2", classFullName: CategorySelectorState.classFullName, categories: [] }, iModel);
+        const displayStyle = new DisplayStyle2dState({ ...modelProps, id: "0x3", classFullName: DisplayStyle2dState.classFullName }, iModel);
         const viewedModelId = "0x4";
         const view = new DrawingViewState({
           ...modelProps,
           id: "0x5",
+          classFullName: DrawingViewState.classFullName,
           baseModelId: viewedModelId,
           categorySelectorId: categorySelector.id,
           displayStyleId: displayStyle.id,
           origin: { x: 0, y: 0 },
           delta: { x: 1, y: 1 },
           angle: 0,
-        } as ViewDefinition2dProps, iModel, categorySelector, displayStyle, Range3d.createNull());
+        }, iModel, categorySelector, displayStyle, Range3d.createNull());
 
         expect(view.iModelRefs.primary.is2d()).toBe(true);
         expect(view.iModelRefs.primary.viewedModel).toBe(viewedModelId);
