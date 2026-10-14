@@ -9,7 +9,7 @@ import {
   DbValueFormat,
   ECSqlReaderBase,
   IModelError,
-  PropertyMetaDataMap, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat, QueryRowProxy,
+  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat, QueryRowProxy,
 } from "@itwin/core-common";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { DbResult } from "@itwin/core-bentley";
@@ -101,7 +101,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
 
     // Fetch metadata once on the first call.
     if (this._props.length === 0) {
-      this._props = new PropertyMetaDataMap(this._executor.fetchMetadata(this._cachedRowOptions));
+      this._props = this._executor.fetchMetadata(this._cachedRowOptions);
     }
 
     return this.stepWithRetry();
@@ -133,7 +133,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    */
   public getMetaData(): QueryPropertyMetaData[] {
     if (this._props.length === 0) {
-      this._props = new PropertyMetaDataMap(this._executor.fetchMetadata(this._cachedRowOptions));
+      this._props = this._executor.fetchMetadata(this._cachedRowOptions);
     }
     return this._props.properties;
   }

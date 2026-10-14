@@ -114,6 +114,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatSet } from '@itwin/ecschema-metadata';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -302,6 +303,7 @@ import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -437,6 +439,18 @@ export interface AvailableCoordinateReferenceSystemProps {
     description: string;
     name: string;
     unit?: string;
+}
+
+// @beta
+export interface AvailableVerticalCoordinateReferenceSystemProps {
+    crsName: string;
+    deprecated: boolean;
+    description: string;
+    epsg?: number;
+    extent: Range2dProps;
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    type: string;
+    unit: string;
 }
 
 // @beta (undocumented)
@@ -2011,6 +2025,24 @@ export interface CreateTerminatorGeometryArgs {
 }
 
 // @beta
+export interface CSVColumnMapping {
+    columnIndex: number;
+    propertyName: string;
+}
+
+// @beta
+export interface CSVFileImportOptions extends CSVImportOptions {
+    hasHeader?: boolean;
+}
+
+// @beta
+export interface CSVImportOptions {
+    className: string;
+    mapping: readonly CSVColumnMapping[];
+    nullValue?: string;
+}
+
+// @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
@@ -2340,6 +2372,8 @@ export class Downloads {
 // @public @preview
 export class Drawing extends Document_2 {
     protected constructor(props: DrawingProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -2452,6 +2486,10 @@ export class ECDb implements Disposable {
     // @internal
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    importCSVData(rows: readonly (readonly string[])[], options: CSVImportOptions): number;
+    // @beta
+    importCSVFile(csvFilePath: string, options: CSVFileImportOptions): number;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -2821,6 +2859,8 @@ export class EditTxn {
 // @public @preview
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>> | undefined;
     // (undocumented)
     static get className(): string;
     code: Code;
@@ -2898,7 +2938,7 @@ class Element_2 extends Entity {
     // @beta
     protected static onSubModelDeleted(arg: OnSubModelIdArg): void;
     // @beta
-    protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
+    protected static onSubModelInsert(arg: OnSubModelPropsArg): void;
     // @beta
     protected static onSubModelInserted(arg: OnSubModelIdArg): void;
     // @beta
@@ -2982,8 +3022,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    static readonly onFieldFormattingChanged: BeEvent<(args: {
+        iModel: IModelDb;
+    }) => void>;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
+    static registerFieldFormatting(args: FieldFormattingArgs): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
@@ -3533,6 +3577,17 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
+// @beta
+export interface FieldFormattingArgs {
+    formatSet?: FormatSet;
+    formatSets?: ReadonlyArray<{
+        id: string;
+        formatSet: FormatSet;
+    }>;
+    iModel: IModelDb;
+    unitSystem?: UnitSystemKey;
+}
+
 // @public @deprecated
 export abstract class FileNameResolver {
     resolveFileName(inFileName: string): string;
@@ -3890,6 +3945,17 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 
 // @beta
 export function getAvailableCRSUnits(): string[];
+
+// @beta
+export function getAvailableVerticalCoordinateReferenceSystems(args?: GetAvailableVerticalCoordinateReferenceSystemsArgs): AvailableVerticalCoordinateReferenceSystemProps[];
+
+// @beta
+export interface GetAvailableVerticalCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+    includeIntersecting?: boolean;
+    point?: XAndY;
+    unit?: string;
+}
 
 // @beta
 export interface GetResolvedSettingDefOptions {
@@ -5880,7 +5946,8 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
 export enum PropertyFilter {
     All = 0,
     BisCoreElement = 1,
-    InstanceKey = 2
+    InstanceKey = 2,
+    InstanceKeyAndIdentifiers = 3
 }
 
 // @public @preview
@@ -5954,6 +6021,8 @@ export interface PushChangesArgs extends TokenArg {
     mergeRetryDelay?: BeDuration;
     // @internal @deprecated
     noFastForward?: true;
+    // @beta
+    onDownloadProgress?: ProgressFunction;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
@@ -6389,7 +6458,7 @@ export namespace SchemaSync {
         scope: BlobContainer.Scope;
     }
     export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
-    const containerType = "schema-sync";
+    const containerType = "schemasync";
     export interface EnableForIModelArgs {
         containerProps?: CloudSqlite.ContainerProps;
         // (undocumented)
@@ -6485,6 +6554,8 @@ export class SectionCallout extends Callout {
 // @public @preview
 export class SectionDrawing extends Drawing {
     protected constructor(props: SectionDrawingProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     displaySpatialView: boolean;
@@ -6683,6 +6754,8 @@ export const settingsWorkspaceDbName: WorkspaceDbName;
 // @public @preview
 export class Sheet extends Document_2 {
     protected constructor(props: SheetProps, iModel: IModelDb);
+    // @beta
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     // (undocumented)
@@ -7053,14 +7126,14 @@ export interface SqliteChange {
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
-export class SqliteChangesetReader implements Disposable {
+export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> implements Disposable {
     [Symbol.dispose](): void;
     protected constructor(
-    db: AnyDb);
+    db: TDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db: AnyDb;
+    readonly db: TDb;
     get disableSchemaCheck(): boolean;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
     getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
@@ -7079,9 +7152,9 @@ export class SqliteChangesetReader implements Disposable {
     isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
     get isIndirect(): boolean;
     get op(): SqliteChangeOp;
-    static openFile(args: {
+    static openFile<TDb extends SqliteChangesetReaderDb>(args: {
         readonly fileName: string;
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb>;
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
@@ -7106,11 +7179,14 @@ export class SqliteChangesetReader implements Disposable {
 }
 
 // @beta
-export interface SqliteChangesetReaderArgs {
-    readonly db: AnyDb;
+export interface SqliteChangesetReaderArgs<TDb extends SqliteChangesetReaderDb = AnyDb> {
+    readonly db: TDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }
+
+// @beta
+export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
 
 // @public
 export class SQLiteDb {
@@ -7492,6 +7568,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;

@@ -7,7 +7,7 @@
  */
 
 import { Geometry } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
+import { AngleSweep, ExteriorFractionSelector } from "../geometry3d/AngleSweep";
 
 /**
  * Enumeration of condition for extending a curve beyond start or end point.
@@ -78,27 +78,21 @@ export class CurveExtendOptions {
   public static resolveRadiansToValidSweepFraction(
     extendParam: VariantCurveExtendParameter | undefined, radians: number, sweep: AngleSweep,
   ): { fraction: number, isValid: boolean } {
-    extendParam ??= false;
-    let fraction = sweep.radiansToSignedPeriodicFraction(radians);
+    let fraction = sweep.radiansToSignedPeriodicFraction(radians, 0, ExteriorFractionSelector.Closer);
     let isValid = true;
-    if (!sweep.isRadiansInSweep(radians)) {
-      const fractionPeriod = sweep.fractionPeriod();
+    if (!Geometry.isIn01(fraction)) {
       const mode0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendParam, 0);
       const mode1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendParam, 1);
-      if (mode0 !== CurveExtendMode.None) {
-        if (mode1 === CurveExtendMode.None) { // only extend to negative
-          if (fraction > 1.0)
-            fraction -= fractionPeriod;
-        }
-      } else if (mode1 !== CurveExtendMode.None) { // only extend to positive
-        if (fraction < 0.0)
-          fraction += fractionPeriod;
-      } else { // no extension allowed
+      if (mode0 === CurveExtendMode.None && mode1 === CurveExtendMode.None) {
         fraction = Geometry.clamp(fraction, 0, 1);
         isValid = false;
+      } else if (mode1 === CurveExtendMode.None && mode0 !== CurveExtendMode.None) {
+        fraction = sweep.radiansToSignedPeriodicFraction(radians, 0, ExteriorFractionSelector.Negative);
+      } else if (mode0 === CurveExtendMode.None && mode1 !== CurveExtendMode.None) {
+        fraction = sweep.radiansToSignedPeriodicFraction(radians, 0, ExteriorFractionSelector.Positive);
       }
     }
-    return { fraction, isValid };
+  return { fraction, isValid };
   }
 
   /** Call [[resolveRadiansToValidSweepFraction]] and return only the fraction. */

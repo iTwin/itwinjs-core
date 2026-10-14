@@ -1490,7 +1490,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
-    if (meshMode === GltfMeshMode.Points && !this._vertexTableRequired) {
+if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
       const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
@@ -2049,6 +2049,9 @@ export abstract class GltfReader {
       vertexCount = bufferData.count ?? 0;
       featureIdBuffers.set(featureIdDesc.attribute, {buffer, stride: bufferView.stride});
     }
+
+    if (featureIdBuffers.size === 0)
+      return undefined;
 
     const itwinFeatureIndices: number[] = [];
     const vertexPropsMap = new Map<string, string>();

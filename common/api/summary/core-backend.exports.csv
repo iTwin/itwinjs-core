@@ -18,6 +18,7 @@ preview;class;AuxCoordSystem3d
 public;class;AuxCoordSystemSpatial
 preview;class;AuxCoordSystemSpatial
 beta;interface;AvailableCoordinateReferenceSystemProps
+beta;interface;AvailableVerticalCoordinateReferenceSystemProps
 beta;interface;AzureBlobStorageCredentials
 public;interface;BackendHubAccess
 public;enum;BackendLoggerCategory
@@ -118,6 +119,9 @@ beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
 beta;interface;CreateTerminatorGeometryArgs
+beta;interface;CSVColumnMapping
+beta;interface;CSVFileImportOptions
+beta;interface;CSVImportOptions
 beta;interface;CustomHandledProperty
 beta;interface;DataTransformationResources
 beta;enum;DataTransformationStrategy
@@ -280,6 +284,7 @@ beta;class;ExternalSourceGroup
 beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
+beta;interface;FieldFormattingArgs
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
 internal;type;FindFontId
@@ -326,6 +331,8 @@ preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
 beta;function;getAvailableCRSUnits
+beta;function;getAvailableVerticalCoordinateReferenceSystems
+beta;interface;GetAvailableVerticalCoordinateReferenceSystemsArgs
 beta;interface;GetResolvedSettingDefOptions
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
@@ -620,6 +627,7 @@ beta;interface;SqliteChange
 beta;type;SqliteChangeOp
 beta;class;SqliteChangesetReader
 beta;interface;SqliteChangesetReaderArgs
+beta;type;SqliteChangesetReaderDb
 public;class;SQLiteDb
 public;namespace;SQLiteDb
 internal;interface;BlobIO

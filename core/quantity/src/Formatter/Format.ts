@@ -8,7 +8,7 @@
 
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { UnitProps, UnitsProvider } from "../Interfaces";
+import { SyncUnitsProvider, UnitProps, UnitsProvider } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision, getTraitString,
   parseFormatTrait, parseFormatType, parsePrecision, parseRatioFormatType, parseRatioType, parseScientificType, parseShowSignOption,
@@ -43,7 +43,7 @@ export class BaseFormat {
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _ratioFormatType?: RatioFormatType; // defaults to Decimal if not specified
-  protected _ratioSeparator?: string; // default is ":"; separator character used in ratio formatting
+  protected _ratioSeparator?: string; // default is ":"; separator string used in ratio formatting
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -179,11 +179,12 @@ export class BaseFormat {
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
 
-      if (undefined !== formatProps.ratioSeparator) { // optional; default is 0.0
+      if (undefined !== formatProps.ratioSeparator) { // optional; default is ":"
         if (typeof (formatProps.ratioSeparator) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
-        if (formatProps.ratioSeparator.length !== 1)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be a one character string.`);
+        const nonSpaceCharacters = [...formatProps.ratioSeparator].filter((character) => character !== " ");
+        if (nonSpaceCharacters.length !== 1 || nonSpaceCharacters[0].trim().length === 0)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should contain exactly one non-space character, optionally surrounded by spaces.`);
         this._ratioSeparator = formatProps.ratioSeparator;
       } else {
         this._ratioSeparator = ":"; // Apply default
@@ -449,6 +450,13 @@ export class Format extends BaseFormat {
     return actualFormat;
   }
 
+  /** Create a `Format` from `FormatProps` using a synchronous unit provider. */
+  public static createFromJSONSync(name: string, unitsProvider: SyncUnitsProvider, formatProps: FormatProps): Format {
+    const actualFormat = new Format(name);
+    actualFormat.fromFullyResolvedJSON(resolveFormatPropsSync(name, unitsProvider, formatProps));
+    return actualFormat;
+  }
+
   public static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps) {
     const actualFormat = new Format(name);
     actualFormat.fromFullyResolvedJSON(formatProps);
@@ -522,65 +530,69 @@ export class Format extends BaseFormat {
   }
 }
 
-async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+function validateCompositeUnitInput(name: string, label?: string): void {
   if (typeof name !== "string" || (undefined !== label && typeof label !== "string")) {
     throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
   }
+}
 
-  const unit = await provider.findUnitByName(name);
+function validateResolvedUnit(unit: UnitProps | undefined, errorMessage: string): UnitProps {
   if (!unit || !unit.isValid) {
-    throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
+    throw new QuantityError(QuantityStatus.InvalidJson, errorMessage);
   }
 
   return unit;
 }
 
-async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+function getAzimuthBearingUnitName(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit"): string | undefined {
   const unitName = jsonObj[key];
-  if (undefined !== unitName) {
-    if (typeof unitName !== "string") {
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
-    }
-
-    const unit = await provider.findUnitByName(unitName);
-    if (!unit || !unit.isValid) {
-      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`);
-    }
-
-    return unit;
+  if (undefined !== unitName && typeof unitName !== "string") {
+    throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
   }
 
-  return undefined;
+  return unitName;
 }
 
-async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
-  let units: ResolvedFormatUnitSpec[] | undefined;
-  if (undefined !== jsonObj.composite?.units) {
-    units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
-      const unit = await resolveCompositeUnit(unitsProvider, entry.name);
-      return { unit, label: entry.label };
-    }));
+async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+  validateCompositeUnitInput(name, label);
+  return validateResolvedUnit(await provider.findUnitByName(name), `Invalid unit name '${name}'.`);
+}
 
-    // For Ratio formats with 2 units: validate both units have the same phenomenon
-    const formatType = parseFormatType(jsonObj.type, formatName);
-    if (formatType === FormatType.Ratio && units.length === 2) {
-      const phenomenon1 = units[0].unit.phenomenon;
-      const phenomenon2 = units[1].unit.phenomenon;
-      if (phenomenon1 !== phenomenon2) {
-        throw new QuantityError(
-          QuantityStatus.InvalidJson,
-          `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
-        );
-      }
+function resolveCompositeUnitSync(provider: SyncUnitsProvider, name: string, label?: string): UnitProps {
+  validateCompositeUnitInput(name, label);
+  return validateResolvedUnit(provider.findUnitByNameSync(name), `Invalid unit name '${name}'.`);
+}
+
+async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+  const unitName = getAzimuthBearingUnitName(formatName, jsonObj, key);
+  return undefined === unitName ? undefined : validateResolvedUnit(
+    await provider.findUnitByName(unitName),
+    `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`,
+  );
+}
+
+function resolveAzimuthBearingUnitSync(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: SyncUnitsProvider): UnitProps | undefined {
+  const unitName = getAzimuthBearingUnitName(formatName, jsonObj, key);
+  return undefined === unitName ? undefined : validateResolvedUnit(
+    provider.findUnitByNameSync(unitName),
+    `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`,
+  );
+}
+
+function validateResolvedFormatProps(formatName: string, jsonObj: FormatProps, units: ResolvedFormatUnitSpec[] | undefined, azimuthBaseUnit: UnitProps | undefined, revolutionUnit: UnitProps | undefined): void {
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Ratio && units?.length === 2) {
+    const phenomenon1 = units[0].unit.phenomenon;
+    const phenomenon2 = units[1].unit.phenomenon;
+    if (phenomenon1 !== phenomenon2) {
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has 2-unit composite with different phenomena. Both units must have the same phenomenon. Found '${phenomenon1}' and '${phenomenon2}'.`
+      );
     }
   }
 
-  let azimuthBaseUnit, revolutionUnit;
-  const type = parseFormatType(jsonObj.type, formatName);
-  if (type === FormatType.Azimuth || type === FormatType.Bearing) {
-    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
-    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
-
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
     if (!revolutionUnit) {
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
     }
@@ -589,7 +601,9 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
     }
   }
+}
 
+function createResolvedFormatProps(jsonObj: FormatProps, units: ResolvedFormatUnitSpec[] | undefined, azimuthBaseUnit: UnitProps | undefined, revolutionUnit: UnitProps | undefined): ResolvedFormatProps {
   return {
     ...jsonObj,
     azimuthBaseUnit,
@@ -599,4 +613,42 @@ async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvid
       units,
     } : undefined,
   };
+}
+
+async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+  const units = undefined === jsonObj.composite?.units ? undefined : await Promise.all(jsonObj.composite.units.map(async (entry) => ({
+    // Label is intentionally not validated, matching master: existing JSON may carry a non-string label (e.g. null).
+    unit: await resolveCompositeUnit(unitsProvider, entry.name),
+    label: entry.label,
+  })));
+
+  let azimuthBaseUnit: UnitProps | undefined;
+  let revolutionUnit: UnitProps | undefined;
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
+    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
+  }
+
+  validateResolvedFormatProps(formatName, jsonObj, units, azimuthBaseUnit, revolutionUnit);
+  return createResolvedFormatProps(jsonObj, units, azimuthBaseUnit, revolutionUnit);
+}
+
+function resolveFormatPropsSync(formatName: string, unitsProvider: SyncUnitsProvider, jsonObj: FormatProps): ResolvedFormatProps {
+  const units = undefined === jsonObj.composite?.units ? undefined : jsonObj.composite.units.map((entry) => ({
+    // Keep in sync with resolveFormatProps: label is intentionally not validated.
+    unit: resolveCompositeUnitSync(unitsProvider, entry.name),
+    label: entry.label,
+  }));
+
+  let azimuthBaseUnit: UnitProps | undefined;
+  let revolutionUnit: UnitProps | undefined;
+  const formatType = parseFormatType(jsonObj.type, formatName);
+  if (formatType === FormatType.Azimuth || formatType === FormatType.Bearing) {
+    azimuthBaseUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = resolveAzimuthBearingUnitSync(formatName, jsonObj, "revolutionUnit", unitsProvider);
+  }
+
+  validateResolvedFormatProps(formatName, jsonObj, units, azimuthBaseUnit, revolutionUnit);
+  return createResolvedFormatProps(jsonObj, units, azimuthBaseUnit, revolutionUnit);
 }

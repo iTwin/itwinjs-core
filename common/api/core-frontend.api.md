@@ -114,6 +114,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatSpecHandle } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatsProviderContext } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { FormattingReadyCollector } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
@@ -316,6 +317,7 @@ import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryOverride } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
+import { SyncFormatsProvider } from '@itwin/core-quantity';
 import { SyncMode } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
@@ -1762,6 +1764,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // @beta
+    pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
     // @deprecated
@@ -2263,6 +2267,7 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
+    direction: "geoToIModel" | "iModelToGeo";
     // (undocumented)
     isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
@@ -3558,15 +3563,17 @@ export class FlyViewTool extends ViewManip {
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
 
 // @internal
-export class FormatsProviderManager implements FormatsProvider {
+export class FormatsProviderManager implements FormatsProvider, SyncFormatsProvider {
     constructor(_formatsProvider: FormatsProvider);
     // (undocumented)
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
-    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
+    getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void;
 }
 
 // @beta @deprecated
@@ -5108,6 +5115,8 @@ export class IModelApp {
     static resetFormatsProvider(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
+    // @beta
+    static setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void>;
     static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
@@ -8141,6 +8150,13 @@ export interface PullChangesOptions {
     progressInterval?: number;
 }
 
+// @beta
+export interface PushChangesOptions {
+    abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    downloadProgressInterval?: number;
+}
+
 // @public
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -8268,6 +8284,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
+    // @internal
+    runAndWaitForReload(action: () => void): Promise<void>;
     // @internal
     protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
@@ -9940,6 +9958,11 @@ export function setBasicAuthorization(headers: Headers, credentials: RequestBasi
 // @internal (undocumented)
 export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
 
+// @beta
+export interface SetFormatsProviderOptions {
+    readonly unitSystem?: UnitSystemKey;
+}
+
 // @internal
 export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
 
@@ -10727,6 +10750,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
+    // (undocumented)
+    get outputColorTexture(): TextureHandle | undefined;
     // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)

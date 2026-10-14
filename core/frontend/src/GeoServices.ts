@@ -22,6 +22,8 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
  * @internal exported strictly for tests.
  */
 export interface CoordinateConverterOptions {
+  /** Conversion direction included in error diagnostics. */
+  direction: "geoToIModel" | "iModelToGeo";
   isIModelClosed: () => boolean;
   /** Asynchronously convert each point. The resultant array should have the same number and order of points as the input. */
   requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
@@ -72,6 +74,7 @@ export class CoordinateConverter {
   protected readonly _maxPointsPerRequest: number;
   protected readonly _isIModelClosed: () => boolean;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  private readonly _direction: CoordinateConverterOptions["direction"];
   // If true, [[dispatch]] will schedule another dispatch after it receives a response.
   // This is needed when all the points requested after the most recent dispatch were included in the currently-in-flight request -
   // _pending will be empty but new callers will be awaiting the results of the in-flight request.
@@ -99,6 +102,7 @@ export class CoordinateConverter {
     this._maxPointsPerRequest = Math.max(1, opts.maxPointsPerRequest ?? 300);
     this._isIModelClosed = opts.isIModelClosed;
     this._requestPoints = opts.requestPoints;
+    this._direction = opts.direction;
 
     this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
     this._pending = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
@@ -141,7 +145,10 @@ export class CoordinateConverter {
             this._cache.set(requests[j], results[j]);
         }
       }).catch((err) => {
-        Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, err);
+        Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, err, () => ({
+          direction: this._direction,
+          pointCount: requests.length,
+        }));
       });
 
       promises.push(promise);
@@ -278,11 +285,13 @@ export class GeoConverter {
   constructor(opts: GeoConverterOptions) {
     const isIModelClosed = opts.isIModelClosed;
     this._geoToIModel = new CoordinateConverter({
+      direction: "geoToIModel",
       isIModelClosed,
       requestPoints: async (geoCoords: XYAndZ[]) => opts.toIModelCoords({ source: opts.datum, geoCoords }),
     });
 
     this._iModelToGeo = new CoordinateConverter({
+      direction: "iModelToGeo",
       isIModelClosed,
       requestPoints: async (iModelCoords: XYAndZ[]) => opts.fromIModelCoords({ target: opts.datum, iModelCoords }),
     });

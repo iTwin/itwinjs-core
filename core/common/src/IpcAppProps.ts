@@ -28,10 +28,30 @@ export interface PullChangesOptions {
   enableCancellation?: boolean;
 }
 
-/** Get IPC channel name used for reporting progress of pulling changes into iModel.
+/** Options for pushing changes to iModel.
  * @internal
  */
-export const getPullChangesIpcChannel = (iModelId: string) => `${ipcAppChannels.functions}/pullChanges/${iModelId}`;
+export interface PushChangesOptions {
+  /** Enables reporting the progress of downloading the changesets that must be merged before pushing. */
+  reportDownloadProgress?: boolean;
+  /** Interval for reporting download progress (in milliseconds). */
+  downloadProgressInterval?: number;
+  /** Enables checks for abort. Currently only observed while downloading. */
+  enableCancellation?: boolean;
+}
+
+/** Get IPC channel name used for reporting progress of pulling changes into iModel.
+ * @param key the key of the briefcase being pulled into.
+ * @internal
+ */
+export const getPullChangesIpcChannel = (key: string) => `${ipcAppChannels.functions}/pullChanges/${key}`;
+
+/** Get IPC channel name used for reporting the progress of the changeset download that [[IpcAppFunctions.pushChanges]] performs before
+ * uploading. Kept distinct from [[getPullChangesIpcChannel]] so that a listener attached for a pull never observes a push's download.
+ * @param key the key of the briefcase being pushed from.
+ * @internal
+ */
+export const getPushChangesIpcChannel = (key: string) => `${ipcAppChannels.functions}/pushChanges/pullProgress/${key}`;
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -191,10 +211,12 @@ export interface IpcAppFunctions {
 
   /** see BriefcaseConnection.pullChanges */
   pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
-  /** Cancels pull of changes. */
+  /** Cancels the download of changesets initiated by [[pullChanges]]. */
   cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
-  pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+  pushChanges: (key: string, description: string, options?: PushChangesOptions) => Promise<ChangesetIndexAndId>;
+  /** Cancels the download of changesets that [[pushChanges]] performs before uploading. Has no effect once uploading has begun. */
+  cancelPushChangesRequest: (key: string) => Promise<void>;
   /** Cancels currently pending or active generation of tile content.  */
   cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Allow ratio separators to be a string with one non-whitespace character",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

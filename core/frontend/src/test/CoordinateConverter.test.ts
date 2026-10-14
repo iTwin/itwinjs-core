@@ -32,9 +32,10 @@ class Connection extends BlankConnection {
 }
 
 class Converter extends CoordinateConverter {
-  public constructor(opts: Omit<CoordinateConverterOptions, "isIModelClosed"> & { iModel: BlankConnection }) {
+  public constructor(opts: Omit<CoordinateConverterOptions, "isIModelClosed" | "direction"> & { iModel: BlankConnection }) {
     super({
       ...opts,
+      direction: "geoToIModel",
       isIModelClosed: () => opts.iModel.isClosed,
     });
   }

@@ -674,6 +674,45 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xd"))).to.be.true;
       });
     });
+
+    it("picks from the correct texture after toggling rendersToScreen", () => {
+      class SquareDecorator {
+        private readonly _graphic: RenderGraphic;
+
+        public constructor(id: string, vp: Viewport) {
+          const pts = [
+            new Point3d(-50, -50, 0), new Point3d(50, -50, 0), new Point3d(50, 50, 0), new Point3d(-50, 50, 0), new Point3d(-50, -50, 0),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+        }
+
+        public decorate(context: DecorateContext): void {
+          context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+        }
+      }
+
+      testBlankViewport((vp) => {
+        addDecorator(new SquareDecorator("0xa", vp));
+        vp.renderFrame();
+
+        // Simulate switching back to on-screen rendering, for example after a secondary viewport is closed
+        vp.rendersToScreen = false;
+        vp.rendersToScreen = true;
+
+        const features = readUniqueFeatures(vp, new ViewRect(0, 0, 8, 8));
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+      });
+    });
   });
 
   describe("Map layers", () => {

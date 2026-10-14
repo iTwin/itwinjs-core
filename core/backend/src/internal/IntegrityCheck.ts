@@ -107,8 +107,11 @@ type IntegrityCheckResultRow<K extends IntegrityCheckKey> = IntegrityCheckResult
  * Return type for quick integrity check
  */
 export interface QuickIntegrityCheckResultRow {
+  /** Name of the integrity check. */
   check: string;
+  /** Whether the check passed. Quick checks do not include problem details. */
   passed: boolean;
+  /** Elapsed time for the check, in seconds. */
   elapsedSeconds: string;
 }
 
@@ -116,8 +119,11 @@ export interface QuickIntegrityCheckResultRow {
  * Return type for Check Data Columns integrity check
  */
 export interface CheckDataColumnsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Mapped data table containing a missing column. */
   table: string;
+  /** Name of the missing nonvirtual physical column. */
   column: string;
 }
 
@@ -125,9 +131,13 @@ export interface CheckDataColumnsResultRow {
  * Return type for Check EC Profile integrity check
  */
 export interface CheckECProfileResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Type of EC profile object, such as a table, index, or iModel trigger. */
   type: string;
+  /** Name of the EC profile object. */
   name: string;
+  /** Description of the missing or mismatching object definition. */
   issue: string;
 }
 
@@ -135,11 +145,17 @@ export interface CheckECProfileResultRow {
  * Return type for Check Navigation Class Ids integrity check
  */
 export interface CheckNavClassIdsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** ID of the source instance row containing the navigation property. */
   id: string;
+  /** Declaring or scanned class for the source row; rows from derived classes may be included. */
   class: string;
+  /** Name of the navigation property. */
   property: string;
+  /** ID of the referenced instance stored by the navigation property. */
   navId: string;
+  /** Relationship class ID stored by the navigation property, not the target instance class ID. */
   navClassId: string;
 }
 
@@ -147,11 +163,17 @@ export interface CheckNavClassIdsResultRow {
  * Return type for Check Navigation Ids integrity check
  */
 export interface CheckNavIdsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** ID of the source instance row containing the navigation property. */
   id: string;
+  /** Declaring or scanned class for the source row; rows from derived classes may be included. */
   class: string;
+  /** Name of the navigation property. */
   property: string;
+  /** ID of the referenced instance stored by the navigation property. */
   navId: string;
+  /** Class queried for the referenced row: the first relationship constraint class in the navigation direction, including derived classes. */
   primaryClass: string;
 }
 
@@ -159,11 +181,17 @@ export interface CheckNavIdsResultRow {
  * Return type for Check Link Table Foreign Key Class Ids integrity check
  */
 export interface CheckLinkTableFkClassIdsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** ID of the relationship row containing the foreign key. */
   id: string;
+  /** Link-table relationship class. */
   relationship: string;
+  /** Endpoint class-ID property: SourceECClassId or TargetECClassId. */
   property: string;
+  /** Source or target endpoint instance ID stored in the link table. */
   keyId: string;
+  /** Source or target endpoint class ID; the check verifies that the class exists. */
   keyClassId: string;
 }
 
@@ -171,11 +199,17 @@ export interface CheckLinkTableFkClassIdsResultRow {
  * Return type for Check Link Table Foreign Key Ids integrity check
  */
 export interface CheckLinkTableFkIdsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** ID of the relationship row containing the foreign key. */
   id: string;
+  /** Link-table relationship class. */
   relationship: string;
+  /** Endpoint instance-ID property: SourceECInstanceId or TargetECInstanceId. */
   property: string;
+  /** Source or target endpoint instance ID stored in the link table. */
   keyId: string;
+  /** Class queried for the referenced endpoint row: the first endpoint constraint class, including derived classes. */
   primaryClass: string;
 }
 
@@ -183,10 +217,15 @@ export interface CheckLinkTableFkIdsResultRow {
  * Return type for Check Class Ids integrity check
  */
 export interface CheckClassIdsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Declaring or scanned class for the row; rows from derived classes may be included. */
   class: string;
+  /** ECInstanceId for primary/joined results, or the physical RowId for overflow results. */
   id: string;
+  /** Persisted ECClassId value with no matching class definition. */
   classId: string;
+  /** Check category: "primary", "joined", or "overflow". */
   type: string;
 }
 
@@ -194,8 +233,11 @@ export interface CheckClassIdsResultRow {
  * Return type for Check Data Schema integrity check
  */
 export interface CheckDataSchemaResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Type of missing mapped schema object, such as a table or index. */
   type: string;
+  /** Name of the missing mapped schema object. */
   name: string;
 }
 
@@ -203,7 +245,9 @@ export interface CheckDataSchemaResultRow {
  * Return type for Check Schema Load integrity check
  */
 export interface CheckSchemaLoadResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Name of the schema that the schema manager could not load. */
   schema: string;
 }
 
@@ -211,10 +255,15 @@ export interface CheckSchemaLoadResultRow {
  * Return type for Check Missing Child Rows integrity check
  */
 export interface CheckMissingChildRowsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** Class used to identify the checked rows: "BisCore:Element". */
   class: string;
+  /** ID of the existing bis_Element row missing a required child row. */
   id: string;
+  /** Persisted ECClassId of the existing element row. */
   classId: string;
+  /** Comma-separated names of all child tables checked for the row, not only tables with a missing child row. */
   missingRowInTables: string;
 }
 
@@ -222,13 +271,21 @@ export interface CheckMissingChildRowsResultRow {
  * Return type for Check Diverged Property Maps integrity check
  */
 export interface CheckDivergedPropMapsResultRow {
+  /** Sequential result row number. */
   sno: number;
+  /** ID of the derived class whose inherited property map diverges. */
   derivedClassId: Id64String;
+  /** Name of the derived class whose inherited property map diverges. */
   derivedClassName: string;
+  /** ID of the base class whose mapping was compared with the derived class. */
   baseClassId: Id64String;
+  /** Name of the base class whose mapping was compared with the derived class. */
   baseClassName: string;
+  /** Access path of the inherited property with different column mappings. */
   propertyName: string;
+  /** Base class mapping, formatted as table.column. */
   baseColumn: string;
+  /** Derived class mapping, formatted as table.column. */
   divergedColumn: string;
 }
 

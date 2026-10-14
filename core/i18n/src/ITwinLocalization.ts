@@ -205,23 +205,9 @@ export class ITwinLocalization implements Localization {
         if (!err)
           return resolve();
 
-        // Here we got a non-null err object.
-        // This method is called when the system has attempted to load the resources for the namespaces for each possible locale.
-        // For example 'fr-ca' might be the most specific locale, in which case 'fr' and 'en' are fallback locales.
-        // Using Backend from i18next-http-backend, err will be an array of strings of each namespace it tried to read and its locale.
-        // There might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible locale.
-        let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
-
-        try {
-          for (const thisError of err) {
-            if (typeof thisError === "string")
-              locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
-          }
-        } catch {
-          locales = [];
-        }
-        // if we removed every locale from the array, it wasn't loaded.
-        if (locales.length === 0)
+        // i18next can return errors from other concurrent namespace loads in this callback.
+        const wasLoaded = this.getLanguageList().some((language) => this.i18next.hasResourceBundle(language, name));
+        if (!wasLoaded)
           Logger.logError("i18n", `No resources for namespace ${name} could be loaded`);
 
         resolve();

@@ -363,6 +363,8 @@ export interface EditorPosition {
 // @public
 export interface EnumerationChoice {
     // (undocumented)
+    description?: string;
+    // (undocumented)
     label: string;
     // (undocumented)
     value: string | number;

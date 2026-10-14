@@ -42,6 +42,14 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 > **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
 
+#### Synchronous local data
+
+Use the optional [SyncUnitsProvider]($quantity) capability when a caller must construct a formatter without awaiting a provider. [BasicUnitsProvider]($quantity) implements it for the bundled canonical BIS units.
+
+These methods use local data only. `BasicUnitsProvider` returns `BadUnit` for an unknown name. It returns an identity conversion with `error: true` when a unit is unavailable or the units are incompatible. Treat either result as a miss and use the plain-value fallback instead of loading a schema or awaiting.
+
+A format provider can implement [SyncFormatsProvider]($quantity) when it can return a locally available [FormatDefinition]($quantity) through `getFormatSync`. The method returns `undefined` when the format is not available synchronously; it does not make schema loading synchronous. A provider that delegates the current lookup to another provider should forward the optional lookup context unchanged; omit it only when starting an independent lookup.
+
 #### createUnitsProvider
 
 [createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `bisUnitsPolicy: "preferBundled"` to invert precedence so the bundled BIS units win instead.
@@ -95,14 +103,26 @@ A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity
 
 #### SchemaFormatsProvider
 
-[SchemaFormatsProvider]($ecschema-metadata) retrieves formats from EC schemas using a [SchemaContext]($ecschema-metadata). It requires a [UnitSystemKey]($quantity) to filter formats according to the current unit system.
+[SchemaFormatsProvider]($ecschema-metadata) retrieves formats from EC schemas using a [SchemaContext]($ecschema-metadata). An optional [UnitSystemKey]($quantity) selects formats for a unit system.
+
+A schema-backed provider can implement [SyncFormatsProvider]($quantity) for definitions that are already loaded. Treat an `undefined` result as a synchronous cache miss and use the asynchronous provider path when loading is acceptable.
 
 **Characteristics:**
 
 - Loads formats from KindOfQuantity definitions in schemas
-- Filters formats by unit system preference group — see [Unit Systems and UnitSystemKey](../definitions/Units.md#unit-systems-and-unitsystemkey) for how each key maps to EC UnitSystems
-- Throws error for invalid [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name)
+- Filters formats by unit system preference group. See [Unit Systems and UnitSystemKey](../definitions/Units.md#unit-systems-and-unitsystemkey) for how each key maps to EC UnitSystems
+- Throws an error for invalid [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name)
 - Read-only format provider
+
+**Format selection**
+
+When a unit system is provided, SchemaFormatsProvider checks a KindOfQuantity in this order:
+
+1. Presentation formats, using the unit-system preference order and the order declared by the KindOfQuantity
+2. The persistence unit, represented as a basic decimal format when its unit system matches
+3. The default presentation format
+
+Without a unit system, it uses the default presentation format. `getFormatSync` follows the same order but reads only schema metadata already loaded in the SchemaContext. If required metadata is not cached, it returns `undefined` instead of loading a schema; use `getFormat` when loading is acceptable.
 
 **Example: Simple Formatting**
 
@@ -195,6 +215,10 @@ When you only have a KindOfQuantity name, you can use a SchemaContext to find th
 - **Chain Resolution**: Supports chains of references with circular reference detection.
 - **Cascade Notifications**: When adding or removing a format, the `onFormatsChanged` event includes not only the modified format but also all formats that reference it (directly or indirectly).
 - **Fallback Provider**: String references can resolve through an optional fallback provider if the target format isn't found in the format set.
+
+`FormatSetFormatsProvider` also implements `SyncFormatsProvider`. `getFormatSync` resolves local entries and synchronous fallbacks without awaiting. It returns `undefined` when the format is missing or the fallback is asynchronous.
+
+Both lookups forward the lookup context to the fallback provider to stop fallback cycles. The cycle check tracks providers, not format names: if a fallback calls back into the same `FormatSetFormatsProvider` with that context, the lookup returns `undefined`, even for a different format. A fallback that needs an independent lookup should call without the context.
 
 **Example: FormatSet with String References**
 

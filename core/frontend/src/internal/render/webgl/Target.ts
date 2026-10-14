@@ -186,6 +186,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public get compositor() { return this._compositor; }
+  public get outputColorTexture(): TextureHandle | undefined { return this._fbo?.getColor(0); }
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
