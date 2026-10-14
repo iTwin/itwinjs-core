@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
 import { Element } from "../../Element";
@@ -13,6 +14,9 @@ import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl, ProgressStatus } from "../../core-backend";
 import { withEditTxn } from "../../EditTxn";
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -282,6 +286,126 @@ describe("BriefcaseManager", async () => {
 
       await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
       await testUtility.deleteTestIModel();
+    });
+  });
+
+  describe("TxnManager.onPrePushValidation", () => {
+    const user2 = "user2 mock token";
+    const user3 = "user3 mock token";
+
+    /** Creates an empty iModel and opens a briefcase with one local, unpushed change to the root subject's user label. */
+    async function setupBriefcaseWithLocalChange(testName: string) {
+      HubMock.startup(testName, KnownTestLocations.outputDir);
+
+      const iTwinId = HubMock.iTwinId;
+      const iModelId = await HubWrappers.recreateIModel({ accessToken: user2, iTwinId, iModelName: testName, noLocks: true });
+
+      const briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user2, iTwinId, iModelId });
+      briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      const rootEl = briefcase.elements.getRootSubject();
+      rootEl.userLabel = "local change";
+      withEditTxn(briefcase, (txn) => txn.updateElement(rootEl.toJSON()));
+      assert.isTrue(briefcase.txns.hasPendingTxns);
+
+      return { iTwinId, iModelId, briefcase };
+    }
+
+    it("delays the push until the listener's promise resolves", async () => {
+      const { briefcase } = await setupBriefcaseWithLocalChange("prePushDelay");
+      const changesetBeforePush = briefcase.changeset.id;
+
+      const events: string[] = [];
+      let changesetWhenListenerFinished: string | undefined;
+      let releaseListener!: () => void;
+      const gate = new Promise<void>((resolve) => { releaseListener = resolve; });
+      let listenerStarted!: () => void;
+      const started = new Promise<void>((resolve) => { listenerStarted = resolve; });
+
+      const removeListener = briefcase.txns.onPrePushValidation.addListener(async () => {
+        events.push("listener started");
+        listenerStarted();
+        await gate;
+        changesetWhenListenerFinished = briefcase.changeset.id;
+        events.push("listener finished");
+      });
+
+      try {
+        const pushPromise = briefcase.pushChanges({ accessToken: user2, description: "delayed push" }).then(() => { events.push("push settled"); });
+
+        await started;
+        events.push("listener released");
+        releaseListener();
+        await pushPromise;
+
+        assert.deepEqual(events, ["listener started", "listener released", "listener finished", "push settled"]);
+        assert.strictEqual(changesetWhenListenerFinished, changesetBeforePush, "nothing should be pushed before the listener resolves");
+        assert.notStrictEqual(briefcase.changeset.id, changesetBeforePush, "push should complete once the listener resolves");
+        assert.isFalse(briefcase.txns.hasPendingTxns);
+      } finally {
+        releaseListener();
+        removeListener();
+      }
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+    });
+
+    it("includes a Txn written by the listener in the pushed changeset", async () => {
+      const { iTwinId, iModelId, briefcase } = await setupBriefcaseWithLocalChange("prePushWriteTxn");
+      const changesetBeforePush = briefcase.changeset.id;
+      const txnCountBeforePush = Array.from(briefcase.txns.queryTxns()).length;
+      let txnCountInListener = 0;
+
+      const removeListener = briefcase.txns.onPrePushValidation.addListener(async () => {
+        const rootEl = briefcase.elements.getRootSubject();
+        rootEl.description = "written during pre-push validation";
+        withEditTxn(briefcase, (txn) => txn.updateElement(rootEl.toJSON()));
+        txnCountInListener = Array.from(briefcase.txns.queryTxns()).length;
+      });
+
+      try {
+        await briefcase.pushChanges({ accessToken: user2, description: "push with pre-push txn" });
+      } finally {
+        removeListener();
+      }
+
+      assert.isAbove(txnCountInListener, txnCountBeforePush, "listener should have written a new Txn");
+      assert.notStrictEqual(briefcase.changeset.id, changesetBeforePush);
+      assert.isFalse(briefcase.txns.hasPendingTxns, "the listener's Txn should have been pushed, not left pending");
+
+      // A fresh briefcase at the tip only sees the listener's change if it was part of the pushed changeset.
+      const verifier = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user3, iTwinId, iModelId });
+      const pushedRoot = verifier.elements.getRootSubject();
+      assert.strictEqual(pushedRoot.userLabel, "local change");
+      assert.strictEqual(pushedRoot.description, "written during pre-push validation");
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user3, verifier);
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+    });
+
+    it("aborts the push when the listener rejects", async () => {
+      const { briefcase } = await setupBriefcaseWithLocalChange("prePushReject");
+      const changesetBeforePush = briefcase.changeset.id;
+
+      const removeListener = briefcase.txns.onPrePushValidation.addListener(async () => {
+        throw new Error("validation failed");
+      });
+
+      try {
+        await assert.isRejected(briefcase.pushChanges({ accessToken: user2, description: "rejected push" }), "validation failed");
+      } finally {
+        removeListener();
+      }
+
+      assert.strictEqual(briefcase.changeset.id, changesetBeforePush, "briefcase should not have advanced");
+      assert.isTrue(briefcase.txns.hasPendingTxns, "local changes should still be pending");
+
+      // With the listener removed, the same changes can still be pushed.
+      await briefcase.pushChanges({ accessToken: user2, description: "retry push" });
+      assert.notStrictEqual(briefcase.changeset.id, changesetBeforePush);
+      assert.isFalse(briefcase.txns.hasPendingTxns);
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
     });
   });
 });
