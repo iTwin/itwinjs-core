@@ -431,7 +431,7 @@ export class BeAsyncEvent<T extends AsyncListener> {
     }
   }
 
-  /** Clear all listeners from this BeUnorderedEvent.
+  /** Clear all listeners from this BeAsyncEvent.
    * @note If called during `raiseEvent`, remaining listeners in the current iteration are skipped
    * immediately rather than being tombstoned.
    */
