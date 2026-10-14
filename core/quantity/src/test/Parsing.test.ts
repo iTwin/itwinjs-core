@@ -11,7 +11,7 @@ import { ParsedQuantity, ParseError, Parser } from "../Parser";
 import { ParserSpec } from "../ParserSpec";
 import { Quantity } from "../Quantity";
 import { BadUnit } from "../Unit";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
+import { TestUnitsProvider, withEmptyUnitLabels } from "./TestUtils/TestHelper";
 
 const logTestOutput = false;
 
@@ -981,6 +981,25 @@ describe("Synchronous Parsing tests:", async () => {
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult))
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
+    }
+  });
+
+  it("Parse using the format's units when their labels differ from the unit conversion labels", async () => {
+    // See https://github.com/iTwin/itwinjs-core/issues/9819
+    const emptyLabelFormat = new Format("test");
+    await emptyLabelFormat.fromJSON(withEmptyUnitLabels(unitsProvider), formatData);
+    const emptyLabelParserSpec = await ParserSpec.create(emptyLabelFormat, unitsProvider, outUnit, unitsProvider);
+
+    const testData = [
+      { value: "10", magnitude: 3.048 }, // unitless value uses the format's first unit (FT)
+      { value: "2' 6", magnitude: 0.762 }, // composite value uses the format's units by position (FT, IN)
+    ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry.value, emptyLabelParserSpec);
       expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult))
         expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
