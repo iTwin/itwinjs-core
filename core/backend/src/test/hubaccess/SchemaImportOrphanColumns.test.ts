@@ -18,7 +18,7 @@ chai.use(chaiAsPromised);
  * No semantic rebase, schema sync or dynamic schema involved. A schema adds an ElementMultiAspect subclass wide enough to
  * ALTER TABLE ADD shared columns to bis_ElementMultiAspect. discardChanges() then reverses the EcSchema txn (ec_* rows)
  * but skips the Ddl txn (TxnManager::ApplyTxnChanges returns early for TxnType::Ddl), so the physical columns remain
- * with no ec_Column rows. The next regular schema import validates strictly and fails.
+ * with no ec_Column rows. The next regular schema import used to fail the strict column-count check; it must now succeed.
  *
  * The dynamic-schema tests show that deleting properties/classes (allowed for dynamic schemas) is not a cause.
  */
@@ -134,7 +134,7 @@ describe("Schema import discard leaves orphan physical columns (Bug 2115705)", f
     }
   });
 
-  it("discardChanges after a schema import that added columns breaks the next schema import", async () => {
+  it("schema import succeeds after discarding a schema import that added columns", async () => {
     const accessToken = "user1";
     const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId: HubMock.iTwinId, iModelName: "DiscardOrphan" });
     briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId: HubMock.iTwinId, iModelId });
@@ -161,8 +161,8 @@ describe("Schema import discard leaves orphan physical columns (Bug 2115705)", f
     chai.expect(mapped).to.equal(baselineColumns.length);
     chai.expect(physical - mapped).to.equal(extraColumns, `orphan columns left in ${tableName}`);
 
-    // Any subsequent regular schema import (importSchemas / upgradeSchemas) validates strictly and fails.
-    await chai.expect(briefcase.importSchemaStrings([unrelatedSchema])).to.be.rejectedWith(
-      `DbTable '${tableName}' has ${mapped} non-virtual columns, but the physical table has ${physical} columns.`);
+    // A subsequent regular schema import must tolerate the unused shared columns left behind.
+    await briefcase.importSchemaStrings([unrelatedSchema]);
+    chai.expect(physicalColumns(briefcase).length).to.equal(physical);
   });
 });
