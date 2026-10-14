@@ -578,8 +578,11 @@ beta;interface;SettingsSchemas
 internal;const;settingsWorkspaceDbName
 public;class;Sheet
 preview;class;Sheet
+beta;class;SheetBorderPrototype
+beta;interface;SheetBorderPrototypeCreateArgs
 public;class;SheetBorderTemplate
 preview;class;SheetBorderTemplate
+beta;class;SheetHasSheetPrototype
 beta;class;SheetIndex
 beta;class;SheetIndexEntry
 beta;interface;SheetIndexEntryCreateArgs
@@ -595,6 +598,9 @@ beta;class;SheetInformationAspect
 public;class;SheetModel
 preview;class;SheetModel
 beta;class;SheetOwnsSheetInformationAspect
+beta;class;SheetPrototype
+beta;interface;SheetPrototypeCreateArgs
+beta;class;SheetPrototypeHasSheetBorderPrototype
 beta;class;SheetReference
 beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet

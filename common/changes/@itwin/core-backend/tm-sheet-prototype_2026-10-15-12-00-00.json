@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add SheetPrototype and SheetBorderPrototype elements and Sheet.sheetPrototype (requires BisCore 01.00.27)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

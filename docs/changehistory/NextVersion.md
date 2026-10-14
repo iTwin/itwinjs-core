@@ -8,6 +8,7 @@ publish: false
   - [Backend](#backend)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Sheet prototypes](#sheet-prototypes)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
@@ -30,6 +31,12 @@ Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties t
 The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
 The ECSQL version was bumped to `2.0.4.2`.
+
+### Sheet prototypes
+
+BisCore 01.00.27 graduates `SheetPrototype` and `SheetBorderPrototype` from the `DrawingProductionExperimental` schema. A [SheetPrototype]($backend) is a `DefinitionElement` sub-modeled by a [SheetModel]($backend) containing the template content for new sheets; it records a `scale`, `height`, and `width`, and may reference a [SheetBorderPrototype]($backend), which is sub-modeled by a [DrawingModel]($backend) holding the border graphics. A [Sheet]($backend) created from a prototype records it via the new `Sheet.sheetPrototype` navigation property.
+
+Both classes use `allowedSubModelClasses` to restrict their sub-models, and their `create` methods throw if the iModel's BisCore schema is older than 01.00.27. The corresponding props ([SheetPrototypeProps]($common), [SheetBorderPrototypeProps]($common), `SheetProps.sheetPrototype`) and navigation relationships ([SheetHasSheetPrototype]($backend), [SheetPrototypeHasSheetBorderPrototype]($backend)) are `@beta`.
 
 ## Common
 
