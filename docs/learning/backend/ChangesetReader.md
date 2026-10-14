@@ -413,7 +413,7 @@ To merge several changesets into one set of instances, use [ChangeUnifier.fromRe
 |---|---|---|
 | `propNames` | all properties | Properties to keep. `ECInstanceId` and `ECClassId` are always kept. Other properties are dropped before they are stored, which reduces memory use and spilling. |
 | `memoryBudgetBytes` | 64 MiB | Bytes of merged data held in memory before sorted runs are spilled to temporary files. `0` means never spill. |
-| `batchSize` | 1000 | Instances fetched from native code at a time while iterating `instances()`. |
+| `batchSize` | 1000 | Instances fetched from native code at a time while iterating `instances()`. A batch ends early once it holds 16 MiB of strings and binary data. |
 
 Differences from [PartialChangeUnifier]($backend):
 

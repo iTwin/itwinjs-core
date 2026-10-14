@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Code, ColorDef, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, GeometricElement2dProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, expect } from "chai";
 import * as path from "node:path";
@@ -14,6 +14,7 @@ import { ChangeUnifier, ChangeUnifierArgs } from "../../ChangeUnifier";
 import { BriefcaseDb, ChannelControl } from "../../core-backend";
 import { EditTxn } from "../../EditTxn";
 import { HubMock } from "../../internal/HubMock";
+import { _appendToNativeUnifier } from "../../internal/Symbols";
 import { IModelNative } from "../../internal/NativePlatform";
 import { ChangeUnifierCache, PartialChangeUnifier } from "../../PartialChangeUnifier";
 import { SqliteChangeOp } from "../../SqliteChangesetReader";
@@ -423,6 +424,33 @@ describe("ChangeUnifier", () => {
     const e4 = instances.find((instance) => instance.ECInstanceId === ids.e[4]);
     assert.strictEqual(e4?.Label, base64LikeLabel);
     assert.instanceOf(e4?.Bin, Uint8Array);
+  });
+
+  it("ends a native batch early once it holds 16 MiB of strings and binary", async () => {
+    const iModel = db();
+    const { model, category } = iModel.elements.getElementProps<GeometricElement2dProps>(ids.e[0]);
+    await iModel.locks.acquireLocks({ shared: model });
+    const blob = new Uint8Array(8 * 1024 * 1024);
+    try {
+      const inserted = [0, 1, 2].map(() => txn!.insertElement({ classFullName: "CuTest:CuElement", model, category, code: Code.createEmpty(), Bin: blob } as GeometricElement2dProps));
+      using reader = ChangesetReader.openInMemoryChanges({ db: iModel, rowOptions: { abbreviateBlobs: false } });
+      const nativeUnifier = new IModelNative.platform.ChangeUnifier({});
+      try {
+        reader[_appendToNativeUnifier](nativeUnifier);
+        const batchSizes: number[] = [];
+        const returnedIds: string[] = [];
+        for (let batch = nativeUnifier.step(1000); batch.length > 0; batch = nativeUnifier.step(1000)) {
+          batchSizes.push(batch.length);
+          returnedIds.push(...batch.map((instance) => instance.ECInstanceId as string));
+        }
+        assert.isAbove(batchSizes.length, 1, "24 MiB of blobs were returned in one batch");
+        assert.includeMembers(returnedIds, inserted);
+      } finally {
+        nativeUnifier.close();
+      }
+    } finally {
+      txn!.abandonChanges();
+    }
   });
 
   it("keeps only the requested properties", () => {

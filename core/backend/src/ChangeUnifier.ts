@@ -28,7 +28,8 @@ export interface ChangeUnifierArgs {
    */
   memoryBudgetBytes?: number;
   /** Number of instances fetched from the native layer at a time while iterating [[ChangeUnifier.instances]].
-   * Must be a positive integer. Defaults to 1000.
+   * Must be a positive integer. Defaults to 1000. A batch ends early once it holds 16 MiB of strings and binary data,
+   * so large instances (e.g. with unabbreviated geometry streams) do not pile up in memory.
    */
   batchSize?: number;
 }
