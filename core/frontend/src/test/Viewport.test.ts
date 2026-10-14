@@ -5,14 +5,17 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance,
+  AnalysisStyle, CategorySelectorProps, Code, ColorDef, ContourDisplay, ContourGroup, DisplayStyleProps, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance, ViewDefinition2dProps,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReference } from "../IModelDisplayReference";
+import { CategorySelectorState } from "../CategorySelectorState";
+import { DisplayStyle2dState } from "../DisplayStyleState";
+import { DrawingViewState } from "../DrawingViewState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
@@ -399,6 +402,33 @@ describe("Viewport", () => {
           loadModels.mockRestore();
         }
       });
+    });
+  });
+
+  describe("IModelDisplayReference2d", () => {
+    it("exposes its viewed model", () => {
+      const iModel = createBlankConnection();
+      try {
+        const modelProps = { model: { id: "0x1" }, code: Code.createEmpty().toJSON() };
+        const categorySelector = new CategorySelectorState({ ...modelProps, id: "0x2" } as CategorySelectorProps, iModel);
+        const displayStyle = new DisplayStyle2dState({ ...modelProps, id: "0x3" } as DisplayStyleProps, iModel);
+        const viewedModelId = "0x4";
+        const view = new DrawingViewState({
+          ...modelProps,
+          id: "0x5",
+          baseModelId: viewedModelId,
+          categorySelectorId: categorySelector.id,
+          displayStyleId: displayStyle.id,
+          origin: { x: 0, y: 0 },
+          delta: { x: 1, y: 1 },
+          angle: 0,
+        } as ViewDefinition2dProps, iModel, categorySelector, displayStyle, Range3d.createNull());
+
+        expect(view.iModelRefs.primary.is2d()).toBe(true);
+        expect(view.iModelRefs.primary.viewedModel).toBe(viewedModelId);
+      } finally {
+        iModel.closeSync();
+      }
     });
   });
 
