@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
@@ -26,6 +26,7 @@ import { Target } from "../internal/render/webgl/Target";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -346,6 +347,57 @@ describe("Viewport", () => {
         });
 
         expect(ref.getSymbologyOverrides().defaultOverrides).toBe(provided);
+      });
+    });
+  });
+
+  describe("IModelDisplayReference overrides", () => {
+    it("applies category, subcategory, model, and per-model visibility changes through the reference", () => {
+      testBlankViewport((viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        const categoryId = "0x1";
+        const subCategoryId = "0x2";
+        const modelId = "0x3";
+        ref.iModel.subcategories.add(categoryId, subCategoryId, new SubCategoryAppearance({ invisible: true }), true);
+
+        ref.changeCategoryDisplay({ categories: [categoryId], display: true, enableAllSubCategories: true });
+        expect(ref.viewedCategories.has(categoryId)).toBe(true);
+        expect(ref.isSubCategoryVisible(subCategoryId)).toBe(true);
+        expect(ref.getSubCategoryAppearance(subCategoryId).invisible).toBe(false);
+
+        ref.changeSubCategoryDisplay(subCategoryId, false);
+        expect(ref.isSubCategoryVisible(subCategoryId)).toBe(false);
+        expect(ref.subCategoryOverrides.get(subCategoryId)?.invisible).toBe(true);
+
+        const modelAppearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
+        ref.modelAppearanceOverrides.set(modelId, modelAppearance);
+        expect(ref.modelAppearanceOverrides.get(modelId)).toBe(modelAppearance);
+
+        ref.perModelCategoryVisibility.setOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Hide);
+        expect(ref.perModelCategoryVisibility.getOverride(modelId, categoryId)).toBe(PerModelCategoryVisibility.Override.Hide);
+
+        ref.changeCategoryDisplay({ categories: [categoryId], display: false });
+        expect(ref.viewedCategories.has(categoryId)).toBe(false);
+      });
+    });
+  });
+
+  describe("SpatialIModelDisplayReference viewed models", () => {
+    it("adds and loads models through the reference", async () => {
+      await testBlankViewportAsync(async (viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        if (!ref.isSpatial())
+          throw new Error("Expected a spatial viewport");
+
+        const modelId = "0x123";
+        const loadModels = vi.spyOn(ref.iModel.models, "load").mockResolvedValue();
+        try {
+          await ref.addAndLoadViewedModels([modelId]);
+          expect(ref.viewedModels.has(modelId)).toBe(true);
+          expect(loadModels).toHaveBeenCalled();
+        } finally {
+          loadModels.mockRestore();
+        }
       });
     });
   });
