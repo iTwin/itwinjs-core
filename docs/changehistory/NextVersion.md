@@ -8,6 +8,7 @@ publish: false
   - [Backend](#backend)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Pre-push validation](#pre-push-validation)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
@@ -31,6 +32,10 @@ Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties t
 The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
 The ECSQL version was bumped to `2.0.4.2`.
+
+### Pre-push validation
+
+The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
 
 ## Common
 

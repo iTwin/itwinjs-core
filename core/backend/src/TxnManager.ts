@@ -1335,7 +1335,9 @@ export class TxnManager {
 
   /**
    * Event raised before pushing changes to iModelHub. This is the final chance to perform any validation or
-   * cancellation before the changes are sent.
+   * cancellation before the changes are sent. If a listener throws or returns a promise that rejects, the
+   * push operation will be aborted. Listeners are allowed to make additional changes to the iModel if necessary,
+   * and those changes will be included in the push (if it proceeds).
    * @see [[BriefcaseDb.pushChanges]].
    * @beta
    */
