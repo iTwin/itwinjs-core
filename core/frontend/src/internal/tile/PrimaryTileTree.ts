@@ -236,6 +236,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected override getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
+    // Section-cut trees use their own intersection clip instead of model clip groups.
     return this.iModelRef.isSpatial() && !this._sectionClip ? this.iModelRef[_getModelClip](this.model.id) : undefined;
   }
 
@@ -648,7 +649,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderSchedule.ScriptReference  | undefined): void {
+  public updateAnimated(script: RenderSchedule.ScriptReference | undefined): void {
     const ref = this._primaryRef;
     if (!ref || this._isExcluded)
       return;

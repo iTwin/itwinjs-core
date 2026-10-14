@@ -1525,7 +1525,6 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }

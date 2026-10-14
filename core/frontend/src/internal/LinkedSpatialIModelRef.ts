@@ -298,8 +298,6 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public [_getModelClip](modelId: Id64String) {
-    // Comment from ViewState3d.getModelClip:
-    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this.#modelClips[index] : undefined;
   }
