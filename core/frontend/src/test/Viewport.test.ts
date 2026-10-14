@@ -275,23 +275,78 @@ describe("Viewport", () => {
         const inherited = FeatureAppearance.fromJSON({ transparency: 0.25 });
         const updated = FeatureAppearance.fromJSON({ transparency: 0.75 });
         const local = FeatureAppearance.fromJSON({ transparency: 0.5 });
+        let collectionChanged = 0;
+        let referenceChanged = 0;
+        refs.onDefaultFeatureAppearanceChanged.addListener(() => collectionChanged++);
+        ref.overrides.onDefaultFeatureAppearanceChanged.addListener(() => referenceChanged++);
 
         expect(ref.getSymbologyOverrides().defaultOverrides).toBe(FeatureAppearance.defaults);
         refs.defaultFeatureAppearance = inherited;
+        expect(collectionChanged).toBe(1);
         expect(ref.getSymbologyOverrides().defaultOverrides).toBe(inherited);
         expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(inherited);
 
         ref.overrides.defaultFeatureAppearance = local;
         expect(ref.getSymbologyOverrides().defaultOverrides).toBe(local);
+        expect(referenceChanged).toBe(1);
+        ref.overrides.defaultFeatureAppearance = local;
+        expect(referenceChanged).toBe(1);
 
         refs.defaultFeatureAppearance = updated;
+        expect(collectionChanged).toBe(2);
         expect(ref.getSymbologyOverrides().defaultOverrides).toBe(local);
+        expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(updated);
+
+        ref.overrides.defaultFeatureAppearance = undefined;
+        expect(referenceChanged).toBe(2);
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(updated);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("initializes linked-reference overrides and resumes inheritance when cleared", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const inherited = FeatureAppearance.fromJSON({ transparency: 0.25 });
+        const local = FeatureAppearance.fromJSON({ transparency: 0.5 });
+        const updated = FeatureAppearance.fromJSON({ transparency: 0.75 });
+        refs.defaultFeatureAppearance = inherited;
+        const linkedRef = refs.link({ iModel: linkedIModel, overrides: { defaultFeatureAppearance: local } });
+
+        expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(local);
+        refs.defaultFeatureAppearance = updated;
+        expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(local);
+
+        linkedRef.overrides.defaultFeatureAppearance = undefined;
         expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(updated);
 
         refs.unlink(linkedRef);
       } finally {
         await linkedIModel.close();
       }
+    });
+
+    it("allows feature override providers to replace the default appearance", () => {
+      testBlankViewport((viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        const inherited = FeatureAppearance.fromJSON({ transparency: 0.25 });
+        const provided = FeatureAppearance.fromJSON({ transparency: 0.5 });
+        viewport.iModelRefs.defaultFeatureAppearance = inherited;
+
+        ref.featureOverrideProviders.add({
+          addFeatureOverrides: (overrides) => overrides.setDefaultOverrides(provided),
+        });
+
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(provided);
+      });
     });
   });
 
