@@ -140,6 +140,8 @@ export namespace FeatureSymbology {
       this._patterns = viewFlags.patterns;
       this._lineWeights = viewFlags.weights;
 
+      this.setDefaultOverrides(ref.overrides.defaultFeatureAppearance ?? ref.parent.defaultFeatureAppearance);
+
       for (const categoryId of ref.viewedCategories) {
         const subCategoryIds = ref.iModel.subcategories.getSubCategories(categoryId);
         if (!subCategoryIds)

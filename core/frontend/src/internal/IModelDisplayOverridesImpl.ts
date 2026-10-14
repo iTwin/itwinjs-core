@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { ClipStyle, ContourDisplay, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, FeatureAppearance, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayOverrides, IModelDisplayOverridesProps, SpatialIModelDisplayOverrides, SpatialIModelDisplayOverridesProps } from "../IModelDisplayOverrides";
 import { BeEvent } from "@itwin/core-bentley";
@@ -16,13 +16,16 @@ class IModelDisplayOverridesImpl implements IModelDisplayOverrides {
 
   #viewFlags: ViewFlagOverrides;
   #clipStyle?: ClipStyle;
+  #defaultFeatureAppearance?: FeatureAppearance;
 
   public readonly onViewFlagsChanged = new BeEvent<() => void>();
   public readonly onClipStyleChanged = new BeEvent<() => void>();
+  public readonly onDefaultFeatureAppearanceChanged = new BeEvent<() => void>();
 
   public constructor(ovrs?: IModelDisplayOverridesProps) {
     this.#viewFlags = ovrs?.viewFlags ?? {};
     this.#clipStyle = ovrs?.clipStyle;
+    this.#defaultFeatureAppearance = ovrs?.defaultFeatureAppearance;
   }
 
   public get viewFlags() {
@@ -42,6 +45,17 @@ class IModelDisplayOverridesImpl implements IModelDisplayOverrides {
     if (style !== this.#clipStyle) {
       this.#clipStyle = style;
       this.onClipStyleChanged.raiseEvent();
+    }
+  }
+
+  public get defaultFeatureAppearance() {
+    return this.#defaultFeatureAppearance;
+  }
+
+  public set defaultFeatureAppearance(appearance: FeatureAppearance | undefined) {
+    if (appearance !== this.#defaultFeatureAppearance) {
+      this.#defaultFeatureAppearance = appearance;
+      this.onDefaultFeatureAppearanceChanged.raiseEvent();
     }
   }
 }

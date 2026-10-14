@@ -7,30 +7,36 @@
  */
 
 import { ColorDef, FeatureAppearance } from "@itwin/core-common";
-import { EmphasizeIModelElements, FeatureSymbology, IModelApp, IModelDisplayReference, Tool, Viewport } from "@itwin/core-frontend";
+import { EmphasizeIModelElements, IModelApp, IModelDisplayReference, Tool, Viewport } from "@itwin/core-frontend";
 
 const emphasizedViewports = new Set<Viewport>();
-const stateByViewport = new WeakMap<Viewport, { emphasize: boolean, colorize: boolean, anyEmphasized: boolean }>();
+interface EmphasisState {
+  emphasize: boolean;
+  colorize: boolean;
+  anyEmphasized: boolean;
+  originalAppearances: Map<IModelDisplayReference, FeatureAppearance | undefined>;
+  appearanceRefs: Set<IModelDisplayReference>;
+}
+const stateByViewport = new WeakMap<Viewport, EmphasisState>();
 
-// ###TODO Might wanna put a default FeatureAppearance on IModelDisplayReferences that can be inherited or overridden per-iModelRef...
-const defaultAppearanceProvider = {
-  appearance: FeatureAppearance.defaults,
-  addFeatureOverrides(overrides: FeatureSymbology.Overrides) {
-    overrides.setDefaultOverrides(this.appearance, true);
-  }
-};
-
-function configureReference(ref: IModelDisplayReference, emphasize: boolean, colorize: boolean): boolean {
+function configureReference(ref: IModelDisplayReference, state: EmphasisState): boolean {
   if (ref.iModel.selectionSet.isActive) {
-    const emph = EmphasizeIModelElements.getOrCreate(ref);
-    if (!colorize || emph.overrideSelectedElements(ref, ColorDef.white, undefined, true, false)) {
-      emph.wantEmphasis = emphasize;
-      return emph.emphasizeSelectedElements(ref, undefined, true);
+    const emphasis = EmphasizeIModelElements.getOrCreate(ref);
+    if (!state.colorize || emphasis.overrideSelectedElements(ref, ColorDef.white, undefined, true, false)) {
+      emphasis.wantEmphasis = state.emphasize;
+      return emphasis.emphasizeSelectedElements(ref, undefined, true);
     }
   }
 
-  ref.featureOverrideProviders.add(defaultAppearanceProvider);
+  if (!state.originalAppearances.has(ref))
+    state.originalAppearances.set(ref, ref.overrides.defaultFeatureAppearance);
+  state.appearanceRefs.add(ref);
   return false;
+}
+
+function updateDefaultAppearances(state: EmphasisState): void {
+  for (const ref of state.appearanceRefs)
+    ref.overrides.defaultFeatureAppearance = state.anyEmphasized ? EmphasizeIModelElements.defaultAppearance : state.originalAppearances.get(ref);
 }
 
 function getViewport(registerIfNotFound: boolean): Viewport | undefined {
@@ -46,9 +52,9 @@ function getViewport(registerIfNotFound: boolean): Viewport | undefined {
         if (!state)
           return;
 
-        state.anyEmphasized = configureReference(ref, state.emphasize, state.colorize) || state.anyEmphasized;
+        state.anyEmphasized = configureReference(ref, state) || state.anyEmphasized;
         vp.isFadeOutActive = state.anyEmphasized;
-        defaultAppearanceProvider.appearance = state.anyEmphasized ? EmphasizeIModelElements.defaultAppearance : FeatureAppearance.defaults;
+        updateDefaultAppearances(state);
       })
       : undefined;
 
@@ -93,14 +99,21 @@ export class EmphasizeSelectedIModelElementsTool extends Tool {
     if (!vp)
       return true;
 
-    const state = { emphasize, colorize, anyEmphasized: false };
+    const previousState = stateByViewport.get(vp);
+    const state: EmphasisState = {
+      emphasize,
+      colorize,
+      anyEmphasized: false,
+      originalAppearances: previousState?.originalAppearances ?? new Map(),
+      appearanceRefs: previousState?.appearanceRefs ?? new Set(),
+    };
     stateByViewport.set(vp, state);
     for (const ref of vp.iModelRefs) {
-      state.anyEmphasized = configureReference(ref, emphasize, colorize) || state.anyEmphasized;
+      state.anyEmphasized = configureReference(ref, state) || state.anyEmphasized;
     }
 
     vp.isFadeOutActive = state.anyEmphasized;
-    defaultAppearanceProvider.appearance = state.anyEmphasized ? EmphasizeIModelElements.defaultAppearance : FeatureAppearance.defaults;
+    updateDefaultAppearances(state);
 
     return true;
   }
@@ -114,11 +127,15 @@ export class ClearEmphasizedIModelElementsTool extends Tool {
     if (!vp)
       return true;
 
+    const state = stateByViewport.get(vp);
     vp.isFadeOutActive = false;
     for (const ref of vp.iModelRefs) {
       EmphasizeIModelElements.clear(ref);
-      ref.featureOverrideProviders.delete(defaultAppearanceProvider);
+      if (state?.originalAppearances.has(ref))
+        ref.overrides.defaultFeatureAppearance = state.originalAppearances.get(ref);
     }
+
+    stateByViewport.delete(vp);
 
     return true;
   }

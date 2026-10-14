@@ -31,7 +31,7 @@ export interface IModelDisplayFeature extends ModelFeature {
 
 /** @beta */
 export namespace IModelDisplayFeature {
-  /** Serves as an [OrderedComparator]($bentley) for a pair of [[IModelDiplayFeature]]s. */
+  /** Serves as an [OrderedComparator]($bentley) for a pair of [[IModelDisplayFeature]]s. */
   export function compare(lhs: IModelDisplayFeature, rhs: IModelDisplayFeature): number {
     return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef.guid, rhs.iModelRef.guid);
   }

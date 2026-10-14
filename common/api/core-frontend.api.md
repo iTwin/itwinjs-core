@@ -1512,7 +1512,9 @@ export interface BaseIModelDisplayReferences {
     readonly [_backingView]: ViewState;
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
+    defaultFeatureAppearance: FeatureAppearance;
     readonly iModels: Iterable<IModelConnection>;
+    readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
     readonly onTimePointChanged: BeEvent<() => void>;
     readonly primary: IModelDisplayReference;
     // @internal (undocumented)
@@ -5474,13 +5476,15 @@ export interface IModelDisplayOverrides {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
     clipStyle?: ClipStyle;
+    defaultFeatureAppearance?: FeatureAppearance;
     readonly onClipStyleChanged: BeEvent<() => void>;
+    readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
     readonly onViewFlagsChanged: BeEvent<() => void>;
     viewFlags: ViewFlagOverrides;
 }
 
 // @beta
-export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "viewFlags" | "clipStyle">>;
+export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "viewFlags" | "clipStyle" | "defaultFeatureAppearance">>;
 
 // @beta
 export interface IModelDisplayReference {

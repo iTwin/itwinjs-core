@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
@@ -258,6 +258,40 @@ describe("Viewport", () => {
 
       expect(hasProxy(ref, provider)).toBe(false);
       expect([...viewport.featureOverrideProviders]).toHaveLength(0);
+    });
+  });
+
+  describe("default feature appearance", () => {
+    it("is inherited by primary and linked references and can be overridden per reference", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const ref = refs.primary;
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const inherited = FeatureAppearance.fromJSON({ transparency: 0.25 });
+        const updated = FeatureAppearance.fromJSON({ transparency: 0.75 });
+        const local = FeatureAppearance.fromJSON({ transparency: 0.5 });
+
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(FeatureAppearance.defaults);
+        refs.defaultFeatureAppearance = inherited;
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(inherited);
+        expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(inherited);
+
+        ref.overrides.defaultFeatureAppearance = local;
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(local);
+
+        refs.defaultFeatureAppearance = updated;
+        expect(ref.getSymbologyOverrides().defaultOverrides).toBe(local);
+        expect(linkedRef.getSymbologyOverrides().defaultOverrides).toBe(updated);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
     });
   });
 

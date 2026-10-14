@@ -8,7 +8,7 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./common/internal/Symbols";
-import { ClipStyle, ContourDisplay, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, FeatureAppearance, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 
 /** Selectively overrides applied aspects of a view's [[DisplayStyleState]] when displaying
  * a specific [[IModelDisplayReference]].
@@ -23,6 +23,11 @@ export interface IModelDisplayOverrides {
   viewFlags: ViewFlagOverrides;
   /** Event dispatched just after assignment to [[viewFlags]]. */
   readonly onViewFlagsChanged: BeEvent<() => void>;
+
+  /** If defined, replaces the default feature appearance inherited from [[IModelDisplayReferences]]. */
+  defaultFeatureAppearance?: FeatureAppearance;
+  /** Event dispatched just after assignment to [[defaultFeatureAppearance]]. */
+  readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
 
   /** If defined, replaces the display style's clip style. */
   clipStyle?: ClipStyle;
@@ -49,7 +54,7 @@ export interface SpatialIModelDisplayOverrides extends IModelDisplayOverrides {
 /** JSON representation of [[IModelDisplayOverrides]].
  * @beta
  */
-export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "viewFlags" | "clipStyle">>;
+export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "viewFlags" | "clipStyle" | "defaultFeatureAppearance">>;
 
 /** JSON representation of [[SpatialIModelDisplayOverrides]].
  * @beta

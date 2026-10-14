@@ -136,6 +136,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.#disposalFunctions.push(this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent()));
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.#disposalFunctions.push(this.overrides.onDefaultFeatureAppearanceChanged.addListener(() => this.invalidateSymbologyOverrides()));
+    this.#disposalFunctions.push(refs.onDefaultFeatureAppearanceChanged.addListener(() => {
+      if (undefined === this.overrides.defaultFeatureAppearance)
+        this.invalidateSymbologyOverrides();
+    }));
 
     refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
       if (ref === this) {
@@ -192,6 +197,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this.overrides.onViewFlagsChanged.clear();
     this.overrides.onClipStyleChanged.clear();
+    this.overrides.onDefaultFeatureAppearanceChanged.clear();
 
     this.onActiveClipStyleChanged.clear();
     this.onModelClipGroupsChanged.clear();

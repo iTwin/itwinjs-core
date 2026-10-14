@@ -11,7 +11,7 @@ import { _backingView, _implementationProhibited } from "./common/internal/Symbo
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { ModelClipGroups } from "@itwin/core-common";
+import { FeatureAppearance, ModelClipGroups } from "@itwin/core-common";
 import { SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
 import { ViewState, ViewState2d } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
@@ -51,6 +51,11 @@ export interface BaseIModelDisplayReferences {
 
   /** The set of iModels displayed by this view (only one, in its present implementation). */
   readonly iModels: Iterable<IModelConnection>;
+
+  /** The default feature appearance inherited by references without their own override. */
+  defaultFeatureAppearance: FeatureAppearance;
+  /** Event dispatched just after assignment to [[defaultFeatureAppearance]]. */
+  readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
 
   /** The point in time currently reflected by the view, expressed in seconds in the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
    * This identifies a point on the timeline of each [[IModelDisplayReference]]'s' [[RenderSchedule.Script]].

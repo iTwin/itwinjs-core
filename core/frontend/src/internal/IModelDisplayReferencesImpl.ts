@@ -15,6 +15,7 @@ import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
 import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
 import { createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
+import { FeatureAppearance } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState> {
@@ -27,6 +28,8 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public readonly primary: R;
   public readonly subcategories = new SubCategoriesCache.Queue();
   public readonly onTimePointChanged = new BeEvent<() => void>();
+  public readonly onDefaultFeatureAppearanceChanged = new BeEvent<() => void>();
+  #defaultFeatureAppearance = FeatureAppearance.defaults;
 
   protected constructor(view: V) {
     this[_backingView] = view;
@@ -46,6 +49,17 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public set timePoint(timePoint: number | undefined) {
     this[_backingView].displayStyle.settings.timePoint = timePoint;
   }
+
+  public get defaultFeatureAppearance(): FeatureAppearance {
+    return this.#defaultFeatureAppearance;
+  }
+
+  public set defaultFeatureAppearance(appearance: FeatureAppearance) {
+    if (appearance !== this.#defaultFeatureAppearance) {
+      this.#defaultFeatureAppearance = appearance;
+      this.onDefaultFeatureAppearanceChanged.raiseEvent();
+    }
+  }
 }
 
 class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d> implements IModelDisplayReferences2d {
@@ -59,7 +73,7 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
     super(view);
   }
 
-  public * [Symbol.iterator](): Iterator<IModelDisplayReference2d> {
+  public *[Symbol.iterator](): Iterator<IModelDisplayReference2d> {
     yield this.primary;
   }
 
@@ -87,7 +101,7 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
     this.#iModels.add(this.primary.iModel);
   }
 
-  public * [Symbol.iterator](): Iterator<SpatialIModelDisplayReference> {
+  public *[Symbol.iterator](): Iterator<SpatialIModelDisplayReference> {
     yield this.primary;
     for (const linked of this.linked)
       yield linked;

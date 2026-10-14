@@ -92,6 +92,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     view.onAfterModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this._ovrs.onDefaultFeatureAppearanceChanged.addListener(() => this.invalidateSymbologyOverrides());
+    refs.onDefaultFeatureAppearanceChanged.addListener(() => {
+      if (undefined === this._ovrs.defaultFeatureAppearance)
+        this.invalidateSymbologyOverrides();
+    });
   }
 
   public get iModel() { return this._view.iModel; }
