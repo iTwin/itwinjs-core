@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { GeoServiceStatus } from "@itwin/core-bentley";
+import { GeoServiceStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, GeoCoordStatus, IModelReadRpcInterface } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { getHeightAverage, getHeightRange } from "../GeoProviders";
@@ -53,6 +54,7 @@ describe("IModelConnection vertical conversion failures", () => {
     { x: 23.7, y: 37.9, z: Number.NEGATIVE_INFINITY },
     [23.7, 37.9, Number.NaN],
   ])("rejects non-finite coordinates even when conversion reports success: %j", async (coordinates) => {
+    const errorLog = vi.spyOn(Logger, "logError").mockImplementation(() => { });
     const imodel = createBlankConnection();
     vi.spyOn(imodel, "noGcsDefined", "get").mockReturnValue(false);
     vi.spyOn(imodel, "isOpen", "get").mockReturnValue(true);
@@ -70,6 +72,16 @@ describe("IModelConnection vertical conversion failures", () => {
     expect(output.toJSON()).toEqual([1, 2, 3]);
     await expect(imodel.cartographicFromSpatial([output])).rejects.toMatchObject(error);
     await expect(imodel.spatialFromCartographic([cartographic])).rejects.toMatchObject(error);
+    expect(errorLog).toHaveBeenCalledTimes(4);
+    const ordinates = Array.isArray(coordinates) ? coordinates : [coordinates.x, coordinates.y, coordinates.z];
+    for (const [category, message, metadata] of errorLog.mock.calls) {
+      expect(category).toBe(FrontendLoggerCategory.IModelConnection);
+      expect(message).toBe("Non-finite coordinate returned by geographic conversion");
+      expect(metadata).toEqual({
+        ordinateIndex: ordinates.findIndex((ordinate) => !Number.isFinite(ordinate)),
+        coordinates: ordinates.map((ordinate) => String(ordinate)),
+      });
+    }
   });
 });
 
