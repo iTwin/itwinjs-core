@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add Relationships.tryGetInstances and Relationships.tryGetInstancesProps to look up many relationships of a class with batched queries.",
+      "comment": "Add Relationships.tryGetInstances, tryGetInstancesProps and their async variants to look up many relationships of a class with batched queries.",
       "type": "none"
     }
   ],

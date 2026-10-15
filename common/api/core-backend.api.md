@@ -6057,7 +6057,15 @@ export class Relationships {
     // @beta
     tryGetInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined>;
     // @beta
+    tryGetInstancesAsync<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
+    // @beta
     tryGetInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined>;
+    // @beta
+    tryGetInstancesPropsAsync<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
     // @deprecated
     updateInstance(props: RelationshipProps): void;
 }

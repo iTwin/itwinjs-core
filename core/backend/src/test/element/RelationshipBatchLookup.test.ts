@@ -102,4 +102,42 @@ describe("Relationships batched lookup", () => {
     const single = imodel.relationships.tryGetInstance<ElementGroupsMembers>(ElementGroupsMembers.classFullName, relIds[1]);
     expect(rels[0]?.toJSON()).to.deep.equal(single?.toJSON());
   });
+
+  it("async variants produce the same results as the synchronous ones", async () => {
+    const [e0, e1, e2, e3, e4, e5] = elementIds;
+    const criteria: Array<Id64String | SourceAndTarget> = [
+      relIds[2],
+      { sourceId: e0, targetId: e1 },
+      Id64.fromLocalAndBriefcaseIds(0x7fff, 0),
+      { sourceId: e0, targetId: e2 },
+      { sourceId: e4, targetId: e5 },
+      Id64.invalid,
+      relIds[2],
+      { sourceId: e3, targetId: e4 },
+    ];
+    const cls = ElementGroupsMembers.classFullName;
+
+    const asyncProps = await imodel.relationships.tryGetInstancesPropsAsync(cls, criteria);
+    expect(asyncProps).to.deep.equal(imodel.relationships.tryGetInstancesProps(cls, criteria));
+    expect(asyncProps.map((p) => p?.id)).to.deep.equal([relIds[2], relIds[0], undefined, undefined, undefined, undefined, relIds[2], relIds[3]]);
+    expect(await imodel.relationships.tryGetInstancesPropsAsync(cls, criteria, { usePrimaryConn: false })).to.deep.equal(asyncProps);
+
+    const asyncRels = await imodel.relationships.tryGetInstancesAsync<ElementGroupsMembers>(cls, criteria);
+    expect(asyncRels.map((r) => r?.toJSON())).to.deep.equal(imodel.relationships.tryGetInstances(cls, criteria).map((r) => r?.toJSON()));
+    expect(asyncRels[0]).to.be.instanceOf(ElementGroupsMembers);
+
+    expect(await imodel.relationships.tryGetInstancesPropsAsync(cls, [])).to.deep.equal([]);
+    expect(await imodel.relationships.tryGetInstancesAsync(cls, [])).to.deep.equal([]);
+  });
+
+  it("async variants see unsaved changes by default", async () => {
+    const cls = ElementGroupsMembers.classFullName;
+    const pair = { sourceId: elementIds[4], targetId: elementIds[5] };
+    await withEditTxn(imodel, async (txn) => {
+      const id = txn.insertRelationship(ElementGroupsMembers.create(imodel, pair.sourceId, pair.targetId, 4).toJSON());
+      const found = await imodel.relationships.tryGetInstancesAsync(cls, [id, pair]);
+      expect(found.map((r) => r?.id)).to.deep.equal([id, id]);
+      txn.deleteRelationship(imodel.relationships.getInstanceProps(cls, id));
+    });
+  });
 });

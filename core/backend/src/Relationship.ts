@@ -641,57 +641,37 @@ export class Relationships {
    * @beta
    */
   public tryGetInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
-    const ids = new Set<Id64String>();
-    const sourceIds = new Set<Id64String>();
-    const targetIds = new Set<Id64String>();
-    for (const criterion of criteria) {
-      if (typeof criterion === "string") {
-        if (Id64.isValidId64(criterion))
-          ids.add(criterion);
-      } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
-        sourceIds.add(criterion.sourceId);
-        targetIds.add(criterion.targetId);
-      }
-    }
-
-    const toProps = (row: any): T => {
-      const props = { ...row } as T;
-      props.classFullName = row.className.replace(".", ":");
-      return props;
-    };
-    const pairKey = (sourceId: Id64String, targetId: Id64String) => `${sourceId}|${targetId}`;
-
-    const propsById = new Map<Id64String, T>();
-    if (ids.size > 0) {
-      this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, ECInstanceId)`, (reader) => {
-        while (reader.step()) {
-          const row = reader.current.toRow();
-          propsById.set(row.id, toProps(row));
-        }
+    const lookup = new RelationshipBatchLookup<T>(relClassFullName, criteria);
+    for (const query of lookup.queries) {
+      this._iModel.withQueryReader(query.ecsql, (reader) => {
+        while (reader.step())
+          query.onRow(reader.current.toRow());
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, new QueryBinder().bindIdSet(1, ids), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      }, query.params, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     }
+    return lookup.getResults();
+  }
 
-    const propsBySourceAndTarget = new Map<string, T>();
-    if (sourceIds.size > 0) {
-      const wanted = new Set<string>();
-      for (const criterion of criteria)
-        if (typeof criterion !== "string")
-          wanted.add(pairKey(criterion.sourceId, criterion.targetId));
-
-      // The query may also return relationships whose source and target are each requested but not as a pair; those are filtered out here.
-      this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, SourceECInstanceId) AND InVirtualSet(?, TargetECInstanceId)`, (reader) => {
-        while (reader.step()) {
-          const row = reader.current.toRow();
-          const key = pairKey(row.sourceId, row.targetId);
-          if (wanted.has(key) && !propsBySourceAndTarget.has(key))
-            propsBySourceAndTarget.set(key, toProps(row));
-        }
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, new QueryBinder().bindIdSet(1, sourceIds).bindIdSet(2, targetIds), { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    }
-
-    return criteria.map((criterion) => typeof criterion === "string" ? propsById.get(criterion) : propsBySourceAndTarget.get(pairKey(criterion.sourceId, criterion.targetId)));
+  /** Asynchronously get the props of multiple Relationship instances of the same class using batched queries.
+   * This produces the same results as [[tryGetInstancesProps]], but executes the queries using [[IModelDb.createQueryReader]].
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstancesProps]].
+   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
+   * @returns An array with the same length and order as `criteria`. Each entry holds the RelationshipProps matching the corresponding criterion, or `undefined` if no such relationship was found.
+   * @see tryGetInstancesProps
+   * @see tryGetInstancesAsync
+   * @beta
+   */
+  public async tryGetInstancesPropsAsync<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
+    const lookup = new RelationshipBatchLookup<T>(relClassFullName, criteria);
+    const usePrimaryConn = options?.usePrimaryConn ?? true;
+    await Promise.all(lookup.queries.map(async (query) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      for await (const row of this._iModel.createQueryReader(query.ecsql, query.params, { rowFormat: QueryRowFormat.UseJsPropertyNames, usePrimaryConn }))
+        query.onRow(row.toRow());
+    }));
+    return lookup.getResults();
   }
 
   /** Get multiple Relationship instances of the same class using batched queries.
@@ -705,5 +685,82 @@ export class Relationships {
    */
   public tryGetInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
     return this.tryGetInstancesProps<RelationshipProps>(relClassFullName, criteria).map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
+  }
+
+  /** Asynchronously get multiple Relationship instances of the same class using batched queries.
+   * This produces the same results as [[tryGetInstances]], but executes the queries using [[IModelDb.createQueryReader]].
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstances]].
+   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
+   * @returns An array with the same length and order as `criteria`. Each entry holds the relationship matching the corresponding criterion, or `undefined` if no such relationship was found.
+   * @see tryGetInstances
+   * @see tryGetInstancesPropsAsync
+   * @beta
+   */
+  public async tryGetInstancesAsync<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
+    const allProps = await this.tryGetInstancesPropsAsync<RelationshipProps>(relClassFullName, criteria, options);
+    return allProps.map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
+  }
+}
+
+/** The queries and results for a batched lookup of relationships by [[Relationships.tryGetInstancesProps]] or [[Relationships.tryGetInstancesPropsAsync]]. */
+class RelationshipBatchLookup<T extends RelationshipProps> {
+  /** The queries to execute. Each row returned by a query must be passed to its `onRow` callback in [QueryRowFormat.UseJsPropertyNames]($common) format. */
+  public readonly queries: Array<{ ecsql: string, params: QueryBinder, onRow: (row: any) => void }> = [];
+  private readonly _propsById = new Map<Id64String, T>();
+  private readonly _propsByPair = new Map<string, T>();
+
+  public constructor(relClassFullName: string, private readonly _criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
+    const ids = new Set<Id64String>();
+    const sourceIds = new Set<Id64String>();
+    const targetIds = new Set<Id64String>();
+    const wantedPairs = new Set<string>();
+    for (const criterion of _criteria) {
+      if (typeof criterion === "string") {
+        if (Id64.isValidId64(criterion))
+          ids.add(criterion);
+      } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
+        sourceIds.add(criterion.sourceId);
+        targetIds.add(criterion.targetId);
+        wantedPairs.add(RelationshipBatchLookup.pairKey(criterion));
+      }
+    }
+
+    if (ids.size > 0) {
+      this.queries.push({
+        ecsql: `SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, ECInstanceId)`,
+        params: new QueryBinder().bindIdSet(1, ids),
+        onRow: (row) => this._propsById.set(row.id, RelationshipBatchLookup.toProps<T>(row)),
+      });
+    }
+
+    if (sourceIds.size > 0) {
+      this.queries.push({
+        ecsql: `SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, SourceECInstanceId) AND InVirtualSet(?, TargetECInstanceId)`,
+        params: new QueryBinder().bindIdSet(1, sourceIds).bindIdSet(2, targetIds),
+        onRow: (row) => {
+          // The query may also return relationships whose source and target are each requested but not as a pair; those are skipped here.
+          const key = RelationshipBatchLookup.pairKey(row);
+          if (wantedPairs.has(key) && !this._propsByPair.has(key))
+            this._propsByPair.set(key, RelationshipBatchLookup.toProps<T>(row));
+        },
+      });
+    }
+  }
+
+  /** Returns the props found for each criterion, in the same order as the criteria. */
+  public getResults(): Array<T | undefined> {
+    return this._criteria.map((criterion) => typeof criterion === "string" ? this._propsById.get(criterion) : this._propsByPair.get(RelationshipBatchLookup.pairKey(criterion)));
+  }
+
+  private static pairKey(pair: SourceAndTarget): string {
+    return `${pair.sourceId}|${pair.targetId}`;
+  }
+
+  private static toProps<T extends RelationshipProps>(row: any): T {
+    const props = { ...row } as T;
+    props.classFullName = row.className.replace(".", ":");
+    return props;
   }
 }
