@@ -1,6 +1,125 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 08 Jul 2026 19:05:13 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Oct 2026 17:39:12 GMT and should not be manually modified.
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+_Version update only_
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+### Updates
+
+- Render schedule timelines using step interpolation now apply each keyframe's value at that keyframe's own time point instead of one keyframe late.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Add `FieldPropertyPath.jsonAccessors` for indexing into a String property of extended type `Json`.
+- Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value.
+- Add download progress reporting and cancellation to pushChanges
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+_Version update only_
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+_Version update only_
+
+## 5.13.3
+Tue, 15 Sep 2026 20:25:28 GMT
+
+_Version update only_
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- QueryBinder.bindIdSet now throws a descriptive ITwinError (scope "itwin-QueryBinder", key "invalid-arguments") when an entry is a string that is not a valid Id64String, instead of silently ignoring it.
+- Add the public TxnEntityMetadata interface in @itwin/core-common for the backend and frontend transaction change APIs.
+- Fixed `Code.equals` to be case-insensitive with code values and added error types for the new `SynchronousChannel.Reservations` backend API.
+- Introduce TextAnnotation leader target point
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Added an internal QueryBinder helper to support restoring legacy binding-skip semantics in downstream packages.
+- Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle).
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
 
 ## 5.11.1
 Wed, 08 Jul 2026 19:03:45 GMT

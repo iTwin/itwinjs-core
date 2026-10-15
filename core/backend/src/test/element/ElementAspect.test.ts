@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
-  Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
+  Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -192,6 +193,171 @@ describe("ElementAspect", () => {
     const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
     assert.equal(allAspects.length, 6);
     assert.equal(JSON.stringify(allAspects), aspectList);
+  });
+
+  it("should use the aspect owner indexes", async () => {
+    const getPlanDetails = async (filtered: boolean, grouped: boolean): Promise<string[]> => {
+      const createQueryReader = sinon.spy(iModel, "createQueryReader");
+      try {
+        for await (const _aspect of iModel.elements.queryAspects({
+          elementIds: "0x17",
+          aspectClassFullName: filtered ? ElementAspect.classFullName : undefined,
+          groupByOwner: grouped,
+        })) { }
+      } finally {
+        createQueryReader.restore();
+      }
+
+      assert.equal(createQueryReader.callCount, 1);
+      const query = String(createQueryReader.firstCall.args[0])
+        .replace("IdSet(:elementIds)", `IdSet('["0x17"]')`)
+        .replace(":aspectClassFullName", `'${ElementAspect.classFullName}'`);
+      const pragma = `PRAGMA explain_query('${query.replaceAll("'", "''")}')`;
+      return iModel.withQueryReader(pragma, (reader) => {
+        const details: string[] = [];
+        for (const row of reader)
+          details.push(row.toRow().detail as string);
+        return details;
+      });
+    };
+
+    for (const filtered of [false, true]) {
+      for (const grouped of [false, true]) {
+        const plan = await getPlanDetails(filtered, grouped);
+        assert.isTrue(plan.some((detail) => /^SCAN (?:owners|IdSet) VIRTUAL TABLE INDEX/.test(detail)), plan.join("\n"));
+        for (const aspectClass of ["ElementMultiAspect", "ElementUniqueAspect"])
+          assert.isTrue(plan.some((detail) => new RegExp(`^SEARCH main\\.bis_${aspectClass} USING .*INDEX .*_target \\(ElementId=\\?\\)$`).test(detail)), plan.join("\n"));
+        if (!grouped)
+          assert.isFalse(plan.some((detail) => detail.startsWith("USE TEMP B-TREE FOR ORDER BY")), plan.join("\n"));
+      }
+    }
+  });
+
+  it("should query aspects for multiple elements", async () => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ElementAspect", "QueryAspects.bim");
+    const testDb = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+
+    try {
+      const secondOwnerId = withEditTxn(testDb, (txn) => {
+        const ownerId = Subject.insert(txn, IModel.rootSubjectId, "Second aspect owner");
+        txn.insertAspect({
+          classFullName: "DgnPlatformTest:TestUniqueAspectNoHandler",
+          element: { id: ownerId },
+          testUniqueAspectProperty: "Second owner unique aspect",
+        } as ElementAspectProps);
+        txn.insertAspect({
+          classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
+          element: { id: ownerId },
+          testMultiAspectProperty: "Second owner multi-aspect",
+        } as ElementAspectProps);
+        return ownerId;
+      });
+
+      const collect = async (aspects: AsyncIterable<ElementAspect>): Promise<ElementAspect[]> => {
+        const result: ElementAspect[] = [];
+        for await (const aspect of aspects)
+          result.push(aspect);
+        return result;
+      };
+
+      const allAspects = await collect(testDb.elements.queryAspects({
+        elementIds: [secondOwnerId, "0x17", secondOwnerId, IModel.rootSubjectId],
+        groupByOwner: true,
+        usePrimaryConn: true,
+      }));
+      assert.equal(allAspects.length, 8);
+      assert.deepEqual([...new Set(allAspects.map((aspect) => aspect.element.id))], ["0x17", secondOwnerId]);
+      const ownerRuns = allAspects.reduce<string[]>((runs, aspect) => {
+        if (runs.at(-1) !== aspect.element.id)
+          runs.push(aspect.element.id);
+        return runs;
+      }, []);
+      assert.deepEqual(ownerRuns, ["0x17", secondOwnerId]);
+      const firstOwnerAspects = allAspects.filter((aspect) => aspect.element.id === "0x17");
+      assert.equal(firstOwnerAspects.length, 6);
+      assert.equal(allAspects.filter((aspect) => aspect.element.id === secondOwnerId).length, 2);
+      assert.isTrue(allAspects.every((aspect) => aspect instanceof ElementAspect));
+      assert.equal(JSON.stringify(firstOwnerAspects), JSON.stringify(testDb.elements.getAspects("0x17")));
+
+      const multiAspects = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        aspectClassFullName: ElementMultiAspect.classFullName,
+      }));
+      assert.equal(multiAspects.length, 5);
+      assert.isTrue(multiAspects.every((aspect) => aspect instanceof ElementMultiAspect));
+
+      const uniqueAspects = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        aspectClassFullName: ElementUniqueAspect.classFullName,
+      }));
+      assert.equal(uniqueAspects.length, 3);
+      assert.isTrue(uniqueAspects.every((aspect) => aspect instanceof ElementUniqueAspect));
+
+      const noHandlerMultiAspects = await collect(testDb.elements.queryAspects({
+        elementIds: new Set(["0x17", secondOwnerId]),
+        aspectClassFullName: "DgnPlatformTest.TestMultiAspectNoHandler",
+      }));
+      assert.equal(noHandlerMultiAspects.length, 3);
+      assert.isTrue(noHandlerMultiAspects.every((aspect) => aspect.classFullName === "DgnPlatformTest:TestMultiAspectNoHandler"));
+
+      const withoutNoHandlerMultiAspects = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        excludedAspectClassFullNames: new Set(["DgnPlatformTest:TestMultiAspectNoHandler"]),
+      }));
+      assert.equal(withoutNoHandlerMultiAspects.length, 5);
+      assert.isFalse(withoutNoHandlerMultiAspects.some((aspect) => aspect.classFullName === "DgnPlatformTest:TestMultiAspectNoHandler"));
+
+      const withUnknownExclusion = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        excludedAspectClassFullNames: new Set(["UnknownSchema:UnknownAspect"]),
+      }));
+      assert.equal(withUnknownExclusion.length, 8);
+
+      const includedMultiWithoutNoHandler = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        aspectClassFullName: ElementMultiAspect.classFullName,
+        excludedAspectClassFullNames: new Set(["DgnPlatformTest:TestMultiAspectNoHandler"]),
+      }));
+      assert.equal(includedMultiWithoutNoHandler.length, 2);
+      assert.isTrue(includedMultiWithoutNoHandler.every((aspect) => aspect.classFullName === "DgnPlatformTest:TestMultiAspect"));
+
+      const withMultipleExclusions = await collect(testDb.elements.queryAspects({
+        elementIds: ["0x17", secondOwnerId],
+        excludedAspectClassFullNames: new Set([
+          "DgnPlatformTest:TestMultiAspectNoHandler",
+          "DgnPlatformTest:TestUniqueAspectNoHandler",
+          "UnknownSchema:UnknownAspect",
+        ]),
+      }));
+      assert.equal(withMultipleExclusions.length, 3);
+      assert.isFalse(withMultipleExclusions.some((aspect) => aspect.classFullName.endsWith("NoHandler")));
+
+      const noAspects = await collect(testDb.elements.queryAspects({ elementIds: [] }));
+      assert.deepEqual(noAspects, []);
+
+      const unsavedEditTxn = new EditTxn(testDb, "query unsaved aspect");
+      unsavedEditTxn.start();
+      try {
+        const unsavedAspectId = unsavedEditTxn.insertAspect({
+          classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
+          element: { id: secondOwnerId },
+          testMultiAspectProperty: "Unsaved multi-aspect",
+        } as ElementAspectProps);
+        const primaryConnectionAspects = await collect(testDb.elements.queryAspects({
+          elementIds: secondOwnerId,
+          usePrimaryConn: true,
+        }));
+        assert.isTrue(primaryConnectionAspects.some((aspect) => aspect.id === unsavedAspectId));
+
+        const concurrentQueryAspects = await collect(testDb.elements.queryAspects({ elementIds: secondOwnerId }));
+        assert.isFalse(concurrentQueryAspects.some((aspect) => aspect.id === unsavedAspectId));
+      } finally {
+        unsavedEditTxn.end("abandon");
+      }
+    } finally {
+      testDb.close();
+    }
   });
 
   it("should be able to insert, update, and delete MultiAspects", () => {

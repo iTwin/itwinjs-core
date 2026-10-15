@@ -61,8 +61,14 @@ export class ChromeTestRunner {
     if (undefined === port)
       throw new Error("CERTA_PORT is not defined.");
 
-    const { failures, coverage } = await runTestsInPlaywright(config, port);
-    webserverProcess.kill();
+    let results: ChromeTestResults;
+    try {
+      results = await runTestsInPlaywright(config, port);
+    } finally {
+      webserverProcess.kill();
+    }
+
+    const { failures, coverage } = results;
 
     // Save nyc/istanbul coverage file.
     if (config.cover)
@@ -87,8 +93,8 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
 
       // Re-throw any uncaught exceptions from the frontend in the backend
       page.on("pageerror", async (error) => {
-        await browser.close();
         reject(error);
+        await browser.close();
       });
 
       // Expose some functions to the frontend that will execute _in the backend context_

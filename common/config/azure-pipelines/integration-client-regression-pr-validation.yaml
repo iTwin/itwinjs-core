@@ -10,6 +10,7 @@ pr: none
 variables:
   - group: iModel.js non-secret config variables
   - group: iModel.js Integration Test Users
+  - group: Rush Build Cache SAS Token
 
 jobs:
   - job: Node_24_x
@@ -23,4 +24,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 24.15.0
+          nodeVersion: 24.x

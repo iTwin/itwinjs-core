@@ -17,8 +17,10 @@ schedules:
 jobs:
   - job:
     variables:
-      - name: linux_pool
+      - name: linuxX64_pool
         value: "imodelNative-Debian12"
+      - name: linuxARM64_pool
+        value: "Platform-Debian12-ARM"
       - name: mac_pool
         value: iModelTechMacArm
       - name: win_pool
@@ -34,7 +36,7 @@ jobs:
         "Linux_Node_20":
           OS: ubuntu-latest
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
           node_version: 20.x
         "MacOS_Node_20":
           OS: macOS-latest
@@ -49,12 +51,16 @@ jobs:
         "Linux_Node_22":
           OS: ubuntu-latest
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
           node_version: 22.x
         "MacOS_Node_22":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
+          node_version: 22.x
+        "LinuxArm64_Node_22":
+          platform: Linux
+          name: $(linuxARM64_pool)
           node_version: 22.x
       maxParallel: 3
 

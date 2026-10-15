@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ColorDef, FontType, ListMarkerEnumerator, terminatorShapes, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, FontType, ListMarkerEnumerator, targetPointShapes, terminatorShapes, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
 import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
@@ -45,6 +45,11 @@ describe("TextStyleSettings", () => {
       terminatorShape: terminatorShapes[0],
       terminatorHeightFactor: 0.5,
       terminatorWidthFactor: 0.5,
+      showLeaders: true,
+      showTerminators: true,
+      showTargetPoint: true,
+      targetPointShape: targetPointShapes[0],
+      targetPointOffsetFactor: 0,
     },
     tabInterval: 7,
     indentation: 0.33,

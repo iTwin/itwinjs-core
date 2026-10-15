@@ -250,9 +250,7 @@ export class ClipUtilities {
     const worldToLocal = localToWorld?.inverse();
     if (!worldToLocal)
       return result;
-    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion; // parallel to xy-plane so we can ignore z
-    if (!localRegion)
-      return result;
+    const localRegion = region.cloneTransformed(worldToLocal); // parallel to xy-plane so we can ignore z
     // We can only clip convex polygons with our clipper machinery, but the input region doesn't have to be
     // convex or even a polygon. We get around this limitation by using a Boolean operation, which admits
     // *any* planar regions, albeit in local coordinates. First, we clip a rectangle that covers the input region

@@ -56,13 +56,13 @@ export class CoordinateXYZ extends GeometryQuery {
     return true;
   }
   /** Return a transformed clone. */
-  public cloneTransformed(transform: Transform): GeometryQuery | undefined {
+  public cloneTransformed(transform: Transform): CoordinateXYZ {
     const result = new CoordinateXYZ(this._xyz.clone());
     result.tryTransformInPlace(transform);
     return result;
   }
   /** Return a clone. */
-  public clone(): GeometryQuery | undefined {
+  public clone(): CoordinateXYZ {
     return new CoordinateXYZ(this._xyz.clone());
   }
   /** Test if (other instanceof Coordinate).  */

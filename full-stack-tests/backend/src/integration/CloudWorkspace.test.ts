@@ -535,8 +535,12 @@ describe("Cloud workspace containers", () => {
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
       const workspace = await IModelHost.getITwinWorkspace(testITwinId);
-      expect(workspace.settings.getNumber("app1/topLevelValue")).equal(99);
-      expect(workspace.settings.getNumber("app1/nestedValue")).equal(42);
+      try {
+        expect(workspace.settings.getNumber("app1/topLevelValue")).equal(99);
+        expect(workspace.settings.getNumber("app1/nestedValue")).equal(42);
+      } finally {
+        workspace.close();
+      }
     } finally {
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     }

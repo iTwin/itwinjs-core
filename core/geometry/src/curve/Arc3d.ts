@@ -1129,7 +1129,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Returns a (high accuracy) range of the curve between fractional positions.
-   * * Default implementation returns teh range of the curve from clonePartialCurve.
+   * * Default implementation returns the range of the curve from clonePartialCurve.
    */
   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     const sweep = AngleSweep.createStartEndRadians(

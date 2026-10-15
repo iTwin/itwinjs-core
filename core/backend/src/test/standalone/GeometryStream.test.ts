@@ -2558,9 +2558,7 @@ describe("ElementGeometry", () => {
 
     const updateElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
     assert.isUndefined(updateElemProps.geom);
-    assert.isTrue(updateElemProps.placement !== undefined);
-    const updatedPlacement = Placement3d.fromJSON(updateElemProps.placement);
-    assert.isTrue(updatedPlacement.bbox.isNull);
+    assert.isUndefined(updateElemProps.placement);
   });
 });
 

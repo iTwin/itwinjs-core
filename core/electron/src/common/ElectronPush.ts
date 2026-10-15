@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
-import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
+import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport.js";
 
 const PUSH = "__push__";
 

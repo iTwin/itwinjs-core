@@ -186,6 +186,47 @@ describe("RenderSchedule", () => {
     }
   });
 
+  it("applies step-interpolated keyframes at their exact time points", () => {
+    const step = RS.Interpolation.Step;
+    const keyframes = [
+      { time: 100, visibility: 80, color: new RgbColor(1, 1, 1), transform: makeTransform(2, 2, 2, 1), planeHeight: 1 },
+      { time: 200, visibility: 50, color: new RgbColor(2, 2, 2), transform: makeTransform(3, 3, 3, 1), planeHeight: 2 },
+      { time: 300, visibility: 0, color: new RgbColor(3, 3, 3), transform: makeTransform(4, 4, 4, 1), planeHeight: 3 },
+    ];
+
+    const timeline = new RS.Timeline({
+      visibilityTimeline: keyframes.map((k) => ({ interpolation: step, time: k.time, value: k.visibility })),
+      colorTimeline: keyframes.map((k) => ({ interpolation: step, time: k.time, value: { red: k.color.r, green: k.color.g, blue: k.color.b } })),
+      transformTimeline: keyframes.map((k) => ({ interpolation: step, time: k.time, value: k.transform })),
+      cuttingPlaneTimeline: keyframes.map((k) => ({ interpolation: step, time: k.time, value: { position: [0, 0, k.planeHeight], direction: [0, 0, -1] } })),
+    });
+
+    function expectKeyframe(time: number, expected: (typeof keyframes)[number]): void {
+      expect(timeline.getVisibility(time)).to.equal(expected.visibility);
+      expect(timeline.getColor(time)!.equals(expected.color)).to.be.true;
+      expect(timeline.getAnimationTransform(time).isAlmostEqual(Transform.fromJSON(expected.transform.transform))).to.be.true;
+      expect(timeline.getCuttingPlane(time)!.getOriginRef().isAlmostEqual(new Point3d(0, 0, expected.planeHeight))).to.be.true;
+    }
+
+    // Each keyframe's value takes effect immediately at its own time point - not at the following one.
+    for (const keyframe of keyframes)
+      expectKeyframe(keyframe.time, keyframe);
+
+    // Between two keyframes the preceding keyframe's value persists, up to and including the instant before the next one.
+    for (let i = 0; i < keyframes.length - 1; i++) {
+      const current = keyframes[i];
+      const next = keyframes[i + 1];
+      expectKeyframe(current.time + (next.time - current.time) / 2, current);
+      expectKeyframe(next.time - 1, current);
+    }
+
+    // Time points outside the timeline clamp to the first and last keyframes.
+    const first = keyframes[0];
+    const last = keyframes[keyframes.length - 1];
+    expectKeyframe(first.time - 50, first);
+    expectKeyframe(last.time + 100, last);
+  });
+
   describe("ScriptBuilder", () => {
     it("sorts and compresses element Ids", () => {
       function expectIds(input: string | string[], expected: string): void {

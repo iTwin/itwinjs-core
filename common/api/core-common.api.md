@@ -54,6 +54,7 @@ import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -874,6 +875,8 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
+    // @internal
+    SchemaSyncElementReserved = 16777206,
     Unassigned = 0
 }
 
@@ -2087,6 +2090,12 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
+// @internal
+export function createIpcDispatcher(impl: object, channelName: string, includeStack: boolean | (() => boolean)): (funcName: string, ...args: any[]) => Promise<IpcInvokeReturn>;
+
+// @internal
+export function createIpcProxy<K>(call: (methodName: string, ...args: any[]) => Promise<any>): PickAsyncMethods<K>;
+
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -2372,6 +2381,12 @@ export const defaultTileOptions: TileOptions;
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @beta
+export interface DefinitionSetProps extends DefinitionElementProps {
+    // (undocumented)
+    rank?: Rank;
 }
 
 // @public
@@ -3270,6 +3285,31 @@ export interface ElementProps extends EntityProps {
     userLabel?: string;
 }
 
+// @beta
+export interface ElementReservationError extends ITwinError {
+    readonly federationGuid?: GuidString;
+}
+
+// @beta (undocumented)
+export namespace ElementReservationError {
+    const scope = "itwin-ElementReservation";
+    export function isError(error: unknown, key?: Key): error is ElementReservationError;
+    export type Key =
+    /** A proposed or inserted reservation is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or a missing federationGuid. */
+    "invalid-reservation" |
+    /** The requested reservation conflicts with an existing reservation (a different class or code). */
+    "reservation-conflict" |
+    /** No reservation exists for the element being inserted; it must be reserved first. */
+    "reservation-not-found" |
+    /** The element cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of element ids available for reservations has been exhausted. */
+    "id-sequence-exhausted" |
+    /** The persisted reservation bookkeeping data is corrupt. */
+    "corrupt-reservation-data";
+    export function throwError<T extends ElementReservationError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
 // @public
 export interface EmphasizeElementsProps {
     alwaysDrawn?: Id64Array;
@@ -3677,6 +3717,7 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -3693,6 +3734,7 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
+    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
 
@@ -3729,9 +3771,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
-    // (undocumented)
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
@@ -3825,8 +3865,18 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal (undocumented)
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+// @internal
+export function formatFieldValue(input: FormatFieldValueArgs): string | undefined;
+
+// @internal
+export interface FormatFieldValueArgs {
+    formatMagnitude?: FormatMagnitude;
+    options?: FieldFormatOptions;
+    value: FieldValue;
+}
+
+// @internal
+export type FormatMagnitude = (magnitude: number) => string;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -4462,7 +4512,10 @@ export function getMarkerText(marker: ListMarker, num: number): string;
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 // @internal
-export const getPullChangesIpcChannel: (iModelId: string) => string;
+export const getPullChangesIpcChannel: (key: string) => string;
+
+// @internal
+export const getPushChangesIpcChannel: (key: string) => string;
 
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
@@ -5593,6 +5646,7 @@ export interface IpcAppFunctions {
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
+    cancelPushChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
@@ -5608,7 +5662,7 @@ export interface IpcAppFunctions {
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
-    pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+    pushChanges: (key: string, description: string, options?: PushChangesOptions) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -5773,7 +5827,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal (undocumented)
+// @internal
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
@@ -7621,6 +7675,13 @@ export interface PullChangesOptions {
     reportProgress?: boolean;
 }
 
+// @internal
+export interface PushChangesOptions {
+    downloadProgressInterval?: number;
+    enableCancellation?: boolean;
+    reportDownloadProgress?: boolean;
+}
+
 // @public
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
@@ -7801,6 +7862,13 @@ export class QPoint3dList {
     unquantize(index: number, out?: Point3d): Point3d;
 }
 
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatSet?: string;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
+}
+
 // @public
 export namespace Quantization {
     const // (undocumented)
@@ -7831,6 +7899,8 @@ export class QueryBinder {
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;
+    // @internal
+    static fromSkippingNullish(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
 }
@@ -8047,6 +8117,9 @@ export class RealityModelDisplaySettings {
     readonly pointCloud: PointCloudDisplaySettings;
     toJSON(): RealityModelDisplayProps | undefined;
 }
+
+// @internal
+export function rebuildIpcError(err: any, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
@@ -9561,6 +9634,9 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     protocolVersion?: number;
 }
 
+// @internal
+export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvokeReturn;
+
 // @beta
 export namespace ServerBasedLocksError {
     const scope = "itwin-ServerBasedLocks";
@@ -10185,6 +10261,12 @@ export interface TabRunProps extends TextBlockComponentProps {
 }
 
 // @beta
+export type TargetPointShape = typeof targetPointShapes[number];
+
+// @beta
+export const targetPointShapes: readonly ["cross", "plus", "circle", "square", "rectangle"];
+
+// @beta
 export type TerminatorShape = typeof terminatorShapes[number];
 
 // @beta
@@ -10431,6 +10513,11 @@ export type TextJustification = "left" | "center" | "right";
 export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
+    showLeaders?: boolean;
+    showTargetPoint?: boolean;
+    showTerminators?: boolean;
+    targetPointOffsetFactor?: number;
+    targetPointShape?: TargetPointShape;
     terminatorHeightFactor?: number;
     terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
@@ -11308,6 +11395,12 @@ export enum TxnAction {
     Reverse = 3
 }
 
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
+}
+
 // @internal
 export interface TxnNotifications {
     // (undocumented)
@@ -11426,6 +11519,9 @@ export enum TypeOfChange {
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
+// @internal
+export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
+
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
@@ -11453,6 +11549,10 @@ export interface VersionedJSON<T> {
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
+    // @beta
+    readonly crsName?: string;
+    // @beta
+    readonly epsg?: number;
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
     readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
@@ -11461,6 +11561,10 @@ export class VerticalCRS implements VerticalCRSProps {
 
 // @public
 export interface VerticalCRSProps {
+    // @beta
+    crsName?: string;
+    // @beta
+    epsg?: number;
     id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 

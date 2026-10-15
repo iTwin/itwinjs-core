@@ -7,9 +7,9 @@
 // It imports both frontend and backend code, which is not legal anywhere.
 // Do not import it in real code!
 
-export * from "./backend/ElectronHost";
-export * from "./common/ElectronIpcInterface";
-export * from "./frontend/ElectronApp";
+export * from "./backend/ElectronHost.js";
+export * from "./common/ElectronIpcInterface.js";
+export * from "./frontend/ElectronApp.js";
 
 /** @docs-package-description
  *

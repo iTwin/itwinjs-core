@@ -73,15 +73,39 @@ Displays values as ratios (e.g., 1:100, 12"=1'). See [Ratio Format Properties](#
   "precision": 1,
   "formatTraits": ["trailZeroes"],
   "composite": {
-    "units": [
-      { "name": "Units.M" },
-      { "name": "Units.M" }
-    ]
+    "units": [{ "name": "Units.M" }, { "name": "Units.M" }]
   }
 }
 ```
 
 This format displays metric scale ratios with 1 decimal place (e.g., `0.01` → `1:100.0`).
+
+### Bearing and Azimuth Format
+
+Displays angular values as compass bearings (e.g., `N45°00'00"E`) or azimuths (e.g., `045°00'00"`). Both require a `revolutionUnit`. See [FormatterSpec]($quantity) and [ParserSpec]($quantity) for the APIs that apply these formats.
+
+```json
+{
+  "type": "Bearing",
+  "revolutionUnit": "Units.REVOLUTION",
+  "composite": {
+    "units": [
+      { "name": "Units.ARC_DEG" },
+      { "name": "Units.ARC_MINUTE" },
+      { "name": "Units.ARC_SECOND" }
+    ]
+  }
+}
+```
+
+**Persistence unit matters.** These format types interpret the persisted magnitude differently depending on `persistenceUnit.phenomenon`:
+
+- **`Units.HORIZONTAL_DIRECTION`** (a phenomenon; e.g. its `Units.HORIZONTAL_DIR_RAD` unit): the value is already a true azimuth (measured clockwise from north) and is formatted/parsed as-is.
+- **`Units.ANGLE`** (a phenomenon; e.g. its `Units.RAD` unit): the value is a raw mathematical angle (measured counter-clockwise from east) and is automatically converted (`90° − θ`) before formatting, and inverse-converted after parsing.
+
+Pick the persistence unit that matches how the value was computed — do not apply the `90° − θ` conversion yourself before or after calling the formatter/parser, since that would double-convert the value.
+
+**`revolutionUnit` (and `azimuthBaseUnit`, if set) must share the same phenomenon as the persistence unit.** These units are resolved against the persistence unit when a `FormatterSpec`/`ParserSpec` is created, and the units provider cannot convert between different phenomena. If your persistence unit's phenomenon is `Units.HORIZONTAL_DIRECTION`, `revolutionUnit` must also be a `Units.HORIZONTAL_DIRECTION` unit (e.g. `Units.HORIZONTAL_DIR_REVOLUTION`, not `Units.REVOLUTION`). A mismatch will fail to resolve and cause incorrect or missing formatting/parsing of bearing/azimuth values.
 
 ## Composite Formats
 
@@ -126,8 +150,6 @@ This format displays values as feet and inches with fractional inch precision:
 ## Station Format Properties
 
 Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
-
-
 
 ### stationOffsetSize
 
@@ -184,13 +206,14 @@ The `ratioType` property determines how the ratio is formatted. This is a requir
 
 ### ratioSeparator
 
-The `ratioSeparator` property specifies the character used to separate the numerator and denominator in the formatted ratio. This is an optional property that defaults to `":"` if not specified. Common separator values include:
+The `ratioSeparator` property specifies the character used to separate the numerator and denominator in the formatted ratio. This is an optional property that defaults to `":"` if not specified. Any surrounding spaces are included in the formatted ratio. Common separator values include:
 
 - `":"` - Standard ratio notation (e.g., `1:2`, `1:100`)
 - `"="` - Equation-style notation, common in architectural scales (e.g., `12"=1'`, `1"=20'`)
+- `" = "` - Equation-style notation with spaces (e.g., `12" = 1'`, `1" = 20'`)
 - `"/"` - Fraction-style notation (e.g., `1/2`, `3/4`)
 
-The separator must be a single character string.
+The separator must contain exactly one non-space character, optionally surrounded by spaces. For example, `"=="` and `"a=a"` are invalid.
 
 ### ratioFormatType
 
@@ -248,20 +271,20 @@ When using composite units for ratio formats, unit labels are displayed when the
 
 ### Ratio Format Examples
 
-| ratioType | ratioFormatType | precision | magnitude | separator | composite.units | Formatted Result |
-| --------- | --------------- | --------- | --------- | --------- | --------------- | ---------------- |
-| NToOne | Decimal | 2 | 1.0 | ":" | - | 1:1 |
-| NToOne | Decimal | 2 | 0.5 | ":" | - | 0.5:1 |
-| OneToN | Decimal | 0 | 0.01 | ":" | - | 1:100 |
-| ValueBased | Decimal | 3 | 2.0 | ":" | - | 2:1 |
-| ValueBased | Decimal | 3 | 0.5 | ":" | - | 1:2 |
-| UseGreatestCommonDivisor | Decimal | 3 | 0.5 | ":" | - | 1:2 |
-| NToOne | Decimal | 2 | 12.0 | "=" | [IN, FT] * | 12"=1' |
-| NToOne | Decimal | 2 | 1.0 | "=" | [IN, FT] * | 1"=1' |
-| NToOne | Fractional | 16 | 1.5 | "=" | [IN, FT] * | 1 1/2"=1' |
-| NToOne | Fractional | 16 | 0.75 | "=" | [IN, FT] * | 3/4"=1' |
+| ratioType                | ratioFormatType | precision | magnitude | separator | composite.units | Formatted Result |
+| ------------------------ | --------------- | --------- | --------- | --------- | --------------- | ---------------- |
+| NToOne                   | Decimal         | 2         | 1.0       | ":"       | -               | 1:1              |
+| NToOne                   | Decimal         | 2         | 0.5       | ":"       | -               | 0.5:1            |
+| OneToN                   | Decimal         | 0         | 0.01      | ":"       | -               | 1:100            |
+| ValueBased               | Decimal         | 3         | 2.0       | ":"       | -               | 2:1              |
+| ValueBased               | Decimal         | 3         | 0.5       | ":"       | -               | 1:2              |
+| UseGreatestCommonDivisor | Decimal         | 3         | 0.5       | ":"       | -               | 1:2              |
+| NToOne                   | Decimal         | 2         | 12.0      | "="       | [IN, FT] \*     | 12"=1'           |
+| NToOne                   | Decimal         | 2         | 1.0       | "="       | [IN, FT] \*     | 1"=1'            |
+| NToOne                   | Fractional      | 16        | 1.5       | "="       | [IN, FT] \*     | 1 1/2"=1'        |
+| NToOne                   | Fractional      | 16        | 0.75      | "="       | [IN, FT] \*     | 3/4"=1'          |
 
-\* *Assumes `composite: { units: [IN(label="\""), FT(label="'")] }`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set*
+\* _Assumes `composite: { units: [IN(label="\""), FT(label="'")] }`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set_
 
 ### Parsing Ratio Strings
 
@@ -304,7 +327,6 @@ The parser supports parsing ratio strings with various formats and handles sever
 5. Calculate ratio: `numerator / denominator`
 6. Apply unit conversion using the format's defined ratio unit
 7. Return the final value in the persistence unit
-
 
 ## Code Examples
 

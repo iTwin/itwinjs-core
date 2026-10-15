@@ -22,6 +22,7 @@ import { StandardTypeNames } from "./StandardTypeNames";
 export interface EnumerationChoice {
   label: string;
   value: string | number;
+  description?: string;
 }
 
 /**

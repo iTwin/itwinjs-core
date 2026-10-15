@@ -9,7 +9,7 @@
 import { Point3d } from "@itwin/core-geometry";
 import { AccuSnap } from "./AccuSnap";
 import { HitListHolder } from "./ElementLocateManager";
-import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import { HitDetail, HitList, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { BeButton, BeButtonEvent } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
@@ -241,21 +241,11 @@ export class TentativePoint {
           const vp = expectDefined(ev.viewport);
           if (vp.isSnapAdjustmentRequired) {
             IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-            const hit = new HitDetail({
-              testPoint: point,
-              viewport: vp,
-              hitSource: HitSource.TentativeSnap,
-              hitPoint: point,
-              sourceId: "",
-              priority: HitPriority.Unknown,
-              distXY: 0,
-              distFraction: 0,
-            });
-
-            const snap = new SnapDetail(hit);
-            this.setCurrSnap(snap);
-            IModelApp.toolAdmin.adjustSnapPoint();
-            this.setPoint(this.getPoint());
+            // NOTE: Apply similar adjustments as ToolAdmin.adjustSnapPoint for snap that isn't hot with AccuDraw is active...
+            IModelApp.toolAdmin.adjustPointToGrid(point, vp);
+            if (!IModelApp.accuDraw.adjustPoint(point, vp, false))
+              IModelApp.toolAdmin.adjustPointToACS(point, vp, true);
+            this.setPoint(point);
           } else {
             IModelApp.accuDraw.adjustPoint(point, vp, false);
             const savePoint = point.clone();

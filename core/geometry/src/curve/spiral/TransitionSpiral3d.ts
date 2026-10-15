@@ -110,6 +110,13 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public get spiralType(): string {
     return this._spiralType;
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Always `false` for `TransitionSpiral3d`.
+   */
+  public override isPhysicallyClosedCurve(_tolerance: number = Geometry.smallMetricDistance, _xyOnly: boolean = false): boolean {
+    return false;
+  }
   /** Return 1/r with convention that exact zero input returns 0 (straight line, zero curvature, infinite radius). */
   public static radiusToCurvature(radius: number): number {
     return (radius === 0.0) ? 0.0 : 1.0 / radius;

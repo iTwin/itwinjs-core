@@ -33,21 +33,21 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 > _Sample code_
 >
 > ```ts
-> const spaceElement: SpatialElement = iModelDb.elements.getElement(
->   "0x1000000001f",
-> ) as SpatialElement;
+> import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 >
-> iModelDb.withPreparedStatement(
->   "SELECT e.ECInstanceId, e.ECClassId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x1000000000a",
->   (stmt: ECSqlStatement) => {
->     stmt.bindRange3d(1, spaceElement.placement.calculateRange());
->     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
->       const row: any = stmt.getRow();
->       console.log(row);
->     }
->   },
+> const spaceElement = iModelDb.elements.getElement("0x1000000001f") as SpatialElement;
+> const params = new QueryBinder().bindRange3d(1, spaceElement.placement.calculateRange());
+> const reader = iModelDb.createQueryReader(
+>   "SELECT e.ECInstanceId AS id, ec_classname(e.ECClassId, 's.c') AS className, e.CodeValue AS codeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.ECInstanceId MATCH iModel_spatial_overlap_aabb(?) AND e.Category.Id=0x1000000000a",
+>   params,
+>   { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
 > );
+> for await (const row of reader) {
+>   console.log(row.toRow());
+> }
 > ```
+>
+> The aliases and `ec_classname()` projection produce the property names and class-name values shown below without relying on deprecated row formatting. See [ECSQL row formats](../ECSQLRowFormat.md).
 >
 > _Result_
 >

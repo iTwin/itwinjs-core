@@ -34,6 +34,7 @@ describe("Integrity Check Tests", () => {
       expect(getIntegrityCheckName("checkDataSchema")).to.equal("Check Data Schema");
       expect(getIntegrityCheckName("checkSchemaLoad")).to.equal("Check Schema Load");
       expect(getIntegrityCheckName("checkMissingChildRows")).to.equal("Check Missing Child Rows");
+      expect(getIntegrityCheckName("checkDivergedPropMaps")).to.equal("Check Diverged Property Maps");
     });
 
     it("should return the correct name when sqlCommand string is passed", () => {
@@ -47,6 +48,7 @@ describe("Integrity Check Tests", () => {
       expect(getIntegrityCheckName("check_data_schema")).to.equal("Check Data Schema");
       expect(getIntegrityCheckName("check_schema_load")).to.equal("Check Schema Load");
       expect(getIntegrityCheckName("check_missing_child_rows")).to.equal("Check Missing Child Rows");
+      expect(getIntegrityCheckName("check_diverged_prop_maps")).to.equal("Check Diverged Property Maps");
     });
 
     it("should return the input string if check type is not found", () => {
@@ -278,6 +280,25 @@ describe("Integrity Check Tests", () => {
       expect(results).to.have.lengthOf(1);
       expect(results[0]).to.deep.equal({ sno: 1, class: "Element", id: "1", classId: "2", missingRowInTables: "ElementTable" });
     });
+
+    it("should return CheckDivergedPropMapsResultRow for checkDivergedPropMaps", async () => {
+      const mockResults = [
+        { sno: 1, derivedClassId: "1", derivedClassName: "Element", baseClassId: "2", baseClassName: "BaseElement", propertyName: "testProperty", baseColumn: "base_column", divergedColumn: "diverged_column" },
+      ];
+
+      const asyncIterator = async function* () {
+        for (const result of mockResults) {
+          yield result;
+        }
+      };
+
+      iModelStub.createQueryReader.returns(asyncIterator() as any);
+
+      const results = await performSpecificIntegrityCheck(iModelStub as any, "checkDivergedPropMaps");
+
+      expect(results).to.have.lengthOf(1);
+      expect(results[0]).to.deep.equal({ sno: 1, derivedClassId: "1", derivedClassName: "Element", baseClassId: "2", baseClassName: "BaseElement", propertyName: "testProperty", baseColumn: "base_column", divergedColumn: "diverged_column" });
+    });
   });
 });
 
@@ -312,7 +333,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
     expect(results[0]).to.have.property("passed").that.equals(true);
     expect(results[0]).to.have.property("results").that.is.an("array");
-    expect(results[0].results.length).to.equal(9);
+    expect(results[0].results.length).to.equal(10);
     assert(results[0].results.every((row) => (row as QuickIntegrityCheckResultRow).passed === true), "All specific checks should pass");
   });
 
@@ -321,13 +342,13 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results).to.have.lengthOf(1);
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
     expect(results[0]).to.have.property("passed").that.equals(true);
-    expect(results[0].results.length).to.equal(9);
+    expect(results[0].results.length).to.equal(10);
 
     const results2 = await iModel.integrityCheck({ quickCheck: false });
     expect(results2).to.have.lengthOf(1);
     expect(results2[0]).to.have.property("check").that.equals("Quick Check");
     expect(results2[0]).to.have.property("passed").that.equals(true);
-    expect(results2[0].results.length).to.equal(9);
+    expect(results2[0].results.length).to.equal(10);
 
     const results3 = await iModel.integrityCheck({
       quickCheck: false,
@@ -342,12 +363,13 @@ describe("iModelDb integrityCheck Tests", () => {
         checkDataSchema: false,
         checkSchemaLoad: false,
         checkMissingChildRows: false,
+        checkDivergedPropMaps: false,
       }
     });
     expect(results3).to.have.lengthOf(1);
     expect(results3[0]).to.have.property("check").that.equals("Quick Check");
     expect(results3[0]).to.have.property("passed").that.equals(true);
-    expect(results3[0].results.length).to.equal(9);
+    expect(results3[0].results.length).to.equal(10);
   });
 
   it("should throw an error when iModel is closed", async () => {
@@ -374,10 +396,11 @@ describe("iModelDb integrityCheck Tests", () => {
         checkDataSchema: true,
         checkSchemaLoad: true,
         checkMissingChildRows: true,
+        checkDivergedPropMaps: true,
       },
     });
     expect(results).to.be.an("array");
-    expect(results).to.have.lengthOf(10);
+    expect(results).to.have.lengthOf(11);
 
     // Verify each check is present and has the expected structure
     const checkNames = results.map((r) => r.check);
@@ -392,6 +415,7 @@ describe("iModelDb integrityCheck Tests", () => {
       "Check Data Schema",
       "Check Schema Load",
       "Check Missing Child Rows",
+      "Check Diverged Property Maps",
     ]);
 
     // All checks should pass
@@ -452,7 +476,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(justQuickCheck).to.have.lengthOf(1);
     expect(justQuickCheck[0]).to.have.property("check").that.equals("Quick Check");
     expect(justQuickCheck[0]).to.have.property("passed").that.equals(false);
-    expect(justQuickCheck[0].results.length).to.equal(9);
+    expect(justQuickCheck[0].results.length).to.equal(10);
     const foreignKeyCheck = justQuickCheck[0].results.find((row) => (row as QuickIntegrityCheckResultRow).check === "Check Link Table Foreign Key Ids");
     assert.isDefined(foreignKeyCheck, "Check Link Table Foreign Key Ids sub-check should be present in quickCheck results");
     expect((foreignKeyCheck as QuickIntegrityCheckResultRow).passed).to.equal(false, "Check Link Table Foreign Key Ids should report failure");
@@ -462,7 +486,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
-    expect(results[0].results.length).to.equal(9);
+    expect(results[0].results.length).to.equal(10);
     assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
@@ -528,7 +552,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
-    expect(results[0].results.length).to.equal(9);
+    expect(results[0].results.length).to.equal(10);
     assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
@@ -560,7 +584,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(resultsAfterClearCache[0]).to.have.property("check").that.equals("Quick Check");
     expect(resultsAfterClearCache[0]).to.have.property("passed").that.equals(false);
     expect(resultsAfterClearCache[0]).to.have.property("results").that.is.an("array");
-    expect(resultsAfterClearCache[0].results.length).to.equal(9);
+    expect(resultsAfterClearCache[0].results.length).to.equal(10);
     assert(resultsAfterClearCache[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(resultsAfterClearCache[1]).to.have.property("passed").that.equals(true);
     expect(resultsAfterClearCache[1]).to.have.property("results").that.is.an("array").that.is.empty;
@@ -626,7 +650,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
-    expect(results[0].results.length).to.equal(9);
+    expect(results[0].results.length).to.equal(10);
     assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;

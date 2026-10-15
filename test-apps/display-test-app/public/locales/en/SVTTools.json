@@ -206,6 +206,9 @@
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
     },
+    "InvokeFrontendIpc": {
+      "keyin": "dta invoke frontend ipc"
+    },
     "ToggleSecondaryIModel": {
       "keyin": "dta imodel attach"
     }

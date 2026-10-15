@@ -11,12 +11,14 @@ import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatsProviderContext } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
+import { SyncFormatsProvider } from '@itwin/core-quantity';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
@@ -433,6 +435,8 @@ export enum ECClassModifier {
 // @public
 export class ECName {
     constructor(name: string);
+    // @internal
+    static decode(name: string): string;
     decode(): string;
     static encode(input: string): ECName;
     get name(): string;
@@ -907,14 +911,15 @@ export interface FormatSet {
 }
 
 // @beta
-export class FormatSetFormatsProvider implements MutableFormatsProvider {
+export class FormatSetFormatsProvider implements MutableFormatsProvider, SyncFormatsProvider {
     constructor(props: {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
     addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
-    getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
+    getFormatSync(input: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     removeFormat(name: string): Promise<void>;
@@ -922,6 +927,13 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
 // @internal (undocumented)
 export function getFormatProps(format: Format | OverrideFormat): FormatProps;
+
+// @beta
+export interface GetSchemaViewArgs {
+    // @internal
+    readonly forceReload?: boolean;
+    readonly schemas?: readonly string[];
+}
 
 // @public @preview
 export interface HasMixins {
@@ -2143,6 +2155,7 @@ export class SchemaCache implements ISchemaLocater {
     getAllSchemas(): Iterable<Schema>;
     getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
+    getSchemaInfoSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): SchemaInfo | undefined;
     getSchemaItems(): Iterable<SchemaItem>;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     schemaExists(schemaKey: SchemaKey): boolean;
@@ -2162,6 +2175,8 @@ export class SchemaContext {
     get classHierarchy(): ECClassHierarchy;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
+    // @internal
+    getCachedSchemaInfoSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): SchemaInfo | undefined;
     // @internal
     getCachedSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     getKnownSchemas(): Iterable<Schema>;
@@ -2226,11 +2241,12 @@ export interface SchemaData {
 }
 
 // @beta
-export class SchemaFormatsProvider implements FormatsProvider {
+export class SchemaFormatsProvider implements FormatsProvider, SyncFormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
@@ -2492,6 +2508,55 @@ export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
 
+// @beta
+export class SchemaManifest {
+    constructor(entries: readonly SchemaManifestEntry[]);
+    // (undocumented)
+    get entries(): readonly SchemaManifestEntry[];
+    findByName(name: string): SchemaManifestEntry | undefined;
+    static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest;
+    getAvailableSchemaNames(): string[];
+    getSchemaClosure(requestedNames: Iterable<string>): string[];
+    get schemaCount(): number;
+    // @internal
+    sortInDependencyOrder(schemaNames: Iterable<string>): string[];
+}
+
+// @beta
+export interface SchemaManifestEntry {
+    // (undocumented)
+    readonly minorVersion: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly readVersion: number;
+    readonly references: readonly SchemaManifestEntry[];
+    // (undocumented)
+    readonly writeVersion: number;
+}
+
+// @beta
+export interface SchemaManifestReferenceRow {
+    // (undocumented)
+    readonly sourceECInstanceId: number;
+    // (undocumented)
+    readonly targetECInstanceId: number;
+}
+
+// @beta
+export interface SchemaManifestSchemaRow {
+    // (undocumented)
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly versionMajor: number;
+    // (undocumented)
+    readonly versionMinor: number;
+    // (undocumented)
+    readonly versionWrite: number;
+}
+
 // @public @preview
 export enum SchemaMatchType {
     // (undocumented)
@@ -2584,17 +2649,17 @@ export class SchemaView {
     // @internal (undocumented)
     readonly [_storage]: SchemaViewStorage;
     // @internal
-    constructor(data: SchemaViewData, schemaToken?: string);
+    constructor(data: SchemaViewData, schemaToken?: string, mergeContext?: SchemaViewMergeContext);
     // @internal (undocumented)
     buildDerivedClassMap(): ReadonlyMap<number, readonly number[]>;
     get classCount(): number;
+    // @internal
+    static createMergeable(schemaToken?: string): SchemaView;
     findClass(qualifiedName: string): SchemaView.Class | undefined;
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
     findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
     static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView;
-    // @internal
-    static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView;
     getSchema(name: string): SchemaView.Schema | undefined;
     getSchemaByAlias(alias: string): SchemaView.Schema | undefined;
     getSchemas(): IterableIterator<SchemaView.Schema>;
@@ -2603,6 +2668,8 @@ export class SchemaView {
     get isOutdated(): boolean;
     // @internal
     markOutdated(): void;
+    // @internal
+    mergeFragment(blob: Uint8Array): void;
     // @internal (undocumented)
     resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[];
     // @internal (undocumented)
@@ -2656,7 +2723,6 @@ export namespace SchemaView {
         isStruct(): boolean;
         // (undocumented)
         isView(): boolean;
-        // (undocumented)
         get label(): string;
         get mixins(): readonly Class[];
         // (undocumented)
@@ -2687,7 +2753,6 @@ export namespace SchemaView {
         readonly idx: number;
         // (undocumented)
         get isStrict(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2704,7 +2769,6 @@ export namespace SchemaView {
         get description(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2721,7 +2785,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2816,7 +2879,6 @@ export namespace SchemaView {
         get fullName(): string;
         // @internal (undocumented)
         readonly idx: number;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get name(): string;
@@ -2869,7 +2931,6 @@ export namespace SchemaView {
         // @internal (undocumented)
         readonly idx: number;
         get isHidden(): boolean;
-        // (undocumented)
         get label(): string;
         // (undocumented)
         get minorVersion(): number;
@@ -2894,6 +2955,12 @@ export namespace SchemaView {
     }
 }
 
+// @beta
+export interface SchemaViewBlob {
+    readonly data: Uint8Array;
+    readonly schemaToken: string;
+}
+
 // @internal
 export class SchemaViewBuilder {
     addClass(data: ClassData): number;
@@ -2907,13 +2974,20 @@ export class SchemaViewBuilder {
     addPropertyRef(ref: PropertyRef): void;
     addRelConstraint(data: RelConstraintData): number;
     addSchema(data: SchemaData): number;
+    assembleData(): SchemaViewData;
     build(schemaToken?: string): SchemaView;
+    get classCount(): number;
     get classMixinCount(): number;
     get constraintClassRefCount(): number;
+    get enumerationCount(): number;
     get enumeratorCount(): number;
+    extendLookupMaps(): void;
     getString(sid: number): string;
     internString(value: string | undefined): number;
+    get koqCount(): number;
+    get propCategoryCount(): number;
     get propertyRefCount(): number;
+    get schemaCount(): number;
     updateClass(classIdx: number, data: ClassData): void;
     updateSchemaRanges(schemaIdx: number, ranges: {
         classRangeStart: number;
@@ -2970,7 +3044,44 @@ export interface SchemaViewData {
 }
 
 // @beta
+export interface SchemaViewDataProvider {
+    fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
+    fetchFullBlob(): Promise<SchemaViewBlob>;
+    fetchManifest(): Promise<SchemaManifest>;
+    fetchSchemaToken(): Promise<string>;
+}
+
+// @beta
 export const schemaViewFormatVersion = 1;
+
+// @beta
+export class SchemaViewManager {
+    constructor(dataProvider: SchemaViewDataProvider);
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
+    invalidateIfChanged(): Promise<void>;
+    reset(): void;
+}
+
+// @internal
+export class SchemaViewMergeContext {
+    // (undocumented)
+    readonly builder: SchemaViewBuilder;
+    // (undocumented)
+    readonly catRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly classResolver: Map<string, number>;
+    // (undocumented)
+    readonly classRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly enumRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly koqRowIdToIdx: Map<number, number>;
+    mergeBlob(data: Uint8Array): void;
+    // (undocumented)
+    readonly schemaECIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly schemaNames: string[];
+}
 
 // @beta
 export enum SchemaViewPrimitiveType {

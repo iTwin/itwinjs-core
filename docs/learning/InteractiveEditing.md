@@ -22,6 +22,11 @@ While Txns themselves hold net changes for a single transaction, they are stored
 
 Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is used for operations on Txns. Likewise, every [BriefcaseConnection]($frontend) has a [BriefcaseTxns]($frontend). `TxnManager` and `BriefcaseTxns` emit events with information about "what happened" as changes are made to the database, permitting applications to remain synchronized with the persistent state of the iModel by, for example, updating in-memory state or (on the frontend) refreshing the contents of [Viewport]($frontend)s and UI components.
 
+The backend and frontend change events describe the same transaction activity, but their payload types are different:
+
+- [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) supply [TxnChangedEntitiesWithMetadata]($backend). Use `metadata.classFullName` for an exact class match or `metadata.is("Schema:BaseClass")` to include derived classes; the backend payload does not provide the frontend `filter` method.
+- [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend) supply [TxnEntityChanges]($frontend). Each iterated change has `metadata.classFullName`, and [TxnEntityChanges.filter]($frontend) can filter by class metadata and change type.
+
 ## Pushing Changesets to IModelHub
 
 Txns hold local changes to a single briefcase. When users are ready to send the result of all their local changes to IModelHub, the local Txns must be merged together to form a Changeset. Changesets hold the *net changes* made during the session. As above, if an element is added in one Txn and then deleted in a subsequent Txn, the result is no change in the Changeset.

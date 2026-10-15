@@ -154,14 +154,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     for (const match of matchingAttributions)
       copyrights.push(match.copyrightMessage);
 
-    let copyrightMsg = "";
-    for (let i = 0; i < copyrights.length; ++i) {
-      if (i > 0)
-        copyrightMsg += "<br>";
-      copyrightMsg += copyrights[i];
-    }
-
-    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
+    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", noticeLines: copyrights }));
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {

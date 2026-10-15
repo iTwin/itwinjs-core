@@ -1245,7 +1245,7 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "run",
-        "webpackTestWorker"
+        "build:test-worker"
       ],
     }
   ],
@@ -1260,7 +1260,7 @@
         "Attach to Vitest Browser",
         "Run Vitest Browser"
       ],
-      "preLaunchTask": "Run webpack for frontend test worker",
+      "preLaunchTask": "Build frontend test worker",
       "stopAll": true
     },
     {

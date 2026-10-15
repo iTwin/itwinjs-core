@@ -83,8 +83,10 @@ class AccuDrawShortcutInputCollector extends InputCollector {
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (this._impl.doDataButtonDown(ev))
+    if (this._impl.doDataButtonDown(ev)) {
+      IModelApp.accuDraw.processHints(); // Process pending hints pre-exit so they don't override savedState "ignoreFlags"...
       await this.exitTool();
+    }
     return EventHandled.No;
   }
 
@@ -129,8 +131,10 @@ class AccuDrawShortcutViewTool extends ViewTool {
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (this._impl.doDataButtonDown(ev))
+    if (this._impl.doDataButtonDown(ev)) {
+      IModelApp.accuDraw.processHints(); // Process pending hints pre-exit so they don't override savedState "ignoreFlags"...
       await this.exitTool();
+    }
     return EventHandled.No;
   }
 

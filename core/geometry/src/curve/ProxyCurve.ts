@@ -59,11 +59,10 @@ export abstract class ProxyCurve extends CurvePrimitive {
   /** Return a deep clone. This override removes the undefined variant return. */
   public abstract override clone(): ProxyCurve;
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): ProxyCurve | undefined {
+  public override cloneTransformed(transform: Transform): ProxyCurve {
     const myClone = this.clone();
-    if (myClone.tryTransformInPlace(transform))
-      return myClone;
-    return undefined;
+    myClone.tryTransformInPlace(transform);
+    return myClone;
   }
   /** Implement by proxyCurve. Subclasses may eventually override this default implementation. */
   public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {

@@ -8,6 +8,7 @@ import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
 import { Id64String } from "@itwin/core-bentley";
 import { FormatSet } from "@itwin/ecschema-metadata";
+import { DtaFrontendInfoResult } from "./DtaFrontendIpcInterface";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {
@@ -35,4 +36,10 @@ export class DtaRpcInterface extends RpcInterface {
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
   public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _defaultTextStyleId: Id64String, _categoryId: Id64String, _modelId: Id64String, _placementProps: PlacementProps, _wantDebugGeometry?: boolean, _renderPriority?: { annotation?: number, annotationLabels?: number }): Promise<Uint8Array | undefined> { return this.forward(arguments); }
   public async getFormatSetFromFile(_filename: string): Promise<FormatSet> { return this.forward(arguments); }
+
+  /** Demonstrates backend-to-frontend Ipc invoke: asks the backend to call back into the frontend via
+   * `IpcHost.invoke`/`IpcHost.makeIpcProxy` and returns the value the frontend computed.
+   * @see DtaFrontendIpcInterface
+   */
+  public async invokeFrontendIpc(): Promise<DtaFrontendInfoResult> { return this.forward(arguments); }
 }

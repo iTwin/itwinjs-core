@@ -409,6 +409,92 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
     }
   });
 
+  // Regression for iTwin/itwinjs-backlog#2435: rebasing a code swap must not cascade-delete derived-class rows.
+  it("preserves both drawing graphics when rebasing a local code swap over an unrelated incoming change", async () => {
+    HubMock.startup("CodeSwapRebaseCascadeTest", KnownTestLocations.outputDir);
+    let far: BriefcaseDb | undefined;
+    let local: BriefcaseDb | undefined;
+
+    try {
+      const iModelId = await HubMock.createNewIModel({
+        accessToken: "far-user",
+        iTwinId: HubMock.iTwinId,
+        iModelName: "CodeSwapRebaseCascadeTest",
+        description: "CodeSwapRebaseCascadeTest",
+      });
+      const source = far = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "far-user", iTwinId: HubMock.iTwinId, iModelId });
+      source.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      await source.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const { drawingModelId, drawingCategoryId, codeSpecId } = withEditTxn(source, "setup code swap rebase", (txn) => {
+        const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(source, "DrawingModel"));
+        const categoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+        const specId = source.codeSpecs.insert(txn, "CodeSwapRebaseCascadeCodeSpec", CodeScopeSpec.Type.Model);
+        return { drawingModelId: modelId, drawingCategoryId: categoryId, codeSpecId: specId };
+      });
+      await source.pushChanges({ description: "setup" });
+
+      const target = local = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "local-user", iTwinId: HubMock.iTwinId, iModelId });
+      target.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      const codeA = new Code({ spec: codeSpecId, scope: drawingModelId, value: "CODE_A" });
+      const codeB = new Code({ spec: codeSpecId, scope: drawingModelId, value: "CODE_B" });
+
+      await source.locks.acquireLocks({ shared: drawingModelId });
+      const { elementA, elementB, unrelatedId } = withEditTxn(source, "insert code swap elements", (txn) => {
+        const props: GeometricElement2dProps = {
+          classFullName: "BisCore:DrawingGraphic",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+        };
+        return {
+          elementA: txn.insertElement({ ...props, code: codeA }),
+          elementB: txn.insertElement({ ...props, code: codeB }),
+          unrelatedId: txn.insertElement(props),
+        };
+      });
+      await source.pushChanges({ description: "insert code swap elements" });
+      await target.pullChanges();
+
+      await target.locks.acquireLocks({ exclusive: [elementA, elementB] });
+      withEditTxn(target, "local code swap", (txn) => {
+        // The session captures only the net swap, discarding this temporary value.
+        txn.updateElement({ id: elementA, code: new Code({ spec: codeSpecId, scope: drawingModelId, value: "CODE_TEMP" }) });
+        txn.updateElement({ id: elementB, code: codeA });
+        txn.updateElement({ id: elementA, code: codeB });
+      });
+      chai.expect(target.txns.hasPendingTxns).to.be.true;
+
+      // Force a genuine rebase of the local swap, rather than a fast-forward pull.
+      await source.locks.acquireLocks({ exclusive: unrelatedId });
+      withEditTxn(source, "unrelated incoming change", (txn) => {
+        txn.updateElement({ id: unrelatedId, userLabel: "remote update" });
+      });
+      await source.pushChanges({ description: "unrelated incoming change" });
+
+      let rebaseCount = 0;
+      target.txns.rebaser.onRebaseBegin.addListener(() => { ++rebaseCount; });
+      await target.pullChanges();
+      chai.expect(rebaseCount).to.equal(1);
+      chai.expect(target.txns.hasPendingTxns).to.be.true;
+      target.clearCaches();
+
+      const a = target.elements.getElementProps<GeometricElement2dProps>(elementA);
+      const b = target.elements.getElementProps<GeometricElement2dProps>(elementB);
+      chai.expect(a.code).to.deep.equal(codeB.toJSON());
+      chai.expect(b.code).to.deep.equal(codeA.toJSON());
+      chai.expect(a.category).to.equal(drawingCategoryId);
+      chai.expect(b.category).to.equal(drawingCategoryId);
+      chai.expect(a.model).to.equal(drawingModelId);
+      chai.expect(b.model).to.equal(drawingModelId);
+      chai.expect(target.elements.getElementProps(unrelatedId).userLabel).to.equal("remote update");
+    } finally {
+      far?.close();
+      local?.close();
+      HubMock.shutdown();
+    }
+  });
+
   it("single-transaction code swap reverts to old behaviour (swap not applied) when noUpdateLoop is true", async () => {
     HubMock.startup("CodeSwapNoUpdateLoopTest", KnownTestLocations.outputDir);
     let b1: BriefcaseDb | undefined;

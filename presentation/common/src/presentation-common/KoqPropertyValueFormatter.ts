@@ -16,7 +16,7 @@ import { InvertedUnit, KindOfQuantity, SchemaContext, SchemaFormatsProvider, Sch
  *
  * @public
  *
- * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
+ * @deprecated in 5.1 - might be removed in next major version. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface UnitSystemFormat {
   unitSystems: UnitSystemKey[];
@@ -44,7 +44,7 @@ export interface UnitSystemFormat {
  *
  * @public
  *
- * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
+ * @deprecated in 5.1 - might be removed in next major version. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface FormatsMap {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -86,7 +86,7 @@ export class KoqPropertyValueFormatter {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
 
-  /** @deprecated in 5.1 - will not be removed until after 2026-08-08. Use the overload that takes a props object. */
+  /** @deprecated in 5.1 - might be removed in next major version. Use the overload that takes a props object. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   constructor(schemaContext: SchemaContext, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider);
   constructor(props: KoqPropertyValueFormatterProps);
@@ -123,6 +123,33 @@ export class KoqPropertyValueFormatter {
       return undefined;
     }
     return formatterSpec.applyFormatting(value);
+  }
+
+  /**
+   * Creates a formatter that reuses formatter specs for repeated formatting options.
+   * Each call creates an independent cache that lasts as long as the returned formatter.
+   * Cached specs and missing-format results are not invalidated by changes to formats,
+   * default formats, or schemas. Create a new formatter to pick up those changes.
+   * Failed spec lookups are not cached and may be retried by subsequent calls.
+   * @returns A formatter with its own cache, suitable for a single content-formatting operation.
+   */
+  public createCachedFormatter(): { format(value: number, options: FormatOptions): Promise<string | undefined> } {
+    const specs = new Map<string, Promise<FormatterSpec | undefined>>();
+    return {
+      format: async (value, options) => {
+        const key = JSON.stringify([options.koqName, options.unitSystem, Object.entries(options.formatOverride ?? {})]);
+        let specPromise = specs.get(key);
+        if (!specPromise) {
+          specPromise = this.getFormatterSpec(options).catch((error: unknown) => {
+            specs.delete(key);
+            throw error;
+          });
+          specs.set(key, specPromise);
+        }
+        const spec = await specPromise;
+        return spec?.applyFormatting(value);
+      },
+    };
   }
 
   public async getFormatterSpec(options: FormatOptions) {

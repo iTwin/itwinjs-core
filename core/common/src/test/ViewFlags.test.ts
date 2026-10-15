@@ -10,7 +10,7 @@ import {
 function invertDefaults(): ViewFlags {
   const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill };
   for (const propname of Object.keys(ViewFlags.defaults)) {
-    const key = propname as keyof ViewFlags;
+    const key = propname as keyof ViewFlagsProperties;
     const value = ViewFlags.defaults[key];
     if (typeof value === "boolean")
       (invertedProperties as any)[key] = !value;

@@ -28,8 +28,8 @@
     },
     {
       "type": "npm",
-      "label": "Run webpack for frontend test worker",
-      "script": "webpackTestWorker",
+      "label": "Build frontend test worker",
+      "script": "build:test-worker",
       "path": "core/frontend/",
       "problemMatcher": []
     },

@@ -295,6 +295,7 @@ export interface PresentationManagerProps {
     activeLocale?: string;
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
+    // @deprecated
     clientId?: string;
     // @deprecated
     defaultFormats?: FormatsMap;

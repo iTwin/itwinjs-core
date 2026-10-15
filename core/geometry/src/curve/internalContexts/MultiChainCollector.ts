@@ -42,8 +42,6 @@ export class MultiChainCollector {
   private _chains: CurvePrimitive[][];
   /** Largest gap distance to close. */
   private _gapTolerance: number;
-  /** End point snap tolerance. Internally, this is an upper bound on gapTolerance. */
-  private _snapTolerance: number;
   /** Planarity tolerance, used to determine whether to return a Path or Loop in `grabResult(true)`. If undefined, always Path. */
   private _planeTolerance: number | undefined;
 
@@ -54,30 +52,28 @@ export class MultiChainCollector {
 
   /** Initialize with an empty array of chains.
    * @param gapTolerance distance tolerance for calling endpoints identical
-   * @param planeTolerance distance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
+   * @param planeTolerance distance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within this tolerance of a plane.
    */
   public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance?: number) {
     this._chains = [];
     this._gapTolerance = gapTolerance;
-    this._snapTolerance = Geometry.smallMetricDistance;
     this._planeTolerance = planeTolerance;
   }
   /**
    * Find a chain (with index _other than_ exceptChainIndex) that starts or ends at xyz
    * @param xyz endpoint to check
-   * @param distanceTol absolute distance tolerance for equating endpoints
    * @param exceptChainIndex index of chain to ignore. Send -1 to consider all chains.
    */
-  private findAnyChainToConnect(xyz: Point3d, distanceTol: number, exceptChainIndex: number = -1): { chainIndex: number, atEnd: boolean } | undefined {
+  private findAnyChainToConnect(xyz: Point3d, exceptChainIndex: number = -1): { chainIndex: number, atEnd: boolean } | undefined {
     for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
       if (exceptChainIndex === chainIndexA)
         continue;
       const chain = this._chains[chainIndexA];
       this._xyzWork1 = chain[chain.length - 1].endPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz, distanceTol))
+      if (this._xyzWork1.isAlmostEqual(xyz, this._gapTolerance))
         return { chainIndex: chainIndexA, atEnd: true };
       this._xyzWork1 = chain[0].startPoint(this._xyzWork1);
-      if (this._xyzWork1.isAlmostEqual(xyz, distanceTol))
+      if (this._xyzWork1.isAlmostEqual(xyz, this._gapTolerance))
         return { chainIndex: chainIndexA, atEnd: false };
     }
     return undefined;
@@ -89,11 +85,7 @@ export class MultiChainCollector {
    * @param candidate curve to add to the context
    */
   public captureCurvePrimitive(candidate: CurvePrimitive) {
-    if (this._snapTolerance < this._gapTolerance) {
-      if (this.attachPrimitiveToAnyChain(candidate, this._snapTolerance))
-        return;
-    }
-    if (this.attachPrimitiveToAnyChain(candidate, this._gapTolerance))
+    if (this.attachPrimitiveToAnyChain(candidate))
       return;
     this._chains.push([candidate]);
   }
@@ -112,7 +104,7 @@ export class MultiChainCollector {
     }
   }
   /** If allowed by the geometry type, move an endpoint. */
-  private static simpleEndPointMove(curve: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
+  private simpleEndPointMove(curve: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
     if (curve instanceof (LineSegment3d)) {
       if (atEnd) {
         curve.point1Ref.setFrom(to);
@@ -132,39 +124,44 @@ export class MultiChainCollector {
    * * All z-coordinates are ignored.
    * @param curve0 first curve, assumed to end close to the start of curve1
    * @param curve1 second curve, assumed to start close to the end of curve0
-   * @param gapTolerance max distance to move a curve start/end point
    * @returns whether curve start/end point(s) moved
    */
-  private static moveHeadOrTail(curve0: CurvePrimitive, curve1: CurvePrimitive, gapTolerance: number): boolean {
+  private moveHeadOrTail(curve0: CurvePrimitive, curve1: CurvePrimitive): boolean {
     const xyz0 = curve0.endPoint();
     const xyz1 = curve1.startPoint();
     const minShift = Geometry.smallMetricDistance * 0.001;
-    const d01 = xyz0.distanceXY(xyz1);
-    if (d01 < minShift)
+    let dist2 = xyz0.distanceSquaredXY(xyz1);
+    if (dist2 <= minShift * minShift)
+      return false; // if the move would be miniscule, don't bother
+    const gap2 = this._gapTolerance * this._gapTolerance;
+    if (dist2 > gap2)
       return false;
     // try lines and linestrings
-    if (d01 < gapTolerance) {
-      if (this.simpleEndPointMove(curve1, false, xyz0) || this.simpleEndPointMove(curve0, true, xyz1))
-        return true;
-    }
+    if (this.simpleEndPointMove(curve1, false, xyz0) || this.simpleEndPointMove(curve0, true, xyz1))
+      return true;
+
     // try other primitive types
+    if (!(curve0 instanceof Arc3d && curve1 instanceof Arc3d))
+      return false; // currently we only consider 2 arcs
+
     const intersections = CurveCurve.intersectionXYPairs(curve0, true, curve1, true);
-    const shiftFactor = 5.0;
-    for (const pair of intersections) {
-      const detail0 = pair.detailA;
-      const detail1 = pair.detailB;
-      const distance0 = detail0.point.distanceXY(xyz0);
-      const distance1 = detail1.point.distanceXY(xyz1);
-      if (distance0 < shiftFactor * gapTolerance && distance1 < shiftFactor * gapTolerance) {
-        if (curve0 instanceof Arc3d && curve1 instanceof Arc3d) {
-          const radians0End = curve0.sweep.fractionToRadians(detail0.fraction);
-          curve0.sweep.setStartEndRadians(curve0.sweep.startRadians, radians0End);
-          const radians1Start = curve1.sweep.fractionToRadians(detail1.fraction);
-          curve1.sweep.setStartEndRadians(radians1Start, curve1.sweep.endRadians);
-          return true;
-        }
-        // TODO: other combinations of types
+    let iClosest = -1;
+    let minDist2 = Infinity;
+    for (let i = 0; i < intersections.length; ++i) { // find intersection closest to the joint
+      const dist20 = intersections[i].detailA.point.distanceSquaredXY(xyz0);
+      const dist21 = intersections[i].detailB.point.distanceSquaredXY(xyz1);
+      dist2 = dist20 + dist21;
+      if (dist20 <= gap2 && dist21 <= gap2 && dist2 < minDist2) {
+        minDist2 = dist2;
+        iClosest = i;
       }
+    }
+    if (iClosest >= 0) { // move arc ends to the intersection point
+      const radians0End = curve0.sweep.fractionToRadians(intersections[iClosest].detailA.fraction);
+      curve0.sweep.setStartEndRadians(curve0.sweep.startRadians, radians0End);
+      const radians1Start = curve1.sweep.fractionToRadians(intersections[iClosest].detailB.fraction);
+      curve1.sweep.setStartEndRadians(radians1Start, curve1.sweep.endRadians);
+      return true;
     }
     return false;
   }
@@ -172,45 +169,45 @@ export class MultiChainCollector {
    * * If a "nearby" connection is possible, insert the candidate in the chain and force endpoint match.
    * * Otherwise start a new chain.
    */
-  private attachPrimitiveToAnyChain(candidate: CurvePrimitive, distanceTol: number): boolean {
-    if (candidate.curveLength() < distanceTol) {
+  private attachPrimitiveToAnyChain(candidate: CurvePrimitive): boolean {
+    if (candidate.curveLength() < this._gapTolerance) {
       return true;
     } else {
       this._xyzWork0 = candidate.startPoint(this._xyzWork0);
-      let connect = this.findAnyChainToConnect(this._xyzWork0, distanceTol);
+      let connect = this.findAnyChainToConnect(this._xyzWork0);
       if (connect) {
         if (connect.atEnd) {
           const chain = this._chains[connect.chainIndex];
           const index0 = chain.length - 1;
           this._chains[connect.chainIndex].push(candidate);
-          MultiChainCollector.moveHeadOrTail(chain[index0], chain[index0 + 1], this._gapTolerance);
-          this.searchAndMergeChainIndex(connect.chainIndex, distanceTol);
+          this.moveHeadOrTail(chain[index0], chain[index0 + 1]);
+          this.searchAndMergeChainIndex(connect.chainIndex);
           return true;
         } else {
           candidate.reverseInPlace();
           const chain = this._chains[connect.chainIndex];
           chain.splice(0, 0, candidate);
-          MultiChainCollector.moveHeadOrTail(chain[0], chain[1], this._gapTolerance);
-          this.searchAndMergeChainIndex(connect.chainIndex, distanceTol);
+          this.moveHeadOrTail(chain[0], chain[1]);
+          this.searchAndMergeChainIndex(connect.chainIndex);
           return true;
         }
       } else {
         this._xyzWork0 = candidate.endPoint(this._xyzWork0);
-        connect = this.findAnyChainToConnect(this._xyzWork0, distanceTol);
+        connect = this.findAnyChainToConnect(this._xyzWork0);
         if (connect) {
           if (connect.atEnd) {
             candidate.reverseInPlace();
             const chain = this._chains[connect.chainIndex];
             const index0 = chain.length - 1;
             this._chains[connect.chainIndex].push(candidate);
-            MultiChainCollector.moveHeadOrTail(chain[index0], chain[index0 + 1], this._gapTolerance);
-            this.searchAndMergeChainIndex(connect.chainIndex, distanceTol);
+            this.moveHeadOrTail(chain[index0], chain[index0 + 1]);
+            this.searchAndMergeChainIndex(connect.chainIndex);
             return true;
           } else {
             const chain = this._chains[connect.chainIndex];
             chain.splice(0, 0, candidate);
-            MultiChainCollector.moveHeadOrTail(chain[0], chain[1], this._gapTolerance);
-            this.searchAndMergeChainIndex(connect.chainIndex, distanceTol);
+            this.moveHeadOrTail(chain[0], chain[1]);
+            this.searchAndMergeChainIndex(connect.chainIndex);
             return true;
           }
         }
@@ -247,13 +244,13 @@ export class MultiChainCollector {
       p.reverseInPlace();
   }
   /** See if the head or tail of chainIndex matches any existing chain. If so, merge the two chains. */
-  private searchAndMergeChainIndex(chainIndex: number, distanceTol: number): void {
+  private searchAndMergeChainIndex(chainIndex: number): void {
     // ASSUME valid index of non-empty chain
     const chain = this._chains[chainIndex];
     const lastIndexInChain = chain.length - 1;
     this._xyzWork0 = chain[0].startPoint(this._xyzWork0);
     // try start with any other chain
-    let connect = this.findAnyChainToConnect(this._xyzWork0, distanceTol, chainIndex);
+    let connect = this.findAnyChainToConnect(this._xyzWork0, chainIndex);
     if (connect) {
       if (!connect.atEnd)
         this.reverseChain(connect.chainIndex);
@@ -262,7 +259,7 @@ export class MultiChainCollector {
     }
     // try end with any other chain
     this._xyzWork0 = chain[lastIndexInChain].endPoint(this._xyzWork0);
-    connect = this.findAnyChainToConnect(this._xyzWork0, distanceTol, chainIndex);
+    connect = this.findAnyChainToConnect(this._xyzWork0, chainIndex);
     if (connect) {
       if (connect.atEnd)
         this.reverseChain(connect.chainIndex);
@@ -284,7 +281,7 @@ export class MultiChainCollector {
       const primitiveN = curves[curves.length - 1];
       MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
       MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
-      if (MultiChainCollector.moveHeadOrTail(primitiveN, primitive0, this._gapTolerance)) {
+      if (this.moveHeadOrTail(primitiveN, primitive0)) {
         // get the corrected coordinates
         MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
         MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);

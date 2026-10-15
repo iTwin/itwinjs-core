@@ -162,6 +162,8 @@ The table below lists common measurements with their typical KindOfQuantity and 
 | Bearing | CivilUnits.BEARING | Units.RAD |
 | Time | DefaultToolsUnits.TIME | Units.S |
 
+> For `Bearing`/`Azimuth` format types specifically, double-check which of these two the KindOfQuantity actually persists: `Units.RAD` (an `ANGLE`-phenomenon unit) is treated as a raw mathematical angle and gets auto-converted to true-azimuth convention, while a `HORIZONTAL_DIRECTION`-phenomenon unit (e.g. `Units.HORIZONTAL_DIR_RAD`) is already true-azimuth and is left as-is. See [Bearing and Azimuth Format](./Formats.md#bearing-and-azimuth-format).
+
 ## FormatSet Storage and Loading
 
 FormatSets are typically:

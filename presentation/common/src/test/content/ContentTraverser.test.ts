@@ -449,6 +449,91 @@ describe("ContentTraverser", () => {
       });
     });
 
+    it("processes array value when display values are omitted", () => {
+      // Content retrieved with `omitFormattedValues: true` has no display values for the array.
+      sinon.stub(visitor, "startArray").returns(true);
+      const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const itemsField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+        name: "ArrayItemProp",
+        label: "Array Item",
+      });
+      const arrayField = createTestArrayPropertiesContentField({
+        properties: [],
+        itemsField,
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${itemsField.type.typeName}[]`,
+          memberType: itemsField.type,
+        },
+      });
+      const descriptor = createTestContentDescriptor({ fields: [arrayField] });
+      const item = createTestContentItem({
+        values: {
+          [arrayField.name]: ["value1", "value2"],
+        },
+        displayValues: {},
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+      expect(processValueSpy).to.be.calledTwice;
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value1",
+        displayValue: undefined,
+      });
+      expect(processValueSpy.secondCall.firstArg).to.containSubset({
+        field: itemsField,
+        parentFieldName: arrayField.name,
+        rawValue: "value2",
+        displayValue: undefined,
+      });
+    });
+
+    it("processes struct value when display values are omitted", () => {
+      // Content retrieved with `omitFormattedValues: true` has no display values for the struct.
+      sinon.stub(visitor, "startStruct").returns(true);
+      const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const memberField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+        name: "StructMemberProp",
+        label: "Struct Member",
+      });
+      const structField = createTestStructPropertiesContentField({
+        properties: [],
+        memberFields: [memberField],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: `TestStruct`,
+          members: [
+            {
+              name: "StructMemberProp",
+              label: "Struct Member",
+              type: memberField.type,
+            },
+          ],
+        },
+      });
+      const descriptor = createTestContentDescriptor({ fields: [structField] });
+      const item = createTestContentItem({
+        values: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          [structField.name]: { StructMemberProp: "value" },
+        },
+        displayValues: {},
+      });
+      const traverser = createContentTraverser(visitor, descriptor);
+      traverser([item]);
+      expect(processValueSpy).to.be.calledOnce;
+      expect(processValueSpy.firstCall.firstArg).to.containSubset({
+        field: memberField,
+        parentFieldName: structField.name,
+        rawValue: "value",
+        displayValue: undefined,
+      });
+    });
+
     it("processes merged primitive value", () => {
       const spy = sinon.spy(visitor, "processMergedValue");
       const field = createTestSimpleContentField();

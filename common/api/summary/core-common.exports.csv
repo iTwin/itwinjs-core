@@ -179,6 +179,8 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
+internal;function;createIpcDispatcher
+internal;function;createIpcProxy
 public;interface;CreateSnapshotIModelProps
 public;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
@@ -214,6 +216,7 @@ beta;enum;DefaultSupportedTypes
 internal;const;defaultTileOptions
 public;interface;DefinitionElementProps
 preview;interface;DefinitionElementProps
+beta;interface;DefinitionSetProps
 public;interface;DeletedElementGeometryChange
 public;interface;DeprecatedBackgroundMapProps
 internal;class;DevToolsRpcInterface
@@ -286,6 +289,8 @@ beta;interface;ElementMeshRequestProps
 public;interface;ElementPlanarClipMaskArgs
 public;interface;ElementProps
 preview;interface;ElementProps
+beta;interface;ElementReservationError
+beta;namespace;ElementReservationError
 public;interface;EmphasizeElementsProps
 public;class;EmptyLocalization
 public;interface;EntityIdAndClassId
@@ -345,6 +350,8 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;interface;FormatFieldValueArgs
+internal;type;FormatMagnitude
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -414,6 +421,7 @@ public;enum;GeometrySummaryVerbosity
 beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
+internal;const;getPushChangesIpcChannel
 internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
@@ -704,6 +712,7 @@ public;class;PropertyMetaDataMap
 beta;interface;PropertyMetaDataProps
 deprecated;interface;PropertyMetaDataProps
 internal;interface;PullChangesOptions
+internal;interface;PushChangesOptions
 public;class;QParams2d
 alpha;interface;QParams2dProps
 public;class;QParams3d
@@ -718,6 +727,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit
@@ -746,6 +756,7 @@ beta;namespace;RealityDataSourceKey
 beta;interface;RealityDataSourceProps
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
+internal;function;rebuildIpcError
 internal;const;REGISTRY
 beta;interface;ReinstateTxnArgs
 public;class;RelatedElement
@@ -868,6 +879,7 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+internal;function;serializeIpcError
 beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
@@ -935,6 +947,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TargetPointShape
+beta;const;targetPointShapes
 beta;type;TerminatorShape
 beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
@@ -1026,6 +1040,7 @@ public;class;Tween
 public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
+public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
 alpha;interface;TxnProps
 alpha;type;TxnType
@@ -1036,6 +1051,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+internal;function;unwrapIpcInvokeReturn
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps

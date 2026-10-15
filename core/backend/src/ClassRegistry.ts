@@ -12,7 +12,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
-import * as assert from "assert";
+import { ok as assert } from "node:assert/strict";
 import { _nativeDb } from "./internal/Symbols";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
@@ -231,8 +231,7 @@ export class ClassRegistry {
         {
           value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectReferenceIds"];
-            superImpl.call(this, referenceIds);
+            superclass.prototype["collectReferenceIds"].call(this, referenceIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id))

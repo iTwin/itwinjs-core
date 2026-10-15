@@ -84,7 +84,10 @@ export interface FormatProps {
 
   /** Required when type is Ratio. See [[RatioType]]*/
   readonly ratioType?: string;
-  /** The separator character for ratio formatting. Defaults to ':' if not specified. */
+/**
+ * The separator string used for ratio formatting. Defaults to ":".
+ * @note The separator may contain one non-space character, optionally surrounded by spaces.
+ */
   readonly ratioSeparator?: string;
    /** The format type for the numbers within a ratio. Defaults to "Decimal". */
   readonly ratioFormatType?: string;
@@ -101,13 +104,21 @@ export interface FormatProps {
   /** The base value for azimuth, specified from east counter-clockwise. */
   readonly azimuthBase?: number;
 
-  /** The name of the unit for the azimuth base value. Required if azimuthBase is set. */
+  /** The name of the unit for the azimuth base value. Required if azimuthBase is set.
+   * @note Must share the same phenomenon as the persistence unit the Format/FormatterSpec/ParserSpec is used with (e.g. a `Units.HORIZONTAL_DIRECTION`
+   * unit for a `Units.HORIZONTAL_DIRECTION` persistence unit, or a `Units.ANGLE` unit for a `Units.ANGLE` persistence unit) - the units provider
+   * cannot convert between different phenomena, so a mismatch will fail to resolve.
+   */
   readonly azimuthBaseUnit?: string;
 
   /** If set to true, azimuth values are returned counter-clockwise from the base. */
   readonly azimuthCounterClockwise?: boolean;
 
-  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types. */
+  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types.
+   * @note Must share the same phenomenon as the persistence unit the Format/FormatterSpec/ParserSpec is used with (e.g. `Units.HORIZONTAL_DIR_REVOLUTION`
+   * for a `Units.HORIZONTAL_DIRECTION` persistence unit, or `Units.REVOLUTION` for a `Units.ANGLE` persistence unit) - the units provider cannot
+   * convert between different phenomena, so a mismatch will fail to resolve.
+   */
   readonly revolutionUnit?: string;
 
   /** Enables calculating mathematic operations during parsing; only addition and subtraction are supported. */
@@ -199,20 +210,44 @@ export interface FormatsChangedArgs {
   impliedUnitSystem?: UnitSystemKey;
 }
 
+/**
+ * Context passed through a chain of providers while resolving one format request.
+ * A provider that delegates the current request must forward this context unchanged; omit it only when starting an independent request.
+ * @beta
+ */
+export interface FormatsProviderContext {
+  /** Providers already visited while resolving the current format request. */
+  readonly providerChain: ReadonlySet<FormatsProvider>;
+}
+
 /** This interface is implemented by a class that would provide formats for use in formatting quantities.
  * @beta
  */
 export interface FormatsProvider {
   /**
    * @param name The full name of the Format or KindOfQuantity.
+   * @param context Optional context to forward when delegating the current lookup through another provider.
    */
-  getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+  getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
 
   /**
    * Fired when formats are added, removed, or changed.
    * If all formats are changed, a single string "all" is emitted. Else, an array of changed format names is emitted.
    */
   onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+}
+
+/**
+ * Optional capability for providers that can resolve format definitions from local data without awaiting.
+ * @note Implementations should use already-loaded local data and avoid schema loading or asynchronous I/O from this method.
+ * @beta
+ */
+export interface SyncFormatsProvider {
+  /**
+   * Return a locally available format definition, or `undefined` when unavailable.
+   * @param context Optional context to forward when delegating the current lookup through another provider.
+   */
+  getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
 }
 
 /** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.

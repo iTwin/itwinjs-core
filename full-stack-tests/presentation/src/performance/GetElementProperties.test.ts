@@ -10,7 +10,7 @@ import { availableParallelism } from "node:os";
 import { join } from "path";
 import { IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { Id64String, StopWatch } from "@itwin/core-bentley";
-import { Presentation } from "@itwin/presentation-backend";
+import { BackendDiagnosticsOptions, Presentation } from "@itwin/presentation-backend";
 import { DiagnosticsLogEntry } from "@itwin/presentation-common";
 
 describe("#performance Element properties loading", () => {
@@ -19,17 +19,21 @@ describe("#performance Element properties loading", () => {
 
   before(async () => {
     if (!process.env.TEST_IMODEL) {
-      throw new Error("The test requires tested imodel path to be set through TEST_IMODEL environment variable");
+      throw new Error(
+        "The test requires tested imodel path to be set through TEST_IMODEL environment variable",
+      );
     }
     if (!fs.existsSync(process.env.TEST_IMODEL)) {
-      throw new Error(`Test imodel path is set, but the file does not exist (TEST_IMODEL = ${process.env.TEST_IMODEL})`);
+      throw new Error(
+        `Test imodel path is set, but the file does not exist (TEST_IMODEL = ${process.env.TEST_IMODEL})`,
+      );
     }
     testIModelName = process.env.TEST_IMODEL;
 
     await IModelHost.startup({ cacheDir: join(import.meta.dirname, ".cache") });
     Presentation.initialize({
       useMmap: true,
-      workerThreadsCount: availableParallelism(),
+      workerThreadsCount: Math.ceil(availableParallelism() / 2),
     });
   });
 
@@ -54,23 +58,26 @@ describe("#performance Element properties loading", () => {
       imodel,
       elementClasses: ["BisCore.GeometricElement"],
       batchSize: 1000,
-      diagnostics: {
-        perf: { minimumDuration: 500 },
-        handler: (d) => handleLogs(d.logs),
-      },
+      diagnostics: setupDiagnosticsProps(),
     });
     console.log(`Loading properties for ${total} elements...`);
     for await (const items of iterator()) {
       items.forEach((item) => itemIds.add(item.id));
-      console.log(`Got ${itemIds.size} items. Elapsed: ${timer.currentSeconds} s., Speed: ${(itemIds.size / timer.currentSeconds).toFixed(2)} el./s.`);
+      console.log(
+        `Got ${itemIds.size} items. Elapsed: ${timer.currentSeconds} s., Speed: ${(itemIds.size / timer.currentSeconds).toFixed(2)} el./s.`,
+      );
     }
     expect(itemIds.size).to.eq(total);
-    console.log(`Loaded ${itemIds.size} elements properties in ${timer.currentSeconds.toFixed(2)} s`);
+    console.log(
+      `Loaded ${itemIds.size} elements properties in ${timer.currentSeconds.toFixed(2)} s`,
+    );
   });
 
   it("load properties using 'getElementProperties' with element ids", async function () {
     const elementIds = new Array<Id64String>();
-    for await (const row of imodel.createQueryReader(`SELECT IdToHex(ECInstanceId) id FROM BisCore.GeometricElement`)) {
+    for await (const row of imodel.createQueryReader(
+      `SELECT IdToHex(ECInstanceId) id FROM BisCore.GeometricElement`,
+    )) {
       elementIds.push(row.id);
     }
     console.log(`Created an array of ${elementIds.length} elements ids`);
@@ -81,32 +88,64 @@ describe("#performance Element properties loading", () => {
       imodel,
       elementIds,
       batchSize: 1000,
-      diagnostics: {
-        perf: { minimumDuration: 500 },
-        handler: (d) => handleLogs(d.logs),
-      },
+      diagnostics: setupDiagnosticsProps(),
     });
     console.log(`Loading properties for ${total} elements...`);
     for await (const items of iterator()) {
       items.forEach((item) => itemIds.add(item.id));
-      console.log(`Got ${itemIds.size} items. Elapsed: ${timer.currentSeconds} s., Speed: ${(itemIds.size / timer.currentSeconds).toFixed(2)} el./s.`);
+      console.log(
+        `Got ${itemIds.size} items. Elapsed: ${timer.currentSeconds} s., Speed: ${(itemIds.size / timer.currentSeconds).toFixed(2)} el./s.`,
+      );
     }
     expect(itemIds.size).to.eq(total);
-    console.log(`Loaded ${itemIds.size} elements properties in ${timer.currentSeconds.toFixed(2)} s`);
+    console.log(
+      `Loaded ${itemIds.size} elements properties in ${timer.currentSeconds.toFixed(2)} s`,
+    );
   });
 });
 
-function handleLogs(logs: DiagnosticsLogEntry[] | undefined, indent = 0): void {
-  if (!logs || !process.env.ENABLE_LOGS) {
-    return;
+function setupDiagnosticsProps() {
+  if (!process.env.ENABLE_LOGS) {
+    return undefined;
   }
-  logs.forEach((log) => {
+  return {
+    perf: { minimumDuration: 500 },
+    handler:
+      process.env.ENABLE_LOGS === "file" ? (d) => logToFile(d.logs) : (d) => logToConsole(d.logs),
+  } satisfies BackendDiagnosticsOptions;
+}
+
+function logToConsole(logs: DiagnosticsLogEntry[] | undefined, indent = 0): void {
+  logs?.forEach((log) => {
     if (DiagnosticsLogEntry.isScope(log)) {
       if (log.duration) {
         console.log(`[${log.duration.toFixed(2)} ms] ${" ".repeat(indent * 2)} ${log.scope}`);
         ++indent;
       }
-      handleLogs(log.logs, indent);
+      logToConsole(log.logs, indent);
+    } else {
+      console.log(`[${log.severity.dev ?? "trace"}] ${" ".repeat(indent * 2)}${log.message}`);
+    }
+  });
+}
+
+const logFilePath = "diagnostics.log";
+function logToFile(logs: DiagnosticsLogEntry[] | undefined, indent = 0): void {
+  logs?.forEach((log) => {
+    if (DiagnosticsLogEntry.isScope(log)) {
+      if (log.duration) {
+        fs.appendFileSync(
+          logFilePath,
+          `[${log.duration.toFixed(2)} ms] ${" ".repeat(indent * 2)} ${log.scope}\n`,
+        );
+        ++indent;
+      }
+      logToFile(log.logs, indent);
+    } else {
+      fs.appendFileSync(
+        logFilePath,
+        `[${log.severity.dev ?? "trace"}] ${" ".repeat(indent * 2)}${log.message}\n`,
+      );
     }
   });
 }

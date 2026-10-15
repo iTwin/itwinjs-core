@@ -63,7 +63,7 @@ export class Code implements CodeProps {
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
-    return c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value;
+    return c1.spec === c2.spec && c1.scope === c2.scope && (c1.value ?? "").toLowerCase() === (c2.value ?? "").toLowerCase();
   }
   /** Determine whether this Code is valid. */
   public static isValid(c: CodeProps): boolean { return Id64.isValidId64(c.spec); }

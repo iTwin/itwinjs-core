@@ -412,10 +412,7 @@ export class Transform implements BeJSONFunctions {
     // Tx = Mx + o so we return Mx + o
     return Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
-  /**
-   * Transform the input 3d point in place (using `Tp = M*p + o`).
-   * Return as a new point or in the pre-allocated result (if result is given).
-   */
+  /** Transform the input 3d point in place (using `Tp = M*p + o`). */
   public multiplyXYAndZInPlace(point: XYAndZ): void {
     return Matrix3d.xyzPlusMatrixTimesXYZInPlace(this._origin, this._matrix, point);
   }

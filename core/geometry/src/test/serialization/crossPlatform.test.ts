@@ -5,7 +5,11 @@
 
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
+import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
@@ -88,7 +92,7 @@ describe("CrossPlatform", () => {
     return true;
   };
 
-  it("EquivalentFormats", () => {
+  it("IndexedMesh", () => {
     const ck = new Checker();
 
     const testCases: TestCase[] = [];
@@ -98,8 +102,6 @@ describe("CrossPlatform", () => {
     testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-size3.fb`, `${nativeRoot}${testName}-size4.fb`, `${nativeRoot}${testName}-size5.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-size3.imjs`, `${nativeRoot}${testName}-size4.imjs`, `${nativeRoot}${testName}-size5.imjs`]], [[`${typeScriptRoot}${testName}-new.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
     testName = "indexedMesh-fixedSize";
     testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
-
-    // TODO: add future testcases where all formats deserialize to the same geometry
 
     for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
       const geometry: GeometryQuery[] = [];
@@ -301,6 +303,110 @@ describe("CrossPlatform", () => {
           }
         }
       }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("LoopIsInner", () => {
+    const ck = new Checker();
+    const circle = Arc3d.createXY(Point3d.createZero(), 1); // arc is same in each loop to minimize differences
+    const generateFiles = false; // set to true to generate files (remember to set `enableSave` flag in Checker ctor)
+    const testCases: TestCase[] = [];
+    // NOTE: the only old code that could write inner loops was native FB
+
+    let testName = "isInner-loop-true";
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopTrue = Loop.create(circle.clone());
+      loopTrue.isInner = true;
+      serialize(ck, loopTrue, testName);
+    }
+    testName = "isInner-loop-false";
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-old.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`, `${typeScriptRoot}${testName}-old.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopFalse = Loop.create(circle.clone());
+      loopFalse.isInner = false;
+      serialize(ck, loopFalse, testName);
+    }
+    testName = "isInner-parityRegion-true0"; // has inner loop first child
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopTrue = Loop.create(circle.clone());
+      loopTrue.isInner = true;
+      const loopFalse = Loop.create(circle.clone());
+      const parityTrue0 = ParityRegion.create(loopTrue, loopFalse);
+      serialize(ck, parityTrue0, testName);
+    }
+    testName = "isInner-parityRegion-true1"; // has inner loop second child
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopTrue = Loop.create(circle.clone());
+      loopTrue.isInner = true;
+      const loopFalse = Loop.create(circle.clone());
+      const parityTrue1 = ParityRegion.create(loopFalse, loopTrue);
+      serialize(ck, parityTrue1, testName);
+    }
+    testName = "isInner-parityRegion-false"; // no inner loops
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-old.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`, `${typeScriptRoot}${testName}-old.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopFalse = Loop.create(circle.clone());
+      const parityFalse = ParityRegion.create(loopFalse);
+      serialize(ck, parityFalse, testName);
+    }
+    testName = "isInner-unionRegion-true"; // has inner loop grandchild
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopTrue = Loop.create(circle.clone());
+      loopTrue.isInner = true;
+      const loopFalse = Loop.create(circle.clone());
+      const parityTrue = ParityRegion.create(loopFalse, loopTrue);
+      const unionTrue = UnionRegion.create(parityTrue);
+      serialize(ck, unionTrue, testName);
+    }
+    testName = "isInner-unionRegion-false"; // no inner loops
+    testCases.push({ fileNames: [
+      [ [`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-old.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-old.imjs`] ],
+      [ [`${typeScriptRoot}${testName}.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`, `${typeScriptRoot}${testName}-old.imjs`] ],
+    ]});
+    if (generateFiles) {
+      const loopFalse = Loop.create(circle.clone());
+      const parityFalse = ParityRegion.create(loopFalse);
+      const unionFalse = UnionRegion.create(parityFalse);
+      serialize(ck, unionFalse, testName);
+    }
+
+    // all geometries in a given test case should be equivalent
+    for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
+      const geometry: GeometryQuery[] = [];
+      for (const platform of [Platform.Native, Platform.TypeScript]) {
+        for (const fileType of [FileType.FlatBuffer, FileType.JSON]) {
+          for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+            const geom = deserializeFirstGeom(fileName, fileType, true);
+            if (ck.testDefined(geom, `deserialized at least one geometry from ${fileName}`))
+              geometry.push(geom);
+          }
+        }
+      }
+      for (let i = 1; i < geometry.length; ++i)
+        ck.testTrue(geometry[0].isAlmostEqual(geometry[i]), `testCase[${iTestCase}]: geom0 compares to geom${i}`);
     }
     expect(ck.getNumErrors()).toBe(0);
   });

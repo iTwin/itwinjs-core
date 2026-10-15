@@ -1,6 +1,113 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 08 Jul 2026 19:05:13 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Oct 2026 17:39:12 GMT and should not be manually modified.
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+_Version update only_
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+_Version update only_
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+_Version update only_
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+_Version update only_
+
+## 5.13.3
+Tue, 15 Sep 2026 20:25:28 GMT
+
+_Version update only_
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+_Version update only_
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:50 GMT
+
+### Updates
+
+- Deprecated `PresentationManagerProps.clientId`. It is no longer used and has no effect: the backend now keys `PresentationManager` instances by the authenticated user (web deployments) or uses a single shared manager (IPC apps) instead of by a caller-supplied `clientId`. The value is still sent to the backend for backwards compatibility with older backends.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
 
 ## 5.11.1
 Wed, 08 Jul 2026 19:03:46 GMT

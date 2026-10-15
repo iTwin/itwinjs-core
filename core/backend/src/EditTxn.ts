@@ -210,6 +210,7 @@ export class EditTxn {
   public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
     this.verifyWriteable();
     try {
+      options ??= {};
       this.iModel.elements[_cache].delete({
         id: elProps.id,
         federationGuid: elProps.federationGuid,

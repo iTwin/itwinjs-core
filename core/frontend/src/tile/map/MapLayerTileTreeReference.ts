@@ -79,10 +79,8 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId)
       return undefined;
 
-    const strings = [];
-    strings.push(`Map Layer: ${this._layerSettings.name}`);
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    div.textContent = `Map Layer: ${this._layerSettings.name}`;
     return div;
   }
 

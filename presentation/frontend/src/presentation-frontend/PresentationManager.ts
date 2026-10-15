@@ -67,7 +67,7 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 /**
  * Data structure that describes IModel hierarchy change event arguments.
  * @public
- * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface IModelHierarchyChangeEventArgs {
@@ -115,7 +115,7 @@ export type MultipleValuesRequestOptions = Paged<{
 /**
  * Options for requests that retrieve nodes.
  * @public
- * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -161,7 +161,7 @@ export interface PresentationManagerProps {
    * store this ID in their local storage so the ID can be reused across
    * sessions - this allows reusing some caches.
    *
-   * Defaults to a unique GUID as a client id.
+   * @deprecated in 5.12 - will not be removed until after 2027-08-03. This property is no longer used and has no effect.
    */
   clientId?: string;
 
@@ -177,7 +177,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
+   * @deprecated in 5.1 - might be removed in next major version. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -187,7 +187,7 @@ export interface PresentationManagerProps {
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
    *
-   * @deprecated in 5.1 - will not be removed until after 2026-08-08. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * @deprecated in 5.1 - might be removed in next major version. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
    * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -221,7 +221,7 @@ export class PresentationManager implements Disposable {
   /**
    * An event raised when hierarchies created using specific ruleset change.
    *
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -254,6 +254,7 @@ export class PresentationManager implements Disposable {
 
     this._requestsHandler =
       (props as PresentationManagerInternalProps)?.rpcRequestsHandler ??
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- `clientId` is still forwarded for backwards compatibility with older backends
       new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
@@ -415,7 +416,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Returns an iterator that polls nodes asynchronously.
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesIterator(
@@ -431,7 +432,7 @@ export class PresentationManager implements Disposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          items: this._localizationHelper.getLocalizedNodes(result.items),
+          items: this._localizationHelper.localizeNodes(result.items),
         };
       },
     });
@@ -450,7 +451,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves nodes count.
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
@@ -475,7 +476,7 @@ export class PresentationManager implements Disposable {
   /**
    * Retrieves hierarchy level descriptor.
    * @public
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesDescriptor(
@@ -487,7 +488,7 @@ export class PresentationManager implements Disposable {
       const rpcOptions = this.toRpcTokenOptions({ ...options });
       const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
       const descriptor = Descriptor.fromJSON(result);
-      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+      return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
     } finally {
       await ensureIModelInitialized(requestOptions.imodel);
     }
@@ -495,7 +496,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodePaths(
@@ -505,12 +506,12 @@ export class PresentationManager implements Disposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /**
    * Retrieves paths from root nodes to nodes containing filter text in their label.
-   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - might be removed in next major version. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getFilteredNodePaths(
@@ -519,7 +520,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.localizeNodePathElement(npe));
   }
 
   /* eslint-enable @typescript-eslint/no-deprecated */
@@ -549,7 +550,7 @@ export class PresentationManager implements Disposable {
       });
       const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
       const descriptor = Descriptor.fromJSON(result);
-      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+      return descriptor ? this._localizationHelper.localizeContentDescriptor(descriptor) : undefined;
     } finally {
       await ensureIModelInitialized(requestOptions.imodel);
     }
@@ -589,7 +590,7 @@ export class PresentationManager implements Disposable {
         formatsProvider: IModelApp.formatsProvider,
       });
       koqPropertyFormatter.defaultFormats = this._defaultFormats;
-      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
+      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter.createCachedFormatter(), unitSystem });
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
@@ -599,7 +600,7 @@ export class PresentationManager implements Disposable {
       if (!firstPageResponse?.descriptor || !firstPageResponse.contentSet) {
         return undefined;
       }
-      descriptor = Descriptor.fromJSON(firstPageResponse?.descriptor);
+      descriptor = this._localizationHelper.localizeContentDescriptor(Descriptor.fromJSON(firstPageResponse.descriptor)!);
       firstPage = firstPageResponse?.contentSet;
     }
 
@@ -607,8 +608,6 @@ export class PresentationManager implements Disposable {
     if (!descriptor) {
       return undefined;
     }
-
-    descriptor = this._localizationHelper.getLocalizedContentDescriptor(descriptor);
 
     const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
       let contentSet = requestIndex === 0 ? firstPage : undefined;
@@ -619,7 +618,7 @@ export class PresentationManager implements Disposable {
         items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
-      items = this._localizationHelper.getLocalizedContentItems(items);
+      items = this._localizationHelper.localizeContentItems(items);
       return {
         total: contentSet.total,
         items,
@@ -698,7 +697,7 @@ export class PresentationManager implements Disposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(x)),
+          items: response.items.map((x) => this._localizationHelper.localizeDisplayValueGroup(x)),
         };
       },
     });
@@ -792,7 +791,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
-    return this._localizationHelper.getLocalizedLabelDefinition(result);
+    return this._localizationHelper.localizeLabelDefinition(result);
   }
 
   /** Retrieves display label definition of specific items. */
@@ -806,7 +805,7 @@ export class PresentationManager implements Disposable {
       getBatch: async (page) => {
         const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
         const result = await this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
-        result.items = this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+        result.items = this._localizationHelper.localizeLabelDefinitions(result.items);
         return result;
       },
     });

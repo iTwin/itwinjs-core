@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, ITwinError, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
@@ -382,7 +382,7 @@ export enum QueryParamType {
  * @see
  * - [ECSQL Parameters]($docs/learning/ECSQL.md#ecsql-parameters)
  * - [ECSQL Parameter Types]($docs/learning/ECSQLParameterTypes)
- * - [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples#parameter-bindings)
+ * - [ECSQL Code Examples]($docs/learning/ECSQLCodeExamples#parameter-bindings)
  *
  * @public
  */
@@ -478,15 +478,29 @@ export class QueryBinder {
    * @param indexOrName Specify parameter index or its name used in ECSQL statement.
    * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
    * @returns @type QueryBinder to allow fluent interface.
+   * @throws an [[ITwinError]] with scope `"itwin-QueryBinder"` and key `"invalid-arguments"` if any entry is not a valid [Id64String]($bentley).
    */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    OrderedId64Iterable.uniqueIterator(val);
+    const ids: Id64String[] = [];
+    // `string` is an Iterable<string>. In that case assume caller passed a single Id64String, matching CompressedId64Set.sortAndCompress.
+    const iterable = typeof val === "string" ? [val] : val;
+    for (const id of iterable) {
+      if (!Id64.isValidId64(id)) {
+        ITwinError.throwError<ITwinError>({
+          message: `QueryBinder.bindIdSet: entry ${JSON.stringify(id)} for parameter "${name}" is not a valid Id64String`,
+          iTwinErrorId: { scope: "itwin-QueryBinder", key: "invalid-arguments" },
+        });
+      }
+      ids.push(id);
+    }
+
+    OrderedId64Iterable.sortArray(ids);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
+        value: CompressedId64Set.compressArray(ids),
       },
     });
     return this;
@@ -664,26 +678,50 @@ export class QueryBinder {
   }
 
   /**
-   * Allow bulk bind either parameters by index as value array or by parameter names as object.
-   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
-   * @returns @type QueryBinder to allow fluent interface.
+   * Shared implementation for [[QueryBinder.from]] and [[QueryBinder.fromSkippingNullish]].
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
+   * @param skipNullish if true, entries whose value is `undefined` or `null` are skipped instead of bound as NULL.
    */
-  public static from(args: any[] | object | undefined): QueryBinder {
+  private static fromImpl(args: any[] | object | undefined, skipNullish: boolean): QueryBinder {
     const params = new QueryBinder();
     if (typeof args === "undefined")
       return params;
 
+    const shouldBind = (val: any) => !skipNullish || (val !== undefined && val !== null);
     if (Array.isArray(args)) {
       let i = 1;
       for (const val of args) {
-        this.bind(params, i++, val);
+        const index = i++;
+        if (shouldBind(val))
+          this.bind(params, index, val);
       }
     } else {
       for (const prop of Object.getOwnPropertyNames(args)) {
-        this.bind(params, prop, (args as any)[prop]);
+        const val = (args as any)[prop];
+        if (shouldBind(val))
+          this.bind(params, prop, val);
       }
     }
     return params;
+  }
+
+  /**
+   * Allow bulk bind either parameters by index as value array or by parameter names as object.
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
+  public static from(args: any[] | object | undefined): QueryBinder {
+    return this.fromImpl(args, false);
+  }
+
+  /**
+   * Same as [[QueryBinder.from]], except entries whose value is `undefined` or `null` are skipped instead of bound as NULL,
+   * matching the legacy `ECSqlStatement.bindValues` semantics. For positional arrays, skipped positions are left unbound
+   * and later positions keep their 1-based index.
+   * @internal
+   */
+  public static fromSkippingNullish(args: any[] | object | undefined): QueryBinder {
+    return this.fromImpl(args, true);
   }
 
   public serialize(): object {
@@ -811,7 +849,7 @@ export interface DbQueryConfig {
   ignorePriority?: boolean;
   /** Max queue size after which queries are rejected with error QueueFull */
   requestQueueSize?: number;
-  /** Number of worker thread, default to 4 */
+  /** Number of worker threads. Defaults to 4, capped at the machine's hardware concurrency. Requests above hardware concurrency fall back to the default. */
   workerThreads?: number;
   /**
    * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. No longer used. Worker connections now prepare statements against a shared, dedicated

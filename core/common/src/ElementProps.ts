@@ -540,7 +540,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
 }
 
-/** The *rank* for a Category
+/** The *rank* for a [Category]($backend), [SubCategory]($backend), or [DefinitionSet]($backend).
  * @public @preview
  * @extensions
  */
@@ -553,6 +553,13 @@ export enum Rank {
   Application = 2,
   /** This category is defined by a user. Elements in this category are not recognized by system, schema, and application classes. */
   User = 3,
+}
+
+/** Parameters of a [DefinitionSet]($backend), unifying [DefinitionContainer]($backend) and [DefinitionGroup]($backend).
+ * @beta
+ */
+export interface DefinitionSetProps extends DefinitionElementProps {
+  rank?: Rank;
 }
 
 /** Parameters of a [Category]($backend)

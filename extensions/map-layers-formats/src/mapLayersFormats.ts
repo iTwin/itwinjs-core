@@ -14,7 +14,7 @@ import { AzureMapsMapLayerFormat } from "./AzureMaps/AzureMapsImageryFormat.js";
 import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
-import { GoogleMapsSessionManager } from "./map-layers-formats.js";
+import { GoogleMapsSessionManager } from "./GoogleMaps/GoogleMapsSession.js";
 
 /** Configuration options.
  * @beta

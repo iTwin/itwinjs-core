@@ -1006,11 +1006,11 @@ export class AnalyticRoots {
    *   * -2 -- all coefficients identically 0.   The entire c, s plane-- and therefore the entire unit circle-- is a solution.
    *   * -1 -- beta, gamma are zero, alpha is not.There is no line defined.There are no solutions.
    *   * 0 -- the line is well defined, but passes completely outside the unit circle.
-   *     * In this case, (c1, s1) is the circle point closest to the line and(c2, s2) is the line point closest to the circle.
+   *     * In this case, (c[0], s[0]) is the circle point closest to the line and (c[1], s[1]) is the line point closest to the circle.
    *   * 1 -- the line is tangent to the unit circle.
    *     * Tangency is determined by tolerances, which calls a "close approach" point a tangency.
-   *       * (c1, s1) is the closest circle point
-   *       * (c2, s2) is the line point.
+   *       * (c[0], s[0]) is the closest circle point
+   *       * (c[1], s[1]) is the line point.
    *   * 2 -- two simple intersections.
    * @param alpha constant coefficient on line
    * @param beta x cosine coefficient on line
@@ -1047,14 +1047,14 @@ export class AnalyticRoots {
       if (D2 < -twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = (alpha < 0) ? (1.0 / delta) : (-1.0 / delta);
-        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         solutionType = 0;
       } else if (D2 < twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = (alpha < 0) ? (1.0 / delta) : (- 1.0 / delta);
-        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         solutionType = 1;
       } else {
         const mu = Math.sqrt(D2 / delta2);

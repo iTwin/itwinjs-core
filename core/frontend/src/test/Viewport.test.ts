@@ -21,7 +21,7 @@ import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
-import { CanvasDecoration } from "../core-frontend";
+import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -674,6 +674,45 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xd"))).to.be.true;
       });
     });
+
+    it("picks from the correct texture after toggling rendersToScreen", () => {
+      class SquareDecorator {
+        private readonly _graphic: RenderGraphic;
+
+        public constructor(id: string, vp: Viewport) {
+          const pts = [
+            new Point3d(-50, -50, 0), new Point3d(50, -50, 0), new Point3d(50, 50, 0), new Point3d(-50, 50, 0), new Point3d(-50, -50, 0),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+        }
+
+        public decorate(context: DecorateContext): void {
+          context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+        }
+      }
+
+      testBlankViewport((vp) => {
+        addDecorator(new SquareDecorator("0xa", vp));
+        vp.renderFrame();
+
+        // Simulate switching back to on-screen rendering, for example after a secondary viewport is closed
+        vp.rendersToScreen = false;
+        vp.rendersToScreen = true;
+
+        const features = readUniqueFeatures(vp, new ViewRect(0, 0, 8, 8));
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+      });
+    });
   });
 
   describe("Map layers", () => {
@@ -710,6 +749,16 @@ describe("Viewport", () => {
     });
   });
 
+  function createViewport(): ScreenViewport {
+    const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+    const parentDiv = document.createElement("div");
+    parentDiv.setAttribute("height", "1px");
+    parentDiv.setAttribute("width", "1px");
+    parentDiv.style.height = parentDiv.style.width = "1px";
+    document.body.appendChild(parentDiv);
+    return ScreenViewport.create(parentDiv, state);
+  }
+
   describe("Read Image To Canvas", () => {
 
     class PixelCanvasDecoration implements CanvasDecoration {
@@ -726,16 +775,6 @@ describe("Viewport", () => {
         context.addDecorationFromBuilder(builder);
         context.addCanvasDecoration(new PixelCanvasDecoration());
       }
-    }
-
-    function createViewport(): ScreenViewport {
-      const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
-      const parentDiv = document.createElement("div");
-      parentDiv.setAttribute("height", "1px");
-      parentDiv.setAttribute("width", "1px");
-      parentDiv.style.height = parentDiv.style.width = "1px";
-      document.body.appendChild(parentDiv);
-      return ScreenViewport.create(parentDiv, state);
     }
 
     const activeDecorators: Decorator[] = [];
@@ -870,6 +909,92 @@ describe("Viewport", () => {
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
+    });
+  });
+
+  describe("Cached decorations", () => {
+    let vp: ScreenViewport;
+    let dec: Decorator;
+
+    beforeAll(() => {
+      vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+
+      dec = {
+        useCachedDecorations: true as const,
+        decorate: (context: DecorateContext) => {
+          context.addHtmlDecoration(document.createElement("div"));
+        },
+      };
+
+      IModelApp.viewManager.addDecorator(dec);
+    });
+
+    afterAll(() => {
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropDecorator(dec);
+    });
+
+    function test(expectCacheClear: boolean, operation: () => void): void {
+      const isCacheEmpty = () => {
+        const cache = (vp as any)._decorationCache as DecorationsCache;
+        expect(cache.size).not.to.be.undefined;
+        return cache.size === 0;
+      }
+
+      // Ensure decorations are generated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
+
+      // Ensure cache is cleared or preserved after operation is performed.
+      operation();
+      expect(isCacheEmpty()).to.equal(expectCacheClear);
+
+      // Ensure decorations are regenerated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
+    }
+
+    it("are invalidated when always/never-drawn elements change", () => {
+      function makeIdSet(id: string): Set<string> {
+        return new Set<string>([id]);
+      }
+
+      test(false, () => {});
+
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      test(true, () => vp.clearNeverDrawn());
+      // No-op because never-drawn is already empty.
+      test(false, () => vp.clearNeverDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      test(true, () => vp.clearAlwaysDrawn());
+      // No-op because always-drawn is already empty
+      test(false, () => vp.clearAlwaysDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123"), true));
+      expect(vp.isAlwaysDrawnExclusive).to.be.true;
+      test(true, () => vp.clearAlwaysDrawn());
+      expect(vp.isAlwaysDrawnExclusive).to.be.false;
+      test(false, () => vp.clearAlwaysDrawn());
+    });
+
+    it("are invalidated when symbology overrides change", () => {
+      test(true, () => vp.setFeatureOverrideProviderChanged());
+    });
+
+    it("are invalidated when excluded elements change", () => {
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      // It doesn't try to detect no-ops.
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.dropExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
     });
   });
 });

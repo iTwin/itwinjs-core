@@ -640,7 +640,7 @@ function clipMovingCurve(
   announceCurve: AnnounceNumberNumberCurvePrimitive) {
   for (let i = 0; i + 1 < numTrace; i++) {
     const shift = traceCurve.fractionToPoint(i / numTrace);
-    const curve1 = curve.cloneTransformed(Transform.createTranslation(shift)) as CurvePrimitive;
+    const curve1 = curve.cloneTransformed(Transform.createTranslation(shift));
     announceCurve(0, 0, curve1);
     const clip = ClipUtilities.collectClippedCurves(curve1, clipper);
     for (const curve2 of clip) announceCurve(1, i, curve2);
@@ -687,7 +687,7 @@ describe("CurveClips", () => {
       output.push(clipGeometry.cloneTransformed(transform1));
       clipMovingCurve(clipper, curve, traceCurve, 5,
         (group: number, _index: number, cp: CurvePrimitive) => {
-          output.push(cp.cloneTransformed(group === 0 ? transform0 : transform1)!);
+          output.push(cp.cloneTransformed(group === 0 ? transform0 : transform1));
         });
     }
     GeometryCoreTestIO.saveGeometry(output, "ClipPlane", "CurvePrimitiveClips");

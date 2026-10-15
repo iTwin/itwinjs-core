@@ -3,41 +3,107 @@ publish: false
 ---
 # NextVersion
 
+<!-- prettier-ignore -->
 - [NextVersion](#nextversion)
-  - [Electron 43 support](#electron-43-support)
-  - [@itwin/core-backend](#itwincore-backend)
-    - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+  - [Backend](#backend)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
+    - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
+  - [Common](#common)
+    - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+  - [Quantity](#quantity)
+    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
+    - [Async formats provider setter](#async-formats-provider-setter)
+  - [Breaking changes](#breaking-changes)
+    - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
+    - [Mobile RPC authentication](#mobile-rpc-authentication)
 
-## Electron 43 support
+## Backend
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 43](https://www.electronjs.org/blog/electron-43-0).
+### Vertical CRS discovery
 
-## @itwin/core-backend
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
-### ChangesetReader.setBatchSize
+### Opt-in fallback for missing navigation relationship class ids
 
-[ChangesetReader]($backend) now exposes a `setBatchSize(n: number)` method that controls how many change rows are cached in the reader. It is a performance improvement parameter that can be tweaked as per user's choice. Increasing the batch size increases the number of rows read at once and cached in the reader, thereby improving throughput when iterating large changesets but it also increases memory consumption; decreasing it reduces peak memory use. The method must be called before the first [ChangesetReader.step]($backend) call.
+Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties that contain an `Id` but no `RelECClassId`. When enabled, end-table relationship queries and `ECVLib.Relations()` report the relationship declared by the navigation property. Existing behavior is unchanged when the option is omitted, and directly selecting the navigation property's `RelECClassId` still returns its stored `NULL` value.
 
-Default batch sizes (unchanged behaviour when `setBatchSize` is not called):
+The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
-| Active configuration | Default |
-|---|---|
-| `propFilter: InstanceKey` | 100 |
-| `propFilter: BisCoreElement` | 20 |
-| `propFilter: All`, `abbreviateBlobs: false` | 5 |
-| `propFilter: All` (blobs abbreviated or unset) | 10 |
+The ECSQL version was bumped to `2.0.4.2`.
+
+### IdSet accepts ids with the high bit set
+
+The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
+
+Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
+
+## Common
+
+### Step-interpolated render schedule keyframes no longer apply one keyframe late
+
+Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one of its keyframes returned the *preceding* keyframe's value when that preceding keyframe used [RenderSchedule.Interpolation.Step]($common). It now returns the matched keyframe's own value. This affects [RenderSchedule.Timeline.getVisibility]($common), [RenderSchedule.Timeline.getColor]($common), [RenderSchedule.Timeline.getAnimationTransform]($common), and [RenderSchedule.Timeline.getCuttingPlane]($common).
+
+For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
+
+The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
+
+## Quantity
+
+### Built-in length ratio units for drawing scales
+
+The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.00.12, which adds three `LENGTH_RATIO` units: `Units.DECIMAL_LENGTH_RATIO`, `Units.M_PER_M_LENGTH_RATIO` (label `m:m`), and `Units.IN_PER_FT_LENGTH_RATIO` (label `in:ft`). These are intended for persisting drawing and sheet scales as paper length divided by model length, so a `1:100` scale is stored as `0.01` and a `1/4" = 1'` scale is stored as `1/48` in `m:m` (or `0.25` in `in:ft`).
+
+[UnitConversions]($quantity) can convert between these units, and [getDefaultPersistenceUnit]($quantity) now accepts `Phenomena.LENGTH_RATIO` and returns `Units.M_PER_M_LENGTH_RATIO`. Previously `LENGTH_RATIO` was excluded from that helper because no built-in default existed.
+
+### Async formats provider setter
+
+[IModelApp.setFormatsProvider]($frontend) replaces the formats provider, optionally sets the active unit system through [SetFormatsProviderOptions.unitSystem]($frontend), and returns a promise that resolves after the [QuantityFormatter]($frontend) has rebuilt its formatting and parsing caches. Use it instead of assigning [IModelApp.formatsProvider]($frontend) when you need to know that formatting reflects the new provider.
+
+- The provider and unit system take effect immediately: `IModelApp.formatsProvider` lookups, including `getFormatSync`, use the new provider, and `IModelApp.quantityFormatter.activeUnitSystem` reports the new unit system before the promise settles.
+- If a later `setFormatsProvider` call is made before the reload finishes, the earlier promise rejects. The latest provider wins.
+- If the reload fails, the promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
+- The promise also rejects if the application shuts down before the reload finishes.
+
+Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
+
+## Breaking changes
+
+### Extensible sub-model class validation
+
+Validation of which model classes may sub-model an element has moved from the native library to [Element.onSubModelInsert]($backend).
+
+The built-in rules remain:
+
+- [Sheet]($backend) accepts [SheetModel]($backend) and its subclasses.
+- [Drawing]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [TemplateRecipe2d]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [SectionDrawing]($backend) accepts [DrawingModel]($backend), [GraphicalModel3d]($backend), and their subclasses.
+
+Domain element classes implementing `bis:ISubModeledElement` may restrict their permitted sub-model classes by overriding the protected static [Element.allowedSubModelClasses]($backend) getter. The default value, `undefined`, permits any model class. A model class derived from an allowed class is also accepted, including a generated JavaScript class for an unregistered EC subclass.
 
 ```ts
-using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-reader.setBatchSize(10);
-while (reader.step()) { /* ... */ }
+class SheetPrototype extends DefinitionElement {
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> {
+    return [SheetModel];
+  }
+}
 ```
 
-**Performance improvement with new caching behaviour in ChangesetReader`**:
+The following behavior changes apply:
 
-| Cache type | Inserts | Before (s) | After (s) | Improvement |
-|---|---|---|---|---|
-| InMemoryCache | 1,000 | 0.220 | 0.204 | 7.3% |
-| InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
-| SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
-| SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+- Inserting a disallowed model now throws [IModelError]($common) with [IModelStatus.WrongModel]($bentley). The corresponding native checks previously returned `IModelStatus.BadElement`.
+- An override of [Element.onSubModelInsert]($backend) must call `super.onSubModelInsert(arg)` to retain inherited validation. An override that does not call `super` replaces that validation.
+- Missing modeled elements and elements that do not implement `bis:ISubModeledElement` continue to be rejected by the native library.
+
+This functionality requires the matching `@bentley/imodeljs-native` version distributed with `@itwin/core-backend`. Combining a native version containing the relaxed checks with an older `@itwin/core-backend` removes the built-in `Sheet` and `Drawing` restrictions.
+
+### Mobile RPC authentication
+
+Mobile RPC WebSocket connections now require a random per-launch token, preventing other applications on the device from accessing the backend through loopback. Connections without the token are rejected before RPC processing or pending-message delivery.
+
+Upgrade the mobile native runtime together with both the frontend and backend copies of `@itwin/core-mobile`. The secured transport cannot use older native runtimes that do not deliver the token, and older frontends cannot connect to the secured backend. There is no unauthenticated fallback. Updated native runtimes remain compatible with older frontend/backend pairs.
+
+No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
+
+Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.

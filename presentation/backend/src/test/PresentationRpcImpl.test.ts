@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelDb, RpcTrace } from "@itwin/core-backend";
+import { IModelDb, IpcHost, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, Guid } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
@@ -223,6 +223,92 @@ describe("PresentationRpcImpl", () => {
       } as unknown as IModelDb);
     using impl = new PresentationRpcImpl();
     await expect(impl.getSelectionScopes(imodelToken, {})).to.eventually.be.rejectedWith("test error");
+  });
+
+  describe("getManager() keying", () => {
+    let accessToken: string;
+    let isIpcApp: boolean;
+
+    beforeEach(() => {
+      accessToken = "";
+      // `isIpcApp` is read at `getManager` call time. It's kept `false` during `initialize` so the
+      // IPC handler isn't registered against a non-started `IpcHost`.
+      isIpcApp = false;
+      sinon.stub(RpcTrace, "expectCurrentActivity").get(() => ({ accessToken }));
+      sinon.stub(IpcHost, "isValid").get(() => isIpcApp);
+      Presentation.initialize({
+        // @ts-expect-error internal prop
+        clientManagerFactory: () => stubPresentationManager(),
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      Presentation.terminate();
+    });
+
+    function makeJwt(payload: object): string {
+      const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
+      const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+      return `${header}.${body}.signature`;
+    }
+
+    it("keys manager by JWT `sub` claim when access token is present", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = `Bearer ${makeJwt({ sub: "user-123" })}`;
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith("user-123");
+    });
+
+    it("keys manager by `sub` even without an authorization scheme prefix", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = makeJwt({ sub: "user-456" });
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith("user-456");
+    });
+
+    it("uses default manager when there's no access token", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = "";
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith(undefined);
+    });
+
+    it("uses default manager when access token is not a JWT", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = "opaque-token";
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith(undefined);
+    });
+
+    it("uses default manager when JWT has no `sub` claim", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = `Bearer ${makeJwt({ name: "no-subject" })}`;
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith(undefined);
+    });
+
+    it("uses default manager when JWT payload is malformed", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = "Bearer not-base64.@@@.signature";
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith(undefined);
+    });
+
+    it("uses default manager in IPC apps regardless of access token", () => {
+      const spy = sinon.spy(Presentation, "getManager");
+      accessToken = `Bearer ${makeJwt({ sub: "user-123" })}`;
+      isIpcApp = true;
+      using impl = new PresentationRpcImpl();
+      impl.getManager();
+      expect(spy).to.be.calledWith(undefined);
+    });
   });
 
   describe("calls forwarding", () => {

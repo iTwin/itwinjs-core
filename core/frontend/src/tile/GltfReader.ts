@@ -1490,7 +1490,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
-    if (meshMode === GltfMeshMode.Points && !this._vertexTableRequired) {
+if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
       const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
@@ -2050,6 +2050,9 @@ export abstract class GltfReader {
       featureIdBuffers.set(featureIdDesc.attribute, {buffer, stride: bufferView.stride});
     }
 
+    if (featureIdBuffers.size === 0)
+      return undefined;
+
     const itwinFeatureIndices: number[] = [];
     const vertexPropsMap = new Map<string, string>();
     for (let vertexId = 0;  vertexId < vertexCount;  vertexId++) {
@@ -2319,6 +2322,9 @@ export abstract class GltfReader {
       }
       case GltfMeshMode.LineStrip: {
         assert(undefined !== bufferView); // compiler can't seem to infer this...
+        // Per the KHR_mesh_primitive_restart extension (https://github.com/KhronosGroup/glTF/pull/2569), the indices accessor may contain
+        // "primitive restart" values - the maximum value for the accessor's component type - each of which terminates the current line strip
+        // and begins a new one. This permits many strips to be batched into a single primitive.
         const restart = GltfDataType.UnsignedByte === bufferView.type ? 0xff : (GltfDataType.UnsignedShort === bufferView.type ? 0xffff : 0xffffffff);
         for (const index of data.buffer) {
           if (index === restart) {
@@ -2441,8 +2447,10 @@ export abstract class GltfReader {
         "draco_wasm_wrapper.js": `${IModelApp.publicPath}scripts/draco_wasm_wrapper.js`,
         "draco_decoder.wasm": `${IModelApp.publicPath}scripts/draco_decoder.wasm`,
       },
-      worker: false,
-      useLocalLibraries: true,
+      core: {
+        worker: false,
+        useLocalLibraries: true,
+      },
     });
     if (mesh)
       this._dracoMeshes.set(ext, mesh);

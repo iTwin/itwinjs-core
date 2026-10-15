@@ -5,6 +5,7 @@
   - [Arithmetic operator](./Operators.md#arithmetic-operator)
   - [String operator](./Operators.md#string-operator)
   - [Boolean operator](./Operators.md#boolean-operator)
+  - [`IS` / `IS NOT` operator (null-safe comparison)](./Operators.md#is--is-not-operator-null-safe-comparison)
 - Built-in functions
   - [Scalar SQLite built-in functions](./SQLiteScalarFunctions.md)
   - [ECSQL Built-In functions](./ECSqlFunctions.md)
@@ -49,3 +50,9 @@
   - [Escaping keywords](./ECSqlKeywords.md#escaping-keywords)
 - [Views](./Views.md)
 - [IdSet Virtual Table](./IdSet.md)
+- [Relations Virtual Table](./Relations.md)
+  - [When to use it](./Relations.md#when-to-use-it)
+  - [Syntax](./Relations.md#syntax)
+  - [Traversal direction](./Relations.md#traversal-direction)
+  - [Returned columns](./Relations.md#returned-columns)
+  - [Recursive traversal with a CTE](./Relations.md#recursive-traversal-with-a-cte)

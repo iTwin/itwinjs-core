@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend";
+import { ExtensionManifest, ExtensionProvider, RemoteExtensionProvider } from "../core-frontend";
 import { ExtensionAdmin } from "../extension/ExtensionAdmin";
 
 describe("ExtensionAdmin", () => {
@@ -67,7 +67,96 @@ describe("ExtensionAdmin", () => {
 
   it("ExtensionAdmin will reject invalid URLs or hostnames", () => {
     const extensionAdmin = new ExtensionAdmin();
-    expect(() => extensionAdmin.registerHost("3001:invalidUrl")).toThrow(/should be a valid URL or hostname/);
-    expect(() => extensionAdmin.registerHost("invalidUrl342!@#")).toThrow(/should be a valid URL or hostname/);
+    expect(() => extensionAdmin.registerHost("3001:invalidUrl")).toThrow(/not a valid URL or hostname/);
+    expect(() => extensionAdmin.registerHost("invalidUrl342!@#")).toThrow(/not a valid URL or hostname/);
+    expect(() => extensionAdmin.registerHost("file:///extension.js")).toThrow(/not a valid URL or hostname/);
+  });
+
+  it("ExtensionAdmin treats a www. subdomain of a registered host as the same host", async () => {
+    const extensionAdmin = new ExtensionAdmin();
+    extensionAdmin.registerHost("example.com");
+
+    const extension = new RemoteExtensionProvider({
+      jsUrl: "https://www.example.com/index.js",
+      manifestUrl: "https://www.example.com/package.json",
+    });
+    await expect(extensionAdmin.addExtension(extension)).resolves.toBeUndefined();
+
+    const withoutWww = new ExtensionAdmin();
+    withoutWww.registerHost("https://www.example.com");
+    await expect(withoutWww.addExtension(new RemoteExtensionProvider({
+      jsUrl: "https://example.com/index.js",
+      manifestUrl: "https://example.com/package.json",
+    }))).resolves.toBeUndefined();
+  });
+
+  it("ExtensionAdmin will not confuse a lookalike host with a registered host", async () => {
+    const extensionAdmin = new ExtensionAdmin();
+    extensionAdmin.registerHost("example.com");
+
+    const lookalikes = [
+      "https://wwwexample.com/index.js",
+      "https://www.example.com.evil.com/index.js",
+      "https://example.com.evil.com/index.js",
+      "https://evil.com/www.example.com/index.js",
+      "https://notexample.com/index.js",
+    ];
+    for (const jsUrl of lookalikes) {
+      const extension = new RemoteExtensionProvider({ jsUrl, manifestUrl: `${jsUrl}/package.json` });
+      await expect(extensionAdmin.addExtension(extension)).rejects.toThrow(/not registered/);
+    }
+  });
+
+  it("ExtensionAdmin compares hostnames case-insensitively", async () => {
+    const extensionAdmin = new ExtensionAdmin();
+    extensionAdmin.registerHost("EXAMPLE.com");
+
+    const extension = new RemoteExtensionProvider({
+      jsUrl: "https://Example.COM/index.js",
+      manifestUrl: "https://Example.COM/package.json",
+    });
+    await expect(extensionAdmin.addExtension(extension)).resolves.toBeUndefined();
+  });
+
+  it("ExtensionAdmin will reject a jsUrl that carries no hostname", async () => {
+    // these schemes parse successfully but produce an empty hostname, so there is nothing
+    // to match against a registered host
+    const hostless = [
+      "data:text/javascript,globalThis.pwned=1",
+      "file:///evil.js",
+      "blob:https://app.example.com/uuid",
+      "javascript:alert(1)",
+    ];
+    for (const jsUrl of hostless) {
+      const extensionAdmin = new ExtensionAdmin();
+      extensionAdmin.registerHost("example.com");
+
+      const extension = new RemoteExtensionProvider({ jsUrl, manifestUrl: "https://example.com/package.json" });
+      await expect(extensionAdmin.addExtension(extension)).rejects.toThrow(/not a valid URL or hostname/);
+    }
+  });
+
+  it("ExtensionAdmin will not treat an empty provider hostname as a local extension", async () => {
+    const extensionAdmin = new ExtensionAdmin();
+    extensionAdmin.registerHost("example.com");
+
+    // a custom ExtensionProvider is free to report an empty hostname - it must not bypass the check
+    const hostless: ExtensionProvider = {
+      hostname: "",
+      getManifest: async () => stubManifest,
+      execute: async () => "",
+    };
+    await expect(extensionAdmin.addExtension(hostless)).rejects.toThrow(/not a valid URL or hostname/);
+  });
+
+  it("ExtensionAdmin will not host-gate extensions without a hostname", async () => {
+    const extensionAdmin = new ExtensionAdmin();
+    extensionAdmin.registerHost("example.com");
+
+    const local: ExtensionProvider = {
+      getManifest: async () => stubManifest,
+      execute: async () => "",
+    };
+    await expect(extensionAdmin.addExtension(local)).resolves.toBeUndefined();
   });
 });

@@ -19,6 +19,7 @@ import {
   MapLayerSourceStatus,
   MapLayerSourceValidation,
   MapLayerTileTreeReference,
+  MapLayerUntrustedOriginError,
   TileUrlImageryProvider,
   ValidateSourceArgs,
   WmsCapabilities,
@@ -109,6 +110,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
@@ -183,6 +189,11 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);

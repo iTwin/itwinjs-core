@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaKey } from "../SchemaKey";
-import { SchemaView } from "../SchemaView";
+import { SchemaView } from "../SchemaView/SchemaView";
 import { Schema } from "../Metadata/Schema";
 import { ECClass } from "../Metadata/Class";
 import { Logger } from "@itwin/core-bentley";

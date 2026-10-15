@@ -1,6 +1,158 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 08 Jul 2026 19:05:13 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Oct 2026 17:39:12 GMT and should not be manually modified.
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+### Updates
+
+- Move Sheet and Drawing sub-model class validation into Element.onSubModelInsert and allow domain ISubModeledElement classes to define permitted model classes.
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+### Updates
+
+- Reuse ECSQL column metadata for cached statements in withQueryReader.
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Added tests and documentation for the experimental Relations() ECSQL table valued function.
+- Text annotation fields can index into a String property holding serialized JSON.
+- Quantity and coordinate `FieldRun` values in text annotations now render through the iTwin.js quantity formatting pipeline instead of `toString()`, using the property's KindOfQuantity and the schema's presentation format by default. Apps can supply `FormatSet`s per iModel with `ElementDrivesTextAnnotation.registerFieldFormatting` and evaluate fields in memory with `ElementDrivesTextAnnotation.evaluateFields`. `@itwin/core-quantity` is now a peer dependency of this package.
+- Added beta ECDb APIs for atomically importing in-memory CSV rows or streaming CSV files.
+- Resolve sqlite_stat1 conflicts during changeset merge and local transaction rebase.
+- Allow SqliteChangesetReader to use a SQLiteDb as its schema source.
+- Add `PropertyFilter.InstanceKeyAndIdentifiers` to read fixed identifiers from a changeset without querying the current iModel.
+- Add download progress reporting and cancellation to pushChanges
+- improve schemasync, split upgrade scenario from regular updates
+- Deprecated "useJsName" from "RowFormatOptions" which is used by "ChangesetReader" api.
+- Escape iModel element labels when constructing HTML tooltip messages.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+_Version update only_
+
+## 5.13.4
+Fri, 18 Sep 2026 15:11:19 GMT
+
+### Updates
+
+- Resolve sqlite_stat1 conflicts during changeset merge and local transaction rebase.
+
+## 5.13.3
+Tue, 15 Sep 2026 20:25:28 GMT
+
+_Version update only_
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+_Version update only_
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:55 GMT
+
+### Updates
+
+- Add IModelDb.Elements.queryAspects to stream typed ElementAspects for multiple owning elements in one query.
+- ChangesetECAdaptor now rejects property access strings containing `constructor` or `prototype`, in addition to `__proto__`, and only traverses own properties, preventing a malicious changeset from polluting `Object.prototype`.
+- Added tests and documentation for the new ECSQL `IS` / `IS NOT` operator (null-safe comparison between value expressions).
+- IModelDb.close() now closes its ViewStore, and IModelHost.shutdown() now also disconnects V2 checkpoint containers. Separately, non-public containers with token-refresh enabled (`tokenRefreshSeconds > 0`, the default) keep the process alive until disconnected - disconnect any you manage outside `CloudSqlite.CloudCaches` before exiting.
+- Resolve benign duplicate dgn_Domain inserts by keeping the incoming row instead of aborting, so pulling several domain-upgrade changesets in a single pullChanges no longer fails with 'PRIMARY KEY INSERT CONFLICT - rejecting this changeset'.
+- Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory and deprecate file resource APIs in favor of blobs or strings.
+- Add IModelDb.getIndirectTxn as a beta API for performing edits from element, model, and aspect callbacks.
+- fix: `PropertyStore.CloudAccess.createNewContainer` passing invalid containerType value "property-store" — corrected to "propertystore" to match the service
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+- Add TxnChangedEntity.metadata to TxnManager.onElementsChanged and onModelsChanged via TxnChangedEntitiesWithMetadata while preserving TxnChangedEntities compatibility; document the backend/frontend payload differences.
+- Added `IModelDb.reservations` (@beta), an opt-in coordination mechanism that lets multiple briefcases concurrently insert elements that share an explicit federationGuid (e.g. shared definitions and component template elements) without producing duplicate or conflicting elements.
+- Added a new check to the integrity check to verify that a class maps every inherited property to the same column as each of its base classes.
+- improve schemasync, split upgrade scenario from regular updates
+- Introduce TextAnnotation leader target point
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+_Version update only_
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+### Updates
+
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb.
+- Unskipped previously mark flaky test
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries.
+- Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values.
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+- Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls.
+- Add filtering support to SchemaView and improve performance.
+- Added caching behaviour to ChangesetReader api
+- Changed error codes for "createQueryReader" and "withQueryReader" api and made error messages consistent across the native node add-on apis for the case of db being closed
+- Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
 
 ## 5.11.1
 Wed, 08 Jul 2026 19:03:45 GMT

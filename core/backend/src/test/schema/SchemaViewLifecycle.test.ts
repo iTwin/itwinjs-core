@@ -65,7 +65,7 @@ describe("SchemaView lifecycle", () => {
     expect(ctx1.isOutdated).to.be.false;
 
     // Import v1 schema - adds TestElement with PropA
-    // importSchemaStrings calls clearCaches which immediately invalidates _schemasPromise.
+    // importSchemaStrings calls clearCaches which immediately invalidates the cached schema view.
     await bc.importSchemaStrings([testSchemaV1]);
 
     // importSchemaStrings calls clearCaches which immediately invalidates the cached view
@@ -132,7 +132,7 @@ describe("SchemaView lifecycle", () => {
     // bc2: pull changes
     await bc2.pullChanges();
 
-    // After pulling a schema changeset, clearCaches is called which immediately nulls _schemasPromise.
+    // After pulling a schema changeset, clearCaches is called which immediately drops the cached schema view.
     const ctxAfterPull = await bc2.getSchemaView();
     expect(ctxBefore.isOutdated).to.be.true;
     const testClass = ctxAfterPull.findClass("SchemaViewLifecycleTest:TestElement");

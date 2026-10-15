@@ -304,3 +304,43 @@ export namespace ElementError {
     return ITwinError.isError<ITwinError>(error, scope, key);
   }
 }
+
+/** An error originating from the shared element reservation APIs (see [SynchronousChannel.Reservations]($backend)),
+ * used to coordinate simultaneous creation of elements with shared identities across briefcases.
+ * @beta
+ */
+export interface ElementReservationError extends ITwinError {
+  /** The federationGuid of the element involved in the error, when known. */
+  readonly federationGuid?: GuidString;
+}
+
+/** @beta */
+export namespace ElementReservationError {
+  /** the ITwinError scope for `ElementReservationError`s. */
+  export const scope = "itwin-ElementReservation";
+
+  /** Keys that identify `ElementReservationError`s */
+  export type Key =
+    /** A proposed or inserted reservation is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or a missing federationGuid. */
+    "invalid-reservation" |
+    /** The requested reservation conflicts with an existing reservation (a different class or code). */
+    "reservation-conflict" |
+    /** No reservation exists for the element being inserted; it must be reserved first. */
+    "reservation-not-found" |
+    /** The element cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of element ids available for reservations has been exhausted. */
+    "id-sequence-exhausted" |
+    /** The persisted reservation bookkeeping data is corrupt. */
+    "corrupt-reservation-data";
+
+  /** Instantiate and throw an ElementReservationError */
+  export function throwError<T extends ElementReservationError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
+    ITwinError.throwError<ElementReservationError>({ ...e, iTwinErrorId: { scope, key } });
+  }
+
+  /** Determine whether an error object is an ElementReservationError */
+  export function isError(error: unknown, key?: Key): error is ElementReservationError {
+    return ITwinError.isError<ElementReservationError>(error, scope, key);
+  }
+}

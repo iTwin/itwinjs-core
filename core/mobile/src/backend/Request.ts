@@ -185,13 +185,31 @@ export class ResponseError extends BentleyError {
 const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
   const elapsed = new Date().getTime() - startTime;
   const elapsedTime = `${elapsed}ms`;
-  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${getSafeUrlForLogging(req.url)} (${elapsedTime})`);
 };
 
 const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
   const startTime = new Date().getTime();
   return req.on("response", logResponse(req, startTime));
 };
+
+/**
+ * Make url safe for logging by removing sensitive information
+ * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
+ * @internal
+ */
+export function getSafeUrlForLogging(url: string): string {
+  try {
+    const safeToLogDownloadUrl = new URL(url);
+    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
+      safeToLogDownloadUrl.search = "...";
+    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
+      safeToLogDownloadUrl.hash = "...";
+    return safeToLogDownloadUrl.toString();
+  } catch {
+    return "<unparsable url>"; // never fall back to the raw url - it may contain a token
+  }
+}
 
 /** Wrapper around making HTTP requests with the specific options.
  *
@@ -214,7 +232,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  Logger.logInfo(loggerCategory, url);
+  Logger.logInfo(loggerCategory, getSafeUrlForLogging(url));
 
   if (options.accept)
     sareq = sareq.accept(options.accept);

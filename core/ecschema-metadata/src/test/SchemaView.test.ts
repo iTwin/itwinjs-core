@@ -4,8 +4,92 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { SchemaView } from "../SchemaView";
-import { schemaViewFormatVersion } from "../SchemaViewInterfaces";
+import { StrengthDirection, StrengthType } from "../ECObjects";
+import { SchemaView } from "../SchemaView/SchemaView";
+import { SchemaViewBuilder } from "../SchemaView/SchemaViewBuilder";
+import { ClassModifier, ClassType, PropertyKind, schemaViewFormatVersion, SchemaViewPrimitiveType } from "../SchemaView/SchemaViewInterfaces";
+
+function makeLabelViews(name: string, label?: string) {
+  const builder = new SchemaViewBuilder();
+  function namedFields(prefix: string) {
+    return {
+      nameStringIdx: builder.internString(`${prefix}${name}`),
+      labelStringIdx: builder.internString(label ? `${prefix}${label}` : label),
+      descriptionStringIdx: 0,
+    };
+  }
+
+  const schemaIdx = builder.addSchema({
+    ...namedFields("Schema"),
+    ecInstanceId: 1,
+    aliasStringIdx: builder.internString("test"),
+    versionRead: 1, versionWrite: 0, versionMinor: 0,
+    classRangeStart: 0, classCount: 1,
+    enumRangeStart: 0, enumCount: 1,
+    koqRangeStart: 0, koqCount: 1,
+    catRangeStart: 0, catCount: 1,
+    isHidden: false,
+  });
+  builder.addClass({
+    ...namedFields("Class"),
+    ecInstanceId: 2,
+    schemaIdx,
+    type: ClassType.Entity,
+    modifier: ClassModifier.None,
+    baseClassIdx: -1,
+    mixinStartIdx: 0, mixinCount: 0,
+    ownPropStart: 0, ownPropCount: 1,
+    strength: StrengthType.Referencing,
+    strengthDirection: StrengthDirection.Forward,
+    sourceConstraintIdx: -1, targetConstraintIdx: -1,
+    isHidden: undefined,
+  });
+  const defIdx = builder.addPropertyDef({
+    nameStringIdx: builder.internString(`Property${name}`),
+    descriptionStringIdx: 0,
+    kind: PropertyKind.Primitive,
+    primitiveType: SchemaViewPrimitiveType.String,
+    extTypeStringIdx: 0,
+    enumIdx: -1, koqIdx: -1, structClassIdx: -1, navRelClassIdx: -1, categoryIdx: -1,
+    navDirection: StrengthDirection.Forward,
+    isReadOnly: false,
+    isHidden: false,
+    arrayMinOccurs: undefined, arrayMaxOccurs: undefined,
+  });
+  builder.addPropertyRef({ ecInstanceId: 3, defIdx, labelStringIdx: namedFields("Property").labelStringIdx, priority: 0 });
+  builder.addEnumeration({
+    ...namedFields("Enumeration"),
+    ecInstanceId: 4,
+    schemaIdx,
+    primitiveType: SchemaViewPrimitiveType.Integer,
+    isStrict: true,
+    enumeratorStart: 0, enumeratorCount: 1,
+  });
+  builder.addEnumerator({ ...namedFields("Enumerator"), value: 1 });
+  builder.addKoq({
+    ...namedFields("KindOfQuantity"),
+    ecInstanceId: 5,
+    schemaIdx,
+    persistenceUnitStringIdx: builder.internString("Units:M"),
+    presentationFormatsStringIdx: 0,
+    relativeError: 0.001,
+  });
+  builder.addPropertyCategory({ ...namedFields("PropertyCategory"), ecInstanceId: 6, schemaIdx, priority: 0 });
+
+  const view = builder.build();
+  const schema = view.getSchema(`Schema${name}`)!;
+  const cls = schema.getClass(`Class${name}`)!;
+  const enumeration = schema.getEnumeration(`Enumeration${name}`)!;
+  return [
+    ["Schema", schema],
+    ["Class", cls],
+    ["Property", cls.getProperty(`Property${name}`)!],
+    ["Enumeration", enumeration],
+    ["Enumerator", enumeration.getEnumeratorByName(`Enumerator${name}`)!],
+    ["KindOfQuantity", schema.getKindOfQuantity(`KindOfQuantity${name}`)!],
+    ["PropertyCategory", schema.getPropertyCategory(`PropertyCategory${name}`)!],
+  ] as const;
+}
 
 /** Build the smallest valid SchemaView blob: header + empty PropertyDefTable, SchemaTable,
  * EnumTable, KoQTable, PropCatTable, ClassTable, then a string table with one empty entry. */
@@ -94,6 +178,41 @@ describe("SchemaView.fromBinary - happy path", () => {
   });
 });
 
+describe("SchemaView label fallback", () => {
+  it.each([
+    { name: "OrdinaryName", label: undefined, expected: "OrdinaryName" },
+    { name: "Encoded__x0020__Name__x0021____x003f__", label: undefined, expected: "Encoded Name!?" },
+    { name: "Unicode__x96EA____xD83D____xDE00__", label: undefined, expected: "Unicode雪😀" },
+    { name: "Malformed__x12____xGGGG____x12345__", label: undefined, expected: "Malformed__x12____xGGGG____x12345__" },
+    { name: "Empty__x0020__Label", label: "", expected: "Empty Label" },
+    { name: "Encoded__x0020__Name", label: "Explicit label", expected: "Explicit label" },
+    { name: "Encoded__x0020__Name", label: "Explicit__x0020__Label", expected: "Explicit__x0020__Label" },
+    { name: "Same__x0020__Name", label: "Same__x0020__Name", expected: "Same__x0020__Name" },
+  ])("resolves $name with label $label", ({ name, label, expected }) => {
+    for (const [prefix, item] of makeLabelViews(name, label)) {
+      expect(item.label, prefix).toBe(`${prefix}${expected}`);
+      expect(item.name, prefix).toBe(`${prefix}${name}`);
+    }
+  });
+
+  it.each([
+    { name: "", expected: "" },
+    { name: "1 Legacy Value", expected: "1 Legacy Value" },
+    { name: "1 Legacy__x0020__Value", expected: "1 Legacy Value" },
+  ])("accepts a legacy string enumerator name '$name'", ({ name, expected }) => {
+    const builder = new SchemaViewBuilder();
+    builder.addEnumerator({
+      nameStringIdx: builder.internString(name),
+      labelStringIdx: 0,
+      descriptionStringIdx: 0,
+      value: name,
+    });
+    const enumerator = new SchemaView.Enumerator(builder.build(), 0);
+    expect(enumerator.label).toBe(expected);
+    expect(enumerator.name).toBe(name);
+  });
+});
+
 describe("SchemaView.fromBinary - malformed blobs", () => {
   it("rejects an empty buffer", () => {
     expect(() => SchemaView.fromBinary(new Uint8Array(0))).to.throw();
@@ -167,3 +286,33 @@ describe("SchemaView.fromBinary - malformed blobs", () => {
     expect(() => SchemaView.fromBinary(buf)).to.throw(/tag/i);
   });
 });
+
+describe("SchemaView husk merging", () => {
+  // These cover the pure-TS husk lifecycle contract (createMergeable / mergeFragment) without
+  // fabricating a full fragment blob - the writer-to-reader blob contract is exercised end to end
+  // in the backend tests (core/backend/.../SchemaViewFragmentLoading.test.ts). The empty minimal
+  // blob is enough to assert the husk's identity, emptiness, and guard behaviors.
+
+  it("createMergeable returns an empty, current view", () => {
+    const view = SchemaView.createMergeable("husk-token");
+    expect(view.schemaCount).to.equal(0);
+    expect(view.classCount).to.equal(0);
+    expect(view.isOutdated).to.be.false;
+    expect(view.schemaToken).to.equal("husk-token");
+  });
+
+  it("merges an (empty) fragment into the same instance without throwing", () => {
+    const view = SchemaView.createMergeable();
+    view.mergeFragment(makeMinimalBlob());
+    expect(view.schemaCount).to.equal(0);
+    // A second empty merge is also a no-op and must not throw.
+    view.mergeFragment(makeMinimalBlob());
+    expect(view.schemaCount).to.equal(0);
+  });
+
+  it("throws when merging into a non-mergeable (fromBinary) view", () => {
+    const view = SchemaView.fromBinary(makeMinimalBlob());
+    expect(() => view.mergeFragment(makeMinimalBlob())).to.throw(/not mergeable/i);
+  });
+});
+

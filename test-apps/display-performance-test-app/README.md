@@ -26,16 +26,6 @@ These options will work for running with electron or for a browser (though speci
 
 Performance tests should automatically operate on Mac the same as on a Windows machine. However, it should be noted that, as Safari does not support the GPU timer we are utilizing, performance results when running with Safari will not produce the following data columns in the csv file: GPU Total, Bound By, Effective Total Time, & Effective FPS.
 
-## Performance tests on iOS (backend running locally)
-
-Performance tests on iOS have more restrictions than performance tests run on other platforms:
-
-* Arguments to the app will be ignored.
-* Results (csv and png files) will be sent to the Documents directory of the iPad. Any path specified in the configuration file will be ignored.
-* The json configuration file used by the app must be present in the Documents directory of the iPad. It must be named MobilePerformanceConfig.json.
-* All bim files referenced by the json configuration file must be present in the Documents directory of the iPad.
-* We cannot gather any GPU data from iOS.
-
 ## Environment Variables
 
 * IMJS_NO_DEV_TOOLS

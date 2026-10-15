@@ -272,6 +272,7 @@ export interface PresentationManagerProps {
 // @public
 export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
     enableSchemasPreload?: boolean;
+    maxClientManagers?: number;
     requestTimeout?: number;
     unusedClientLifetime?: number;
 }

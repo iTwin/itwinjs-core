@@ -152,7 +152,7 @@ export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
   }
 
   public override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
-    if (!isDynamics) {
+    if (!isDynamics && ev.button !== BeButton.Reset) {
       this._points.push(ev.point.clone());
     }
 

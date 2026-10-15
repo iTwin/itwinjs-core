@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -28,9 +28,36 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
+      // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
+      const classifyResponseFailure = (httpResponse: Response, requestedUrl: string): MapLayerSourceValidation | undefined => {
+        if (httpResponse.ok)
+          return undefined;
+
+        if (httpResponse.status === 401 || httpResponse.status === 403) {
+          const challengedUrl = httpResponse.url || requestedUrl;
+          if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url)) {
+            let blockedOrigin: string | undefined;
+            try { blockedOrigin = new URL(challengedUrl).origin; } catch { /* non-hierarchical URL */ }
+            return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+          }
+
+          return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
+        }
+
+        return { status: MapLayerSourceStatus.InvalidUrl };
+      };
+
       let url = appendQueryParams(source.url, source.savedQueryParams);
       url = appendQueryParams(url, source.unsavedQueryParams);
-      let response = await fetch(url, opts);
+      const allowLandingCredentials = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, source.url);
+      if (headers && allowLandingCredentials)
+        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
+
+      let response = await fetch(url, allowLandingCredentials ? opts : { method: "GET" });
+      const landingFailure = classifyResponseFailure(response, url);
+      if (landingFailure)
+        return landingFailure;
+
       let json = await response.json();
       if (!json) {
         return { status };
@@ -77,9 +104,24 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       } else if (Array.isArray(json.links)) {
         // This might be the main landing page
         const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
-        let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
+        // Landing-page links are allowed to be relative, so resolve them against the URL the landing document
+        // was actually served from (which may differ from the requested one if the request was redirected)
+        // before appending query parameters or evaluating trust.
+        let collectionsUrl = new URL(collectionsLink.href, response.url || url).toString();
+        collectionsUrl = appendQueryParams(collectionsUrl, source.savedQueryParams);
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
-        response = await fetch(collectionsUrl, opts);
+
+        // The collections link is advertised by the server-controlled landing document, so the trust
+        // decision is applied to it independently of the source URL.
+        const allowCreds = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(collectionsUrl, source.url);
+        if (headers && allowCreds)
+          IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
+
+        response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
+        const collectionsFailure = classifyResponseFailure(response, collectionsUrl);
+        if (collectionsFailure)
+          return collectionsFailure;
+
         json = await response.json();
         if (Array.isArray(json.collections)) {
           subLayers = createCollectionsList(json);

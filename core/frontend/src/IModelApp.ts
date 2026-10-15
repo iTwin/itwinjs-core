@@ -17,7 +17,7 @@ import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, expectDefined, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { FormatsProvider } from "@itwin/core-quantity";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -162,6 +162,17 @@ export interface IModelAppOptions {
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
 }
+
+/** Options for [[IModelApp.setFormatsProvider]].
+ * @beta
+ */
+export interface SetFormatsProviderOptions {
+  /** The unit system implied by the formats provider. If omitted, the active unit system remains unchanged. */
+  readonly unitSystem?: UnitSystemKey;
+}
+
+/** CSS class name applied to the notice element of a logo card created by [[IModelApp.makeLogoCard]]. */
+const logoCardNoticeClassName = "logo-cards";
 
 /** Options for [[IModelApp.makeModalDiv]]
  *  @public
@@ -347,11 +358,27 @@ export class IModelApp {
 
   /** The [[FormatsProvider]] for this session.
    * @param provider The provider to use for formatting quantities.
+   * @note Prefer [[IModelApp.setFormatsProvider]] when replacing the provider; assigning this property starts an asynchronous reload without returning a promise.
    * @beta
    */
   public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
   public static set formatsProvider(provider: FormatsProvider) {
     this._formatsProviderManager.formatsProvider = provider;
+  }
+
+  /**
+   * Replaces the formats provider and optionally changes the active unit system.
+   * Resolves after the formatter has rebuilt its formatting and parsing caches.
+   * Incompatible provider entries are logged and skipped, so they do not reject this Promise.
+   * If the reload fails, this Promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
+   * If a later setFormatsProvider call supersedes this request, this Promise rejects.
+   * It also rejects if the application shuts down first.
+   * @beta
+   */
+  public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {
+    await this.quantityFormatter.runAndWaitForReload(() => {
+      this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
+    });
   }
 
   /** @alpha */
@@ -768,8 +795,18 @@ export class IModelApp {
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
-      /** A *notice* string to be shown on the logo card. May include HTML.  */
+      /** A *notice* string to be shown on the logo card. May include HTML.
+       * @note Never pass untrusted (e.g., server-provided) text here — string notices are parsed as HTML. Use [[noticeLines]] instead.
+       */
       notice?: string | HTMLElement;
+      /** Lines composing the *notice* shown on the logo card, separated by line breaks and styled like [[notice]].
+       * Strings are rendered as plain text — never parsed as HTML — making this the safe choice for untrusted
+       * (e.g., server-provided) content such as copyright attributions; supply an `HTMLElement` for a line requiring markup.
+       * This option is intended for any caller — including applications and map-layer format extensions — that needs to
+       * display text it does not fully control; prefer it over [[notice]] unless you require raw HTML for your own trusted content.
+       * Ignored if [[notice]] is defined.
+       */
+      noticeLines?: Array<string | HTMLElement>;
     }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
@@ -791,9 +828,19 @@ export class IModelApp {
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: logoCardNoticeClassName });
       else
         noticeCell.appendChild(opts.notice);
+    } else if (undefined !== opts.noticeLines) {
+      // A <p> cannot legally contain flow content, so use a <div> when a line is an element.
+      const containerTag = opts.noticeLines.some((line) => typeof line !== "string") ? "div" : "p";
+      const notice = IModelApp.makeHTMLElement(containerTag, { parent: noticeCell, className: logoCardNoticeClassName });
+      opts.noticeLines.forEach((line, index) => {
+        if (index > 0)
+          notice.appendChild(IModelApp.makeHTMLElement("br"));
+        // Strings are appended as text nodes so they are never parsed as HTML.
+        notice.append(line);
+      });
     }
     return card;
   }
@@ -810,6 +857,7 @@ export class IModelApp {
   }
 
   /** Format the tooltip strings returned by [[IModelConnection.getToolTipMessage]].
+   * @note Each string is interpreted as HTML. Any untrusted content must be HTML-escaped or sanitized before calling this method.
    * @alpha
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {

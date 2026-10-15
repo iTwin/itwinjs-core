@@ -7,13 +7,15 @@
  * @module Curve
  */
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveTypes";
+import { Transform } from "../geometry3d/Transform";
 import { CurveCollection } from "./CurveCollection";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * * A `UnionRegion` is a collection of other planar region types -- `Loop` and `ParityRegion`.
@@ -70,6 +72,18 @@ export class UnionRegion extends CurveCollection {
   /** Return new empty `UnionRegion` */
   public cloneEmptyPeer(): UnionRegion {
     return new UnionRegion();
+  }
+  /** Return a deep copy. */
+  public override clone(): UnionRegion {
+    return super.clone() as UnionRegion;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): UnionRegion {
+    return super.cloneTransformed(transform) as UnionRegion;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): UnionRegion {
+    return super.cloneWithExpandedLineStrings() as UnionRegion;
   }
   /**
    * Try to add a child (by capturing it).
