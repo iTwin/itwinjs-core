@@ -10,7 +10,15 @@ release time.
 The script also asserts this lockfile's pinned `@microsoft/rush` version matches `rushVersion` in
 `rush.json` before it runs Rush, and fails the release if they've drifted apart. `../audit-rush-lockfile.mjs`
 runs `npm audit` against this lockfile at PR time and release time, and fails on high/critical
-advisories.
+advisories, except those listed in `audit-exceptions.json`.
+
+## Audit exceptions
+
+Use `audit-exceptions.json` only when an advisory has no available fix (for example, no patched
+release exists upstream). Each entry needs the advisory `id` (GHSA), a `reason`, and an `expires`
+date (`YYYY-MM-DD`). The audit keeps reporting the advisory as a warning until the date passes,
+then fails again, so pick a short window. Remove the entry once the lockfile no longer reports
+the advisory (the audit warns when an entry is stale).
 
 ## Regenerating after a `rushVersion` bump
 
