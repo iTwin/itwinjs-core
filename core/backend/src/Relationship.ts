@@ -710,41 +710,41 @@ export class Relationships {
   private prepareBatchLookup<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
     const pairKey = (pair: SourceAndTarget) => `${pair.sourceId}|${pair.targetId}`;
     const toProps = (row: any): T => ({ ...row, classFullName: row.className.replace(".", ":") });
+    // Ids are passed to the queries as JSON integers, which must match the signed 64-bit values stored by SQLite.
+    const toInt64 = (id: Id64String) => BigInt.asIntN(64, BigInt(id)).toString();
 
-    const ids = new Set<Id64String>();
-    const sourceIds = new Set<Id64String>();
-    const targetIds = new Set<Id64String>();
-    const wantedPairs = new Set<string>();
+    const ids = new Map<Id64String, string>();
+    const pairs = new Map<string, string>();
     for (const criterion of criteria) {
       if (typeof criterion === "string") {
         if (Id64.isValidId64(criterion))
-          ids.add(criterion);
+          ids.set(criterion, toInt64(criterion));
       } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
-        sourceIds.add(criterion.sourceId);
-        targetIds.add(criterion.targetId);
-        wantedPairs.add(pairKey(criterion));
+        pairs.set(pairKey(criterion), `[${toInt64(criterion.sourceId)},${toInt64(criterion.targetId)}]`);
       }
     }
 
+    // Each query joins the requested values (as a json_each virtual table) to the relationship class. CROSS JOIN makes SQLite iterate
+    // the requested values and look up each one by index, so only the requested relationships are read, regardless of the size of the class.
     const propsById = new Map<Id64String, T>();
     const propsByPair = new Map<string, T>();
     const queries: Array<{ ecsql: string, params: QueryBinder, onRow: (row: any) => void }> = [];
     if (ids.size > 0) {
       queries.push({
-        ecsql: `SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, ECInstanceId)`,
-        params: new QueryBinder().bindIdSet(1, ids),
+        ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.ECInstanceId = p.[value]`,
+        params: new QueryBinder().bindString(1, `[${[...ids.values()].join(",")}]`),
         onRow: (row) => propsById.set(row.id, toProps(row)),
       });
     }
 
-    if (sourceIds.size > 0) {
+    if (pairs.size > 0) {
       queries.push({
-        ecsql: `SELECT * FROM ${relClassFullName} WHERE InVirtualSet(?, SourceECInstanceId) AND InVirtualSet(?, TargetECInstanceId)`,
-        params: new QueryBinder().bindIdSet(1, sourceIds).bindIdSet(2, targetIds),
+        ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.SourceECInstanceId = json_extract(p.[value], '$[0]') AND r.TargetECInstanceId = json_extract(p.[value], '$[1]')`,
+        params: new QueryBinder().bindString(1, `[${[...pairs.values()].join(",")}]`),
         onRow: (row) => {
-          // The query may also return relationships whose source and target are each requested but not as a pair; those are skipped here.
+          // A polymorphic query may find more than one relationship for the same pair; keep the first, like tryGetInstanceProps.
           const key = pairKey(row);
-          if (wantedPairs.has(key) && !propsByPair.has(key))
+          if (!propsByPair.has(key))
             propsByPair.set(key, toProps(row));
         },
       });

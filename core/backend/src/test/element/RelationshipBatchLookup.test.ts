@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, IModel, RepositoryLinkProps, SourceAndTarget } from "@itwin/core-common";
 import { withEditTxn } from "../../EditTxn";
@@ -139,5 +140,61 @@ describe("Relationships batched lookup", () => {
       expect(found.map((r) => r?.id)).to.deep.equal([id, id]);
       txn.deleteRelationship(imodel.relationships.getInstanceProps(cls, id));
     });
+  });
+
+  it("reads only the requested pairs in a dense many-to-many graph", async () => {
+    const cls = ElementGroupsMembers.classFullName;
+    const n = 5;
+    await withEditTxn(imodel, async (txn) => {
+      const sources: Id64String[] = [];
+      const targets: Id64String[] = [];
+      for (let i = 0; i < 2 * n; ++i) {
+        const id = txn.insertElement({ classFullName: RepositoryLink.classFullName, model: IModel.repositoryModelId, code: Code.createEmpty(), repositoryGuid: Guid.createValue() } as RepositoryLinkProps);
+        (i < n ? sources : targets).push(id);
+      }
+
+      // Connect every source to every target, then request only the "diagonal" pairs.
+      for (const sourceId of sources)
+        for (const targetId of targets)
+          txn.insertRelationship(ElementGroupsMembers.create(imodel, sourceId, targetId, 0).toJSON());
+
+      const pairs = sources.map((sourceId, i) => ({ sourceId, targetId: targets[i] }));
+      let rowsRead = 0;
+      const withQueryReader = imodel.withQueryReader.bind(imodel);
+      const stub = sinon.stub(imodel, "withQueryReader").callsFake((ecsql, callback, params, options) => withQueryReader(ecsql, (reader) => {
+        const step = reader.step.bind(reader);
+        reader.step = () => {
+          const hasRow = step();
+          if (hasRow)
+            ++rowsRead;
+          return hasRow;
+        };
+        return callback(reader);
+      }, params, options));
+      try {
+        const found = imodel.relationships.tryGetInstancesProps(cls, pairs);
+        expect(found.map((p) => p && { sourceId: p.sourceId, targetId: p.targetId })).to.deep.equal(pairs);
+      } finally {
+        stub.restore();
+      }
+      expect(rowsRead).to.equal(n);
+
+      const foundAsync = await imodel.relationships.tryGetInstancesPropsAsync(cls, pairs);
+      expect(foundAsync.map((p) => p && { sourceId: p.sourceId, targetId: p.targetId })).to.deep.equal(pairs);
+    });
+  });
+
+  it("supports relationships stored as navigation properties and ids from any briefcase", () => {
+    const cls = "BisCore:ModelContainsElements";
+    const highBriefcaseId = Id64.fromLocalAndBriefcaseIds(1, 0xfffffd);
+    const criteria: Array<Id64String | SourceAndTarget> = [
+      elementIds[0],
+      { sourceId: IModel.repositoryModelId, targetId: elementIds[1] },
+      highBriefcaseId,
+      { sourceId: highBriefcaseId, targetId: elementIds[1] },
+    ];
+    const batch = imodel.relationships.tryGetInstancesProps(cls, criteria);
+    criteria.forEach((criterion, i) => expect(batch[i]).to.deep.equal(imodel.relationships.tryGetInstanceProps(cls, criterion), `criterion ${i}`));
+    expect(batch.map((p) => p?.targetId)).to.deep.equal([elementIds[0], elementIds[1], undefined, undefined]);
   });
 });
