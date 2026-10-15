@@ -79,7 +79,6 @@ steps:
   # Disabling to unblock CI.
   # Re-enable ASAP.
   # For more details monitor issue here: https://github.com/iTwin/itwinjs-backlog/issues/2506
-  - script: npm run android:all
   - script: npm run ios:all
     enabled: false # TEMPORARY - see https://github.com/iTwin/itwinjs-backlog/issues/2506
     workingDirectory: test-apps/display-test-app
