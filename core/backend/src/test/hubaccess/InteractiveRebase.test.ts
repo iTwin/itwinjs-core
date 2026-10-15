@@ -2334,6 +2334,47 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).foo).to.equal("LocalChild");
   });
 
+  it("tracks a conflicting CASCADE effect when only a child is locally updated", async () => {
+    const [childId, untouchedId] = await withEditTxn(briefcase1, async (txn) => {
+      const insertChild = (foo: string) => txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo,
+        somePoint: new Point2d(5, 6),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps);
+      return [insertChild("EditedChild"), insertChild("UntouchedChild")];
+    });
+    await briefcase1.pushChanges({ description: "Create children" });
+    await briefcase2.pullChanges();
+    await withEditTxn(briefcase1, async (txn) => txn.deleteElement(id));
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id: childId, foo: "LocalChild" });
+    });
+    await briefcase1.pushChanges({ description: "Delete parent upstream" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    const conflict = interactive.conflicts.find((candidate) => candidate.id === childId);
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.ours?.foo).to.equal("LocalChild");
+
+    conflict.acceptOurs();
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).foo).to.equal("LocalChild");
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(untouchedId)).to.be.undefined;
+    conflict.acceptTheirs();
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+    conflict.acceptOurs();
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).foo).to.equal("LocalChild");
+  });
+
   it("should restore an edited aspect when accepting ours after they deleted the element", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
