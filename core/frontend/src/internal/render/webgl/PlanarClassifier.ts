@@ -277,6 +277,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
+  private _lastValidProjectionMatrix?: Matrix4d;
+  private _lastValidFrustum?: Frustum;
 
   private constructor(classifier: ActiveSpatialClassifier | undefined, target: Target) {
     super();
@@ -395,6 +397,29 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._planarClipMask = planarClipMask;
   }
 
+  /**
+   * Checks whether a projection matrix is invalid or unstable.
+   * This detects common issues like non-finite values, malformed scale/skew,
+   * or incorrect W component (usually caused by extreme view angles).
+   */
+  public isProjectionMatrixUnstable(matrix: Matrix4d): boolean {
+    const m = matrix.toJSON().flat();
+
+    if (m.some((v) => !Number.isFinite(v)))
+      return true;
+
+    // 2. Validate last row is exactly [0, 0, 0, 1]
+    const lastRow = m.slice(12, 16);
+    const isLastRowValid = Math.abs(lastRow[0]) < 1e-8 &&
+                          Math.abs(lastRow[1]) < 1e-8 &&
+                          Math.abs(lastRow[2]) < 1e-8 &&
+                          Math.abs(lastRow[3] - 1) < 1e-8;
+
+    if (!isLastRowValid)
+      return true;
+    return false;
+  }
+
   public collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void {
     this._classifierGraphics.length = this._maskGraphics.length = 0;
     if (undefined === context.viewingSpace)
@@ -427,8 +452,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
-    this._projectionMatrix = projection.projectionMatrix;
-    this._frustum = projection.textureFrustum;
+    if (!this.isProjectionMatrixUnstable(projection.projectionMatrix)) {
+      this._projectionMatrix = projection.projectionMatrix;
+      this._frustum = projection.textureFrustum;
+      this._lastValidProjectionMatrix = this._projectionMatrix;
+      this._lastValidFrustum = this._frustum;
+    } else if (this._lastValidProjectionMatrix && this._lastValidFrustum) {
+      this._projectionMatrix = this._lastValidProjectionMatrix;
+      this._frustum = this._lastValidFrustum;
+    } else {
+      this._projectionMatrix = projection.projectionMatrix;
+      this._frustum = projection.textureFrustum;
+    }
+
     this._debugFrustum = projection.debugFrustum;
     if (this._overridesDirty) {
       this._overridesDirty = false;
