@@ -26,8 +26,10 @@ describe("MobileHost", () => {
     const defaultHandler = MobileHost.nativeQueryHandler;
 
     const entryPoints: Array<[string, (name: string, message: string) => Promise<string>]> = [
-      ["MobileHost.handleNativeQuery", async (name, message) => MobileHost.handleNativeQuery(name, message)],
-      ["MobileDevice.handleNativeQuery", async (name, message) => device.handleNativeQuery(name, message)],
+      // eslint-disable-next-line @typescript-eslint/promise-function-async -- Must expose synchronous throws from the API.
+      ["MobileHost.handleNativeQuery", (name, message) => MobileHost.handleNativeQuery(name, message)],
+      // eslint-disable-next-line @typescript-eslint/promise-function-async -- Must expose synchronous throws from the API.
+      ["MobileDevice.handleNativeQuery", (name, message) => device.handleNativeQuery(name, message)],
     ];
 
     afterEach(() => {
