@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Authenticate mobile RPC WebSocket connections with a per-launch secret to reject unauthorized on-device clients. Requires an updated mobile native runtime.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}

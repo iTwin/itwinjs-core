@@ -1,6 +1,6 @@
 {
   "version": "01.00.00",
-  "sourceEcSchemaVersion": "01.00.11",
+  "sourceEcSchemaVersion": "01.00.12",
   "name": "Units",
   "alias": "u",
   "label": "Units",
@@ -3345,6 +3345,30 @@
       "unitSystem": "Units.INTERNATIONAL",
       "definition": "PROBABILITY_FRACTION",
       "denominator": 100
+    },
+    "DECIMAL_LENGTH_RATIO": {
+      "schemaItemType": "Unit",
+      "label": "decimal length ratio",
+      "description": "Unitless decimal number representing a ratio of two lengths, equivalent to M_PER_M_LENGTH_RATIO. For drawing scales, value = paper length / model length, e.g. 1:100 is stored as 0.01.",
+      "phenomenon": "Units.LENGTH_RATIO",
+      "unitSystem": "Units.INTERNATIONAL",
+      "definition": "ONE"
+    },
+    "M_PER_M_LENGTH_RATIO": {
+      "schemaItemType": "Unit",
+      "label": "m:m",
+      "description": "Ratio of two lengths, such as a drawing scale. Value = paper length / model length, e.g. 1:100 is stored as 0.01 and 1/4 in = 1 ft is stored as 1/48 (0.0208333...).",
+      "phenomenon": "Units.LENGTH_RATIO",
+      "unitSystem": "Units.SI",
+      "definition": "M*M(-1)"
+    },
+    "IN_PER_FT_LENGTH_RATIO": {
+      "schemaItemType": "Unit",
+      "label": "in:ft",
+      "description": "Ratio of a length in inches to a length in feet, such as an architectural drawing scale. Value = paper length (in) / model length (ft), e.g. 1/4 in = 1 ft is stored as 0.25.",
+      "phenomenon": "Units.LENGTH_RATIO",
+      "unitSystem": "Units.USCUSTOM",
+      "definition": "IN*FT(-1)"
     },
     "M_PER_M": {
       "schemaItemType": "Unit",

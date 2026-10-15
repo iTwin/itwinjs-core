@@ -1,6 +1,29 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Thu, 01 Oct 2026 15:17:55 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Oct 2026 17:39:12 GMT and should not be manually modified.
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+_Version update only_
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Expose SchemaView incremental-loading APIs as beta and decode ECName escapes in fallback display labels
+- Add synchronous format lookup to schema and format-set providers.
 
 ## 5.13.7
 Thu, 01 Oct 2026 15:15:30 GMT
