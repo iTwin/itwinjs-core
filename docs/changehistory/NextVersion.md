@@ -8,12 +8,14 @@ publish: false
   - [Backend](#backend)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
   - [Breaking changes](#breaking-changes)
+    - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
 
 ## Backend
@@ -29,6 +31,12 @@ Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties t
 The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
 The ECSQL version was bumped to `2.0.4.2`.
+
+### IdSet accepts ids with the high bit set
+
+The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
+
+Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
 
 ## Common
 
@@ -60,6 +68,35 @@ The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.
 Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
 
 ## Breaking changes
+
+### Extensible sub-model class validation
+
+Validation of which model classes may sub-model an element has moved from the native library to [Element.onSubModelInsert]($backend).
+
+The built-in rules remain:
+
+- [Sheet]($backend) accepts [SheetModel]($backend) and its subclasses.
+- [Drawing]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [TemplateRecipe2d]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [SectionDrawing]($backend) accepts [DrawingModel]($backend), [GraphicalModel3d]($backend), and their subclasses.
+
+Domain element classes implementing `bis:ISubModeledElement` may restrict their permitted sub-model classes by overriding the protected static [Element.allowedSubModelClasses]($backend) getter. The default value, `undefined`, permits any model class. A model class derived from an allowed class is also accepted, including a generated JavaScript class for an unregistered EC subclass.
+
+```ts
+class SheetPrototype extends DefinitionElement {
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> {
+    return [SheetModel];
+  }
+}
+```
+
+The following behavior changes apply:
+
+- Inserting a disallowed model now throws [IModelError]($common) with [IModelStatus.WrongModel]($bentley). The corresponding native checks previously returned `IModelStatus.BadElement`.
+- An override of [Element.onSubModelInsert]($backend) must call `super.onSubModelInsert(arg)` to retain inherited validation. An override that does not call `super` replaces that validation.
+- Missing modeled elements and elements that do not implement `bis:ISubModeledElement` continue to be rejected by the native library.
+
+This functionality requires the matching `@bentley/imodeljs-native` version distributed with `@itwin/core-backend`. Combining a native version containing the relaxed checks with an older `@itwin/core-backend` removes the built-in `Sheet` and `Drawing` restrictions.
 
 ### Mobile RPC authentication
 
