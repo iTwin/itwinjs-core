@@ -408,6 +408,36 @@ describe("BriefcaseManager", async () => {
 
       await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
     });
+
+    it("handles a listener that calls pushChanges, recursing asynchronously", async () => {
+      const { briefcase } = await setupBriefcaseWithLocalChange("prePushRecursion");
+      const changesetBeforePush = briefcase.changeset.id;
+
+      let listenerCalls = 0;
+      let changesetAfterNestedPush: string | undefined;
+      // addOnce removes the listener before invoking it, so the nested push does not re-enter it endlessly.
+      const removeListener = briefcase.txns.onPrePushValidation.addOnce(async () => {
+        ++listenerCalls;
+        await briefcase.pushChanges({ accessToken: user2, description: "nested push" });
+        changesetAfterNestedPush = briefcase.changeset.id;
+      });
+
+      try {
+        // The nested push consumes all pending Txns, so the outer push has nothing left to push and completes quietly.
+        await briefcase.pushChanges({ accessToken: user2, description: "outer push" });
+      } finally {
+        removeListener();
+      }
+
+      assert.strictEqual(listenerCalls, 1, "listener should only run for the outer push");
+      assert.isDefined(changesetAfterNestedPush);
+      assert.notStrictEqual(changesetAfterNestedPush, changesetBeforePush, "nested push should have pushed the changes");
+      assert.strictEqual(briefcase.changeset.id, changesetAfterNestedPush);
+      assert.isFalse(briefcase.txns.hasPendingTxns);
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+    });
+
     describe("after pull/merge", () => {
       const incomingExtents = new Range3d(-100, -200, -300, 400, 500, 600);
 

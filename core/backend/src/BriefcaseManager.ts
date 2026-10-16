@@ -805,6 +805,14 @@ export class BriefcaseManager {
 
     await db.txns.onPrePushValidation.raiseEvent();
 
+    // A listener may have pushed the pending changes itself (e.g. by calling pushChanges), leaving nothing to push.
+    // We shouldn't error in this case.
+    if (!db[_nativeDb].hasPendingTxns()) {
+      if (!arg.retainLocks)
+        await db.locks[_releaseAllLocks]();
+      return;
+    }
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
