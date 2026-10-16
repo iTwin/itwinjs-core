@@ -1338,6 +1338,11 @@ export class TxnManager {
    * cancellation before the changes are sent. If a listener throws or returns a promise that rejects, the
    * push operation will be aborted. Listeners are allowed to make additional changes to the iModel if necessary,
    * and those changes will be included in the push (if it proceeds).
+   *
+   * If the push is happening as part of [[BriefcaseManager.pullMergePush]], and the listener throws or returns
+   * a promise that rejects with an [[IModelError]] with an `errorNumber` of [[IModelHubStatus.PullIsRequired]],
+   * then another pull will be attempted, following by another pre-push validation attempt. This will continue
+   * as necessary up to the retry limit.
    * @see [[BriefcaseDb.pushChanges]].
    * @beta
    */
