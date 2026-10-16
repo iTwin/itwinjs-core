@@ -73,6 +73,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -516,6 +517,7 @@ export abstract class IModelDb extends IModel {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  private readonly _queryMetadataCache = new QueryMetadataCache();
   private _codeSpecs?: CodeSpecs;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -799,7 +801,8 @@ export abstract class IModelDb extends IModel {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
-    this.clearCaches({ instanceCachesOnly: true });
+    // Unsaved changes here can include schema changes, e.g. after a failed schema import.
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
   }
 
@@ -1052,7 +1055,7 @@ export abstract class IModelDb extends IModel {
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
+        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -1269,6 +1272,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
       this._statementCache.clear();
+      this._queryMetadataCache.clear();
       this._sqliteStatementCache.clear();
       this._classMetaDataRegistry = undefined;
       this._jsClassMap = undefined;
@@ -1608,6 +1612,7 @@ export abstract class IModelDb extends IModel {
           const status = this[_nativeDb].cancelTo(txnBeforeAdopt, true);
           if (IModelStatus.Success !== status)
             Logger.logError(loggerCategory, `Failed to roll back the adopted schema rows after a failed import: ${IModelStatus[status] ?? status}`);
+          this.clearCaches();
         }
         throw err;
       }
@@ -4044,7 +4049,8 @@ export class BriefcaseDb extends IModelDb {
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
-        nativeDb.clearECDbCache();
+        // The other connection may have changed the schema, so drop everything prepared against the old one.
+        briefcaseDb.clearCaches();
         nativeDb.restartDefaultTxn();
         briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
       });
