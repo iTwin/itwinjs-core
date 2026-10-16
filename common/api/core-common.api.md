@@ -2209,6 +2209,7 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    cacheSizeInKB?: number;
     cursorIdleTimeout?: number;
     // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
