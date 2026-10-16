@@ -103,16 +103,21 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
+        const listener = context.listener;
+
+        if (context.once) {
+          context.listener = undefined;
+          dropped = true;
+        }
+
         try {
-          context.listener.apply(context.scope, args);
+          listener.apply(context.scope, args);
         } catch (e) {
           UnexpectedErrors.handle(e);
         }
+
         if (!context.listener) {
           // listener was removed during its own callback
-          dropped = true;
-        } else if (context.once) {
-          context.listener = undefined;
           dropped = true;
         }
       }
@@ -170,8 +175,6 @@ interface UnorderedEventContext {
  */
 export class BeUnorderedEvent<T extends Listener> {
   private _listeners: Set<UnorderedEventContext> = new Set();
-  private _emitDepth: number = 0;
-  private _hasTombstones: boolean = false;
 
   /** The number of listeners currently subscribed to the event.
    * @note During `raiseEvent()`, this may include listeners that have been removed or are one-shot
@@ -205,12 +208,7 @@ export class BeUnorderedEvent<T extends Listener> {
 
   /** Remove a specific context entry, deferring during emit. */
   private _removeCtx(ctx: UnorderedEventContext): void {
-    if (this._emitDepth > 0) {
-      ctx.listener = undefined; // tombstone for deferred cleanup
-      this._hasTombstones = true;
-    } else {
-      this._listeners.delete(ctx);
-    }
+    this._listeners.delete(ctx);
   }
 
   /**
@@ -218,31 +216,19 @@ export class BeUnorderedEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    */
   public raiseEvent(...args: Parameters<T>) {
-    this._emitDepth++;
-
     for (const ctx of this._listeners) {
       if (!ctx.listener) {
         continue;
       }
+
+      if (ctx.once) {
+        this._listeners.delete(ctx);
+      }
+
       try {
         ctx.listener.apply(ctx.scope, args);
       } catch (e) {
         UnexpectedErrors.handle(e);
-      }
-      if (ctx.listener && ctx.once) {
-        ctx.listener = undefined;
-        this._hasTombstones = true;
-      }
-    }
-
-    this._emitDepth--;
-
-    // Only clean up tombstoned entries when we're back at the outermost emit
-    if (this._hasTombstones && this._emitDepth === 0) {
-      this._hasTombstones = false;
-      for (const ctx of this._listeners) {
-        if (ctx.listener === undefined)
-          this._listeners.delete(ctx);
       }
     }
   }
@@ -318,8 +304,6 @@ interface BeAsyncEventOptions {
  */
 export class BeAsyncEvent<T extends AsyncListener> {
   private _listeners: Set<UnorderedAsyncEventContext> = new Set();
-  private _emitDepth: number = 0;
-  private _hasTombstones: boolean = false;
   private _concurrent: boolean = false;
   private _promiseRejectionIsUnexpected: boolean = false;
 
@@ -362,12 +346,7 @@ export class BeAsyncEvent<T extends AsyncListener> {
 
   /** Remove a specific context entry, deferring during emit. */
   private _removeCtx(ctx: UnorderedAsyncEventContext): void {
-    if (this._emitDepth > 0) {
-      ctx.listener = undefined; // tombstone for deferred cleanup
-      this._hasTombstones = true;
-    } else {
-      this._listeners.delete(ctx);
-    }
+    this._listeners.delete(ctx);
   }
 
   /**
@@ -379,8 +358,6 @@ export class BeAsyncEvent<T extends AsyncListener> {
    * @returns A Promise that settles when the event invocation is complete.
    */
   public async raiseEvent(...args: Parameters<T>): Promise<void> {
-    this._emitDepth++;
-
     const promises = [];
 
     // Wrapper to ensure that an exception thrown immediately by a listener is captured as a rejected promise rather than
@@ -391,36 +368,23 @@ export class BeAsyncEvent<T extends AsyncListener> {
       await ctx.listener.apply(ctx.scope, args);
     };
 
-    try {
-      for (const ctx of this._listeners) {
-        if (!ctx.listener)
-          continue;
+    for (const ctx of this._listeners) {
+      if (!ctx.listener)
+        continue;
 
-        let promise = invoke(ctx, args);
-        if (this._promiseRejectionIsUnexpected)
-          promise = promise.catch(reason => UnexpectedErrors.handle(reason));
-
-        if (this._concurrent)
-          promises.push(promise);
-        else
-          await promise;
-
-        if (ctx.listener && ctx.once) {
-          ctx.listener = undefined;
-          this._hasTombstones = true;
-        }
+      if (ctx.once) {
+        // Set guarantees this is safe during iteration.
+        this._listeners.delete(ctx);
       }
-    } finally {
-      this._emitDepth--;
 
-      // Only clean up tombstoned entries when we're back at the outermost emit
-      if (this._hasTombstones && this._emitDepth === 0) {
-        this._hasTombstones = false;
-        for (const ctx of this._listeners) {
-          if (ctx.listener === undefined)
-            this._listeners.delete(ctx);
-        }
-      }
+      let promise = invoke(ctx, args);
+      if (this._promiseRejectionIsUnexpected)
+        promise = promise.catch(reason => UnexpectedErrors.handle(reason));
+
+      if (this._concurrent)
+        promises.push(promise);
+      else
+        await promise;
     }
 
     if (this._concurrent) {
