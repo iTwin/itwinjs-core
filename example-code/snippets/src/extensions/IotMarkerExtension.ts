@@ -40,7 +40,7 @@ export class IotMarkerExtension {
       for await (const row of result)
         categoryIds.push(row.id);
 
-      vp.changeCategoryDisplay(categoryIds, false);
+      vp.iModelRefs.primary.changeCategoryDisplay({ categories: categoryIds, display: false });
 
       ExtensionHost.viewManager.addDecorator(new SmartDeviceDecorator(vp));
     });

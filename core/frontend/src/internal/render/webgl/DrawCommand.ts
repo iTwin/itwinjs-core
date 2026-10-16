@@ -18,7 +18,7 @@ import { Primitive } from "./Primitive";
 import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { Hilites, Target } from "./Target";
+import { Target } from "./Target";
 import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
@@ -254,8 +254,8 @@ export type DrawCommands = DrawCommand[];
  * The primitive should be right in the middle of a set.  We need to find the set which matches the flashID.
  * @internal
  */
-export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
-  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier)
+export function extractFlashedVolumeClassifierCommands(flashedId: Id64String | undefined, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
+  if (undefined === flashedId || 0 === numCmdsPerClassifier)
     return undefined;
 
   const firstPrim = (numCmdsPerClassifier - 1) / 2;
@@ -284,7 +284,7 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
 const scratchFeature = PackedFeature.create();
 
 /** @internal */
-export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
+export function extractHilitedVolumeClassifierCommands(cmds: DrawCommands): DrawCommands {
   // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
   //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
   const result: DrawCommand[] = [];
@@ -315,8 +315,9 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
           if (undefined === surface || undefined === surface.mesh.uniformFeatureId)
             continue;
 
+          const hilites = batch.iModelRef?.iModel.hilited;
           const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId, scratchFeature);
-          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
+          if (undefined === hilites || undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
             continue;
 
           break;

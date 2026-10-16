@@ -209,8 +209,11 @@
     "InvokeFrontendIpc": {
       "keyin": "dta invoke frontend ipc"
     },
-    "ToggleSecondaryIModel": {
-      "keyin": "dta imodel attach"
+    "LinkIModel": {
+      "keyin": "dta link imodel"
+    },
+    "UnlinkIModels": {
+      "keyin": "dta unlink imodels"
     }
   }
 }

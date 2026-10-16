@@ -326,19 +326,21 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
-    for (const ref of view.getTileTreeRefs()) {
-      if (ref.castsShadows) {
-        if (ref.isGlobal) {
-          // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
-          for (const p3 of viewFrustum.points) {
-            const p4 = worldToMap.multiplyPoint3d(p3, 1);
-            if (p4.w > 0.0001)
-              viewTileRange.extendXYZW(p4.x, p4.y, p4.z, p4.w);
-            else
-              viewTileRange.high.z = Math.max(1.0, viewTileRange.high.z); // behind eye plane.
+    for (const iModelRef of view.iModelRefs) {
+      for (const ttRef of iModelRef.tileTreeRefs) {
+        if (ttRef.castsShadows) {
+          if (ttRef.isGlobal) {
+            // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
+            for (const p3 of viewFrustum.points) {
+              const p4 = worldToMap.multiplyPoint3d(p3, 1);
+              if (p4.w > 0.0001)
+                viewTileRange.extendXYZW(p4.x, p4.y, p4.z, p4.w);
+              else
+                viewTileRange.high.z = Math.max(1.0, viewTileRange.high.z); // behind eye plane.
+            }
+          } else {
+            ttRef.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
           }
-        } else {
-          ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
         }
       }
     }
@@ -376,20 +378,22 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const tileRange = Range3d.createNull();
     scratchFrustumPlanes.init(this._shadowFrustum);
-    for (const ref of view.getTileTreeRefs()) {
-      if (!ref.castsShadows)
-        continue;
+    for (const iModelRef of view.iModelRefs) {
+      for (const ttRef of iModelRef.tileTreeRefs) {
+        if (!ttRef.castsShadows)
+          continue;
 
-      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes, (tiles: Tile[]) => {
-        for (const tile of tiles)
-          tileRange.extendRange(tileToMapTransform.multiplyRange(tile.range, this._scratchRange));
-      });
+        const drawArgs = createDrawArgs(context, this, ttRef, scratchFrustumPlanes, (tiles: Tile[]) => {
+          for (const tile of tiles)
+            tileRange.extendRange(tileToMapTransform.multiplyRange(tile.range, this._scratchRange));
+        });
 
-      if (undefined === drawArgs)
-        continue;
+        if (undefined === drawArgs)
+          continue;
 
-      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
-      drawArgs.tree.draw(drawArgs);
+        const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
+        drawArgs.tree.draw(drawArgs);
+      }
     }
 
     if (tileRange.isNull) {

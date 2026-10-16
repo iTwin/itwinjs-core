@@ -146,7 +146,7 @@ for (const watchForChanges of [false, true]) {
 
       const model = await getModel(roConn);
       let prevGuid = model.geometryGuid;
-      const ref = model.createTileTreeReference(view);
+      const ref = model.createTileTreeReference(view.iModelRefs.primary);
       let prevTree = (await ref.treeOwner.loadTree())!;
       expect(prevTree).not.to.be.undefined;
 

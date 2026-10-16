@@ -42,6 +42,12 @@
     "ClearIsolatedElements": {
       "keyin": "fdt clear isolate"
     },
+    "EmphasizeSelectedIModelElements": {
+      "keyin": "fdt emph selection"
+    },
+    "ClearEmphasizedIModelElements": {
+      "keyin": "fdt clear emph"
+    },
     "ChangeViewFlags": {
       "keyin": "fdt change viewflags"
     },

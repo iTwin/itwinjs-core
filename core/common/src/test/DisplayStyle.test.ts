@@ -116,22 +116,13 @@ describe("DisplayStyleSettings", () => {
 
     it("deletes plan projection settings", () => {
       const settings = new DisplayStyle3dSettings({});
-      expect(settings.planProjectionSettings).to.be.undefined;
+      expect(settings.planProjectionSettings.size).to.equal(0);
 
-      const countSettings = () => {
-        let count = 0;
-        const iter = settings.planProjectionSettings;
-        if (undefined !== iter)
-          for (const _entry of iter)
-            ++count;
-
-        return count;
-      };
+      const countSettings = () => settings.planProjectionSettings.size;
 
       const makeSettings = (props: PlanProjectionSettingsProps) => PlanProjectionSettings.fromJSON(props);
 
       settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
-      expect(settings.planProjectionSettings).not.to.be.undefined;
       expect(countSettings()).to.equal(1);
       expect(settings.getPlanProjectionSettings("0x1")!.elevation).to.equal(1);
 
@@ -153,7 +144,6 @@ describe("DisplayStyleSettings", () => {
 
       settings.setPlanProjectionSettings("0x2", undefined);
       expect(countSettings()).to.equal(0);
-      expect(settings.planProjectionSettings).to.be.undefined;
     });
   });
 
