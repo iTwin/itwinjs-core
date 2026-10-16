@@ -6,7 +6,8 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Guid } from "@itwin/core-bentley";
-import { BriefcaseIdValue } from "@itwin/core-common";
+import { BriefcaseIdValue, EcefLocation } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { Element } from "../../Element";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -406,6 +407,84 @@ describe("BriefcaseManager", async () => {
       assert.isFalse(briefcase.txns.hasPendingTxns);
 
       await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+    });
+    describe("after pull/merge", () => {
+      const user2 = "user2 mock token";
+      const user3 = "user3 mock token";
+      const incomingExtents = new Range3d(-100, -200, -300, 400, 500, 600);
+      const incomingEcef = new EcefLocation({ origin: [1000, 2000, 3000], orientation: { yaw: 10, pitch: 20, roll: 30 } });
+
+      /** user2 has a local unpushed change; user3 then pushes new project extents and ECEF location that user2 has not yet pulled. */
+      async function setup(testName: string) {
+        HubMock.startup(testName, KnownTestLocations.outputDir);
+        const iTwinId = HubMock.iTwinId;
+        const iModelId = await HubWrappers.recreateIModel({ accessToken: user2, iTwinId, iModelName: testName, noLocks: true });
+
+        const local = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user2, iTwinId, iModelId });
+        local.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+        const rootEl = local.elements.getRootSubject();
+        rootEl.userLabel = "local change";
+        withEditTxn(local, (txn) => txn.updateElement(rootEl.toJSON()));
+
+        const remote = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user3, iTwinId, iModelId });
+        remote.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+        withEditTxn(remote, (txn) => {
+          txn.updateProjectExtents(incomingExtents);
+          txn.updateEcefLocation(incomingEcef);
+        });
+        await remote.pushChanges({ accessToken: user3, description: "extents and geolocation" });
+
+        return { iTwinId, iModelId, local, remote };
+      }
+
+      it("exposes the merged extents and geolocation to listeners", async () => {
+        const { local, remote } = await setup("prePushMergedProps");
+
+        let seenExtents: Range3d | undefined;
+        let seenEcef: EcefLocation | undefined;
+        const removeListener = local.txns.onPrePushValidation.addListener(async () => {
+          seenExtents = local.projectExtents.clone();
+          seenEcef = local.ecefLocation;
+        });
+
+        try {
+          await local.pushChanges({ accessToken: user2, description: "push after merge" });
+        } finally {
+          removeListener();
+        }
+
+        assert.isDefined(seenExtents);
+        assert.isTrue(seenExtents!.isAlmostEqual(incomingExtents), "listener should see the merged project extents");
+        assert.isDefined(seenEcef, "listener should see the merged ECEF location");
+        assert.isTrue(seenEcef!.isAlmostEqual(incomingEcef), "listener should see the merged ECEF location");
+
+        await HubWrappers.closeAndDeleteBriefcaseDb(user3, remote);
+        await HubWrappers.closeAndDeleteBriefcaseDb(user2, local);
+      });
+
+      it("preserves incoming geolocation when a listener updates the extents", async () => {
+        const { iTwinId, iModelId, local, remote } = await setup("prePushPreserveGeolocation");
+
+        const listenerExtents = new Range3d(-1, -2, -3, 4, 5, 6);
+        const removeListener = local.txns.onPrePushValidation.addListener(async () => {
+          withEditTxn(local, (txn) => txn.updateProjectExtents(listenerExtents));
+        });
+
+        try {
+          await local.pushChanges({ accessToken: user2, description: "push after merge" });
+        } finally {
+          removeListener();
+        }
+
+        const verifier = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user3, iTwinId, iModelId, briefcaseId: BriefcaseIdValue.Unassigned });
+        assert.isTrue(verifier.projectExtents.isAlmostEqual(listenerExtents), "listener's extents should be pushed");
+        assert.isDefined(verifier.ecefLocation, "incoming ECEF location should not be erased");
+        assert.isTrue(verifier.ecefLocation!.isAlmostEqual(incomingEcef), "incoming ECEF location should not be overwritten by stale cached values");
+
+        await HubWrappers.closeAndDeleteBriefcaseDb(user3, verifier);
+        await HubWrappers.closeAndDeleteBriefcaseDb(user3, remote);
+        await HubWrappers.closeAndDeleteBriefcaseDb(user2, local);
+      });
     });
   });
 });

@@ -146,6 +146,22 @@ describe("BeAsyncEvent", () => {
       expect(event.numberOfListeners).toBe(0);
     });
 
+    it("addOnce — listener that re-raises the event is still invoked only once", async () => {
+      const event = new BeAsyncEvent<() => Promise<void>>();
+      let count = 0;
+
+      event.addOnce(async () => {
+        count++;
+        if (count < 10)
+          await event.raiseEvent();
+      });
+
+      await event.raiseEvent();
+
+      expect(count).toBe(1);
+      expect(event.numberOfListeners).toBe(0);
+    });
+
     it("closure removes only its own registration", async () => {
       const event = new BeAsyncEvent<() => Promise<void>>();
       const fn = async () => { };
