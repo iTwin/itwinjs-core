@@ -463,7 +463,7 @@ describe("BeEvent tests", () => {
 
   describe("ListenerType", () => {
     it("Retrieves listener type", () => {
-      const dispatcher = new BeEvent<(args: {x: number, y: string}) => void>();
+      const dispatcher = new BeEvent<(args: { x: number, y: string }) => void>();
 
       type DispatcherListener = ListenerType<typeof dispatcher>;
       const fn: DispatcherListener = (args) => {
@@ -481,7 +481,7 @@ describe("BeEvent tests", () => {
         addListener(listener: TListener): () => void;
       }
 
-      const dispatcher: MyEvent<(args: {x: number, y: string}) => void> = new BeEvent();
+      const dispatcher: MyEvent<(args: { x: number, y: string }) => void> = new BeEvent();
       type DispatcherListener = ListenerType<typeof dispatcher>;
       const fn: DispatcherListener = (args) => {
         args.x === 0;

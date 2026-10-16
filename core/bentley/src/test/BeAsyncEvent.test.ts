@@ -162,6 +162,22 @@ describe("BeAsyncEvent", () => {
       expect(event.numberOfListeners).toBe(0);
     });
 
+    it("addOnce — listener that rejects is not invoked again", async () => {
+      const event = new BeAsyncEvent<() => Promise<void>>();
+      let count = 0;
+
+      event.addOnce(async () => {
+        count++;
+        throw new Error("Test error");
+      });
+
+      await expect(event.raiseEvent()).rejects.toThrow("Test error");
+      await event.raiseEvent();
+
+      expect(count).toBe(1);
+      expect(event.numberOfListeners).toBe(0);
+    });
+
     it("closure removes only its own registration", async () => {
       const event = new BeAsyncEvent<() => Promise<void>>();
       const fn = async () => { };
