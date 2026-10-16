@@ -275,8 +275,8 @@ interface BeAsyncEventOptions {
 
   /**
    * If true, and a listener rejects its returned Promise, [[UnexpectedError.handle]] is invoked
-   * and the error is otherwise ignored; the Promise returned by [[BeAsyncEvent.raiseEvent]] always resolves
-   * successfully, and all listeners are run.
+   * and the error is otherwise ignored; the Promise returned by [[BeAsyncEvent.raiseEvent]] will only
+   * reject if [[UnexpectedError.handle]] itself throws an exception.
    *
    * If false or unspecified, promise rejection is considered normal, so [[UnexpectedError.handle]] is not
    * invoked. Instead, the Promise returned by [[BeAsyncEvent.raiseEvent]] will reject. If [[concurrent]] is true,
