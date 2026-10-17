@@ -178,6 +178,7 @@ export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): bo
   // Helper function to add fill parameters
   const addFillParams = () => {
     params.fillDisplay = FillDisplay.Always;
+    params.fillColor = params.lineColor;
     result = result && builder.appendGeometryParamsChange(params);
   };
 
