@@ -266,7 +266,7 @@ describe("requestTileTreeProps", () => {
 
     overrideRequestTileTreeProps(undefined);
 
-    // We closed the iModel. Reopen it for use by subsequent tests.
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    // This is the final test in the describe block, so leave the iModel closed rather than
+    // reopening a connection that the suite-level cleanup would observe as a leak.
   });
 });
