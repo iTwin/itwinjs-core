@@ -5,11 +5,13 @@
 import { backendCallbackPath, createHttpBackendCallbackHandler } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { WebAppRpcProtocol } from "@itwin/core-common";
 import { WebEditServer } from "@itwin/express-server";
+import { chromeBackendIdentityHeader } from "../common/ChromeTestBackend";
 
 /** WebEditServer with the callback endpoint used by the Vitest browser runner.
  * Only loopback callers that present this run's callback token may invoke backend callbacks.
  */
 export class TestServer extends WebEditServer {
+  public backendId?: string;
   private readonly _callbackToken: string;
 
   public constructor(protocol: WebAppRpcProtocol, callbackToken: string) {
@@ -20,5 +22,12 @@ export class TestServer extends WebEditServer {
   protected override _configureHeaders() {
     super._configureHeaders();
     this._app.post(backendCallbackPath, createHttpBackendCallbackHandler({ token: this._callbackToken }));
+    this._app.get("/v3/swagger.json", (_request, response, next) => {
+      if (this.backendId !== undefined) {
+        response.setHeader(chromeBackendIdentityHeader, this.backendId);
+        response.append("Access-Control-Expose-Headers", chromeBackendIdentityHeader);
+      }
+      next();
+    });
   }
 }
