@@ -9,9 +9,11 @@ publish: false
     - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Pre-push validation](#pre-push-validation)
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+    - [BeAsyncEvent](#beasyncevent)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
@@ -43,6 +45,10 @@ The option adds compatibility predicates that can result in less efficient query
 
 The ECSQL version was bumped to `2.0.4.2`.
 
+### Pre-push validation
+
+The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
+
 ### IdSet accepts ids with the high bit set
 
 The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
@@ -58,6 +64,10 @@ Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one
 For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
 
 The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
+
+### BeAsyncEvent
+
+[BeAsyncEvent]($bentley) is similar to [BeEvent]($bentley) in that it allows any number of listeners to be notified when something happens. The difference is that, in the case of [BeAsyncEvent]($bentley), the listener is expected to return a `Promise`. Only after the returned `Promise` settles is the listener considered to have finished handling the event.
 
 ## Quantity
 

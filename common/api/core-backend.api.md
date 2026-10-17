@@ -14,6 +14,7 @@ import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BaselineShift } from '@itwin/core-common';
+import { BeAsyncEvent } from '@itwin/core-bentley';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
@@ -4103,6 +4104,8 @@ export abstract class IModelDb extends IModel {
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal
+    [_refreshIModelProps](): void;
     // @internal (undocumented)
     [_resetIModelDb](): void;
     // @internal
@@ -7946,6 +7949,8 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
+    // @beta
+    readonly onPrePushValidation: BeAsyncEvent<() => Promise<void>>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
