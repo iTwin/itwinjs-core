@@ -3,8 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
+import { afterAll, beforeAll } from "vitest";
+import { setupFrontend, teardownFrontend } from "./testSetup";
 
-export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
-  return invokeBackendCallback(name, ...args);
-}
+beforeAll(async () => {
+  await setupFrontend();
+});
+afterAll(async () => {
+  await teardownFrontend();
+});
