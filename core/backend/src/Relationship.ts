@@ -716,29 +716,29 @@ export class Relationships {
   private prepareBatchLookup<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
     const pairKey = (pair: SourceAndTarget) => `${pair.sourceId}|${pair.targetId}`;
     const toProps = (row: any): T => ({ ...row, classFullName: row.className.replace(".", ":") });
-    // Ids are passed to the queries as JSON integers, which must match the signed 64-bit values stored by SQLite.
+    // Pair ids are passed to the query as JSON integers, which must match the signed 64-bit values stored by SQLite.
     const toInt64 = (id: Id64String) => BigInt.asIntN(64, BigInt(id)).toString();
 
-    const ids = new Map<Id64String, string>();
+    const ids = new Set<Id64String>();
     const pairs = new Map<string, string>();
     for (const criterion of criteria) {
       if (typeof criterion === "string") {
         if (Id64.isValidId64(criterion))
-          ids.set(criterion, toInt64(criterion));
+          ids.add(criterion);
       } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
         pairs.set(pairKey(criterion), `[${toInt64(criterion.sourceId)},${toInt64(criterion.targetId)}]`);
       }
     }
 
-    // Each query joins the requested values (as a json_each virtual table) to the relationship class. CROSS JOIN makes SQLite iterate
+    // Each query joins the requested values (as an IdSet or json_each virtual table) to the relationship class. CROSS JOIN makes SQLite iterate
     // the requested values and look up each one by index, so only the requested relationships are read, regardless of the size of the class.
     const propsById = new Map<Id64String, T>();
     const propsByPair = new Map<string, T>();
     const queries: Array<{ ecsql: string, params: QueryBinder, onRow: (row: any) => void }> = [];
     if (ids.size > 0) {
       queries.push({
-        ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.ECInstanceId = p.[value]`,
-        params: new QueryBinder().bindString(1, `[${[...ids.values()].join(",")}]`),
+        ecsql: `SELECT r.* FROM IdSet(?) p CROSS JOIN ${relClassFullName} r WHERE r.ECInstanceId = p.id`,
+        params: new QueryBinder().bindIdSet(1, ids),
         onRow: (row) => propsById.set(row.id, toProps(row)),
       });
     }
