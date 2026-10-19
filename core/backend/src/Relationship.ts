@@ -716,17 +716,15 @@ export class Relationships {
   private prepareBatchLookup<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
     const pairKey = (pair: SourceAndTarget) => `${pair.sourceId}|${pair.targetId}`;
     const toProps = (row: any): T => ({ ...row, classFullName: row.className.replace(".", ":") });
-    // Hex Id64Strings in the pair query's JSON never match the integer id columns, so convert each id to the signed 64-bit decimal SQLite stores.
-    const toInt64 = (id: Id64String) => BigInt.asIntN(64, BigInt(id)).toString();
 
     const ids = new Set<Id64String>();
-    const pairs = new Map<string, string>();
+    const pairs = new Map<string, [Id64String, Id64String]>();
     for (const criterion of criteria) {
       if (typeof criterion === "string") {
         if (Id64.isValidId64(criterion))
           ids.add(criterion);
       } else if (Id64.isValidId64(criterion.sourceId) && Id64.isValidId64(criterion.targetId)) {
-        pairs.set(pairKey(criterion), `[${toInt64(criterion.sourceId)},${toInt64(criterion.targetId)}]`);
+        pairs.set(pairKey(criterion), [criterion.sourceId, criterion.targetId]);
       }
     }
 
@@ -744,9 +742,10 @@ export class Relationships {
     }
 
     if (pairs.size > 0) {
+      // json_each yields the ids as hex strings; HexToId converts them to the integer ids stored in the table.
       queries.push({
-        ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.SourceECInstanceId = json_extract(p.[value], '$[0]') AND r.TargetECInstanceId = json_extract(p.[value], '$[1]')`,
-        params: new QueryBinder().bindString(1, `[${[...pairs.values()].join(",")}]`),
+        ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.SourceECInstanceId = HexToId(json_extract(p.[value], '$[0]')) AND r.TargetECInstanceId = HexToId(json_extract(p.[value], '$[1]'))`,
+        params: new QueryBinder().bindString(1, JSON.stringify([...pairs.values()])),
         onRow: (row) => {
           // A polymorphic query may find more than one relationship for the same pair; keep the first, like tryGetInstanceProps.
           const key = pairKey(row);
