@@ -8,6 +8,10 @@ Each iModel is represented by an [IModelDisplayReference]($frontend), which spec
 >
 ![linked iModels](./linked-imodels.png "A site iModel with a plant and office building displayed as linked iModels.")
 
+## Scope and interaction
+
+Links are managed directly by a spatial view's `iModelRefs` collection: use [SpatialIModelDisplayReferences.link]($frontend) to add a reference and `unlink` to remove it. Linked references do not contain their own links, so links are not nested. Drawing and sheet views are 2D and currently expose only their primary iModel reference.
+
 ```ts
 const refs = viewport.iModelRefs;
 if (!refs.isSpatial)
@@ -15,10 +19,6 @@ if (!refs.isSpatial)
 
 const buildingRef = refs.link({ iModel: buildingIModel });
 ```
-
-## Scope and interaction
-
-Links are managed directly by a spatial view's `iModelRefs` collection: use [SpatialIModelDisplayReferences.link]($frontend) to add a reference and `unlink` to remove it. Linked references do not contain their own links, so links are not nested. Drawing and sheet views are 2D and currently expose only their primary iModel reference.
 
 Displaying an iModel does not automatically make it available to every interaction tool. Picking linked content is opt-in through [LocateOptions.allowExternalIModels]($frontend), which is `false` by default. When enabled, handle the hit's [HitDetail.iModelRef]($frontend) rather than assuming it came from the primary iModel. Tools that do not opt in continue to operate on the primary iModel.
 
