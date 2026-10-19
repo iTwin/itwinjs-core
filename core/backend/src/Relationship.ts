@@ -716,7 +716,7 @@ export class Relationships {
   private prepareBatchLookup<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
     const pairKey = (pair: SourceAndTarget) => `${pair.sourceId}|${pair.targetId}`;
     const toProps = (row: any): T => ({ ...row, classFullName: row.className.replace(".", ":") });
-    // Pair ids are passed to the query as JSON integers, which must match the signed 64-bit values stored by SQLite.
+    // Hex Id64Strings in the pair query's JSON never match the integer id columns, so convert each id to the signed 64-bit decimal SQLite stores.
     const toInt64 = (id: Id64String) => BigInt.asIntN(64, BigInt(id)).toString();
 
     const ids = new Set<Id64String>();
