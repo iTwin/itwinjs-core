@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Allow Id64.iterator, Id64.iterable, Id64.getFirst, Id64.sizeOf, and Id64.has to accept read-only arrays and sets of Id64 strings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
