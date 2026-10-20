@@ -9,6 +9,8 @@ publish: false
     - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
+    - [Native ChangeUnifier](#native-changeunifier)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
@@ -41,6 +43,16 @@ Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties t
 The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
 The ECSQL version was bumped to `2.0.4.2`.
+
+### IdSet accepts ids with the high bit set
+
+The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
+
+Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
+
+### Native ChangeUnifier
+
+The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
 
 ## Common
 

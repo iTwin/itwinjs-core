@@ -10,7 +10,7 @@ import { rimrafSync } from "rimraf";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import sinon from "sinon";
-import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, IModelJsFs, SettingsPriority } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization, IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
@@ -182,6 +182,15 @@ async function initializePresentation(props: PresentationInitProps) {
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   await IModelHost.startup(props.backendHostProps);
+  // Temporarily disable GCS workspace loading to avoid unintended network traffic during iModel setup
+  // causing intermittent timeouts. These tests do not need cloud GCS data. We intend to fix the underlying
+  // loading behavior; once fixed, this override should probably be removed.
+  IModelHost.appWorkspace.settings.addDictionary({
+    name: "disable-gcs-workspaces-for-repro",
+    priority: SettingsPriority.application,
+  }, {
+    "itwin/core/gcs/disableWorkspaces": true,
+  });
   PresentationBackend.initialize(props.backendProps);
   ECSchemaRpcImpl.register();
 

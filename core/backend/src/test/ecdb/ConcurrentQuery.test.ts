@@ -350,21 +350,20 @@ describe("ConcurrentQuery", () => {
   it("timeout check", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
-    ConcurrentQuery.resetConfig(db[_nativeDb], { monitorPollInterval: 1, globalQuota: { time: 5, memory: 10000000 } });
-    const req: DbQueryRequest = {
-      query: `WITH sequence(n) AS (
-                SELECT  1 UNION ALL SELECT n + 1 FROM sequence WHERE n < 10000000
-              ) SELECT n FROM sequence s`,
-    };
-
-    const responsePromises: Promise<DbQueryResponse>[] = [];
-    for (let i = 0; i < 100; ++i) {
-      responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { ignoreDelay: false, monitorPollInterval: 1000, globalQuota: { time: 1, memory: 1000 } });
+      // Keep requests queued past their deadline without generating large result sets.
+      const req: DbQueryRequest = { query: "SELECT 1", delay: 2000 };
+      const responsePromises: Promise<DbQueryResponse>[] = [];
+      for (let i = 0; i < 100; ++i) {
+        responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      }
+      const responses = await Promise.all(responsePromises);
+      for (const response of responses)
+        expect(response.status).equals(DbResponseStatus.Timeout);
+    } finally {
+      db.close();
     }
-    const responses = await Promise.all(responsePromises);
-    const queueResponses = Array.from(responses.filter((x) => x.status === DbResponseStatus.Timeout));
-    expect(queueResponses.length).to.be.greaterThanOrEqual(10);
-    db.close();
   });
 
   it("should handle concurrent queries during shutdown without deadlock", async () => {

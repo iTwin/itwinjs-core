@@ -7,6 +7,8 @@ import { execSync } from 'child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
+import * as dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 
 // Constants used in the script for convenience
 const dtaRootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -14,6 +16,15 @@ const appName = "imodeljs-test-app"
 const bundleId = `bentley.${appName}`;
 const assetsPath = `${dtaRootDir}/test-models`;
 const bimFile = "JoesHouse.bim";
+
+// Populate process.env from the same .env files the mobile build uses (most specific first, without
+// overwriting), so running locally configures a Hub download instead of silently falling back to a
+// standalone file. dotenv.config does not override vars already set in the shell.
+for (const envFile of [".env.local.mobile", ".env.local", ".env"]) {
+  const result = dotenv.config({ path: path.join(dtaRootDir, envFile) });
+  if (!result.error)
+    dotenvExpand(result);
+}
 
 /**
  * Sort function that compares strings numerically from high to low
@@ -278,14 +289,14 @@ async function main() {
   const iTwinID = env.IMJS_ITWIN_ID;
   const iModelID = env.IMJS_IMODEL_ID;
   if (clientID && scope && clientSecret && iTwinID && iModelID) {
-    args.concat([
+    args.push(
       `IMJS_OIDC_CLIENT_ID=${clientID}`,
       `IMJS_OIDC_SCOPE=${scope}`,
       `IMJS_OIDC_CLIENT_SECRET=${clientSecret}`,
       `IMJS_ITWIN_ID=${iTwinID}`,
       `IMJS_IMODEL_ID=${iModelID}`,
       "IMJS_IGNORE_CACHE=YES",
-    ]);
+    );
     log(`Configured from environment to download iModel ${iModelID} from iModel Hub.`);
   } else {
     args.push(`IMJS_STANDALONE_FILENAME=${bimFile}`);
