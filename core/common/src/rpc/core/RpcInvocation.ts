@@ -189,7 +189,7 @@ export class RpcInvocation {
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];
-      if (RpcInvocation.isTokenParameter(parameter, i) && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
+      if (this.protocol.checkToken && !this.operation.policy.allowTokenMismatch && RpcInvocation.isTokenParameter(parameter, i)) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
 
