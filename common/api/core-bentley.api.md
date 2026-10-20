@@ -664,12 +664,12 @@ export namespace Id64 {
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
     export function fromUint32PairObject(pair: Uint32Pair): Id64String;
     export function getBriefcaseId(id: Id64String): number;
-    export function getFirst(arg: Id64Arg): Id64String;
+    export function getFirst(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Id64String;
     export function getLocalId(id: Id64String): number;
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String, out?: Uint32Pair): Uint32Pair;
     export function getUpperUint32(id: Id64String): number;
-    export function has(arg: Id64Arg, id: Id64String): boolean;
+    export function has(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String, id: Id64String): boolean;
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
@@ -679,8 +679,8 @@ export namespace Id64 {
     const invalid = "0";
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterable(ids: Id64String | Iterable<Id64String>): Iterable<Id64String>;
-    export function iterator(ids: Id64Arg): Iterator<Id64String>;
-    export function sizeOf(arg: Id64Arg): number;
+    export function iterator(ids: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Iterator<Id64String>;
+    export function sizeOf(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): number;
     export function toIdSet(arg: Id64String | Iterable<Id64String>, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
         clear(): void;
