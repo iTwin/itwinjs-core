@@ -110,11 +110,7 @@
     "vite": "^6.4.3"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@bentley/imodeljs-native": "5.14.48",
-=======
-    "@bentley/imodeljs-native": "5.15.15",
->>>>>>> 8bdf1a7 (Test schema import after discarding a schema import that added columns (#9833))
+    "@bentley/imodeljs-native": "5.14.49",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.6",

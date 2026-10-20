@@ -554,11 +554,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
-				version = 5.14.48;
-=======
-				version = 5.15.15;
->>>>>>> 8bdf1a7 (Test schema import after discarding a schema import that added columns (#9833))
+				version = 5.14.49;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

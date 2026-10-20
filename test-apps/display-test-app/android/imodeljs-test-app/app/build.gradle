@@ -42,11 +42,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
-<<<<<<< HEAD
-    implementation 'com.github.itwin:mobile-native-android:5.14.48'
-=======
-    implementation 'com.github.itwin:mobile-native-android:5.15.15'
->>>>>>> 8bdf1a7 (Test schema import after discarding a schema import that added columns (#9833))
+    implementation 'com.github.itwin:mobile-native-android:5.14.49'
     implementation 'androidx.webkit:webkit:1.5.0'
 }
 
