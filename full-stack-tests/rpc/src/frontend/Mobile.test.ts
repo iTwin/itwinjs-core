@@ -8,7 +8,7 @@ import { assert } from "chai";
 import { MobileRpcProtocol } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { MobileTestInterface } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Mobile", () => {

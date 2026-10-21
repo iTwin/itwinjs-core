@@ -7,8 +7,9 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { IpcApp, IpcHandler } from "@itwin/core-frontend";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 import type { IpcInvokeReturn } from "@itwin/core-common";
+import { after, before } from "./testHooks";
 
 interface MyITwinError extends ITwinError {
   foo: number;
