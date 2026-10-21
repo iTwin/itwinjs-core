@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import { execFile } from "node:child_process";
-import { createHash, randomUUID } from "node:crypto";
-import { lookup } from "node:dns/promises";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync } from "node:fs";
 import { ClientRequest, createServer } from "node:http";
 import { Agent, request } from "node:https";
 import { createRequire } from "node:module";
 import { createConnection } from "node:net";
-import { tmpdir } from "node:os";
+import { release, tmpdir, version } from "node:os";
 import * as path from "node:path";
+import { createInterface } from "node:readline";
 import { promisify } from "node:util";
 import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
 import { GeoCoordStatus, GeographicCRSProps, IModelProps } from "@itwin/core-common";
@@ -16,6 +16,7 @@ import { Point3d } from "@itwin/core-geometry";
 
 const offlineEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS?.trim().toLowerCase() ?? "");
 const resourceEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS?.trim().toLowerCase() ?? "");
+const interactiveEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_INTERACTIVE_TESTS?.trim().toLowerCase() ?? "");
 const phase = process.env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE;
 const runProcess = promisify(execFile);
 const loadModule = createRequire(__filename);
@@ -163,125 +164,9 @@ const macOSOfflinePlatform: OfflinePlatform = {
   },
 };
 
-const windowsHelper = path.resolve(__dirname, "../../../src/integration/VerticalCrsOffline.windows.ps1");
-const powershell = process.env.ITWIN_VERTICAL_CRS_OFFLINE_POWERSHELL ?? path.join(process.env.SystemRoot ?? "C:\\Windows", "System32/WindowsPowerShell/v1.0/powershell.exe");
-interface ProbeEndpoint { address: string; family: number }
-
-async function windowsFirewall(action: string, ruleName?: string, executable?: string) {
-  expect(path.isAbsolute(powershell), "PowerShell host path must be absolute").to.be.true;
-  const args = ["-NoProfile", "-NonInteractive", "-File", windowsHelper, "-Action", action];
-  if (ruleName && executable)
-    args.push("-RuleName", ruleName, "-Executable", executable);
-
-  const result = await runProcess(powershell, args, { timeout: 30_000 });
-  const policy: unknown = JSON.parse(result.stdout);
-  process.stdout.write(`${phase ?? "parent"}: firewall ${action} ${JSON.stringify(policy)}\n`);
-}
-
-async function probeTcp(endpoint: ProbeEndpoint, connect: typeof createConnection): Promise<string> {
-  return new Promise((resolve) => {
-    const socket = connect({ host: endpoint.address, family: endpoint.family, port: 443 });
-    const finish = (result: string) => {
-      socket.destroy();
-      resolve(result);
-    };
-    socket.setTimeout(5000);
-    socket.once("connect", () => finish("connected"));
-    socket.once("timeout", () => finish("timeout"));
-    socket.once("error", (error: NodeJS.ErrnoException) => finish(error.code ?? "unknown"));
-  });
-}
-
-async function probeExecutable(executable: string, endpoint: ProbeEndpoint) {
-  const script = `(${probeTcp.toString()})(${JSON.stringify(endpoint)}, require('node:net').createConnection).then(result => process.stdout.write(JSON.stringify(result)))`;
-  const result = await runProcess(executable, ["-e", script], { timeout: 10_000 });
-  const status = JSON.parse(result.stdout) as string;
-  process.stdout.write(`parent: ${executable} TCP ${endpoint.address}:443 ${status}\n`);
-  return status;
-}
-
-const windowsOfflinePlatform: OfflinePlatform = {
-  async createWorker(nodeArgs, env) {
-    await windowsFirewall("Check");
-    const ruleName = `itwin-vertical-crs-offline-${randomUUID()}`;
-    const directory = path.join(realpathSync.native(tmpdir()), ruleName);
-    const executable = path.join(directory, "node.exe");
-    const endpoints: ProbeEndpoint[] = [];
-    let ruleAttempted = false;
-    const cleanup = async () => {
-      await windowsFirewall("Stop", ruleName, executable);
-      if (ruleAttempted) {
-        await windowsFirewall("Remove", ruleName, executable);
-        for (const endpoint of endpoints)
-          expect(await probeExecutable(executable, endpoint), "restored dedicated executable connectivity").to.equal("connected");
-      }
-      rmSync(directory, { recursive: true, force: true });
-      process.stdout.write(`parent: removed owned directory ${directory}\n`);
-    };
-    const quote = (value: string) => `'${value.replace(/'/g, "''")}'`;
-    process.stdout.write(`parent: owned rule ${ruleName}, executable ${executable}\nRecovery (elevated PowerShell): & ${quote(powershell)} -NoProfile -File ${quote(windowsHelper)} -Action Stop -RuleName ${quote(ruleName)} -Executable ${quote(executable)}; if ($LASTEXITCODE -eq 0) { & ${quote(powershell)} -NoProfile -File ${quote(windowsHelper)} -Action Remove -RuleName ${quote(ruleName)} -Executable ${quote(executable)}; if ($LASTEXITCODE -eq 0) { Remove-Item -LiteralPath ${quote(directory)} -Recurse -Force } }\n`);
-    try {
-      mkdirSync(directory);
-      copyFileSync(process.execPath, executable);
-      const hash = (fileName: string) => createHash("sha256").update(readFileSync(fileName)).digest("hex");
-      expect(hash(executable), "dedicated Node binary hash").to.equal(hash(process.execPath));
-      expect((await runProcess(executable, ["--version"], { timeout: 5000 })).stdout.trim()).to.equal(process.version);
-      const addresses = await lookup("geocoord-workspace.itwinjs.org", { all: true });
-      for (const family of [4, 6]) {
-        const candidates = addresses.filter((entry) => entry.family === family);
-        for (const endpoint of candidates) {
-          if (await probeExecutable(executable, endpoint) === "connected") {
-            endpoints.push(endpoint);
-            break;
-          }
-        }
-        if (!endpoints.some((entry) => entry.family === family))
-          process.stdout.write(`parent: no reachable production IPv${family} endpoint (${candidates.length} resolved addresses)\n`);
-      }
-      expect(endpoints, "at least one reachable external control endpoint is required").not.to.be.empty;
-      ruleAttempted = true;
-      await windowsFirewall("Create", ruleName, executable);
-      for (const endpoint of endpoints) {
-        expect(await probeTcp(endpoint, createConnection), "original parent Node retains online connectivity").to.equal("connected");
-        process.stdout.write(`parent: original Node TCP ${endpoint.address}:443 connected with worker rule active\n`);
-      }
-      const workerEnv = { ...env };
-      workerEnv.ITWIN_VERTICAL_CRS_OFFLINE_RULE = ruleName;
-      workerEnv.ITWIN_VERTICAL_CRS_OFFLINE_EXECUTABLE = executable;
-      workerEnv.ITWIN_VERTICAL_CRS_OFFLINE_ENDPOINTS = JSON.stringify(endpoints);
-      return {
-        executable, args: nodeArgs, env: workerEnv, cleanup,
-      };
-    } catch (error) {
-      try {
-        await cleanup();
-      } catch (cleanupError) {
-        throw new AggregateError([error, cleanupError], "Windows offline setup and cleanup failed");
-      }
-      throw error;
-    }
-  },
-  async verifyNetworkDenied() {
-    const ruleName = process.env.ITWIN_VERTICAL_CRS_OFFLINE_RULE;
-    const executable = process.env.ITWIN_VERTICAL_CRS_OFFLINE_EXECUTABLE;
-    expect(ruleName, "owned firewall identity is required").to.be.a("string").and.not.to.be.empty;
-    expect(executable, "dedicated executable is required").to.be.a("string").and.not.to.be.empty;
-    expect(realpathSync(process.execPath).toLowerCase()).to.equal(realpathSync(executable!).toLowerCase());
-    await windowsFirewall("Verify", ruleName, executable);
-    const endpoints = JSON.parse(process.env.ITWIN_VERTICAL_CRS_OFFLINE_ENDPOINTS ?? "[]") as ProbeEndpoint[];
-    expect(endpoints, "positive control endpoints are required").not.to.be.empty;
-    for (const endpoint of endpoints) {
-      const status = await probeTcp(endpoint, createConnection);
-      expect(status, "matched external connection is blocked").to.be.oneOf(["timeout", "ETIMEDOUT", "EACCES", "EPERM"]);
-      process.stdout.write(`${phase}: dedicated Node TCP ${endpoint.address}:443 blocked (${status})\n`);
-    }
-  },
-};
-
 const offlinePlatforms: Partial<Record<NodeJS.Platform, OfflinePlatform>> = {
   linux: linuxOfflinePlatform,
   darwin: macOSOfflinePlatform,
-  win32: windowsOfflinePlatform,
 };
 const runAcceptance = offlineEnabled && offlinePlatforms[process.platform] ? describe : describe.skip;
 
@@ -293,7 +178,8 @@ function getOfflinePlatform(): OfflinePlatform {
   return platform;
 }
 
-async function executeWorker(worker: OfflineWorker): Promise<{ stdout: string, stderr: string }> {
+async function executeWorker(worker: OfflineWorker, signal?: AbortSignal): Promise<{ stdout: string, stderr: string }> {
+  signal?.throwIfAborted();
   if (process.platform !== "win32")
     return runProcess(worker.executable, worker.args, { env: worker.env, timeout: 600_000, maxBuffer: 4 * 1024 * 1024 });
 
@@ -301,20 +187,101 @@ async function executeWorker(worker: OfflineWorker): Promise<{ stdout: string, s
     let timedOut = false;
     const child = execFile(worker.executable, worker.args, { env: worker.env, maxBuffer: 4 * 1024 * 1024 }, (error, stdout, stderr) => {
       clearTimeout(timer);
-      if (error || timedOut) {
-        reject(Object.assign(error ?? new Error("Owned Windows worker timed out"), { stdout, stderr }));
+      signal?.removeEventListener("abort", terminate);
+      if (error || timedOut || signal?.aborted) {
+        reject(Object.assign(error ?? new Error(signal?.aborted ? "Owned Windows worker cancelled" : "Owned Windows worker timed out"), { stdout, stderr }));
       } else {
         resolve({ stdout, stderr });
       }
     });
-    const timer = setTimeout(() => {
-      timedOut = true;
+    const terminate = () => {
       if (child.pid) {
         void runProcess(path.join(process.env.SystemRoot ?? "C:\\Windows", "System32/taskkill.exe"), ["/PID", `${child.pid}`, "/T", "/F"], { timeout: 15_000 })
-          .catch((error) => reject(new Error(`Could not terminate owned Windows worker tree: ${String(error)}`)));
+          .catch((error) => {
+            process.stderr.write(`Could not terminate owned Windows worker tree: ${String(error)}\n`);
+            child.kill();
+          });
       }
+    };
+    signal?.addEventListener("abort", terminate, { once: true });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      terminate();
     }, 600_000);
   });
+}
+
+async function confirmDisconnected(signal: AbortSignal) {
+  signal.throwIfAborted();
+  process.stdout.write("Disconnect VPN, Wi-Fi, Ethernet, mobile tethering, and ALL other network paths, then press Enter to confirm. Ctrl+C aborts.\n");
+  const input = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const abort = () => reject(new Error("Offline acceptance aborted; networking was not confirmed disconnected"));
+      input.once("line", () => resolve());
+      input.once("close", abort);
+      input.once("SIGINT", abort);
+      signal.addEventListener("abort", abort, { once: true });
+      input.once("close", () => signal.removeEventListener("abort", abort));
+    });
+    signal.throwIfAborted();
+    process.stdout.write(`parent: operator confirmed all network paths disconnected at ${new Date().toISOString()}; this is not proof of complete network isolation\n`);
+  } finally {
+    input.close();
+  }
+}
+
+async function runInteractiveAcceptance() {
+  if (!process.stdin.isTTY || !process.stdout.isTTY || process.env.CI)
+    throw new Error("Windows interactive offline acceptance requires a local interactive TTY (stdin and stdout), with CI unset; no resources were downloaded");
+
+  const reminder = () => process.stderr.write("RESTORE NETWORKING MANUALLY: reconnect VPN, Wi-Fi, Ethernet, tethering, and other network paths as appropriate.\n");
+  process.stdout.write(`operator-confirmed offline acceptance: ${version()} (${release()}), ${process.arch}, Node ${process.version}\nWARNING: Disconnecting networking can interrupt remote sessions and other applications. Run locally, not over a connection needed to control this test. No adapters or firewall rules will be changed automatically.\n`);
+  const cacheRoot = mkdtempSync(path.join(tmpdir(), "itwin-vertical-crs-interactive-"));
+  const controller = new AbortController();
+  const cancel = () => {
+    reminder();
+    controller.abort();
+  };
+  process.on("SIGINT", cancel);
+  process.stdout.write(`parent: temporary caches ${cacheRoot}; after forced termination, stop owned workers before removing this directory\n`);
+  try {
+    mkdirSync(path.join(cacheRoot, "populated"));
+    mkdirSync(path.join(cacheRoot, "empty"));
+    for (const workerPhase of ["prefetch", "offline", "cold-offline"]) {
+      if (workerPhase === "offline")
+        await confirmDisconnected(controller.signal);
+
+      controller.signal.throwIfAborted();
+      const env = { ...process.env };
+      env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE = workerPhase;
+      env.ITWIN_VERTICAL_CRS_OFFLINE_CACHE = path.join(cacheRoot, workerPhase === "cold-offline" ? "empty" : "populated");
+      delete env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT;
+      const reportPath = path.join(cacheRoot, `${workerPhase}-results.json`);
+      const args = [require.resolve("mocha/bin/mocha.js"), __filename, "--no-config", "--timeout", "600000", "--reporter", "json", "--reporter-option", `output=${reportPath}`];
+      try {
+        const result = await executeWorker({ executable: process.execPath, args, env }, controller.signal);
+        process.stdout.write(result.stdout);
+        process.stderr.write(result.stderr);
+      } catch (error) {
+        const failure = error as Error & { stdout?: string, stderr?: string };
+        process.stderr.write(`${workerPhase}: worker failed\n${failure.stdout ?? ""}${failure.stderr ?? ""}`);
+        if (existsSync(reportPath))
+          process.stderr.write(`${readFileSync(reportPath, "utf8")}\n`);
+        throw error;
+      }
+    }
+    controller.signal.throwIfAborted();
+    process.stdout.write("PASS: operator-confirmed offline acceptance (not certified network isolation)\n");
+  } finally {
+    reminder();
+    try {
+      rmSync(cacheRoot, { recursive: true, force: true });
+      process.stdout.write(`parent: removed temporary caches ${cacheRoot}\n`);
+    } finally {
+      process.removeListener("SIGINT", cancel);
+    }
+  }
 }
 
 async function verifyConversions(iModel: SnapshotDb) {
@@ -366,7 +333,7 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
           const url = new URL(endpoint!);
           await verifyTcpDenied(url.hostname, Number(url.port), ["ECONNREFUSED"]);
         }
-      } else if (phase !== "prefetch") {
+      } else if (phase !== "prefetch" && !(process.platform === "win32" && interactiveEnabled)) {
         await getOfflinePlatform().verifyNetworkDenied();
       }
 
@@ -571,5 +538,16 @@ if (!phase || process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT !== undefined) {
 if (!phase || process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT === undefined) {
   runAcceptance("Vertical CRS production offline acceptance", function () {
     registerAcceptance.call(this, false);
+  });
+  const runInteractive = interactiveEnabled && process.platform === "win32" ? describe : describe.skip;
+  runInteractive("Vertical CRS Windows operator-confirmed offline acceptance", function () {
+    if (phase) {
+      registerAcceptance.call(this, false);
+    } else {
+      it("converts with a populated production cache and rejects an empty cache after operator disconnection", async function () {
+        this.timeout(0);
+        await runInteractiveAcceptance();
+      });
+    }
   });
 }
