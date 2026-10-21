@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { runInNewContext } from "node:vm";
 import { expect, it, vi } from "vitest";
+import { installElectronFrameRouting } from "@itwin/vitest-browser-bridge/electron/frame-routing";
 
 it("routes IPC-only notifications from handlers registered during backend startup", async () => {
   let started = false;
@@ -28,6 +29,8 @@ it("routes IPC-only notifications from handlers registered during backend startu
     require: (name: string): unknown => {
       if (name === "electron")
         return { ipcMain };
+      if (name === "@itwin/vitest-browser-bridge/electron/frame-routing")
+        return { installElectronFrameRouting };
       if (name === "@itwin/core-electron/main")
         return { ElectronHost: electronHost }; // eslint-disable-line @typescript-eslint/naming-convention
       if (name === "./backend") {

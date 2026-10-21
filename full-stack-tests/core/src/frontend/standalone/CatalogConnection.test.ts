@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import * as path from "path";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { CatalogIModel } from "@itwin/core-common";
@@ -18,13 +18,13 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("CatalogConnection", async () => {
     const iTwinId = Guid.createValue();
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, true);
       // this test uses the AzTest framework on the backend, and requires its authorization client.
       await coreFullStackTestIpc.useAzTestAuthClient();
     });
 
-    after(async () => {
+    afterAll(async () => {
       // restore the backend's authorization client to its value before this test started
       await coreFullStackTestIpc.restoreAuthClient();
       await TestUtility.shutdownFrontend();
@@ -55,19 +55,19 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       // verify that only users with administrator privilege may create new containers
       await coreFullStackTestIpc.setAzTestUser("readWrite");
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata })).rejectedWith("only admins may create containers");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata })).rejects.toThrow("only admins may create containers");
 
       await coreFullStackTestIpc.setAzTestUser("admin");
       // verify that illegal dbNames are rejected
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, dbName: "a:b", version: "1.0.0", iTwinId, manifest, metadata })).rejectedWith("invalid dbName");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, dbName: "a:b", version: "1.0.0", iTwinId, manifest, metadata })).rejects.toThrow("invalid dbName");
       // verify that an illegal initial version is rejected
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "not a version", iTwinId, manifest, metadata })).rejectedWith("invalid version specification");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "not a version", iTwinId, manifest, metadata })).rejects.toThrow("invalid version specification");
 
       // create a container for our tests. The initial version is supplied as "1.0.0"
       const newContainer = await CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata });
-      expect(newContainer.containerId).not.undefined;
-      expect(newContainer.baseUri).not.undefined;
-      expect(newContainer.provider).equal("azure");
+      expect(newContainer.containerId).not.toBeUndefined();
+      expect(newContainer.baseUri).not.toBeUndefined();
+      expect(newContainer.provider).toBe("azure");
 
       // the container's id (a Guid) comes in the response from `createNewContainer`. Save it for the rest of the tests
       const containerId = newContainer.containerId;
@@ -76,40 +76,40 @@ if (ProcessDetector.isElectronAppFrontend) {
       await coreFullStackTestIpc.setAzTestUser("readOnly");
       const readonlyConnection = await CatalogConnection.openReadonly({ containerId, version: "^1" })
       let info = await readonlyConnection.getCatalogInfo();
-      expect(info.version).equal("1.0.0");
-      expect(info.manifest).deep.equal(manifest);
+      expect(info.version).toBe("1.0.0");
+      expect(info.manifest).toEqual(manifest);
       await readonlyConnection.close();
 
       // attempting to open a version that isn't present, or a dbName that isn't right should fail
-      await expect(CatalogConnection.openReadonly({ containerId, version: "^2" })).rejectedWith("No version of");
-      await expect(CatalogConnection.openReadonly({ dbName: "not there", containerId, version: "^1" })).rejectedWith("No version of");
+      await expect(CatalogConnection.openReadonly({ containerId, version: "^2" })).rejects.toThrow("No version of");
+      await expect(CatalogConnection.openReadonly({ dbName: "not there", containerId, version: "^1" })).rejects.toThrow("No version of");
 
       // attempt to acquire the write lock for an unauthorized user
-      await expect(CatalogConnection.acquireWriteLock({ containerId, username: people.bill })).rejectedWith("unauthorized user");
+      await expect(CatalogConnection.acquireWriteLock({ containerId, username: people.bill })).rejects.toThrow("unauthorized user");
       // simulate a user with write access to the container
       await coreFullStackTestIpc.setAzTestUser("readWrite");
       // verify that to create a new version, the write lock must be held
-      await expect(CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" })).rejectedWith("Write lock must be held");
+      await expect(CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" })).rejects.toThrow("Write lock must be held");
 
       // get the write lock. The username supplied should become the "last editor" in the manifest.
       await CatalogConnection.acquireWriteLock({ containerId, username: people.bill });
       // you should not be able to edit a Catalog that has already been published.
-      await expect(CatalogConnection.openEditable({ version: "1.0.0", containerId })).rejectedWith("Catalog has already been published");
+      await expect(CatalogConnection.openEditable({ version: "1.0.0", containerId })).rejects.toThrow("Catalog has already been published");
 
       // create a patch version from the most recent version that starts with 1 (should be 1.0.0). This will create version "1.0.1"
       const v101 = await CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" });
-      expect(v101.oldDb.version).equal("1.0.0");
-      expect(v101.newDb.dbName).equal("catalog-db");
-      expect(v101.newDb.version).equal("1.0.1");
+      expect(v101.oldDb.version).toBe("1.0.0");
+      expect(v101.newDb.dbName).toBe("catalog-db");
+      expect(v101.newDb.version).toBe("1.0.1");
 
       // Attempt to open the new version for editing
       const v101db = await CatalogConnection.openEditable({ version: "1.0.1", containerId });
       info = await v101db.getCatalogInfo();
-      expect(info.version).equal("1.0.1");
-      expect(info.manifest).not.undefined;
+      expect(info.version).toBe("1.0.1");
+      expect(info.manifest).not.toBeUndefined();
       // change the contact name in the manifest for 1.0.1 (note that 1.0.0 will still have the old value)
       if (info.manifest) {
-        expect(info.manifest.catalogName).equal(manifest.catalogName);
+        expect(info.manifest.catalogName).toBe(manifest.catalogName);
         await v101db.updateManifest({ ...info.manifest, contactName: people.harold });
       }
 
@@ -125,12 +125,12 @@ if (ProcessDetector.isElectronAppFrontend) {
       await CatalogConnection.acquireWriteLock({ containerId, username: people.sarah });
       // now create a new major version (2.0.0) from the most recent version in 1.x.x (should be 1.0.1)
       const v20 = await CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "major" });
-      expect(v20.oldDb.version).equal("1.0.1");
-      expect(v20.newDb.version).equal("2.0.0");
+      expect(v20.oldDb.version).toBe("1.0.1");
+      expect(v20.newDb.version).toBe("2.0.0");
       // open 2.0.0 for editing (we don't supply a version here, but it's the "latest version" )
       const v20db = await CatalogConnection.openEditable({ containerId });
       info = await v20db.getCatalogInfo();
-      expect(info.version).equal("2.0.0");
+      expect(info.version).toBe("2.0.0");
 
       // now add another element to 2.0.0. This version of the catalogDb will have both spatial categories.
       const cat2 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(v20db.key, dictModelId, "Category 2", { color: 2 });
@@ -150,23 +150,23 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const verifyInfo = async (db: CatalogConnection, version: string, contactName: string, lastEditedBy?: string) => {
         const inf = await db.getCatalogInfo();
-        expect(inf.version).equal(version);
-        expect(inf.manifest).not.undefined;
+        expect(inf.version).toBe(version);
+        expect(inf.manifest).not.toBeUndefined();
         if (inf.manifest) {
-          expect(inf.manifest.contactName).equal(contactName);
-          expect(inf.manifest.lastEditedBy).equal(lastEditedBy);
+          expect(inf.manifest.contactName).toBe(contactName);
+          expect(inf.manifest.lastEditedBy).toBe(lastEditedBy);
         }
       }
       const verifyCategory = async (db: CatalogConnection, id: string, name?: string) => {
         const props = await db.elements.loadProps(id);
         if (undefined === name) {
-          expect(props).undefined;
+          expect(props).toBeUndefined();
           return;
         }
-        expect(props).not.undefined;
+        expect(props).not.toBeUndefined();
         if (props) {
-          expect(props.classFullName).equal("BisCore:SpatialCategory");
-          expect(props.code.value).equal(name);
+          expect(props.classFullName).toBe("BisCore:SpatialCategory");
+          expect(props.code.value).toBe(name);
         }
       }
 
