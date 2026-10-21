@@ -638,84 +638,18 @@ export class Relationships {
   }
 
   /** Get the props of multiple Relationship instances of the same class using batched queries.
-   * This is equivalent to calling [[tryGetInstanceProps]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
+   * This produces the same results as calling [[tryGetInstanceProps]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
    * @param relClassFullName The full class name of the relationship in the form of "schema:class"
    * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstanceProps]].
+   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
    * @returns An array with the same length and order as `criteria`. Each entry holds the RelationshipProps matching the corresponding criterion, or `undefined` if no such relationship was found.
    * @see tryGetInstanceProps
-   * @see tryGetInstances
+   * @see queryInstances
    * @beta
    */
-  public tryGetInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
-    const lookup = this.prepareBatchLookup<T>(relClassFullName, criteria);
-    for (const query of lookup.queries) {
-      this._iModel.withQueryReader(query.ecsql, (reader) => {
-        while (reader.step())
-          query.onRow(reader.current.toRow());
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, query.params, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    }
-    return lookup.getResults();
-  }
-
-  /** Asynchronously get the props of multiple Relationship instances of the same class using batched queries.
-   * This produces the same results as [[tryGetInstancesProps]], but executes the queries using [[IModelDb.createQueryReader]].
-   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
-   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
-   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstancesProps]].
-   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
-   * @returns An array with the same length and order as `criteria`. Each entry holds the RelationshipProps matching the corresponding criterion, or `undefined` if no such relationship was found.
-   * @see tryGetInstancesProps
-   * @see tryGetInstancesAsync
-   * @beta
-   */
-  public async tryGetInstancesPropsAsync<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
-    const lookup = this.prepareBatchLookup<T>(relClassFullName, criteria);
-    const usePrimaryConn = options?.usePrimaryConn ?? true;
-    await Promise.all(lookup.queries.map(async (query) => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this._iModel.createQueryReader(query.ecsql, query.params, { rowFormat: QueryRowFormat.UseJsPropertyNames, usePrimaryConn }))
-        query.onRow(row.toRow());
-    }));
-    return lookup.getResults();
-  }
-
-  /** Get multiple Relationship instances of the same class using batched queries.
-   * This is equivalent to calling [[tryGetInstance]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
-   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
-   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
-   * @returns An array with the same length and order as `criteria`. Each entry holds the relationship matching the corresponding criterion, or `undefined` if no such relationship was found.
-   * @see tryGetInstance
-   * @see tryGetInstancesProps
-   * @beta
-   */
-  public tryGetInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>): Array<T | undefined> {
-    return this.tryGetInstancesProps<RelationshipProps>(relClassFullName, criteria).map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
-  }
-
-  /** Asynchronously get multiple Relationship instances of the same class using batched queries.
-   * This produces the same results as [[tryGetInstances]], but executes the queries using [[IModelDb.createQueryReader]].
-   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
-   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
-   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstances]].
-   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
-   * @returns An array with the same length and order as `criteria`. Each entry holds the relationship matching the corresponding criterion, or `undefined` if no such relationship was found.
-   * @see tryGetInstances
-   * @see tryGetInstancesPropsAsync
-   * @beta
-   */
-  public async tryGetInstancesAsync<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
-    const allProps = await this.tryGetInstancesPropsAsync<RelationshipProps>(relClassFullName, criteria, options);
-    return allProps.map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
-  }
-
-  /** Builds the queries used by [[tryGetInstancesProps]] and [[tryGetInstancesPropsAsync]].
-   * Each row returned by a query must be passed to its `onRow` callback in [QueryRowFormat.UseJsPropertyNames]($common) format.
-   * Once all queries have run, `getResults` returns the props found for each criterion, in the same order as `criteria`.
-   */
-  private prepareBatchLookup<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>) {
+  public async queryInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
     const pairKey = (pair: SourceAndTarget) => `${pair.sourceId}|${pair.targetId}`;
-    const toProps = (row: any): T => ({ ...row, classFullName: row.className.replace(".", ":") });
 
     const ids = new Set<Id64String>();
     const pairs = new Map<string, [Id64String, Id64String]>();
@@ -732,12 +666,12 @@ export class Relationships {
     // the requested values and look up each one by index, so only the requested relationships are read, regardless of the size of the class.
     const propsById = new Map<Id64String, T>();
     const propsByPair = new Map<string, T>();
-    const queries: Array<{ ecsql: string, params: QueryBinder, onRow: (row: any) => void }> = [];
+    const queries: Array<{ ecsql: string, params: QueryBinder, onProps: (props: T) => void }> = [];
     if (ids.size > 0) {
       queries.push({
         ecsql: `SELECT r.* FROM IdSet(?) p CROSS JOIN ${relClassFullName} r WHERE r.ECInstanceId = p.id`,
         params: new QueryBinder().bindIdSet(1, ids),
-        onRow: (row) => propsById.set(row.id, toProps(row)),
+        onProps: (props) => propsById.set(props.id as Id64String, props),
       });
     }
 
@@ -746,16 +680,44 @@ export class Relationships {
       queries.push({
         ecsql: `SELECT r.* FROM json1.json_each(?) p CROSS JOIN ${relClassFullName} r WHERE r.SourceECInstanceId = HexToId(json_extract(p.[value], '$[0]')) AND r.TargetECInstanceId = HexToId(json_extract(p.[value], '$[1]'))`,
         params: new QueryBinder().bindString(1, JSON.stringify([...pairs.values()])),
-        onRow: (row) => {
+        onProps: (props) => {
           // A polymorphic query may find more than one relationship for the same pair; keep the first, like tryGetInstanceProps.
-          const key = pairKey(row);
+          const key = pairKey(props);
           if (!propsByPair.has(key))
-            propsByPair.set(key, toProps(row));
+            propsByPair.set(key, props);
         },
       });
     }
 
-    const getResults = (): Array<T | undefined> => criteria.map((criterion) => typeof criterion === "string" ? propsById.get(criterion) : propsByPair.get(pairKey(criterion)));
-    return { queries, getResults };
+    if (queries.length > 0) {
+      // Convert rows the same way as tryGetInstanceProps, so that both produce identical props.
+      const ecClass = getRuntimeClass(this._iModel, relClassFullName);
+      const usePrimaryConn = options?.usePrimaryConn ?? true;
+      await Promise.all(queries.map(async (query) => {
+        for await (const row of this._iModel.createQueryReader(query.ecsql, query.params, { rowFormat: QueryRowFormat.UseECSqlPropertyNames, usePrimaryConn })) {
+          const props = reshapeInstanceRow(row.toRow(), ecClass, this._iModel) as T & { className: string };
+          props.classFullName = props.className.replace(".", ":");
+          query.onProps(props);
+        }
+      }));
+    }
+
+    return criteria.map((criterion) => typeof criterion === "string" ? propsById.get(criterion) : propsByPair.get(pairKey(criterion)));
+  }
+
+  /** Get multiple Relationship instances of the same class using batched queries.
+   * This produces the same results as calling [[tryGetInstance]] for each entry in `criteria`, but executes at most two queries regardless of the number of entries.
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria The relationships to look up. Each entry is either a relationship instanceId or the source and target Ids. Entries of both kinds may be mixed.
+   * @param options.usePrimaryConn If `true` (the default), the queries run on the primary connection so that unsaved changes are visible, matching [[tryGetInstance]].
+   * If `false`, they run on a concurrent query connection, which does not see unsaved changes.
+   * @returns An array with the same length and order as `criteria`. Each entry holds the relationship matching the corresponding criterion, or `undefined` if no such relationship was found.
+   * @see tryGetInstance
+   * @see queryInstancesProps
+   * @beta
+   */
+  public async queryInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: { usePrimaryConn?: boolean }): Promise<Array<T | undefined>> {
+    const allProps = await this.queryInstancesProps<RelationshipProps>(relClassFullName, criteria, options);
+    return allProps.map((props) => undefined !== props ? this._iModel.constructEntity<T>(props) : undefined);
   }
 }
