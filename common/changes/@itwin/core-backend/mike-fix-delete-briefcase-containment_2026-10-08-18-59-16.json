@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "NativeApp.deleteBriefcase now only deletes files in the briefcase cache or valid iModels. BriefcaseManager.deleteBriefcaseFiles only deletes associated files named '<briefcase>-*' or '<briefcase>.*'.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "108895074+MichaelSwigerAtBentley@users.noreply.github.com"
+}
