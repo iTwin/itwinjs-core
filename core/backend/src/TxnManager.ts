@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeAsyncEvent, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1332,6 +1332,21 @@ export class TxnManager {
    * @see [[BriefcaseDb.pullChanges]].
    */
   public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /**
+   * Event raised before pushing changes to iModelHub. This is the final chance to perform any validation or
+   * cancellation before the changes are sent. If a listener throws or returns a promise that rejects, the
+   * push operation will be aborted. Listeners are allowed to make additional changes to the iModel if necessary,
+   * and those changes will be included in the push (if it proceeds).
+   *
+   * If the push is happening as part of [[BriefcaseManager.pullMergePush]], and the listener throws or returns
+   * a promise that rejects with an [[IModelError]] with an `errorNumber` of [[IModelHubStatus.PullIsRequired]],
+   * then another pull will be attempted, following by another pre-push validation attempt. This will continue
+   * as necessary up to the retry limit.
+   * @see [[BriefcaseDb.pushChanges]].
+   * @beta
+   */
+  public readonly onPrePushValidation = new BeAsyncEvent<() => Promise<void>>();
 
   /** Event raised after changes are pushed to iModelHub.
    * @see [[BriefcaseDb.pushChanges]].
