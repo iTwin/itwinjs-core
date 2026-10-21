@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Always bind the IModelRpcProps parameter of an RPC operation to the protocol token, even if some of its properties are omitted.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
