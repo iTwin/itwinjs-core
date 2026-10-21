@@ -12,6 +12,7 @@ publish: false
     - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
     - [Native ChangeUnifier](#native-changeunifier)
+    - [Batched relationship lookups](#batched-relationship-lookups)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
   - [Quantity](#quantity)
@@ -60,6 +61,16 @@ Because SQLite stores ids as signed 64-bit integers, a negative integer in an `I
 ### Native ChangeUnifier
 
 The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
+
+### Batched relationship lookups
+
+The new `@beta` [Relationships.queryInstancesProps]($backend) and [Relationships.queryInstances]($backend) methods look up many relationships of the same class with at most two queries. Each criterion is either a relationship id or a source and target id pair, and both kinds can be mixed. The returned array has one entry per criterion, in the same order, with `undefined` where no relationship was found. The results match calling [Relationships.tryGetInstanceProps]($backend) or [Relationships.tryGetInstance]($backend) for each criterion.
+
+```ts
+const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(ElementGroupsMembers.classFullName, [relId, { sourceId, targetId }]);
+```
+
+By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
 
 ## Common
 

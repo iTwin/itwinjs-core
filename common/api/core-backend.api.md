@@ -6211,6 +6211,14 @@ export class Relationships {
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     // @deprecated
     insertInstance(props: RelationshipProps): Id64String;
+    // @beta
+    queryInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
+    // @beta
+    queryInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     // @deprecated

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add Relationships.queryInstances and queryInstancesProps to look up many relationships of a class with batched queries.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "DanRod1999@users.noreply.github.com"
+}
