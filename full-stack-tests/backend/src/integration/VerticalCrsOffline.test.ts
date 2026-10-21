@@ -2,20 +2,89 @@ import { expect } from "chai";
 import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { lookup } from "node:dns/promises";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync } from "node:fs";
+import { ClientRequest, createServer } from "node:http";
+import { Agent, request } from "node:https";
 import { createRequire } from "node:module";
 import { createConnection } from "node:net";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { promisify } from "node:util";
-import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SnapshotDb } from "@itwin/core-backend";
+import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
 import { GeoCoordStatus, GeographicCRSProps, IModelProps } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
-const enabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS?.trim().toLowerCase() ?? "");
+const offlineEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS?.trim().toLowerCase() ?? "");
+const resourceEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS?.trim().toLowerCase() ?? "");
 const phase = process.env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE;
 const runProcess = promisify(execFile);
 const loadModule = createRequire(__filename);
+
+async function createWorkspaceEndpoint() {
+  let requests = 0;
+  const failures: string[] = [];
+  const upstreams = new Set<ClientRequest>();
+  const agent = new Agent({ keepAlive: true, maxSockets: 6 });
+  const server = createServer((incoming, outgoing) => {
+    if (!["GET", "HEAD"].includes(incoming.method ?? "") || !incoming.url?.startsWith("/gcs/")) {
+      outgoing.writeHead(400).end();
+      return;
+    }
+
+    requests++;
+    const upstream = request({
+      hostname: "geocoord-workspace.itwinjs.org",
+      path: incoming.url,
+      method: incoming.method,
+      agent,
+      headers: { ...incoming.headers, host: "geocoord-workspace.itwinjs.org", connection: "keep-alive" },
+    }, (response) => {
+      if (!response.statusCode || response.statusCode >= 400)
+        failures.push(`${incoming.url}: HTTP ${response.statusCode}`);
+
+      outgoing.writeHead(response.statusCode ?? 502, response.headers);
+      response.on("error", (error) => outgoing.destroy(error));
+      response.pipe(outgoing);
+    });
+    upstreams.add(upstream);
+    upstream.once("close", () => upstreams.delete(upstream));
+    upstream.on("error", (error) => {
+      failures.push(`${incoming.url}: ${error.message}`);
+      outgoing.destroy(error);
+    });
+    upstream.setTimeout(30_000, () => upstream.destroy(new Error("Workspace upstream request timed out")));
+    incoming.once("aborted", () => upstream.destroy());
+    outgoing.once("close", () => {
+      if (!outgoing.writableFinished)
+        upstream.destroy();
+    });
+    upstream.end();
+  });
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === "string")
+    throw new Error("Workspace endpoint did not bind a TCP port");
+
+  return {
+    baseUri: `http://127.0.0.1:${address.port}`,
+    get requests() { return requests; },
+    failures,
+    async stop() {
+      agent.destroy();
+      if (!server.listening)
+        return;
+
+      const closed = new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+      server.closeAllConnections();
+      for (const upstream of upstreams)
+        upstream.destroy();
+      await closed;
+    },
+  };
+}
 
 interface OfflineWorker {
   executable: string;
@@ -44,7 +113,7 @@ async function verifyTcpDenied(host: string, port: number, expectedErrors: reado
     socket.once("error", (error: NodeJS.ErrnoException) => {
       socket.destroy();
       if (error.code && expectedErrors.includes(error.code)) {
-        process.stdout.write(`${phase}: network probe ${host}:${port} failed with ${error.code}\n`);
+        process.stdout.write(`${phase}: network probe ${host}:${port} denied as expected (${error.code})\n`);
         resolve();
       } else {
         reject(error);
@@ -214,7 +283,7 @@ const offlinePlatforms: Partial<Record<NodeJS.Platform, OfflinePlatform>> = {
   darwin: macOSOfflinePlatform,
   win32: windowsOfflinePlatform,
 };
-const runAcceptance = enabled && offlinePlatforms[process.platform] ? describe : describe.skip;
+const runAcceptance = offlineEnabled && offlinePlatforms[process.platform] ? describe : describe.skip;
 
 function getOfflinePlatform(): OfflinePlatform {
   const platform = offlinePlatforms[process.platform];
@@ -282,15 +351,24 @@ async function verifyConversions(iModel: SnapshotDb) {
   process.stdout.write(`${phase}: EGM96 input ${JSON.stringify(location)}, ellipsoidal XYZ ${JSON.stringify(result)}, roundtrip XYZ ${JSON.stringify(roundtrip)}\n`);
 }
 
-runAcceptance("Vertical CRS production offline acceptance", function () {
+function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
   this.timeout(600_000);
 
   if (phase) {
     it(`runs the ${phase} worker`, async () => {
+      // Note: environment variables are populated by the test runner before this code executes.
       const cacheDir = process.env.ITWIN_VERTICAL_CRS_OFFLINE_CACHE;
       expect(cacheDir).not.to.be.undefined;
-      if (phase !== "prefetch")
+      const endpoint = process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT;
+      if (resourceTest) {
+        expect(endpoint, "test-owned loopback endpoint is required").to.match(/^http:\/\/127\.0\.0\.1:\d+$/);
+        if (phase !== "prefetch") {
+          const url = new URL(endpoint!);
+          await verifyTcpDenied(url.hostname, Number(url.port), ["ECONNREFUSED"]);
+        }
+      } else if (phase !== "prefetch") {
         await getOfflinePlatform().verifyNetworkDenied();
+      }
 
       if (process.env.ITWIN_VERTICAL_CRS_OFFLINE_FAIL_PHASE === phase)
         throw new Error(`Intentionally induced ${phase} worker failure for cleanup validation`);
@@ -321,16 +399,26 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
         IModelNative.platform.enableLocalGcsFiles(false);
         expect(IModelHost.appWorkspace.getCloudCache().isDaemon, "workspace resource egress must remain in-process").to.be.false;
         process.stdout.write(`${phase}: workspace cache is daemonless\n`);
-        const defaults = IModelHost.appWorkspace.settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases)!;
+        let defaults = IModelHost.appWorkspace.settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases)!;
         expect(defaults.map((entry) => entry.dbName)).to.deep.equal(["base", "allEarth"]);
         expect(defaults.every((entry) => entry.baseUri === "https://geocoord-workspace.itwinjs.org")).to.be.true;
+        if (resourceTest) {
+          defaults = defaults.map((entry) => ({ ...entry, baseUri: endpoint!, prefetch: false }));
+          IModelHost.appWorkspace.settings.addDictionary(
+            { name: "vertical-crs-resource-regression", priority: SettingsPriority.application },
+            { [GeoCoordConfig.settingName.defaultDatabases]: defaults },
+          );
+        }
         GeoCoordConfig.loadDefaultDatabases();
 
         if (phase === "cold-offline") {
           expect(() => getAvailableVerticalCoordinateReferenceSystems()).to.throw("unable to query vertical coordinate reference systems (status 16427)");
-          process.stdout.write("cold-offline: networking denied and uncached dictionary unavailable\n");
+          process.stdout.write("cold-offline: resource endpoint unavailable and uncached dictionary unavailable\n");
           return;
         }
+
+        if (phase === "prefetch")
+          expect(await Promise.all(GeoCoordConfig.prefetches.map(async (task) => task.promise))).not.to.include(false);
 
         for (const props of defaults) {
           const db = await IModelHost.appWorkspace.getWorkspaceDb(props);
@@ -353,9 +441,6 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
             process.stdout.write(`${phase}: ${expectedNames.length} dictionary definitions discovered\n`);
           }
         }
-        if (phase === "prefetch")
-          expect(await Promise.all(GeoCoordConfig.prefetches.map(async (task) => task.promise))).not.to.include(false);
-
         iModel = SnapshotDb.createEmpty(path.join(cacheDir!, `${phase}.bim`), { rootSubject: { name: "Vertical CRS production acceptance" } });
         await verifyConversions(iModel);
       } finally {
@@ -373,6 +458,49 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
     return;
   }
 
+  if (resourceTest) {
+    it("converts from a persistent cache after its resource endpoint stops, but fails with an empty cache", async function () {
+      this.timeout(3 * 600_000 + 30_000);
+      const cacheRoot = mkdtempSync(path.join(tmpdir(), "itwin-vertical-crs-resource-"));
+      let endpoint: Awaited<ReturnType<typeof createWorkspaceEndpoint>> | undefined;
+      let workerOutput = "";
+      try {
+        endpoint = await createWorkspaceEndpoint();
+        for (const workerPhase of ["prefetch", "offline", "cold-offline"]) {
+          const env = { ...process.env };
+          env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE = workerPhase;
+          env.ITWIN_VERTICAL_CRS_OFFLINE_CACHE = path.join(cacheRoot, workerPhase === "cold-offline" ? "empty" : "populated");
+          env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT = endpoint.baseUri;
+          const reportPath = path.join(cacheRoot, `${workerPhase}-results.json`);
+          const args = [require.resolve("mocha/bin/mocha.js"), __filename, "--no-config", "--timeout", "600000", "--reporter", "json", "--reporter-option", `output=${reportPath}`];
+          try {
+            const result = await executeWorker({ executable: process.execPath, args, env });
+            workerOutput += result.stdout + result.stderr;
+          } catch (error) {
+            const failure = error as Error & { stdout?: string, stderr?: string };
+            process.stderr.write(`${workerPhase}: worker failed\n${workerOutput}${failure.stdout ?? ""}${failure.stderr ?? ""}`);
+            if (existsSync(reportPath))
+              process.stderr.write(`${readFileSync(reportPath, "utf8")}\n`);
+            process.stderr.write(`parent: ${endpoint.requests} forwarded requests, failures ${JSON.stringify(endpoint.failures)}\n`);
+            throw error;
+          }
+          if (workerPhase === "prefetch") {
+            expect(endpoint.requests, "native prefetch used the test endpoint").to.be.greaterThan(0);
+            await endpoint.stop();
+            workerOutput += `parent: stopped ${endpoint.baseUri} after ${endpoint.requests} requests\n`;
+          }
+        }
+      } finally {
+        try {
+          await endpoint?.stop();
+        } finally {
+          rmSync(cacheRoot, { recursive: true, force: true });
+        }
+      }
+    });
+    return;
+  }
+
   it("discovers and converts using stock production settings after prefetch with networking denied", async function () {
     if (process.platform === "win32")
       this.timeout(3 * 600_000 + 180_000);
@@ -381,10 +509,12 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
     let cleanupFailed = false;
     try {
       for (const workerPhase of ["cold-offline", "prefetch", "offline"]) {
-        const args = [require.resolve("mocha/bin/mocha.js"), __filename, "--no-config", "--timeout", "600000"];
+        const reportPath = path.join(cacheDir, `${workerPhase}-results.json`);
+        const args = [require.resolve("mocha/bin/mocha.js"), __filename, "--no-config", "--timeout", "600000", "--reporter", "json", "--reporter-option", `output=${reportPath}`];
         const env = { ...process.env };
         env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE = workerPhase;
         env.ITWIN_VERTICAL_CRS_OFFLINE_CACHE = cacheDir;
+        delete env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT;
         const worker: OfflineWorker = workerPhase === "prefetch"
           ? { executable: process.execPath, args, env }
           : await getOfflinePlatform().createWorker(args, env);
@@ -398,6 +528,8 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
           workerFailure = error instanceof Error ? error : new Error(String(error));
           const failure = error as Error & { stdout?: string, stderr?: string };
           process.stderr.write(`${workerPhase}: worker failed\n${failure.stdout ?? ""}${failure.stderr ?? ""}`);
+          if (existsSync(reportPath))
+            process.stderr.write(`${readFileSync(reportPath, "utf8")}\n`);
         } finally {
           try {
             await worker.cleanup?.();
@@ -424,4 +556,20 @@ runAcceptance("Vertical CRS production offline acceptance", function () {
       }
     }
   });
-});
+}
+
+// Register in the parent process, or in a worker given the test-owned resource endpoint.
+if (!phase || process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT !== undefined) {
+  const runResourceRegression = resourceEnabled ? describe : describe.skip;
+  runResourceRegression("Vertical CRS resource-unavailability regression", function () {
+    registerAcceptance.call(this, true);
+  });
+}
+
+// Register in the parent process, or in a production-isolation worker with no resource endpoint override.
+// runAcceptance keeps this suite opt-in in both cases.
+if (!phase || process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT === undefined) {
+  runAcceptance("Vertical CRS production offline acceptance", function () {
+    registerAcceptance.call(this, false);
+  });
+}

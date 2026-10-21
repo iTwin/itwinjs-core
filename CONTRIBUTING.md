@@ -74,6 +74,12 @@ Use `rushx docs` from the package directory to build its documentation.
 
 Check the package's `package.json` to identify Mocha or Vitest. Use the existing test scripts first. Use runner-supported filters for focused local work, but do not commit `.only` or a temporary Vitest test filter. For interactive debugging, use the launch configurations in [`.vscode/launch.json`](./.vscode/launch.json).
 
+### Vertical CRS resource regression
+
+The Vertical CRS resource-unavailability regression is opt-in locally and enabled in the four Node 24 renderer/architecture lanes of `common/config/azure-pipelines/integration-validation.yaml`. It is skipped by default in other pipelines, including PR validation and native/internal builds, and in the weekly Node 20/22 compatibility lanes. It needs online access during prefetch and a matching native addon, but no elevation, network isolation tools, or operator prompts. For a focused run from `full-stack-tests/backend`, run `rushx build`, then `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS=1 ./node_modules/.bin/mocha lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 1850000`. In PowerShell, set `$env:ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS = '1'` before the Mocha command and restore its previous value afterward.
+
+Its test-owned endpoint is a loopback HTTP server forwarding real workspace requests to the production HTTPS service. The test changes the configured workspace endpoint, explicitly prefetches both databases through the native stack, then closes the server and its connections. Fresh workers retain the same endpoint/container identities: the populated cache must support enumeration and bidirectional EGM96 conversion; an independent empty cache must fail dictionary access. Local GCS fallback is disabled and caches are daemonless. Temporary caches and the server are cleaned up after success or failure. The parent automatically supplies the endpoint and cache locations to workers through internal environment variables. This validates resource-unavailability behavior and cache persistence, not complete network isolation or unchanged production settings. Production-isolation acceptance remains separately opt-in as described below.
+
 ### Opt-in tests
 
 Some tests are too slow or too repetitive to run on every build, so they are skipped unless an environment variable asks for them. A normal run reports them as pending rather than hiding them, which is the signal that one of these exists.
@@ -84,9 +90,10 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS` | native prefetch and fresh-process cache regression with a test-owned local resource endpoint | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | macOS/Linux/Windows production workspace prefetch and fresh-process offline vertical CRS acceptance using OS-level network isolation | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
-Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
+Set one to `1`, `true` or `yes` and run the package's usual test script. CI enables selected suites through pipeline or job variables; the resource regression is enabled only in the Node 24 renderer/architecture jobs described above.
 
 The offline Vertical CRS test runs on macOS, Linux, and Windows with a matching native addon for the Node.js architecture. macOS uses `sandbox-exec`; Linux requires `unshare` (util-linux), `ip` (iproute2), and permission to create unprivileged user and network namespaces. Windows uses an outbound Windows Defender Firewall block rule for a dedicated copy of Node; it requires an already elevated, policy-approved session, enabled firewall profiles permitting local rules, NetSecurity cmdlets, and a PowerShell host whose execution policy permits the helper script (see the Windows setup below). Verify Linux prerequisites with `unshare --user --map-root-user --net -- ip -j link show`; it must succeed with only the isolated loopback interface, initially down. An isolation setup failure fails the test rather than running without isolation.
 
