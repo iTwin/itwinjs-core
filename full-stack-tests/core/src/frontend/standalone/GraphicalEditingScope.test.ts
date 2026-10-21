@@ -17,9 +17,10 @@ import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/c
 import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
+import { resolveChaiPlugin } from "../testAssertions";
 
 const expect = chai.expect;
-chai.use(chaiAsPromised);
+chai.use(resolveChaiPlugin(chaiAsPromised));
 
 const dummyRange = new Range3d();
 function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange {
