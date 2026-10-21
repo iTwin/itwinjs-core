@@ -10,5 +10,7 @@ export default defineConfig({
     dir: "src/test",
     include: ["**/*.test.ts"],
     exclude: ["electron-provider-smoke.test.ts", "electron-provider-startup.test.ts"],
+    // Stands in for the token a real run's global setup provides; see browser-callbacks.test.ts.
+    provide: { backendCallbackToken: "unit-test-backend-callback-token-0000" },
   },
 });
