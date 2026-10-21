@@ -456,7 +456,7 @@ describe("LeaderGeometry", () => {
       expect(leaderLines.points.length).to.equal(2); // start + end, no elbow
     });
 
-    it("test test", () => {
+    it("should return elbow direction", () => {
       const leaders: TextAnnotationLeader[] = [
         {
           startPoint: Point3d.create(10, 0, 0),
