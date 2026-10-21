@@ -28,6 +28,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _refreshIModelProps, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { isBriefcaseSidecar } from "./internal/BriefcaseUtils";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 
@@ -341,28 +342,40 @@ export class BriefcaseManager {
   /**
    * Delete and clean up a briefcase and all of its associated files. First, this method opens the supplied filename to determine its briefcaseId.
    * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
-   * associated files (that is, all files in the same directory that start with the briefcase name).
+   * associated files (that is, files in the same directory named `<briefcase file name>-*` or `<briefcase file name>.*`,
+   * e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles").
    * @param filePath the full file name of the Briefcase to delete
    * @param accessToken for releasing the briefcaseId
    */
   public static async deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void> {
+    let briefcase: BriefcaseProps | undefined;
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
-      const briefcase: BriefcaseProps = {
+      briefcase = {
         iModelId: db.getIModelId(),
         briefcaseId: db.getBriefcaseId(),
       };
       db.closeFile();
+    } catch {
+      // not a valid iModel (e.g. missing, corrupt, or partially downloaded). Just delete the files below.
+    }
 
-      if (this.isValidBriefcaseId(briefcase.briefcaseId))
-        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId); // cleanup rebase folders
+    // Clean up the rebase folders and release the briefcaseId independently, so a failure in one doesn't prevent the other.
+    if (undefined !== briefcase && this.isValidBriefcaseId(briefcase.briefcaseId)) {
+      try {
+        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId);
+      } catch (err) {
+        Logger.logWarning(loggerCategory, `Failed to clean up rebase folders for ${filePath}: ${String(err)}`);
+      }
 
       if (accessToken) {
-        if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
+        try {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
+        } catch (err) {
+          Logger.logWarning(loggerCategory, `Failed to release briefcaseId ${briefcase.briefcaseId} for ${filePath}: ${String(err)}`);
         }
       }
-    } catch { }
+    }
 
     // first try to delete the briefcase file
     try {
@@ -372,14 +385,15 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${String(err)}`);
     }
 
-    // next, delete all files that start with the briefcase's filePath (e.g. "a.bim-locks", "a.bim-journal", etc.)
+    // next, delete the briefcase's associated files (e.g. "a.bim-wal", "a.bim-locks", "a.bim.Tiles", etc.)
     try {
       const dirName = path.dirname(filePath);
       const fileName = path.basename(filePath);
       const files = IModelJsFs.readdirSync(dirName);
       for (const file of files) {
-        if (file.startsWith(fileName))
-          this.deleteFile(path.join(dirName, file)); // don't throw on error
+        const sidecar = path.join(dirName, file);
+        if (isBriefcaseSidecar(file, fileName) && !IModelJsFs.lstatSync(sidecar)?.isDirectory)
+          this.deleteFile(sidecar); // don't throw on error
       }
     } catch { }
   }

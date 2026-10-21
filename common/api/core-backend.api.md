@@ -1057,6 +1057,13 @@ export interface ChangesetRangeArg extends IModelIdArg {
 
 // @beta
 export class ChangesetReader implements Disposable, ChangeSource {
+    // @internal
+    [_appendToNativeUnifier](nativeUnifier: IModelJsNative.ChangeUnifier): void;
+    // @internal
+    get [_readerOptions](): {
+        readonly propFilter: PropertyFilter;
+        readonly rowOptions: RowFormatOptions | undefined;
+    };
     [Symbol.dispose](): void;
     clearClassNameFilters(): void;
     clearOpCodeFilters(): void;
@@ -1146,6 +1153,21 @@ export class ChangeSummaryManager {
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
+}
+
+// @beta
+export class ChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    static fromReader(reader: ChangesetReader, args?: ChangeUnifierArgs): ChangeUnifier;
+    static fromReaders(readers: Iterable<ChangesetReader>, args?: ChangeUnifierArgs): ChangeUnifier;
+    instances(): IterableIterator<ChangeInstance>;
+}
+
+// @beta
+export interface ChangeUnifierArgs {
+    batchSize?: number;
+    memoryBudgetBytes?: number;
+    propNames?: string[];
 }
 
 // @beta (undocumented)
@@ -6192,6 +6214,14 @@ export class Relationships {
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     // @deprecated
     insertInstance(props: RelationshipProps): Id64String;
+    // @beta
+    queryInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
+    // @beta
+    queryInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     // @deprecated

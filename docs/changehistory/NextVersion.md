@@ -10,7 +10,10 @@ publish: false
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
     - [Pre-push validation](#pre-push-validation)
+    - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
+    - [Native ChangeUnifier](#native-changeunifier)
+    - [Batched relationship lookups](#batched-relationship-lookups)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
@@ -49,11 +52,31 @@ The ECSQL version was bumped to `2.0.4.2`.
 
 The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
 
+### Stricter briefcase file deletion
+
+[NativeApp.deleteBriefcase]($frontend) now only deletes files that are inside the briefcase cache directory or that are valid iModels. If the supplied path refers to an existing file that is neither, it throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
+
+[BriefcaseManager.deleteBriefcaseFiles]($backend) no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only files named `<briefcase file name>-*` or `<briefcase file name>.*` (e.g. `-wal`, `-shm`, `-locks`, `.Tiles`) are deleted along with the briefcase.
+
 ### IdSet accepts ids with the high bit set
 
 The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
 
 Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
+
+### Native ChangeUnifier
+
+The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
+
+### Batched relationship lookups
+
+The new `@beta` [Relationships.queryInstancesProps]($backend) and [Relationships.queryInstances]($backend) methods look up many relationships of the same class with at most two queries. Each criterion is either a relationship id or a source and target id pair, and both kinds can be mixed. The returned array has one entry per criterion, in the same order, with `undefined` where no relationship was found. The results match calling [Relationships.tryGetInstanceProps]($backend) or [Relationships.tryGetInstance]($backend) for each criterion.
+
+```ts
+const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(ElementGroupsMembers.classFullName, [relId, { sourceId, targetId }]);
+```
+
+By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
 
 ## Common
 
