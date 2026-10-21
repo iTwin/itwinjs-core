@@ -257,21 +257,27 @@ describe("ConcurrentQuery", () => {
   it("queue limit check", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
-    ConcurrentQuery.resetConfig(db[_nativeDb], { requestQueueSize: 40, globalQuota: { time: 5, memory: 100000 } });
-    const req: DbQueryRequest = {
-      query: `WITH sequence(n) AS (
-                SELECT  1 UNION ALL SELECT n + 1 FROM sequence WHERE n < 10000000
-              ) SELECT n FROM sequence s`,
-    };
+    try {
+      const requestQueueSize = 40;
+      const requestCount = 60;
+      ConcurrentQuery.resetConfig(db[_nativeDb], { requestQueueSize, ignoreDelay: false, globalQuota: { time: 5, memory: 100000 } });
+      // A delay keeps accepted requests in the queue (workers only dequeue requests whose delay has elapsed),
+      // so the queue fills up deterministically regardless of how fast the worker threads are.
+      const req: DbQueryRequest = { query: "SELECT 1", delay: 2000 };
 
-    const responsePromises: Promise<DbQueryResponse>[] = [];
-    for (let i = 0; i < 60; ++i) {
-      responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      const responsePromises: Promise<DbQueryResponse>[] = [];
+      for (let i = 0; i < requestCount; ++i) {
+        responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      }
+      const responses = await Promise.all(responsePromises);
+      const queueFullResponses = responses.filter((x) => x.status === DbResponseStatus.QueueFull);
+      expect(queueFullResponses.length).to.equal(requestCount - requestQueueSize);
+      const otherStatuses = responses.filter((x) => x.status !== DbResponseStatus.QueueFull).map((x) => x.status);
+      expect(otherStatuses).to.have.lengthOf(requestQueueSize);
+      expect(otherStatuses.every((x) => x === DbResponseStatus.Done)).to.be.true;
+    } finally {
+      db.close();
     }
-    const responses = await Promise.all(responsePromises);
-    const queueResponses = Array.from(responses.filter((x) => x.status === DbResponseStatus.QueueFull));
-    expect(queueResponses.length).to.be.greaterThanOrEqual(10);
-    db.close();
   });
 
   it("timeout check", async () => {
@@ -300,10 +306,20 @@ describe("ConcurrentQuery", () => {
     const config = {
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
+      ignoreDelay: false, // Honor request delays so some requests are guaranteed to still be queued at shutdown
     };
 
     // Reset configuration
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+
+    // Requests that are still queued when shutdown happens are rejected with ShuttingDown. A delay keeps these
+    // requests from being dequeued by a worker, so they are deterministically queued at shutdown regardless of
+    // how fast or slow the worker threads are. They are enqueued first so they cannot be rejected with QueueFull.
+    const queuedRequestCount = 10;
+    const queuedPromises: Promise<DbQueryResponse>[] = [];
+    for (let i = 0; i < queuedRequestCount; ++i) {
+      queuedPromises.push(ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], { query: "SELECT 1", delay: 5000 }));
+    }
 
     const responsePromises: Promise<DbQueryResponse>[] = [];
     const spamPromises: Promise<void>[] = [];
@@ -333,13 +349,15 @@ describe("ConcurrentQuery", () => {
 
     shouldStop = true;
 
-    // Wait for all promises to complete
+    // Wait for all promises to complete. If shutdown deadlocked, these would never settle and the test would time out.
+    const queuedResults = await Promise.allSettled(queuedPromises);
     const results = await Promise.allSettled(responsePromises);
     await Promise.allSettled(spamPromises);
 
-    const satisfiesShutDownResponse = results.some((result) => result.status === "fulfilled" && result.value.status === DbResponseStatus.ShuttingDown);
-
-    expect(satisfiesShutDownResponse).to.be.true; // some queries should face shutdown
+    expect(results.every((result) => result.status === "fulfilled")).to.be.true;
+    // Every request that was still queued at shutdown must be rejected with ShuttingDown.
+    const queuedStatuses = queuedResults.map((result) => result.status === "fulfilled" ? result.value.status : undefined);
+    expect(queuedStatuses).to.deep.equal(new Array(queuedRequestCount).fill(DbResponseStatus.ShuttingDown));
 
     // Restore original config by resetting to default
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});
