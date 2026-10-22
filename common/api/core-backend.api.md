@@ -14,6 +14,7 @@ import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BaselineShift } from '@itwin/core-common';
+import { BeAsyncEvent } from '@itwin/core-bentley';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
@@ -4125,6 +4126,8 @@ export abstract class IModelDb extends IModel {
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal
+    [_refreshIModelProps](): void;
     // @internal (undocumented)
     [_resetIModelDb](): void;
     // @internal
@@ -6088,17 +6091,19 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     db: WorkspaceDb;
 }>) => void;
 
-// @alpha
+// @beta
 export interface RebaseHandler {
     dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
 
-// @alpha
+// @beta
 export class RebaseManager {
+    // @alpha
     constructor(_iModel: BriefcaseDb);
     abort(): Promise<void>;
+    // @internal
     addConflictHandler(args: {
         id: string;
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
@@ -6135,6 +6140,7 @@ export class RebaseManager {
     notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
     readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
     readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
+    // @internal
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
     readonly onDownloadChangesetsBegin: BeEvent<() => void>;
     readonly onDownloadChangesetsEnd: BeEvent<() => void>;
@@ -6146,8 +6152,10 @@ export class RebaseManager {
     readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReverseLocalChangesBegin: BeEvent<() => void>;
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @internal
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
+    // @internal
     resumeSemantic(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
 }
@@ -6211,6 +6219,14 @@ export class Relationships {
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     // @deprecated
     insertInstance(props: RelationshipProps): Id64String;
+    // @beta
+    queryInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
+    // @beta
+    queryInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     // @deprecated
@@ -7904,14 +7920,14 @@ export class TxnManager {
     // @alpha
     getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
-    // @alpha
+    // @beta
     getLastSavedTxnProps(): TxnProps | undefined;
-    // @alpha
+    // @beta
     getMode(): TxnMode;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    // @alpha
+    // @beta
     getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
@@ -7968,6 +7984,8 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
+    // @beta
+    readonly onPrePushValidation: BeAsyncEvent<() => Promise<void>>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -7981,9 +7999,9 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
-    // @alpha
+    // @beta
     queryTxns(): Generator<TxnProps>;
-    // @internal (undocumented)
+    // @beta
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     // @beta
@@ -8005,13 +8023,13 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
-    // @alpha
+    // @beta
     withIndirectTxnMode(callback: () => void): void;
-    // @alpha
+    // @beta
     withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void>;
 }
 
-// @alpha
+// @beta
 export type TxnMode = "direct" | "indirect";
 
 // @public @preview

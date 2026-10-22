@@ -15,6 +15,7 @@ import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
@@ -86,6 +87,7 @@ export class ECDb implements Disposable {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  private readonly _queryMetadataCache = new QueryMetadataCache();
 
   /** Event called when the ECDb is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -181,6 +183,7 @@ export class ECDb implements Disposable {
    * @beta
   */
   public clearCaches(): void {
+    this._queryMetadataCache.clear();
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this[_nativeDb].clearECDbCache();
@@ -545,8 +548,8 @@ export class ECDb implements Disposable {
     }
     const executor = {
       execute: (request: DbQueryRequest): DbQueryResponse | Promise<DbQueryResponse> => request.usePrimaryConn === true
-        ? ConcurrentQuery.executePrimaryQueryRequest(this[_nativeDb], request)
-        : ConcurrentQuery.executeQueryRequest(this[_nativeDb], request),
+        ? this._queryMetadataCache.executeCachedPrimaryQueryRequest(request, (req) => ConcurrentQuery.executePrimaryQueryRequest(this[_nativeDb], req))
+        : this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req)),
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }

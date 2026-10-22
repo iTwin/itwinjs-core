@@ -32,6 +32,8 @@ export const _cache = Symbol.for(sym("cache"));
 export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));
 /** @internal */
 export const _activeTxn = Symbol.for(sym("activeTxn"));
+/** @internal */
+export const _refreshIModelProps = Symbol.for(sym("refreshIModelProps"));
 export const _resetIModelDb = Symbol.for(sym("resetIModelDb"));
 export const _onReservedElementInsert = Symbol.for(sym("onReservedElementInsert"));
 /** @internal */

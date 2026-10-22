@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Promote RebaseManager abort, resume, dispose, rebase events, setCustomHandler, merge state, and RebaseHandler (including recompute, dispose, and shouldReinstate) from @alpha to @beta. Promote TxnManager.rebaser from @internal to @beta. Promote TxnManager.withIndirectTxnMode, withIndirectTxnModeAsync, getMode, getTxnProps, queryTxns, getLastSavedTxnProps, and TxnMode from @alpha to @beta. Mark RebaseManager.resumeSemantic, onConflict, addConflictHandler, and removeConflictHandler as @internal because they depend on internal types.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
