@@ -126,6 +126,7 @@ import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
+import { GeographicCRS } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
 import { GeometricModel3dProps } from '@itwin/core-common';
@@ -3805,6 +3806,8 @@ export interface GeoConverterOptions {
     readonly datum: string;
     // (undocumented)
     fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    getGcs?: () => GeographicCRS | undefined;
     // (undocumented)
     isIModelClosed: () => boolean;
     // (undocumented)
