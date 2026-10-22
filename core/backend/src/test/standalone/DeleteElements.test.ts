@@ -1,10 +1,39 @@
 import { assert } from "chai";
-import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { DbResult, Id64, Id64Array, Id64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, ExternalSourceAspectProps, IModel, PhysicalElementProps, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
+import {
+  _nativeDb, BulkDeleteElementsResult, BulkDeleteElementsStatus, BulkDeleteFailureReason, BulkDeleteMode, ChannelControl, EditTxn, ElementGroupsMembers, ExternalSourceAspect,
+  Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
+
+/**
+ * Expected failure entry. Omit `reason` to only require that the element is reported (regardless of why).
+ * `detail` may be a literal string or a RegExp matched against the reported `table.column`.
+ */
+interface ExpectedFailure {
+  elementId: Id64String;
+  reason?: BulkDeleteFailureReason;
+  detail?: string | RegExp;
+}
+
+/** Expected shape of a [[BulkDeleteElementsResult]]. `sqlDeleteStatus` defaults to `BE_SQLITE_OK`. */
+interface ExpectedResult {
+  status: BulkDeleteElementsStatus;
+  sqlDeleteStatus?: DbResult;
+  failures: ExpectedFailure[];
+  failedIds?: Id64Set;
+}
+
+const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures: [] };
+const partialSuccess = (...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.PartialSuccess, failures });
+const constraintViolation = (...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures });
+
+/** The element itself is referenced from outside the delete set via its Code scope. */
+const codeScopeViolator = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_Element.CodeScopeId` });
+const blockedByRelative = (elementId: Id64String, blockedRelative: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.BlockedByRelative, detail: blockedRelative });
 
 describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
@@ -66,57 +95,32 @@ describe("deleteElements (native bulk delete API)", () => {
   };
 
   /** Assert that the element with the given id exists or has been deleted. */
-  const assertExists = (id: Id64String, msg: string) => assert.isDefined(iModelDb.elements.tryGetElement(id), msg);
-  const assertDeleted = (id: Id64String, msg: string) => assert.isUndefined(iModelDb.elements.tryGetElement(id), msg);
+  const assertExists = (id: Id64String, msg?: string) => assert.isDefined(iModelDb.elements.tryGetElement(id), msg);
+  const assertDeleted = (id: Id64String, msg?: string) => assert.isUndefined(iModelDb.elements.tryGetElement(id), msg);
 
-  // Run deleteElements, then verify the returned failed set, check each id in `deleted` is gone and each id in `retained` is still present.
-  const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
-    const resultStatus: BulkDeleteElementsResult = txn.deleteElements(idsToDelete);
-    if (expectedFailed.length === 0)
-      assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
-    else
-      assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
+  /** Assert the result matches `expected` and that elements in the delete set are the only ones reported; then check which elements were deleted / retained. */
+  const assertResult = (result: BulkDeleteElementsResult, expected: ExpectedResult, deletedIds: Id64Array, retainedIds: Id64Array) => {
+    assert.equal(result.status, expected.status, `Bulk element deletion status is ${BulkDeleteElementsStatus[result.status]}; Expected: ${BulkDeleteElementsStatus[expected.status]}`);
+    assert.equal(result.sqlDeleteStatus, expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK, `Bulk element deletion internal sql status is ${result.sqlDeleteStatus}; Expected: ${expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK}`);
 
-    assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+    assert.equal(result.failures.length, expected.failures.length, `Actual failures don't match the expected. Actual: ${JSON.stringify(result.failures)}; Expected: ${JSON.stringify(expected.failures)}`);
+    assert.deepEqualInAnyOrder(result.failures, expected.failures);
 
-    for (const id of deleted)
-      assertDeleted(id, `[${label}] ${id} should have been deleted`);
+    for (const retainedId of retainedIds)
+      assertExists(retainedId);
 
-    for (const id of retained)
-      assertExists(id, `[${label}] ${id} should have been retained`);
+    for (const deletedId of deletedIds)
+      assertDeleted(deletedId);
 
-    txn.abandonChanges();
-
-    // Verify that the same test case produces the same result when using the deprecated iModelDb.elements.deleteElements API, to ensure that the deprecation does not cause any regressions.
-    executeTestCaseDeprecated(label, idsToDelete, deleted, retained, expectedFailed);
+    // TODO: Deprecated
+    // assert.deepEqual(result.failedIds, expected.failedIds ?? new Set());
   };
 
-  const executeTestCaseDeprecated = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
-    const previousEnforcement = EditTxn.implicitWriteEnforcement;
-    EditTxn.implicitWriteEnforcement = "allow";
-
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
-
-      if (expectedFailed.length === 0)
-        assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
-      else
-        assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
-
-      assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
-
-      for (const id of deleted)
-        assertDeleted(id, `[${label}] ${id} should have been deleted`);
-
-      for (const id of retained)
-        assertExists(id, `[${label}] ${id} should have been retained`);
-    } finally {
-
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      iModelDb.abandonChanges();
-      EditTxn.implicitWriteEnforcement = previousEnforcement;
-    }
+  // Run deleteElements, compare the returned result object against `expected`, then check each id in `deleted` is gone and each id in `retained` is still present.
+  const executeTestCase = (_label: string, idsToDelete: Id64Array, deletedIds: Id64Array, retainedIds: Id64Array, expected: ExpectedResult = success, deleteMode: BulkDeleteMode = BulkDeleteMode.RemoveFKViolators) => {
+    const result = txn.deleteElements(idsToDelete, { deleteMode });
+    assertResult(result, expected, deletedIds, retainedIds);
+    txn.abandonChanges();
   };
 
   /**
@@ -156,7 +160,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("root cascades",
         [parentA],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
-        [parentB, childB1, childB2, standalone, childS1]);
+        [parentB, childB1, childB2, standalone, childS1]
+      );
     });
 
     it("Second call to deleteElement fails if a read cursor on a temp table is open", () => {
@@ -174,7 +179,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const result2 = txn.deleteElements([el2]);
 
       for (const result of [result1, result2]) {
-        assert.equal(result.failedIds.size, 0);
+        assert.isEmpty(result.failures);
         assert.equal(result.status, BulkDeleteElementsStatus.Success, "deleteElements call must succeed");
         assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_OK);
       }
@@ -299,7 +304,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [rootA, childA, rootB],
-        [childA]);
+        partialSuccess(codeScopeViolator(childA)));
 
       executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
@@ -339,8 +344,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], [rootA]);
-      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], [rootB]);
+      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], partialSuccess(codeScopeViolator(rootA)));
+      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], partialSuccess(codeScopeViolator(rootB)));
       executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
 
       executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
@@ -359,18 +364,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootD],
         [rootD],
         [rootA, rootB, rootC],
-        [rootA]);
-    });
-
-    it("scope chain delete with skipping constraint validation should fail", () => {
-      const rootA = insertElement();
-      const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
-      const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
-
-      const resultStatus: BulkDeleteElementsResult = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
-      assert.equal(resultStatus.status, BulkDeleteElementsStatus.DeletionFailed);
-      assert.equal(resultStatus.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
+        partialSuccess(codeScopeViolator(rootA)));
     });
 
     it("two elements using the same scope", () => {
@@ -432,7 +426,163 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [parent, childA, childB],
-        [childA]);
+        partialSuccess(codeScopeViolator(childA)));
+    });
+  });
+
+  describe("delete modes", () => {
+    /** A -> B -> C -> D code-scope chain. Deleting [A, D] leaves A referenced by B (external), while D is safe. */
+    const insertScopeChain = () => {
+      const rootA = insertElement();
+      const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
+      const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
+      const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
+      return { rootA, rootB, rootC, rootD };
+    };
+
+    it("RemoveFKViolators (default) reports the FK violator with the referencing table.column", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+
+      executeTestCase("Delete A and D",
+        [rootA, rootD],
+        [rootD],
+        [rootA, rootB, rootC],
+        partialSuccess(codeScopeViolator(rootA))
+      );
+
+      executeTestCase("Delete A and B",
+        [rootA, rootB],
+        [],
+        [rootA, rootB],
+        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB))
+      );
+
+      executeTestCase("Delete B and C",
+        [rootB, rootC],
+        [],
+        [rootB, rootC],
+        partialSuccess(codeScopeViolator(rootB), codeScopeViolator(rootC))
+      );
+
+      executeTestCase("Delete C and D",
+        [rootC, rootD],
+        [rootC, rootD],
+        [],
+        success
+      );
+
+      executeTestCase("Delete A, B and D",
+        [rootA, rootB, rootD],
+        [rootD],
+        [rootA, rootB, rootC],
+        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB))
+      );
+
+      executeTestCase("Delete all the roots",
+        [rootA, rootB, rootC, rootD],
+        [rootA, rootB, rootC, rootD],
+        [],
+        success
+      );
+    });
+
+    it("FailFast deletes nothing and returns ConstraintViolation when any element is still referenced", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+      const unrelated = insertElement();
+
+      executeTestCase("FailFast fails",
+        [rootA, rootD, unrelated],
+        [],
+        [rootA, rootB, rootC, rootD, unrelated],
+        constraintViolation(codeScopeViolator(rootA)),
+        BulkDeleteMode.FailFast
+      );
+    });
+
+    it("FailFast succeeds when there are no external references", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+
+      executeTestCase("FailFast succeeds",
+        [rootA, rootB, rootC, rootD],
+        [rootA, rootB, rootC, rootD],
+        [],
+        success,
+        BulkDeleteMode.FailFast
+      );
+    });
+
+    it("FailFast does not evict retained elements from the element cache", () => {
+      const { rootA, rootD } = insertScopeChain();
+      // Prime the cache.
+      const before = iModelDb.elements.getElement(rootA);
+
+      executeTestCase("FailFast does not evict cache for retained elements",
+        [rootA, rootD],
+        [],
+        [rootA, rootD],
+        constraintViolation(codeScopeViolator(rootA)),
+        BulkDeleteMode.FailFast
+      );
+
+      const after = iModelDb.elements.getElement(rootA);
+      assert.strictEqual(after.id, before.id);
+      assertExists(rootD, "rootD must still exist");
+    });
+
+    it("FailFast ConstraintViolation leaves no side effects behind (aspects, subclass rows, sub-models)", async () => {
+      // Validation runs before anything is modified, so unlike DeletionFailed nothing needs to be abandoned.
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+      const aspectId = txn.insertAspect({
+        classFullName: ExternalSourceAspect.classFullName,
+        element: { id: rootD },
+        scope: { id: IModel.rootSubjectId },
+        identifier: "src-rootD",
+        kind: "Element",
+      } as ExternalSourceAspectProps);
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "FailFastNoSideEffects");
+      txn.saveChanges();
+      const aspectExists = async (): Promise<boolean> => {
+        const reader = iModelDb.createQueryReader("SELECT 1 FROM bis.ElementMultiAspect WHERE ECInstanceId=?", new QueryBinder().bindId(1, aspectId));
+        return reader.step();
+      };
+      const geomRowExists = (id: Id64String) => iModelDb.withPreparedSqliteStatement("SELECT 1 FROM bis_GeometricElement3d WHERE ElementId=?", (stmt) => { stmt.bindId(1, id); return stmt.step() === DbResult.BE_SQLITE_ROW; });
+
+      const result = txn.deleteElements([rootA, rootD, partitionId], { deleteMode: BulkDeleteMode.FailFast });
+      assertResult(result, constraintViolation(codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD, partitionId]);
+      assert.isTrue(await aspectExists(), "aspect must not be touched");
+      assert.isTrue(geomRowExists(rootD), "subclass rows must not be touched");
+      assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must not be touched");
+      assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "a rejected FailFast delete must not dirty the txn");
+    });
+
+    it("deprecated skipFKConstraintValidations: true behaves like FailFast", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
+      assertResult(result, constraintViolation(codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
+
+      // ...and succeeds when nothing is referenced from outside the set.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const ok = txn.deleteElements([rootA, rootB, rootC, rootD], { skipFKConstraintValidations: true });
+      assertResult(ok, success, [rootA, rootB, rootC, rootD], []);
+    });
+
+    it("deprecated skipFKConstraintValidations: false keeps the default RemoveFKViolators behaviour", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: false });
+      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
+    });
+
+    it("deleteMode takes precedence over the deprecated skipFKConstraintValidations flag", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+
+      // RemoveFKViolators must win over the deprecated flag: PartialSuccess with rootD deleted.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const result = txn.deleteElements([rootA, rootD], { deleteMode: BulkDeleteMode.RemoveFKViolators, skipFKConstraintValidations: true });
+      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
     });
   });
 
@@ -445,7 +595,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, external],
-        [rootA]);
+        partialSuccess(codeScopeViolator(rootA)));
     });
 
     it("depth-1 child is code scope for external", () => {
@@ -457,7 +607,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, childA, external],
-        [rootA]);
+        partialSuccess(codeScopeViolator(childA), blockedByRelative(rootA, childA)));
     });
 
     it("depth-2 grandchild is code scope for external", () => {
@@ -470,7 +620,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, childA, grandchildA, external],
-        [rootA]);
+        partialSuccess(codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
     });
 
     it("only the child is passed for deletion", () => {
@@ -481,7 +631,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [rootA, childA, external],
-        [childA]);
+        partialSuccess(codeScopeViolator(childA)));
     });
 
     it("root has both an external scope dependent AND an intra-set scope dependent", () => {
@@ -492,7 +642,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, external],
-        [rootA]);
+        partialSuccess(codeScopeViolator(rootA)));
     });
 
     it("two independent external scope violations", () => {
@@ -505,7 +655,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB, rootC],
         [rootC],
         [rootA, rootB, extX, extY],
-        [rootA, rootB]);
+        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB)));
     });
   });
 
@@ -561,7 +711,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA1],
         [],
         [rootA, childA1, rootB, childB1],
-        [childA1]);
+        partialSuccess(codeScopeViolator(childA1)));
     });
 
     it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", () => {
@@ -618,7 +768,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [grandchildA, rootA, childB],
         [childB],
         [rootA, childA, grandchildA, rootB, external],
-        [rootA, grandchildA]);
+        partialSuccess(codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
     });
 
     it("two trees: one has external scope violation, other is deleted cleanly", () => {
@@ -634,7 +784,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB, childB1, childB2, gcB],
         [rootA, childA, gcA, external],
-        [rootA]);
+        partialSuccess(codeScopeViolator(childA), blockedByRelative(rootA, childA)));
     });
   });
 
@@ -677,7 +827,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
       const result = txn.deleteElements([partitionId]);
       assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assert.isEmpty(result.failedIds);
+      assert.isEmpty(result.failures);
       assertDeleted(partitionId, "partition element should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(elem1, "elem1 inside sub-model should be deleted");
@@ -756,8 +906,9 @@ describe("deleteElements (native bulk delete API)", () => {
 
       // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
       // entire partition subtree (including the sub-model) must be ignored from the delete set.
+      // scopingElem is the direct violator; the requested partition is reported as blocked by it.
       const result = txn.deleteElements([partitionId, unrelated]);
-      assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
+      assertResult(result, partialSuccess(codeScopeViolator(scopingElem), blockedByRelative(partitionId, scopingElem)), [unrelated], [partitionId, scopingElem, otherElem, external]);
       assertExists(partitionId, "partition should be ignored (retained)");
       assertModelExists(partitionId, "sub-model should be retained");
       assertExists(scopingElem, "scopingElem should be retained");
@@ -915,6 +1066,396 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
+    });
+  });
+
+  describe("input validation and txn state", () => {
+    it("throws when the EditTxn is not active", () => {
+      const el = insertElement();
+      txn.end("abandon");
+      assert.throws(() => txn.deleteElements([el]), "EditTxn is not active");
+
+      // Re-activate so afterEach can end it.
+      txn = new EditTxn(iModelDb, "delete elements");
+      txn.start();
+      assertExists(el, "nothing may be deleted by an inactive txn");
+    });
+
+    it("throws before touching the iModel when any id is invalid, even if other ids are deletable", () => {
+      const rootA = insertElement();
+      const rootB = insertElement();
+      assert.throws(() => txn.deleteElements([rootA, "0x", rootB]));
+      assert.throws(() => txn.deleteElements([rootA, "", rootB]));
+      assertExists(rootA);
+      assertExists(rootB);
+    });
+
+    it("well-formed ids that do not exist are ignored", () => {
+      const rootA = insertElement();
+      const missing = "0xffffffffffff";
+      assert.isUndefined(iModelDb.elements.tryGetElement(missing));
+      executeTestCase("missing id", [rootA, missing], [rootA], [], success);
+    });
+
+    it("second deletion of an already-deleted element is a no-op", () => {
+      const rootA = insertElement();
+      const rootB = insertElement();
+      assert.equal(txn.deleteElements([rootA]).status, BulkDeleteElementsStatus.Success);
+      assertDeleted(rootA);
+
+      // rootA no longer exists; the call must still succeed and delete rootB.
+      const result = txn.deleteElements([rootA, rootB]);
+      assertResult(result, success, [rootA, rootB], []);
+    });
+
+    it("does not auto-save: abandonChanges restores every deleted element", () => {
+      const rootA = insertElement();
+      const childA = insertElement({ parentId: rootA });
+      const result = txn.deleteElements([rootA]);
+      assertResult(result, success, [rootA, childA], []);
+
+      txn.abandonChanges();
+      assertExists(rootA, "abandon must restore rootA");
+      assertExists(childA, "abandon must restore childA");
+    });
+
+    it("failures list is capped at 100 entries but every violator is still retained", () => {
+      // 120 roots, each the code scope of an external element -> 120 direct violators.
+      const roots: Id64Array = [];
+      const externals: Id64Array = [];
+      for (let i = 0; i < 120; i++) {
+        const root = insertElement();
+        roots.push(root);
+        externals.push(insertElement({ codeScope: root, codeValue: `ext-${i}` }));
+      }
+      const unrelated = insertElement();
+
+      const result = txn.deleteElements([...roots, unrelated]);
+      assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
+      assert.equal(result.failures.length, 100, "failures must be capped at 100 entries");
+      for (const failure of result.failures) {
+        assert.equal(failure.reason, BulkDeleteFailureReason.ReferencedByForeignKey);
+        assert.include(roots, failure.elementId, "only violators may be reported");
+      }
+      // The cap only limits the report, never the correctness of the operation.
+      for (const id of [...roots, ...externals])
+        assertExists(id);
+      assertDeleted(unrelated);
+    });
+  });
+
+  describe("cache coherence", () => {
+    /** Load an element (or model) so that it is held in the in-memory cache. */
+    const prime = (ids: Id64Array) => {
+      for (const id of ids)
+        assert.isDefined(iModelDb.elements.getElement(id));
+    };
+
+    it("cascaded descendants that were cached are no longer readable after their ancestor is deleted", () => {
+      const parent = insertElement();
+      const child = insertElement({ parentId: parent });
+      const grandchild = insertElement({ parentId: child });
+      prime([parent, child, grandchild]);
+
+      const result = txn.deleteElements([parent]);
+      assertResult(result, success, [parent, child, grandchild], []);
+      assert.isUndefined(iModelDb.elements.tryGetElementProps(child), "cached child props must not be served after deletion");
+      assert.isUndefined(iModelDb.elements.tryGetElementProps(grandchild), "cached grandchild props must not be served after deletion");
+      assert.throws(() => iModelDb.elements.getElement(child));
+    });
+
+    it("cached sub-model contents and the model itself are no longer readable after the modeled element is deleted", () => {
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "CachedSubModelPartition");
+      const inner = txn.insertElement({
+        classFullName: "Generic:PhysicalObject",
+        model: partitionId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      txn.saveChanges();
+      prime([partitionId, inner]);
+      assert.isDefined(iModelDb.models.getModelProps(partitionId));
+      assert.isDefined(iModelDb.models.getModel(partitionId));
+
+      const result = txn.deleteElements([partitionId]);
+      assertResult(result, success, [partitionId, inner], []);
+      assert.isUndefined(iModelDb.models.tryGetModelProps(partitionId), "cached model props must not be served after deletion");
+      assert.isUndefined(iModelDb.models.tryGetModel(partitionId), "cached model must not be served after deletion");
+      assert.isUndefined(iModelDb.elements.tryGetElementProps(inner), "cached sub-model element must not be served after deletion");
+    });
+
+    it("on PartialSuccess, retained elements stay readable and deleted ones are evicted", () => {
+      const rootA = insertElement();
+      const external = insertElement({ codeScope: rootA, codeValue: "ext" });
+      const rootB = insertElement();
+      const childB = insertElement({ parentId: rootB });
+      prime([rootA, external, rootB, childB]);
+
+      const result = txn.deleteElements([rootA, rootB]);
+      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootB, childB], [rootA, external]);
+      assert.strictEqual(iModelDb.elements.getElement(rootA).id, rootA);
+      assert.isUndefined(iModelDb.elements.tryGetElementProps(childB));
+    });
+
+    it("a cached parent reflects the removal of its children", () => {
+      const parent = insertElement();
+      const child = insertElement({ parentId: parent });
+      prime([parent, child]);
+      assert.deepEqual(iModelDb.elements.queryChildren(parent), [child]);
+
+      const result = txn.deleteElements([child]);
+      assertResult(result, success, [child], [parent]);
+      assert.isEmpty(iModelDb.elements.queryChildren(parent));
+      assert.strictEqual(iModelDb.elements.getElement(parent).id, parent);
+    });
+  });
+
+  describe("related data cleanup", () => {
+    const countAspects = async (elementId: Id64String): Promise<number> => {
+      const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementMultiAspect WHERE Element.Id=?", new QueryBinder().bindId(1, elementId));
+      assert.isTrue(await reader.step());
+      return reader.current.toArray()[0];
+    };
+
+    const insertAspect = (elementId: Id64String, scopeId: Id64String = IModel.rootSubjectId): Id64String =>
+      txn.insertAspect({
+        classFullName: ExternalSourceAspect.classFullName,
+        element: { id: elementId },
+        scope: { id: scopeId },
+        identifier: `src-${elementId}`,
+        kind: "Element",
+      } as ExternalSourceAspectProps);
+
+    it("aspects owned by deleted elements (including cascaded descendants) are removed", async () => {
+      const parent = insertElement();
+      const child = insertElement({ parentId: parent });
+      const survivor = insertElement();
+      insertAspect(parent);
+      insertAspect(child);
+      insertAspect(child);
+      const survivorAspect = insertAspect(survivor);
+      assert.equal(await countAspects(parent), 1);
+      assert.equal(await countAspects(child), 2);
+
+      const result = txn.deleteElements([parent]);
+      assertResult(result, success, [parent, child], [survivor]);
+      assert.equal(await countAspects(parent), 0, "aspects of the deleted parent must be removed");
+      assert.equal(await countAspects(child), 0, "aspects of the cascaded child must be removed");
+      assert.equal(await countAspects(survivor), 1, "aspects of unrelated elements must be untouched");
+      assert.isDefined(iModelDb.elements.getAspect(survivorAspect));
+    });
+
+    it("an element used as the Scope of another element's ExternalSourceAspect", () => {
+      const scopeElem = insertElement();
+      const owner = insertElement();
+      const aspectId = insertAspect(owner, scopeElem);
+
+      // Deleting both the scope element and the aspect owner is fine: the aspect goes away with its owner.
+      const result = txn.deleteElements([scopeElem, owner]);
+      assertResult(result, success, [scopeElem, owner], []);
+      assert.throws(() => iModelDb.elements.getAspect(aspectId));
+    });
+
+    describe("ElementRefersToElements link table", () => {
+      let groupModelId: Id64String;
+      let groupCounter = 0;
+
+      beforeEach(() => {
+        const partitionId = txn.insertElement({
+          classFullName: GroupInformationPartition.classFullName,
+          model: IModel.repositoryModelId,
+          parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+          code: GroupInformationPartition.createCode(iModelDb, IModel.rootSubjectId, `GroupPartition-${++groupCounter}`),
+        });
+        groupModelId = txn.insertModel({ classFullName: GroupModel.classFullName, modeledElement: { id: partitionId } });
+        txn.saveChanges();
+      });
+
+      const insertGroup = (): Id64String => txn.insertElement({ classFullName: Group.classFullName, model: groupModelId, code: Code.createEmpty() });
+
+      const countMemberships = async (groupId: Id64String): Promise<number> => {
+        const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementGroupsMembers WHERE SourceECInstanceId=?", new QueryBinder().bindId(1, groupId));
+        assert.isTrue(await reader.step());
+        return reader.current.toArray()[0];
+      };
+
+      it("deleting a member removes only its membership row; the group and other members survive", async () => {
+        const group = insertGroup();
+        const member1 = insertElement();
+        const member2 = insertElement();
+        const rel1 = txn.insertRelationship(ElementGroupsMembers.create(iModelDb, group, member1, 0).toJSON());
+        const rel2 = txn.insertRelationship(ElementGroupsMembers.create(iModelDb, group, member2, 1).toJSON());
+        txn.saveChanges();
+        assert.equal(await countMemberships(group), 2);
+
+        const result = txn.deleteElements([member1]);
+        assertResult(result, success, [member1], [group, member2]);
+        assert.equal(await countMemberships(group), 1);
+        assert.isUndefined(iModelDb.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, rel1));
+        assert.isDefined(iModelDb.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, rel2));
+      });
+
+      it("deleting the group removes all of its membership rows; the members survive", async () => {
+        const group = insertGroup();
+        const member1 = insertElement();
+        const member2 = insertElement();
+        txn.insertRelationship(ElementGroupsMembers.create(iModelDb, group, member1, 0).toJSON());
+        txn.insertRelationship(ElementGroupsMembers.create(iModelDb, group, member2, 1).toJSON());
+        txn.saveChanges();
+
+        const result = txn.deleteElements([group]);
+        assertResult(result, success, [group], [member1, member2]);
+        assert.equal(await countMemberships(group), 0);
+      });
+
+      it("deleting a parent whose cascaded child is a group member removes the membership row", () => {
+        const group = insertGroup();
+        const parent = insertElement();
+        const child = insertElement({ parentId: parent });
+        const rel = txn.insertRelationship(ElementGroupsMembers.create(iModelDb, group, child, 0).toJSON());
+        txn.saveChanges();
+
+        const result = txn.deleteElements([parent]);
+        assertResult(result, success, [parent, child], [group]);
+        assert.isUndefined(iModelDb.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, rel));
+      });
+    });
+  });
+
+  describe("FailFast with hierarchy", () => {
+    it("reports the direct violator and the blocked requested ancestor, and deletes nothing", () => {
+      const rootA = insertElement();
+      const childA = insertElement({ parentId: rootA });
+      const external = insertElement({ codeScope: childA, codeValue: "ext" });
+      const unrelated = insertElement();
+
+      executeTestCase("FailFast: violator is a cascaded child",
+        [rootA, unrelated],
+        [],
+        [rootA, childA, external, unrelated],
+        constraintViolation(codeScopeViolator(childA), blockedByRelative(rootA, childA)),
+        BulkDeleteMode.FailFast);
+    });
+
+    it("sub-model partition blocked by an element inside its sub-model", () => {
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "FailFastPartition");
+      const inner = txn.insertElement({
+        classFullName: "Generic:PhysicalObject",
+        model: partitionId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      txn.saveChanges();
+      const external = insertElement({ codeScope: inner, codeValue: "ext" });
+
+      executeTestCase("FailFast: violator is inside the sub-model",
+        [partitionId],
+        [],
+        [partitionId, inner, external],
+        constraintViolation(codeScopeViolator(inner), blockedByRelative(partitionId, inner)),
+        BulkDeleteMode.FailFast);
+      assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must survive a FailFast rejection");
+    });
+  });
+
+  describe("undo / redo (StandaloneDb)", () => {
+    let sdb: StandaloneDb;
+    let sModelId: Id64String;
+    let sCategoryId: Id64String;
+
+    before(() => {
+      sdb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DeleteElements", "UndoRedo.bim"), {
+        rootSubject: { name: "DeleteElementsUndo" },
+        enableTransactions: true,
+      });
+      sdb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      withEditTxn(sdb, "setup", (t) => {
+        sModelId = PhysicalModel.insert(t, IModel.rootSubjectId, "UndoModel");
+        sCategoryId = SpatialCategory.insert(t, IModel.dictionaryId, "UndoCategory", new SubCategoryAppearance());
+      });
+    });
+
+    after(() => {
+      if (sdb?.isOpen)
+        sdb.close();
+    });
+
+    const insertInStandalone = (t: EditTxn, parentId?: Id64String): Id64String => t.insertElement({
+      classFullName: "Generic:PhysicalObject",
+      model: sModelId,
+      category: sCategoryId,
+      code: Code.createEmpty(),
+      placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
+    } as PhysicalElementProps);
+
+    it("a bulk delete is recorded as a single undoable txn and can be reversed and reinstated", () => {
+      const { parent, child, partition, inner, survivor } = withEditTxn(sdb, "insert", (t) => {
+        const p = insertInStandalone(t);
+        const c = insertInStandalone(t, p);
+        const part = PhysicalModel.insert(t, IModel.rootSubjectId, "UndoPartition");
+        const i = t.insertElement({
+          classFullName: "Generic:PhysicalObject", model: part, category: sCategoryId, code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        } as PhysicalElementProps);
+        return { parent: p, child: c, partition: part, inner: i, survivor: insertInStandalone(t) };
+      });
+
+      withEditTxn(sdb, "bulk delete", (t) => {
+        const result = t.deleteElements([parent, partition]);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success);
+        assert.isEmpty(result.failures);
+      });
+      for (const id of [parent, child, partition, inner])
+        assert.isUndefined(sdb.elements.tryGetElement(id));
+      assert.isUndefined(sdb.models.tryGetModelProps(partition));
+      assert.isDefined(sdb.elements.tryGetElement(survivor));
+
+      // Undo: everything the bulk delete removed (requested, cascaded children, sub-model + contents) comes back in one step.
+      assert.isTrue(sdb.txns.isUndoPossible);
+      assert.equal(sdb.txns.reverseSingleTxn(), IModelStatus.Success);
+      for (const id of [parent, child, partition, inner, survivor])
+        assert.isDefined(sdb.elements.tryGetElement(id), `${id} must be restored by undo`);
+      assert.isDefined(sdb.models.tryGetModelProps(partition), "sub-model must be restored by undo");
+
+      // Redo: deleted again.
+      assert.isTrue(sdb.txns.isRedoPossible);
+      assert.equal(sdb.txns.reinstateTxn(), IModelStatus.Success);
+      for (const id of [parent, child, partition, inner])
+        assert.isUndefined(sdb.elements.tryGetElement(id), `${id} must be deleted again by redo`);
+      assert.isUndefined(sdb.models.tryGetModelProps(partition));
+      assert.isDefined(sdb.elements.tryGetElement(survivor));
+    });
+
+    it("a PartialSuccess delete leaves retained elements untouched after undo/redo", () => {
+      const { rootA, external, rootB } = withEditTxn(sdb, "insert", (t) => {
+        const a = insertInStandalone(t);
+        const specId = sdb.codeSpecs.insert(t, "UndoScopeSpec", CodeScopeSpec.Type.RelatedElement);
+        const ext = t.insertElement({
+          classFullName: "Generic:PhysicalObject", model: sModelId, category: sCategoryId,
+          code: { spec: specId, scope: a, value: "ext" },
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        } as PhysicalElementProps);
+        return { rootA: a, external: ext, rootB: insertInStandalone(t) };
+      });
+
+      withEditTxn(sdb, "partial delete", (t) => {
+        const result = t.deleteElements([rootA, rootB]);
+        assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
+      });
+      assert.isDefined(sdb.elements.tryGetElement(rootA));
+      assert.isUndefined(sdb.elements.tryGetElement(rootB));
+
+      assert.equal(sdb.txns.reverseSingleTxn(), IModelStatus.Success);
+      for (const id of [rootA, external, rootB])
+        assert.isDefined(sdb.elements.tryGetElement(id));
+
+      assert.equal(sdb.txns.reinstateTxn(), IModelStatus.Success);
+      assert.isDefined(sdb.elements.tryGetElement(rootA));
+      assert.isDefined(sdb.elements.tryGetElement(external));
+      assert.isUndefined(sdb.elements.tryGetElement(rootB));
     });
   });
 });

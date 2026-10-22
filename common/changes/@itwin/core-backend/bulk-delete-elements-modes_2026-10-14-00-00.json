@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "`EditTxn.deleteElements` now accepts a `deleteMode` (`RemoveFKViolators` | `FailFast`) and reports per-element `failures` with a `reason`. Deprecated `skipFKConstraintValidations` (now equivalent to `FailFast`; it no longer bypasses validation) and `failedIds`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

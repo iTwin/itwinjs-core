@@ -14,6 +14,7 @@ publish: false
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
     - [Native ChangeUnifier](#native-changeunifier)
     - [Batched relationship lookups](#batched-relationship-lookups)
+    - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
@@ -77,6 +78,25 @@ const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(Ele
 ```
 
 By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
+
+### Bulk Element Deletion API changes
+
+[EditTxn.deleteElements]($backend) now accepts a [deleteMode]($backend:BulkDeleteElementsArgs.deleteMode) option that controls how elements still referenced from *outside* the delete set are handled:
+
+- `BulkDeleteMode.RemoveFKViolators` (current default) - best effort. Referenced elements (and their logical subtree inside the delete set) are skipped; everything else is deleted. Status is `PartialSuccess` if anything was skipped, otherwise `Success`.
+- `BulkDeleteMode.FailFast` - all-or-nothing. If any element is still referenced, nothing is deleted and the status is `ConstraintViolation`.
+
+```ts
+const result = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.FailFast });
+```
+
+> The default will change to `BulkDeleteMode.FailFast` in a future release. Pass `deleteMode` explicitly now to be insulated from that change.
+
+[BulkDeleteElementsResult.failures]($backend) replaces the former failed-id set with a detailed, per-element report: each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, or `BlockedByRelative`), and - for `ReferencedByForeignKey` - the referencing `table.column`. `BulkDeleteElementsResult.failedIds` is now deprecated in favor of the more detailed `failures`.
+
+`BulkDeleteElementsArgs.skipFKConstraintValidations` is now deprecated. It no longer bypasses the foreign-key validation pass - doing so could leave the iModel in an inconsistent state. Passing `true` is now equivalent to `{ deleteMode: BulkDeleteMode.FailFast }`, and is ignored if `deleteMode` is also set. Use `deleteMode` instead.
+
+See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 
 ## Common
 

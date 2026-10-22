@@ -16,15 +16,59 @@ import type { ChangeElementModelProps, ChangeElementParentProps, IModelDb, Inser
 import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
+/**
+ * Controls how [[EditTxn.deleteElements]] treats elements that are still referenced from outside the delete set.
+ * @beta
+ */
+export enum BulkDeleteMode {
+  /** Default best effort. Skip referenced elements and their logical subtree inside the set (if any), delete the rest, return `PartialSuccess`/`Success`. */
+  RemoveFKViolators = 0,
+  /** Validate everything first; if any element is still referenced, delete nothing and return `ConstraintViolation`. */
+  FailFast = 1,
+}
+
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
  */
 export interface BulkDeleteElementsArgs {
+  /** How to treat elements still referenced from outside the delete set.
+   * Defaults to `BulkDeleteMode.RemoveFKViolators` to ensure compatibility.
+   * Will be changed to use `BulkDeleteMode.FailFast` in the future.
+   */
+  deleteMode?: BulkDeleteMode;
   /**
-   * Skips pre-deletion **NO ACTION** foreign key constraint validation checks, which may improve performance for large deletions.
-   * This will improve performance, but if the user supplies elements which have FK constraint violations, it will result in the delete failing and an eventual rollback.
+   * `true` is equivalent to `deleteMode: BulkDeleteMode.FailFast`. Ignored if `deleteMode` is set.
+   * @note This flag no longer bypasses validation. Skipping the foreign key checks could leave the iModel with dangling references
+   * (e.g. a deleted GeometryPart still referenced from a geometry stream), so that behaviour was removed.
+   * @deprecated in 5.15.0 - might be removed in next major version. Use `deleteMode` instead.
    */
   skipFKConstraintValidations?: boolean;
+}
+
+/**
+ * Why an element could not be deleted by [[EditTxn.deleteElements]].
+ * @beta
+ */
+export enum BulkDeleteFailureReason {
+  /** A row outside the delete set references it via a NO ACTION. */
+  ReferencedByForeignKey = 0,
+  /** It is a DefinitionElement still used by elements outside the delete set. */
+  DefinitionInUse = 1,
+  /** Possible with `RemoveFKViolators` mode only: it was skipped because a logical ancestor/descendant in the delete set failed. */
+  BlockedByRelative = 2,
+}
+
+/**
+ * One element that could not be deleted by [[EditTxn.deleteElements]], and why.
+ * @beta
+ */
+export interface BulkDeleteFailure {
+  /** The id of the element that could not be deleted. */
+  elementId: Id64String;
+  /** Why the element could not be deleted. */
+  reason: BulkDeleteFailureReason;
+  /** Possible with `ReferencedByForeignKey` reason only: the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId`. */
+  detail?: string;
 }
 
 /**
@@ -32,21 +76,20 @@ export interface BulkDeleteElementsArgs {
  * @beta
  */
 export interface BulkDeleteElementsResult {
-  /**
-   * Overall status of the bulk delete operation.
-   * - `Success`: All elements were deleted successfully. `failedIds` will be empty.
-   * - `PartialSuccess`: Some elements were deleted, but others failed. `failedIds` contains the ids that could not be deleted.
-   * - `DeletionFailed`: The delete operation failed entirely (e.g. due to an FK constraint violation). `failedIds` contains the ids that could not be deleted.
-   */
+  /** Overall status of the bulk delete operation. See [[BulkDeleteElementsStatus]]. */
   status: BulkDeleteElementsStatus;
-  /**
-   * The raw SQLite result code from the underlying SQL DELETE statement.
-   * `DbResult.BE_SQLITE_OK` on success; a non-OK code indicates a database-level error such as a constraint violation.
-   */
+  /** The raw SQLite result code from the underlying SQL DELETE. Only meaningful when `status === DeletionFailed`. */
   sqlDeleteStatus: DbResult;
+  /**
+   * Every element in the delete set that could not be deleted, with the reason (`PartialSuccess` / `ConstraintViolation`).
+   * An element may appear more than once if several foreign keys reference it. At most 100 `ReferencedByForeignKey` entries are reported.
+   * Empty on `Success` and `DeletionFailed`.
+   */
+  failures: BulkDeleteFailure[];
   /**
    * The set of element ids that could not be deleted.
    * Empty when `status` is `Success`. Non-empty when `status` is `PartialSuccess` or `DeletionFailed`.
+   * @deprecated Use `failures` for a more detailed failure report.
    */
   failedIds: Id64Set;
 }
@@ -58,10 +101,12 @@ export interface BulkDeleteElementsResult {
 export enum BulkDeleteElementsStatus {
   /** All supplied elements were deleted successfully. */
   Success = 0,
-  /** Some elements were deleted but others could not be, typically due to foreign key constraints on the elements not being deleted. */
+  /** Possible with `RemoveFKViolators` mode only. Some elements were deleted but others could not be, typically due to foreign key constraints on the elements not being deleted. */
   PartialSuccess = 1,
-  /** No elements were deleted. This occurs when the SQL DELETE statement itself fails, e.g. due to a FK constraint violation that prevents the entire batch from being processed. */
-  DeletionFailed = 2,
+  /** Possible with `FailFast` mode only. Nothing was deleted because some elements are still referenced from outside the delete set; see `failures` for the violators. */
+  ConstraintViolation = 2,
+  /** An internal error occurred. The iModel may be partially modified; the caller must abandon the current txn. `failures` will be empty. */
+  DeletionFailed = 3,
 }
 
 /**
@@ -430,10 +475,20 @@ export class EditTxn {
   }
 
   /**
-   * Delete multiple elements from the iModel.
+   * Delete multiple elements from the iModel in a single bulk operation.
+   *
+   * Child elements and sub-model contents of the requested elements are deleted along with them. How elements that are still
+   * referenced from *outside* the delete set are handled is controlled by [[BulkDeleteElementsArgs.deleteMode]]:
+   * - `RemoveFKViolators` (default): referenced elements (and their logical subtree inside the set) are skipped, everything else is deleted.
+   *   The result status is `PartialSuccess` if anything was skipped, otherwise `Success`.
+   * - `FailFast`: nothing is deleted if any element is still referenced and the result status is `ConstraintViolation`, otherwise `Success`.
+   *
+   * On `PartialSuccess` or `ConstraintViolation`, [[BulkDeleteElementsResult.failures]] lists every element that could not be deleted and why.
+   * On `DeletionFailed` (an unexpected SQLite error) the iModel may be partially modified and the caller must abandon the current txn.
+   *
    * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
    * @param deleteOptions Options for the delete operation.
-   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+   * @returns A result object describing the outcome of the operation and the elements that could not be deleted (if any).
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @beta
    */
@@ -448,20 +503,34 @@ export class EditTxn {
     if (invalidIds.size > 0)
       ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
-    const bulkDeletionResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
-    const finalResult = { ...bulkDeletionResult, failedIds: Id64.toIdSet(bulkDeletionResult.failedIds) };
+    const nativeResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
 
-    if (finalResult.status === BulkDeleteElementsStatus.DeletionFailed)
-      return finalResult;
+    // `failedIds` are deprecated since `failures` provides a more comprehensive error report.
+    // We still need to return `failedIds` to maintain backward compatibility.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const failedIds: Id64Set = Id64.toIdSet(nativeResult.failedIds ?? []);
+    for (const failure of nativeResult.failures)
+      failedIds.add(failure.elementId);
+
+    const result: BulkDeleteElementsResult = {
+      status: nativeResult.status,
+      sqlDeleteStatus: nativeResult.sqlDeleteStatus,
+      failures: nativeResult.failures,
+      failedIds,
+    };
+
+    // Nothing was deleted on ConstraintViolation; on DeletionFailed the caller must abandon the txn, which restores the cached state.
+    if (result.status === BulkDeleteElementsStatus.ConstraintViolation || result.status === BulkDeleteElementsStatus.DeletionFailed)
+      return result;
 
     for (const id of ids) {
-      if (!finalResult.failedIds.has(id)) {
+      if (!failedIds.has(id)) {
         this.iModel.elements[_cache].delete({ id });
         this.iModel.elements[_instanceKeyCache].deleteById(id);
       }
     }
 
-    return finalResult;
+    return result;
   }
 
   /** Insert a new aspect into the iModel.
