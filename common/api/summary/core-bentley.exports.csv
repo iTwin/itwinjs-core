@@ -6,8 +6,10 @@ public;function;areEqualPossiblyUndefined
 public;function;asInstanceOf
 public;function;assert
 public;type;AsyncFunction
+beta;type;AsyncListener
 public;type;AsyncMethodsOf
 public;function;base64StringToUint8Array
+beta;class;BeAsyncEvent
 public;class;BeDuration
 public;class;BeEvent
 public;class;BeEventList

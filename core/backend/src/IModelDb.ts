@@ -72,7 +72,7 @@ import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshIModelProps, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -940,6 +940,13 @@ export abstract class IModelDb extends IModel {
     db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
     db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
     db.onGeographicCoordinateSystemChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON()));
+  }
+
+  /** Reload the cached iModel properties (extents, geolocation, name, etc.) from the database, e.g. after changesets were merged.
+   * @internal
+   */
+  public [_refreshIModelProps](): void {
+    this.initializeIModelDb("pullMerge");
   }
 
   /** Returns true if this is a BriefcaseDb
@@ -4324,7 +4331,7 @@ export class BriefcaseDb extends IModelDb {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       SchemaSync.updateDbSchema(this);
-      this.initializeIModelDb("pullMerge");
+      this[_refreshIModelProps]();
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
@@ -4517,7 +4524,6 @@ export class BriefcaseDb extends IModelDb {
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
       await BriefcaseManager.pullMergePush(this, arg);
-      this.initializeIModelDb("pullMerge");
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
