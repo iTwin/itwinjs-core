@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Added BeAsyncEvent.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
