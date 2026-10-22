@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BeDuration, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
-import { GeoCoordStatus, GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
+import { GeoCoordStatus, GeographicCRS, GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
 describe("GeoServices", () => {
@@ -13,6 +13,7 @@ describe("GeoServices", () => {
   function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
     return new GeoServices({
       isIModelClosed: opts.isIModelClosed ?? (() => false),
+      getGcs: opts.getGcs,
       toIModelCoords: opts.toIModelCoords ?? (async () => Promise.resolve([])),
       fromIModelCoords: opts.fromIModelCoords ?? (async () => Promise.resolve([])),
     });
@@ -157,6 +158,49 @@ describe("GeoServices", () => {
   });
 
   for (const direction of ["geoToIModel", "iModelToGeo"] as const) {
+    it(`invalidates retained ${direction} conversions when the iModel CRS changes`, async () => {
+      let gcs = GeographicCRS.fromJSON({ verticalCRS: { id: "GEOID", crsName: "EGM96 height" } });
+      const inputs = [{ x: 23, y: 37, z: 0 }];
+      const oldResults: PointWithStatus[] = [{ p: { x: 23, y: 37, z: 38 }, s: GeoCoordStatus.Success }];
+      const newResults: PointWithStatus[] = [{ p: inputs[0], s: GeoCoordStatus.Success }];
+      const request = vi.fn(async () => oldResults);
+      const converter = makeGeoServices({ getGcs: () => gcs, toIModelCoords: request, fromIModelCoords: request }).getConverter()!;
+      const convert = async () => direction === "geoToIModel"
+        ? converter.getIModelCoordinatesFromGeoCoordinates(inputs).then((response) => ({ points: response.iModelCoords, fromCache: response.fromCache }))
+        : converter.getGeoCoordinatesFromIModelCoordinates(inputs).then((response) => ({ points: response.geoCoords, fromCache: response.fromCache }));
+
+      expect(await convert()).toEqual({ points: oldResults, fromCache: 0 });
+      expect(await convert()).toEqual({ points: oldResults, fromCache: 1 });
+      gcs = GeographicCRS.fromJSON({ verticalCRS: { id: "ELLIPSOID" } });
+      request.mockResolvedValue(newResults);
+      expect(converter.getCachedIModelCoordinatesFromGeoCoordinates(inputs)).toEqual({ result: [undefined], missing: inputs });
+      expect(await convert()).toEqual({ points: newResults, fromCache: 0 });
+      expect(await convert()).toEqual({ points: newResults, fromCache: 1 });
+      expect(request).toHaveBeenCalledTimes(2);
+    });
+
+    it(`retries an in-flight ${direction} conversion if the iModel CRS changes`, async () => {
+      let gcs = GeographicCRS.fromJSON({ verticalCRS: { id: "GEOID", crsName: "EGM96 height" } });
+      const inputs = [{ x: 23, y: 37, z: 0 }];
+      const releaseOldRequest = new BeEvent<() => void>();
+      const newResults: PointWithStatus[] = [{ p: inputs[0], s: GeoCoordStatus.Success }];
+      const request = vi.fn(async () => newResults).mockImplementationOnce(async () => new Promise<PointWithStatus[]>((resolve) => {
+        releaseOldRequest.addOnce(() => resolve([{ p: { x: 23, y: 37, z: 38 }, s: GeoCoordStatus.Success }]));
+      }));
+      const converter = makeGeoServices({ getGcs: () => gcs, toIModelCoords: request, fromIModelCoords: request }).getConverter()!;
+      const convert = async () => direction === "geoToIModel" ? converter.convertToIModelCoords(inputs) : converter.convertFromIModelCoords(inputs);
+      const oldRequest = convert();
+      await waitOneFrame();
+      expect(request).toHaveBeenCalledTimes(1);
+      gcs = GeographicCRS.fromJSON({ verticalCRS: { id: "ELLIPSOID" } });
+      const newRequest = convert();
+      expect(await newRequest).toEqual(newResults);
+      releaseOldRequest.raiseEvent();
+      expect(await oldRequest).toEqual(newResults);
+      expect(await convert()).toEqual(newResults);
+      expect(request).toHaveBeenCalledTimes(2);
+    });
+
     it(`preserves mixed vertical failure results in the ${direction} cache and retries with a fresh converter`, async () => {
       const inputs = [0, 1, 2, 3].map((x) => ({ x, y: 1, z: 10 }));
       const results: PointWithStatus[] = [
