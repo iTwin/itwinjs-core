@@ -21,8 +21,8 @@ importers:
         specifier: ^12.28.0
         version: 12.34.0
       '@bentley/imodeljs-native':
-        specifier: 5.15.26
-        version: 5.15.26
+        specifier: 5.15.28
+        version: 5.15.28
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.1.3
@@ -1188,9 +1188,15 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
+      '@types/chai':
+        specifier: 4.3.1
+        version: 4.3.1
       '@types/lodash':
         specifier: ^4.14.202
         version: 4.17.25
+      '@types/mocha':
+        specifier: ^10.0.6
+        version: 10.0.10
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -1200,9 +1206,18 @@ importers:
       '@types/ws':
         specifier: ^7.0.0
         version: 7.4.7
+      chai:
+        specifier: ^4.3.10
+        version: 4.5.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
+      mocha:
+        specifier: ^11.1.0
+        version: 11.8.0
+      nyc:
+        specifier: ^17.1.0
+        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -4664,8 +4679,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.15.26':
-    resolution: {integrity: sha512-eDwGFJSQEEzzj08RRRRVVI2IzOXHY7UVRNHB+I6WR8CDZoHVGDtRrt8bMpDL09jeiRRBBZHV7KThKAxCax8VrA==}
+  '@bentley/imodeljs-native@5.15.28':
+    resolution: {integrity: sha512-dsOpjkWR07rv2/sAGbjt0I9J30CMJrhZOO4oZUfz4eX1oJEHztbGTTF/FyG8OVL1FSpn4pD9x1VhQVS5n8hvhQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11389,7 +11404,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.15.26': {}
+  '@bentley/imodeljs-native@5.15.28': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
