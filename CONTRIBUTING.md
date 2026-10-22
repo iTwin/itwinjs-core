@@ -39,6 +39,7 @@ rushx lint
 | Published package | Run `rush change` and commit the generated change file |
 | External dependency manifest | Run `rush check` and `rush update` |
 | Documentation extract or package docs | Run the package's `rushx docs` command when available |
+| GCS resource loading, production workspace settings/resources, prefetching, durable cache behavior, or a native-addon update affecting these paths | Run [manual Vertical CRS offline acceptance](#manual-vertical-crs-offline-acceptance) on the affected supported platforms and record results in the PR |
 
 Do not commit `.only` tests.
 
@@ -78,7 +79,7 @@ Check the package's `package.json` to identify Mocha or Vitest. Use the existing
 
 The Vertical CRS resource-unavailability regression is opt-in locally and enabled in the four Node 24 renderer/architecture lanes of `common/config/azure-pipelines/integration-validation.yaml`. It is skipped by default in other pipelines, including PR validation and native/internal builds, and in the weekly Node 20/22 compatibility lanes. It needs online access during prefetch and a matching native addon, but no elevation, network isolation tools, or operator prompts. For a focused run from `full-stack-tests/backend`, run `rushx build`, then `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS=1 ./node_modules/.bin/mocha lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 1850000`. In PowerShell, set `$env:ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS = '1'` before the Mocha command and restore its previous value afterward.
 
-Its test-owned endpoint is a loopback HTTP server forwarding real workspace requests to the production HTTPS service. The test changes the configured workspace endpoint, explicitly prefetches both databases through the native stack, then closes the server and its connections. Fresh workers retain the same endpoint/container identities: the populated cache must support enumeration and bidirectional EGM96 conversion; an independent empty cache must fail dictionary access. Local GCS fallback is disabled and caches are daemonless. Temporary caches and the server are cleaned up after success or failure. The parent automatically supplies the endpoint and cache locations to workers through internal environment variables. This validates resource-unavailability behavior and cache persistence, not complete network isolation or unchanged production settings. Production-isolation acceptance remains separately opt-in as described below.
+Its test-owned endpoint is a loopback HTTP server forwarding real workspace requests to the production HTTPS service. The test changes the configured workspace endpoint, explicitly prefetches both databases through the native stack, then closes the server and its connections. Fresh workers retain the same endpoint/container identities: the populated cache must support enumeration and bidirectional EGM96 conversion; an independent empty cache must fail dictionary access. Local GCS fallback is disabled and caches are daemonless. Temporary caches and the server are cleaned up after success or failure. The parent automatically supplies the endpoint and cache locations to workers through internal environment variables. This validates resource-unavailability behavior and cache persistence, not complete network isolation or unchanged production settings. Production acceptance remains a separate [manual test](#manual-vertical-crs-offline-acceptance).
 
 ### Opt-in tests
 
@@ -91,39 +92,110 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS` | native prefetch and fresh-process cache regression with a test-owned local resource endpoint | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
-| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | macOS/Linux production workspace prefetch and fresh-process offline vertical CRS acceptance using OS-level network isolation | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
-| `ITWIN_INCLUDE_VERTICAL_CRS_INTERACTIVE_TESTS` | Windows operator-confirmed offline acceptance against unmodified production settings, requiring local interactive input and manual network disconnection | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | one manual production acceptance operation selected by `ITWIN_VERTICAL_CRS_OFFLINE_PHASE`, using the dedicated cache in `ITWIN_VERTICAL_CRS_OFFLINE_CACHE`; follow the procedure below | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
 Set one to `1`, `true` or `yes` and run the package's usual test script. CI enables selected suites through pipeline or job variables; the resource regression is enabled only in the Node 24 renderer/architecture jobs described above.
 
-The automated offline Vertical CRS acceptance runs on macOS and Linux with a matching native addon for the Node.js architecture. macOS uses `sandbox-exec`; Linux requires `unshare` (util-linux), `ip` (iproute2), and permission to create unprivileged user and network namespaces. Verify Linux prerequisites with `unshare --user --map-root-user --net -- ip -j link show`; it must succeed with only the isolated loopback interface, initially down. An isolation setup failure fails the test rather than running without isolation. Windows uses the separate interactive acceptance described below; the automated opt-in does not enable it.
+Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 
-From `full-stack-tests/backend`, run `rushx build`, then `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ./node_modules/.bin/mocha lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 650000` from an ordinary online shell. It downloads both default production GCS databases into a temporary cache, verifies cold-offline failure, then checks discovery and bidirectional EGM96 conversion in a fresh network-blocked process. Linux offline workers verify a distinct network namespace, loopback-only interfaces, empty IPv4/IPv6 route tables, and a routing failure before native startup. Only the offline workers are isolated; prefetch retains network access. Worker output includes the loaded addon path and SHA-256. The cache is removed afterward.
+### Manual Vertical CRS offline acceptance
 
-On Windows, run **locally** in an ordinary, interactive PowerShell terminal with a Windows native addon matching the Node.js architecture and containing the vertical CRS changes under test. Disconnecting networking can interrupt remote sessions and other applications: do not run through a connection needed to control the test. No elevation, firewall rules, copied Node executable, adapter changes, PowerShell helper, or execution-policy changes are needed. Explicit opt-in with redirected stdin/stdout or with `CI` set fails before cache creation, downloads, or worker startup. From `full-stack-tests/backend`:
+Run locally from `full-stack-tests/backend`, not through a remote connection. Run `rushx build` first. Create fresh empty directories at `$HOME/vertical-crs-acceptance/populated` and `$HOME/vertical-crs-acceptance/empty`, or substitute your own absolute paths below. Unset `ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT` if it is set.
 
-```powershell
-rushx build
-if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
-$previousOptIn = $env:ITWIN_INCLUDE_VERTICAL_CRS_INTERACTIVE_TESTS
-try {
-	$env:ITWIN_INCLUDE_VERTICAL_CRS_INTERACTIVE_TESTS = '1'
-	node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config
-	if ($LASTEXITCODE -ne 0) { throw 'Offline acceptance failed' }
-} finally {
-	$env:ITWIN_INCLUDE_VERTICAL_CRS_INTERACTIVE_TESTS = $previousOptIn
-}
+**AI assistants do not work while the machine is offline.** Read all steps before disconnecting and complete them without assistant help. See [acceptance details](#vertical-crs-offline-acceptance-details) for run requirements and background.
+
+#### Prefetch Online
+
+While online, prefetch production resources into the populated cache.
+
+POSIX shell:
+
+```sh
+ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ITWIN_VERTICAL_CRS_OFFLINE_PHASE=prefetch ITWIN_VERTICAL_CRS_OFFLINE_CACHE="$HOME/vertical-crs-acceptance/populated" node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
 ```
 
-Windows first downloads both default databases using stock production settings into a dedicated populated cache, verifies full block residency and conversion, and waits for that worker to exit. At the parent prompt, manually disconnect VPN, Wi-Fi, Ethernet, mobile tethering, and every other network path, then press Enter. The human wait has no assertion timeout; each worker is limited to ten minutes. Fresh workers must enumerate and filter the dictionary and perform forward/reverse EGM96 conversion with the populated cache, then report the specific dictionary-unavailable error with an independent empty cache. Both offline workers disable local GCS fallback and require daemonless workspace caches. Production endpoints and database identities remain unchanged; the unattended resource regression never prompts and continues to use its own local endpoint.
+PowerShell:
 
-The result is labeled **operator-confirmed offline acceptance**. Enter records an operator action, not proof of complete network isolation. The empty-cache control detects some setup errors, not every possible connectivity path. Evidence includes Windows version, architecture, Node version, native package version, loaded addon path and SHA-256, timestamped operator confirmation, and each worker's assertions. Retain the terminal output as acceptance evidence.
+```powershell
+$env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS = '1'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_PHASE = 'prefetch'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_CACHE = "$HOME/vertical-crs-acceptance/populated"
+node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
+```
 
-On success, input EOF/cancellation, worker failure, or handled Ctrl+C, the parent reminds you to **restore networking manually** and removes temporary caches after worker exit. Ctrl+C terminates an active owned worker tree before cleanup. No adapters are restored automatically. Forced termination (including closing the terminal or killing the parent) cannot guarantee a final reminder or cleanup: reconnect networking yourself, stop any remaining worker processes for this run, then remove the exact temporary cache directory printed at startup. Never remove a cache while its worker is running. There are no firewall rules or copied executables to recover.
+Expected: `1 passing`, exit status `0`, both databases fully cached, dictionary discovery, and successful forward/reverse EGM96 conversion. Stop if this fails; otherwise keep both cache directories for the next steps.
 
-The installed addon is the default. For a separately labeled local-build run, set `ITWIN_VERTICAL_CRS_OFFLINE_ADDON` to the absolute `imodeljs.node` path with its matching platform libraries/assets alongside it, then restore the prior environment value afterward. This does not replace installed dependencies. Do not attempt a native build without the required initialized build environment. To validate worker-error cleanup, temporarily set `ITWIN_VERTICAL_CRS_OFFLINE_FAIL_PHASE` to `prefetch` (before any disconnection) or `cold-offline` (after disconnection); the selected worker deliberately fails before native startup. Expect a failing test, a restoration reminder, and no remaining owned workers/caches. Restore the variable afterward. Also exercise EOF/cancellation at the prompt and Ctrl+C during a worker. Windows acceptance and interruption validation require a Windows run; compilation alone is not acceptance. Changes to shared worker lifecycle also require Linux and macOS runtime reruns.
+#### Verify the Populated Cache Offline
 
-Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
+Disconnect all network paths, including VPN, Wi-Fi, Ethernet, and tethering. Run using the populated cache:
+
+POSIX shell:
+
+```sh
+ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ITWIN_VERTICAL_CRS_OFFLINE_PHASE=offline ITWIN_VERTICAL_CRS_OFFLINE_CACHE="$HOME/vertical-crs-acceptance/populated" node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
+```
+
+PowerShell:
+
+```powershell
+$env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS = '1'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_PHASE = 'offline'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_CACHE = "$HOME/vertical-crs-acceptance/populated"
+node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
+```
+
+Expected: `1 passing`, exit status `0`, dictionary discovery, and successful forward/reverse EGM96 conversion. On failure, stop and restore networking.
+
+#### Verify the Empty Cache Offline
+
+Stay disconnected. Run using the empty cache:
+
+POSIX shell:
+
+```sh
+ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS=1 ITWIN_VERTICAL_CRS_OFFLINE_PHASE=cold-offline ITWIN_VERTICAL_CRS_OFFLINE_CACHE="$HOME/vertical-crs-acceptance/empty" node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
+```
+
+PowerShell:
+
+```powershell
+$env:ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS = '1'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_PHASE = 'cold-offline'
+$env:ITWIN_VERTICAL_CRS_OFFLINE_CACHE = "$HOME/vertical-crs-acceptance/empty"
+node ./node_modules/mocha/bin/mocha.js lib/cjs/integration/VerticalCrsOffline.test.js --no-config --timeout 600000
+```
+
+Expected: `1 passing` and exit status `0`. The test asserts the expected dictionary-unavailable error (status 16427).
+
+**Restore networking manually after completion, cancellation, or failure.** To cancel, press Ctrl+C; if the process does not exit, terminate it locally. Save the terminal output and remove this run's caches only after all test processes exit. Confirm networking is restored before returning to an assistant.
+
+### Vertical CRS offline acceptance details
+
+#### When to Run
+
+Run this manual acceptance test when changing native GCS resource loading, production GCS workspace settings or published resources, prefetching, workspace cache identity/location, or durable cache reopening. Also run it for native-addon updates affecting those paths and changes to this test's worker lifecycle. It is not required for unrelated changes. The change author owns arranging the runs and recording the results; reviewers should check that evidence before merging. For production resource publications, the publisher owns the equivalent validation before rollout. Run on every affected supported platform; changes to shared loading/cache behavior or worker lifecycle require Windows, macOS, and Linux runs. Record any missing platform run as an outstanding validation requirement, not a pass.
+
+#### Coverage
+
+Each invocation runs one operation in a fresh process using stock production workspace settings and a native addon matching the Node.js architecture and containing the vertical CRS changes under test. The populated cache is retained between prefetch and offline verification; the empty cache must not be used for prefetch. Local GCS fallback is disabled and workspace caches must be daemonless in every operation. The assertions verify dictionary discovery/filtering and bidirectional grid-backed EGM96 conversion, or the specific dictionary-unavailable error for the empty-cache operation.
+
+The test does not change or verify machine connectivity. The operator is responsible for disconnecting and restoring all network paths. The empty-cache control detects some setup errors, not every possible connectivity path; a pass is not proof of complete network isolation. Disconnecting networking can interrupt remote sessions and other applications. Each operation has a ten-minute Mocha timeout. Cache cleanup and network restoration are operator responsibilities.
+
+The unattended resource regression remains independent of this procedure and continues to use its own local endpoint. Builds and automated resource-regression results alone are not production offline acceptance.
+
+#### Evidence and Cleanup
+
+Retain the terminal output and record the OS version, architecture, disconnect/reconnect times, Node version, native package version, loaded addon path and SHA-256, and each operation's pass/fail result in the PR or resource-publication record. The worker logs addon details; record OS version and connectivity changes yourself.
+
+After all test processes exit, remove only the cache directories created for this run. Never remove a cache while a test process is running. Restore any environment variables you changed, or close the dedicated terminal. For a rerun, start with fresh populated and empty caches and repeat all three operations.
+
+#### AI Assistant Handoff
+
+AI assistants used for this workflow require network access. Assistants must not launch or supervise this test through their tools. While the machine is online, provide the complete commands, expected results, cancellation steps, and manual network-restoration instructions, then end the assistant turn. The operator runs the commands independently and returns to the assistant only after networking is restored. Assistants must wait for that confirmation before resuming tool calls.
+
+#### Native Addon
+
+The installed addon is the default. For a separately labeled local-build run, set `ITWIN_VERTICAL_CRS_OFFLINE_ADDON` to the absolute `imodeljs.node` path with its matching platform libraries/assets alongside it, then restore the prior environment value afterward. This does not replace installed dependencies. Native addon build instructions are outside the scope of this document.
 
 ## Ask questions or report issues
 
