@@ -1042,8 +1042,8 @@ public;class;Tweens
 public;enum;TxnAction
 public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
-alpha;interface;TxnProps
-alpha;type;TxnType
+beta;interface;TxnProps
+beta;type;TxnType
 public;class;TypeDefinition
 preview;class;TypeDefinition
 public;interface;TypeDefinitionElementProps

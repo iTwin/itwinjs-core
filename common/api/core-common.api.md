@@ -11472,29 +11472,20 @@ export interface TxnNotifications {
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
-// @alpha
+// @beta
 export interface TxnProps {
-    // (undocumented)
     grouped: boolean;
-    // (undocumented)
     id: Id64String;
-    // (undocumented)
     nextId?: Id64String;
-    // (undocumented)
     prevId?: Id64String;
-    // (undocumented)
     props: SaveChangesArgs;
-    // (undocumented)
     reversed: boolean;
-    // (undocumented)
     sessionId: number;
-    // (undocumented)
     timestamp: string;
-    // (undocumented)
     type: TxnType;
 }
 
-// @alpha
+// @beta
 export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview

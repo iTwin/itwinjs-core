@@ -6091,17 +6091,19 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     db: WorkspaceDb;
 }>) => void;
 
-// @alpha
+// @beta
 export interface RebaseHandler {
     dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
 
-// @alpha
+// @beta
 export class RebaseManager {
+    // @alpha
     constructor(_iModel: BriefcaseDb);
     abort(): Promise<void>;
+    // @internal
     addConflictHandler(args: {
         id: string;
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
@@ -6138,6 +6140,7 @@ export class RebaseManager {
     notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
     readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
     readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
+    // @internal
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
     readonly onDownloadChangesetsBegin: BeEvent<() => void>;
     readonly onDownloadChangesetsEnd: BeEvent<() => void>;
@@ -6149,8 +6152,10 @@ export class RebaseManager {
     readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReverseLocalChangesBegin: BeEvent<() => void>;
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @internal
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
+    // @internal
     resumeSemantic(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
 }
@@ -7915,14 +7920,14 @@ export class TxnManager {
     // @alpha
     getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
-    // @alpha
+    // @beta
     getLastSavedTxnProps(): TxnProps | undefined;
-    // @alpha
+    // @beta
     getMode(): TxnMode;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    // @alpha
+    // @beta
     getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
@@ -7994,9 +7999,9 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
-    // @alpha
+    // @beta
     queryTxns(): Generator<TxnProps>;
-    // @internal (undocumented)
+    // @beta
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     // @beta
@@ -8018,13 +8023,13 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
-    // @alpha
+    // @beta
     withIndirectTxnMode(callback: () => void): void;
-    // @alpha
+    // @beta
     withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void>;
 }
 
-// @alpha
+// @beta
 export type TxnMode = "direct" | "indirect";
 
 // @public @preview
