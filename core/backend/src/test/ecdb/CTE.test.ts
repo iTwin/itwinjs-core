@@ -29,6 +29,28 @@ describe("Common table expression support in ECSQL", () => {
   after(async () => {
     imodel1.close();
   });
+
+  it("preserves a zero-valued authoringId in a recursive CTE with UNION", async () => {
+    const query = `
+      WITH RECURSIVE tree(authoringId, label, level) AS (
+        SELECT e.ECInstanceId authoringId, 'root' label, 0 level
+        FROM bis.Element e WHERE e.ECInstanceId = 1
+        UNION
+        SELECT 0 authoringId, 'child' label, level + 1
+        FROM tree WHERE level < 1
+      )
+      SELECT authoringId, label, level FROM tree ORDER BY level`;
+
+    const rows = await imodel1.createQueryReader(query, undefined, {
+      rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+    }).toArray();
+
+    assert.deepEqual(rows, [
+      { authoringId: "0x1", label: "root", level: 0 },
+      { authoringId: 0, label: "child", level: 1 },
+    ]);
+  });
+
   it("collect base properties recursively", async () => {
     const query = `
         WITH RECURSIVE
