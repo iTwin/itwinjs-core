@@ -30,26 +30,29 @@ describe("Common table expression support in ECSQL", () => {
     imodel1.close();
   });
 
-  it("preserves a zero-valued authoringId in a recursive CTE with UNION", async () => {
-    const query = `
-      WITH RECURSIVE tree(authoringId, label, level) AS (
-        SELECT e.ECInstanceId authoringId, 'root' label, 0 level
-        FROM bis.Element e WHERE e.ECInstanceId = 1
-        UNION
-        SELECT 0 authoringId, 'child' label, level + 1
-        FROM tree WHERE level < 1
-      )
-      SELECT authoringId, label, level FROM tree ORDER BY level`;
+  for (const api of ["createQueryReader", "withQueryReader"]) {
+    it(`${api} preserves a zero-valued authoringId in a recursive CTE with UNION`, async () => {
+      const query = `
+        WITH RECURSIVE tree(authoringId, label, level) AS (
+          SELECT e.ECInstanceId authoringId, 'root' label, 0 level
+          FROM bis.Element e WHERE e.ECInstanceId = 1
+          UNION
+          SELECT 0 authoringId, 'child' label, level + 1
+          FROM tree WHERE level < 1
+        )
+        SELECT authoringId, label, level FROM tree ORDER BY level`;
 
-    const rows = await imodel1.createQueryReader(query, undefined, {
-      rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-    }).toArray();
+      const options = { rowFormat: QueryRowFormat.UseECSqlPropertyNames };
+      const rows = api === "createQueryReader"
+        ? await imodel1.createQueryReader(query, undefined, options).toArray()
+        : imodel1.withQueryReader(query, (reader) => reader.toArray(), undefined, options);
 
-    assert.deepEqual(rows, [
-      { authoringId: "0x1", label: "root", level: 0 },
-      { authoringId: 0, label: "child", level: 1 },
-    ]);
-  });
+      assert.deepEqual(rows, [
+        { authoringId: "0x1", label: "root", level: 0 },
+        { authoringId: 0, label: "child", level: 1 },
+      ]);
+    });
+  }
 
   it("collect base properties recursively", async () => {
     const query = `
