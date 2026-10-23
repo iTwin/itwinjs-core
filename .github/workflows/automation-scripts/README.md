@@ -61,4 +61,5 @@ locally. If that push lands bad changelog content on `master` or a `release/X.Y.
 For a run that fails _before_ the push step (e.g. the Rush lockfile audit or
 `update-changelogs.mjs` throwing), nothing has been pushed yet. Fix the underlying issue
 (bump `rushVersion` and regenerate `rush-lockfile/package-lock.json` for an audit failure;
-see that directory's README) and re-run the workflow.
+see that directory's README) and re-run the workflow. If the audit reports that `npm audit`
+could not run (registry or network outage), no fix is needed; just re-run.

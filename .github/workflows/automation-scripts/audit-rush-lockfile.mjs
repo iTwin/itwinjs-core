@@ -7,7 +7,7 @@
 // Advisories listed in rush-lockfile/audit-exceptions.json are tolerated until their expiry date.
 // An unreadable report or registry failure fails closed.
 
-import { execFileSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -29,6 +29,13 @@ function readExceptions(repoRoot) {
   return exceptions;
 }
 
+function auditUnavailable(details, cause) {
+  const hint = "This usually means the npm registry or network was temporarily unavailable (or npm is not on PATH), "
+    + "not that the lockfile has a vulnerability. Re-run the job; if it keeps failing, check https://status.npmjs.org/.";
+  console.error(`::error::npm audit could not run. ${hint}`);
+  return new Error(`npm audit could not run: ${details}\n${hint}`, cause ? { cause } : undefined);
+}
+
 function runNpmAudit(repoRoot) {
   const lockfilePath = path.join(repoRoot, lockfileDir, "package-lock.json");
   const lockfile = JSON.parse(fs.readFileSync(lockfilePath, "utf8"));
@@ -44,18 +51,24 @@ function runNpmAudit(repoRoot) {
     );
 
     // npm audit exits nonzero on any finding, so read the report from stdout instead.
+    // A fixed command string through the shell, so Windows can resolve npm.cmd.
     let stdout;
     try {
-      stdout = execFileSync("npm", ["audit", "--json"], { cwd: tempDir, encoding: "utf8" });
+      stdout = execSync("npm audit --json", { cwd: tempDir, encoding: "utf8" });
     } catch (error) {
       stdout = error.stdout;
       if (!stdout)
-        throw error;
+        throw auditUnavailable(error.message, error);
     }
 
-    const report = JSON.parse(stdout);
+    let report;
+    try {
+      report = JSON.parse(stdout);
+    } catch (error) {
+      throw auditUnavailable(`unreadable report: ${stdout}`, error);
+    }
     if (report.error || !report.vulnerabilities)
-      throw new Error(`npm audit could not run: ${JSON.stringify(report.error ?? report)}`);
+      throw auditUnavailable(JSON.stringify(report.error ?? report));
     return report;
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });

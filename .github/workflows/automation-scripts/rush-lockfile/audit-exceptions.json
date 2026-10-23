@@ -1,7 +1,1 @@
-[
-  {
-    "id": "GHSA-vfj7-8cjw-p6xm",
-    "reason": "braces stack-exhaustion DoS, no patched release exists. Only runs on glob patterns Rush supplies at build time.",
-    "expires": "2026-12-15"
-  }
-]
+[]
