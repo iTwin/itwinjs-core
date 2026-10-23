@@ -33,6 +33,10 @@ public;class;BriefcaseManager
 beta;interface;BulkDeleteElementsArgs
 beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
+beta;interface;BulkElementAspectFailure
+beta;interface;BulkElementAspectsResult
+beta;enum;BulkElementAspectsStatus
+beta;interface;BulkInsertElementAspectsResult
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb
@@ -449,6 +453,8 @@ public;interface;NativeHostOpts
 beta;interface;OnAspectArg
 beta;interface;OnAspectIdArg
 beta;interface;OnAspectPropsArg
+beta;interface;OnAspectsIdArg
+beta;interface;OnAspectsPropsArg
 beta;interface;OnBulkChildDeleteArg
 beta;interface;OnBulkChildDeletedBatchArg
 beta;interface;OnBulkDeleteArg
