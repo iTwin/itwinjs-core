@@ -518,8 +518,8 @@ beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
-alpha;interface;RebaseHandler
-alpha;class;RebaseManager
+beta;interface;RebaseHandler
+beta;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
@@ -696,7 +696,7 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
-alpha;type;TxnMode
+beta;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
