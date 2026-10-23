@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "SchemaView: Add category/priority/kindofquantity support in property overrides.",
+      "comment": "SchemaView: Inherit category and KindOfQuantity from overridden properties, add Property.isEffectivelyHidden, and fix derived-mixin property resolution.",
       "type": "none"
     }
   ],
