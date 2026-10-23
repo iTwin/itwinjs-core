@@ -23,9 +23,24 @@ const initialBatchSize = 4;
 const batchGrowthFactor = 4;
 /** Upper bound on rows rendered per native call; bounds memory held by the read-ahead buffer. */
 const maxBatchSize = 128;
-const metadataCache = new WeakMap<IModelDb | ECDb, Map<string, PropertyMetaDataMap>>();
+/** Number of distinct row-flag combinations; metadata keys pack the statement id and the row flags into one number. */
+const rowFlagCombinations = 16;
+const metadataCache = new WeakMap<IModelDb | ECDb, Map<number, PropertyMetaDataMap>>();
+/** Receives the first batch and statement id from `concurrentQuerySyncPrepare`. Read immediately after each call. */
+const prepareOut: any[] = [];
 
-function getCachedMetadata(db: IModelDb | ECDb, key: string, fetch: () => PropertyMetaDataMap): PropertyMetaDataMap {
+/** Row rendering flags passed to `concurrentQuerySyncPrepare`.
+ * @internal
+ */
+export enum SyncReaderRowFlags {
+  None = 0,
+  AbbreviateBlobs = 1,
+  ClassIdsToClassNames = 2,
+  UseJsName = 4,
+  DoNotConvertClassIdsToClassNamesWhenAliased = 8,
+}
+
+function getCachedMetadata(db: IModelDb | ECDb, key: number, fetch: () => PropertyMetaDataMap): PropertyMetaDataMap {
   let entries = metadataCache.get(db);
   if (!entries) {
     entries = new Map();
@@ -38,7 +53,7 @@ function getCachedMetadata(db: IModelDb | ECDb, key: string, fetch: () => Proper
   } else {
     properties = fetch();
     if (entries.size >= maxCachedMetadataEntries)
-      entries.delete(entries.keys().next().value as string);
+      entries.delete(entries.keys().next().value as number);
   }
   entries.set(key, properties);
   return properties;
@@ -58,7 +73,8 @@ function getCachedMetadata(db: IModelDb | ECDb, key: string, fetch: () => Proper
 export class ECSqlRowExecutor implements Disposable {
   private _removeListener: () => void;
   private _reader?: IModelJsNative.ConcurrentQuerySyncReader;
-  private _metadataKey = "";
+  /** Key of this statement's metadata in `metadataCache`, or undefined when its metadata must not be cached. */
+  private _metadataKey: number | undefined;
   private _rows: any[] = [];
   private _rowIndex = 0;
   private _batchSize = initialBatchSize;
@@ -100,21 +116,39 @@ export class ECSqlRowExecutor implements Disposable {
   // Core execution
   // --------------------------------------------------------------------------------------------
 
-  /** Prepare the statement and bind parameters in one step.
+  /** Prepare the statement and bind parameters in one step. On a read-only db the first batch of rows is read by the
+   * same native call.
    * @param query - The ECSql text to prepare.
-   * @param args - Optional serialized bind parameters.
-   * @param rowOptions - Native row-adaptor options used for every row and for metadata.
+   * @param args - Optional bind parameters as flat `[key, type, value, ...]` triples.
+   * @param rowFlags - [[SyncReaderRowFlags]] used for every row and for metadata.
    * @throws IModelError on preparation or binding failure.
    * @internal
    */
-  public prepareAndBind(query: string, args: object | undefined, rowOptions: IModelJsNative.ECSqlRowAdaptorOptions): void {
+  public prepareAndBind(query: string, args: any[] | undefined, rowFlags: SyncReaderRowFlags): void {
     this.releaseReader();
     try {
-      this._reader = this._db[_nativeDb].concurrentQuerySyncPrepare(query, args, rowOptions);
+      this._reader = this._db[_nativeDb].concurrentQuerySyncPrepare(query, args, rowFlags, this._batchSize, prepareOut);
     } catch (error) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, BentleyError.getErrorMessage(error));
     }
-    this._metadataKey = `${this._reader.getStatementId()}|${rowOptions.abbreviateBlobs}|${rowOptions.classIdsToClassNames}|${rowOptions.useJsName}|${rowOptions.doNotConvertClassIdsToClassNamesWhenAliased}`;
+    const firstBatch = prepareOut[0];
+    // Metadata of a dynamic column (e.g. $->prop) changes as the statement is stepped, so it is never cached.
+    this._metadataKey = prepareOut[2] ? undefined : prepareOut[1] * rowFlagCombinations + rowFlags;
+    prepareOut.length = 0;
+    if (firstBatch !== undefined)
+      this.acceptBatch(firstBatch);
+  }
+
+  /** Store a batch returned by native code: a JSON array string, an array of rows, or the final DbResult. */
+  private acceptBatch(batch: string | any[] | DbResult): void {
+    this._batchSize = Math.min(this._batchSize * batchGrowthFactor, maxBatchSize);
+    this._rowIndex = 0;
+    if (typeof batch === "number") {
+      this._rows = [];
+      this._batchStatus = batch;
+    } else {
+      this._rows = typeof batch === "string" ? JSON.parse(batch) : batch;
+    }
   }
 
   /** Return the next row data array, or `undefined` when the result set is exhausted. Rows are served from the
@@ -132,10 +166,7 @@ export class ECSqlRowExecutor implements Disposable {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
 
     if (this._batchStatus === DbResult.BE_SQLITE_ROW) {
-      this._rows.length = 0;
-      this._rowIndex = 0;
-      this._batchStatus = reader.stepBatch(this._batchSize, this._rows);
-      this._batchSize = Math.min(this._batchSize * batchGrowthFactor, maxBatchSize);
+      this.acceptBatch(reader.stepBatch(this._batchSize));
       if (this._rows.length > 0)
         return this._rows[this._rowIndex++];
     }
@@ -152,6 +183,7 @@ export class ECSqlRowExecutor implements Disposable {
     const reader = this._reader;
     if (!reader)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
-    return getCachedMetadata(this._db, this._metadataKey, () => new PropertyMetaDataMap(reader.getMetadata()));
+    const fetch = () => new PropertyMetaDataMap(reader.getMetadata());
+    return this._metadataKey === undefined ? fetch() : getCachedMetadata(this._db, this._metadataKey, fetch);
   }
 }

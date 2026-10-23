@@ -7,15 +7,13 @@
  */
 import {
   Base64EncodedString,
-  DbValueFormat,
   ECSqlReaderBase,
   IModelError,
   PropertyMetaDataMap,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat, QueryRowProxy,
 } from "@itwin/core-common";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor, SyncReaderRowFlags } from "./ECSqlRowExecutor";
 import { DbResult } from "@itwin/core-bentley";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 
 /** @beta */
 export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
@@ -43,8 +41,6 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
   private _currentRow: any;
   private _options: SynchronousQueryOptions;
   private _ownsMetadata = false;
-  /** Native row-adaptor options — built once and used for every row. */
-  private _cachedRowOptions: IModelJsNative.ECSqlRowAdaptorOptions;
 
   /**
    * @internal
@@ -61,23 +57,35 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     }
 
     this._options = resolvedOptions;
-    const serializedParam = param ? param.serialize() : new QueryBinder().serialize();
 
-    // Build the native row-adaptor options once; the native reader uses them for every row.
+    // Row options are passed to native code once, as flags, and used for every row.
+    let rowFlags = SyncReaderRowFlags.DoNotConvertClassIdsToClassNamesWhenAliased;
+    if (this._options.abbreviateBlobs)
+      rowFlags |= SyncReaderRowFlags.AbbreviateBlobs;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
-    this._cachedRowOptions = {
-      abbreviateBlobs: this._options.abbreviateBlobs ?? false,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      classIdsToClassNames: this._options.convertClassIdsToClassNames ?? false,
-      useJsName: valueFormat === DbValueFormat.JsNames,
-      doNotConvertClassIdsToClassNamesWhenAliased: true,
-    };
+    if (this._options.convertClassIdsToClassNames)
+      rowFlags |= SyncReaderRowFlags.ClassIdsToClassNames;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    if (this._options.rowFormat === QueryRowFormat.UseJsPropertyNames)
+      rowFlags |= SyncReaderRowFlags.UseJsName;
 
-    // Prepare the statement and bind parameters once.
-    const args = Object.keys(serializedParam).length > 0 ? serializedParam : undefined;
-    this._executor.prepareAndBind(this.query, args, this._cachedRowOptions);
+    this._executor.prepareAndBind(this.query, param ? ECSqlSyncReader.flattenArgs(param) : undefined, rowFlags);
     this._currentRow = undefined;
+  }
+
+  /** Flatten the bindings of `param` into `[key, type, value, ...]` triples, the form read by native code without
+   * per-property lookups. Entries lacking a type or value are skipped, as the object form skipped them.
+   * @internal
+   */
+  private static flattenArgs(param: QueryBinder): any[] | undefined {
+    const serialized = param.serialize() as Record<string, { type?: number, value?: any } | undefined>;
+    let args: any[] | undefined;
+    for (const key of Object.keys(serialized)) {
+      const arg = serialized[key];
+      if (typeof arg === "object" && arg !== null && "type" in arg && "value" in arg)
+        (args ??= []).push(key, arg.type, arg.value);
+    }
+    return args;
   }
 
   /**

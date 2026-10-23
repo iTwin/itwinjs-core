@@ -12,7 +12,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { ECDb } from "../../ECDb";
 import { _nativeDb } from "../../internal/Symbols";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { SyncReaderRowFlags } from "../../ECSqlRowExecutor";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -102,22 +102,30 @@ describe("WithQueryReaderTests", () => {
 
   it("returns the same rows whether the native batch is rendered as JSON or cell by cell", () => {
     const readNative = (ecsql: string, renderAsJson: boolean, options: SynchronousQueryOptions = {}) => {
-      const reader = iModel[_nativeDb].concurrentQuerySyncPrepare(ecsql, undefined, {
-        abbreviateBlobs: options.abbreviateBlobs ?? false,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        classIdsToClassNames: options.convertClassIdsToClassNames ?? false,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        useJsName: options.rowFormat === QueryRowFormat.UseJsPropertyNames,
-        doNotConvertClassIdsToClassNamesWhenAliased: true,
-      });
+      let rowFlags = SyncReaderRowFlags.DoNotConvertClassIdsToClassNamesWhenAliased;
+      if (options.abbreviateBlobs)
+        rowFlags |= SyncReaderRowFlags.AbbreviateBlobs;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      if (options.convertClassIdsToClassNames)
+        rowFlags |= SyncReaderRowFlags.ClassIdsToClassNames;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      if (options.rowFormat === QueryRowFormat.UseJsPropertyNames)
+        rowFlags |= SyncReaderRowFlags.UseJsName;
+      const out: any[] = [];
+      const reader = iModel[_nativeDb].concurrentQuerySyncPrepare(ecsql, undefined, rowFlags, 0, out);
       try {
+        expect(out[0]).to.be.undefined;
         const rows: any[] = [];
-        let status: DbResult;
-        do {
-          status = reader.stepBatch(16, rows, renderAsJson);
-        } while (status === DbResult.BE_SQLITE_ROW);
-        expect(status).to.equal(DbResult.BE_SQLITE_DONE);
-        return rows;
+        for (;;) {
+          const batch = reader.stepBatch(16, renderAsJson);
+          if (typeof batch === "number") {
+            expect(batch).to.equal(DbResult.BE_SQLITE_DONE);
+            return rows;
+          }
+          if (renderAsJson)
+            expect(batch).to.be.a("string");
+          rows.push(...(typeof batch === "string" ? JSON.parse(batch) : batch));
+        }
       } finally {
         reader.dispose();
       }
@@ -278,9 +286,10 @@ describe("WithQueryReaderTests", () => {
     const getMetadataSpy = sinon.spy();
     Object.defineProperty(nativeDb, "concurrentQuerySyncPrepare", {
       configurable: true,
-      value: (ecsql: string, args: object | undefined, rowOptions: IModelJsNative.ECSqlRowAdaptorOptions, logErrors?: boolean) => {
-        const reader = prepare(ecsql, args, rowOptions, logErrors);
-        statementIds.push(reader.getStatementId());
+      value: (ecsql: string, args: any[] | undefined, rowFlags: number, maxRows: number, out: any[], logErrors?: boolean) => {
+        const reader = prepare(ecsql, args, rowFlags, maxRows, out, logErrors);
+        statementIds.push(out[1]);
+        expect(out[1]).to.equal(reader.getStatementId());
         const getMetadata = reader.getMetadata.bind(reader);
         Object.defineProperty(reader, "getMetadata", {
           configurable: true,
