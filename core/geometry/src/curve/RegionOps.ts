@@ -8,7 +8,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Geometry } from "../Geometry";
+import { AxisIndex, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import {
@@ -18,7 +19,7 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
-import { Range3d } from "../geometry3d/Range";
+import { Range2d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { Transform } from "../geometry3d/Transform";
@@ -55,6 +56,7 @@ import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupMember, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 
 /**
  * * `properties` is a string with special characters indicating
@@ -140,6 +142,46 @@ export interface RegionBooleanXYOptions {
   operationGroupA?: RegionBinaryOpType;
   /** Operation to apply to the regions of the second argument. Default/unsupported is union. Subtraction operations are not supported. */
   operationGroupB?: RegionBinaryOpType;
+}
+
+/**
+ * Interface bundling options for [[RegionOps.computeRectangleCoverage]].
+ * @public
+ */
+export interface RectangleCoverageOptions {
+  /** Length of the side of a rectangle along the local x-axis. */
+  width: number;
+  /** Length of the side of a rectangle along the local y-axis. */
+  height: number;
+  /** CCW angle measured from the global x-axis to the local x-axis (CW if negative). */
+  orientation: Angle;
+  /**
+   * Minimum required overlap distance `d` between every pair of neighboring rectangles, enforced independently
+   * along both the x- and y-axes.
+   */
+  minOverlap: number;
+  /**
+   * Weights to specify the importance of each term in the metric — a weighted sum of:
+   * excess rectangle count, excess neighbor overlap above the required minimum, total rectangle
+   * area lying outside the shape, and boundary rectangle displacement from the grid. The metric
+   * is only used to rank candidates that already satisfy the coverage and minimum-overlap
+   * constraints. Each weight is between 0 and 1 and is a plain linear coefficient of its term:
+   * `0` = ignore, `1` = max importance. Omitted fields fall back to tuned defaults.
+   */
+  weights?: {
+    /** Weight on excess rectangle count. Raise to prefer solutions with fewer rectangles. */
+    count?: number;
+    /** Weight on excess overlap above `d`. Raise to prefer solutions where neighbors overlap by close to the minimum. */
+    excessOverlap?: number;
+    /** Weight on rectangle area outside the shape. Raise to prefer tighter coverage. */
+    outsideArea?: number;
+    /**
+     * Weight on boundary rectangle displacement from the grid. Raise to prefer alignment
+     * even for boundary rectangles. Internal rectangles are always perfectly grid-aligned
+     * by construction and are unaffected by this weight.
+     */
+    boundaryAlignment?: number;
+  };
 }
 
 /**
@@ -1403,7 +1445,128 @@ export class RegionOps {
     });
     return convexPolygons;
   }
+  /**
+   * Compute covering rectangles for the given shape.
+   * @param shape The 2D region to cover. z-coordinates are ignored.
+   * @param options list of rectangle coverage options.
+   * @returns covering rectangles encapsulated as a single `UnionRegion` whose child loops
+   * are each a closed 4-corner rectangle
+   */
+  public static computeRectangleCoverage(shape: AnyRegion, options: RectangleCoverageOptions): UnionRegion {
+    // populate metric weights from options, falling back to tuned defaults from the design doc.
+    const weights = {
+      count: options.weights?.count ?? 1.0,
+      outsideArea: options.weights?.outsideArea ?? 0.5,
+      excessOverlap: options.weights?.excessOverlap ?? 0.2,
+      boundaryAlignment: options.weights?.boundaryAlignment ?? 0.1,
+    };
+
+    // build a transform as rotation by -options.orientation followed by translation by -center,
+    // so that after applying the transform, the shape's range is centered at the origin.
+    const rotationMatrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, options.orientation.cloneScaled(-1));
+    const rotationOnly = Transform.createFixedPointAndMatrix(Point3d.create(), rotationMatrix);
+    const rotatedShape = shape.cloneTransformed(rotationOnly) as AnyRegion;
+    const rotatedRange = Range2d.createFrom(rotatedShape.range());
+    const center = rotatedRange.center;
+    const translateOnly = Transform.createTranslationXYZ(-center.x, -center.y, 0);
+    const transform = translateOnly.multiplyTransformTransform(rotationOnly);
+    const translatedRange = rotatedRange.cloneTranslated(translateOnly.origin);
+
+    // place rectangles starting from the bottom-left of translatedRange with perfect grid alignment and given overlap
+    const { width: w, height: h, minOverlap: d } = options;
+    const stepX = w - d;
+    const stepY = h - d;
+    const rangeWidth = translatedRange.high.x - translatedRange.low.x;
+    const rangeHeight = translatedRange.high.y - translatedRange.low.y;
+    const cols = Math.ceil((rangeWidth - w) / stepX) + 1;
+    const rows = Math.ceil((rangeHeight - h) / stepY) + 1;
+    const rectangles: Range2d[] = [];
+    for (let r = 0; r < rows; ++r) {
+      const yLow = translatedRange.low.y + r * stepY;
+      const yHigh = yLow + h;
+      for (let c = 0; c < cols; ++c) {
+        const xLow = translatedRange.low.x + c * stepX;
+        const xHigh = xLow + w;
+        rectangles.push(Range2d.createXYXY(xLow, yLow, xHigh, yHigh));
+      }
+    }
+
+    // Removal pass: iteratively drop any rectangle whose absence leaves the shape still fully covered
+    // by the remaining rectangles. Full coverage is a hard constraint, so a rectangle is removed only
+    // when `shape - union(others)` is strictly empty (regionBooleanXY returns undefined). Any non-empty
+    // remainder — even a tiny sliver — blocks removal to preserve coverage deterministically.
+    const localShape = rotatedShape.cloneTransformed(translateOnly) as AnyRegion;
+    const rangeToLoop = (r: Range2d): Loop => Loop.createPolygon([
+      Point3d.create(r.low.x, r.low.y, 0),
+      Point3d.create(r.high.x, r.low.y, 0),
+      Point3d.create(r.high.x, r.high.y, 0),
+      Point3d.create(r.low.x, r.high.y, 0),
+      Point3d.create(r.low.x, r.low.y, 0),
+    ]);
+    // Phase 1 (cheap): drop rectangles that don't actually intersect the shape (only its bounding range).
+    for (let i = rectangles.length - 1; i >= 0; --i) {
+      const overlap = RegionOps.regionBooleanXY(localShape, [rangeToLoop(rectangles[i])], RegionBinaryOpType.Intersection);
+      if (overlap === undefined)
+        rectangles.splice(i, 1);
+    }
+    // Phase 2: drop rectangles whose shape-content is already covered by their neighbors. Only overlapping
+    // rectangles can share shape-content, so the "others" set for rectangle B reduces to B's <=8 neighbors,
+    // making each removal test a small local boolean instead of an N-way one.
+    const isNeighbor = (a: Range2d, b: Range2d): boolean =>
+      a.high.x > b.low.x && a.low.x < b.high.x && a.high.y > b.low.y && a.low.y < b.high.y;
+    // When w > 2d AND h > 2d every internal rectangle has an unreachable (w-2d)x(h-2d) strip its
+    // neighbors cannot cover, so it is provably non-removable and we can skip its boolean test.
+    const strictInterior = (w - 2 * d) > 0 && (h - 2 * d) > 0;
+    const loopsCache: Loop[] = rectangles.map(rangeToLoop);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let i = rectangles.length - 1; i >= 0; --i) {
+        if (rectangles.length <= 1)
+          break;
+        const B = rectangles[i];
+        const neighborLoops: Loop[] = [];
+        for (let j = 0; j < rectangles.length; ++j) {
+          if (j !== i && isNeighbor(B, rectangles[j]))
+            neighborLoops.push(loopsCache[j]);
+        }
+        if (strictInterior && neighborLoops.length === 8)
+          continue;
+        const shapeInB = RegionOps.regionBooleanXY(localShape, [loopsCache[i]], RegionBinaryOpType.Intersection);
+        if (shapeInB === undefined) {
+          rectangles.splice(i, 1);
+          loopsCache.splice(i, 1);
+          changed = true;
+          continue;
+        }
+        const remainder = neighborLoops.length === 0
+          ? shapeInB
+          : RegionOps.regionBooleanXY(shapeInB, neighborLoops, RegionBinaryOpType.AMinusB);
+        if (remainder === undefined) {
+          rectangles.splice(i, 1);
+          loopsCache.splice(i, 1);
+          changed = true;
+        }
+      }
+    }
+
+    // Convert local-frame rectangles to world-frame closed Loops and wrap in a UnionRegion
+    const inverseTransform = transform.inverse()!;
+    const loops: Loop[] = rectangles.map((rect) => {
+      const corners = [
+        Point3d.create(rect.low.x, rect.low.y, 0),
+        Point3d.create(rect.high.x, rect.low.y, 0),
+        Point3d.create(rect.high.x, rect.high.y, 0),
+        Point3d.create(rect.low.x, rect.high.y, 0),
+        Point3d.create(rect.low.x, rect.low.y, 0),
+      ];
+      inverseTransform.multiplyPoint3dArrayInPlace(corners);
+      return Loop.createPolygon(corners);
+    });
+    return UnionRegion.create(...loops);
+  }
 }
+
 /** @internal */
 function pushToInOnOutArrays(
   curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[],
