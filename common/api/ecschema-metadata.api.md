@@ -2658,8 +2658,6 @@ export class SchemaView {
     findClass(qualifiedName: string): SchemaView.Class | undefined;
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
-    // @internal
-    findOverriddenProperty(classIdx: number, nameKey: string): ResolvedPropertyRef | undefined;
     findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
     // @internal
     findPropertyDefInOverrides(ref: PropertyRef, classIdx: number, predicate: (def: PropertyDef) => boolean): PropertyDef | undefined;

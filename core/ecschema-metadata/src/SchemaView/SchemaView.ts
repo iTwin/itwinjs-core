@@ -332,9 +332,8 @@ export class SchemaView {
 
   /** Finds the property declaration that a property of the given class overrides.
    * Searches the base class and its ancestors first, then each mixin in declaration order.
-   * @internal
    */
-  public findOverriddenProperty(classIdx: number, nameKey: string): ResolvedPropertyRef | undefined {
+  private _findOverriddenProperty(classIdx: number, nameKey: string): ResolvedPropertyRef | undefined {
     const cls = this[_storage].classes[classIdx];
     if (cls === undefined || cls.type === ClassType.View)
       return undefined;
@@ -364,7 +363,7 @@ export class SchemaView {
       if (this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx] === nameKey)
         return { ref, classIdx };
     }
-    return this.findOverriddenProperty(classIdx, nameKey);
+    return this._findOverriddenProperty(classIdx, nameKey);
   }
 
   /** Returns the first declaration matching `predicate`, starting with the given declaration and
@@ -378,7 +377,7 @@ export class SchemaView {
       const def = this[_storage].propDefs[current.ref.defIdx];
       if (predicate(def))
         return def;
-      current = current.classIdx !== -1 ? this.findOverriddenProperty(current.classIdx, nameKey) : undefined;
+      current = current.classIdx !== -1 ? this._findOverriddenProperty(current.classIdx, nameKey) : undefined;
     }
     return undefined;
   }
