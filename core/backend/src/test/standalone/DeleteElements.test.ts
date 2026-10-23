@@ -1213,7 +1213,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
   describe("related data cleanup", () => {
     const countAspects = async (elementId: Id64String): Promise<number> => {
-      const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementMultiAspect WHERE Element.Id=?", new QueryBinder().bindId(1, elementId));
+      const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementMultiAspect WHERE Element.Id=?", new QueryBinder().bindId(1, elementId), { usePrimaryConn: true });
       assert.isTrue(await reader.step());
       return reader.current.toArray()[0];
     };
@@ -1275,7 +1275,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const insertGroup = (): Id64String => txn.insertElement({ classFullName: Group.classFullName, model: groupModelId, code: Code.createEmpty() });
 
       const countMemberships = async (groupId: Id64String): Promise<number> => {
-        const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementGroupsMembers WHERE SourceECInstanceId=?", new QueryBinder().bindId(1, groupId));
+        const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementGroupsMembers WHERE SourceECInstanceId=?", new QueryBinder().bindId(1, groupId), { usePrimaryConn: true });
         assert.isTrue(await reader.step());
         return reader.current.toArray()[0];
       };
