@@ -5,12 +5,12 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import { DbResult, Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, ImageSourceFormat, IModel, PhysicalElementProps, PhysicalTypeProps, QueryBinder, QueryRowFormat, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
-import { EditTxn } from "../../EditTxn";
+import { BulkDeleteElementsResult, BulkDeleteElementsStatus, BulkDeleteFailure, BulkDeleteFailureReason, BulkDeleteMode, EditTxn } from "../../EditTxn";
 import {
-  CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  _nativeDb, CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingViewDefinition, GenericGraphicalType2d, GenericPhysicalType, GeometryPart,
   GraphicalElement2dIsOfType, IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalElementIsOfType,
   PhysicalModel, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
@@ -18,6 +18,44 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
+
+/** Expected shape of a [[BulkDeleteElementsResult]]. `sqlDeleteStatus` defaults to `BE_SQLITE_OK`. `failures` must match exactly (order-insensitive). */
+interface ExpectedResult {
+  status: BulkDeleteElementsStatus;
+  sqlDeleteStatus?: DbResult;
+  failures: BulkDeleteFailure[];
+}
+
+const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures: [] };
+const partialSuccess = (...failures: BulkDeleteFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.PartialSuccess, failures });
+
+/** The element is a DefinitionElement still used (e.g. via a GeometryStream) by elements outside the delete set. */
+const definitionInUse = (elementId: Id64String): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.DefinitionInUse });
+/** The element itself is referenced from outside the delete set via its Code scope. */
+const codeScopeViolator = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_Element.CodeScopeId");
+/** A row outside the delete set references the element via a hard NO ACTION foreign key; `detail` is the referencing `table.column`. */
+const referencedByForeignKey = (elementId: Id64String, detail: string): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail });
+/** A Category still assigned to a GeometricElement3d outside the delete set (hard FK, so not `DefinitionInUse`). */
+const categoryInUse3d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_GeometricElement3d.CategoryId");
+/** A Category still assigned to a GeometricElement2d outside the delete set (hard FK, so not `DefinitionInUse`). */
+const categoryInUse2d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_GeometricElement2d.CategoryId");
+/** A *requested* element that was skipped because `violator` (a logical relative in the delete set) could not be deleted. */
+const blockedByRelative = (elementId: Id64String, violator: Id64String): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.BlockedByRelative, detail: violator });
+
+/** Assert the result matches `expected` exactly, then check that each id in `deletedIds` is gone and each id in `retainedIds` is still present. */
+const assertResult = (result: BulkDeleteElementsResult, expected: ExpectedResult, deletedIds: Id64Array, retainedIds: Id64Array, iModelDb: SnapshotDb) => {
+  assert.equal(result.status, expected.status, `Bulk element deletion status is ${BulkDeleteElementsStatus[result.status]}; Expected: ${BulkDeleteElementsStatus[expected.status]}. Actual failures: ${JSON.stringify(result.failures)}`);
+  assert.equal(result.sqlDeleteStatus, expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK, `Bulk element deletion internal sql status is ${result.sqlDeleteStatus}; Expected: ${expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK}`);
+
+  assert.equal(result.failures.length, expected.failures.length, `Actual failures don't match the expected. Actual: ${JSON.stringify(result.failures)}; Expected: ${JSON.stringify(expected.failures)}`);
+  assert.deepEqualInAnyOrder(result.failures, expected.failures);
+
+  for (const retainedId of retainedIds)
+    assert.isDefined(iModelDb.elements.tryGetElement(retainedId), `${retainedId} should have been retained`);
+
+  for (const deletedId of deletedIds)
+    assert.isUndefined(iModelDb.elements.tryGetElement(deletedId), `${deletedId} should have been deleted`);
+};
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");
@@ -28,7 +66,9 @@ describe("DeleteDefinitionElements", () => {
   let definitionModelId: Id64String;
   let physicalModelId: Id64String;
   let spatialCategoryId: Id64String;
+  let sourcePhysicalCategoryId: Id64String;
   let subCategoryId: Id64String;
+  let filteredSubCategoryId: Id64String;
   let spatialCategorySelectorId: Id64String;
   let modelSelectorId: Id64String;
   let displayStyle3dId: Id64String;
@@ -65,7 +105,9 @@ describe("DeleteDefinitionElements", () => {
     definitionModelId = seedDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(seedDb, subjectId, "Definition"))!;
     physicalModelId = seedDb.elements.queryElementIdByCode(PhysicalPartition.createCode(seedDb, subjectId, "Physical"))!;
     spatialCategoryId = seedDb.elements.queryElementIdByCode(SpatialCategory.createCode(seedDb, definitionModelId, "SpatialCategory"))!;
+    sourcePhysicalCategoryId = seedDb.elements.queryElementIdByCode(SpatialCategory.createCode(seedDb, definitionModelId, "SourcePhysicalCategory"))!;
     subCategoryId = seedDb.elements.queryElementIdByCode(SubCategory.createCode(seedDb, spatialCategoryId, "SubCategory"))!;
+    filteredSubCategoryId = seedDb.elements.queryElementIdByCode(SubCategory.createCode(seedDb, spatialCategoryId, "FilteredSubCategory"))!;
     spatialCategorySelectorId = seedDb.elements.queryElementIdByCode(CategorySelector.createCode(seedDb, definitionModelId, "SpatialCategories"))!;
     modelSelectorId = seedDb.elements.queryElementIdByCode(ModelSelector.createCode(seedDb, definitionModelId, "SpatialModels"))!;
     displayStyle3dId = seedDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(seedDb, definitionModelId, "DisplayStyle3d"))!;
@@ -325,208 +367,195 @@ describe("DeleteDefinitionElements", () => {
     };
 
     /**
-     * Call deleteElements, verify the returned failed-set, then check which elements survived vs. were deleted.
+     * Call deleteElements, compare the returned result object against `expected`, then check which elements survived vs. were deleted.
      * Rolls back changes with abandonChanges afterwards.
      */
-    const executeTestCase = (txn: EditTxn, label: string, idsToDelete: Id64Array, expectedDeleted: Id64Array, expectedFailed: Id64Array, expectedRetained: Id64Array, abandonChanges: boolean = true) => {
-      const failed = txn.deleteElements(idsToDelete);
-      assert.sameMembers(Array.from(failed.failedIds), expectedFailed, `[${label}] failed set mismatch`);
-
-      for (const id of expectedDeleted)
-        assert.isUndefined(iModelDb.elements.tryGetElement(id), `error reading element`);
-      for (const id of expectedRetained)
-        assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
+    const executeTestCase = (txn: EditTxn, _label: string, idsToDelete: Id64Array, deletedIds: Id64Array, expected: ExpectedResult, retainedIds: Id64Array, abandonChanges: boolean = true) => {
+      const result = txn.deleteElements(idsToDelete);
+      assertResult(result, expected, deletedIds, retainedIds, iModelDb);
 
       if (abandonChanges)
         txn.abandonChanges();
     };
 
     it("should delete only if not used with deleteElements", async () => {
-      let usedDefinitionElementIds: Id64Set;
-
       const txn = new EditTxn(iModelDb, "delete definition elements");
       txn.start();
 
-      // make sure deleteElements only skips Elements that are being used (subjectId)
-      usedDefinitionElementIds = txn.deleteElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 1);
-      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId1));
-      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId2));
-      assert.isUndefined(iModelDb.elements.tryGetElement(physicalObjectId3));
-      assert.isDefined(iModelDb.elements.tryGetElement(subjectId));
+      /** Run deleteElements and compare the returned result object against `expected`, then check deleted / retained ids. */
+      const expectDelete = (idsToDelete: Id64Array, expected: ExpectedResult, deletedIds: Id64Array, retainedIds: Id64Array) =>
+        assertResult(txn.deleteElements(idsToDelete), expected, deletedIds, retainedIds, iModelDb);
 
-      // Reset the db state
-      txn.abandonChanges();
+      try {
+        // Deleting the Subject expands the delete set to everything beneath it (partitions, sub-models and their contents).
+        // The categories / non-default sub-categories / GeometryPart / RenderMaterial in the Definition model are still used by
+        // elements outside that subtree, so they are reported as DefinitionInUse and the Subject is BlockedByRelative.
+        // Default SubCategories are not reported separately - they are implied by their (reported) parent Category.
+        // The requested PhysicalObjects are not affected and are deleted.
+        const defaultSubCategoryOf = (categoryId: Id64String) => IModel.getDefaultSubCategoryId(categoryId);
+        expectDelete(
+          [physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId],
+          partialSuccess(
+            definitionInUse(spatialCategoryId),
+            definitionInUse(defaultSubCategoryOf(spatialCategoryId)),
+            definitionInUse(sourcePhysicalCategoryId),
+            definitionInUse(defaultSubCategoryOf(sourcePhysicalCategoryId)),
+            definitionInUse(subCategoryId),
+            definitionInUse(filteredSubCategoryId),
+            definitionInUse(drawingCategoryId),
+            definitionInUse(defaultSubCategoryOf(drawingCategoryId)),
+            definitionInUse(renderMaterialId),
+            definitionInUse(geometryPartId),
+            blockedByRelative(subjectId, spatialCategoryId),
+          ),
+          [physicalObjectId1, physicalObjectId2, physicalObjectId3],
+          [subjectId],
+        );
 
-      // make sure deleteElements throws for invalid Ids
-      assert.throws(() => txn.deleteElements([Id64.invalid, Id64.invalid]));
+        // Reset the db state
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements for a used GeometryPart should fail
-      assert.throws(() => txn.deleteElement(geometryPartId));
-      usedDefinitionElementIds = txn.deleteElements([geometryPartId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(geometryPartId));
-      assert.isDefined(iModelDb.elements.tryGetElement(geometryPartId));
+        // make sure deleteElements throws for invalid Ids
+        assert.throws(() => txn.deleteElements([Id64.invalid, Id64.invalid]));
 
-      // deleteElements for an unused GeometryPart should succeed, delete should still fail
-      const unusedGeometryPartProps: GeometryPartProps = {
-        classFullName: GeometryPart.classFullName,
-        model: definitionModelId,
-        code: GeometryPart.createCode(iModelDb, definitionModelId, "Unused GeometryPart"),
-        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
-      };
-      // Reset the db state
-      txn.abandonChanges();
-      const unusedGeometryPartId = txn.insertElement(unusedGeometryPartProps);
-      assert.isTrue(Id64.isValidId64(unusedGeometryPartId));
-      assert.throws(() => txn.deleteElement(unusedGeometryPartId));
-      usedDefinitionElementIds = txn.deleteElements([unusedGeometryPartId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedGeometryPartId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a used GeometryPart should fail
+        assert.throws(() => txn.deleteElement(geometryPartId));
+        expectDelete([geometryPartId], partialSuccess(definitionInUse(geometryPartId)), [], [geometryPartId]);
 
-      // deleteElement/deleteElements for a used RenderMaterial should fail
-      assert.throws(() => txn.deleteElement(renderMaterialId));
-      usedDefinitionElementIds = txn.deleteElements([renderMaterialId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(renderMaterialId));
-      assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId));
-      txn.abandonChanges();
+        // deleteElements for an unused GeometryPart should succeed, delete should still fail
+        const unusedGeometryPartProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: GeometryPart.createCode(iModelDb, definitionModelId, "Unused GeometryPart"),
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        };
+        // Reset the db state
+        txn.abandonChanges();
+        const unusedGeometryPartId = txn.insertElement(unusedGeometryPartProps);
+        assert.isTrue(Id64.isValidId64(unusedGeometryPartId));
+        assert.throws(() => txn.deleteElement(unusedGeometryPartId));
+        expectDelete([unusedGeometryPartId], success, [unusedGeometryPartId], []);
+        txn.abandonChanges();
 
-      // deleteElements for an unused RenderMaterial should succeed, delete should still fail
-      const unusedRenderMaterialId = RenderMaterialElement.insert(txn, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
-      assert.isTrue(Id64.isValidId64(unusedRenderMaterialId));
-      assert.throws(() => txn.deleteElement(unusedRenderMaterialId));
-      usedDefinitionElementIds = txn.deleteElements([unusedRenderMaterialId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedRenderMaterialId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a used RenderMaterial should fail
+        assert.throws(() => txn.deleteElement(renderMaterialId));
+        expectDelete([renderMaterialId], partialSuccess(definitionInUse(renderMaterialId)), [], [renderMaterialId]);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements for a used Texture should fail
-      assert.throws(() => txn.deleteElement(textureId));
-      usedDefinitionElementIds = txn.deleteElements([textureId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(textureId));
-      assert.isDefined(iModelDb.elements.tryGetElement(textureId));
-      txn.abandonChanges();
+        // deleteElements for an unused RenderMaterial should succeed, delete should still fail
+        const unusedRenderMaterialId = RenderMaterialElement.insert(txn, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
+        assert.isTrue(Id64.isValidId64(unusedRenderMaterialId));
+        assert.throws(() => txn.deleteElement(unusedRenderMaterialId));
+        expectDelete([unusedRenderMaterialId], success, [unusedRenderMaterialId], []);
+        txn.abandonChanges();
 
-      // deleteElements for an unused Texture should succeed, delete should still fail
-      const unusedTextureId = IModelTestUtils.insertTextureElement(txn, definitionModelId, "Unused Texture");
-      assert.isTrue(Id64.isValidId64(unusedTextureId));
-      assert.throws(() => txn.deleteElement(unusedTextureId));
-      usedDefinitionElementIds = txn.deleteElements([unusedTextureId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedTextureId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a used Texture should fail
+        assert.throws(() => txn.deleteElement(textureId));
+        expectDelete([textureId], partialSuccess(definitionInUse(textureId)), [], [textureId]);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements for a used SpatialCategory should fail
-      assert.throws(() => txn.deleteElement(spatialCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([spatialCategoryId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(spatialCategoryId));
-      assert.isDefined(iModelDb.elements.tryGetElement(spatialCategoryId));
-      txn.abandonChanges();
+        // deleteElements for an unused Texture should succeed, delete should still fail
+        const unusedTextureId = IModelTestUtils.insertTextureElement(txn, definitionModelId, "Unused Texture");
+        assert.isTrue(Id64.isValidId64(unusedTextureId));
+        assert.throws(() => txn.deleteElement(unusedTextureId));
+        expectDelete([unusedTextureId], success, [unusedTextureId], []);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements for a default SubCategory should fail
-      const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
-      const defaultSpatialSubCategoryId = spatialCategory.myDefaultSubCategoryId();
-      assert.throws(() => txn.deleteElement(defaultSpatialSubCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([defaultSpatialSubCategoryId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(defaultSpatialSubCategoryId));
-      assert.isDefined(iModelDb.elements.tryGetElement(defaultSpatialSubCategoryId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a used SpatialCategory should fail (hard FK from GeometricElement3d.CategoryId, so not DefinitionInUse)
+        assert.throws(() => txn.deleteElement(spatialCategoryId));
+        expectDelete([spatialCategoryId], partialSuccess(categoryInUse3d(spatialCategoryId)), [], [spatialCategoryId]);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements for a used, non-default SubCategory should fail
-      assert.throws(() => txn.deleteElement(subCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([subCategoryId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(subCategoryId));
-      assert.isDefined(iModelDb.elements.tryGetElement(subCategoryId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a default SubCategory should fail
+        const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
+        const defaultSpatialSubCategoryId = spatialCategory.myDefaultSubCategoryId();
+        assert.throws(() => txn.deleteElement(defaultSpatialSubCategoryId));
+        expectDelete([defaultSpatialSubCategoryId], partialSuccess(definitionInUse(defaultSpatialSubCategoryId)), [], [defaultSpatialSubCategoryId]);
+        txn.abandonChanges();
 
-      // deleteElements for an unused SubCategory should succeed, delete should still fail
-      const unusedSubCategoryId = SubCategory.insert(txn, spatialCategoryId, "Unused SubCategory", {});
-      assert.isTrue(Id64.isValidId64(unusedSubCategoryId));
-      assert.throws(() => txn.deleteElement(unusedSubCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([unusedSubCategoryId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedSubCategoryId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements for a used, non-default SubCategory should fail
+        assert.throws(() => txn.deleteElement(subCategoryId));
+        expectDelete([subCategoryId], partialSuccess(definitionInUse(subCategoryId)), [], [subCategoryId]);
+        txn.abandonChanges();
 
-      // deleteElements for an unused SpatialCategory should succeed, delete should still fail
-      const unusedSpatialCategoryId = SpatialCategory.insert(txn, definitionModelId, "Unused SpatialCategory", {});
-      assert.isTrue(Id64.isValidId64(unusedSpatialCategoryId));
-      const unusedSpatialCategory = iModelDb.elements.getElement<SpatialCategory>(unusedSpatialCategoryId, SpatialCategory);
-      const unusedSpatialCategoryDefaultSubCategoryId = unusedSpatialCategory.myDefaultSubCategoryId();
-      assert.isTrue(Id64.isValidId64(unusedSpatialCategoryDefaultSubCategoryId));
-      assert.throws(() => txn.deleteElement(unusedSpatialCategoryId));
-      assert.throws(() => txn.deleteElement(unusedSpatialCategoryDefaultSubCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([unusedSpatialCategoryId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedSpatialCategoryDefaultSubCategoryId));
-      txn.abandonChanges();
+        // deleteElements for an unused SubCategory should succeed, delete should still fail
+        const unusedSubCategoryId = SubCategory.insert(txn, spatialCategoryId, "Unused SubCategory", {});
+        assert.isTrue(Id64.isValidId64(unusedSubCategoryId));
+        assert.throws(() => txn.deleteElement(unusedSubCategoryId));
+        expectDelete([unusedSubCategoryId], success, [unusedSubCategoryId], []);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements of a used DrawingCategory should fail
-      assert.throws(() => txn.deleteElement(drawingCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([drawingCategoryId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(drawingCategoryId));
-      assert.isDefined(iModelDb.elements.tryGetElement(drawingCategoryId));
-      txn.abandonChanges();
+        // deleteElements for an unused SpatialCategory should succeed, delete should still fail
+        const unusedSpatialCategoryId = SpatialCategory.insert(txn, definitionModelId, "Unused SpatialCategory", {});
+        assert.isTrue(Id64.isValidId64(unusedSpatialCategoryId));
+        const unusedSpatialCategory = iModelDb.elements.getElement<SpatialCategory>(unusedSpatialCategoryId, SpatialCategory);
+        const unusedSpatialCategoryDefaultSubCategoryId = unusedSpatialCategory.myDefaultSubCategoryId();
+        assert.isTrue(Id64.isValidId64(unusedSpatialCategoryDefaultSubCategoryId));
+        assert.throws(() => txn.deleteElement(unusedSpatialCategoryId));
+        assert.throws(() => txn.deleteElement(unusedSpatialCategoryDefaultSubCategoryId));
+        expectDelete([unusedSpatialCategoryId], success, [unusedSpatialCategoryId, unusedSpatialCategoryDefaultSubCategoryId], []);
+        txn.abandonChanges();
 
-      // deleteElements for an unused DrawingCategory should succeed, delete should still fail
-      const unusedDrawingCategoryId = DrawingCategory.insert(txn, definitionModelId, "Unused DrawingCategory", {});
-      assert.isTrue(Id64.isValidId64(unusedDrawingCategoryId));
-      const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
-      const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
-      assert.isTrue(Id64.isValidId64(unusedDrawingSubCategoryId));
-      assert.throws(() => txn.deleteElement(unusedDrawingSubCategoryId));
-      usedDefinitionElementIds = txn.deleteElements([unusedDrawingCategoryId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingCategoryId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(unusedDrawingSubCategoryId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements of a used DrawingCategory should fail (hard FK from GeometricElement2d.CategoryId, so not DefinitionInUse)
+        assert.throws(() => txn.deleteElement(drawingCategoryId));
+        expectDelete([drawingCategoryId], partialSuccess(categoryInUse2d(drawingCategoryId)), [], [drawingCategoryId]);
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements of DefinitionElements used by an existing SpatialViewDefinition should fail
-      assert.throws(() => txn.deleteElement(spatialCategorySelectorId));
-      assert.throws(() => txn.deleteElement(modelSelectorId));
-      assert.throws(() => txn.deleteElement(displayStyle3dId));
-      usedDefinitionElementIds = txn.deleteElements([spatialCategorySelectorId, modelSelectorId, displayStyle3dId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(spatialCategorySelectorId));
-      assert.isTrue(usedDefinitionElementIds.has(modelSelectorId));
-      assert.isTrue(usedDefinitionElementIds.has(displayStyle3dId));
-      assert.isDefined(iModelDb.elements.tryGetElement(spatialCategorySelectorId));
-      assert.isDefined(iModelDb.elements.tryGetElement(modelSelectorId));
-      assert.isDefined(iModelDb.elements.tryGetElement(displayStyle3dId));
-      assert.isDefined(iModelDb.elements.tryGetElement(viewId));
-      txn.abandonChanges();
+        // deleteElements for an unused DrawingCategory should succeed, delete should still fail
+        const unusedDrawingCategoryId = DrawingCategory.insert(txn, definitionModelId, "Unused DrawingCategory", {});
+        assert.isTrue(Id64.isValidId64(unusedDrawingCategoryId));
+        const unusedDrawingCategory = iModelDb.elements.getElement<DrawingCategory>(unusedDrawingCategoryId, DrawingCategory);
+        const unusedDrawingSubCategoryId = unusedDrawingCategory.myDefaultSubCategoryId();
+        assert.isTrue(Id64.isValidId64(unusedDrawingSubCategoryId));
+        assert.throws(() => txn.deleteElement(unusedDrawingSubCategoryId));
+        expectDelete([unusedDrawingCategoryId], success, [unusedDrawingCategoryId, unusedDrawingSubCategoryId], []);
+        txn.abandonChanges();
 
-      // deleteElements should succeed when the list includes the SpatialViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
-      assert.throws(() => txn.deleteElement(viewId));
-      usedDefinitionElementIds = txn.deleteElements([viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(spatialCategorySelectorId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(modelSelectorId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle3dId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(viewId));
-      txn.abandonChanges();
+        // deleteElement/deleteElements of DefinitionElements used by an existing SpatialViewDefinition should fail
+        assert.throws(() => txn.deleteElement(spatialCategorySelectorId));
+        assert.throws(() => txn.deleteElement(modelSelectorId));
+        assert.throws(() => txn.deleteElement(displayStyle3dId));
+        expectDelete(
+          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          partialSuccess(definitionInUse(spatialCategorySelectorId), definitionInUse(modelSelectorId), definitionInUse(displayStyle3dId)),
+          [],
+          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId, viewId],
+        );
+        txn.abandonChanges();
 
-      // deleteElement/deleteElements of DefinitionElements used by an existing DrawingViewDefinition should fail
-      assert.throws(() => txn.deleteElement(drawingCategorySelectorId));
-      assert.throws(() => txn.deleteElement(displayStyle2dId));
-      usedDefinitionElementIds = txn.deleteElements([drawingCategorySelectorId, displayStyle2dId]).failedIds;
-      assert.isTrue(usedDefinitionElementIds.has(drawingCategorySelectorId));
-      assert.isTrue(usedDefinitionElementIds.has(displayStyle2dId));
-      assert.isDefined(iModelDb.elements.tryGetElement(drawingCategorySelectorId));
-      assert.isDefined(iModelDb.elements.tryGetElement(displayStyle2dId));
-      assert.isDefined(iModelDb.elements.tryGetElement(drawingViewId));
-      txn.abandonChanges();
+        // deleteElements should succeed when the list includes the SpatialViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
+        assert.throws(() => txn.deleteElement(viewId));
+        expectDelete(
+          [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          success,
+          [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [],
+        );
+        txn.abandonChanges();
 
-      // deleteElements should succeed when the list includes the DrawingViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
-      assert.throws(() => txn.deleteElement(drawingViewId));
-      usedDefinitionElementIds = txn.deleteElements([drawingViewId, drawingCategorySelectorId, displayStyle2dId]).failedIds;
-      assert.equal(usedDefinitionElementIds.size, 0);
-      assert.isUndefined(iModelDb.elements.tryGetElement(drawingCategorySelectorId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(displayStyle2dId));
-      assert.isUndefined(iModelDb.elements.tryGetElement(drawingViewId));
+        // deleteElement/deleteElements of DefinitionElements used by an existing DrawingViewDefinition should fail
+        assert.throws(() => txn.deleteElement(drawingCategorySelectorId));
+        assert.throws(() => txn.deleteElement(displayStyle2dId));
+        expectDelete(
+          [drawingCategorySelectorId, displayStyle2dId],
+          partialSuccess(definitionInUse(drawingCategorySelectorId), definitionInUse(displayStyle2dId)),
+          [],
+          [drawingCategorySelectorId, displayStyle2dId, drawingViewId],
+        );
+        txn.abandonChanges();
 
-      txn.end("abandon");
-      iModelDb.close();
+        // deleteElements should succeed when the list includes the DrawingViewDefinition as the only thing referencing other DefinitionElements, delete should still fail
+        assert.throws(() => txn.deleteElement(drawingViewId));
+        expectDelete(
+          [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
+          success,
+          [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
+          [],
+        );
+      } finally {
+        if (txn.isActive)
+          txn.end("abandon");
+      }
     });
 
     describe("basic tests", () => {
@@ -541,33 +570,30 @@ describe("DeleteDefinitionElements", () => {
 
       it("deletes a single unused definition element", () => {
         const element = insertDefinitionElement(txn);
-        executeTestCase(txn, "single unused definition element", [element], [element], [], []);
+        executeTestCase(txn, "single unused definition element", [element], [element], success, []);
       });
 
       it("deletes multiple unused definition elements in one call", () => {
         const element1 = insertDefinitionElement(txn);
         const element2 = insertDefinitionElement(txn);
         const element3 = insertDefinitionElement(txn);
-        executeTestCase(txn, "multiple unused definition elements", [element1, element2, element3], [element1, element2, element3], [], []);
+        executeTestCase(txn, "multiple unused definition elements", [element1, element2, element3], [element1, element2, element3], success, []);
       });
 
-      it("returns empty failed-set when given an empty array", () => {
-        const failed = txn.deleteElements([]).failedIds;
-        assert.isEmpty(Array.from(failed), "empty input should return empty failed set");
+      it("returns a Success result when given an empty array", () => {
+        executeTestCase(txn, "empty input", [], [], success, []);
       });
 
       it("throws for invalid ids", () => {
         assert.throws(() => txn.deleteElements([Id64.invalid, Id64.invalid]));
       });
 
-      it("keeps an in-use definition element in the failed set and does not delete it", () => {
+      it("reports an in-use definition element as a failure and does not delete it", () => {
         // geometryPartId is referenced by PhysicalObject1's geometry stream
-        const failed = txn.deleteElements([geometryPartId]);
-        assert.isTrue(failed.failedIds.has(geometryPartId), "in-use definition element must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(geometryPartId), "in-use definition element must not be deleted");
+        executeTestCase(txn, "in-use GeometryPart", [geometryPartId], [], partialSuccess(definitionInUse(geometryPartId)), [geometryPartId]);
       });
 
-      it("returns only the in-use definition element in the failed set when mixing used and unused parts", () => {
+      it("reports only the in-use definition element as a failure when mixing used and unused parts", () => {
         const unusedElement = insertDefinitionElement(txn);
         const usedElement = insertDefinitionElement(txn);
 
@@ -587,34 +613,30 @@ describe("DeleteDefinitionElements", () => {
           "used + unused definition elements",
           [unusedElement, usedElement],
           [unusedElement],
-          [usedElement],
+          partialSuccess(definitionInUse(usedElement)),
           [usedElement, physElemId],
         );
       });
 
-      it("keeps an in-use RenderMaterial in the failed set and does not delete it", () => {
-        const failed = txn.deleteElements([renderMaterialId]);
-        assert.isTrue(failed.failedIds.has(renderMaterialId), "in-use RenderMaterial must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId), "in-use RenderMaterial must not be deleted");
+      it("reports an in-use RenderMaterial as a failure and does not delete it", () => {
+        executeTestCase(txn, "in-use RenderMaterial", [renderMaterialId], [], partialSuccess(definitionInUse(renderMaterialId)), [renderMaterialId]);
       });
 
       it("deletes an unused RenderMaterial", () => {
         const unusedRenderMaterialId = RenderMaterialElement.insert(txn, definitionModelId, "Unused RenderMaterial", { paletteName: "PaletteName" });
-        executeTestCase(txn, "unused RenderMaterial", [unusedRenderMaterialId], [unusedRenderMaterialId], [], []);
+        executeTestCase(txn, "unused RenderMaterial", [unusedRenderMaterialId], [unusedRenderMaterialId], success, []);
       });
 
-      it("keeps an in-use Texture in the failed set and does not delete it", () => {
-        const failed = txn.deleteElements([textureId]);
-        assert.isTrue(failed.failedIds.has(textureId), "in-use Texture must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(textureId), "in-use Texture must not be deleted");
+      it("reports an in-use Texture as a failure and does not delete it", () => {
+        executeTestCase(txn, "in-use Texture", [textureId], [], partialSuccess(definitionInUse(textureId)), [textureId]);
       });
 
       it("deletes an unused Texture", () => {
         const unusedTextureId = IModelTestUtils.insertTextureElement(txn, definitionModelId, "Unused Texture");
-        executeTestCase(txn, "unused Texture", [unusedTextureId], [unusedTextureId], [], []);
+        executeTestCase(txn, "unused Texture", [unusedTextureId], [unusedTextureId], success, []);
       });
 
-      it("returns the full input as the failed set when every element is an in-use definition element", () => {
+      it("reports every element as a failure when all are in-use definition elements", () => {
         const usedElement1 = insertDefinitionElement(txn);
         const usedElement2 = insertDefinitionElement(txn);
         const usedElement3 = insertDefinitionElement(txn);
@@ -634,11 +656,15 @@ describe("DeleteDefinitionElements", () => {
         physElemProps.geom = IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, usedElement3);
         assert.isTrue(Id64.isValid(txn.insertElement(physElemProps)));
 
-        const failedToDelete = txn.deleteElements([usedElement1, usedElement2, usedElement3]);
-        assert.equal(failedToDelete.failedIds.size, 3, "all in-use definition elements should be in failed set");
-        assert.isTrue(failedToDelete.failedIds.has(usedElement1));
-        assert.isTrue(failedToDelete.failedIds.has(usedElement2));
-        assert.isTrue(failedToDelete.failedIds.has(usedElement3));
+        // Every requested element was skipped - that is still PartialSuccess in the default mode, not an error.
+        executeTestCase(
+          txn,
+          "all in-use",
+          [usedElement1, usedElement2, usedElement3],
+          [],
+          partialSuccess(definitionInUse(usedElement1), definitionInUse(usedElement2), definitionInUse(usedElement3)),
+          [usedElement1, usedElement2, usedElement3],
+        );
       });
     });
 
@@ -652,29 +678,23 @@ describe("DeleteDefinitionElements", () => {
         txn.end("abandon");
       });
 
-      it("keeps an in-use SpatialCategory in the failed set and does not delete it", () => {
-        const failed = txn.deleteElements([spatialCategoryId]);
-        assert.isTrue(failed.failedIds.has(spatialCategoryId), "in-use SpatialCategory must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(spatialCategoryId), "in-use SpatialCategory must not be deleted");
+      it("reports an in-use SpatialCategory as an FK violator and does not delete it", () => {
+        executeTestCase(txn, "in-use SpatialCategory", [spatialCategoryId], [], partialSuccess(categoryInUse3d(spatialCategoryId)), [spatialCategoryId]);
       });
 
-      it("keeps the default SubCategory in the failed set when its parent SpatialCategory is in use", () => {
+      it("reports the default SubCategory as a failure when its parent SpatialCategory is in use", () => {
         const spatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId, SpatialCategory);
         const defaultSubCategoryId = spatialCategory.myDefaultSubCategoryId();
-        const failed = txn.deleteElements([defaultSubCategoryId]);
-        assert.isTrue(failed.failedIds.has(defaultSubCategoryId), "default SubCategory must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(defaultSubCategoryId), "default SubCategory must not be deleted");
+        executeTestCase(txn, "default SubCategory", [defaultSubCategoryId], [], partialSuccess(definitionInUse(defaultSubCategoryId)), [defaultSubCategoryId]);
       });
 
-      it("keeps a used non-default SubCategory in the failed set and does not delete it", () => {
-        const failed = txn.deleteElements([subCategoryId]);
-        assert.isTrue(failed.failedIds.has(subCategoryId), "in-use SubCategory must be in failed set");
-        assert.isDefined(iModelDb.elements.tryGetElement(subCategoryId), "in-use SubCategory must not be deleted");
+      it("reports a used non-default SubCategory as a failure and does not delete it", () => {
+        executeTestCase(txn, "in-use SubCategory", [subCategoryId], [], partialSuccess(definitionInUse(subCategoryId)), [subCategoryId]);
       });
 
       it("deletes an unused non-default SubCategory", () => {
         const unusedSubCategoryId = SubCategory.insert(txn, spatialCategoryId, "Unused SubCategory", {});
-        executeTestCase(txn, "unused SubCategory", [unusedSubCategoryId], [unusedSubCategoryId], [], [spatialCategoryId]);
+        executeTestCase(txn, "unused SubCategory", [unusedSubCategoryId], [unusedSubCategoryId], success, [spatialCategoryId]);
       });
 
       it("deletes an unused SpatialCategory together with its default SubCategory", () => {
@@ -687,7 +707,7 @@ describe("DeleteDefinitionElements", () => {
           "unused SpatialCategory + default SubCategory",
           [unusedCategoryId],
           [unusedCategoryId, unusedDefaultSubCategoryId],
-          [],
+          success,
           [],
         );
       });
@@ -702,18 +722,18 @@ describe("DeleteDefinitionElements", () => {
           "unused DrawingCategory + default SubCategory",
           [unusedDrawingCategoryId],
           [unusedDrawingCategoryId, unusedDrawingSubCategoryId],
-          [],
+          success,
           [],
         );
       });
 
-      it("keeps CategorySelector, ModelSelector, DisplayStyle3d in the failed set when their view still exists", () => {
+      it("reports CategorySelector, ModelSelector, DisplayStyle3d as failures when their view still exists", () => {
         executeTestCase(
           txn,
           "view-related still referenced",
           [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
           [],
-          [spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          partialSuccess(definitionInUse(spatialCategorySelectorId), definitionInUse(modelSelectorId), definitionInUse(displayStyle3dId)),
           [spatialCategorySelectorId, modelSelectorId, displayStyle3dId, viewId],
         );
       });
@@ -724,7 +744,7 @@ describe("DeleteDefinitionElements", () => {
           "view + view-related",
           [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
           [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
-          [],
+          success,
           [],
         );
       });
@@ -735,7 +755,7 @@ describe("DeleteDefinitionElements", () => {
           "drawing view + drawing view-related",
           [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
           [drawingViewId, drawingCategorySelectorId, displayStyle2dId],
-          [],
+          success,
           [],
         );
       });
@@ -750,7 +770,7 @@ describe("DeleteDefinitionElements", () => {
           "orphaned view-related elements",
           [orphanCategorySelectorId, orphanDisplayStyle2dId],
           [orphanCategorySelectorId, orphanDisplayStyle2dId],
-          [],
+          success,
           [],
         );
       });
@@ -776,7 +796,7 @@ describe("DeleteDefinitionElements", () => {
           "parent + child definition elements",
           [parentPart],
           [parentPart, childPart],
-          [],
+          success,
           [],
         );
       });
@@ -791,7 +811,7 @@ describe("DeleteDefinitionElements", () => {
           "parent + child definition elements",
           [parentPart, childPart],
           [parentPart, childPart],
-          [],
+          success,
           [],
         );
       });
@@ -812,7 +832,7 @@ describe("DeleteDefinitionElements", () => {
         const partB = txn.insertElement(partBProps);
 
         // Both unused externally; the intra-set code-scope link must not block deletion
-        executeTestCase(txn, "intra-set code scope", [partA, partB], [partA, partB], [], []);
+        executeTestCase(txn, "intra-set code scope", [partA, partB], [partA, partB], success, []);
       });
 
       // Multi-level parent-child hierarchy
@@ -825,7 +845,7 @@ describe("DeleteDefinitionElements", () => {
         const grandchild = insertDefinitionElement(txn, child);
 
         // Only supply the root - all descendants must be included and deleted leaf-first
-        executeTestCase(txn, "3-level hierarchy via root only", [root], [root, child, grandchild], [], []);
+        executeTestCase(txn, "3-level hierarchy via root only", [root], [root, child, grandchild], success, []);
       });
 
       it("deletes a 3-level parent-child hierarchy by passing all elements explicitly", () => {
@@ -839,7 +859,7 @@ describe("DeleteDefinitionElements", () => {
           "3-level hierarchy with all elements",
           [root, child, grandchild],
           [root, child, grandchild],
-          [],
+          success,
           [],
         );
       });
@@ -856,7 +876,7 @@ describe("DeleteDefinitionElements", () => {
           "mixed unused batch",
           [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
           [unusedPart, unusedRenderMaterial, unusedTexture, unusedSubCategory],
-          [],
+          success,
           [],
         );
       });
@@ -882,7 +902,7 @@ describe("DeleteDefinitionElements", () => {
           "mixed used and unused batch",
           [usedPart, unusedPart, scopedPart],
           [usedPart, unusedPart, childPart, scopedPart],
-          [],
+          success,
           [],
         );
       });
@@ -902,13 +922,13 @@ describe("DeleteDefinitionElements", () => {
         };
         const scopedPart = txn.insertElement(scopedPartProps);
 
-        // Pass both used and unused parts, with a child that has a code scope reference
+        // Pass both used and unused parts; usedPart is the code scope of scopedPart (outside the set) so it is a direct FK violator.
         executeTestCase(
           txn,
           "mixed used and unused batch",
           [usedPart, unusedPart],
           [unusedPart],
-          [usedPart],
+          partialSuccess(codeScopeViolator(usedPart)),
           [usedPart, childPart, scopedPart],
         );
       });
@@ -951,7 +971,7 @@ describe("DeleteDefinitionElements", () => {
           "unused elements in container sub-model",
           [partA, partB],
           [partA, partB],
-          [],
+          success,
           [],
           false,
         );
@@ -968,14 +988,14 @@ describe("DeleteDefinitionElements", () => {
           "container + sub-model contents deleted via container id",
           [containerId],
           [containerId, defElem1, defElem2],
-          [],
+          success,
           [],
         );
         // Sub-model row is deleted once the container element is successfully purged.
         assertModelDeleted(containerId, "DefinitionModel sub-model row must be deleted after container is purged");
       });
 
-      it("keeps an in-use element inside a DefinitionContainer sub-model in the failed set", () => {
+      it("reports an in-use element inside a DefinitionContainer sub-model as a failure", () => {
         const containerId = insertDefinitionContainer();
         const usedPart = insertDefinitionElement(txn, undefined, containerId);
         const unusedPart = insertDefinitionElement(txn, undefined, containerId);
@@ -995,14 +1015,14 @@ describe("DeleteDefinitionElements", () => {
           "one used + one unused in container sub-model",
           [usedPart, unusedPart],
           [unusedPart],
-          [usedPart],
+          partialSuccess(definitionInUse(usedPart)),
           [usedPart, physElemId],
           false,
         );
         assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
       });
 
-      it("parent blocked in failed set when its child inside a DefinitionContainer sub-model is in use", () => {
+      it("parent reported as a failure when its child inside a DefinitionContainer sub-model is in use", () => {
         const containerId = insertDefinitionContainer();
         const parent = insertDefinitionElement(txn, undefined, containerId);
         const child = insertDefinitionElement(txn, parent, containerId);
@@ -1017,12 +1037,13 @@ describe("DeleteDefinitionElements", () => {
         };
         const physElemId = txn.insertElement(physElemProps);
 
+        // child (pulled into the set via parent) is a DefinitionInUse violator, which blocks the requested parent.
         executeTestCase(
           txn,
           "parent blocked when child inside container sub-model is in use",
           [parent],
           [],
-          [parent],
+          partialSuccess(definitionInUse(child), blockedByRelative(parent, child)),
           [parent, child, physElemId],
           false,
         );
@@ -1046,7 +1067,7 @@ describe("DeleteDefinitionElements", () => {
           "intra-set code scope in container sub-model",
           [partA, partB],
           [partA, partB],
-          [],
+          success,
           [],
           false,
         );
@@ -1072,7 +1093,7 @@ describe("DeleteDefinitionElements", () => {
           "external code scope blocks element inside container sub-model",
           [partA, partB],
           [partB],
-          [partA],
+          partialSuccess(codeScopeViolator(partA)),
           [partA, externalId],
           false,
         );
@@ -1097,7 +1118,7 @@ describe("DeleteDefinitionElements", () => {
           "cross-container intra-set code scope",
           [partA, partB],
           [partA, partB],
-          [],
+          success,
           [],
           false,
         );
@@ -1132,11 +1153,191 @@ describe("DeleteDefinitionElements", () => {
           "mixed top-level and container sub-model: used blocked, unused deleted",
           [topUnused, topUsed, nestedUnused, nestedUsed],
           [topUnused, nestedUnused],
-          [topUsed, nestedUsed],
+          partialSuccess(definitionInUse(topUsed), definitionInUse(nestedUsed)),
           [topUsed, nestedUsed, topUsedPhysElem, nestedUsedPhysElem],
           false,
         );
         assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
+      });
+    });
+
+    describe("definition and its users deleted together", () => {
+      let txn: EditTxn;
+      beforeEach(() => {
+        txn = new EditTxn(iModelDb, "delete definition + users");
+        txn.start();
+      });
+      afterEach(() => {
+        txn.end("abandon");
+      });
+
+      const insertPhysicalObject = (opts: { categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String, geometryPartId?: Id64String } = {}): Id64String => {
+        const category = opts.categoryId ?? spatialCategoryId;
+        // A material is only recorded in the geometry stream together with a sub-category.
+        const subCategory = opts.subCategoryId ?? (opts.renderMaterialId ? IModel.getDefaultSubCategoryId(category) : undefined);
+        return txn.insertElement({
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category,
+          code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), category, subCategory, opts.renderMaterialId, opts.geometryPartId),
+        } as PhysicalElementProps);
+      };
+
+      it("a GeometryPart with two users is still in use when only one user is in the delete set", () => {
+        const part = insertDefinitionElement(txn);
+        const user1 = insertPhysicalObject({ geometryPartId: part });
+        const user2 = insertPhysicalObject({ geometryPartId: part });
+        executeTestCase(txn, "part + one of two users", [part, user1], [user1], partialSuccess(definitionInUse(part)), [part, user2]);
+      });
+
+      it("a DisplayStyle shared by two views is reported in use when only one view is in the delete set", () => {
+        const categorySelectorB = CategorySelector.insert(txn, definitionModelId, "CategorySelectorB", [spatialCategoryId]);
+        const modelSelectorB = ModelSelector.insert(txn, definitionModelId, "ModelSelectorB", [physicalModelId]);
+        const viewB = OrthographicViewDefinition.insert(txn, definitionModelId, "ViewB", modelSelectorB, categorySelectorB, displayStyle3dId, new Range3d(0, 0, 0, 1, 1, 1));
+
+        executeTestCase(
+          txn,
+          "view A + its selectors + shared style",
+          [viewId, spatialCategorySelectorId, modelSelectorId, displayStyle3dId],
+          [viewId, spatialCategorySelectorId, modelSelectorId],
+          partialSuccess(definitionInUse(displayStyle3dId)),
+          [displayStyle3dId, viewB, categorySelectorB, modelSelectorB],
+          false,
+        );
+
+        // Deleting both views releases the shared style.
+        txn.abandonChanges();
+        executeTestCase(
+          txn,
+          "both views + everything they reference",
+          [viewId, viewB, spatialCategorySelectorId, modelSelectorId, categorySelectorB, modelSelectorB, displayStyle3dId],
+          [viewId, viewB, spatialCategorySelectorId, modelSelectorId, categorySelectorB, modelSelectorB, displayStyle3dId],
+          success,
+          [],
+        );
+      });
+
+      it("an element is reported once per referencing foreign key", () => {
+        // A fresh category used by a physical object (CategoryId FK) AND used as the Code scope of a GeometryPart (CodeScopeId FK).
+        const category = SpatialCategory.insert(txn, definitionModelId, "DoublyReferencedCategory", {});
+        const user = insertPhysicalObject({ categoryId: category });
+        const scopeSpecId = iModelDb.codeSpecs.insert(txn, "CategoryScopedSpec", CodeScopeSpec.Type.RelatedElement);
+        const scopedPart = txn.insertElement({
+          classFullName: GeometryPart.classFullName,
+          model: definitionModelId,
+          code: { spec: scopeSpecId, scope: category, value: "scoped-part" },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        } as GeometryPartProps);
+
+        executeTestCase(
+          txn,
+          "two FKs on one element",
+          [category],
+          [],
+          partialSuccess(categoryInUse3d(category), codeScopeViolator(category)),
+          [category, user, scopedPart],
+        );
+      });
+    });
+
+    describe("delete modes with definition elements", () => {
+      let txn: EditTxn;
+      beforeEach(() => {
+        txn = new EditTxn(iModelDb, "delete modes");
+        txn.start();
+      });
+      afterEach(() => {
+        txn.end("abandon");
+      });
+
+      const constraintViolation = (...failures: BulkDeleteFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, failures });
+
+      /**
+       * In FailFast mode nothing is pruned between the FK pass and the definition-usage pass, so the used SpatialCategory is reported
+       * twice (hard FK + usage) and its used non-default SubCategories (pulled into the set as children) are reported as well.
+       * In RemoveFKViolators mode the category's subtree is pruned after the FK pass, so only `categoryInUse3d` is reported there.
+       */
+      const usedSpatialCategoryViolations = (): BulkDeleteFailure[] => [
+        categoryInUse3d(spatialCategoryId),
+        definitionInUse(spatialCategoryId),
+        definitionInUse(subCategoryId),
+        definitionInUse(filteredSubCategoryId),
+      ];
+
+      it("FailFast treats DefinitionInUse as a constraint violation and deletes nothing", () => {
+        const unusedPart = insertDefinitionElement(txn);
+        const result = txn.deleteElements([geometryPartId, unusedPart], { deleteMode: BulkDeleteMode.FailFast });
+        assertResult(result, constraintViolation(definitionInUse(geometryPartId)), [], [geometryPartId, unusedPart], iModelDb);
+      });
+
+      it("FailFast treats a used Category as a constraint violation and reports every violator in the expanded set", () => {
+        const unusedPart = insertDefinitionElement(txn);
+        const result = txn.deleteElements([spatialCategoryId, unusedPart], { deleteMode: BulkDeleteMode.FailFast });
+        assertResult(result, constraintViolation(...usedSpatialCategoryViolations()), [], [spatialCategoryId, subCategoryId, filteredSubCategoryId, unusedPart], iModelDb);
+      });
+
+      it("FailFast reports the in-use child and the blocked parent when the violator is a cascaded child", () => {
+        const parent = insertDefinitionElement(txn);
+        const child = insertDefinitionElement(txn, parent);
+        const user = txn.insertElement({
+          classFullName: "Generic:PhysicalObject",
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId, undefined, undefined, child),
+        } as PhysicalElementProps);
+        const result = txn.deleteElements([parent], { deleteMode: BulkDeleteMode.FailFast });
+        assertResult(result, constraintViolation(definitionInUse(child), blockedByRelative(parent, child)), [], [parent, child, user], iModelDb);
+      });
+
+      it("deprecated skipFKConstraintValidations: true behaves like FailFast and still detects DefinitionInUse", () => {
+        // There is no way to bypass the definition usage check: geometry-stream references are not SQLite foreign keys, so
+        // skipping validation would silently leave dangling references. The deprecated flag therefore maps to FailFast.
+        const unusedPart = insertDefinitionElement(txn);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const result = txn.deleteElements([geometryPartId, unusedPart], { skipFKConstraintValidations: true });
+        assertResult(result, constraintViolation(definitionInUse(geometryPartId)), [], [geometryPartId, unusedPart], iModelDb);
+      });
+
+      it("FailFast ConstraintViolation for a used Category (hard FK) leaves the txn clean", () => {
+        const result = txn.deleteElements([spatialCategoryId], { deleteMode: BulkDeleteMode.FailFast });
+        assertResult(result, constraintViolation(...usedSpatialCategoryViolations()), [], [spatialCategoryId], iModelDb);
+        assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "a rejected FailFast delete must not dirty the txn");
+      });
+    });
+
+    describe("cache coherence for cascaded definition elements", () => {
+      let txn: EditTxn;
+      beforeEach(() => {
+        txn = new EditTxn(iModelDb, "cache");
+        txn.start();
+      });
+      afterEach(() => {
+        txn.end("abandon");
+      });
+
+      it("a cached default SubCategory is not readable after its Category is deleted", () => {
+        const category = SpatialCategory.insert(txn, definitionModelId, "CachedCategory", {});
+        const defaultSubCategory = iModelDb.elements.getElement<SpatialCategory>(category, SpatialCategory).myDefaultSubCategoryId();
+        assert.isDefined(iModelDb.elements.getElement(defaultSubCategory)); // prime the cache
+
+        executeTestCase(txn, "category with cached default subcategory", [category], [category, defaultSubCategory], success, [], false);
+        assert.isUndefined(iModelDb.elements.tryGetElementProps(defaultSubCategory), "cached default SubCategory props must not be served after deletion");
+      });
+
+      it("cached contents of a deleted DefinitionContainer are not readable afterwards", () => {
+        const codeSpecId = iModelDb.codeSpecs.insert(txn, "CachedContainerSpec", CodeScopeSpec.Type.Model);
+        const containerId = DefinitionContainer.insert(txn, definitionModelId, new Code({ spec: codeSpecId, scope: definitionModelId, value: "CachedContainer" }));
+        const inner = insertDefinitionElement(txn, undefined, containerId);
+        assert.isDefined(iModelDb.elements.getElement(inner));
+        assert.isDefined(iModelDb.models.getModelProps(containerId));
+
+        executeTestCase(txn, "container with cached contents", [containerId], [containerId, inner], success, [], false);
+        assert.isUndefined(iModelDb.elements.tryGetElementProps(inner));
+        assert.isUndefined(iModelDb.models.tryGetModelProps(containerId));
       });
     });
   });
@@ -1293,11 +1494,10 @@ describe("DeleteDefinitionElements", () => {
       const physTypeId = insertPhysicalType();
       const physObjId = insertPhysicalObjectWithType(physTypeId);
 
-      const failed = txn.deleteElements([physTypeId]);
+      const result = txn.deleteElements([physTypeId]);
 
-      assert.isFalse(failed.failedIds.has(physTypeId), "physTypeId should NOT be in the failed set — TypeDefinitionId refs do not block deleteElements");
-      assert.isUndefined(iModelDb.elements.tryGetElement(physTypeId), "PhysicalType should be deleted");
-      assert.isDefined(iModelDb.elements.tryGetElement(physObjId), "PhysicalObject should still exist");
+      // TypeDefinitionId refs do not block deleteElements - the type is deleted, the referencing object survives, and no failures are reported.
+      assertResult(result, success, [physTypeId], [physObjId], iModelDb);
       assert.isUndefined(getTypeDefinitionId3d(physObjId), "TypeDefinitionId should be NULLed since the type was deleted");
     });
   });

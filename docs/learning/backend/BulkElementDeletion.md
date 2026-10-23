@@ -14,24 +14,48 @@ switch (result.status) {
     // All requested elements were deleted.
     break;
   case BulkDeleteElementsStatus.PartialSuccess:
-    // Some elements were deleted, but others were blocked — inspect result.failedIds.
-    for (const id of result.failedIds)
-      console.log(`Could not delete: ${id}`);
+    // RemoveFKViolators mode only: some elements were deleted, others were blocked - inspect result.failures.
+    for (const failure of result.failures)
+      console.log(`Could not delete ${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+    break;
+  case BulkDeleteElementsStatus.ConstraintViolation:
+    // FailFast mode only: at least one element is still referenced, so nothing was deleted - inspect result.failures.
+    console.log(`Bulk delete failed due to constraint violations in:\n`);
+    for (const failure of result.failures)
+      console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}\n`);
     break;
   case BulkDeleteElementsStatus.DeletionFailed:
-    // The entire SQL DELETE statement failed (e.g. FK constraint violation when using
-    // skipFKConstraintValidations). No elements were deleted. Roll back and investigate.
+    // An unexpected SQLite error occurred (see result.sqlDeleteStatus). The iModel may be partially modified:
+    // abandon the current txn.
     break;
 }
 ```
 
-The `result` object has three fields:
+The `result` object has these fields:
 
 | Field | Description |
 |---|---|
-| `status` | [BulkDeleteElementsStatus]($backend): `Success`, `PartialSuccess`, or `DeletionFailed` |
-| `failedIds` | `Id64Set` of element IDs that could not be deleted |
-| `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement |
+| `status` | [BulkDeleteElementsStatus]($backend): `Success`, `PartialSuccess`, `ConstraintViolation` or `DeletionFailed` |
+| `failures` | [BulkDeleteFailure]($backend) entries: the element, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `BlockedByRelative`) and a `detail` (the referencing `table.column`, or the id of the blocking relative) |
+| `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement; only meaningful for `DeletionFailed` |
+| `failedIds` | _Deprecated._ The unique set of element ids appearing in `failures` |
+
+## Delete modes
+
+[BulkDeleteElementsArgs.deleteMode]($backend) controls what happens when an element in the delete set is still referenced from outside the set:
+
+| Mode | Behaviour |
+|---|---|
+| `RemoveFKViolators` (current default) | Best effort. Violators and their logical subtree inside the set are skipped; everything else is deleted. Status is `PartialSuccess` when anything was skipped. |
+| `FailFast` | All-or-nothing. If any violator exists, nothing is deleted and the status is `ConstraintViolation`. |
+
+```typescript
+const result = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.FailFast });
+```
+
+> The default will change to `FailFast` in a future release. Pass `deleteMode` explicitly to be insulated from that change.
+
+In both modes the validation pass runs before anything is modified, so `PartialSuccess` and `ConstraintViolation` always leave the iModel in a consistent state.
 
 You do **not** need to call [EditTxn.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and performs the same usage checks for definitions.
 The only behavioral difference is that `deleteDefinitionElements` silently ignores non-definition elements in the input, whereas `deleteElements` will attempt to delete everything it can.
@@ -77,7 +101,7 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 | A `GeometricElement3d` or `GeometricElement2d` outside the set uses this element as its **Category** | The category element (and its subtree root) |
 | A `DefinitionElement` outside the set has a tracked **usage** reference to this element (e.g. a geometry part in a geometry stream) | The definition element (and its subtree root) |
 
-All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are reported in the returned `BulkDeleteElementsResult` via `result.failedIds`.
+All constraint violators, together with their entire subtrees (descendants and sub-model contents), are reported in the returned `BulkDeleteElementsResult` via `result.failures`. The direct violator is reported with `ReferencedByForeignKey` (plus the referencing `table.column`) or `DefinitionInUse`; a requested ancestor that was skipped because of it is reported with `BlockedByRelative` and the violator's id as `detail`. In `RemoveFKViolators` mode they are removed from the delete set and the rest is deleted; in `FailFast` mode nothing is deleted.
 
 > Such blocking constraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
 
@@ -112,17 +136,9 @@ The **default implementations** of all three callbacks delegate to the existing 
 
 > **Note:** Callbacks cannot veto a deletion in `deleteElements`. Any veto attempt from a callback is ignored. If you need per-element veto semantics, use [EditTxn.deleteElement]($backend) on individual elements instead.
 
-## Performance option — `skipFKConstraintValidations`
+## Deprecated: `skipFKConstraintValidations`
 
-By default, `deleteElements` runs a pre-deletion pass that validates all `ON DELETE NO ACTION` foreign-key constraints and prunes any elements that would violate them (returning them in `failedIds`). For very large deletions this validation pass can itself become a bottleneck.
-
-If you are certain that none of the elements in the batch are referenced by elements **outside** the batch, you can skip this pass:
-
-```typescript
-const result = txn.deleteElements(ids, { skipFKConstraintValidations: true });
-```
-
-> **Warning:** When this option is enabled and an external FK dependency exists, the underlying SQL `DELETE` will fail, `status` will be `DeletionFailed`, and **no elements will be deleted**. You must roll back the transaction. Only use this option when the safety of the input is guaranteed.
+Earlier releases offered `{ skipFKConstraintValidations: true }` to bypass the pre-deletion validation pass. That option has been removed because it could leave the iModel with dangling references. The flag is still accepted for source compatibility but is now equivalent to `{ deleteMode: BulkDeleteMode.FailFast }`; it is ignored when `deleteMode` is supplied. Use `deleteMode` explicitly instead.
 
 ## When to use `deleteElements` vs `deleteElement`
 
@@ -132,6 +148,7 @@ Use `deleteElements` when:
 - Deleting partitions/modeled elements (so their sub-models are cleaned up too).
 - Deleting a mix of ordinary and definition elements.
 - Deleting large numbers of elements where per-element overhead matters.
+- You want all-or-nothing semantics with a detailed report of what is still referenced (`FailFast`).
 
 Use `deleteElement` when:
 - You want a hard failure on any constraint violation rather than silent exclusion and a returned failed set.

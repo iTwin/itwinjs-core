@@ -772,21 +772,46 @@ export class BriefcaseManager {
 
 // @beta
 export interface BulkDeleteElementsArgs {
+    deleteMode?: BulkDeleteMode;
+    // @deprecated
     skipFKConstraintValidations?: boolean;
 }
 
 // @beta
 export interface BulkDeleteElementsResult {
+    // @deprecated
     failedIds: Id64Set;
+    failures: BulkDeleteFailure[];
     sqlDeleteStatus: DbResult;
     status: BulkDeleteElementsStatus;
 }
 
 // @beta
 export enum BulkDeleteElementsStatus {
-    DeletionFailed = 2,
+    ConstraintViolation = 2,
+    DeletionFailed = 3,
     PartialSuccess = 1,
     Success = 0
+}
+
+// @beta
+export interface BulkDeleteFailure {
+    detail?: string;
+    elementId: Id64String;
+    reason: BulkDeleteFailureReason;
+}
+
+// @beta
+export enum BulkDeleteFailureReason {
+    BlockedByRelative = 2,
+    DefinitionInUse = 1,
+    ReferencedByForeignKey = 0
+}
+
+// @beta
+export enum BulkDeleteMode {
+    FailFast = 1,
+    RemoveFKViolators = 0
 }
 
 // @public

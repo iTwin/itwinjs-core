@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsStatus, ChannelControl, EditTxn, GeometryPart, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { BulkDeleteElementsStatus, BulkDeleteMode, ChannelControl, EditTxn, GeometryPart, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 import { Point3d } from "@itwin/core-geometry";
@@ -154,14 +154,40 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         reporter.addEntry("DeleteElementsPerfTest", `deleteElement for ${count} elements`, "Execution time(ms)", elapsed);
       }
 
+      // With FailFast delete mode
       {
-        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_bulk_${count}.bim`);
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_FailFast_bulk_${count}.bim`);
         const { db, ids } = createIModelWithElements(fileName, count);
-        const txn = new EditTxn(db, "deleteElements perf test");
+        const txn = new EditTxn(db, "deleteElements perf test with FailFast mode");
         txn.start();
 
         const startTime = performance.now();
-        const deletionResult = txn.deleteElements(ids, { skipFKConstraintValidations: true });
+        const deletionResult = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.FailFast });
+        const elapsed = performance.now() - startTime;
+
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
+
+        txn.saveChanges();
+        for (const id of ids) {
+          assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
+        }
+
+        txn.end();
+        db.close();
+        IModelJsFs.unlinkSync(fileName);
+
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements`, "Execution time(ms)", elapsed);
+      }
+
+      // With RemoveFKViolators delete mode
+      {
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_RemoveFKViolators_bulk_${count}.bim`);
+        const { db, ids } = createIModelWithElements(fileName, count);
+        const txn = new EditTxn(db, "deleteElements perf test with RemoveFKViolators mode");
+        txn.start();
+
+        const startTime = performance.now();
+        const deletionResult = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.RemoveFKViolators });
         const elapsed = performance.now() - startTime;
 
         assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
