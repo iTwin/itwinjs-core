@@ -10,6 +10,7 @@ Supported options include:
 1. `DO_NOT_TRUNCATE_BLOB` returns the full blob instead of truncating it when using the instance accessor.
 1. `ENABLE_EXPERIMENTAL_FEATURES` enables experimental features.
 1. `NAV_REL_CLASSID_FALLBACK` treats an end-table navigation property with a non-null `Id` and null `RelECClassId` as an instance of the relationship declared by the navigation property. It affects relationship class queries and [`ECVLib.Relations()`](./Relations.md), but does not change the stored navigation property's `RelECClassId`.
+1. `CAST_V2` enables [extended casting](./CAST.md#extended-casting-cast_v2), including the `<expr>::<type>` syntax, parameter casts, Id and `ClassName` targets, and conversions of EC values to text. It applies to the `SELECT` it is attached to and that statement's subqueries, but not to common table expression definitions or other `UNION` branches, which need their own `OPTIONS CAST_V2`. `CAST_V2=false` disables it.
 
 `NAV_REL_CLASSID_FALLBACK` is intended for legacy data that omitted the relationship class id. It adds an `OR ... IS NULL` predicate and an `IFNULL` projection, which may result in less efficient query plans. Enable it only for queries that need the compatibility behavior.
 
