@@ -2209,12 +2209,16 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    cacheSizeInKB?: number;
+    cursorIdleTimeout?: number;
     // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
+    enableCursors?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
     ignoreDelay?: boolean;
     ignorePriority?: boolean;
+    maxCursorsPerWorker?: number;
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
@@ -2239,6 +2243,7 @@ export class DbQueryError extends BentleyError {
 export interface DbQueryRequest extends DbRequest, QueryOptions {
     // (undocumented)
     args?: object;
+    cursorId?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -2321,6 +2326,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     memUsed: number;
     prepareTime: number;
+    // @internal
+    resumed?: boolean;
     timeLimit: number;
     totalTime: number;
 }
@@ -11465,29 +11472,20 @@ export interface TxnNotifications {
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
-// @alpha
+// @beta
 export interface TxnProps {
-    // (undocumented)
     grouped: boolean;
-    // (undocumented)
     id: Id64String;
-    // (undocumented)
     nextId?: Id64String;
-    // (undocumented)
     prevId?: Id64String;
-    // (undocumented)
     props: SaveChangesArgs;
-    // (undocumented)
     reversed: boolean;
-    // (undocumented)
     sessionId: number;
-    // (undocumented)
     timestamp: string;
-    // (undocumented)
     type: TxnType;
 }
 
-// @alpha
+// @beta
 export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview

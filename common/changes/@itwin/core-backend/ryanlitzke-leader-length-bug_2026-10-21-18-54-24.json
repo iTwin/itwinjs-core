@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added check against 0 length elbow when wantElbow is true",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
