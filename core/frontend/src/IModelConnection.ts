@@ -390,7 +390,8 @@ export abstract class IModelConnection extends IModel {
   public static getFiniteGeoPoint(props: XYZProps): Point3d {
     const coordinates = Array.isArray(props) ? props : [props.x, props.y, props.z];
     for (let index = 0; index < 3; ++index) {
-      if (!Number.isFinite(coordinates[index] ?? 0)) {
+      // RPC marshaling converts NaN and infinities to null; reject null rather than defaulting it to zero.
+      if (!Number.isFinite(coordinates[index] === undefined ? 0 : coordinates[index])) {
         Logger.logError(loggerCategory, "Non-finite coordinate returned by geographic conversion", {
           ordinateIndex: index,
           coordinates: coordinates.map((ordinate) => String(ordinate)),

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeoServiceStatus, Logger } from "@itwin/core-bentley";
-import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, GeoCoordStatus, IModelReadRpcInterface } from "@itwin/core-common";
+import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, GeoCoordinatesResponseProps, GeoCoordStatus, IModelReadRpcInterface, RpcMarshaling } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
@@ -27,6 +27,27 @@ describe("IModelConnection vertical conversion failures", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
   afterEach(() => vi.restoreAllMocks());
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])("rejects invalid ordinates after RPC marshaling: %s", (ordinate) => {
+    vi.spyOn(Logger, "logError").mockImplementation(() => { });
+    for (let index = 0; index < 3; ++index) {
+      const coordinates = [23.7, 37.9, 10];
+      coordinates[index] = ordinate;
+      for (const point of [coordinates, { x: coordinates[0], y: coordinates[1], z: coordinates[2] }]) {
+        const response = RpcMarshaling.deserialize(undefined, RpcMarshaling.serialize(undefined, {
+          geoCoords: [{ p: point, s: GeoCoordStatus.Success }],
+        })) as GeoCoordinatesResponseProps;
+        expect(() => IModelConnection.getFiniteGeoPoint(response.geoCoords[0].p)).toThrow(expect.objectContaining({ errorNumber: GeoServiceStatus.CSMapError }));
+      }
+    }
+  });
+
+  it.each([{}, { x: 23.7 }, { x: 23.7, y: 37.9 }, [], [23.7], [23.7, 37.9]])("defaults omitted ordinates to zero after RPC marshaling: %j", (coordinates) => {
+    const response = RpcMarshaling.deserialize(undefined, RpcMarshaling.serialize(undefined, {
+      geoCoords: [{ p: coordinates, s: GeoCoordStatus.Success }],
+    })) as GeoCoordinatesResponseProps;
+    expect(IModelConnection.getFiniteGeoPoint(response.geoCoords[0].p)).toEqual(Point3d.fromJSON(coordinates));
+  });
 
   it.each([10, 15, Number.NaN])("rejects status 26 without consuming unreliable elevation %s", async (height) => {
     const imodel = createBlankConnection();

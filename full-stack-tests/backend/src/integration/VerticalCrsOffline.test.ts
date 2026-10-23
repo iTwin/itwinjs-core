@@ -7,9 +7,10 @@ import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { promisify } from "node:util";
 import { gunzipSync } from "node:zlib";
+import { stub } from "sinon";
 import { _nativeDb, BlobContainer, CloudSqlite, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
 import { GeoCoordStatus, GeographicCRSProps, IModelProps } from "@itwin/core-common";
-import { Point3d } from "@itwin/core-geometry";
+import { Point3d, XYZProps } from "@itwin/core-geometry";
 
 const resourceEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS?.trim().toLowerCase() ?? "");
 const offlineEnabled = ["1", "true", "yes"].includes(process.env.ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS?.trim().toLowerCase() ?? "");
@@ -65,6 +66,12 @@ async function createWorkspaceFixture(cacheRoot: string) {
   }
 }
 
+function readConversionPoint(point: XYZProps, direction: string) {
+  const ordinates = Array.isArray(point) ? point : [point.x, point.y, point.z];
+  expect(ordinates.map(Number.isFinite), `${direction}: raw coordinates must be finite`).to.deep.equal([true, true, true]);
+  return Point3d.fromJSON(point);
+}
+
 async function verifyConversions(iModel: SnapshotDb) {
   const location = { x: 23.700523, y: 37.944210, z: 0 };
   const systems = getAvailableVerticalCoordinateReferenceSystems({ point: location });
@@ -85,18 +92,40 @@ async function verifyConversions(iModel: SnapshotDb) {
   const ellipsoid = JSON.stringify({ horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } });
   const forward = await iModel.getGeoCoordinatesFromIModelCoordinates({ target: ellipsoid, iModelCoords: [location] });
   expect(forward.geoCoords[0].s).to.equal(GeoCoordStatus.Success);
-  const result = Point3d.fromJSON(forward.geoCoords[0].p);
+  const result = readConversionPoint(forward.geoCoords[0].p, "forward");
   expect(result.x).to.be.closeTo(location.x, 0.000001);
   expect(result.y).to.be.closeTo(location.y, 0.000001);
   expect(result.z).to.be.closeTo(38.3, 0.5);
 
   const reverse = await iModel.getIModelCoordinatesFromGeoCoordinates({ source: ellipsoid, geoCoords: [result] });
   expect(reverse.iModelCoords[0].s).to.equal(GeoCoordStatus.Success);
-  const roundtrip = Point3d.fromJSON(reverse.iModelCoords[0].p);
+  const roundtrip = readConversionPoint(reverse.iModelCoords[0].p, "reverse");
   expect(roundtrip.x).to.be.closeTo(location.x, 0.000001);
   expect(roundtrip.y).to.be.closeTo(location.y, 0.000001);
   expect(roundtrip.z).to.be.closeTo(location.z, 0.000001);
   process.stdout.write(`${phase}: EGM96 input ${JSON.stringify(location)}, ellipsoidal XYZ ${JSON.stringify(result)}, roundtrip XYZ ${JSON.stringify(roundtrip)}\n`);
+}
+
+async function verifyInvalidConversionsRejected(iModel: SnapshotDb) {
+  for (const direction of ["forward", "reverse"]) {
+    const forward = stub(iModel, "getGeoCoordinatesFromIModelCoordinates").resolves({
+      geoCoords: [{ p: { x: 23.700523, y: 37.944210, z: direction === "forward" ? Number.NaN : 38.3 }, s: GeoCoordStatus.Success }],
+      fromCache: 0,
+    });
+    const reverse = stub(iModel, "getIModelCoordinatesFromGeoCoordinates").resolves({
+      iModelCoords: [{ p: { x: 23.700523, y: 37.944210, z: direction === "reverse" ? Number.NaN : 0 }, s: GeoCoordStatus.Success }],
+      fromCache: 0,
+    });
+    try {
+      await verifyConversions(iModel).then(
+        () => expect.fail(`${direction}: accepted a successful response with NaN elevation`),
+        (error: Error) => expect(error.message).to.include(`${direction}: raw coordinates must be finite`),
+      );
+    } finally {
+      forward.restore();
+      reverse.restore();
+    }
+  }
 }
 
 function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
@@ -194,6 +223,8 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
         }
         iModel = SnapshotDb.createEmpty(path.join(cacheDir!, `${phase}.bim`), { rootSubject: { name: "Vertical CRS production acceptance" } });
         await verifyConversions(iModel);
+        if (resourceTest && phase === "offline")
+          await verifyInvalidConversionsRejected(iModel);
       } finally {
         try {
           if (started) {
