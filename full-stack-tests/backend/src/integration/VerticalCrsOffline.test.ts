@@ -1,14 +1,13 @@
 import { expect } from "chai";
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
-import { ClientRequest, createServer } from "node:http";
-import { Agent, request } from "node:https";
+import { createHash, randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { promisify } from "node:util";
-import { _nativeDb, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
+import { gunzipSync } from "node:zlib";
+import { _nativeDb, BlobContainer, CloudSqlite, GcsDbProps, GeoCoordConfig, getAvailableVerticalCoordinateReferenceSystems, IModelHost, IModelNative, SettingsPriority, SnapshotDb } from "@itwin/core-backend";
 import { GeoCoordStatus, GeographicCRSProps, IModelProps } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
@@ -18,70 +17,52 @@ const phase = process.env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE;
 const runProcess = promisify(execFile);
 const loadModule = createRequire(__filename);
 
-async function createWorkspaceEndpoint() {
-  let requests = 0;
-  const failures: string[] = [];
-  const upstreams = new Set<ClientRequest>();
-  const agent = new Agent({ keepAlive: true, maxSockets: 6 });
-  const server = createServer((incoming, outgoing) => {
-    if (!["GET", "HEAD"].includes(incoming.method ?? "") || !incoming.url?.startsWith("/gcs/")) {
-      outgoing.writeHead(400).end();
-      return;
+async function createWorkspaceFixture(cacheRoot: string) {
+  const originalService = BlobContainer.service;
+  const { AzuriteTest: azuriteTest } = await import("./AzuriteTest");
+  const originalAuthorization = IModelHost.authorizationClient;
+  const originalToken = azuriteTest.userToken;
+  const started = !IModelHost.isValid;
+  const containerId = `vertical-crs-${randomUUID()}`;
+  const client = azuriteTest.createAzClient(containerId);
+  let cache: CloudSqlite.CloudCache | undefined;
+  try {
+    if (started)
+      await IModelHost.startup({ cacheDir: path.join(cacheRoot, "setup") });
+    BlobContainer.service = azuriteTest.service;
+    IModelHost.authorizationClient = new azuriteTest.AuthorizationClient();
+    azuriteTest.userToken = azuriteTest.service.userToken.admin;
+    await azuriteTest.Sqlite.createAzContainer({ containerId, isPublic: true });
+    const container = await azuriteTest.Sqlite.makeContainer({ containerId, isPublic: true });
+    azuriteTest.Sqlite.initializeContainers([container]);
+    const cacheDir = path.join(cacheRoot, "upload");
+    mkdirSync(cacheDir, { recursive: true });
+    cache = CloudSqlite.CloudCaches.getCache({ cacheName: containerId, cacheDir });
+    const fixturePath = path.join(cacheRoot, "VerticalCrs.itwin-workspace");
+    writeFileSync(fixturePath, gunzipSync(readFileSync(path.join(__dirname, "../../../src/integration/fixtures/VerticalCrs.itwin-workspace.gz"))));
+    await azuriteTest.Sqlite.uploadFile(container, cache, "vertical-crs:1.0.0", fixturePath);
+    return {
+      baseUri: azuriteTest.baseUri,
+      containerId,
+      async remove() {
+        await client.deleteIfExists();
+        expect(await client.exists(), "fixture container has been deleted").to.be.false;
+      },
+    };
+  } catch (error) {
+    await client.deleteIfExists();
+    throw error;
+  } finally {
+    try {
+      cache?.destroy();
+      if (started)
+        await IModelHost.shutdown();
+    } finally {
+      IModelHost.authorizationClient = originalAuthorization;
+      azuriteTest.userToken = originalToken;
+      BlobContainer.service = originalService;
     }
-
-    requests++;
-    const upstream = request({
-      hostname: "geocoord-workspace.itwinjs.org",
-      path: incoming.url,
-      method: incoming.method,
-      agent,
-      headers: { ...incoming.headers, host: "geocoord-workspace.itwinjs.org", connection: "keep-alive" },
-    }, (response) => {
-      if (!response.statusCode || response.statusCode >= 400)
-        failures.push(`${incoming.url}: HTTP ${response.statusCode}`);
-
-      outgoing.writeHead(response.statusCode ?? 502, response.headers);
-      response.on("error", (error) => outgoing.destroy(error));
-      response.pipe(outgoing);
-    });
-    upstreams.add(upstream);
-    upstream.once("close", () => upstreams.delete(upstream));
-    upstream.on("error", (error) => {
-      failures.push(`${incoming.url}: ${error.message}`);
-      outgoing.destroy(error);
-    });
-    upstream.setTimeout(30_000, () => upstream.destroy(new Error("Workspace upstream request timed out")));
-    incoming.once("aborted", () => upstream.destroy());
-    outgoing.once("close", () => {
-      if (!outgoing.writableFinished)
-        upstream.destroy();
-    });
-    upstream.end();
-  });
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  const address = server.address();
-  if (!address || typeof address === "string")
-    throw new Error("Workspace endpoint did not bind a TCP port");
-
-  return {
-    baseUri: `http://127.0.0.1:${address.port}`,
-    get requests() { return requests; },
-    failures,
-    async stop() {
-      agent.destroy();
-      if (!server.listening)
-        return;
-
-      const closed = new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-      server.closeAllConnections();
-      for (const upstream of upstreams)
-        upstream.destroy();
-      await closed;
-    },
-  };
+  }
 }
 
 async function verifyConversions(iModel: SnapshotDb) {
@@ -130,7 +111,8 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
       expect(path.isAbsolute(cacheDir!), "cache path must be absolute").to.be.true;
       const endpoint = process.env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT;
       if (resourceTest) {
-        expect(endpoint, "test-owned loopback endpoint is required").to.match(/^http:\/\/127\.0\.0\.1:\d+$/);
+        expect(endpoint, "test-owned loopback endpoint is required").to.match(/^http:\/\/127\.0\.0\.1:\d+\/devstoreaccount1$/);
+        expect(process.env.ITWIN_VERTICAL_CRS_RESOURCE_CONTAINER, "test-owned container is required").to.be.a("string").and.not.to.be.empty;
       }
 
       const nativeEntry = require.resolve("@bentley/imodeljs-native", { paths: [require.resolve("@itwin/core-backend")] });
@@ -163,7 +145,16 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
         expect(defaults.map((entry) => entry.dbName)).to.deep.equal(["base", "allEarth"]);
         expect(defaults.every((entry) => entry.baseUri === "https://geocoord-workspace.itwinjs.org")).to.be.true;
         if (resourceTest) {
-          defaults = defaults.map((entry) => ({ ...entry, baseUri: endpoint!, prefetch: false }));
+          defaults = [{
+            baseUri: endpoint!,
+            containerId: process.env.ITWIN_VERTICAL_CRS_RESOURCE_CONTAINER!,
+            storageType: "azure",
+            isPublic: true,
+            dbName: "vertical-crs",
+            version: "1.0.0",
+            priority: 10000,
+            prefetch: false,
+          }];
           IModelHost.appWorkspace.settings.addDictionary(
             { name: "vertical-crs-resource-regression", priority: SettingsPriority.application },
             { [GeoCoordConfig.settingName.defaultDatabases]: defaults },
@@ -191,7 +182,7 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
           expect(stats.localBlocks, `${db.dbFileName} is fully cached`).to.equal(stats.totalBlocks);
           process.stdout.write(`${phase}: ${db.dbFileName} ${stats.localBlocks}/${stats.totalBlocks} blocks cached\n`);
 
-          if (props.dbName === "base") {
+          if (resourceTest || props.dbName === "base") {
             const blob = db.getBlob("VerticalDatumDefinitions.json");
             expect(blob).not.to.be.undefined;
             const dictionary = JSON.parse(new TextDecoder().decode(blob)) as { definitions: Array<{ verticalCRS: { crsName: string } }> };
@@ -219,18 +210,19 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
   }
 
   if (resourceTest) {
-    it("converts from a persistent cache after its resource endpoint stops, but fails with an empty cache", async function () {
+    it("converts from a persistent cache after its resource container is deleted, but fails with an empty cache", async function () {
       this.timeout(3 * 600_000 + 30_000);
       const cacheRoot = mkdtempSync(path.join(tmpdir(), "itwin-vertical-crs-resource-"));
-      let endpoint: Awaited<ReturnType<typeof createWorkspaceEndpoint>> | undefined;
+      let fixture: Awaited<ReturnType<typeof createWorkspaceFixture>> | undefined;
       let workerOutput = "";
       try {
-        endpoint = await createWorkspaceEndpoint();
+        fixture = await createWorkspaceFixture(cacheRoot);
         for (const workerPhase of ["prefetch", "offline", "cold-offline"]) {
           const env = { ...process.env };
           env.ITWIN_VERTICAL_CRS_OFFLINE_PHASE = workerPhase;
           env.ITWIN_VERTICAL_CRS_OFFLINE_CACHE = path.join(cacheRoot, workerPhase === "cold-offline" ? "empty" : "populated");
-          env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT = endpoint.baseUri;
+          env.ITWIN_VERTICAL_CRS_RESOURCE_ENDPOINT = fixture.baseUri;
+          env.ITWIN_VERTICAL_CRS_RESOURCE_CONTAINER = fixture.containerId;
           const reportPath = path.join(cacheRoot, `${workerPhase}-results.json`);
           const args = [require.resolve("mocha/bin/mocha.js"), __filename, "--no-config", "--timeout", "600000", "--reporter", "json", "--reporter-option", `output=${reportPath}`];
           try {
@@ -241,18 +233,16 @@ function registerAcceptance(this: Mocha.Suite, resourceTest: boolean) {
             process.stderr.write(`${workerPhase}: worker failed\n${workerOutput}${failure.stdout ?? ""}${failure.stderr ?? ""}`);
             if (existsSync(reportPath))
               process.stderr.write(`${readFileSync(reportPath, "utf8")}\n`);
-            process.stderr.write(`parent: ${endpoint.requests} forwarded requests, failures ${JSON.stringify(endpoint.failures)}\n`);
             throw error;
           }
           if (workerPhase === "prefetch") {
-            expect(endpoint.requests, "native prefetch used the test endpoint").to.be.greaterThan(0);
-            await endpoint.stop();
-            workerOutput += `parent: stopped ${endpoint.baseUri} after ${endpoint.requests} requests\n`;
+            await fixture.remove();
+            workerOutput += `parent: deleted ${fixture.containerId} from ${fixture.baseUri}\n`;
           }
         }
       } finally {
         try {
-          await endpoint?.stop();
+          await fixture?.remove();
         } finally {
           rmSync(cacheRoot, { recursive: true, force: true });
         }
