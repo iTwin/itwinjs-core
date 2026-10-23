@@ -28,6 +28,9 @@ export function assert(condition: boolean | (() => boolean), message?: string | 
 // @public
 export type AsyncFunction = (...args: any[]) => Promise<unknown>;
 
+// @beta
+export type AsyncListener = (...arg: any[]) => Promise<void>;
+
 // @public
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
@@ -35,6 +38,16 @@ export type AsyncMethodsOf<T> = {
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
+
+// @beta
+export class BeAsyncEvent<T extends AsyncListener> {
+    constructor(options?: BeAsyncEventOptions);
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): Promise<void>;
+}
 
 // @public
 export class BeDuration {

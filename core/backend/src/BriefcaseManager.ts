@@ -26,7 +26,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _hubAccess, _nativeDb, _refreshIModelProps, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { isBriefcaseSidecar } from "./internal/BriefcaseUtils";
 import { StashManager, StashProps } from "./StashManager";
@@ -713,6 +713,11 @@ export class BriefcaseManager {
         Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
         this.dropRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
       }
+
+      // Local schema txns were reversed and reinstated without a full clear (semantic rebase clears per schema txn,
+      // but the regular rebase does not), so caches filled during the merge may describe the schema without them.
+      if (hasLocalSchemaTxn)
+        db.clearCaches();
     }
     // notify listeners
     db.notifyChangesetApplied();
@@ -817,6 +822,16 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
     }
 
+    await db.txns.onPrePushValidation.raiseEvent();
+
+    // A listener may have pushed the pending changes itself (e.g. by calling pushChanges), leaving nothing to push.
+    // We shouldn't error in this case.
+    if (!db[_nativeDb].hasPendingTxns()) {
+      if (!arg.retainLocks)
+        await db.locks[_releaseAllLocks]();
+      return;
+    }
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
@@ -873,6 +888,10 @@ export class BriefcaseManager {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, { ...arg, onProgress: arg.onDownloadProgress });
         SchemaSync.updateDbSchema(db);
+
+        // Refresh the iModel properties in case the pull changed them.
+        db[_refreshIModelProps]();
+
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false
         if (!db[_nativeDb].hasPendingTxns()) {

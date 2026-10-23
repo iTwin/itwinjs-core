@@ -9,12 +9,14 @@ publish: false
     - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
     - [Vertical CRS discovery](#vertical-crs-discovery)
     - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Pre-push validation](#pre-push-validation)
     - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
     - [Native ChangeUnifier](#native-changeunifier)
     - [Batched relationship lookups](#batched-relationship-lookups)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+    - [BeAsyncEvent](#beasyncevent)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
@@ -45,6 +47,10 @@ Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties t
 The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
 The ECSQL version was bumped to `2.0.4.2`.
+
+### Pre-push validation
+
+The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
 
 ### Stricter briefcase file deletion
 
@@ -81,6 +87,10 @@ Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one
 For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
 
 The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
+
+### BeAsyncEvent
+
+[BeAsyncEvent]($bentley) is similar to [BeEvent]($bentley) in that it allows any number of listeners to be notified when something happens. The difference is that, in the case of [BeAsyncEvent]($bentley), the listener is expected to return a `Promise`. Only after the returned `Promise` settles is the listener considered to have finished handling the event.
 
 ## Quantity
 
