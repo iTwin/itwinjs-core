@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DbQueryResponse, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
@@ -78,7 +78,7 @@ import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, Schema
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 import { SynchronousChannel } from "./SynchronousChannel";
@@ -1061,9 +1061,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = {
-      execute: async (request: DbQueryRequest) => {
-        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
-      },
+      execute: (request: DbQueryRequest): DbQueryResponse | Promise<DbQueryResponse> => request.usePrimaryConn === true
+        ? this._queryMetadataCache.executeCachedPrimaryQueryRequest(request, (req) => ConcurrentQuery.executePrimaryQueryRequest(this[_nativeDb], req))
+        : this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req)),
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
@@ -1089,13 +1089,8 @@ export abstract class IModelDb extends IModel {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
-    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
-    const release = () => {
-      executor[Symbol.dispose]();
-      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
-    };
+    const executor = new ECSqlRowExecutor(this);
+    const release = () => executor[Symbol.dispose]();
     try {
       const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);

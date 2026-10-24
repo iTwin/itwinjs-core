@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { assert, describe, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { Base64 } from "js-base64";
 import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, QueryBinder, QueryParamType } from "../ConcurrentQuery";
 import { ECSqlReader } from "../ECSqlReader";
@@ -58,6 +58,80 @@ describe("ECSqlReader cursor hints", () => {
     reader.resetBindings();
     await reader.toArray();
     assert.equal(new Set(ids).size, 3);
+  });
+
+  it("materializes the remaining buffered rows and subsequent pages in order", async () => {
+    const requests: DbQueryRequest[] = [];
+    const reader = new ECSqlReader({
+      execute: (request) => {
+        requests.push(request);
+        return requests.length === 1 ? response(DbResponseStatus.Partial, [[1], [2], [3]]) :
+          response(DbResponseStatus.Done, [[4], [5]]);
+      },
+    }, "SELECT n", undefined, { limit: { count: 5 } });
+    assert.isTrue(await reader.step());
+    assert.deepEqual(reader.current.toArray(), [1]);
+    assert.deepEqual(await reader.toArray(), [[2], [3], [4], [5]]);
+    assert.isFalse(await reader.step());
+    assert.deepEqual(await reader.toArray(), []);
+    assert.deepEqual(requests.map(request => request.limit), [{ offset: 0, count: 5 }, { offset: 3, count: 2 }]);
+    assert.equal(reader.stats.backendRowsReturned, 5);
+  });
+
+  it("retries synchronous empty partial responses before draining pages", async () => {
+    let calls = 0;
+    const reader = new ECSqlReader({
+      execute: () => {
+        ++calls;
+        return calls === 1 ? response(DbResponseStatus.Partial, []) :
+          calls === 2 ? response(DbResponseStatus.Partial, [[1], [2]]) : response(DbResponseStatus.Done, [[3]]);
+      },
+    }, "SELECT n");
+    assert.deepEqual(await reader.toArray(), [[1], [2], [3]]);
+    assert.equal(calls, 3);
+    assert.equal(reader.stats.retryCount, 1);
+    assert.equal(reader.stats.backendRowsReturned, 3);
+  });
+
+  it("keeps calling overridden step methods when materializing rows", async () => {
+    class InstrumentedReader extends ECSqlReader {
+      public calls = 0;
+      public override async step(): Promise<boolean> {
+        ++this.calls;
+        return super.step();
+      }
+    }
+    const reader = new InstrumentedReader({
+      execute: () => response(DbResponseStatus.Done, [[1], [2], [3]]),
+    }, "SELECT n");
+    assert.deepEqual(await reader.toArray(), [[1], [2], [3]]);
+    assert.equal(reader.calls, 4);
+  });
+
+  it("propagates errors returned by retries for immediate and asynchronous executors", async () => {
+    for (const asynchronous of [false, true]) {
+      let calls = 0;
+      const reader = new ECSqlReader({
+        execute: (): DbQueryResponse | Promise<DbQueryResponse> => {
+          const result = ++calls === 1 ? response(DbResponseStatus.Partial, []) :
+            { ...response(DbResponseStatus.Error, []), error: "retry failed" };
+          return asynchronous ? Promise.resolve(result) : result;
+        },
+      }, "SELECT n");
+      await expect(reader.toArray()).rejects.toThrow("retry failed");
+      assert.equal(calls, 2);
+      assert.equal(reader.stats.retryCount, 1);
+    }
+  });
+
+  it("rejects materialization when a later page fails instead of returning partial success", async () => {
+    let calls = 0;
+    const reader = new ECSqlReader({
+      execute: () => ++calls === 1 ? response(DbResponseStatus.Partial, [[1], [2]]) :
+        { ...response(DbResponseStatus.Error, []), error: "later page failed" },
+    }, "SELECT n");
+    await expect(reader.toArray()).rejects.toThrow("later page failed");
+    assert.equal(calls, 2);
   });
 });
 
