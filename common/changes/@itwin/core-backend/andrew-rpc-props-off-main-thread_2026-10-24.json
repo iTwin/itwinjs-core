@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "IModelReadRpcInterface no longer blocks the JavaScript thread on cloud block downloads while querying entity ids, and preloads entities on the concurrent query threads before reading model and element props from cloud-backed iModels.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

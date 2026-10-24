@@ -33,6 +33,7 @@ import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
+import { addEntityId, buildEntityIdsQuery } from "./internal/EntityQueries";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -1236,33 +1237,10 @@ export abstract class IModelDb extends IModel {
    * ```
    */
   public queryEntityIds(params: EntityQueryParams): Id64Set {
-    let sql = "SELECT ECInstanceId FROM ";
-    if (params.only)
-      sql += "ONLY ";
-    sql += params.from;
-    if (params.where)
-      sql += ` WHERE ${params.where}`;
-
-    if (params.orderBy)
-      sql += ` ORDER BY ${params.orderBy}`;
-
-    if (typeof params.limit === "number" && params.limit > 0)
-      sql += ` LIMIT ${params.limit}`;
-
-    if (typeof params.offset === "number" && params.offset > 0)
-      sql += ` OFFSET ${params.offset}`;
-
     const ids = new Set<string>();
-    this.withQueryReader(sql, (reader) => {
-      for (const row of reader) {
-        const id = row[0];
-        if (id !== undefined) {
-          ids.add(id);
-          if (ids.size > IModelDb.maxLimit) {
-            throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
-          }
-        }
-      }
+    this.withQueryReader(buildEntityIdsQuery(params), (reader) => {
+      for (const row of reader)
+        addEntityId(ids, row[0], IModelDb.maxLimit);
     }, QueryBinder.fromSkippingNullish(params.bindings));
     return ids;
   }

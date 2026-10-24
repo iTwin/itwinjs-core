@@ -33,6 +33,7 @@ import { RpcTrace } from "../rpc/tracing";
 import { ViewStateHydrator } from "../ViewStateHydrator";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { _nativeDb } from "../internal/Symbols";
+import { preloadEntities, queryEntityIdsAsync } from "../internal/EntityQueries";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -95,6 +96,17 @@ function currentActivity() {
 
 async function getIModelForRpc(tokenProps: IModelRpcProps): Promise<IModelDb> {
   return RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+}
+
+/** For an iModel backed by a cloud container, read the specified entities on the concurrent query threads first, so that the
+ * synchronous reads that follow find their blocks already downloaded instead of blocking the JavaScript thread on downloads.
+ */
+async function preloadForRpc(iModelDb: IModelDb, ids: Set<Id64String>, classFullNames: string[]): Promise<void> {
+  if (undefined === iModelDb.cloudContainer)
+    return;
+
+  const idArray = [...ids];
+  await Promise.all(classFullNames.map(async (classFullName) => preloadEntities(iModelDb, idArray, classFullName)));
 }
 
 /** The backend implementation of IModelReadRpcInterface.
@@ -164,6 +176,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
     const modelIds = new Set(modelIdsList);
     const iModelDb = await getIModelForRpc(tokenProps);
+    // Model props include properties of the modeled element, which has the same id as the model.
+    await preloadForRpc(iModelDb, modelIds, ["BisCore.Model", "BisCore.Element"]);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
@@ -185,6 +199,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getElementProps(tokenProps: IModelRpcProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
     const elementIds = new Set(elementIdsList);
     const iModelDb = await getIModelForRpc(tokenProps);
+    await preloadForRpc(iModelDb, elementIds, ["BisCore.Element"]);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
@@ -225,7 +240,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async queryEntityIds(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<Id64String[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    const res = iModelDb.queryEntityIds(params);
+    // Concurrent query cannot see uncommitted changes, so only use it when there can't be any.
+    const res = iModelDb.isReadonly ? await queryEntityIdsAsync(iModelDb, params, IModelDb.maxLimit) : iModelDb.queryEntityIds(params);
     return [...res];
   }
 
