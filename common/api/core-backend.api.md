@@ -4279,6 +4279,11 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
+    // @internal
+    static openDgnDbAsync(file: {
+        path: LocalFileName;
+        key?: string;
+    }, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): Promise<IModelJsNative.DgnDb>;
     // @beta
     optimize(): void;
     get pathName(): LocalFileName;

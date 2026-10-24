@@ -1745,29 +1745,62 @@ export abstract class IModelDb extends IModel {
     return this._openDbs.get(key);
   }
 
-  /** @internal */
-  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb {
+  /** Keys of DgnDbs currently being opened by [[openDgnDbAsync]]. */
+  private static readonly _pendingOpenKeys = new Set<string>();
+
+  /** Validate the arguments to [[openDgnDb]] or [[openDgnDbAsync]], assigning a key if necessary. */
+  private static validateOpenDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions): string {
     file.key = file.key ?? Guid.createValue();
-    if (this.tryFindByKey(file.key))
+    if (this.tryFindByKey(file.key) || this._pendingOpenKeys.has(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
 
     const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
+    return file.key;
+  }
 
+  /** Compute the props to pass to the native open. */
+  private static getNativeOpenProps(file: { path: LocalFileName }, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs) {
+    const container = props?.container;
+    if (container) {
+      // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
+      const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+      IModelJsFs.recursiveMkDirSync(baseDir);
+      props = { ...props, tempFileBase: join(baseDir, file.path) };
+    }
+    return props;
+  }
+
+  /** @internal */
+  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb {
+    this.validateOpenDgnDb(file, openMode, upgradeOptions);
     try {
+      props = this.getNativeOpenProps(file, props);
       const nativeDb = new IModelNative.platform.DgnDb();
-      const container = props?.container;
-      if (container) {
-        // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
-        const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
-        IModelJsFs.recursiveMkDirSync(baseDir);
-        props = { ...props, tempFileBase: join(baseDir, file.path) };
-      }
       nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container, props);
       return nativeDb;
     } catch (err: any) {
       throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
+    }
+  }
+
+  /** Open a DgnDb read-only without blocking the JavaScript thread while the file is read.
+   * This matters for cloud-hosted (e.g. V2 checkpoint) files, whose blocks may need to be downloaded during the open.
+   * @internal
+   */
+  public static async openDgnDbAsync(file: { path: LocalFileName, key?: string }, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): Promise<IModelJsNative.DgnDb> {
+    const key = this.validateOpenDgnDb(file, OpenMode.Readonly);
+    this._pendingOpenKeys.add(key);
+    try {
+      props = this.getNativeOpenProps(file, props);
+      const nativeDb = new IModelNative.platform.DgnDb();
+      await nativeDb.openIModelAsync(file.path, OpenMode.Readonly, undefined, props, props?.container, props);
+      return nativeDb;
+    } catch (err: any) {
+      throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
+    } finally {
+      this._pendingOpenKeys.delete(key);
     }
   }
 
@@ -4797,10 +4830,19 @@ export class SnapshotDb extends IModelDb {
     return db;
   }
 
+  /** Asynchronous version of [[openFile]] that does not block the JavaScript thread while the file is opened. */
+  private static async openFileAsync(path: LocalFileName, opts: SnapshotDbOpenArgs & { key: string }): Promise<SnapshotDb> {
+    this.onOpen.raiseEvent(path, opts);
+    const nativeDb = await this.openDgnDbAsync({ path, key: opts.key }, opts);
+    const db = new this(nativeDb, opts.key);
+    this.onOpened.raiseEvent(db);
+    return db;
+  }
+
   private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    const db = SnapshotDb.openFile(dbName, { key, container });
+    const db = await SnapshotDb.openFileAsync(dbName, { key, container });
     await db.loadWorkspaceSettings();
     await db.initializeSharedElementReservations();
     return db;

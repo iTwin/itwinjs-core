@@ -144,7 +144,7 @@ describe("iModel lifecycle", () => {
     });
     const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDbAsync").resolves(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
