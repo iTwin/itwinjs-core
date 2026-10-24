@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, use } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
+
+import * as sinonChai from "sinon-chai";
+use(sinonChai);
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
@@ -98,7 +101,7 @@ describe("ViewCreator3d", async () => {
 
     expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
     expectVisible(true, true);
-    expect(loadSpy).to.be.calledOnce;
+    expect(loadSpy).to.be.calledTwice;
     loadSpy.restore();
     queryStub.restore();
   });

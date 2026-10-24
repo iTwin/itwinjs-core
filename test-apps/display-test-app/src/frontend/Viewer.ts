@@ -7,7 +7,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
+  IModelApp, IModelConnection, MarginOptions, MarginPercent, MultiIModelSelectionTool, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
@@ -314,7 +314,7 @@ export class Viewer extends Window {
 
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
-      click: async () => IModelApp.tools.run("SVTSelect"),
+      click: async () => IModelApp.tools.run(MultiIModelSelectionTool.toolId),
       tooltip: "Element selection",
     }));
 

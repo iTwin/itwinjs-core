@@ -174,6 +174,7 @@ describe("White-on-white reversal", async () => {
 
     await test([white, red, blue, green, yellow], (vp, _vf) => {
       IModelApp.viewManager.addDecorator(decorator);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels([]);
       vp.displayStyle.backgroundColor = ColorDef.white;
       return undefined;

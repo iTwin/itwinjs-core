@@ -36,7 +36,6 @@ export class NullTarget extends RenderTarget {
   public changeRenderPlan(): void { }
   public drawFrame(_sceneMilSecElapsed?: number): void { }
   public override overrideFeatureSymbology(): void { }
-  public override setHiliteSet(): void { }
   public override setFlashed(): void { }
   public setViewRect(): void { }
   public override onResized(): void { }

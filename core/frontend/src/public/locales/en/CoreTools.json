@@ -229,6 +229,11 @@
       "description": "Selects Element for inspection or manipulation",
       "flyover": "Select Elements"
     },
+    "MultiIModelSelect": {
+      "keyin": "select imodel elements",
+      "description": "Selects Element in any iModel for inspect or manipulation",
+      "flyover": "Select Elements (multi-iModel)"
+    },
     "AccuDraw": {
       "SessionToggle": {
         "keyin": "accudraw session toggle",

@@ -197,7 +197,7 @@ export class SheetViewState extends ViewState2d {
     if (iModel.isBriefcaseConnection()) {
       iModel.txns.onElementsChanged.addListener(async (changes) => {
         let reload = false;
-        for (const change of changes.filter({ includeMetadata: (meta) => meta.is("BisCore:ViewAttachment")})) {
+        for (const change of changes.filter({ includeMetadata: (meta) => meta.is("BisCore:ViewAttachment") })) {
           if (change.type === "inserted" || this._viewAttachments.attachmentIds.includes(change.id)) {
             reload = true;
             break;
@@ -358,8 +358,8 @@ export class SheetViewState extends ViewState2d {
 
   /** @beta */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for sheets.
-    // Should probably call super or have super call us.
-    return this._viewAttachments.computeDisplayTransform(args);
+    return args.viewAttachmentId
+      ? this._viewAttachments.computeDisplayTransform(args)
+      : super.computeDisplayTransform(args);
   }
 }
