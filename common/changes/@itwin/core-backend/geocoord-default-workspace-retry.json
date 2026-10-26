@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Retry default GCS workspace loading after a transient failure instead of leaving coordinate system dictionaries unavailable for the remainder of the process.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
