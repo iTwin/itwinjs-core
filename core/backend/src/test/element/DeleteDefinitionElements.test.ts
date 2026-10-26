@@ -66,7 +66,6 @@ describe("DeleteDefinitionElements", () => {
   let definitionModelId: Id64String;
   let physicalModelId: Id64String;
   let spatialCategoryId: Id64String;
-  let sourcePhysicalCategoryId: Id64String;
   let subCategoryId: Id64String;
   let filteredSubCategoryId: Id64String;
   let spatialCategorySelectorId: Id64String;
@@ -105,7 +104,6 @@ describe("DeleteDefinitionElements", () => {
     definitionModelId = seedDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(seedDb, subjectId, "Definition"))!;
     physicalModelId = seedDb.elements.queryElementIdByCode(PhysicalPartition.createCode(seedDb, subjectId, "Physical"))!;
     spatialCategoryId = seedDb.elements.queryElementIdByCode(SpatialCategory.createCode(seedDb, definitionModelId, "SpatialCategory"))!;
-    sourcePhysicalCategoryId = seedDb.elements.queryElementIdByCode(SpatialCategory.createCode(seedDb, definitionModelId, "SourcePhysicalCategory"))!;
     subCategoryId = seedDb.elements.queryElementIdByCode(SubCategory.createCode(seedDb, spatialCategoryId, "SubCategory"))!;
     filteredSubCategoryId = seedDb.elements.queryElementIdByCode(SubCategory.createCode(seedDb, spatialCategoryId, "FilteredSubCategory"))!;
     spatialCategorySelectorId = seedDb.elements.queryElementIdByCode(CategorySelector.createCode(seedDb, definitionModelId, "SpatialCategories"))!;
@@ -388,28 +386,13 @@ describe("DeleteDefinitionElements", () => {
 
       try {
         // Deleting the Subject expands the delete set to everything beneath it (partitions, sub-models and their contents).
-        // The categories / non-default sub-categories / GeometryPart / RenderMaterial in the Definition model are still used by
-        // elements outside that subtree, so they are reported as DefinitionInUse and the Subject is BlockedByRelative.
-        // Default SubCategories are not reported separately - they are implied by their (reported) parent Category.
-        // The requested PhysicalObjects are not affected and are deleted.
-        const defaultSubCategoryOf = (categoryId: Id64String) => IModel.getDefaultSubCategoryId(categoryId);
+        // Every element in this iModel lives under that Subject, so all usages of the categories / GeometryPart / RenderMaterial
+        // in the Definition model are *intra-set* and must not block the deletion: everything is deleted.
         expectDelete(
           [physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId],
-          partialSuccess(
-            definitionInUse(spatialCategoryId),
-            definitionInUse(defaultSubCategoryOf(spatialCategoryId)),
-            definitionInUse(sourcePhysicalCategoryId),
-            definitionInUse(defaultSubCategoryOf(sourcePhysicalCategoryId)),
-            definitionInUse(subCategoryId),
-            definitionInUse(filteredSubCategoryId),
-            definitionInUse(drawingCategoryId),
-            definitionInUse(defaultSubCategoryOf(drawingCategoryId)),
-            definitionInUse(renderMaterialId),
-            definitionInUse(geometryPartId),
-            blockedByRelative(subjectId, spatialCategoryId),
-          ),
-          [physicalObjectId1, physicalObjectId2, physicalObjectId3],
-          [subjectId],
+          success,
+          [physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId, definitionModelId, physicalModelId, spatialCategoryId, geometryPartId, renderMaterialId],
+          [],
         );
 
         // Reset the db state
@@ -558,6 +541,39 @@ describe("DeleteDefinitionElements", () => {
       }
     });
 
+    it("a Subject is BlockedByRelative when a definition beneath it is used from outside its subtree", () => {
+      const txn = new EditTxn(iModelDb, "delete subject with outside user");
+      txn.start();
+      try {
+        // A PhysicalObject in a model that is NOT under the Subject uses the SpatialCategory. The category is a hard FK violator
+        // (bis_GeometricElement3d.CategoryId, so ReferencedByForeignKey rather than DefinitionInUse; its default SubCategory is
+        // implied and not reported separately) and the requested Subject is BlockedByRelative; nothing under the Subject is deleted.
+        // The requested PhysicalObjects are unaffected and are deleted.
+        const outsideModelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "OutsideSubject");
+        const outsideUserProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: outsideModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: Point3d.create(0, 0, 0).toJSON(), angles: {} },
+        };
+        const outsideUserId = txn.insertElement(outsideUserProps);
+        txn.saveChanges();
+
+        executeTestCase(
+          txn,
+          "subject blocked by outside user of its category",
+          [physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId],
+          [physicalObjectId1, physicalObjectId2, physicalObjectId3],
+          partialSuccess(categoryInUse3d(spatialCategoryId), blockedByRelative(subjectId, spatialCategoryId)),
+          [subjectId, definitionModelId, physicalModelId, spatialCategoryId, IModel.getDefaultSubCategoryId(spatialCategoryId), outsideUserId],
+        );
+      } finally {
+        if (txn.isActive)
+          txn.end("abandon");
+      }
+    });
+
     describe("basic tests", () => {
       let txn: EditTxn;
       beforeEach(() => {
@@ -665,6 +681,44 @@ describe("DeleteDefinitionElements", () => {
           partialSuccess(definitionInUse(usedElement1), definitionInUse(usedElement2), definitionInUse(usedElement3)),
           [usedElement1, usedElement2, usedElement3],
         );
+      });
+
+      it("a definition used only by elements inside the delete set is not DefinitionInUse", () => {
+        const insertPhysicalObject = (model: Id64String, category: Id64String): Id64String => {
+          const props: PhysicalElementProps = {
+            classFullName: "Generic:PhysicalObject",
+            model,
+            category,
+            code: Code.createEmpty(),
+            placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          };
+          return txn.insertElement(props);
+        };
+
+        // Case 1: the only user of the category is requested directly.
+        const directCategory = SpatialCategory.insert(txn, definitionModelId, "DirectUserCategory", new SubCategoryAppearance());
+        const directUser = insertPhysicalObject(physicalModelId, directCategory);
+
+        // Case 2: the only user of the category lives in a sub-model that is reached through the partition cascade, i.e. it is in the
+        // *expanded* delete set but not in the requested ids.
+        const cascadeCategory = SpatialCategory.insert(txn, definitionModelId, "CascadeUserCategory", new SubCategoryAppearance());
+        const partitionId = PhysicalModel.insert(txn, subjectId, "CascadeUserModel");
+        const cascadeUser = insertPhysicalObject(partitionId, cascadeCategory);
+        txn.saveChanges();
+
+        const directSubCategory = IModel.getDefaultSubCategoryId(directCategory);
+        const cascadeSubCategory = IModel.getDefaultSubCategoryId(cascadeCategory);
+
+        /** Like `executeTestCase` but with an explicit `deleteMode`. Rolls back afterwards. */
+        const expectSuccess = (deleteMode: BulkDeleteMode, idsToDelete: Id64Array, deletedIds: Id64Array, retainedIds: Id64Array) => {
+          assertResult(txn.deleteElements(idsToDelete, { deleteMode }), success, deletedIds, retainedIds, iModelDb);
+          txn.abandonChanges();
+        };
+
+        for (const deleteMode of [BulkDeleteMode.RemoveFKViolators, BulkDeleteMode.FailFast]) {
+          expectSuccess(deleteMode, [directCategory, directUser], [directCategory, directSubCategory, directUser], [cascadeCategory, cascadeSubCategory, cascadeUser]);
+          expectSuccess(deleteMode, [cascadeCategory, partitionId], [cascadeCategory, cascadeSubCategory, partitionId, cascadeUser], [directCategory, directSubCategory, directUser]);
+        }
       });
     });
 
@@ -1236,7 +1290,7 @@ describe("DeleteDefinitionElements", () => {
           "two FKs on one element",
           [category],
           [],
-          partialSuccess(categoryInUse3d(category), codeScopeViolator(category)),
+          partialSuccess(codeScopeViolator(category)),
           [category, user, scopedPart],
         );
       });
@@ -1261,7 +1315,6 @@ describe("DeleteDefinitionElements", () => {
        */
       const usedSpatialCategoryViolations = (): BulkDeleteFailure[] => [
         categoryInUse3d(spatialCategoryId),
-        definitionInUse(spatialCategoryId),
         definitionInUse(subCategoryId),
         definitionInUse(filteredSubCategoryId),
       ];
@@ -1297,7 +1350,6 @@ describe("DeleteDefinitionElements", () => {
         // There is no way to bypass the definition usage check: geometry-stream references are not SQLite foreign keys, so
         // skipping validation would silently leave dangling references. The deprecated flag therefore maps to FailFast.
         const unusedPart = insertDefinitionElement(txn);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const result = txn.deleteElements([geometryPartId, unusedPart], { skipFKConstraintValidations: true });
         assertResult(result, constraintViolation(definitionInUse(geometryPartId)), [], [geometryPartId, unusedPart], iModelDb);
       });

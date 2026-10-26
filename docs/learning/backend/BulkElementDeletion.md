@@ -4,10 +4,10 @@
 
 ## Basic usage
 
-Pass an array of element IDs to delete. The method returns a [BulkDeleteElementsResult]($backend) that describes the outcome: which elements were deleted, which could not be deleted due to integrity constraints, and the overall status.
+Pass an array of element IDs to delete. The method returns a [BulkDeleteElementsResult]($backend) that describes the outcome: deletion status, in case of failure which elements could not be deleted due to integrity constraints.
 
 ```typescript
-const result: BulkDeleteElementsResult = txn.deleteElements([idA, idB, idC]);
+const result: BulkDeleteElementsResult = txn.deleteElements([idA, idB, idC], { deleteMode: BulkDeleteMode.FailFast });
 
 switch (result.status) {
   case BulkDeleteElementsStatus.Success:
@@ -20,9 +20,9 @@ switch (result.status) {
     break;
   case BulkDeleteElementsStatus.ConstraintViolation:
     // FailFast mode only: at least one element is still referenced, so nothing was deleted - inspect result.failures.
-    console.log(`Bulk delete failed due to constraint violations in:\n`);
+    console.log(`Bulk delete failed due to constraint violations in:`);
     for (const failure of result.failures)
-      console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}\n`);
+      console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}`);
     break;
   case BulkDeleteElementsStatus.DeletionFailed:
     // An unexpected SQLite error occurred (see result.sqlDeleteStatus). The iModel may be partially modified:
@@ -82,7 +82,7 @@ txn.deleteElements([partitionId]);
 
 ### DefinitionElements
 
-DefinitionElements (categories, subcategories, geometry parts, render materials, textures, display styles, view definitions, etc.) can only be deleted when they are no longer referenced by elements outside the delete set. `deleteElements` performs the necessary usage checks automatically. Definition elements that are still in use outside the delete set are excluded from deletion and returned in the failed set.
+DefinitionElements (categories, subcategories, geometry parts, render materials, textures, display styles, view definitions, etc.) can only be deleted when they are no longer referenced by elements outside the delete set. `deleteElements` performs the necessary usage checks automatically. Definition elements that are still in use outside the delete set are excluded from deletion and reported in result.failures with reason `DefinitionInUse`.
 
 Importantly, _intra-set_ usages are resolved correctly: if element A references element B and both are in the input, neither blocks the other.
 
@@ -101,7 +101,8 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 | A `GeometricElement3d` or `GeometricElement2d` outside the set uses this element as its **Category** | The category element (and its subtree root) |
 | A `DefinitionElement` outside the set has a tracked **usage** reference to this element (e.g. a geometry part in a geometry stream) | The definition element (and its subtree root) |
 
-All constraint violators, together with their entire subtrees (descendants and sub-model contents), are reported in the returned `BulkDeleteElementsResult` via `result.failures`. The direct violator is reported with `ReferencedByForeignKey` (plus the referencing `table.column`) or `DefinitionInUse`; a requested ancestor that was skipped because of it is reported with `BlockedByRelative` and the violator's id as `detail`. In `RemoveFKViolators` mode they are removed from the delete set and the rest is deleted; in `FailFast` mode nothing is deleted.
+Any requested id that was skipped because a logical ancestor/descendant is a violator is reported with `BlockedByRelative`. Cascaded descendants that were not requested are not listed individually.
+The direct violator is reported with `ReferencedByForeignKey` (plus the referencing `table.column`) or `DefinitionInUse`; a requested ancestor that was skipped because of it is reported with `BlockedByRelative` and the violator's id as `detail`. In `RemoveFKViolators` mode they are removed from the delete set and the rest is deleted; in `FailFast` mode nothing is deleted.
 
 > Such blocking constraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
 
@@ -122,7 +123,7 @@ The other constraints such as `On Delete Cascade` and `On Delete Set NULL` are c
 
 No manual cleanup of these tables is required.
 
-### Lifecycle batched callbacks
+## Lifecycle batched callbacks
 
 For large deletions, firing one notification per element adds significant overhead. Three batch-scoped callbacks allow subclasses to handle an entire group at once:
 
@@ -148,8 +149,5 @@ Use `deleteElements` when:
 - Deleting partitions/modeled elements (so their sub-models are cleaned up too).
 - Deleting a mix of ordinary and definition elements.
 - Deleting large numbers of elements where per-element overhead matters.
+- Better control on the failure response (`FailFast` / `RemoveFKViolators` - best effort)
 - You want all-or-nothing semantics with a detailed report of what is still referenced (`FailFast`).
-
-Use `deleteElement` when:
-- You want a hard failure on any constraint violation rather than silent exclusion and a returned failed set.
-- You need callback vetoes to be respected.

@@ -257,6 +257,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         txn.saveChanges();
 
         const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.equal(deletionResult.failedIds.size, expectedFailedCount, "in-use and externally-blocked parts should fail to delete");
         for (const id of unusedPartIds) {
           if (externallyBlockedPartIds.has(id))

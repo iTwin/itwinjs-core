@@ -27,9 +27,9 @@ interface ExpectedResult {
   failedIds?: Id64Set;
 }
 
-const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures: [] };
-const partialSuccess = (...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.PartialSuccess, failures });
-const constraintViolation = (...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures });
+const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures: [], failedIds: new Set() };
+const partialSuccess = (failedIds: Id64Set, ...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.PartialSuccess, failures, failedIds });
+const constraintViolation = (failedIds: Id64Set, ...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures, failedIds });
 
 /** The element itself is referenced from outside the delete set via its Code scope. */
 const codeScopeViolator = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_Element.CodeScopeId` });
@@ -100,7 +100,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
   /** Assert the result matches `expected` and that elements in the delete set are the only ones reported; then check which elements were deleted / retained. */
   const assertResult = (result: BulkDeleteElementsResult, expected: ExpectedResult, deletedIds: Id64Array, retainedIds: Id64Array) => {
-    assert.equal(result.status, expected.status, `Bulk element deletion status is ${BulkDeleteElementsStatus[result.status]}; Expected: ${BulkDeleteElementsStatus[expected.status]}`);
+    assert.equal(result.status, expected.status, `Bulk element deletion status is ${BulkDeleteElementsStatus[result.status]}; Expected: ${BulkDeleteElementsStatus[expected.status]}. Actual failures: ${JSON.stringify(result.failures)}`);
     assert.equal(result.sqlDeleteStatus, expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK, `Bulk element deletion internal sql status is ${result.sqlDeleteStatus}; Expected: ${expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK}`);
 
     assert.equal(result.failures.length, expected.failures.length, `Actual failures don't match the expected. Actual: ${JSON.stringify(result.failures)}; Expected: ${JSON.stringify(expected.failures)}`);
@@ -112,8 +112,8 @@ describe("deleteElements (native bulk delete API)", () => {
     for (const deletedId of deletedIds)
       assertDeleted(deletedId);
 
-    // TODO: Deprecated
-    // assert.deepEqual(result.failedIds, expected.failedIds ?? new Set());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    assert.deepEqual(result.failedIds, expected.failedIds ?? new Set());
   };
 
   // Run deleteElements, compare the returned result object against `expected`, then check each id in `deleted` is gone and each id in `retained` is still present.
@@ -304,7 +304,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [rootA, childA, rootB],
-        partialSuccess(codeScopeViolator(childA)));
+        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
 
       executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
@@ -344,8 +344,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], partialSuccess(codeScopeViolator(rootA)));
-      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], partialSuccess(codeScopeViolator(rootB)));
+      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
+      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], partialSuccess(new Set([rootB]), codeScopeViolator(rootB)));
       executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
 
       executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
@@ -364,7 +364,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootD],
         [rootD],
         [rootA, rootB, rootC],
-        partialSuccess(codeScopeViolator(rootA)));
+        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
     });
 
     it("two elements using the same scope", () => {
@@ -426,7 +426,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [parent, childA, childB],
-        partialSuccess(codeScopeViolator(childA)));
+        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
     });
   });
 
@@ -447,21 +447,21 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootD],
         [rootD],
         [rootA, rootB, rootC],
-        partialSuccess(codeScopeViolator(rootA))
+        partialSuccess(new Set([rootA]), codeScopeViolator(rootA))
       );
 
       executeTestCase("Delete A and B",
         [rootA, rootB],
         [],
         [rootA, rootB],
-        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB))
+        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB))
       );
 
       executeTestCase("Delete B and C",
         [rootB, rootC],
         [],
         [rootB, rootC],
-        partialSuccess(codeScopeViolator(rootB), codeScopeViolator(rootC))
+        partialSuccess(new Set([rootB, rootC]), codeScopeViolator(rootB), codeScopeViolator(rootC))
       );
 
       executeTestCase("Delete C and D",
@@ -475,7 +475,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB, rootD],
         [rootD],
         [rootA, rootB, rootC],
-        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB))
+        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB))
       );
 
       executeTestCase("Delete all the roots",
@@ -494,7 +494,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootD, unrelated],
         [],
         [rootA, rootB, rootC, rootD, unrelated],
-        constraintViolation(codeScopeViolator(rootA)),
+        constraintViolation(new Set([rootA]), codeScopeViolator(rootA)),
         BulkDeleteMode.FailFast
       );
     });
@@ -520,7 +520,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootD],
         [],
         [rootA, rootD],
-        constraintViolation(codeScopeViolator(rootA)),
+        constraintViolation(new Set([rootA]), codeScopeViolator(rootA)),
         BulkDeleteMode.FailFast
       );
 
@@ -548,7 +548,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const geomRowExists = (id: Id64String) => iModelDb.withPreparedSqliteStatement("SELECT 1 FROM bis_GeometricElement3d WHERE ElementId=?", (stmt) => { stmt.bindId(1, id); return stmt.step() === DbResult.BE_SQLITE_ROW; });
 
       const result = txn.deleteElements([rootA, rootD, partitionId], { deleteMode: BulkDeleteMode.FailFast });
-      assertResult(result, constraintViolation(codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD, partitionId]);
+      assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD, partitionId]);
       assert.isTrue(await aspectExists(), "aspect must not be touched");
       assert.isTrue(geomRowExists(rootD), "subclass rows must not be touched");
       assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must not be touched");
@@ -558,31 +558,26 @@ describe("deleteElements (native bulk delete API)", () => {
     it("deprecated skipFKConstraintValidations: true behaves like FailFast", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
-      assertResult(result, constraintViolation(codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
+      assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
 
       // ...and succeeds when nothing is referenced from outside the set.
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const ok = txn.deleteElements([rootA, rootB, rootC, rootD], { skipFKConstraintValidations: true });
       assertResult(ok, success, [rootA, rootB, rootC, rootD], []);
     });
 
     it("deprecated skipFKConstraintValidations: false keeps the default RemoveFKViolators behaviour", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
-
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: false });
-      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
+      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
     });
 
     it("deleteMode takes precedence over the deprecated skipFKConstraintValidations flag", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
 
       // RemoveFKViolators must win over the deprecated flag: PartialSuccess with rootD deleted.
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = txn.deleteElements([rootA, rootD], { deleteMode: BulkDeleteMode.RemoveFKViolators, skipFKConstraintValidations: true });
-      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
+      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
     });
   });
 
@@ -595,7 +590,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, external],
-        partialSuccess(codeScopeViolator(rootA)));
+        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
     });
 
     it("depth-1 child is code scope for external", () => {
@@ -607,7 +602,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, childA, external],
-        partialSuccess(codeScopeViolator(childA), blockedByRelative(rootA, childA)));
+        partialSuccess(new Set([rootA, childA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)));
     });
 
     it("depth-2 grandchild is code scope for external", () => {
@@ -620,7 +615,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, childA, grandchildA, external],
-        partialSuccess(codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
+        partialSuccess(new Set([rootA, grandchildA]), codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
     });
 
     it("only the child is passed for deletion", () => {
@@ -631,7 +626,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [rootA, childA, external],
-        partialSuccess(codeScopeViolator(childA)));
+        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
     });
 
     it("root has both an external scope dependent AND an intra-set scope dependent", () => {
@@ -642,7 +637,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB],
         [rootA, external],
-        partialSuccess(codeScopeViolator(rootA)));
+        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
     });
 
     it("two independent external scope violations", () => {
@@ -655,7 +650,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB, rootC],
         [rootC],
         [rootA, rootB, extX, extY],
-        partialSuccess(codeScopeViolator(rootA), codeScopeViolator(rootB)));
+        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB)));
     });
   });
 
@@ -711,7 +706,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA1],
         [],
         [rootA, childA1, rootB, childB1],
-        partialSuccess(codeScopeViolator(childA1)));
+        partialSuccess(new Set([childA1]), codeScopeViolator(childA1)));
     });
 
     it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", () => {
@@ -768,7 +763,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [grandchildA, rootA, childB],
         [childB],
         [rootA, childA, grandchildA, rootB, external],
-        partialSuccess(codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
+        partialSuccess(new Set([rootA, grandchildA]), codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
     });
 
     it("two trees: one has external scope violation, other is deleted cleanly", () => {
@@ -784,7 +779,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, rootB],
         [rootB, childB1, childB2, gcB],
         [rootA, childA, gcA, external],
-        partialSuccess(codeScopeViolator(childA), blockedByRelative(rootA, childA)));
+        partialSuccess(new Set([rootA, childA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)));
     });
   });
 
@@ -908,7 +903,7 @@ describe("deleteElements (native bulk delete API)", () => {
       // entire partition subtree (including the sub-model) must be ignored from the delete set.
       // scopingElem is the direct violator; the requested partition is reported as blocked by it.
       const result = txn.deleteElements([partitionId, unrelated]);
-      assertResult(result, partialSuccess(codeScopeViolator(scopingElem), blockedByRelative(partitionId, scopingElem)), [unrelated], [partitionId, scopingElem, otherElem, external]);
+      assertResult(result, partialSuccess(new Set([scopingElem, partitionId]), codeScopeViolator(scopingElem), blockedByRelative(partitionId, scopingElem)), [unrelated], [partitionId, scopingElem, otherElem, external]);
       assertExists(partitionId, "partition should be ignored (retained)");
       assertModelExists(partitionId, "sub-model should be retained");
       assertExists(scopingElem, "scopingElem should be retained");
@@ -1119,28 +1114,42 @@ describe("deleteElements (native bulk delete API)", () => {
       assertExists(childA, "abandon must restore childA");
     });
 
-    it("failures list is capped at 100 entries but every violator is still retained", () => {
-      // 120 roots, each the code scope of an external element -> 120 direct violators.
-      const roots: Id64Array = [];
-      const externals: Id64Array = [];
-      for (let i = 0; i < 120; i++) {
-        const root = insertElement();
-        roots.push(root);
-        externals.push(insertElement({ codeScope: root, codeValue: `ext-${i}` }));
-      }
-      const unrelated = insertElement();
+    it("an element referenced through several foreign keys is reported exactly once", () => {
+      // A fresh category referenced from outside the delete set via two distinct NO ACTION foreign keys:
+      //   - bis_GeometricElement3d.CategoryId (a PhysicalObject assigned to it)
+      //   - bis_Element.CodeScopeId          (another element using it as code scope)
+      const multiRefCategory = SpatialCategory.insert(txn, IModel.dictionaryId, "MultiRefCategory", new SubCategoryAppearance());
+      const usesAsCategoryProps: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: modelId,
+        category: multiRefCategory,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      };
+      const usesAsCategory = txn.insertElement(usesAsCategoryProps);
+      const usesAsCodeScope = insertElement({ codeScope: multiRefCategory, codeValue: "scoped-by-category" });
+      txn.saveChanges();
 
-      const result = txn.deleteElements([...roots, unrelated]);
-      assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
-      assert.equal(result.failures.length, 100, "failures must be capped at 100 entries");
-      for (const failure of result.failures) {
+      const fkDetails = ["bis_GeometricElement3d.CategoryId", "bis_Element.CodeScopeId"];
+      const assertSingleFailure = (resultObj: BulkDeleteElementsResult, status: BulkDeleteElementsStatus) => {
+        assert.equal(resultObj.status, status);
+        assert.equal(resultObj.failures.length, 1, `expected a single failure, got ${JSON.stringify(resultObj.failures)}`);
+        const [failure] = resultObj.failures;
+        assert.equal(failure.elementId, multiRefCategory);
         assert.equal(failure.reason, BulkDeleteFailureReason.ReferencedByForeignKey);
-        assert.include(roots, failure.elementId, "only violators may be reported");
-      }
-      // The cap only limits the report, never the correctness of the operation.
-      for (const id of [...roots, ...externals])
-        assertExists(id);
-      assertDeleted(unrelated);
+        assert.include(fkDetails, failure.detail, "detail must name one of the referencing foreign keys");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.deepEqual(resultObj.failedIds, new Set([multiRefCategory]));
+        for (const id of [multiRefCategory, usesAsCategory, usesAsCodeScope])
+          assertExists(id);
+      };
+
+      assertSingleFailure(txn.deleteElements([multiRefCategory], { deleteMode: BulkDeleteMode.RemoveFKViolators }), BulkDeleteElementsStatus.PartialSuccess);
+      assertSingleFailure(txn.deleteElements([multiRefCategory], { deleteMode: BulkDeleteMode.FailFast }), BulkDeleteElementsStatus.ConstraintViolation);
+
+      // Once both referencing elements are in the delete set the category is no longer a violator.
+      const result = txn.deleteElements([multiRefCategory, usesAsCategory, usesAsCodeScope]);
+      assertResult(result, success, [multiRefCategory, usesAsCategory, usesAsCodeScope], []);
     });
   });
 
@@ -1193,7 +1202,7 @@ describe("deleteElements (native bulk delete API)", () => {
       prime([rootA, external, rootB, childB]);
 
       const result = txn.deleteElements([rootA, rootB]);
-      assertResult(result, partialSuccess(codeScopeViolator(rootA)), [rootB, childB], [rootA, external]);
+      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootB, childB], [rootA, external]);
       assert.strictEqual(iModelDb.elements.getElement(rootA).id, rootA);
       assert.isUndefined(iModelDb.elements.tryGetElementProps(childB));
     });
@@ -1334,7 +1343,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA, unrelated],
         [],
         [rootA, childA, external, unrelated],
-        constraintViolation(codeScopeViolator(childA), blockedByRelative(rootA, childA)),
+        constraintViolation(new Set([childA, rootA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)),
         BulkDeleteMode.FailFast);
     });
 
@@ -1354,7 +1363,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [partitionId],
         [],
         [partitionId, inner, external],
-        constraintViolation(codeScopeViolator(inner), blockedByRelative(partitionId, inner)),
+        constraintViolation(new Set([inner, partitionId]), codeScopeViolator(inner), blockedByRelative(partitionId, inner)),
         BulkDeleteMode.FailFast);
       assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must survive a FailFast rejection");
     });

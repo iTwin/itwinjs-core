@@ -40,7 +40,7 @@ export interface BulkDeleteElementsArgs {
    * `true` is equivalent to `deleteMode: BulkDeleteMode.FailFast`. Ignored if `deleteMode` is set.
    * @note This flag no longer bypasses validation. Skipping the foreign key checks could leave the iModel with dangling references
    * (e.g. a deleted GeometryPart still referenced from a geometry stream), so that behaviour was removed.
-   * @deprecated in 5.15.0 - might be removed in next major version. Use `deleteMode` instead.
+   * @deprecated Use `deleteMode` instead.
    */
   skipFKConstraintValidations?: boolean;
 }
@@ -67,7 +67,7 @@ export interface BulkDeleteFailure {
   elementId: Id64String;
   /** Why the element could not be deleted. */
   reason: BulkDeleteFailureReason;
-  /** Possible with `ReferencedByForeignKey` reason only: the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId`. */
+  /** The referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId` or the id of the blocking relative element. */
   detail?: string;
 }
 
@@ -81,14 +81,13 @@ export interface BulkDeleteElementsResult {
   /** The raw SQLite result code from the underlying SQL DELETE. Only meaningful when `status === DeletionFailed`. */
   sqlDeleteStatus: DbResult;
   /**
-   * Every element in the delete set that could not be deleted, with the reason (`PartialSuccess` / `ConstraintViolation`).
-   * An element may appear more than once if several foreign keys reference it. At most 100 `ReferencedByForeignKey` entries are reported.
+   * One entry per element that could not be deleted, with the reason (`PartialSuccess` / `ConstraintViolation`).
    * Empty on `Success` and `DeletionFailed`.
    */
   failures: BulkDeleteFailure[];
   /**
    * The set of element ids that could not be deleted.
-   * Empty when `status` is `Success`. Non-empty when `status` is `PartialSuccess` or `DeletionFailed`.
+   * Empty when `status` is `Success` or `DeletionFailed`.
    * @deprecated Use `failures` for a more detailed failure report.
    */
   failedIds: Id64Set;
@@ -505,12 +504,11 @@ export class EditTxn {
 
     const nativeResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
 
-    // `failedIds` are deprecated since `failures` provides a more comprehensive error report.
-    // We still need to return `failedIds` to maintain backward compatibility.
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const failedIds: Id64Set = Id64.toIdSet(nativeResult.failedIds ?? []);
-    for (const failure of nativeResult.failures)
-      failedIds.add(failure.elementId);
+    // `failedIds` is deprecated. `failures` provides a more comprehensive error report and native no longer returns a `failedIds` array.
+    // We still need to construct and return the deprecated `failedIds` to maintain backward compatibility.
+    const failedIds = new Set<Id64String>();
+    for (const f of nativeResult.failures)
+      failedIds.add(f.elementId);
 
     const result: BulkDeleteElementsResult = {
       status: nativeResult.status,
