@@ -9,6 +9,7 @@ on:
       - rush.json
       - .github/workflows/automation-scripts/rush-lockfile/**
       - .github/workflows/automation-scripts/check-rush-lockfile.mjs
+      - .github/workflows/automation-scripts/audit-rush-lockfile.mjs
       - .github/workflows/check-rush-lockfile.yaml
 
 permissions:
@@ -25,3 +26,6 @@ jobs:
 
       - name: Check lockfile matches rush.json
         run: node .github/workflows/automation-scripts/check-rush-lockfile.mjs
+
+      - name: Audit Rush lockfile
+        run: node .github/workflows/automation-scripts/audit-rush-lockfile.mjs
