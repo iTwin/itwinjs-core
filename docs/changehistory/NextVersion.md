@@ -23,6 +23,7 @@ publish: false
   - [Breaking changes](#breaking-changes)
     - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
+    - [Non-finite geographic conversion results](#non-finite-geographic-conversion-results)
 
 ## Backend
 
@@ -151,3 +152,11 @@ Upgrade the mobile native runtime together with both the frontend and backend co
 No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
 
 Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.
+
+### Non-finite geographic conversion results
+
+The GCS-based single-point and batch conversion methods on [IModelConnection]($frontend) now reject non-finite returned coordinates with `GeoServiceStatus.CSMapError`, even if the conversion reports success. Previously, coordinate normalization could turn an invalid ordinate into zero or return an infinite value. Finite successful results and the existing handling of failure statuses are unchanged. OPC point-cloud placement now warns and uses zero vertical correction when its computed correction is non-finite.
+
+Handle these rejected promises instead of relying on normalized invalid elevations. Applications that deliberately use partial conversion results should use [GeoConverter]($frontend), inspect each [PointWithStatus]($common), and validate the ordinates they need. Status `26` (`GeoCoordStatus.VerticalDatumConvertError`) permits horizontal use but does not provide a reliable converted elevation, even when Z is finite. Connection convenience methods continue to reject this status; OPC's warning and zero-correction fallback is approximate display placement, not successful vertical conversion.
+
+After fixing unavailable grid resources, do not reuse a retained converter's cached failure. Finish outstanding requests and obtain a fresh converter from `GeoServices.getConverter` to retry.

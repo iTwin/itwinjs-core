@@ -407,7 +407,17 @@ export async function computeVerticalDatumShift(geoOrigin: Point3d, heightAsElli
       return 0;
     }
 
-    return Point3d.fromJSON(response.iModelCoords[0].p).z - heightAsEllipsoidalDbZ;
+    try {
+      const converted = IModelConnection.getFiniteGeoPoint(response.iModelCoords[0].p);
+      const shift = converted.z - heightAsEllipsoidalDbZ;
+      if (!Number.isFinite(shift))
+        throw new Error("Non-finite orthometric height correction");
+
+      return shift;
+    } catch {
+      Logger.logWarning(FrontendLoggerCategory.RealityData, "Non-finite orthometric height correction for point cloud; heights will be treated as ellipsoidal");
+      return 0;
+    }
   } catch (err) {
     Logger.logError(FrontendLoggerCategory.RealityData, err);
     return 0;
