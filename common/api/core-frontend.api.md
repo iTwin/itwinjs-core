@@ -126,6 +126,7 @@ import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
+import { GeographicCRS } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
 import { GeometricModel3dProps } from '@itwin/core-common';
@@ -3903,6 +3904,8 @@ export interface GeoConverterOptions {
     // (undocumented)
     fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
     // (undocumented)
+    getGcs?: () => GeographicCRS | undefined;
+    // (undocumented)
     isIModelClosed: () => boolean;
     // (undocumented)
     toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
@@ -5310,6 +5313,8 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     readonly geoServices: GeoServices;
+    // @internal
+    static getFiniteGeoPoint(props: XYZProps): Point3d;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
     // @internal (undocumented)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Reject non-finite GCS conversion results before coordinate normalization and use a warning with zero correction for non-finite OPC vertical shifts. Document per-point vertical conversion status and fresh-converter retries after grid resources become available. Refresh retained converters when the iModel CRS changes so cached or in-flight results cannot retain the previous datum's elevations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -58,3 +58,7 @@ Before committing work that will be pushed, apply only the checks required by th
 - Treat a runtime or logical behavior change as breaking even when existing consumer code still compiles.
 - If a required check is blocked, state the command and blocker.
 - Do not commit `.only` tests.
+
+## Manual offline tests
+
+AI assistants require network access and cannot work while this machine is offline. Do not launch or supervise a test requiring machine-wide disconnection through assistant tools. While still online, give the operator the complete commands, expected results, cancellation steps, and manual network-restoration instructions, then end your turn before disconnection. Resume work only after the operator confirms networking is restored. For Vertical CRS acceptance, follow the [Vertical CRS testing guide](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance).
