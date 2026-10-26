@@ -14,7 +14,7 @@ import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
 import type { ChangeElementModelProps, ChangeElementParentProps, IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _updateIModelProps, _verifyChannel } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -175,6 +175,7 @@ export class EditTxn {
     this.verifyWriteable();
     this.iModel.clearCaches({ instanceCachesOnly: true });
     this.iModel[_nativeDb].abandonChanges();
+    this.iModel[_refreshGeographicCoordinateSystem]();
   }
 
   /** Save changes with additional arguments.
@@ -752,11 +753,12 @@ export class EditTxn {
   }
 
   /** Update the iModel props in the database from the current in-memory state.
+   * An unchanged geographic coordinate system is not replaced or re-resolved from its dictionary identifiers.
    * @throws EditTxnError if this EditTxn is not active.
    */
   public updateIModelProps(): void {
     this.verifyWriteable();
-    this.iModel[_nativeDb].updateIModelProps(this.iModel.toJSON());
+    this.iModel[_updateIModelProps]();
   }
 
   private static readonly _settingPropNamespace = "settings";
