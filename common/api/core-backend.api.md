@@ -1350,6 +1350,9 @@ export namespace CloudSqlite {
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;
+        readonly onDemandBlocksDownloaded?: string;
+        readonly onDemandBytesDownloaded?: string;
+        readonly onDemandDownloadTimeMs?: string;
         readonly ongoingPrefetches?: string;
         readonly populatedCacheslots: string;
         readonly totalCacheslots: string;
