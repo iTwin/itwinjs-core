@@ -12,7 +12,8 @@
   "globalOverrides": {
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
     "serialize-javascript": "^7.0.5", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq and https://github.com/advisories/GHSA-qj8w-gfj5-8c6v mocha>serialize-javascript
-    "lodash@>=4.0.0 <=4.17.23": "^4.18.0" // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
+    "lodash@>=4.0.0 <=4.17.23": "^4.18.0", // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
+    "@azure/msal-node@>=5.0.0-beta.0 <7.1.0": "^7.1.0" // https://github.com/advisories/GHSA-xcx6-jx8p-x3h5 azurite>applicationinsights|sequelize>tedious>@azure/identity>@azure/msal-node; latest @azure/identity (4.14.0) still requires ^6.0.0
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
