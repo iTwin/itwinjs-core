@@ -8,6 +8,7 @@ import { AccessToken } from "@itwin/core-bentley";
 
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "setBackendAccessToken";
+export const verticalCrsChangesCallbackName = "verticalCrsChanges";
 
 export type SerializedAccessToken = [string, any];
 
