@@ -66,6 +66,8 @@ jobs:
     # rendering lane (itwinjs-backlog#2355), allow the single Windows pass to finish. Lanes that
     # finish under 60m are unaffected.
     timeoutInMinutes: 90
+    variables:
+      ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS: "1"
     strategy:
       matrix:
         Renderer_Linux_x64_node_24_x:
