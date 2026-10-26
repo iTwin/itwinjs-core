@@ -41,7 +41,7 @@ export type Persisted<T extends EntityProps> = T & { id: Id64String };
  * @extensions
  */
 export function isPersisted<T extends EntityProps>(entity: T): entity is Persisted<T> {
-  return undefined !== entity.id && Id64.isId64(entity.id);
+  return undefined !== entity.id && Id64.isValidId64(entity.id);
 }
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
