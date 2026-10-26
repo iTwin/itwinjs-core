@@ -10,7 +10,8 @@ import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, Externa
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { assert, Id64String } from "@itwin/core-bentley";
-import { _implicitTxn, _verifyChannel } from "./internal/Symbols";
+import { _implicitTxn } from "./internal/Symbols";
+import { verifyAspectChannel, verifyAspectLock, withActiveBulkAspectChecks } from "./internal/BulkAspectChecks";
 import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
 import { Sheet } from "./Element";
 import { ECVersion } from "@itwin/ecschema-metadata";
@@ -90,8 +91,8 @@ export class ElementAspect extends Entity {
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
+    verifyAspectChannel(iModel, arg.model);
+    verifyAspectLock(iModel, props.element.id, "insert aspect");
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -107,8 +108,8 @@ export class ElementAspect extends Entity {
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
+    verifyAspectChannel(iModel, arg.model);
+    verifyAspectLock(iModel, props.element.id, "update aspect");
   }
 
   /** Called after an ElementAspect was updated.
@@ -124,9 +125,9 @@ export class ElementAspect extends Entity {
    */
   protected static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
+    verifyAspectChannel(iModel, arg.model);
     const elementId = arg.element ?? iModel.elements.getAspect(aspectId).element.id;
-    iModel.locks.checkExclusiveLock(elementId, "element", "delete aspect");
+    verifyAspectLock(iModel, elementId, "delete aspect");
   }
 
   /** Called after an ElementAspect was deleted.
@@ -143,8 +144,10 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onBulkInsert(arg: OnAspectsPropsArg): void {
-    for (const aspect of arg.aspects)
-      this.onInsert(aspect);
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onInsert(aspect);
+    });
   }
 
   /** Called once per aspect class after a batch of ElementAspects of that class was inserted by [[EditTxn.insertAspects]].
@@ -164,8 +167,10 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onBulkUpdate(arg: OnAspectsPropsArg): void {
-    for (const aspect of arg.aspects)
-      this.onUpdate(aspect);
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onUpdate(aspect);
+    });
   }
 
   /** Called once per aspect class after a batch of ElementAspects of that class was updated by [[EditTxn.updateAspects]].
@@ -185,8 +190,10 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onBulkDelete(arg: OnAspectsIdArg): void {
-    for (const aspect of arg.aspects)
-      this.onDelete(aspect);
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onDelete(aspect);
+    });
   }
 
   /** Called once per aspect class after a batch of ElementAspects of that class was deleted by [[EditTxn.deleteAspects]].
