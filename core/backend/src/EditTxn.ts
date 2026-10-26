@@ -503,17 +503,14 @@ export class EditTxn {
       ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     const nativeResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
-
-    // `failedIds` is deprecated. `failures` provides a more comprehensive error report and native no longer returns a `failedIds` array.
-    // We still need to construct and return the deprecated `failedIds` to maintain backward compatibility.
-    const failedIds = new Set<Id64String>();
-    for (const f of nativeResult.failures)
-      failedIds.add(f.elementId);
+    const failedIds = new Set<Id64String>(nativeResult.failures.map((failure) => failure.elementId));
 
     const result: BulkDeleteElementsResult = {
       status: nativeResult.status,
       sqlDeleteStatus: nativeResult.sqlDeleteStatus,
       failures: nativeResult.failures,
+      // `failedIds` is deprecated. `failures` provides a more comprehensive error report.
+      // We still need to return the deprecated `failedIds` to maintain backward compatibility.
       failedIds,
     };
 
