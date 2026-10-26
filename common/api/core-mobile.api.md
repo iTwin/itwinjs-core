@@ -144,11 +144,15 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract getOrientation(): Orientation;
     // (undocumented)
+    handleNativeQuery(name: string, message: string): Promise<string>;
+    // (undocumented)
     abstract reconnect(connection: number): void;
     // (undocumented)
     abstract resumeDownloadInBackground(requestId: number): boolean;
     // (undocumented)
     abstract resumeDownloadInForeground(requestId: number): boolean;
+    // (undocumented)
+    abstract sendQueryToNative(name: string, message: string, callback: (response?: string, err?: string) => void): void;
 }
 
 // @internal
@@ -176,7 +180,12 @@ export class MobileHost {
     // @internal (undocumented)
     static downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     // (undocumented)
+    static handleNativeQuery(name: string, message: string): Promise<string>;
+    // (undocumented)
     static get isValid(): boolean;
+    // (undocumented)
+    static get nativeQueryHandler(): NativeQueryHandler;
+    static set nativeQueryHandler(handler: NativeQueryHandler);
     static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>): void;
     static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     static readonly onConnected: BeEvent<Listener>;
@@ -282,6 +291,9 @@ export class MobileRpcRequest extends RpcRequest {
     protected send(): Promise<number>;
     protected setHeader(_name: string, _value: string): void;
 }
+
+// @beta (undocumented)
+export type NativeQueryHandler = (name: string, message: string) => Promise<string>;
 
 // @beta (undocumented)
 export enum Orientation {
