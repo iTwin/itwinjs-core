@@ -14,7 +14,7 @@ import {
   Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, DbResponseKind, DbResponseStatus, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Persisted, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
@@ -945,13 +945,13 @@ export namespace IModelConnection {
     /** @internal */
     public async getDictionaryModel(): Promise<Id64String> {
       const res = await this._iModel.models.queryProps({ from: "bis.DictionaryModel", wantPrivate: true });
-      if (res.length !== 1 || res[0].id === undefined)
+      if (res.length !== 1)
         throw new IModelError(IModelStatus.BadModel, "bis.DictionaryModel");
       return res[0].id;
     }
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
-    public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
+    public async getProps(modelIds: Id64Arg): Promise<Persisted<ModelProps>[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getModelProps(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
@@ -1193,7 +1193,7 @@ export namespace IModelConnection {
      * @param queryParams The query parameters. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
-    public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
+    public async queryProps(queryParams: ModelQueryParams): Promise<Persisted<ModelProps>[]> {
       const iModel = this._iModel;
       if (!iModel.isOpen)
         return [];
@@ -1216,9 +1216,9 @@ export namespace IModelConnection {
     }
 
     /** Asynchronously stream ModelProps using the specified ModelQueryParams. */
-    public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
+    public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<Persisted<ModelProps>> {
       // NOTE: this implementation has the desired API signature, but its implementation must be improved to actually page results
-      const modelPropsArray: ModelProps[] = await this.queryProps(queryParams);
+      const modelPropsArray: Persisted<ModelProps>[] = await this.queryProps(queryParams);
       for (const modelProps of modelPropsArray) {
         yield modelProps;
       }
@@ -1252,7 +1252,7 @@ export namespace IModelConnection {
      * @note This method returns **all** of the properties of the element (excluding GeometryStream), which may be a very large amount of data - consider using
      * [[IModelConnection.query]] to select only those properties of interest to limit the amount of data returned.
      */
-    public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
+    public async getProps(arg: Id64Arg): Promise<Persisted<ElementProps>[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
     }
@@ -1268,7 +1268,7 @@ export namespace IModelConnection {
      * @returns The properties of the requested element; or `undefined` if no element exists with the specified identifier or the iModel is not open.
      * @throws [IModelError]($common) if the element exists but could not be loaded.
      */
-    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<Persisted<ElementProps> | undefined> {
       const imodel = this._iModel;
       return imodel.isOpen ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(imodel.getRpcProps(), identifier, options) : undefined;
     }
@@ -1277,7 +1277,7 @@ export namespace IModelConnection {
      * @param params The query parameters. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
-    public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
+    public async queryProps(params: EntityQueryParams): Promise<Persisted<ElementProps>[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
     }
@@ -1490,7 +1490,7 @@ export namespace IModelConnection {
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
-    public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
+    public async queryProps(queryParams: ViewQueryParams): Promise<Persisted<ViewDefinitionProps>[]> {
       const iModel = this._iModel;
       if (iModel.isClosed)
         return [];
@@ -1506,7 +1506,7 @@ export namespace IModelConnection {
       }
       const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
-      return viewProps as ViewDefinitionProps[];
+      return viewProps as Persisted<ViewDefinitionProps>[];
     }
 
     /** Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
