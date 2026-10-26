@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, Persisted, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
@@ -44,7 +44,7 @@ export class ViewStateHydrator {
   private async handleModelSelectorStateModels(response: HydrateViewStateResponseProps, models: CompressedId64Set) {
     const decompressedModelIds = CompressedId64Set.decompressSet(models);
 
-    const modelJsonArray: ModelProps[] = [];
+    const modelJsonArray: Persisted<ModelProps>[] = [];
     for (const id of decompressedModelIds) {
       try {
         const modelProps = this._imodel.models.getModelProps(id);
@@ -68,7 +68,7 @@ export class ViewStateHydrator {
 
   private async handleSheetViewAttachmentIds(response: HydrateViewStateResponseProps, sheetViewAttachmentIds: CompressedId64Set, viewStateLoadProps?: ViewStateLoadProps) {
     const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
-    const attachmentProps: ViewAttachmentProps[] = [];
+    const attachmentProps: Persisted<ViewAttachmentProps>[] = [];
     for (const id of decompressedIds) {
       try {
         attachmentProps.push(this._imodel.elements.getElementProps({ id }));
