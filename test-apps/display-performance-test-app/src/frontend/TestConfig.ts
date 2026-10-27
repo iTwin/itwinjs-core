@@ -138,6 +138,8 @@ export interface TestConfigProps {
   iModelName?: string;
   /** The ID of the iModel if it should be downloaded from iModelHub. */
   iModelId?: string;
+  /** The ID of the changeset at which to open the remote iModel. Default: latest. */
+  changesetId?: string;
   /** The ID of the iTwin project from which to obtain the iModel. */
   iTwinId?: string;
   /** The format in which to output the timing data. See DisplayPerfRpcImpl.saveCsv - only "original" is treated specially.
@@ -208,6 +210,7 @@ export class TestConfig {
   public frontendTilesNopFallback?: boolean;
   public urlStr?: string;
   public readonly iModelId?: string;
+  public readonly changesetId?: string;
   public readonly iTwinId?: string;
   public viewName: string;
   public readonly testType: TestType;
@@ -246,6 +249,8 @@ export class TestConfig {
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelId = props.iModelId ?? prevConfig?.iModelId;
+    // Don't inherit a changeset that belongs to a different iModel.
+    this.changesetId = props.changesetId ?? (props.iModelId ? undefined : prevConfig?.changesetId);
     this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? props.extViewName ?? prevConfig?.viewName ?? prevConfig?.extViewName ?? "*";
