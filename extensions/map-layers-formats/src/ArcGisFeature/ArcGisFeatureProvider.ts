@@ -291,8 +291,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     tmpUrl.searchParams.append("f", arcgisFeatureFormats.json);
     // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
     // header-authenticated) must not be shared with or served from differently-customized requests.
-    const hasFetchHandler = this.hasFetchHandler;
-    const cached = hasFetchHandler ? undefined : ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
+    // Reads are skipped on registration state; writes on the actual provenance of the response, since a
+    // handler may be registered while the request awaits token acquisition or the first-request gate.
+    const cached = this.hasFetchHandler ? undefined : ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
     if (cached) {
       extentJson = cached;
     } else {
@@ -303,7 +304,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       const response = await this.fetch(tmpUrl, opts);
 
       extentJson = await response.json();
-      if (!hasFetchHandler)
+      if (!this.isManagedByHandler(response))
         ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
     }
     return (extentJson ? extentJson.extent : undefined);

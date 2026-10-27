@@ -31,6 +31,9 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   protected _querySupported = false;
 
+  /** Responses of [[fetch]] managed by a fetch handler (see [[MapLayerFetchResult.managedByHandler]]). */
+  private readonly _handlerManagedFetchResponses = new WeakSet<Response>();
+
   public override get supportsMapFeatureInfo() { return this._querySupported;}
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
@@ -250,6 +253,13 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     if (response === undefined)
       throw new Error("fetch call failed");
 
+    if (managedByHandler)
+      this._handlerManagedFetchResponses.add(response);
     return response;
+  }
+
+  /** Also true for responses of [[fetch]] a handler returned as its own. */
+  protected override isManagedByHandler(response: Response): boolean {
+    return this._handlerManagedFetchResponses.has(response) || super.isManagedByHandler(response);
   }
 }

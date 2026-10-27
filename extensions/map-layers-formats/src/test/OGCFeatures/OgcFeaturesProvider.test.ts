@@ -51,7 +51,7 @@ describe("OgcApiFeaturesProvider", () => {
       return true;
     });
 
-    const symbInitSpy = sinon.spy(DefaultOgcSymbology.prototype, "initialize");
+    const symbInitSpy = sandbox.spy(DefaultOgcSymbology.prototype, "initialize");
     const indexDataStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
       return true;
     });

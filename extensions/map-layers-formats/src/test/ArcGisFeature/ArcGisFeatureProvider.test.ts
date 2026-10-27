@@ -352,6 +352,51 @@ describe("ArcGisFeatureProvider", () => {
 
   });
 
+  it("should not cache an extent managed by a fetch handler registered while the request awaited", async () => {
+    stubGetServiceJson(sandbox, () => {return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities}});
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
+      return {...NewYorkDataset.streetsLayerCapabilities};
+    });
+
+    const referenceExtent = {extent: NewYorkDataset.streetsLayerCapabilities.extent};
+    // Run the real fetch() so provenance flows from the pipeline boundary. No handler is registered when
+    // fetchLayerExtent starts; the boundary reports the request as handler-managed, as it would be if a handler
+    // were registered during token acquisition.
+    fetchStub.restore();
+    let managedByHandler = true;
+    const stub = sandbox.stub((ArcGISImageryProvider.prototype as any), "requestViaHandler").callsFake(async function _() {
+      return { response: new Response(JSON.stringify(referenceExtent), { headers: { "content-type": "application/json" } }), managedByHandler };
+    });
+
+    const layerId = 7;
+    const expectedUrl = `https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/${layerId}/query?where=1%3D1&outSR=3857&returnExtentOnly=true&f=json`;
+    expect((ArcGisFeatureProvider as any)._extentCache.get(expectedUrl)).to.be.undefined;
+
+    const createProvider = async () => {
+      const created = new ArcGisFeatureProvider(ImageMapLayerSettings.fromJSON(esriFeatureSampleSource));
+      await created.initialize();
+      (created as any)._layerId = layerId;
+      return created;
+    };
+
+    let provider = await createProvider();
+    expect((provider as any).hasFetchHandler).to.be.false;
+    expect(await (provider as any).fetchLayerExtent()).to.deep.equals(referenceExtent.extent);
+    expect(stub.callCount).to.equals(1);
+    expect((ArcGisFeatureProvider as any)._extentCache.get(expectedUrl), "handler-managed extent must not be cached").to.be.undefined;
+
+    // After the handler is gone, a later provider must fetch again rather than read the authenticated extent.
+    managedByHandler = false;
+    provider = await createProvider();
+    expect(await (provider as any).fetchLayerExtent()).to.deep.equals(referenceExtent.extent);
+    expect(stub.callCount).to.equals(2);
+    expect((ArcGisFeatureProvider as any)._extentCache.get(expectedUrl)).to.deep.equals(referenceExtent);
+
+    // Default sends are cached and served from the cache.
+    await (provider as any).fetchLayerExtent();
+    expect(stub.callCount).to.equals(2);
+  });
+
   it("should not initialize with no service metadata", async () => {
     stubGetServiceJson(sandbox, ()=>undefined);
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
