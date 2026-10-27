@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Return element/model props with Persisted<T> to convey that it has a valid id",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

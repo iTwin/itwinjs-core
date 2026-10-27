@@ -30,6 +30,20 @@ export interface EntityProps {
   jsonProperties?: { [key: string]: any };
 }
 
+/** An [[EntityProps]] whose `id` is required, representing an entity that has been persisted.
+ * @public @preview
+ * @extensions
+ */
+export type Persisted<T extends EntityProps> = T & { id: Id64String };
+
+/** Tests whether an [[EntityProps]] has a valid `id`, narrowing its type to [[Persisted]] if it does.
+ * @public @preview
+ * @extensions
+ */
+export function isPersisted<T extends EntityProps>(entity: T): entity is Persisted<T> {
+  return undefined !== entity.id && Id64.isValidId64(entity.id);
+}
+
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public @preview
  * @extensions
