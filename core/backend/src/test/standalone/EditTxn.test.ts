@@ -259,6 +259,41 @@ describe("EditTxn", () => {
     expect(iModel.queryFilePropertyString({ name: "pending", namespace: "EditTxnTest" })).to.be.undefined;
   });
 
+  for (const asynchronous of [false, true]) {
+    it(`preserves the ${asynchronous ? "asynchronous" : "synchronous"} callback error when rollback and error logging both fail`, async () => {
+      const failure = new Error("callback failure");
+      const abandonFailure = new Error("native abandonment failed");
+      const loggingFailure = new Error("error logging failed");
+      const nativeOperation = sinon.stub(iModel[_nativeDb], "abandonChanges").throws(abandonFailure);
+      const logError = sinon.stub(Logger, "logError").throws(loggingFailure);
+      let activeTxn: EditTxn | undefined;
+      const edit = (txn: EditTxn) => {
+        activeTxn = txn;
+        txn.saveFileProperty({ name: "pending", namespace: "EditTxnTest" }, "value");
+        throw failure;
+      };
+      try {
+        if (asynchronous) {
+          const error = await withEditTxn(iModel, async (txn) => {
+            await Promise.resolve();
+            edit(txn);
+          }).catch((err: unknown) => err);
+          expect(error).to.equal(failure);
+        } else {
+          expect(() => withEditTxn(iModel, edit)).to.throw(failure);
+        }
+        expect(logError.calledOnceWithExactly(BackendLoggerCategory.IModelDb, abandonFailure)).to.be.true;
+        expect(logError.firstCall.exception).to.equal(loggingFailure);
+        expect(activeTxn?.isActive).to.be.true;
+        expect(iModel.txns.hasUnsavedChanges).to.be.true;
+      } finally {
+        nativeOperation.restore();
+        activeTxn?.end("abandon");
+      }
+      expect(iModel.queryFilePropertyString({ name: "pending", namespace: "EditTxnTest" })).to.be.undefined;
+    });
+  }
+
   it("uses the default description unless save is given an override", () => {
     const txn = new EditTxn(iModel, "default description");
 

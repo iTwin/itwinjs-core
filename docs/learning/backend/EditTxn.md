@@ -95,7 +95,9 @@ Recommended follow-up:
 
 Abandoning an editing transaction reloads the cached geographic coordinate system from the database. Undo and redo also refresh it. Do not retain an abandoned in-memory CRS edit and assume it will be persisted by a later unrelated update; explicitly set it again if it is still wanted.
 
-CRS restoration raises [IModel.onGeographicCoordinateSystemChanged]($common). These restoration notifications are read-only: transaction writes, including legacy implicit writes, are rejected while the cached CRS is being restored. Perform any follow-up edits after restoration completes instead of writing from the notification listener.
+CRS restoration raises [IModel.onGeographicCoordinateSystemChanged]($common). These restoration notifications are read-only: starting an editing transaction and transaction writes, including legacy implicit writes, are rejected while the cached CRS is being restored. Perform any follow-up edits after restoration completes instead of writing from the notification listener.
+
+After a successful database rollback, `end("abandon")` releases transaction ownership even if a restoration listener propagates an error. Calling `abandonChanges()` directly instead keeps the transaction active. If rollback also throws while [withEditTxn]($backend) is handling a callback failure, logging the rollback error is attempted and the original callback error is re-thrown, even if logging fails.
 
 ## implicitWriteEnforcement
 

@@ -824,7 +824,7 @@ export class EditTxn {
  * and passed to `fn`. If `fn` returns normally (or its returned Promise resolves), the transaction
  * is committed. If `fn` throws (or its returned Promise rejects), the transaction is abandoned —
  * none of the changes made during the callback are saved — and the error is re-thrown.
- * If abandonment also throws, that secondary error is logged and the callback error is re-thrown.
+ * If abandonment also throws, logging that secondary error is attempted without allowing a logging failure to replace the callback error.
  *
  * This is the recommended way to perform a scoped unit of work on an iModel. It ensures that
  * edits are committed atomically on success and rolled back on failure, without the caller needing
@@ -876,7 +876,11 @@ export function withEditTxn<T>(iModel: IModelDb, saveArgsOrFn: string | SaveChan
       if (txn.isActive)
         txn.end("abandon");
     } catch (abandonError) {
-      Logger.logError(BackendLoggerCategory.IModelDb, abandonError);
+      try {
+        Logger.logError(BackendLoggerCategory.IModelDb, abandonError);
+      } catch {
+        throw error;
+      }
     }
     throw error;
   };
