@@ -17,9 +17,12 @@ publish: false
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
+    - [Persisted entity properties](#persisted-entity-properties)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
+  - [Platform support](#platform-support)
+    - [Electron 45 support](#electron-45-support)
   - [Breaking changes](#breaking-changes)
     - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
@@ -94,6 +97,10 @@ The change only affects queries at a time exactly equal to a keyframe's time, on
 
 [BeAsyncEvent]($bentley) is similar to [BeEvent]($bentley) in that it allows any number of listeners to be notified when something happens. The difference is that, in the case of [BeAsyncEvent]($bentley), the listener is expected to return a `Promise`. Only after the returned `Promise` settles is the listener considered to have finished handling the event.
 
+### Persisted entity properties
+
+The new [Persisted]($common) type represents entity properties with a required ID, and [isPersisted]($common) checks whether arbitrary entity properties have a valid ID. Model and element property APIs that return persisted entities now expose this stronger type, so callers can remove unnecessary ID checks and non-null assertions from those results.
+
 ## Quantity
 
 ### Built-in length ratio units for drawing scales
@@ -112,6 +119,12 @@ The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.
 - The promise also rejects if the application shuts down before the reload finishes.
 
 Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
+
+## Platform support
+
+### Electron 45 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 45](https://www.electronjs.org/blog/electron-45-0).
 
 ## Breaking changes
 
