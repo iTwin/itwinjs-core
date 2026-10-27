@@ -790,6 +790,31 @@ export enum BulkDeleteElementsStatus {
     Success = 0
 }
 
+// @beta
+export interface BulkElementAspectFailure {
+    index: number;
+    message: string;
+    status: IModelStatus;
+}
+
+// @beta
+export interface BulkElementAspectsResult {
+    failures: BulkElementAspectFailure[];
+    status: BulkElementAspectsStatus;
+}
+
+// @beta
+export enum BulkElementAspectsStatus {
+    Failed = 2,
+    PartialSuccess = 1,
+    Success = 0
+}
+
+// @beta
+export interface BulkInsertElementAspectsResult extends BulkElementAspectsResult {
+    ids: Id64String[];
+}
+
 // @public
 export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -2846,6 +2871,7 @@ export class EditTxn {
     changeElementModel(props: ChangeElementModelProps): void;
     changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
+    deleteAspects(ids: Id64Array): BulkElementAspectsResult;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
     deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
@@ -2861,6 +2887,7 @@ export class EditTxn {
     readonly iModel: IModelDb;
     static implicitWriteEnforcement: ImplicitWriteEnforcement;
     insertAspect(aspectProps: ElementAspectProps): Id64String;
+    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkInsertElementAspectsResult;
     insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
     insertModel(props: ModelProps): Id64String;
     insertRelationship(props: RelationshipProps): Id64String;
@@ -2872,6 +2899,7 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
+    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkElementAspectsResult;
     updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;
@@ -3002,6 +3030,18 @@ export class ElementAspect extends Entity {
     static get className(): string;
     // (undocumented)
     element: RelatedElement;
+    // @beta
+    protected static onBulkDelete(arg: OnAspectsIdArg): void;
+    // @beta
+    protected static onBulkDeleted(arg: OnAspectsIdArg): void;
+    // @beta
+    protected static onBulkInsert(arg: OnAspectsPropsArg): void;
+    // @beta
+    protected static onBulkInserted(arg: OnAspectsPropsArg): void;
+    // @beta
+    protected static onBulkUpdate(arg: OnAspectsPropsArg): void;
+    // @beta
+    protected static onBulkUpdated(arg: OnAspectsPropsArg): void;
     // @beta
     protected static onDelete(arg: OnAspectIdArg): void;
     // @beta
@@ -5630,11 +5670,26 @@ export interface OnAspectArg {
 // @beta
 export interface OnAspectIdArg extends OnAspectArg {
     aspectId: Id64String;
+    element?: Id64String;
 }
 
 // @beta
 export interface OnAspectPropsArg extends OnAspectArg {
     props: Readonly<ElementAspectProps>;
+}
+
+// @beta
+export interface OnAspectsIdArg {
+    aspects: Array<OnAspectIdArg & {
+        element: Id64String;
+    }>;
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnAspectsPropsArg {
+    aspects: OnAspectPropsArg[];
+    iModel: IModelDb;
 }
 
 // @beta

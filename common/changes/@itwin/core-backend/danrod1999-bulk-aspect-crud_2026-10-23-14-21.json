@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add beta EditTxn.insertAspects, updateAspects and deleteAspects for bulk ElementAspect writes, with ElementAspect.onBulk* handlers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

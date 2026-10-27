@@ -33,6 +33,7 @@
     "perftest:sqliteChangesetReaderAndChangesetECAdaptorPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SqliteChangesetReaderAndChangesetECAdaptorAPI \"./lib/cjs/perftest/SQliteChangesetReaderAndChangesetECAdaptor.test.js\"",
     "perftest:changesetReaderPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\"",
     "perftest:deleteRelationshipInstances": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/DeleteRelationshipInstances.test.js\"",
+    "perftest:bulkElementAspects": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/BulkElementAspects.test.js\"",
     "perftest:incrementalLoading": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/IncrementalLoading.test.js\"",
     "perftest:specific": "npm run -s perftest:pre && mocha --timeout=999999999"
   },

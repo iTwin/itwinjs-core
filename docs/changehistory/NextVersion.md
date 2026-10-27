@@ -14,6 +14,7 @@ publish: false
     - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
     - [Native ChangeUnifier](#native-changeunifier)
     - [Batched relationship lookups](#batched-relationship-lookups)
+    - [Bulk ElementAspect operations](#bulk-elementaspect-operations)
   - [Common](#common)
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
@@ -80,6 +81,17 @@ const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(Ele
 
 By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
 
+### Bulk ElementAspect operations
+
+The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) methods write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes. Each owning element is updated once per call instead of once per aspect, which makes these methods faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) for each aspect, especially when an element has several aspects.
+
+Invalid rows do not prevent the other rows from being written. The result lists the index, [IModelStatus]($bentley) and message of every row that failed. For example, a `classFullName` that is not in the iModel fails with `IModelStatus.BadSchema`, and a class that is not an aspect fails with `IModelStatus.WrongClass`.
+
+```ts
+const { ids, failures } = txn.insertAspects(aspectProps);
+```
+
+The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`, `onBulkUpdated`, `onBulkDelete` and `onBulkDeleted` handlers are called once per aspect class. By default they call the existing per-aspect handlers, so existing overrides of `onInsert`, `onUpdate` and the other per-aspect handlers still run for every aspect. Within one bulk call, the default handlers check the lock of each owning element and the channel of each model only once. The existing single-aspect methods and handlers are unchanged.
 ## Common
 
 ### Step-interpolated render schedule keyframes no longer apply one keyframe late
