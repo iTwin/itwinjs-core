@@ -42,7 +42,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
-    "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
     "@types/mocha": "^10.0.6",
