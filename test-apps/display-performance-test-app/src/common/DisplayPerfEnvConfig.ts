@@ -8,7 +8,12 @@ export interface DtaBooleanConfiguration {
 }
 
 /** Parameters for starting display-performance-test-app with a specified initial configuration */
-export type DptaEnvConfig = DtaBooleanConfiguration;
+export interface DptaEnvConfig extends DtaBooleanConfiguration {
+  /** Prefix of the api.bentley.com host, e.g. "qa-" or "dev-". */
+  urlPrefix?: string;
+  /** The backend signs in headlessly (or uses an existing token) and supplies the access token to the frontend. */
+  oidcHeadless?: boolean;
+}
 
 let envConfig: DptaEnvConfig | undefined;
 
@@ -22,6 +27,10 @@ export const getConfig = (): DptaEnvConfig => {
     envConfig.noDevTools = true;
   if (undefined !== process.env.IMJS_NO_MAXIMIZE_WINDOW)
     envConfig.noMaximizeWindow = true;
+  if (process.env.IMJS_URL_PREFIX)
+    envConfig.urlPrefix = process.env.IMJS_URL_PREFIX;
+  if (process.env.IMJS_OIDC_HEADLESS)
+    envConfig.oidcHeadless = true;
 
   return envConfig;
 };

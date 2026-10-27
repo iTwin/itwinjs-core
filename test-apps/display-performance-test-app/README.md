@@ -40,6 +40,7 @@ Performance tests should automatically operate on Mac the same as on a Windows m
   * If defined, the API key supplying access to Cesium ION assets.
 * BRIEFCASE_CACHE_LOCATION
   * iModelHost.cacheDir location
+* IMJS_URL_PREFIX and IMJS_OIDC_HEADLESS are read by the backend and forwarded to the frontend; values baked into the frontend build are only used as a fallback when the backend doesn't define them.
 * Authentication
   * Existing access token (takes precedence over the options below)
     * DPTA_ACCESS_TOKEN (with or without the `Bearer ` prefix)

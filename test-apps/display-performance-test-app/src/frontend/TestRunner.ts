@@ -20,7 +20,7 @@ import {
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
+import { DisplayPerfTestApp, envConfiguration, getApiBaseUrl } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
@@ -228,7 +228,7 @@ export class TestRunner {
         /** API Version. v1 by default */
         // version?: ApiVersion;
         /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-        baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+        baseUrl: getApiBaseUrl(),
       };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
@@ -262,7 +262,7 @@ export class TestRunner {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-      baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: getApiBaseUrl(),
     };
 
     let context: TestContext | undefined;
@@ -720,7 +720,8 @@ export class TestRunner {
 
   private async openIModel(): Promise<TestContext> {
     if (this.curConfig.iModelId) {
-      if (import.meta.env.IMJS_OIDC_HEADLESS) {
+      if (envConfiguration.oidcHeadless) {
+        await this.logToConsole(`Running in headless mode, using backend access token for authorization.`);
         const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
