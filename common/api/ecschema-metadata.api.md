@@ -1695,6 +1695,7 @@ export interface PropertyRef {
     readonly ecInstanceId: number;
     // (undocumented)
     readonly labelStringIdx: number;
+    overriddenProperty: ResolvedPropertyRef | null | undefined;
     // (undocumented)
     readonly priority: number;
 }
