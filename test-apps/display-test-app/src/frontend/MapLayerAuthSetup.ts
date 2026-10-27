@@ -36,7 +36,8 @@ function configureTrustedCredentialsOrigins(configuration: DtaConfiguration): vo
 
 /** Registers a map-layer fetch handler ([[MapLayerFormatRegistry.addMapLayerFetchHandler]]) injecting a
  * fixed header (e.g. "Authorization=Bearer ...") and/or query parameters for IMJS_MAP_LAYER_AUTH_FORMATS.
- * The layer's own origin is allowed; IMJS_MAP_LAYER_AUTH_ORIGINS permits additional destinations. See README.md.
+ * Only destinations listed in IMJS_MAP_LAYER_AUTH_ORIGINS receive them; a layer's own origin is not trusted
+ * implicitly, since a layer URL is data, not an approval. See README.md.
  */
 function configureAuthFetchHandler(configuration: DtaConfiguration): void {
   if (!configuration.mapLayerAuthHeader && !configuration.mapLayerAuthQueryParams)
@@ -74,7 +75,7 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
     return;
   }
 
-  // Optional additional origins for cross-origin requests; independent of SSO trust.
+  // The only approval for a destination; independent of SSO trust.
   const origins = new Set<string>();
   for (const entry of configuration.mapLayerAuthOrigins?.split(",") ?? []) {
     const value = entry.trim();
@@ -92,6 +93,11 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
       console.warn("Ignoring invalid origin in IMJS_MAP_LAYER_AUTH_ORIGINS; expected an exact HTTP(S) origin (scheme + host + port).");
     }
   }
+  if (origins.size === 0) {
+    // eslint-disable-next-line no-console
+    console.warn("IMJS_MAP_LAYER_AUTH_ORIGINS must list the exact HTTP(S) origins allowed to receive the injected header/query parameters; no handler registered.");
+    return;
+  }
 
   for (const formatId of formats) {
     if (!IModelApp.mapLayerFormatRegistry.isRegistered(formatId)) {
@@ -103,18 +109,15 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
   IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
     if (!formats.includes(request.formatId))
       return undefined;   // not ours: leave the request to the next handler or the default behavior
-    // Same-origin requests are allowed by default; server-advertised cross-origin links need explicit approval.
+    // Every destination needs explicit approval, including a layer's own origin and server-advertised links.
     let target: URL;
-    let layer: URL;
     try {
-      const baseUrl = typeof document !== "undefined" ? document.baseURI : undefined;
-      target = new URL(request.url, baseUrl);
-      layer = new URL(request.layerUrl, baseUrl);
+      target = new URL(request.url, typeof document !== "undefined" ? document.baseURI : undefined);
     } catch {
       return undefined;
     }
-    if ((target.protocol !== "https:" && target.protocol !== "http:")
-      || (target.origin !== layer.origin && !origins.has(target.origin)))
+    // blob: URLs report their creator's origin, so the scheme must be checked too.
+    if ((target.protocol !== "https:" && target.protocol !== "http:") || !origins.has(target.origin))
       return undefined;
 
     const headers = new Headers(request.headers);

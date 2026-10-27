@@ -25,6 +25,7 @@ const configuration = {
   mapLayerAuthHeader: "Authorization=Bearer test-only",
   mapLayerAuthQueryParams: "apiKey=test-only",
   mapLayerAuthFormats: "WMTS,OgcApiFeatures",
+  mapLayerAuthOrigins: origin,
 };
 
 /** @param {string} source */
@@ -94,7 +95,7 @@ async function invoke(handler, url, formatId = "WMTS", sourceUrl = layerUrl, sta
   }
 }
 
-test("DTA injects both configured values for same-origin requests without an allowlist", async () => {
+test("DTA injects both configured values for requests to a listed origin", async () => {
   const { handlers } = configure();
   assert.equal(handlers.length, 1);
   for (const url of [`${origin}/tiles/0/0/0`, "https://MAPS.EXAMPLE.COM:443/collections", "/tiles/0/0/0", "tiles/0/0/0"]) {
@@ -107,15 +108,25 @@ test("DTA injects both configured values for same-origin requests without an all
   assert.equal((await invoke(handlers[0], `${origin}/tiles`, "WMS")).sends.length, 0);
 });
 
-test("DTA allows each layer's own origin even when it is absent from the additional allowlist", async () => {
-  const { handlers } = configure({ mapLayerAuthOrigins: "https://tiles.example.com" });
+test("DTA does not trust a layer's own origin: an unlisted layer receives neither header nor query secrets", async () => {
   for (const restriction of [false, true]) {
-    const { handlers: current, registry } = configure();
+    const { handlers, registry } = configure();
     registry.restrictCredentialsToTrustedOrigins = restriction;
-    assert.equal((await invoke(current[0], "https://other.example.com/tiles", "WMTS", "https://other.example.com/wmts")).sends.length, 1);
+    for (const [url, sourceUrl] of [
+      ["https://other.example.com/tiles", "https://other.example.com/wmts"],
+      ["https://other.example.com/collections/x/items", "https://other.example.com/collections/x"],
+    ]) {
+      for (const format of ["WMTS", "OgcApiFeatures"]) {
+        const { sends, response } = await invoke(handlers[0], url, format, sourceUrl);
+        assert.equal(sends.length, 0, `${url} (restriction ${restriction})`);
+        assert.equal(response, undefined, url);
+      }
+    }
   }
-  assert.equal((await invoke(handlers[0], `${origin}/tiles`)).sends.length, 1);
-  assert.equal((await invoke(handlers[0], "/tiles", "WMTS", "/wmts")).sends.length, 1);
+  // A listed origin is approved regardless of which layer the request is made for.
+  const { handlers } = configure({ mapLayerAuthOrigins: "https://tiles.example.com" });
+  assert.equal((await invoke(handlers[0], "https://tiles.example.com/tiles", "WMTS", "https://other.example.com/wmts")).sends.length, 1);
+  assert.equal((await invoke(handlers[0], `${origin}/tiles`)).sends.length, 0);
 });
 
 test("DTA declines server-advertised WMTS and OGC destinations despite a trusted layerUrl", async () => {
@@ -145,6 +156,7 @@ test("DTA requires explicit approval for a separate tile host and port", async (
 test("DTA resolves relative destinations using the document base, not layerUrl", async () => {
   const { handlers } = configure({}, "https://other.example.com/app/");
   assert.equal((await invoke(handlers[0], "/tiles")).sends.length, 0);
+  assert.equal((await invoke(handlers[0], "/tiles", "WMTS", "/wmts")).sends.length, 0);
 });
 
 test("DTA does not reuse the SSO trust list for injected secrets", async () => {
@@ -154,16 +166,18 @@ test("DTA does not reuse the SSO trust list for injected secrets", async () => {
   assert.equal(configure().registry.restrictCredentialsToTrustedOrigins, false);
 });
 
-test("DTA keeps same-origin access but grants no extra origins for missing or invalid configuration", async () => {
+test("DTA registers no handler for missing or invalid origin configuration", async () => {
   for (const value of [undefined, "", " ", "null", "file:///", `blob:${origin}/id`, "https://*.example.com",
     `${origin}/path`, `${origin}?apiKey=do-not-log`, `${origin}#fragment`, "https://user:do-not-log@maps.example.com"]) {
     const { handlers, warnings } = configure({ mapLayerAuthOrigins: value });
-    assert.equal(handlers.length, 1, value);
-    assert.equal((await invoke(handlers[0], `${origin}/tiles`)).sends.length, 1);
-    assert.equal((await invoke(handlers[0], "https://other.example.com/tiles")).sends.length, 0);
-    assert.equal(warnings.length > 0, !!value?.trim());
+    assert.equal(handlers.length, 0, value);
+    assert.ok(warnings.length > 0, value);
     assert.ok(warnings.every((warning) => !warning.includes("do-not-log")));
   }
+  // A valid entry next to an invalid one is still honored.
+  const { handlers } = configure({ mapLayerAuthOrigins: `${origin}/path, ${origin}` });
+  assert.equal(handlers.length, 1);
+  assert.equal((await invoke(handlers[0], `${origin}/tiles`)).sends.length, 1);
   assert.equal(configure({ mapLayerAuthFormats: undefined }).handlers.length, 0);
 });
 
