@@ -48,13 +48,12 @@ export interface MapLayerRequest {
   readonly headers: Headers;
 }
 
-/** Sends a [[MapLayerRequest]] — the equivalent of `base.SendAsync(request)` in an HTTP message-handler
- * pipeline. The request is first offered to the [[MapLayerFetchHandler]]s registered after the calling one,
- * which may modify it further or decline; once the pipeline is exhausted we issue it with the site's standard
- * behavior (origin-trust checks, timeouts) and resolve with the response.
+/** Sends a [[MapLayerRequest]] onward: the request is first offered to the [[MapLayerFetchHandler]]s registered
+ * after the calling one, which may modify it further or decline; once the pipeline is exhausted we issue it with
+ * the site's standard behavior (origin-trust checks, timeouts) and resolve with the response.
  * The request sent is the one passed: its [[MapLayerRequest.searchParams]] and [[MapLayerRequest.headers]] go on
  * the wire, while the target (origin and path) is always that of the request the handler received. May be
- * called several times by a handler (e.g. to retry with a refreshed token).
+ * called one or more times by a handler (e.g. to retry with a refreshed token).
  *
  * Every send is a credentialed request, because only the handler knows whether a value it injected is a secret:
  * redirects are refused while [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so
@@ -69,7 +68,7 @@ export interface MapLayerRequest {
 export type MapLayerFetchRequest = (request: MapLayerRequest) => Promise<Response>;
 
 /** Wraps every map-layer network request issued through [[MapLayerImageryProvider]] — tiles, tooltips,
- * capabilities, service metadata, and source validation — like a `DelegatingHandler` wraps `HttpClient` sends.
+ * capabilities, service metadata, and source validation.
  * Registered via [[MapLayerFormatRegistry.addMapLayerFetchHandler]]. Handlers form a pipeline we own, run in
  * registration order: the first registered is the outermost. Requests a format issues outside the provider's
  * request path (e.g. through its own session or token service client) are not routed; that format's
@@ -77,17 +76,19 @@ export type MapLayerFetchRequest = (request: MapLayerRequest) => Promise<Respons
  *
  * A handler may:
  * - decline a request it does not manage (e.g. a format it does not serve) by returning `undefined` without
- *   calling `fetchRequest`: the request is offered unchanged to the next handler, and if every handler declines
- *   we issue it ourselves with the default behavior in full;
+ *   calling `fetchRequest`: each handler receives its own copy of the request, so the next handler sees it exactly
+ *   as the declining one received it, and if every handler declines we issue it ourselves with the default
+ *   behavior in full;
  * - pass a copy of the request with different query parameters or headers to `fetchRequest`; the request is
  *   offered to the remaining handlers, then issued as a credentialed send;
- * - call `fetchRequest` several times (e.g. refresh an expired token and retry transparently);
+ * - call `fetchRequest` one or more times (e.g. refresh an expired token and retry transparently);
  * - return its own `Response` without calling `fetchRequest` (short-circuit);
  * - throw [[MapLayerAuthenticationFailedError]] to report an unrecoverable authentication failure,
  *   transitioning the layer to [[MapLayerImageryProviderStatus.RequireAuth]].
  *
- * A handler that called `fetchRequest` must return a response (its own or the one received): declining after
- * sending makes the enclosing handler's `fetchRequest` issue the request again.
+ * A handler that has called `fetchRequest` must return a response (its own or the one received) or throw; it must
+ * not decline. This is not enforced: declining after sending makes the enclosing handler's `fetchRequest` issue
+ * the request again.
  *
  * Invoked on the hot path of tile loading; handlers should be fast, cache their tokens internally, and
  * coalesce concurrent refreshes (many tile requests observe an expired token at the same time).
