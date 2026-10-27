@@ -131,9 +131,14 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       await this.initializeService();
     } catch (error) {
       // Keep the provider (and its tile tree) alive so the application can offer re-authentication.
-      if (error instanceof MapLayerAuthenticationFailedError)
+      if (error instanceof MapLayerAuthenticationFailedError) {
+        // The failure may occur after the items URL was recorded: discard partial state so no request or
+        // rendering happens before re-initialization.
+        this._itemsUrl = "";
+        this._staticData = undefined;
+        this._spatialIdx = undefined;
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
-      else
+      } else
         throw error;
     }
   }
@@ -524,6 +529,8 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
+    if (!this._itemsUrl)
+      return;   // initialization did not complete (e.g. awaiting re-authentication)
     const tileExtent = this.getEPSG4326Extent(quadId.row, quadId.column, quadId.level);
     const tilePixelSizeX = (tileExtent.longitudeRight - tileExtent.longitudeLeft) / this.tileSize;
     const tilePixelSizeY = (tileExtent.latitudeTop - tileExtent.latitudeBottom) / this.tileSize;

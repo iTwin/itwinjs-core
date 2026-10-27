@@ -139,6 +139,34 @@ describe("OgcApiFeaturesProvider", () => {
     expect(await provider.loadTile(0, 0, 0)).to.be.undefined;
   });
 
+  it("should discard partial initialization when authentication fails after the items URL was found", async () => {
+    const settings = getTestSettings(CountriesDataset.collectionUrl);
+    let authFailing = true;
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown) {
+      if (authFailing && url === CountriesDataset.queryablesUrl)
+        throw new MapLayerAuthenticationFailedError(url);
+      return { json: JSON.parse(CountriesDataset.urlsContent[url as string]), responseUrl: url as string };
+    });
+    const fetchItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchItems").resolves(undefined);
+    const symbInitSpy = sandbox.spy(DefaultOgcSymbology.prototype, "initialize");
+    const provider = new OgcApiFeaturesProvider(settings);
+
+    await provider.initialize();
+
+    expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    expect((provider as any)._itemsUrl).to.equal("");
+    expect(await provider.loadTile(0, 0, 0)).to.be.undefined;
+    await provider.getFeatureInfo([], { row: 0, column: 0, level: 0 } as any, {} as any, {} as any, {} as any);
+    expect(fetchItemsStub.called, "no items request before re-initialization").to.be.false;
+    expect(symbInitSpy.called).to.be.false;
+
+    // Re-initialization after re-authentication completes normally.
+    authFailing = false;
+    await provider.initialize();
+    expect((provider as any)._itemsUrl).to.equal(CountriesDataset.collection.links[1].href);
+    expect(symbInitSpy.called).to.be.true;
+  });
+
   it("should propagate other initialize failures", async () => {
     const settings = getTestSettings(CountriesDataset.collectionUrl);
     sandbox.stub(OgcApiFeaturesProvider.prototype, "makeRequest").callsFake(async function _() {
