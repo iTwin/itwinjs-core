@@ -526,6 +526,8 @@ internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
 internal;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
+public;function;isPersisted
+preview;function;isPersisted
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -660,6 +662,8 @@ beta;interface;ParagraphProps
 internal;interface;ParsedTileTreeIdAndContentId
 internal;function;parseTileTreeIdAndContentId
 public;interface;PartReference
+public;type;Persisted
+preview;type;Persisted
 public;type;PersistentBackgroundMapProps
 public;interface;PersistentGraphicsRequestProps
 beta;interface;PerStatementHealthStats
