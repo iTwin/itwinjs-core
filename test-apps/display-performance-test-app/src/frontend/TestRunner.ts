@@ -729,7 +729,12 @@ export class TestRunner {
       if (iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
       const version = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
+      await this.logToConsole(`Opening remote iModel ${iModelId} at changeset ${changesetId ?? "latest"} from a V2 checkpoint...`);
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, version);
+      // Remote opens always use V2 checkpoints (SnapshotDb.openCheckpoint / openCheckpointFromRpc on the backend).
+      const openedMsg = `  Opened iModel ${iModelId} from a V2 checkpoint at changeset ${iModel.changeset.id || "(none)"} (index ${iModel.changeset.index ?? "?"})`;
+      await this.logToConsole(openedMsg);
+      await this.logToFile(openedMsg);
 
       let remoteSavedViews: ViewStateSpec[] = [];
       try {
