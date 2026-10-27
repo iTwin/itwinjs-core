@@ -52,13 +52,20 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
-    if (iModelHost.authorizationClient)
-      await (iModelHost.authorizationClient as ElectronMainAuthorization).signInSilent();
+    if (iModelHost.authorizationClient instanceof ElectronMainAuthorization)
+      await iModelHost.authorizationClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }
 
 async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
+  // Not IMJS_-prefixed so that Vite doesn't embed the token in the frontend bundle.
+  const existingToken = process.env.DPTA_ACCESS_TOKEN;
+  if (existingToken) {
+    const token = existingToken.startsWith("Bearer ") ? existingToken : `Bearer ${existingToken}`;
+    return { getAccessToken: async () => token };
+  }
+
   if (process.env.IMJS_OIDC_HEADLESS) {
     const envVars = getEnvVars(
       "IMJS_OIDC_CLIENT_ID",

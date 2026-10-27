@@ -41,6 +41,9 @@ Performance tests should automatically operate on Mac the same as on a Windows m
 * BRIEFCASE_CACHE_LOCATION
   * iModelHost.cacheDir location
 * Authentication
+  * Existing access token (takes precedence over the options below)
+    * DPTA_ACCESS_TOKEN (with or without the `Bearer ` prefix)
+    * IMJS_OIDC_HEADLESS (any value, so that the frontend gets the token from the backend)
   * [Headless](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool)
     * IMJS_OIDC_HEADLESS (any value, as long as it's set)
     * IMJS_OIDC_CLIENT_ID
