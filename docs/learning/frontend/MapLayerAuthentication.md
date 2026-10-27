@@ -48,9 +48,11 @@ Handlers run on the hot path of tile loading; they should be fast and cache thei
 A complete handler authenticating layers behind a proxy, with transparent token refresh:
 
 ```ts
-// Obtains a fresh token from the hosting application's identity provider (OAuth2 client, SSO session...).
+// Obtains a fresh token from the hosting application's identity provider, e.g. by running an OAuth2
+// client-credentials or refresh-token exchange against the proxy's token endpoint.
 async function acquireToken(): Promise<string> {
-  // ...
+  const response = await fetch("https://proxy.example.com/oauth/token", { method: "POST", /* grant parameters */ });
+  return (await response.json()).access_token;
 }
 
 // Coalesces concurrent refreshes: every caller observing the same expired token awaits one refresh.
