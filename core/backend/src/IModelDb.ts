@@ -21,7 +21,7 @@ import {
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, Persisted, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -2680,7 +2680,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelProps
      */
-    public getModelProps<T extends ModelProps>(id: Id64String): T {
+    public getModelProps<T extends ModelProps>(id: Id64String): Persisted<T> {
       const model = this.tryGetModelProps<T>(id);
       if (undefined === model)
         throw new IModelError(IModelStatus.NotFound, `Model=${id}`);
@@ -2694,22 +2694,22 @@ export namespace IModelDb {
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
-    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): Persisted<T> | undefined {
       try {
         if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getModel({ id }) as T;
+          return this._iModel[_nativeDb].getModel({ id }) as Persisted<T>;
         }
 
         const cachedMdl = this[_cache].get(id);
         if (cachedMdl) {
-          return cachedMdl as T;
+          return cachedMdl as Persisted<T>;
         }
 
         const options = { useJsNames: true }
         const instanceKey = this.resolveModelKey({ id });
         const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
         const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
-        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as Persisted<T>;
         this[_cache].set(id, modelProps);
         return modelProps;
       } catch {
@@ -2772,8 +2772,6 @@ export namespace IModelDb {
         args = { partialKey: { id: modelIdArg.id, baseClassName } };
       } else if (modelIdArg.code) {
         const modelId = this._iModel.elements.getElementProps<ElementProps>({ code: modelIdArg.code }).id;
-        if (!modelId)
-          throw new IModelError(IModelStatus.NotFound, `Model not found with code: [spec:${modelIdArg.code.spec}, scope:${modelIdArg.code.scope}, value:${modelIdArg.code.value}])`);
         args = { partialKey: { id: modelId, baseClassName } };
       } else {
         throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
@@ -2798,7 +2796,7 @@ export namespace IModelDb {
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
+      if (modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
       return this.getModel<T>(modeledElementProps.id, modelClass);
     }
@@ -2812,7 +2810,7 @@ export namespace IModelDb {
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
+      if (undefined === modeledElementProps || IModel.rootSubjectId === modeledElementProps.id)
         return undefined;
 
       return this.tryGetModel<T>(modeledElementProps.id, modelClass);
@@ -2930,8 +2928,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elProp = this.tryGetElementProps<T>(props);
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> {
+      const elProp = this.tryGetElementProps<Persisted<T>>(props);
       if (undefined === elProp)
         throw new IModelError(IModelStatus.NotFound, `element not found`);
       return elProp;
@@ -2974,7 +2972,7 @@ export namespace IModelDb {
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> | undefined {
       if (typeof props === "string") {
         props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
       } else if (props instanceof Code) {
@@ -2982,19 +2980,19 @@ export namespace IModelDb {
       }
       try {
         if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getElement(props) as T;
+          return this._iModel[_nativeDb].getElement(props) as Persisted<T>;
         }
 
         const cachedElm = this[_cache].get(props);
         if (cachedElm) {
-          return cachedElm.elProps as T;
+          return cachedElm.elProps as Persisted<T>;
         }
 
         const options = { ...props, useJsNames: true };
         const instanceKey = this.resolveElementKey(props);
         const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
         const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
-        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as Persisted<T>;
         this[_cache].set({ elProps: elementProps, loadOptions: props });
         return elementProps;
       } catch {

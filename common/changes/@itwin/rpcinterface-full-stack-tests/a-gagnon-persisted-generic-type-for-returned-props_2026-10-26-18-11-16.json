@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
+      "comment": "React to changes in typing from common package. Remove unnecessary id! assertion",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/rpcinterface-full-stack-tests"
+}
