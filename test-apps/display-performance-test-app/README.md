@@ -43,8 +43,7 @@ Performance tests should automatically operate on Mac the same as on a Windows m
 * IMJS_URL_PREFIX and IMJS_OIDC_HEADLESS are read by the backend and forwarded to the frontend; values baked into the frontend build are only used as a fallback when the backend doesn't define them.
 * Authentication
   * Existing access token (takes precedence over the options below)
-    * DPTA_ACCESS_TOKEN (with or without the `Bearer ` prefix)
-    * IMJS_OIDC_HEADLESS (any value, so that the frontend gets the token from the backend)
+    * DPTA_ACCESS_TOKEN (with or without the `Bearer ` prefix); the frontend gets the token from the backend, so IMJS_OIDC_HEADLESS isn't needed
   * [Headless](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool)
     * IMJS_OIDC_HEADLESS (any value, as long as it's set)
     * IMJS_OIDC_CLIENT_ID

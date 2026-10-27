@@ -29,7 +29,7 @@ export const getConfig = (): DptaEnvConfig => {
     envConfig.noMaximizeWindow = true;
   if (process.env.IMJS_URL_PREFIX)
     envConfig.urlPrefix = process.env.IMJS_URL_PREFIX;
-  if (process.env.IMJS_OIDC_HEADLESS)
+  if (process.env.IMJS_OIDC_HEADLESS || process.env.DPTA_ACCESS_TOKEN)
     envConfig.oidcHeadless = true;
 
   return envConfig;
