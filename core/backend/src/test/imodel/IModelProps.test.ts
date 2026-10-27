@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelStatus, OpenMode, UnexpectedErrors } from "@itwin/core-bentley";
+import { IModelStatus, Logger, OpenMode, UnexpectedErrors } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, GeographicCRS, GeographicCRSProps } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { EditTxn, getAvailableVerticalCoordinateReferenceSystems, IModelJsFs, StandaloneDb, withEditTxn } from "../../core-backend";
+import { BackendLoggerCategory, EditTxn, getAvailableVerticalCoordinateReferenceSystems, IModelJsFs, StandaloneDb, withEditTxn } from "../../core-backend";
 import { _nativeDb, _refreshIModelProps } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
@@ -240,6 +240,101 @@ describe("iModel property updates", () => {
       expect(iModel.rootSubject.name).to.equal("IModelProps");
       expect(iModel.queryFilePropertyString({ namespace: "test", name: "after-rollback" })).to.equal("allowed");
     });
+  it("rejects scoped transaction activation during undo abandonment without retaining ownership", () => {
+    sinon.stub(EditTxn, "implicitWriteEnforcement").value("allow");
+    const unexpectedError = sinon.stub(UnexpectedErrors, "handle");
+    iModel[_nativeDb].deleteAllTxns();
+    iModel.setGeographicCoordinateSystem(changedGcs);
+    iModel.getIndirectTxn().updateIModelProps();
+    const edit = sinon.spy((txn: EditTxn) => txn.updateIModelProps());
+    const listener = sinon.spy(() => withEditTxn(iModel, edit));
+    const removeListener = iModel.onGeographicCoordinateSystemChanged.addListener(listener);
+    try {
+      expect(iModel.txns.reverseTxns(1)).to.equal(IModelStatus.NothingToUndo);
+      expect(listener.calledOnce).to.be.true;
+      expect(unexpectedError.calledOnceWithExactly(listener.firstCall.exception)).to.be.true;
+      expect(listener.firstCall.exception).to.have.property("message", "Cannot write while restoring the geographic coordinate system");
+      expect(edit.called).to.be.false;
+      expect(iModel[_nativeDb].hasUnsavedChanges()).to.be.false;
+    } finally {
+      removeListener();
+    }
+    withEditTxn(iModel, (txn) => txn.saveFileProperty({ namespace: "test", name: "after-listener-start" }, "allowed"));
+    expect(iModel.queryFilePropertyString({ namespace: "test", name: "after-listener-start" })).to.equal("allowed");
+  });
+
+  for (const endTxn of [false, true]) {
+    it(`${endTxn ? "releases" : "retains"} transaction ownership when a rollback notification propagates`, () => {
+      const originalGcs = iModel[_nativeDb].getIModelProps().geographicCoordinateSystem;
+      const txn = new EditTxn(iModel, "propagating rollback listener");
+      txn.start();
+      iModel.setGeographicCoordinateSystem(changedGcs);
+      txn.updateIModelProps();
+      const listener = sinon.spy(() => txn.updateIModelProps());
+      const removeListener = iModel.onGeographicCoordinateSystemChanged.addListener(listener);
+      const previousHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+      try {
+        expect(() => endTxn ? txn.end("abandon") : txn.abandonChanges()).to.throw("Cannot write while restoring the geographic coordinate system");
+        expect(listener.calledOnce).to.be.true;
+        expect(txn.isActive).to.equal(!endTxn);
+        expect(iModel[_nativeDb].hasUnsavedChanges()).to.be.false;
+        expect(iModel.geographicCoordinateSystem?.toJSON()).to.deep.equal(new GeographicCRS(originalGcs).toJSON());
+      } finally {
+        UnexpectedErrors.setHandler(previousHandler);
+        removeListener();
+      }
+      if (!endTxn)
+        txn.end("save");
+      withEditTxn(iModel, (nextTxn) => nextTxn.saveFileProperty({ namespace: "test", name: "after-propagated-notification" }, "allowed"));
+      expect(iModel.queryFilePropertyString({ namespace: "test", name: "after-propagated-notification" })).to.equal("allowed");
+    });
+  }
+
+  for (const asynchronous of [false, true]) {
+    it(`preserves the ${asynchronous ? "asynchronous" : "synchronous"} callback error when a rollback notification propagates`, async () => {
+      const originalGcs = iModel[_nativeDb].getIModelProps().geographicCoordinateSystem;
+      const failure = new Error("initiating edit failure");
+      const logError = sinon.spy(Logger, "logError");
+      let activeTxn: EditTxn | undefined;
+      let removeListener: (() => void) | undefined;
+      const listener = sinon.spy(() => iModel.getIndirectTxn().updateIModelProps());
+      const edit = (txn: EditTxn) => {
+        activeTxn = txn;
+        iModel.rootSubject = { name: "Abandoned root subject" };
+        iModel.setGeographicCoordinateSystem(changedGcs);
+        txn.updateIModelProps();
+        removeListener = iModel.onGeographicCoordinateSystemChanged.addListener(listener);
+        throw failure;
+      };
+      const previousHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+      try {
+        if (asynchronous) {
+          const error = await withEditTxn(iModel, async (txn) => {
+            await Promise.resolve();
+            edit(txn);
+          }).catch((err: unknown) => err);
+          expect(error).to.equal(failure);
+        } else {
+          expect(() => withEditTxn(iModel, edit)).to.throw(failure);
+        }
+        expect(listener.calledOnce).to.be.true;
+        expect(listener.firstCall.exception).to.have.property("message", "Cannot write while restoring the geographic coordinate system");
+        expect(logError.calledOnceWithExactly(BackendLoggerCategory.IModelDb, listener.firstCall.exception)).to.be.true;
+        expect(activeTxn?.isActive).to.be.false;
+        expect(iModel[_nativeDb].hasUnsavedChanges()).to.be.false;
+      } finally {
+        UnexpectedErrors.setHandler(previousHandler);
+        removeListener?.();
+      }
+      withEditTxn(iModel, (txn) => txn.saveFileProperty({ namespace: "test", name: "after-failed-scope" }, "allowed"));
+      iModel.close();
+      iModel = StandaloneDb.openFile(fileName, OpenMode.ReadWrite);
+      expect(iModel.rootSubject.name).to.equal("IModelProps");
+      expect(iModel.geographicCoordinateSystem?.toJSON()).to.deep.equal(new GeographicCRS(originalGcs).toJSON());
+      expect(iModel.queryFilePropertyString({ namespace: "test", name: "after-failed-scope" })).to.equal("allowed");
+    });
+  }
+
   it("refreshes the GCS and its baseline after undo", () => {
     const originalGcs = iModel[_nativeDb].getIModelProps().geographicCoordinateSystem;
     withEditTxn(iModel, (txn) => {
