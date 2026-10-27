@@ -27,6 +27,7 @@ publish: false
     - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
     - [Non-finite geographic conversion results](#non-finite-geographic-conversion-results)
+    - [Preserving geographic coordinate systems during property updates](#preserving-geographic-coordinate-systems-during-property-updates)
 
 ## Backend
 
@@ -173,3 +174,11 @@ The GCS-based single-point and batch conversion methods on [IModelConnection]($f
 Handle these rejected promises instead of relying on normalized invalid elevations. Applications that deliberately use partial conversion results should use [GeoConverter]($frontend), inspect each [PointWithStatus]($common), and validate the ordinates they need. Status `26` (`GeoCoordStatus.VerticalDatumConvertError`) permits horizontal use but does not provide a reliable converted elevation, even when Z is finite. Connection convenience methods continue to reject this status; OPC's warning and zero-correction fallback is approximate display placement, not successful vertical conversion.
 
 After fixing unavailable grid resources, do not reuse a retained converter's cached failure. Finish outstanding requests and obtain a fresh converter from `GeoServices.getConverter` to retry.
+
+### Preserving geographic coordinate systems during property updates
+
+[EditTxn.updateIModelProps]($backend), [EditTxn.updateProjectExtents]($backend), and [EditTxn.updateEcefLocation]($backend) no longer replace an unchanged geographic coordinate system. Unrelated property writes preserve the complete stored CRS definition without re-resolving its dictionary identifiers, including when its workspace dictionary is unavailable. Intentionally changed CRS definitions continue to be persisted.
+
+Do not rely on repeated property updates to re-resolve an unchanged CRS against a changed dictionary. Explicitly set a changed CRS definition when replacing the stored CRS is intended. Abandoning edits, undo, and redo now reload the cached geographic coordinate system from the database; explicitly reapply an abandoned CRS edit if it should be saved later. See [Updating iModel properties](../learning/backend/EditTxn.md#updating-imodel-properties).
+
+CRS-restoration notifications reject transaction writes, including implicit writes, so listeners cannot write abandoned edits back to the database. Defer follow-up edits until restoration completes.
