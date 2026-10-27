@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {  describe, expect, it} from "vitest";
+import {  beforeAll, describe, expect, it} from "vitest";
+import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
@@ -66,7 +67,6 @@ describe("Parsing tests:", () => {
   });
 
   it("Generate Parse Tokens", async () => {
-
     const format = new Format("test");
     const tests = [
       {input: "", expectedTokens: []},
@@ -89,19 +89,31 @@ describe("Parsing tests:", () => {
       {input: "135°11'30.5\"", expectedTokens: [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }]},
       {input: "2FT 6IN", expectedTokens: [{ value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }]},
       {input: "1 1/2 FT", expectedTokens: [{ value: 1.5 }, { value: "FT" }]},
+      {input: "10 km/h", expectedTokens: [{ value: 10 }, { value: "km/h" }]},
+      {input: "10km/h", expectedTokens: [{ value: 10 }, { value: "km/h" }]},
+      {input: "10 km/h + 5 m/s", expectedTokens: [{ value: 10 }, { value: "km/h" }, { value: "+" }, { value: 5 }, { value: "m/s" }]},
+      {input: "10 m / 2", expectedTokens: [{ value: 10 }, { value: "m" }, { value: "/" }, { value: 2 }]},
+      {input: "10 m/2", expectedTokens: [{ value: 10 }, { value: "m" }, { value: "/" }, { value: 2 }]},
+      {input: "1 ft/ft", expectedTokens: [{ value: 1 }, { value: "ft/ft" }]},
     ];
+    tests.forEach(({ input, expectedTokens }) => {
+      const tokens = Parser.parseQuantitySpecification(input, format);
+      expect(tokens.map(({ value }) => value)).to.deep.eq(expectedTokens.map(({ value }) => value));
+    });
+  });
 
-    let i = 0;
-    for (const test of tests) {
-      const tokens = Parser.parseQuantitySpecification(test.input, format);
-      expect(tokens.length).toEqual(test.expectedTokens.length);
+  it("Generate Parse Tokens for unit labels containing a slash with a uom separator", async () => {
+    const format = new Format("test");
+    await format.fromJSON(new TestUnitsProvider(), { type: "Decimal", uomSeparator: "*" });
 
-      for (let j = 0; j < tokens.length; j++) {
-        expect(tokens[j].value).toEqual(test.expectedTokens[j].value);
-      }
-
-      i = i + 1;
-    }
+    const tests = [
+      {input: "10*km/h", expectedTokens: [10, "km/h"]},
+      {input: "1*ft/ft", expectedTokens: [1, "ft/ft"]},
+    ];
+    tests.forEach(({ input, expectedTokens }) => {
+      const tokens = Parser.parseQuantitySpecification(input, format);
+      expect(tokens.map(({ value }) => value)).to.deep.eq(expectedTokens);
+    });
   });
 
   it("Generate Parse Tokens given different decimal and thousand separators", async () => {
@@ -466,6 +478,84 @@ describe("Parsing tests:", () => {
       expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
       expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
+  });
+
+  it("Parse into Velocity Quantities", async () => {
+    const formatData = {
+      composite: {
+        units: [{ label: "km/h", name: "Units.KM_PER_HR" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      allowMathematicOperations: true,
+    };
+
+    const testData = [
+      { value: "10", magnitude: 10 },
+      { value: "10 km/h", magnitude: 10 },
+      { value: "10km/h", magnitude: 10 },
+      { value: "10 m/s", magnitude: 36 },
+      { value: "10 mi/h", magnitude: 16.09344 },
+      { value: "10 km/h + 1 m/s", magnitude: 13.6 },
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+
+    for (const testEntry of testData) {
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
+      expect(quantityProps.isValid).to.be.true;
+      expect(quantityProps.magnitude).closeTo(testEntry.magnitude, 0.0001);
+      expect(quantityProps.unit.name).toEqual("Units.KM_PER_HR");
+    }
+  });
+
+  describe("Velocity parsing with BasicUnitsProvider and mathematic operations disabled", () => {
+    const unitsProvider = new BasicUnitsProvider();
+    let parserSpec: ParserSpec;
+    let formatterSpec: FormatterSpec;
+
+    beforeAll(async () => {
+      const format = new Format("velocity");
+      await format.fromJSON(unitsProvider, {
+        type: "Decimal",
+        precision: 3,
+        formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        composite: { units: [{ name: "Units.KM_PER_HR" }] },
+      });
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M_PER_SEC");
+      parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
+      formatterSpec = await FormatterSpec.create("velocity", format, unitsProvider, persistenceUnit);
+    });
+
+    it("parses unit labels containing a slash", () => {
+      const testData = [
+        { value: "10", magnitude: 10 / 3.6 },
+        { value: "10 km/h", magnitude: 10 / 3.6 },
+        { value: "10km/h", magnitude: 10 / 3.6 },
+        { value: "10 KM/H", magnitude: 10 / 3.6 },
+        { value: "-10 km/h", magnitude: -10 / 3.6 },
+        { value: "10 m/s", magnitude: 10 },
+        { value: "10 mi/h", magnitude: 4.4704 },
+        { value: "10 ft/s", magnitude: 3.048 },
+      ];
+      for (const { value, magnitude } of testData) {
+        const result = parserSpec.parseToQuantityValue(value);
+        expect(Parser.isParsedQuantity(result)).to.be.true;
+        expect((result as ParsedQuantity).value).closeTo(magnitude, 0.0001);
+      }
+    });
+
+    it("round-trips a formatted value", () => {
+      const formatted = Formatter.formatQuantity(10 / 3.6, formatterSpec);
+      expect(formatted).toEqual("10.0 km/h");
+
+      const result = parserSpec.parseToQuantityValue(formatted);
+      expect(Parser.isParsedQuantity(result)).to.be.true;
+      expect((result as ParsedQuantity).value).closeTo(10 / 3.6, 0.0001);
+    });
   });
 
   it("Parse into Survey Length Quantities into meters", async () => {
