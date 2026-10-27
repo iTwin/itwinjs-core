@@ -95,6 +95,8 @@ Recommended follow-up:
 
 Abandoning an editing transaction reloads the cached geographic coordinate system from the database. Undo and redo also refresh it. Do not retain an abandoned in-memory CRS edit and assume it will be persisted by a later unrelated update; explicitly set it again if it is still wanted.
 
+CRS restoration raises [IModel.onGeographicCoordinateSystemChanged]($common). These restoration notifications are read-only: transaction writes, including legacy implicit writes, are rejected while the cached CRS is being restored. Perform any follow-up edits after restoration completes instead of writing from the notification listener.
+
 ## implicitWriteEnforcement
 
 [EditTxn.implicitWriteEnforcement]($backend), initialized from [IModelHostOptions.implicitWriteEnforcement]($backend), controls how legacy implicit writes behave while you migrate:

@@ -180,3 +180,5 @@ After fixing unavailable grid resources, do not reuse a retained converter's cac
 [EditTxn.updateIModelProps]($backend), [EditTxn.updateProjectExtents]($backend), and [EditTxn.updateEcefLocation]($backend) no longer replace an unchanged geographic coordinate system. Unrelated property writes preserve the complete stored CRS definition without re-resolving its dictionary identifiers, including when its workspace dictionary is unavailable. Intentionally changed CRS definitions continue to be persisted.
 
 Do not rely on repeated property updates to re-resolve an unchanged CRS against a changed dictionary. Explicitly set a changed CRS definition when replacing the stored CRS is intended. Abandoning edits, undo, and redo now reload the cached geographic coordinate system from the database; explicitly reapply an abandoned CRS edit if it should be saved later. See [Updating iModel properties](../learning/backend/EditTxn.md#updating-imodel-properties).
+
+CRS-restoration notifications reject transaction writes, including implicit writes, so listeners cannot write abandoned edits back to the database. Defer follow-up edits until restoration completes.

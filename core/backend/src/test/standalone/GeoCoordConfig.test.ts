@@ -8,6 +8,9 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { CloudSqlite, GcsDbProps, GeoCoordConfig, IModelHost } from "../../core-backend";
 import { IModelNative } from "../../internal/NativePlatform";
+import { constructWorkspace } from "../../internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "../../internal/workspace/SettingsImpl";
+import { SettingsPriority } from "../../workspace/Settings";
 import { TestUtils } from "../TestUtils";
 
 describe("GeoCoordConfig", () => {
@@ -80,6 +83,56 @@ describe("GeoCoordConfig", () => {
     expect(logError.calledOnce).to.be.true;
     expect(addWorkspace.called).to.be.false;
     expectRetryToSucceed();
+  });
+
+  it("recovers a failed initial cloud connection through the real workspace cache", () => {
+    const workspace = constructWorkspace(new SettingsImpl());
+    const sharedWorkspace = constructWorkspace(new SettingsImpl());
+    const props = { ...dbProps, baseUri: "https://example.invalid", containerId: "gcs-initial-connect-retry", isPublic: true, priority: 42 };
+    workspace.settings.addDictionary({ name: "gcs connection retry", priority: SettingsPriority.application }, {
+      [GeoCoordConfig.settingName.disableWorkspaces]: false,
+      [GeoCoordConfig.settingName.defaultDatabases]: [props],
+    });
+    sandbox.stub(IModelHost, "appWorkspace").get(() => workspace);
+    const cloud = CloudSqlite.createCloudContainer({ ...props, accessToken: "" });
+    let isConnected = false;
+    const connect = sandbox.stub().callsFake(() => { isConnected = true; });
+    connect.onFirstCall().throws(new Error("temporary cloud connection failure"));
+    const disconnect = sandbox.stub().callsFake(() => { isConnected = false; });
+    Object.defineProperties(cloud, {
+      isConnected: { get: () => isConnected },
+      connect: { value: connect },
+      disconnect: { value: disconnect },
+      checkForChanges: { value: sandbox.stub() },
+      queryDatabases: { value: sandbox.stub().returns(["vertical:1.0.0"]) },
+      queryDatabase: { value: sandbox.stub().returns({ totalBlocks: 10, localBlocks: 0, dirtyBlocks: 0, transactions: false, state: "", nClient: 0, nPrefetch: 0 }) },
+    });
+    sandbox.stub(CloudSqlite, "createCloudContainer").returns(cloud);
+    try {
+      GeoCoordConfig.loadDefaultDatabases();
+      expect(logError.calledOnce).to.be.true;
+      expect(addWorkspace.called).to.be.false;
+      expect(workspace.findContainer(props.containerId)).to.be.undefined;
+      GeoCoordConfig.loadDefaultDatabases();
+      expect(connect.callCount).to.equal(2);
+      expect(addWorkspace.callCount, JSON.stringify(logError.args)).to.equal(1);
+      expect(addWorkspace.firstCall.args).to.deep.equal(["vertical:1.0.0", cloud, props.priority]);
+      expect(prefetch.calledOnce).to.be.true;
+      const container = workspace.findContainer(props.containerId);
+      expect(container?.cloudContainer).to.equal(cloud);
+      expect(sharedWorkspace.getContainer({ ...props, accessToken: "" }).cloudContainer).to.equal(cloud);
+      expect(connect.callCount).to.equal(2);
+      GeoCoordConfig.loadDefaultDatabases();
+      expect(addWorkspace.calledOnce).to.be.true;
+    } finally {
+      try {
+        sharedWorkspace.close();
+        expect(disconnect.called).to.be.false;
+      } finally {
+        workspace.close();
+      }
+    }
+    expect(disconnect.calledOnce).to.be.true;
   });
 
   it("attempts every database and accepts already registered databases on retry", () => {

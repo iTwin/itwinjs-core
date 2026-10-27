@@ -14,7 +14,7 @@ import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
 import type { ChangeElementModelProps, ChangeElementParentProps, IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _updateIModelProps, _verifyChannel } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _updateIModelProps, _verifyChannel, _verifyTxnWrite } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -115,6 +115,7 @@ export class EditTxn {
   }
 
   public verifyWriteable(): void {
+    this.iModel[_verifyTxnWrite]();
     // Explicit transactions must always be active before writing.
     if (!this.isActive)
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);

@@ -72,7 +72,7 @@ import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _refreshIModelProps, _releaseAllLocks, _resetIModelDb, _updateIModelProps } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _refreshIModelProps, _releaseAllLocks, _resetIModelDb, _updateIModelProps, _verifyTxnWrite } from "./internal/Symbols";
 import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -107,6 +107,7 @@ class ImplicitWriteTxn extends EditTxn {
   }
 
   public override verifyWriteable(): void {
+    this.iModel[_verifyTxnWrite]();
     const enforcement = EditTxn.implicitWriteEnforcement;
     if (enforcement === "allow")
       return;
@@ -954,9 +955,23 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public [_refreshGeographicCoordinateSystem](): void {
-    const props = this[_nativeDb].getIModelProps().geographicCoordinateSystem;
-    this._lastUpdatedGeographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
-    this.geographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+    const wasRefreshing = this._isRefreshingGeographicCoordinateSystem;
+    this._isRefreshingGeographicCoordinateSystem = true;
+    try {
+      const props = this[_nativeDb].getIModelProps().geographicCoordinateSystem;
+      this._lastUpdatedGeographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+      this.geographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+    } finally {
+      this._isRefreshingGeographicCoordinateSystem = wasRefreshing;
+    }
+  }
+
+  private _isRefreshingGeographicCoordinateSystem = false;
+
+  /** @internal */
+  public [_verifyTxnWrite](): void {
+    if (this._isRefreshingGeographicCoordinateSystem)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot write while restoring the geographic coordinate system");
   }
 
   /** @internal */

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Preserve unchanged geographic coordinate systems during iModel property updates, reload the cached CRS after rollback, and retry default GCS workspace loading after a transient failure.",
+      "comment": "Preserve unchanged geographic coordinate systems during iModel property updates, safely restore the cached CRS after rollback without reentrant writes, and retry default GCS workspace loading after failed initial connections.",
       "type": "none"
     }
   ],

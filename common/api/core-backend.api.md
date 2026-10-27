@@ -4138,6 +4138,8 @@ export abstract class IModelDb extends IModel {
     [_resetIModelDb](): void;
     // @internal (undocumented)
     [_updateIModelProps](): void;
+    // @internal (undocumented)
+    [_verifyTxnWrite](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
