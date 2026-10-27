@@ -40,10 +40,16 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.transparentBackground).toEqual(sampleSourceJson.transparentBackground);
     expect(sampleSource!.baseMap).toEqual(sampleSourceJson.baseMap);
     expect(sampleSource!.queryParams).toEqual(sampleSourceJson.queryParams);
-    // The deprecated alias reads and writes the same value.
+    // The deprecated field stores the value; the new name is an alias over it.
     expect(sampleSource!.savedQueryParams).toEqual(sampleSourceJson.queryParams);
     sampleSource!.savedQueryParams = { renamed: "1" };
     expect(sampleSource!.queryParams).toEqual({ renamed: "1" });
+    sampleSource!.queryParams = { renamedBack: "2" };
+    expect(sampleSource!.savedQueryParams).toEqual({ renamedBack: "2" });
+    expect(sampleSource!.toJSON().queryParams).toEqual({ renamedBack: "2" });
+    delete sampleSource!.savedQueryParams;
+    expect(sampleSource!.queryParams).toEqual(undefined);
+    expect(sampleSource!.toJSON().queryParams).toEqual(undefined);
     sampleSource!.queryParams = sampleSourceJson.queryParams;
     expect(sampleSource!.unsavedQueryParams).toEqual(undefined);
 

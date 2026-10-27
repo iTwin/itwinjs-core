@@ -5232,16 +5232,16 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
-    queryParams?: {
-        [key: string]: string;
-    };
-    // @beta @deprecated
-    get savedQueryParams(): {
+    get queryParams(): {
         [key: string]: string;
     } | undefined;
-    set savedQueryParams(value: {
+    set queryParams(value: {
         [key: string]: string;
     } | undefined);
+    // @beta @deprecated
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
     // (undocumented)

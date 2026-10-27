@@ -323,20 +323,23 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public password?: string;
   public accessKey?: MapLayerKey;
 
+  /** Former name of [[queryParams]], which stores the value; retained as the backing field so existing subclasses
+   * and `delete` keep working.
+   * @deprecated in 5.15. Use [[queryParams]].
+   * @beta
+  */
+  public savedQueryParams?: { [key: string]: string };
+
   /** Non-secret query parameters appended to every request made for the layer, persisted as part of the JSON
    * representation ([[ImageMapLayerProps.queryParams]]). Secrets must never be placed here; the hosting application
    * injects them per session through a fetch handler (see `MapLayerFormatRegistry.addMapLayerFetchHandler` in
    * `@itwin/core-frontend`), which also protects them against leaking through redirects.
    * @beta
   */
-  public queryParams?: { [key: string]: string };
-
-  /** Former name of [[queryParams]]; reads and writes the same value.
-   * @deprecated in 5.15. Use [[queryParams]].
-   * @beta
-  */
-  public get savedQueryParams(): { [key: string]: string } | undefined { return this.queryParams; }
-  public set savedQueryParams(value: { [key: string]: string } | undefined) { this.queryParams = value; }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the deprecated field is the storage until its removal.
+  public get queryParams(): { [key: string]: string } | undefined { return this.savedQueryParams; }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public set queryParams(value: { [key: string]: string } | undefined) { this.savedQueryParams = value; }
 
   /** List of query parameters that will get appended to the settings URL that should *not* be be persisted part of the JSON representation.
    * @deprecated in 5.15. Register a fetch handler (`MapLayerFormatRegistry.addMapLayerFetchHandler` in `@itwin/core-frontend`) to inject secret or per-session parameters, which unlike this field are protected against leaking through redirects; use [[queryParams]] for non-secret parameters.
@@ -416,8 +419,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.unsavedQueryParams)
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
-    if (this.queryParams)
-      clone.queryParams = {...this.queryParams};
 
     return clone;
   }
@@ -527,9 +528,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.password = password;
   }
 
-  /** Collect all query parameters: [[queryParams]] overlaid with the deprecated `unsavedQueryParams`.
- * @beta
- */
+  /** The query parameters actually sent with requests: [[queryParams]] overlaid with the deprecated `unsavedQueryParams`
+   * (a key present in both takes the latter's value). Equals a copy of [[queryParams]] once `unsavedQueryParams` is removed.
+   * @beta
+   */
   public collectQueryParams() {
     let queryParams: {[key: string]: string} = {};
     if (this.queryParams)

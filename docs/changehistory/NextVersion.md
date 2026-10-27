@@ -56,8 +56,8 @@ See [Map-layer authentication](../learning/frontend/MapLayerAuthentication.md) f
 
 With the fetch handler as the designated channel for secrets, the split between persisted and non-persisted custom query parameters no longer has a purpose, and the non-persisted one was never a safe place for a secret (a value in `unsavedQueryParams` follows redirects and is sent along with an NTLM/Negotiate retry). Both `@beta` fields are deprecated on [ImageMapLayerSettings]($common) and [MapLayerSource]($frontend); they keep working until removed in the next major version.
 
-- `savedQueryParams` is renamed [ImageMapLayerSettings.queryParams]($common) / [MapLayerSource.queryParams]($frontend), matching the JSON property it has always been persisted as ([ImageMapLayerProps.queryParams]($common)). The old name remains as an accessor over the same value.
-- `unsavedQueryParams` has no direct replacement: a secret or per-session parameter is injected by a [MapLayerFetchHandler]($frontend), keyed on [MapLayerRequest.layerUrl]($frontend) when it differs per layer; a non-secret parameter goes in `queryParams`.
+- `savedQueryParams` is renamed [ImageMapLayerSettings.queryParams]($common) / [MapLayerSource.queryParams]($frontend), matching the JSON property it has always been persisted as ([ImageMapLayerProps.queryParams]($common)). The new name is an accessor over the existing field, so code that redeclares or deletes `savedQueryParams` is unaffected.
+- `unsavedQueryParams` has no direct replacement: a secret or per-session parameter is injected by a [MapLayerFetchHandler]($frontend), keyed on [MapLayerRequest.layerUrl]($frontend) when it differs per layer; a non-secret parameter goes in `queryParams`. Until it is removed, `collectQueryParams()` remains the merged view actually sent, and every request kind now applies the same precedence: a key present in both maps takes its value from `unsavedQueryParams` (tile requests previously favored the persisted value).
 
 ```ts
 // Before

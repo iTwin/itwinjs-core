@@ -6395,16 +6395,16 @@ export class MapLayerSource {
     // (undocumented)
     password?: string;
     // @beta
-    queryParams?: {
-        [key: string]: string;
-    };
-    // @beta @deprecated
-    get savedQueryParams(): {
+    get queryParams(): {
         [key: string]: string;
     } | undefined;
-    set savedQueryParams(value: {
+    set queryParams(value: {
         [key: string]: string;
     } | undefined);
+    // @beta @deprecated
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     toJSON(): Omit<MapLayerSourceProps, "formatId"> & {
         formatId: string;

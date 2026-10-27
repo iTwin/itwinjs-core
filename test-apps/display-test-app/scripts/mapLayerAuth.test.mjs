@@ -34,6 +34,8 @@ function compile(source) {
   }).outputText;
 }
 
+class MapLayerAuthenticationFailedError extends Error {}
+
 function createContext(base = baseURI) {
   /** @type {MapLayerFetchHandler[]} */
   const handlers = [];
@@ -46,6 +48,7 @@ function createContext(base = baseURI) {
   };
   const context = {
     IModelApp: { mapLayerFormatRegistry: registry },
+    MapLayerAuthenticationFailedError,
     document: { baseURI: base },
     URL, URLSearchParams, Headers, Response,
     console: { warn: /** @param {string} message */ (message) => warnings.push(message) },
@@ -62,7 +65,7 @@ function configure(overrides = {}, base = baseURI) {
     exports,
     require: /** @param {string} id */ (id) => {
       assert.equal(id, "@itwin/core-frontend");
-      return { IModelApp: result.context.IModelApp };
+      return { IModelApp: result.context.IModelApp, MapLayerAuthenticationFailedError };
     },
   });
   exports.configureMapLayerAuth({ ...configuration, ...overrides });
@@ -72,19 +75,23 @@ function configure(overrides = {}, base = baseURI) {
 /**
  * @param {MapLayerFetchHandler} handler
  * @param {string} url
+ * @param {number[]} statuses Status of each successive send; the last one repeats.
  */
-async function invoke(handler, url, formatId = "WMTS", sourceUrl = layerUrl) {
+async function invoke(handler, url, formatId = "WMTS", sourceUrl = layerUrl, statuses = [200]) {
   const request = { url, layerUrl: sourceUrl, formatId, headers: new Headers(), searchParams: new URLSearchParams("service=WMTS") };
   /** @type {MapLayerRequest[]} */
   const sends = [];
-  const response = await handler(request, async (sent) => {
-    sends.push(sent);
-    return new Response();
-  });
-  // Neither sending nor declining may inject secrets into the input value.
-  assert.equal(request.headers.has("Authorization"), false);
-  assert.equal(request.searchParams.has("apiKey"), false);
-  return { response, sends };
+  try {
+    const response = await handler(request, async (sent) => {
+      sends.push(sent);
+      return new Response(null, { status: statuses[Math.min(sends.length, statuses.length) - 1] });
+    });
+    return { response, sends };
+  } finally {
+    // Neither sending, declining nor failing may inject secrets into the input value.
+    assert.equal(request.headers.has("Authorization"), false);
+    assert.equal(request.searchParams.has("apiKey"), false);
+  }
 }
 
 test("DTA injects both configured values for same-origin requests without an allowlist", async () => {
@@ -160,6 +167,13 @@ test("DTA keeps same-origin access but grants no extra origins for missing or in
   assert.equal(configure({ mapLayerAuthFormats: undefined }).handlers.length, 0);
 });
 
+test("DTA reports 401/403 as an authentication failure", async () => {
+  const { handlers } = configure();
+  for (const status of [401, 403])
+    await assert.rejects(invoke(handlers[0], `${origin}/tiles`, "WMTS", layerUrl, [status]), MapLayerAuthenticationFailedError);
+  assert.equal((await invoke(handlers[0], `${origin}/tiles`, "WMTS", layerUrl, [404])).response?.status, 404);
+});
+
 test("DTA reads the explicit auth-origin environment variable", () => {
   const exports = /** @type {{ getConfig: () => AuthConfiguration }} */ ({});
   runInNewContext(compile(readFileSync(new URL("src/common/DtaConfiguration.ts", appRoot), "utf8")), {
@@ -208,4 +222,28 @@ test("published auth examples check actual origins before injecting headers or p
       assert.equal(response, undefined);
     }
   }
+});
+
+test("published auth examples report unrecoverable 401/403 as an authentication failure", async () => {
+  const tokens = { current: "expired", refreshes: 0, async refresh() { this.refreshes++; this.current = "fresh"; } };
+  const handlers = [
+    example("docs/learning/frontend/MapLayerAuthentication.md", "const tokensByLayer", `tokensByLayer.set(${JSON.stringify(layerUrl)}, "test-only");`),
+    example("docs/changehistory/NextVersion.md", "const secretParamsByLayer", "", { settings: { url: layerUrl }, secret: "test-only" }),
+    example("docs/changehistory/NextVersion.md", "const authOrigins", `authOrigins.clear(); authOrigins.add(${JSON.stringify(origin)});`, { tokens }),
+  ];
+  for (const handler of handlers)
+    await assert.rejects(invoke(handler, `${origin}/tiles`, "WMS", layerUrl, [403]), MapLayerAuthenticationFailedError);
+
+  // The retrying recipe refreshes once, then either recovers transparently or reports the failure.
+  const retrying = handlers[2];
+  tokens.refreshes = 0;
+  tokens.current = "expired";
+  const recovered = await invoke(retrying, `${origin}/tiles`, "WMS", layerUrl, [401, 200]);
+  assert.equal(recovered.response?.status, 200);
+  assert.deepEqual(recovered.sends.map((sent) => sent.headers.get("Authorization")), ["Bearer expired", "Bearer fresh"]);
+  assert.equal(tokens.refreshes, 1);
+
+  tokens.refreshes = 0;
+  await assert.rejects(invoke(retrying, `${origin}/tiles`, "WMS", layerUrl, [401]), MapLayerAuthenticationFailedError);
+  assert.equal(tokens.refreshes, 1);
 });

@@ -49,9 +49,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         return { status: MapLayerSourceStatus.InvalidUrl };
       };
 
-      let url = appendQueryParams(source.url, source.queryParams);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- unsavedQueryParams kept for backward compatibility until removal.
-      url = appendQueryParams(url, source.unsavedQueryParams);
+      const url = appendQueryParams(source.url, source.collectQueryParams());
       const allowLandingCredentials = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, source.url);
       if (headers && allowLandingCredentials)
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
@@ -125,10 +123,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         // Landing-page links are allowed to be relative, so resolve them against the URL the landing document
         // was actually served from (which may differ from the requested one if the request was redirected)
         // before appending query parameters or evaluating trust.
-        let collectionsUrl = new URL(collectionsLink.href, response.url || url).toString();
-        collectionsUrl = appendQueryParams(collectionsUrl, source.queryParams);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
+        const collectionsUrl = appendQueryParams(new URL(collectionsLink.href, response.url || url).toString(), source.collectQueryParams());
 
         // The collections link is advertised by the server-controlled landing document, so the trust
         // decision is applied to it independently of the source URL.

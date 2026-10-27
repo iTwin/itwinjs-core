@@ -34,4 +34,12 @@ describe("TileUrlImageryProvider", () => {
     url = await provider.constructUrl(0,0,0);
     expect(url).toEqual(`${refUrl}&${param1.toString()}&${param2.toString()}`);
   });
+
+  it("lets unsavedQueryParams override queryParams for the same key, like collectQueryParams()", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({formatId:"TileUrl", name: "", url: "https://sub.service.com/service/{level}/{column}/{row}"});
+    settings.queryParams = { shared: "saved", saved: "1" };
+    settings.unsavedQueryParams = { shared: "unsaved" };
+    const url = await new TileUrlImageryProvider(settings).constructUrl(0,0,0);
+    expect(url).toEqual("https://sub.service.com/service/0/0/0?shared=unsaved&saved=1");
+  });
 });
