@@ -1038,8 +1038,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.8
       i18next-http-backend:
-        specifier: ^3.0.2
-        version: 3.0.6
+        specifier: ^4.0.5
+        version: 4.0.6
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2782,8 +2782,8 @@ importers:
         specifier: ^26.0.0
         version: 26.0.0(jsdom@26.1.0)
       i18next-http-backend:
-        specifier: ^3.0.2
-        version: 3.0.6
+        specifier: ^4.0.5
+        version: 4.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -7162,9 +7162,6 @@ packages:
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
 
-  cross-fetch@4.1.0:
-    resolution: {integrity: sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -8236,8 +8233,9 @@ packages:
   i18next-browser-languagedetector@6.1.8:
     resolution: {integrity: sha512-Svm+MduCElO0Meqpj1kJAriTC6OhI41VhlT/A0UPjGoPZBhAHIaGE5EfsHlTpgdH09UVX7rcc72pSDDBeKSQQA==}
 
-  i18next-http-backend@3.0.6:
-    resolution: {integrity: sha512-mBOqy8993jtqAoj6XaI1XeC/8/9v6EPS+681ziegrPvTB0DoaCY7PpTS0SpY56qLMoS4OI1TZEM2Zf59zNh05w==}
+  i18next-http-backend@4.0.6:
+    resolution: {integrity: sha512-k5OPDXAQH9CZ2Ju2DDw1ZC4WiYmjKUjOE4lcd51tNQyWjVDfpuwPcE9Y5VzDpz1tR1Z4wxkkj4H+ImxgwbfpeQ==}
+    engines: {node: '>=18'}
 
   i18next@21.10.0:
     resolution: {integrity: sha512-YeuIBmFsGjUfO3qBmMOc0rQaun4mIpGKET5WDwvu8lU7gvwpcariZLNtL0Fzj+zazcHUrlXHiptcFhBMFaxzfg==}
@@ -13221,7 +13219,7 @@ snapshots:
       '@vitest/mocker': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
       playwright: 1.56.1
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -13237,7 +13235,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
@@ -13257,7 +13255,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
     optionalDependencies:
       '@vitest/browser': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
 
@@ -14165,12 +14163,6 @@ snapshots:
   cross-env@7.0.3:
     dependencies:
       cross-spawn: 7.0.6
-
-  cross-fetch@4.1.0:
-    dependencies:
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
 
   cross-spawn@7.0.6:
     dependencies:
@@ -15522,11 +15514,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
 
-  i18next-http-backend@3.0.6:
-    dependencies:
-      cross-fetch: 4.1.0
-    transitivePeerDependencies:
-      - encoding
+  i18next-http-backend@4.0.6: {}
 
   i18next@21.10.0:
     dependencies:
