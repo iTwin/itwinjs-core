@@ -2,6 +2,12 @@
   "name": "@itwin/physical-material-backend",
   "entries": [
     {
+      "version": "5.14.5",
+      "tag": "@itwin/physical-material-backend_v5.14.5",
+      "date": "Tue, 27 Oct 2026 12:19:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.4",
       "tag": "@itwin/physical-material-backend_v5.14.4",
       "date": "Fri, 23 Oct 2026 19:58:24 GMT",
