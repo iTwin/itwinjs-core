@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
+import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type ResolvedPropertyRef, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "../ECObjects";
 import { ECName } from "../ECName";
@@ -25,16 +25,6 @@ const _storage = Symbol("SchemaView.storage");
 interface SchemaViewStorage extends SchemaViewData {
   readonly transitiveBaseCache: Map<number, ReadonlySet<number>>;
   derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
-}
-
-/** A property reference paired with the index of the class that declared it. Used for
- * property inheritance resolution - the classIdx tracks where each property originates
- * (base class, mixin, or own) so consumers can discover the declaring class.
- * @internal
- */
-export interface ResolvedPropertyRef {
-  readonly ref: PropertyRef;
-  readonly classIdx: number;
 }
 
 /** Internal data bag passed from the builder to the context constructor.
@@ -203,8 +193,8 @@ export class SchemaView {
       throw new Error("SchemaView is not mergeable: create it via SchemaView.createMergeable to merge fragments.");
     this._mergeContext.mergeBlob(blob);
     // A new fragment can add subclasses to an already-present base class, so the derived-class map
-    // must be rebuilt. transitiveBaseCache stays valid: a class's ancestors are always merged
-    // before it (dependency order), so an append never adds an ancestor to an already-cached class.
+    // must be rebuilt. transitiveBaseCache and PropertyRef.overriddenProperty stay valid: a class's ancestors
+    // are always merged before it (dependency order), so an append never adds an ancestor to an already-cached class.
     this[_storage].derivedClassMap = undefined;
   }
 
@@ -371,15 +361,25 @@ export class SchemaView {
    * @internal
    */
   public findPropertyDefInOverrides(ref: PropertyRef, classIdx: number, predicate: (def: PropertyDef) => boolean): PropertyDef | undefined {
-    const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
-    let current: ResolvedPropertyRef | undefined = { ref, classIdx };
-    while (current !== undefined) {
+    let current: ResolvedPropertyRef | null = { ref, classIdx };
+    while (current !== null) {
       const def = this[_storage].propDefs[current.ref.defIdx];
       if (predicate(def))
         return def;
-      current = current.classIdx !== -1 ? this._findOverriddenProperty(current.classIdx, nameKey) : undefined;
+      current = this._getOverriddenProperty(current.ref, current.classIdx);
     }
     return undefined;
+  }
+
+  /** Returns the declaration the given one overrides, resolving and storing it on the ref on first access.
+   * Caching per ref is sound because a ref belongs to exactly one class; view properties (classIdx -1) never override.
+   */
+  private _getOverriddenProperty(ref: PropertyRef, classIdx: number): ResolvedPropertyRef | null {
+    if (ref.overriddenProperty === undefined) {
+      const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
+      ref.overriddenProperty = classIdx !== -1 ? this._findOverriddenProperty(classIdx, nameKey) ?? null : null;
+    }
+    return ref.overriddenProperty;
   }
 
   /** @internal */
