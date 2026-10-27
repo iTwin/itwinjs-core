@@ -10,33 +10,34 @@ import { Id64String } from "@itwin/core-bentley";
 import type { IModelDb } from "../IModelDb";
 import { _verifyChannel } from "./Symbols";
 
-/** The lock and channel checks that already passed during one bulk ElementAspect operation.
+/** The lock checks that already passed during one bulk ElementAspect operation.
  * Checks are only reused while `active`, i.e. while the default `ElementAspect.onBulkInsert/onBulkUpdate/onBulkDelete`
- * call the per-aspect pre-handlers. Neither check has side effects, and the state they verify cannot change while the
- * pre-handlers of one bulk call run, so skipping a repeated check of the same model or element does not change the result.
+ * call the per-aspect pre-handlers. The lock check has no side effects, and locks can only be released asynchronously,
+ * so they cannot be lost while the synchronous pre-handlers of one bulk call run.
+ * Channel checks are not cached here: a pre-handler may revoke a channel, and `ChannelAdmin` already caches with invalidation.
  */
 interface BulkAspectChecks {
   active: boolean;
-  readonly models: Set<Id64String>;
   readonly elements: Set<Id64String>;
 }
 
 const bulkAspectChecks = new WeakMap<IModelDb, BulkAspectChecks>();
 
 /** Run a bulk ElementAspect operation (e.g. `EditTxn.insertAspects`) so that its default pre-handlers check the
- * channel of each distinct model and the lock of each distinct owning element once, instead of once per aspect.
- * The scope ends when `fn` returns or throws.
+ * lock of each distinct owning element once, instead of once per aspect.
+ * A nested bulk operation gets its own scope. The scope ends when `fn` returns or throws.
  * @internal
  */
 export function withBulkAspectChecks<T>(iModel: IModelDb, fn: () => T): T {
-  if (bulkAspectChecks.has(iModel))
-    return fn();
-
-  bulkAspectChecks.set(iModel, { active: false, models: new Set(), elements: new Set() });
+  const outer = bulkAspectChecks.get(iModel);
+  bulkAspectChecks.set(iModel, { active: false, elements: new Set() });
   try {
     return fn();
   } finally {
-    bulkAspectChecks.delete(iModel);
+    if (undefined === outer)
+      bulkAspectChecks.delete(iModel);
+    else
+      bulkAspectChecks.set(iModel, outer);
   }
 }
 
@@ -57,16 +58,11 @@ export function withActiveBulkAspectChecks(iModel: IModelDb, fn: () => void): vo
   }
 }
 
-/** Verify that the channel of `modelId` may be written, skipping the check if it already passed in the active bulk operation.
+/** Verify that the channel of `modelId` may be written.
  * @internal
  */
 export function verifyAspectChannel(iModel: IModelDb, modelId: Id64String): void {
-  const cache = activeChecks(iModel);
-  if (cache?.models.has(modelId))
-    return;
-
   iModel.channels[_verifyChannel](modelId);
-  cache?.models.add(modelId);
 }
 
 /** Verify that the exclusive lock on `elementId` is held, skipping the check if it already passed in the active bulk operation.

@@ -154,7 +154,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
     });
   });
 
-  it("checks the lock of each distinct owner and the channel of each distinct model once per call, still calling the per-aspect handlers", () => {
+  it("checks the lock of each distinct owner once per call and the channel of every aspect, still calling the per-aspect handlers", () => {
     inAbandonedTxn((txn) => {
       const [e1, e2] = insertOwners(txn, 2);
       const checkLock = sinon.spy(iModel.locks, "checkExclusiveLock");
@@ -165,17 +165,17 @@ describe("EditTxn bulk ElementAspect operations", () => {
       const { ids } = txn.insertAspects([multiProps(e1, "m1a"), multiProps(e1, "m1b"), uniqueProps(e1, "u1"), multiProps(e2, "m2a"), uniqueProps(e2, "u2")]);
       expect(onInsert.callCount).to.equal(5);
       expect(lockedIds()).to.deep.equal([e1, e2].sort());
-      expect(verifyChannel.callCount).to.equal(1);
+      expect(verifyChannel.callCount).to.equal(5);
 
-      for (const op of [
-        () => txn.updateAspects([{ ...multiProps(e1, "m1a-new"), id: ids[0] }, { ...multiProps(e1, "m1b-new"), id: ids[1] }, uniqueProps(e2, "u2-new")]),
-        () => txn.deleteAspects(ids),
-      ]) {
+      for (const [op, rows] of [
+        [() => txn.updateAspects([{ ...multiProps(e1, "m1a-new"), id: ids[0] }, { ...multiProps(e1, "m1b-new"), id: ids[1] }, uniqueProps(e2, "u2-new")]), 3],
+        [() => txn.deleteAspects(ids), 5],
+      ] as const) {
         checkLock.resetHistory();
         verifyChannel.resetHistory();
         expect(op().status).to.equal(BulkElementAspectsStatus.Success);
         expect(lockedIds()).to.deep.equal([e1, e2].sort());
-        expect(verifyChannel.callCount).to.equal(1);
+        expect(verifyChannel.callCount).to.equal(rows);
       }
     });
   });
@@ -289,6 +289,60 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(txn.insertAspects([multiProps(owner, "allowed")]).status).to.equal(BulkElementAspectsStatus.Success);
       expect(aspectsOf(owner)).to.deep.equal(["TestMultiAspect:allowed"]);
       iModel.channels.removeAllowedChannel(channelKey);
+    });
+  });
+
+  /** Inserts `count` owners into a new model of an allowed channel, and returns the channel key and the owner ids. */
+  const insertChannelOwners = (txn: EditTxn, count: number) => {
+    const channelKey = `bulk-aspects-${Guid.createValue()}`;
+    iModel.channels.addAllowedChannel(channelKey);
+    const channelSubject = iModel.channels.insertChannelSubject({ subjectName: channelKey, channelKey, txn });
+    const modelId = PhysicalModel.insert(txn, channelSubject, "ChannelModel");
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, `Category-${channelKey}`, {});
+    const owners = Array.from({ length: count }, () => txn.insertElement({ classFullName: "Generic:PhysicalObject", model: modelId, category: categoryId, code: Code.createEmpty() } as any));
+    return { channelKey, owners };
+  };
+
+  it("a channel revoked by a pre-handler is enforced for the remaining aspects of the call", () => {
+    inAbandonedTxn((txn) => {
+      const { channelKey, owners: [owner] } = insertChannelOwners(txn, 1);
+      const onInsert = (ElementAspect as any).onInsert;
+      sinon.stub(ElementAspect as any, "onInsert").callsFake(function (this: any, arg: any) {
+        onInsert.call(this, arg);
+        iModel.channels.removeAllowedChannel(channelKey);
+      });
+      try {
+        expect(() => txn.insertAspects([multiProps(owner, "a"), multiProps(owner, "b")])).to.throw("not allowed");
+        expect(aspectsOf(owner)).to.deep.equal([]);
+      } finally {
+        iModel.channels.removeAllowedChannel(channelKey);
+      }
+    });
+  });
+
+  it("a nested bulk call made by a pre-handler checks the channel again", () => {
+    inAbandonedTxn((txn) => {
+      const { channelKey, owners: [outerOwner, nestedOwner] } = insertChannelOwners(txn, 2);
+      const onInsert = (ElementAspect as any).onInsert;
+      let nestedError: unknown;
+      sinon.stub(ElementAspect as any, "onInsert").callsFake(function (this: any, arg: any) {
+        onInsert.call(this, arg);
+        if (arg.props.element.id !== outerOwner)
+          return;
+        iModel.channels.removeAllowedChannel(channelKey);
+        try {
+          txn.insertAspects([multiProps(nestedOwner, "nested")]);
+        } catch (err) {
+          nestedError = err;
+        }
+      });
+      try {
+        expect(() => txn.insertAspects([multiProps(outerOwner, "outer")])).to.not.throw();
+        expect((nestedError as Error)?.message).to.contain("not allowed");
+        expect(aspectsOf(nestedOwner)).to.deep.equal([]);
+      } finally {
+        iModel.channels.removeAllowedChannel(channelKey);
+      }
     });
   });
 
