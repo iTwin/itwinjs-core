@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
@@ -1431,5 +1431,78 @@ describe("Deferred unit-system-changed emit (race condition validation)", () => 
 
     // No unit system change should have been emitted
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Velocity parsing through the spec registry", () => {
+  const velocityFormatProps = {
+    type: "Decimal",
+    precision: 3,
+    formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+    composite: { units: [{ name: "Units.KM_PER_HR" }] },
+  };
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  let qf: QuantityFormatter;
+  beforeEach(async () => {
+    qf = new QuantityFormatter();
+    await qf.onInitialized();
+  });
+
+  afterEach(() => {
+    qf[Symbol.dispose]();
+  });
+
+  async function createVelocityHandle() {
+    await qf.addFormattingSpecsToRegistry({
+      name: "Test.VELOCITY",
+      persistenceUnitName: "Units.M_PER_SEC",
+      formatProps: velocityFormatProps,
+      system: "metric",
+    });
+    return qf.getFormatSpecHandle("Test.VELOCITY", "Units.M_PER_SEC", "metric");
+  }
+
+  it("parses velocity labels and default alternate labels", async () => {
+    using handle = await createVelocityHandle();
+    const testData = [
+      { value: "10", magnitude: 10 / 3.6 },
+      { value: "10 km/h", magnitude: 10 / 3.6 },
+      { value: "10 kph", magnitude: 10 / 3.6 },
+      { value: "10 kmh", magnitude: 10 / 3.6 },
+      { value: "10 mi/h", magnitude: 4.4704 },
+      { value: "10 mph", magnitude: 4.4704 },
+    ];
+    for (const { value, magnitude } of testData) {
+      const result = handle.parserSpec?.parseToQuantityValue(value);
+      expect(result?.ok).toBe(true);
+      expect((result as ParsedQuantity).value).toBeCloseTo(magnitude, 4);
+    }
+  });
+
+  it("round-trips a formatted velocity", async () => {
+    using handle = await createVelocityHandle();
+    const formatted = handle.format(10 / 3.6);
+    expect(formatted).toBe("10.0 km/h");
+
+    const result = handle.parserSpec?.parseToQuantityValue(formatted);
+    expect(result?.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(10 / 3.6, 4);
+  });
+
+  it("applies alternate labels added for a unit without default alternate labels", async () => {
+    qf.addAlternateLabels("Units.FT_PER_SEC", "fps");
+    expect(qf.alternateUnitLabelsProvider.getAlternateUnitLabels({ name: "Units.FT_PER_SEC" } as UnitProps)).toEqual(["fps"]);
+    using handle = await createVelocityHandle();
+    const result = handle.parserSpec?.parseToQuantityValue("10 fps");
+    expect(result?.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(3.048, 4);
   });
 });

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix parser specs created through the `QuantityFormatter` spec registry ignoring alternate unit labels, allow `QuantityFormatter.addAlternateLabels` to add labels for units without default alternates, and add default \"kph\", \"kmh\" and \"mph\" alternate labels for velocity units.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

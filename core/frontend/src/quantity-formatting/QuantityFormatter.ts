@@ -85,7 +85,12 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
   private _alternateLabelRegistry = new Map<UnitNameKey, Set<string>>();
 
   public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
-    [...labels].forEach((value) => this._alternateLabelRegistry.get(key)?.add(value));
+    let entry = this._alternateLabelRegistry.get(key);
+    if (!entry) {
+      entry = new Set<string>();
+      this._alternateLabelRegistry.set(key, entry);
+    }
+    labels.forEach((value) => entry.add(value));
   }
 
   constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>) {
@@ -1346,7 +1351,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     const { persistenceUnitName, formatProps, formatName } = props;
     const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
     const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
-    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
+    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps, this.alternateUnitLabelsProvider);
   }
 
   /**
