@@ -226,15 +226,16 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
     if (metadata?.content === undefined) {
       // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
-      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin || this.status === MapLayerImageryProviderStatus.RequireAuth)
         return;
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
     const json = metadata.content;
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired
-      || json?.error?.code === ArcGisErrorCode.InvalidToken
-      || json?.error?.code === ArcGisErrorCode.MissingPermissions
+    const errorCode = metadata.errorCode;
+    if (errorCode === ArcGisErrorCode.TokenRequired
+      || errorCode === ArcGisErrorCode.InvalidToken
+      || errorCode === ArcGisErrorCode.MissingPermissions
     ) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {

@@ -130,6 +130,7 @@ internal;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
+internal;function;credentialedFetchRedirect
 internal;class;CurrentInputState
 public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
@@ -194,6 +195,7 @@ internal;interface;FeatureSymbolizedRenderer
 public;namespace;FeatureSymbology
 alpha;interface;Source
 internal;interface;FeatureSymbologyRenderer
+internal;function;fetchMapLayerRequest
 public;class;FitViewTool
 internal;class;Flags
 public;enum;FlashMode
@@ -386,12 +388,16 @@ beta;class;MapFeatureInfoRecord
 beta;interface;MapLayerAccessClient
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
+beta;class;MapLayerAuthenticationFailedError
 beta;interface;MapLayerAuthenticationInfo
 beta;interface;MapLayerFeature
 beta;interface;MapLayerFeatureAttribute
 beta;interface;MapLayerFeatureGeometry
 beta;interface;MapLayerFeatureInfo
 beta;class;MapLayerFeatureRecord
+beta;type;MapLayerFetchHandler
+beta;type;MapLayerFetchRequest
+internal;interface;MapLayerFetchResult
 public;class;MapLayerFormat
 public;class;MapLayerFormatRegistry
 public;type;MapLayerFormatType
@@ -400,6 +406,7 @@ public;enum;MapLayerImageryProviderStatus
 public;interface;MapLayerIndex
 internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
+beta;interface;MapLayerRequest
 beta;interface;MapLayerScaleRangeVisibility
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps
@@ -409,6 +416,7 @@ public;interface;MapLayerSourceValidation
 beta;class;MapLayerTileTreeReference
 beta;interface;MapLayerTokenEndpoint
 internal;interface;MapLayerTreeSetting
+internal;class;MapLayerUntrustedOriginError
 beta;interface;MapSubLayerFeatureInfo
 public;class;MapTile
 public;class;MapTileProjection

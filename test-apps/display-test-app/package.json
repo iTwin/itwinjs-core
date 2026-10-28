@@ -27,6 +27,7 @@
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",
+    "test:map-layer-auth": "node --test ./scripts/mapLayerAuth.test.mjs",
     "cover": "",
     "copy:config": "internal-tools copy-config",
     "build:mobile": "npm run -s build:mobile-frontend && npm run -s build:mobile-backend && npm run -s build:mobile-env-json",

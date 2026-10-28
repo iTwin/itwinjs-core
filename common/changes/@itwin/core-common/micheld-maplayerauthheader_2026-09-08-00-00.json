@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "ImageMapLayerSettings: `savedQueryParams` is renamed `queryParams` (matching the persisted JSON property; the old name remains as a deprecated accessor over the same value) and `unsavedQueryParams` is deprecated - inject secret or per-session parameters through a map-layer fetch handler (MapLayerFormatRegistry.addMapLayerFetchHandler in @itwin/core-frontend) instead. Both keep working until removed in the next major version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

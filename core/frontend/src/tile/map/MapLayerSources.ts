@@ -79,23 +79,36 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  /** List of query parameters that will get appended to the source URL that should be be persisted part of the JSON representation.
+  /** Former name of [[queryParams]], which stores the value; retained as the backing field so existing subclasses
+   * and `delete` keep working.
+   * @deprecated in 5.15. Use [[queryParams]].
    * @beta
   */
   public savedQueryParams?: { [key: string]: string };
 
+  /** Non-secret query parameters appended to every request made for the source, persisted as part of the JSON
+   * representation ([[MapLayerSourceProps.queryParams]]). Secrets must never be placed here; the hosting application
+   * injects them per session through a [[MapLayerFetchHandler]].
+   * @beta
+  */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- the deprecated field is the storage until its removal.
+  public get queryParams(): { [key: string]: string } | undefined { return this.savedQueryParams; }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public set queryParams(value: { [key: string]: string } | undefined) { this.savedQueryParams = value; }
+
   /** List of query parameters that will get appended to the source URL that should *not* be be persisted part of the JSON representation.
+   * @deprecated in 5.15. Register a [[MapLayerFetchHandler]] ([[MapLayerFormatRegistry.addMapLayerFetchHandler]]) to inject secret or per-session parameters, which unlike this field are protected against leaking through redirects; use [[queryParams]] for non-secret parameters.
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}) {
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, queryParams?: { [key: string]: string}) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
-    this.savedQueryParams = savedQueryParams;
+    this.queryParams = queryParams;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
@@ -124,7 +137,7 @@ export class MapLayerSource {
     return undefined;
   }
   public toJSON(): Omit<MapLayerSourceProps, "formatId"> & {formatId: string}  {
-    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.queryParams };
   }
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
@@ -134,11 +147,13 @@ export class MapLayerSource {
       layerSettings?.setCredentials(this.userName, this.password);
     }
 
-    if (this.savedQueryParams) {
-      layerSettings.savedQueryParams = {...this.savedQueryParams};
+    if (this.queryParams) {
+      layerSettings.queryParams = {...this.queryParams};
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compatibility until removal.
     if (this.unsavedQueryParams) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       layerSettings.unsavedQueryParams = {...this.unsavedQueryParams};
     }
     return layerSettings;
@@ -148,15 +163,18 @@ export class MapLayerSource {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 
-  /** Collect all query parameters
- * @beta
- */
+  /** The query parameters actually sent with requests: [[queryParams]] overlaid with the deprecated `unsavedQueryParams`
+   * (a key present in both takes the latter's value). Equals a copy of [[queryParams]] once `unsavedQueryParams` is removed.
+   * @beta
+   */
   public collectQueryParams() {
     let queryParams: {[key: string]: string} = {};
 
-    if (this.savedQueryParams)
-      queryParams = {...this.savedQueryParams};
+    if (this.queryParams)
+      queryParams = {...this.queryParams};
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compatibility until removal.
     if (this.unsavedQueryParams)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       queryParams = {...queryParams, ...this.unsavedQueryParams};
     return queryParams;
   }
