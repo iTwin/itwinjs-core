@@ -29,7 +29,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "chai": "^4.3.10",
     "yargs": "^17.4.0"
   },
   "devDependencies": {
