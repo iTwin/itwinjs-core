@@ -1193,6 +1193,45 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
   });
 
+  it("reports the cascade of our delete to an element we updated that they reparented under it", async () => {
+    const childId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(5.0, 6.0),
+      } as SomeGraphicalElementProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert child" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id: childId, parent: new ElementOwnsChildElements(id) });
+    });
+    await briefcase1.pushChanges({ description: "Reparent child under id" });
+
+    // The child is not under `id` yet when we delete it, so our delete doesn't cascade to it locally.
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id: childId, foo: "Local" });
+      txn.deleteElement(id);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+
+    // Our update must not be lost silently: if the child was swept away, something has to report it.
+    if (briefcase2.elements.tryGetElementProps(childId) === undefined) {
+      const reported = interactive.conflicts.some((conflict) => conflict.id === childId || conflict.deletionEffects.some((effect) => effect.affectedId === childId));
+      chai.expect(reported, "the cascaded delete of the child is not reported").to.be.true;
+    }
+  });
+
   it("reports a foreign key constraint violation when we add an element to a model they deleted", async () => {
     const deletedModelId = await withEditTxn(briefcase1, async (txn) => {
       const code = Code.createEmpty();
