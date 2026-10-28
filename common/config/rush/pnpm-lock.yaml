@@ -1831,9 +1831,6 @@ importers:
       '@vitest/browser-playwright':
         specifier: ^4.1.10
         version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
-      cpx2:
-        specifier: ^8.0.0
-        version: 8.0.2
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -1957,9 +1954,6 @@ importers:
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.4
-      '@types/sinon-chai':
-        specifier: ^3.2.0
-        version: 3.2.12
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -1984,9 +1978,6 @@ importers:
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
-      sinon-chai:
-        specifier: ^3.7.0
-        version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.21
