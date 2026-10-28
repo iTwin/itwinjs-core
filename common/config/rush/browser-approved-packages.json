@@ -447,10 +447,6 @@
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
-      "name": "cache-require-paths",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "canonical-path",
       "allowedCategories": [ "tools" ]
     },
@@ -767,10 +763,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "openid-client",
-      "allowedCategories": [ "integration-testing" ]
-    },
-    {
       "name": "os-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -849,10 +841,6 @@
     {
       "name": "source-map-support",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "spdy",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sql-formatter",

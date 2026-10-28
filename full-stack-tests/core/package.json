@@ -35,7 +35,6 @@
   "repository": {},
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
-    "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -98,7 +97,6 @@
     "nock": "^12.0.3",
     "npm-run-all2": "^7.0.2",
     "null-loader": "^4.0.1",
-    "nyc": "^17.1.0",
     "path-browserify": "^1.0.1",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",

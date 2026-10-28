@@ -55,8 +55,7 @@
     "chai-as-promised": "^7.1.1",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "mocha": "^11.1.0",
-    "openid-client": "^4.7.4"
+    "mocha": "^11.1.0"
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
@@ -71,7 +70,6 @@
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
-    "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
     "glob": "^13.0.6",
     "internal-tools": "workspace:*",
