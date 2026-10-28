@@ -4155,10 +4155,16 @@ export abstract class IModelDb extends IModel {
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal (undocumented)
+    [_refreshGeographicCoordinateSystem](): void;
     // @internal
     [_refreshIModelProps](): void;
     // @internal (undocumented)
     [_resetIModelDb](): void;
+    // @internal (undocumented)
+    [_updateIModelProps](): void;
+    // @internal (undocumented)
+    [_verifyTxnWrite](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
