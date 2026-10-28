@@ -1137,7 +1137,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
       throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
+    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider, this.alternateUnitLabelsProvider);
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.

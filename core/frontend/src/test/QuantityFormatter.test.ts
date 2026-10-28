@@ -221,6 +221,14 @@ describe("Quantity formatter", async () => {
     }
   });
 
+  it("parser spec for an inactive unit system uses alternate unit labels", async () => {
+    expect(quantityFormatter.activeUnitSystem).toBe("imperial");
+    const metricParserSpec = await quantityFormatter.getParserSpecByQuantityTypeAndSystem(QuantityType.Length, "metric");
+    const result = quantityFormatter.parseToQuantityValue("1 F", metricParserSpec);
+    expect(result.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(0.3048, 6);
+  });
+
   it("createQuantityDescription returns the correct property metadata", () => {
     const desc = createQuantityDescription({
       name: "myLength",
