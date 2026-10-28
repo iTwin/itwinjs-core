@@ -50,7 +50,6 @@
   "devDependencies": {
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
