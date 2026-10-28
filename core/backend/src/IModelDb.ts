@@ -18,7 +18,7 @@ import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DbQueryResponse, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
-  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeographicCRS, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, Persisted, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
@@ -72,7 +72,7 @@ import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshIModelProps, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _refreshIModelProps, _releaseAllLocks, _resetIModelDb, _updateIModelProps, _verifyTxnWrite } from "./internal/Symbols";
 import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -107,6 +107,7 @@ class ImplicitWriteTxn extends EditTxn {
   }
 
   public override verifyWriteable(): void {
+    this.iModel[_verifyTxnWrite]();
     const enforcement = EditTxn.implicitWriteEnforcement;
     if (enforcement === "allow")
       return;
@@ -502,6 +503,7 @@ export interface CloseIModelArgs {
  */
 export abstract class IModelDb extends IModel {
   private _initialized = false;
+  private _lastUpdatedGeographicCoordinateSystem?: GeographicCRS;
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
 
@@ -804,6 +806,7 @@ export abstract class IModelDb extends IModel {
     // Unsaved changes here can include schema changes, e.g. after a failed schema import.
     this.clearCaches();
     this[_nativeDb].abandonChanges();
+    this[_refreshGeographicCoordinateSystem]();
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -924,6 +927,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected initializeIModelDb(when?: "pullMerge") {
     const props = this[_nativeDb].getIModelProps(when);
+    this._lastUpdatedGeographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -947,6 +951,37 @@ export abstract class IModelDb extends IModel {
    */
   public [_refreshIModelProps](): void {
     this.initializeIModelDb("pullMerge");
+  }
+
+  /** @internal */
+  public [_refreshGeographicCoordinateSystem](): void {
+    const wasRefreshing = this._isRefreshingGeographicCoordinateSystem;
+    this._isRefreshingGeographicCoordinateSystem = true;
+    try {
+      const props = this[_nativeDb].getIModelProps().geographicCoordinateSystem;
+      this._lastUpdatedGeographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+      this.geographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+    } finally {
+      this._isRefreshingGeographicCoordinateSystem = wasRefreshing;
+    }
+  }
+
+  private _isRefreshingGeographicCoordinateSystem = false;
+
+  /** @internal */
+  public [_verifyTxnWrite](): void {
+    if (this._isRefreshingGeographicCoordinateSystem)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot write while restoring the geographic coordinate system");
+  }
+
+  /** @internal */
+  public [_updateIModelProps](): void {
+    const { geographicCoordinateSystem, ...props } = this.toJSON();
+    const gcs = geographicCoordinateSystem ? new GeographicCRS(geographicCoordinateSystem) : undefined;
+    const gcsChanged = gcs !== undefined && !this._lastUpdatedGeographicCoordinateSystem?.equals(gcs);
+    this[_nativeDb].updateIModelProps(gcsChanged ? { ...props, geographicCoordinateSystem } : props);
+    if (gcsChanged)
+      this._lastUpdatedGeographicCoordinateSystem = gcs;
   }
 
   /** Returns true if this is a BriefcaseDb

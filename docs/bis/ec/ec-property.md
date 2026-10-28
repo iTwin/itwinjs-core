@@ -20,9 +20,9 @@ All property types may have a single base property determined using the base cla
 
 **priority** a number value that specifies the importance of this property in relation to other properties defined within the class.
 
-**kindOfQuantity** the name of the [Kind Of Quantity](./kindofquantity.md) to associate with this property.
+**kindOfQuantity** the name of the [Kind Of Quantity](./kindofquantity.md) to associate with this property. A property override without a kindOfQuantity uses the one of the property it overrides. An override cannot remove an inherited kindOfQuantity, and it can only replace it with one that has the same persistence unit.
 
-**category** the name of the [Property Category](./property-category.md) to that classify this property.
+**category** the name of the [Property Category](./property-category.md) that classifies this property. A property override without a category uses the category of the property it overrides. An override cannot remove an inherited category.
 
 ### Custom Attributes
 

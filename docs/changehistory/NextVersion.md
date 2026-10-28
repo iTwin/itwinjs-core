@@ -18,6 +18,8 @@ publish: false
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
     - [Persisted entity properties](#persisted-entity-properties)
+  - [Schemas](#schemas)
+    - [SchemaView: property overrides use metadata of the overridden property](#schemaview-property-overrides-use-metadata-of-the-overridden-property)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
@@ -27,6 +29,7 @@ publish: false
     - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
     - [Non-finite geographic conversion results](#non-finite-geographic-conversion-results)
+    - [Preserving geographic coordinate systems during property updates](#preserving-geographic-coordinate-systems-during-property-updates)
 
 ## Backend
 
@@ -99,6 +102,14 @@ The change only affects queries at a time exactly equal to a keyframe's time, on
 ### Persisted entity properties
 
 The new [Persisted]($common) type represents entity properties with a required ID, and [isPersisted]($common) checks whether arbitrary entity properties have a valid ID. Model and element property APIs that return persisted entities now expose this stronger type, so callers can remove unnecessary ID checks and non-null assertions from those results.
+
+## Schemas
+
+### SchemaView: property overrides use metadata of the overridden property
+
+In [SchemaView](../learning/metadata/SchemaView.md), when a class overrides a property without specifying a category or KindOfQuantity, `category` and `kindOfQuantity` on `SchemaView.Property` now return the values of the overridden property, matching the rest of the EC APIs. The new `isEffectivelyHidden` also considers `HiddenProperty` on overridden properties. Label, description and priority still come from the overriding declaration.
+
+Classes using a mixin that overrides a property of its base mixin now get the overriding declaration.
 
 ## Quantity
 
@@ -173,3 +184,11 @@ The GCS-based single-point and batch conversion methods on [IModelConnection]($f
 Handle these rejected promises instead of relying on normalized invalid elevations. Applications that deliberately use partial conversion results should use [GeoConverter]($frontend), inspect each [PointWithStatus]($common), and validate the ordinates they need. Status `26` (`GeoCoordStatus.VerticalDatumConvertError`) permits horizontal use but does not provide a reliable converted elevation, even when Z is finite. Connection convenience methods continue to reject this status; OPC's warning and zero-correction fallback is approximate display placement, not successful vertical conversion.
 
 After fixing unavailable grid resources, do not reuse a retained converter's cached failure. Finish outstanding requests and obtain a fresh converter from `GeoServices.getConverter` to retry.
+
+### Preserving geographic coordinate systems during property updates
+
+[EditTxn.updateIModelProps]($backend), [EditTxn.updateProjectExtents]($backend), and [EditTxn.updateEcefLocation]($backend) no longer replace an unchanged geographic coordinate system. Unrelated property writes preserve the complete stored CRS definition without re-resolving its dictionary identifiers, including when its workspace dictionary is unavailable. Intentionally changed CRS definitions continue to be persisted.
+
+Do not rely on repeated property updates to re-resolve an unchanged CRS against a changed dictionary. Explicitly set a changed CRS definition when replacing the stored CRS is intended. Abandoning edits, undo, and redo now reload the cached geographic coordinate system from the database; explicitly reapply an abandoned CRS edit if it should be saved later. See [Updating iModel properties](../learning/backend/EditTxn.md#updating-imodel-properties).
+
+CRS-restoration notifications reject transaction writes, including implicit writes, so listeners cannot write abandoned edits back to the database. Defer follow-up edits until restoration completes.
