@@ -82,12 +82,18 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
   cache.workspaceContainers.set(id, cloudContainer);
   cloudContainer.connectCount = 0;
   CloudSqlite.addHiddenProperty(cloudContainer, "sharedConnect", function (this: WorkspaceCloudContainer) {
-    if (this.connectCount++ === 0) {
-      this.connect(cache);
-      return true;
+    const firstConnection = this.connectCount === 0;
+    if (firstConnection) {
+      try {
+        this.connect(cache);
+      } catch (error) {
+        cache.workspaceContainers.delete(id);
+        throw error;
+      }
     }
 
-    return false;
+    this.connectCount++;
+    return firstConnection;
   });
 
   CloudSqlite.addHiddenProperty(cloudContainer, "sharedDisconnect", function (this: WorkspaceCloudContainer) {
@@ -125,15 +131,21 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (props.baseUri !== "")
       this._cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
 
-    workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
 
     const cloudContainer = this.cloudContainer;
+    const newlyConnected = cloudContainer?.sharedConnect() ?? false;
+    try {
+      workspace.addContainer(this);
+    } catch (error) {
+      cloudContainer?.sharedDisconnect();
+      throw error;
+    }
     if (undefined === cloudContainer)
       return;
 
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
-    if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
+    if (newlyConnected && false !== props.syncOnConnect) {
       try {
         if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
           // Even though we've already confirmed that we are running in a native app backend,

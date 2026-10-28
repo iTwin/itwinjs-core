@@ -389,7 +389,8 @@ export {
 	ThematicGradientMode,
 	ThematicGradientTransparencyMode,
 	TxnAction,
-	TypeOfChange
+	TypeOfChange,
+	isPersisted
 } from "@itwin/core-common";
 
 export type {
@@ -544,6 +545,7 @@ export type {
 	NavigationBindingValue,
 	NavigationValue,
 	PartReference,
+	Persisted,
 	PersistentBackgroundMapProps,
 	PersistentGraphicsRequestProps,
 	PhysicalElementProps,
