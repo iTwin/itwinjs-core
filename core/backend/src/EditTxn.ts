@@ -76,6 +76,32 @@ export enum BulkElementAspectsStatus {
   PartialSuccess = 1,
   /** Every row failed. */
   Failed = 2,
+  /** Only with [[BulkElementAspectsMode.FailFast]]: some rows failed validation, so nothing was written and no handlers were called.
+   * [[BulkElementAspectsResult.failures]] lists the invalid rows.
+   */
+  ValidationFailed = 3,
+}
+
+/**
+ * How a bulk ElementAspect operation such as [[EditTxn.insertAspects]] treats invalid rows.
+ * @beta
+ */
+export enum BulkElementAspectsMode {
+  /** Write the valid rows and report the invalid ones. This is the default. */
+  BestEffort = 0,
+  /** Validate every row first. If any row is invalid, write nothing, call no handlers, and return [[BulkElementAspectsStatus.ValidationFailed]].
+   * Failures that only show up while writing (for example, a database error) are still reported per row, with the other rows written.
+   */
+  FailFast = 1,
+}
+
+/**
+ * Options for the bulk ElementAspect operations such as [[EditTxn.insertAspects]].
+ * @beta
+ */
+export interface BulkElementAspectsArgs {
+  /** How to treat invalid rows. Defaults to [[BulkElementAspectsMode.BestEffort]]. */
+  mode?: BulkElementAspectsMode;
 }
 
 /**
@@ -575,17 +601,18 @@ export class EditTxn {
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param aspectProps The properties of the new aspects.
-   * @returns The Id of each inserted aspect and the rows that failed. Invalid rows do not prevent the other rows from being inserted.
+   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to insert nothing if any row is invalid.
+   * @returns The Id of each inserted aspect and the rows that failed. By default, invalid rows do not prevent the other rows from being inserted.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if a pre-insert handler throws. Nothing is written in that case.
    * @throws IModelError if the update of an owning element or a post-insert handler throws. Aspects already written stay in this EditTxn, as with the single-aspect methods;
    * call [[EditTxn.abandonChanges]] to discard them.
    * @beta
    */
-  public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkInsertElementAspectsResult {
+  public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkInsertElementAspectsResult {
     this.verifyWriteable();
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].insertElementAspects(aspectProps));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].insertElementAspects(aspectProps, args));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error inserting ElementAspects [${err.message}]`);
       error.cause = err;
@@ -599,17 +626,18 @@ export class EditTxn {
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param aspectProps The properties of the aspects to update. [[ElementMultiAspect]]s are identified by `id`, [[ElementUniqueAspect]]s by `element` and `classFullName`.
-   * @returns The rows that failed. Invalid rows do not prevent the other rows from being updated.
+   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to update nothing if any row is invalid or its aspect is not found.
+   * @returns The rows that failed. By default, invalid rows do not prevent the other rows from being updated.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if a pre-update handler throws. Nothing is written in that case.
    * @throws IModelError if the update of an owning element or a post-update handler throws. Aspects already written stay in this EditTxn, as with the single-aspect methods;
    * call [[EditTxn.abandonChanges]] to discard them.
    * @beta
    */
-  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkElementAspectsResult {
+  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkElementAspectsResult {
     this.verifyWriteable();
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].updateElementAspects(aspectProps));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].updateElementAspects(aspectProps, args));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error updating ElementAspects [${err.message}]`);
       error.cause = err;
@@ -623,7 +651,8 @@ export class EditTxn {
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param ids The Ids of the aspects to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @returns The rows that failed, e.g. because no aspect with that id exists. Failed rows do not prevent the other rows from being deleted.
+   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to delete nothing if any aspect is not found.
+   * @returns The rows that failed, e.g. because no aspect with that id exists. By default, failed rows do not prevent the other rows from being deleted.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @throws IModelError if a pre-delete handler throws. Nothing is written in that case.
@@ -631,14 +660,14 @@ export class EditTxn {
    * call [[EditTxn.abandonChanges]] to discard them.
    * @beta
    */
-  public deleteAspects(ids: Id64Array): BulkElementAspectsResult {
+  public deleteAspects(ids: Id64Array, args?: BulkElementAspectsArgs): BulkElementAspectsResult {
     this.verifyWriteable();
     const invalidIds = ids.filter((id) => !Id64.isValidId64(id));
     if (invalidIds.length > 0)
       ITwinError.throwError({ message: `Invalid aspect ids: ${invalidIds.join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].deleteElementAspects(ids));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].deleteElementAspects(ids, args));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error deleting ElementAspects [${err.message}]`);
       error.cause = err;

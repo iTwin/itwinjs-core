@@ -34,6 +34,8 @@ beta;interface;BulkDeleteElementsArgs
 beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
 beta;interface;BulkElementAspectFailure
+beta;interface;BulkElementAspectsArgs
+beta;enum;BulkElementAspectsMode
 beta;interface;BulkElementAspectsResult
 beta;enum;BulkElementAspectsStatus
 beta;interface;BulkInsertElementAspectsResult

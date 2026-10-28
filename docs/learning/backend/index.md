@@ -44,6 +44,7 @@ These packages provide the following functions to support backend operations:
   - [Delete Elements in Bulk](./BulkElementDeletion.md)
   - [Access ElementAspects](./AccessElementAspects.md)
   - [Create ElementAspects](./CreateElementAspects.md)
+  - [Write ElementAspects in Bulk](./BulkElementAspects.md)
   - [Access Models](./AccessModels.md)
   - [Create Models](./CreateModels.md)
 

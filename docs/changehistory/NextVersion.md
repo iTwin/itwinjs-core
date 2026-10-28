@@ -89,7 +89,16 @@ Invalid rows do not prevent the other rows from being written. The result lists 
 const { ids, failures } = txn.insertAspects(aspectProps);
 ```
 
+To write nothing when any row is invalid, pass [BulkElementAspectsMode.FailFast]($backend) in [BulkElementAspectsArgs]($backend). The result then has status [BulkElementAspectsStatus.ValidationFailed]($backend) and lists the invalid rows, and no handlers are called.
+
+```ts
+const result = txn.updateAspects(aspectProps, { mode: BulkElementAspectsMode.FailFast });
+```
+
 The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`, `onBulkUpdated`, `onBulkDelete` and `onBulkDeleted` handlers are called once per aspect class. By default they call the existing per-aspect handlers, so existing overrides of `onInsert`, `onUpdate` and the other per-aspect handlers still run for every aspect. Within one bulk call, the default handlers check the lock of each owning element and the channel of each model only once. The existing single-aspect methods and handlers are unchanged.
+
+See [Bulk ElementAspect Operations]($docs/learning/backend/BulkElementAspects.md) for details.
+
 ## Common
 
 ### Step-interpolated render schedule keyframes no longer apply one keyframe late

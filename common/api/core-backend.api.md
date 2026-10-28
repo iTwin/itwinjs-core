@@ -797,6 +797,17 @@ export interface BulkElementAspectFailure {
 }
 
 // @beta
+export interface BulkElementAspectsArgs {
+    mode?: BulkElementAspectsMode;
+}
+
+// @beta
+export enum BulkElementAspectsMode {
+    BestEffort = 0,
+    FailFast = 1
+}
+
+// @beta
 export interface BulkElementAspectsResult {
     failures: BulkElementAspectFailure[];
     status: BulkElementAspectsStatus;
@@ -806,7 +817,8 @@ export interface BulkElementAspectsResult {
 export enum BulkElementAspectsStatus {
     Failed = 2,
     PartialSuccess = 1,
-    Success = 0
+    Success = 0,
+    ValidationFailed = 3
 }
 
 // @beta
@@ -2867,7 +2879,7 @@ export class EditTxn {
     changeElementModel(props: ChangeElementModelProps): void;
     changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
-    deleteAspects(ids: Id64Array): BulkElementAspectsResult;
+    deleteAspects(ids: Id64Array, args?: BulkElementAspectsArgs): BulkElementAspectsResult;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
     deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
@@ -2883,7 +2895,7 @@ export class EditTxn {
     readonly iModel: IModelDb;
     static implicitWriteEnforcement: ImplicitWriteEnforcement;
     insertAspect(aspectProps: ElementAspectProps): Id64String;
-    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkInsertElementAspectsResult;
+    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkInsertElementAspectsResult;
     insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
     insertModel(props: ModelProps): Id64String;
     insertRelationship(props: RelationshipProps): Id64String;
@@ -2895,7 +2907,7 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
-    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkElementAspectsResult;
+    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkElementAspectsResult;
     updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;

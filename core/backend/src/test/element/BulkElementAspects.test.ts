@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { Guid, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Code, ElementAspectProps, IModel } from "@itwin/core-common";
 import {
-  BulkElementAspectsStatus, EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject,
+  BulkElementAspectsMode, BulkElementAspectsStatus, EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject,
 } from "../../core-backend";
 import { _verifyChannel } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -129,6 +129,47 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(deleted.status).to.equal(BulkElementAspectsStatus.PartialSuccess);
       expect(deleted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
       expect(aspectsOf(e1)).to.deep.equal(["TestUniqueAspect:ok2-new"]);
+    });
+  });
+
+  it("FailFast writes nothing, and calls no handlers, if any row is invalid", () => {
+    inAbandonedTxn((txn) => {
+      const [e1, e2] = insertOwners(txn, 2);
+      const { ids } = txn.insertAspects([multiProps(e1, "m1"), uniqueProps(e2, "u2")]);
+      const failFast = { mode: BulkElementAspectsMode.FailFast };
+      const handlers = ["onInsert", "onInserted", "onUpdate", "onUpdated", "onDelete", "onDeleted"].map((name) => sinon.spy(ElementAspect as any, name));
+      const ownerUpdates = spyOwnerUpdates();
+
+      const inserted = txn.insertAspects([multiProps(e1, "new"), multiProps("0xffffff", "noOwner")], failFast);
+      expect(inserted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
+      expect(inserted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.MissingId]]);
+      expect(inserted.ids).to.deep.equal([Id64.invalid, Id64.invalid]);
+
+      const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }], failFast);
+      expect(updated.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
+      expect(updated.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
+
+      const deleted = txn.deleteAspects([ids[0], "0xffffff"], failFast);
+      expect(deleted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
+      expect(deleted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
+
+      handlers.forEach((handler) => expect(handler.callCount).to.equal(0));
+      expect(ownerUpdates()).to.deep.equal([]);
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
+      expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2"]);
+
+      const valid = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, uniqueProps(e2, "u2-new")], failFast);
+      expect(valid.status).to.equal(BulkElementAspectsStatus.Success);
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1-new"]);
+      expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2-new"]);
+    });
+  });
+
+  it("throws for an invalid mode", () => {
+    inAbandonedTxn((txn) => {
+      const [e1] = insertOwners(txn, 1);
+      expect(() => txn.insertAspects([multiProps(e1, "m1")], { mode: 2 as BulkElementAspectsMode })).to.throw("Invalid options.mode");
+      expect(aspectsOf(e1)).to.deep.equal([]);
     });
   });
 
