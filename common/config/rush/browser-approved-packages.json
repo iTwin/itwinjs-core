@@ -787,10 +787,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "raf",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react",
       "allowedCategories": [ "internal" ]
     },
