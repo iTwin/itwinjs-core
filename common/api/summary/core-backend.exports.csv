@@ -18,6 +18,7 @@ preview;class;AuxCoordSystem3d
 public;class;AuxCoordSystemSpatial
 preview;class;AuxCoordSystemSpatial
 beta;interface;AvailableCoordinateReferenceSystemProps
+beta;interface;AvailableVerticalCoordinateReferenceSystemProps
 beta;interface;AzureBlobStorageCredentials
 public;interface;BackendHubAccess
 public;enum;BackendLoggerCategory
@@ -63,6 +64,8 @@ beta;interface;ChangesetReaderArgs
 beta;interface;ChangeSource
 beta;interface;ChangeSummary
 beta;class;ChangeSummaryManager
+beta;class;ChangeUnifier
+beta;interface;ChangeUnifierArgs
 beta;namespace;ChangeUnifierCache
 beta;interface;ChannelControl
 beta;namespace;ChannelControl
@@ -330,6 +333,8 @@ preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
 beta;function;getAvailableCRSUnits
+beta;function;getAvailableVerticalCoordinateReferenceSystems
+beta;interface;GetAvailableVerticalCoordinateReferenceSystemsArgs
 beta;interface;GetResolvedSettingDefOptions
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
@@ -510,8 +515,8 @@ beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
-alpha;interface;RebaseHandler
-alpha;class;RebaseManager
+beta;interface;RebaseHandler
+beta;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
@@ -688,7 +693,7 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
-alpha;type;TxnMode
+beta;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions

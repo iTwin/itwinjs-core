@@ -2209,12 +2209,16 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    cacheSizeInKB?: number;
+    cursorIdleTimeout?: number;
     // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
+    enableCursors?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
     ignoreDelay?: boolean;
     ignorePriority?: boolean;
+    maxCursorsPerWorker?: number;
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
@@ -2239,6 +2243,7 @@ export class DbQueryError extends BentleyError {
 export interface DbQueryRequest extends DbRequest, QueryOptions {
     // (undocumented)
     args?: object;
+    cursorId?: string;
     // (undocumented)
     query: string;
     // (undocumented)
@@ -2321,6 +2326,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     memUsed: number;
     prepareTime: number;
+    // @internal
+    resumed?: boolean;
     timeLimit: number;
     totalTime: number;
 }
@@ -5074,13 +5081,13 @@ export interface HydrateViewStateRequestProps {
 // @internal
 export interface HydrateViewStateResponseProps {
     // (undocumented)
-    acsElementProps?: ElementProps;
+    acsElementProps?: Persisted<ElementProps>;
     // (undocumented)
-    baseModelProps?: ModelProps;
+    baseModelProps?: Persisted<ModelProps>;
     // (undocumented)
-    modelSelectorStateModels?: ModelProps[];
+    modelSelectorStateModels?: Persisted<ModelProps>[];
     // (undocumented)
-    sheetViewAttachmentProps?: ViewAttachmentProps[];
+    sheetViewAttachmentProps?: Persisted<ViewAttachmentProps>[];
     // (undocumented)
     sheetViewViews?: (ViewStateProps | undefined)[];
     // (undocumented)
@@ -5443,7 +5450,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
-    getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
+    getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<Persisted<ElementProps>[]>;
     // (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
@@ -5457,7 +5464,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     // (undocumented)
-    getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Persisted<ModelProps>[]>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -5469,19 +5476,19 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+    loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<Persisted<ElementProps> | undefined>;
     // (undocumented)
     queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
-    queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
+    queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Persisted<ElementProps>[]>;
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
     // (undocumented)
     queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]>;
     // (undocumented)
-    queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]>;
+    queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Persisted<ModelProps>[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
@@ -5839,6 +5846,9 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
+
+// @public @preview
+export function isPersisted<T extends EntityProps>(entity: T): entity is Persisted<T>;
 
 // @public @preview
 export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
@@ -7150,6 +7160,11 @@ export interface PartReference {
     // (undocumented)
     type: "partReference";
 }
+
+// @public @preview
+export type Persisted<T extends EntityProps> = T & {
+    id: Id64String;
+};
 
 // @public
 export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
@@ -11472,29 +11487,20 @@ export interface TxnNotifications {
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
-// @alpha
+// @beta
 export interface TxnProps {
-    // (undocumented)
     grouped: boolean;
-    // (undocumented)
     id: Id64String;
-    // (undocumented)
     nextId?: Id64String;
-    // (undocumented)
     prevId?: Id64String;
-    // (undocumented)
     props: SaveChangesArgs;
-    // (undocumented)
     reversed: boolean;
-    // (undocumented)
     sessionId: number;
-    // (undocumented)
     timestamp: string;
-    // (undocumented)
     type: TxnType;
 }
 
-// @alpha
+// @beta
 export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl";
 
 // @public @preview
@@ -11556,6 +11562,10 @@ export interface VersionedJSON<T> {
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
+    // @beta
+    readonly crsName?: string;
+    // @beta
+    readonly epsg?: number;
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
     readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
@@ -11564,6 +11574,10 @@ export class VerticalCRS implements VerticalCRSProps {
 
 // @public
 export interface VerticalCRSProps {
+    // @beta
+    crsName?: string;
+    // @beta
+    epsg?: number;
     id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 

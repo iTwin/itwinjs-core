@@ -1042,7 +1042,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       else
         displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
 
-      displayStyles.set(displayStyleProp.id!, displayStyle);
+      displayStyles.set(displayStyleProp.id, displayStyle);
     }
 
     await Promise.all(promises);

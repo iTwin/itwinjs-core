@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "5.15.0-dev.1",
+  "version": "5.15.0-dev.17",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -70,6 +70,6 @@
   "dependencies": {
     "i18next": "^21.9.1",
     "i18next-browser-languagedetector": "^6.1.2",
-    "i18next-http-backend": "^3.0.2"
+    "i18next-http-backend": "^4.0.5"
   }
 }

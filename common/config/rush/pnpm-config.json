@@ -10,10 +10,11 @@
     ]
   },
   "globalOverrides": {
-    "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
     "serialize-javascript": "^7.0.5", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq and https://github.com/advisories/GHSA-qj8w-gfj5-8c6v mocha>serialize-javascript
-    "lodash@>=4.0.0 <=4.17.23": "^4.18.0" // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
+    "lodash@>=4.0.0 <=4.17.23": "^4.18.0", // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
+    "@azure/msal-node@>=5.0.0-beta.0 <7.1.0": "^7.1.0", // https://github.com/advisories/GHSA-xcx6-jx8p-x3h5 azurite>applicationinsights|sequelize>tedious>@azure/identity>@azure/msal-node; latest @azure/identity (4.14.0) still requires ^6.0.0
+    "@itwin/reality-capture>zod": "^4.6.6" // https://github.com/advisories/GHSA-mrhx-c7xc-m3w5 reality-data-client>reality-capture>zod; no zod 3.x fix exists and latest reality-capture still requires ^3.22.2. reality-capture only uses zod for schema/type declarations (no runtime parse), verified to load and type-check with zod 4
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
