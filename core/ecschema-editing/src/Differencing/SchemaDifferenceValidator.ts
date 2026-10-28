@@ -92,14 +92,14 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     // The targetSchemaReference can be undefined, if the reference will be added by the source schema.
     // In this case further validation is not needed.
     const targetSchemaReference = await this._targetSchema.getReference(entry.difference.name);
-    if(targetSchemaReference === undefined) {
+    if (targetSchemaReference === undefined) {
       return;
     }
 
     const sourceSchemaKey = sourceSchemaReference.schemaKey;
     const targetSchemaKey = targetSchemaReference.schemaKey;
 
-    if(targetSchemaReference.isDynamic !== sourceSchemaReference.isDynamic) {
+    if (targetSchemaReference.isDynamic !== sourceSchemaReference.isDynamic) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceDynamic,
         difference: entry,
@@ -109,7 +109,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     }
 
-    if(entry.changeType === "modify" && !targetSchemaReference.isDynamic && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
+    if (entry.changeType === "modify" && !targetSchemaReference.isDynamic && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceVersion,
         difference: entry,
@@ -396,10 +396,23 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     }
 
     if (entry.changeType === "modify" && targetProperty !== undefined) {
+      // ECDb does not support changing the bounds of an existing array property during a
+      // schema upgrade, so any minOccurs/maxOccurs delta must be reported as a conflict
+      // instead of being silently merged into a schema that cannot be imported.
+      if (("minOccurs" in entry.difference || "maxOccurs" in entry.difference) && sourceProperty.isArray() && targetProperty.isArray()) {
+        return this.addConflict({
+          code: ConflictCode.ConflictingPropertyArrayBounds,
+          difference: entry,
+          source: { minOccurs: sourceProperty.minOccurs, maxOccurs: sourceProperty.maxOccurs },
+          target: { minOccurs: targetProperty.minOccurs, maxOccurs: targetProperty.maxOccurs },
+          description: "Changing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.",
+        });
+      }
+
       if ("kindOfQuantity" in entry.difference) {
         const sourceKoQ = await sourceProperty.kindOfQuantity;
         const targetKoQ = await targetProperty.kindOfQuantity;
-        if(!targetKoQ) {
+        if (!targetKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
             difference: entry,
@@ -409,7 +422,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
           });
         }
 
-        if(!sourceKoQ) {
+        if (!sourceKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
             difference: entry,
@@ -550,11 +563,11 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     // First check for name which must be same in any case...
     if (ecClass.name === baseClassKey.name) {
       // ... then check if the class is in the same schema as the expected base class...
-      if(ecClass.schema.name === baseClassKey.schemaName)
+      if (ecClass.schema.name === baseClassKey.schemaName)
         return true;
       // ... if not, whether it's in the source schema, but then we expect the baseclass
       // to be in the target schema.
-      if(ecClass.schema.name === this._sourceSchema.name && baseClassKey.schemaName === this._targetSchema.name)
+      if (ecClass.schema.name === this._sourceSchema.name && baseClassKey.schemaName === this._targetSchema.name)
         return true;
     }
     return this.derivedFrom(await ecClass.baseClass, baseClassKey);
@@ -603,5 +616,5 @@ function resolvePropertyTypeName(property: Property) {
  */
 function areCompatible(leftSchemaKey: SchemaKey, rightSchemaKey: SchemaKey): boolean {
   return leftSchemaKey.matches(rightSchemaKey, SchemaMatchType.LatestWriteCompatible)
-      || rightSchemaKey.matches(leftSchemaKey, SchemaMatchType.LatestWriteCompatible);
+    || rightSchemaKey.matches(leftSchemaKey, SchemaMatchType.LatestWriteCompatible);
 }
