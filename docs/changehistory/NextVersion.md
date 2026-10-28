@@ -19,6 +19,8 @@ publish: false
     - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
     - [BeAsyncEvent](#beasyncevent)
     - [Persisted entity properties](#persisted-entity-properties)
+  - [Schemas](#schemas)
+    - [SchemaView: property overrides use metadata of the overridden property](#schemaview-property-overrides-use-metadata-of-the-overridden-property)
   - [Quantity](#quantity)
     - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
     - [Async formats provider setter](#async-formats-provider-setter)
@@ -120,6 +122,14 @@ The change only affects queries at a time exactly equal to a keyframe's time, on
 ### Persisted entity properties
 
 The new [Persisted]($common) type represents entity properties with a required ID, and [isPersisted]($common) checks whether arbitrary entity properties have a valid ID. Model and element property APIs that return persisted entities now expose this stronger type, so callers can remove unnecessary ID checks and non-null assertions from those results.
+
+## Schemas
+
+### SchemaView: property overrides use metadata of the overridden property
+
+In [SchemaView](../learning/metadata/SchemaView.md), when a class overrides a property without specifying a category or KindOfQuantity, `category` and `kindOfQuantity` on `SchemaView.Property` now return the values of the overridden property, matching the rest of the EC APIs. The new `isEffectivelyHidden` also considers `HiddenProperty` on overridden properties. Label, description and priority still come from the overriding declaration.
+
+Classes using a mixin that overrides a property of its base mixin now get the overriding declaration.
 
 ## Quantity
 

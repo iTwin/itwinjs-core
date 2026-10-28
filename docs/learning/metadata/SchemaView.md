@@ -25,7 +25,7 @@ A small number of widely-used custom attributes are promoted to first-class conc
 
 - **Views** - ECViews are surfaced as their own `ClassType.View` (see [Views](#views)).
 - **Mixin** - the mixin custom attribute is reflected in `classType` and is included in `applies-to`/`is-a` walks.
-- **Hidden** - hidden flags on schemas, classes, and properties are exposed directly (e.g. `schema.isHidden`).
+- **Hidden** - hidden flags on schemas, classes, and properties are exposed directly (e.g. `schema.isHidden`). Classes and properties also have `isEffectivelyHidden`, which takes inheritance into account.
 
 ## What is excluded
 
@@ -112,6 +112,8 @@ Classes expose their type (entity, relationship, struct, mixin, custom attribute
 ## Working with properties
 
 Properties include inherited properties from base classes and mixins, in base-first declaration order. Each property exposes its kind (primitive, struct, array, navigation) and type-specific attributes.
+
+When a class overrides a property, it gets the overriding declaration. If that declaration has no category or kind of quantity, `category` and `kindOfQuantity` return the ones of the overridden property. Label, description and priority always come from the overriding declaration.
 
 ```ts
 [[include:SchemaView.properties]]

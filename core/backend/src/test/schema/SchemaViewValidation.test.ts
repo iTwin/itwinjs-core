@@ -548,10 +548,7 @@ function compareProperty(rProp: ReturnType<SchemaView.Class["getProperties"]>[nu
     }
 
     // KindOfQuantity reference (only on primitive properties)
-    const metaKoq = metaProp.getKindOfQuantitySync();
-    if (metaKoq !== undefined && rProp.kindOfQuantity !== undefined) {
-      expect(rProp.kindOfQuantity.name).to.equal(metaKoq.name, `KoQ mismatch for ${ctx}`);
-    }
+    expect(rProp.kindOfQuantity?.name).to.equal(metaProp.getKindOfQuantitySync()?.name, `KoQ mismatch for ${ctx}`);
   }
 
   // isReadOnly
@@ -576,8 +573,5 @@ function compareProperty(rProp: ReturnType<SchemaView.Class["getProperties"]>[nu
   }
 
   // Category reference (available on all property kinds)
-  const metaCat = metaProp.getCategorySync();
-  if (metaCat !== undefined && rProp.category !== undefined) {
-    expect(rProp.category.name).to.equal(metaCat.name, `category mismatch for ${ctx}`);
-  }
+  expect(rProp.category?.name).to.equal(metaProp.getCategorySync()?.name, `category mismatch for ${ctx}`);
 }
