@@ -172,7 +172,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_USE_CESIUM
   * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
 * IMJS_ENABLE_GAUSSIAN_SPLATS
-  * If defined, enables the native Gaussian splat renderer preview (`RenderSystem.Options.enableGaussianSplats`). Use `dta gaussian ion <assetId>` to open a Cesium ion splat asset; it requires IMJS_CESIUM_ION_KEY.
+  * If defined, enables the native Gaussian splat renderer preview (`RenderSystem.Options.enableGaussianSplats`). See [Viewing Gaussian splats](#viewing-gaussian-splats).
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
@@ -244,6 +244,21 @@ You can use these environment variables to alter the default behavior of various
   * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
 * IMJS_GOOGLEMAPS_UI
   * Enable the Google Maps toolbar button
+
+## Viewing Gaussian splats
+
+display-test-app can display Gaussian splat reality models with the native renderer preview. See [Gaussian splats preview](../../docs/learning/display/GaussianSplats.md) for the supported content and the limits.
+
+Define `IMJS_ENABLE_GAUSSIAN_SPLATS` before you start display-test-app. Then:
+
+* To show splats with an iModel, attach a compatible tileset to an iModel view with the existing reality-model tools. The view must include the geographic location of the capture.
+* To show a Cesium ion splat asset by itself, set `IMJS_CESIUM_ION_KEY` to a key that can open the asset, then enter `dta gaussian ion <assetId>` in the key-in field. For example, `dta gaussian ion 4547222` opens the Redmond campus capture.
+
+Put both variables in `.env.local`. If you export them in the shell instead, export them before you start both the frontend and the backend: the frontend reads its configuration from the backend.
+
+A Cesium ion key can open only the assets of its own ion account, and the Asset Depot assets that the account has added. Assets 4547222 (Redmond) and 3667783 (Boathouse) are CesiumJS Sandcastle samples in Cesium's own account, so most keys cannot open them. If the key cannot open the asset, the key-in fails with `Unexpected token '<'`: Cesium ion refuses the asset, and the tileset request then returns the app's HTML page instead of JSON.
+
+Use the existing Models, Diagnostics, and Inspect Element controls to inspect a scene that combines BIM geometry and splats.
 
 ## Adding a key-in
 
@@ -320,6 +335,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `c=0|1` if true, apply a random color to each instance.
   * `w=0|1` - if true, does not force smooth shade rendering mode for the glTF asset.
 * `dta text` *command* *args* - display a TextAnnotation loaded from a JSON file as a decoration graphic in the current viewport, then optionally persist it to the iModel. Start with `dta text init [categoryId] [defaultTextStyleId]` (defaults to the first category in the view), then `dta text import annotation <path>` to load `TextAnnotationProps` from a file. Other commands: `center`, `debug`, `export annotation <path> [force]`, `insert`, `update <annotationId>`, `delete <annotationId>`, `insertstyle|updatestyle <name> <path>`, `deletestyle <name>`, and `scale <factor>`. To test quantity field formatting, `dta text import formatset <path> [id]` registers a `FormatSet` from a JSON file for the current iModel (as the default when no `id` is given, or addressable by a FieldRun's `formatSet` option when one is), and `dta text import formatset off` reverts to the schema defaults. Use `dta text clear` to remove the decoration and reset all state, and `dta text help` to print the full command list to the console. The file, FormatSet, and iModel-editing commands go through DTA's IPC handler, which is only registered in the Electron app; when running in a browser, only `help`, `init`, `clear`, `center`, and `debug` are available.
+* `dta gaussian ion` assetId - open a blank connection at the location of a Cesium ion asset, attach the asset as a reality model, and aim the view at it. Requires `IMJS_CESIUM_ION_KEY`; for Gaussian splat assets, also define `IMJS_ENABLE_GAUSSIAN_SPLATS`. See [Viewing Gaussian splats](#viewing-gaussian-splats).
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
   * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
