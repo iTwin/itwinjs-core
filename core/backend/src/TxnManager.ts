@@ -17,7 +17,7 @@ import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _nativeDb, _refreshGeographicCoordinateSystem } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1105,6 +1105,7 @@ export class TxnManager {
   protected _onChangesApplied() {
     // Should only clear instance caches, not all caches
     this._iModel.clearCaches({ instanceCachesOnly: true });
+    this._iModel[_refreshGeographicCoordinateSystem]();
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
@@ -1428,8 +1429,10 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
-    if (this._nativeDb.hasUnsavedChanges())
+    if (this._nativeDb.hasUnsavedChanges()) {
       this._nativeDb.abandonChanges();
+      this._iModel[_refreshGeographicCoordinateSystem]();
+    }
     return this._nativeDb.reverseTxns(numOperations);
   }
 
@@ -1614,6 +1617,7 @@ export class TxnManager {
     if (this.hasUnsavedChanges) {
       this._iModel.clearCaches({ instanceCachesOnly: true });
       this._iModel[_nativeDb].abandonChanges();
+      this._iModel[_refreshGeographicCoordinateSystem]();
     }
 
     if (!args?.retainLocks) {
