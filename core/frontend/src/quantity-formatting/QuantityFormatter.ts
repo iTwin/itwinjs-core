@@ -84,7 +84,12 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
   private _alternateLabelRegistry = new Map<UnitNameKey, Set<string>>();
 
   public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
-    [...labels].forEach((value) => this._alternateLabelRegistry.get(key)?.add(value));
+    let entry = this._alternateLabelRegistry.get(key);
+    if (!entry) {
+      entry = new Set<string>();
+      this._alternateLabelRegistry.set(key, entry);
+    }
+    labels.forEach((value) => entry.add(value));
   }
 
   constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>) {
@@ -1144,7 +1149,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
       throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
+    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider, this.alternateUnitLabelsProvider);
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.
@@ -1358,7 +1363,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     const { persistenceUnitName, formatProps, formatName } = props;
     const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
     const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
-    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
+    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps, this.alternateUnitLabelsProvider);
   }
 
   /**

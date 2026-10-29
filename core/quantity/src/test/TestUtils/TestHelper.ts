@@ -79,6 +79,10 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_FT", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", phenomenon: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
+  // conversion => specified unit to base unit m/s
+  { name: "Units.M_PER_SEC", phenomenon: "Units.VELOCITY", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/s", altDisplayLabels: [] },
+  { name: "Units.KM_PER_HR", phenomenon: "Units.VELOCITY", system: "Units.INTERNATIONAL", conversion: { numerator: 3.6, denominator: 1.0, offset: 0.0 }, displayLabel: "km/h", altDisplayLabels: [] },
+  { name: "Units.MPH", phenomenon: "Units.VELOCITY", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.44704, offset: 0.0 }, displayLabel: "mi/h", altDisplayLabels: [] },
 
   { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
   { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, isInverted: true, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
