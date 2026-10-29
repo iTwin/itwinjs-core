@@ -1,9 +1,10 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64Array, Id64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, ExternalSourceAspectProps, IModel, PhysicalElementProps, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
+import { Code, CodeScopeSpec, ExternalSourceAspectProps, GeometryPartProps, IModel, PhysicalElementProps, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
 import {
-  _nativeDb, BulkDeleteElementsResult, BulkDeleteElementsStatus, BulkDeleteFailureReason, BulkDeleteMode, ChannelControl, EditTxn, ElementGroupsMembers, ExternalSourceAspect,
-  Group, GroupInformationPartition, GroupModel, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+  _nativeDb, BulkDeleteElementsResult, BulkDeleteElementsStatus, BulkDeleteFailureReason, ChannelControl, DefinitionModel, EditTxn, ElementDrivesElement, ElementDrivesElementProps, ElementGroupsMembers, ExternalSourceAspect,
+  GeometryPart, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs, PhysicalModel, RenderMaterialElement, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -28,12 +29,28 @@ interface ExpectedResult {
 }
 
 const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures: [], failedIds: new Set() };
-const partialSuccess = (failedIds: Id64Set, ...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.PartialSuccess, failures, failedIds });
+/**
+ * Nothing is deleted; `failures` lists the *direct* violators only. The bulk delete validates the expanded delete set exactly
+ * once (no pruning fixpoint), so an element that would only become a violator after another violator is excluded is NOT reported.
+ */
 const constraintViolation = (failedIds: Id64Set, ...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures, failedIds });
 
 /** The element itself is referenced from outside the delete set via its Code scope. */
 const codeScopeViolator = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_Element.CodeScopeId` });
-const blockedByRelative = (elementId: Id64String, blockedRelative: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.BlockedByRelative, detail: blockedRelative });
+/** A Category still assigned to a GeometricElement3d outside the delete set (hard FK, so not `DefinitionInUse`). */
+const categoryInUse3d = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_GeometricElement3d.CategoryId` });
+/** A DefinitionElement still used (e.g. via a GeometryStream) by elements outside the delete set. No SQLite foreign key is involved. */
+const definitionInUse = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.DefinitionInUse });
+
+const assertNoFkViolations = (db: IModelDb) => {
+  const rows = db.withSqliteStatement("PRAGMA foreign_key_check", (stmt) => {
+    const out: string[] = [];
+    while (stmt.step() === DbResult.BE_SQLITE_ROW)
+      out.push(`${stmt.getValueString(0)} rowid=${stmt.getValueInteger(1)} -> ${stmt.getValueString(2)} fk#${stmt.getValueInteger(3)}`);
+    return out;
+  });
+  assert.isEmpty(rows, `PRAGMA foreign_key_check reported violations after bulk delete: ${rows.join("; ")}`);
+};
 
 describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
@@ -114,14 +131,23 @@ describe("deleteElements (native bulk delete API)", () => {
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(result.failedIds, expected.failedIds ?? new Set());
+
+    assertNoFkViolations(iModelDb);
   };
 
   // Run deleteElements, compare the returned result object against `expected`, then check each id in `deleted` is gone and each id in `retained` is still present.
-  const executeTestCase = (_label: string, idsToDelete: Id64Array, deletedIds: Id64Array, retainedIds: Id64Array, expected: ExpectedResult = success, deleteMode: BulkDeleteMode = BulkDeleteMode.RemoveFKViolators) => {
-    const result = txn.deleteElements(idsToDelete, { deleteMode });
+  const executeTestCase = (_label: string, idsToDelete: Id64Array, deletedIds: Id64Array, retainedIds: Id64Array, expected: ExpectedResult = success) => {
+    const result = txn.deleteElements(idsToDelete);
     assertResult(result, expected, deletedIds, retainedIds);
     txn.abandonChanges();
   };
+
+  /**
+   * Run a delete that must be rejected with `ConstraintViolation`: nothing is deleted, so every id in `retained` must still exist,
+   * and `failures` / `failedIds` must list exactly the given direct violators. Changes are rolled back afterwards.
+   */
+  const expectRejected = (label: string, idsToDelete: Id64Array, retained: Id64Array, failedIds: Id64Set, ...failures: ExpectedFailure[]) =>
+    executeTestCase(label, idsToDelete, [], retained, constraintViolation(failedIds, ...failures));
 
   /**
    * Shared hierarchy used throughout the parent-child tests:
@@ -304,7 +330,7 @@ describe("deleteElements (native bulk delete API)", () => {
         [childA],
         [],
         [rootA, childA, rootB],
-        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
+        constraintViolation(new Set([childA]), codeScopeViolator(childA)));
 
       executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
@@ -344,8 +370,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
-      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], partialSuccess(new Set([rootB]), codeScopeViolator(rootB)));
+      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], constraintViolation(new Set([rootA]), codeScopeViolator(rootA)));
+      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], constraintViolation(new Set([rootB]), codeScopeViolator(rootB)));
       executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
 
       executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
@@ -359,12 +385,12 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
       const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
 
-      // Only A and D in the delete set. B is external -> A ignored. D's scope (C) is not being deleted -> D is safe.
-      executeTestCase("deep gap chain: A ignored, D deleted",
+      // Only A and D in the delete set. B is external -> A is a violator, which rejects the whole call even though D itself is safe.
+      executeTestCase("deep gap chain: A violates, nothing deleted",
         [rootA, rootD],
-        [rootD],
-        [rootA, rootB, rootC],
-        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
+        [],
+        [rootA, rootB, rootC, rootD],
+        constraintViolation(new Set([rootA]), codeScopeViolator(rootA)));
     });
 
     it("two elements using the same scope", () => {
@@ -421,17 +447,17 @@ describe("deleteElements (native bulk delete API)", () => {
         [childB],
         [parent, childA]);
 
-      // Delete only the scope element - childB is external -> childA ignored.
-      executeTestCase("sibling scope - delete only scope element, ignored due to external childB",
+      // Delete only the scope element - childB is external -> childA is a violator.
+      executeTestCase("sibling scope - delete only scope element, rejected due to external childB",
         [childA],
         [],
         [parent, childA, childB],
-        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
+        constraintViolation(new Set([childA]), codeScopeViolator(childA)));
     });
   });
 
-  describe("delete modes", () => {
-    /** A -> B -> C -> D code-scope chain. Deleting [A, D] leaves A referenced by B (external), while D is safe. */
+  describe("all-or-nothing semantics and validation rounds", () => {
+    /** A -> B -> C -> D code-scope chain (each element is the code scope of the next). */
     const insertScopeChain = () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
@@ -440,96 +466,64 @@ describe("deleteElements (native bulk delete API)", () => {
       return { rootA, rootB, rootC, rootD };
     };
 
-    it("RemoveFKViolators (default) reports the FK violator with the referencing table.column", () => {
+    it("reports each FK violator with the referencing table.column and deletes nothing", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
+      const all = [rootA, rootB, rootC, rootD];
 
-      executeTestCase("Delete A and D",
-        [rootA, rootD],
-        [rootD],
-        [rootA, rootB, rootC],
-        partialSuccess(new Set([rootA]), codeScopeViolator(rootA))
-      );
+      // A is scoped by B (external) -> violator. D is safe, but the call is all-or-nothing.
+      executeTestCase("Delete A and D", [rootA, rootD], [], all, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)));
 
-      executeTestCase("Delete A and B",
-        [rootA, rootB],
-        [],
-        [rootA, rootB],
-        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB))
-      );
+      // Only the *direct* violators are reported: A is scoped by B which is in the set, so only B (scoped by external C) is reported.
+      executeTestCase("Delete A and B", [rootA, rootB], [], all, constraintViolation(new Set([rootB]), codeScopeViolator(rootB)));
+      executeTestCase("Delete B and C", [rootB, rootC], [], all, constraintViolation(new Set([rootC]), codeScopeViolator(rootC)));
+      executeTestCase("Delete A, B and D", [rootA, rootB, rootD], [], all, constraintViolation(new Set([rootB]), codeScopeViolator(rootB)));
 
-      executeTestCase("Delete B and C",
-        [rootB, rootC],
-        [],
-        [rootB, rootC],
-        partialSuccess(new Set([rootB, rootC]), codeScopeViolator(rootB), codeScopeViolator(rootC))
-      );
-
-      executeTestCase("Delete C and D",
-        [rootC, rootD],
-        [rootC, rootD],
-        [],
-        success
-      );
-
-      executeTestCase("Delete A, B and D",
-        [rootA, rootB, rootD],
-        [rootD],
-        [rootA, rootB, rootC],
-        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB))
-      );
-
-      executeTestCase("Delete all the roots",
-        [rootA, rootB, rootC, rootD],
-        [rootA, rootB, rootC, rootD],
-        [],
-        success
-      );
+      // Tail of the chain has no external dependents.
+      executeTestCase("Delete C and D", [rootC, rootD], [rootC, rootD], [rootA, rootB], success);
+      executeTestCase("Delete all the roots", all, all, [], success);
     });
 
-    it("FailFast deletes nothing and returns ConstraintViolation when any element is still referenced", () => {
+    it("succeeds when the whole chain is in the delete set, regardless of input order", () => {
+      const { rootA, rootB, rootC, rootD } = insertScopeChain();
+      executeTestCase("forward", [rootA, rootB, rootC, rootD], [rootA, rootB, rootC, rootD], []);
+      executeTestCase("reversed", [rootD, rootC, rootB, rootA], [rootA, rootB, rootC, rootD], []);
+    });
+
+    it("an unrelated deletable element does not rescue a call that contains a violator", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
       const unrelated = insertElement();
-
-      executeTestCase("FailFast fails",
-        [rootA, rootD, unrelated],
-        [],
-        [rootA, rootB, rootC, rootD, unrelated],
-        constraintViolation(new Set([rootA]), codeScopeViolator(rootA)),
-        BulkDeleteMode.FailFast
-      );
+      expectRejected("violator + unrelated", [rootA, rootD, unrelated], [rootA, rootB, rootC, rootD, unrelated],
+        new Set([rootA]), codeScopeViolator(rootA));
     });
 
-    it("FailFast succeeds when there are no external references", () => {
+    it("reports only first-round violators (no pruning fixpoint) - known limitation", () => {
+      // Chain A <- B <- C <- D; delete [A, B, D]. C is external and scopes B, so B is a violator. A is scoped by B, which is
+      // *in* the set, so A is not a violator in the single validation round that runs. If the caller drops B from the input and
+      // retries, A will then be reported. Pinned here so a change in the native validation strategy is deliberate.
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
 
-      executeTestCase("FailFast succeeds",
-        [rootA, rootB, rootC, rootD],
-        [rootA, rootB, rootC, rootD],
-        [],
-        success,
-        BulkDeleteMode.FailFast
-      );
+      const result = txn.deleteElements([rootA, rootB, rootD]);
+      assertResult(result, constraintViolation(new Set([rootB]), codeScopeViolator(rootB)), [], [rootA, rootB, rootC, rootD]);
+      assert.isFalse(result.failures.some((f) => f.elementId === rootA), "transitive violators (A) are not reported; update this test if the native fixpoint changes");
+
+      txn.abandonChanges();
+      const retry = txn.deleteElements([rootA, rootD]);
+      assertResult(retry, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
     });
 
-    it("FailFast does not evict retained elements from the element cache", () => {
+    it("a rejected delete does not evict anything from the element cache", () => {
       const { rootA, rootD } = insertScopeChain();
       // Prime the cache.
       const before = iModelDb.elements.getElement(rootA);
 
-      executeTestCase("FailFast does not evict cache for retained elements",
-        [rootA, rootD],
-        [],
-        [rootA, rootD],
-        constraintViolation(new Set([rootA]), codeScopeViolator(rootA)),
-        BulkDeleteMode.FailFast
-      );
+      expectRejected("rejected delete keeps cache", [rootA, rootD], [rootA, rootD], new Set([rootA]), codeScopeViolator(rootA));
 
       const after = iModelDb.elements.getElement(rootA);
       assert.strictEqual(after.id, before.id);
       assertExists(rootD, "rootD must still exist");
     });
 
-    it("FailFast ConstraintViolation leaves no side effects behind (aspects, subclass rows, sub-models)", async () => {
+    it("ConstraintViolation leaves no side effects behind (aspects, subclass rows, sub-models)", async () => {
       // Validation runs before anything is modified, so unlike DeletionFailed nothing needs to be abandoned.
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
       const aspectId = txn.insertAspect({
@@ -539,7 +533,7 @@ describe("deleteElements (native bulk delete API)", () => {
         identifier: "src-rootD",
         kind: "Element",
       } as ExternalSourceAspectProps);
-      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "FailFastNoSideEffects");
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "NoSideEffects");
       txn.saveChanges();
       const aspectExists = async (): Promise<boolean> => {
         const reader = iModelDb.createQueryReader("SELECT 1 FROM bis.ElementMultiAspect WHERE ECInstanceId=?", new QueryBinder().bindId(1, aspectId));
@@ -547,50 +541,38 @@ describe("deleteElements (native bulk delete API)", () => {
       };
       const geomRowExists = (id: Id64String) => iModelDb.withPreparedSqliteStatement("SELECT 1 FROM bis_GeometricElement3d WHERE ElementId=?", (stmt) => { stmt.bindId(1, id); return stmt.step() === DbResult.BE_SQLITE_ROW; });
 
-      const result = txn.deleteElements([rootA, rootD, partitionId], { deleteMode: BulkDeleteMode.FailFast });
+      const result = txn.deleteElements([rootA, rootD, partitionId]);
       assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD, partitionId]);
       assert.isTrue(await aspectExists(), "aspect must not be touched");
       assert.isTrue(geomRowExists(rootD), "subclass rows must not be touched");
       assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must not be touched");
-      assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "a rejected FailFast delete must not dirty the txn");
+      assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "a rejected delete must not dirty the txn");
     });
 
-    it("deprecated skipFKConstraintValidations: true behaves like FailFast", () => {
+    it("deprecated skipFKConstraintValidations flag is ignored (either value)", () => {
       const { rootA, rootB, rootC, rootD } = insertScopeChain();
 
-      const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
-      assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
+      for (const skipFKConstraintValidations of [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations });
+        assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, rootB, rootC, rootD]);
 
-      // ...and succeeds when nothing is referenced from outside the set.
-      const ok = txn.deleteElements([rootA, rootB, rootC, rootD], { skipFKConstraintValidations: true });
-      assertResult(ok, success, [rootA, rootB, rootC, rootD], []);
-    });
-
-    it("deprecated skipFKConstraintValidations: false keeps the default RemoveFKViolators behaviour", () => {
-      const { rootA, rootB, rootC, rootD } = insertScopeChain();
-      const result = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: false });
-      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
-    });
-
-    it("deleteMode takes precedence over the deprecated skipFKConstraintValidations flag", () => {
-      const { rootA, rootB, rootC, rootD } = insertScopeChain();
-
-      // RemoveFKViolators must win over the deprecated flag: PartialSuccess with rootD deleted.
-      const result = txn.deleteElements([rootA, rootD], { deleteMode: BulkDeleteMode.RemoveFKViolators, skipFKConstraintValidations: true });
-      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootD], [rootA, rootB, rootC]);
+        // ...and succeeds when nothing is referenced from outside the set.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const ok = txn.deleteElements([rootA, rootB, rootC, rootD], { skipFKConstraintValidations });
+        assertResult(ok, success, [rootA, rootB, rootC, rootD], []);
+        txn.abandonChanges();
+      }
     });
   });
 
-  describe("Code scope violations to test delete set element pruning", () => {
+  describe("Code scope violations from outside the delete set", () => {
     it("root is code scope for an external element", () => {
       const rootA = insertElement();
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes root",
-        [rootA, rootB],
-        [rootB],
-        [rootA, external],
-        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
+      expectRejected("external scopes root", [rootA, rootB], [rootA, rootB, external],
+        new Set([rootA]), codeScopeViolator(rootA));
     });
 
     it("depth-1 child is code scope for external", () => {
@@ -598,11 +580,9 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes depth-1 child - parent subtree ignored",
-        [rootA, rootB],
-        [rootB],
-        [rootA, childA, external],
-        partialSuccess(new Set([rootA, childA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)));
+      // The cascaded child is the violator; the requested parent is not itself reported.
+      expectRejected("external scopes depth-1 child", [rootA, rootB], [rootA, childA, external, rootB],
+        new Set([childA]), codeScopeViolator(childA));
     });
 
     it("depth-2 grandchild is code scope for external", () => {
@@ -611,46 +591,34 @@ describe("deleteElements (native bulk delete API)", () => {
       const grandchildA = insertElement({ parentId: childA });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes depth-2 grandchild - grandparent subtree ignored",
-        [rootA, rootB],
-        [rootB],
-        [rootA, childA, grandchildA, external],
-        partialSuccess(new Set([rootA, grandchildA]), codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
+      expectRejected("external scopes depth-2 grandchild", [rootA, rootB], [rootA, childA, grandchildA, external, rootB],
+        new Set([grandchildA]), codeScopeViolator(grandchildA));
     });
 
     it("only the child is passed for deletion", () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
-      executeTestCase("external scopes requested child",
-        [childA],
-        [],
-        [rootA, childA, external],
-        partialSuccess(new Set([childA]), codeScopeViolator(childA)));
+      expectRejected("external scopes requested child", [childA], [rootA, childA, external],
+        new Set([childA]), codeScopeViolator(childA));
     });
 
     it("root has both an external scope dependent AND an intra-set scope dependent", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
-      executeTestCase("root ignored due to external; sibling still deleted",
-        [rootA, rootB],
-        [rootB],
-        [rootA, external],
-        partialSuccess(new Set([rootA]), codeScopeViolator(rootA)));
+      expectRejected("root rejected due to external", [rootA, rootB], [rootA, rootB, external],
+        new Set([rootA]), codeScopeViolator(rootA));
     });
 
-    it("two independent external scope violations", () => {
+    it("two independent external scope violations are both reported", () => {
       const rootA = insertElement();
       const rootB = insertElement();
       const extX = insertElement({ codeScope: rootA, codeValue: "extX" });
       const extY = insertElement({ codeScope: rootB, codeValue: "extY" });
       const rootC = insertElement();
-      executeTestCase("two independent violations",
-        [rootA, rootB, rootC],
-        [rootC],
-        [rootA, rootB, extX, extY],
-        partialSuccess(new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB)));
+      expectRejected("two independent violations", [rootA, rootB, rootC], [rootA, rootB, rootC, extX, extY],
+        new Set([rootA, rootB]), codeScopeViolator(rootA), codeScopeViolator(rootB));
     });
   });
 
@@ -695,18 +663,14 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootA]);
     });
 
-    it("depth-1 child scopes an unrelated root - deleting only the child cascades into the scoped root's subtree", () => {
-      // childA1 is the code scope of rootB. When childA1 is deleted, rootB loses its scope
-      // element -> rootB (and its children) must also be deleted.
+    it("depth-1 child scopes an unrelated root - deleting only the child is rejected because the scoped root is outside the set", () => {
+      // childA1 is the code scope of rootB. rootB is not in the delete set, so childA1 is still referenced and the call is rejected.
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      executeTestCase("delete child only - scoped root also removed",
-        [childA1],
-        [],
-        [rootA, childA1, rootB, childB1],
-        partialSuccess(new Set([childA1]), codeScopeViolator(childA1)));
+      expectRejected("delete child only - scoped root is external", [childA1], [rootA, childA1, rootB, childB1],
+        new Set([childA1]), codeScopeViolator(childA1));
     });
 
     it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", () => {
@@ -751,22 +715,21 @@ describe("deleteElements (native bulk delete API)", () => {
     });
 
     it("external element scopes a depth-2 grandchild, mixed with an unrelated deletion", () => {
-      // Unique case: grandchild has an external scope violation, but an unrelated element from
-      // another tree (childB) is also requested and has no violation - it should be deleted.
+      // The grandchild has an external scope violation. An unrelated element from another tree (childB) is also requested and
+      // has no violation, but the call is all-or-nothing so it survives as well.
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const grandchildA = insertElement({ parentId: childA });
       const rootB = insertElement();
       const childB = insertElement({ parentId: rootB });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
-      executeTestCase("external scopes depth-2 grandchild, unrelated childB deleted",
+      expectRejected("external scopes depth-2 grandchild, unrelated childB retained",
         [grandchildA, rootA, childB],
-        [childB],
-        [rootA, childA, grandchildA, rootB, external],
-        partialSuccess(new Set([rootA, grandchildA]), codeScopeViolator(grandchildA), blockedByRelative(rootA, grandchildA)));
+        [rootA, childA, grandchildA, rootB, childB, external],
+        new Set([grandchildA]), codeScopeViolator(grandchildA));
     });
 
-    it("two trees: one has external scope violation, other is deleted cleanly", () => {
+    it("two trees: one has external scope violation, neither is deleted", () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const gcA = insertElement({ parentId: childA });
@@ -775,11 +738,10 @@ describe("deleteElements (native bulk delete API)", () => {
       const childB1 = insertElement({ parentId: rootB });
       const childB2 = insertElement({ parentId: rootB });
       const gcB = insertElement({ parentId: childB1 });
-      executeTestCase("one tree ignored, other fully deleted",
+      expectRejected("one tree violates, both retained",
         [rootA, rootB],
-        [rootB, childB1, childB2, gcB],
-        [rootA, childA, gcA, external],
-        partialSuccess(new Set([rootA, childA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)));
+        [rootA, childA, gcA, external, rootB, childB1, childB2, gcB],
+        new Set([childA]), codeScopeViolator(childA));
     });
   });
 
@@ -828,6 +790,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(elem1, "elem1 inside sub-model should be deleted");
       assertDeleted(elem2, "elem2 inside sub-model should be deleted");
       assertExists(unrelated, "unrelated element should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -852,6 +815,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
       assertDeleted(elem1, "elem1 inside child partition sub-model should be deleted");
       assertExists(unrelated, "unrelated element should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -881,6 +845,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(grandchildOfElem1, "grandchild of elem1 should be deleted");
       assertDeleted(elem2, "elem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -892,24 +857,18 @@ describe("deleteElements (native bulk delete API)", () => {
      *   external (not in delete set)
      *   unrelated
      */
-    it("partition ignored when a sub-model element is a code scope for an external element", () => {
+    it("partition rejected when a sub-model element is a code scope for an external element", () => {
       const partitionId = insertSubModel();
       const scopingElem = insertElementInModel(partitionId);
       const otherElem = insertElementInModel(partitionId);
       const external = insertElement({ codeScope: scopingElem, codeValue: "ext-code" });
       const unrelated = insertElement();
 
-      // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
-      // entire partition subtree (including the sub-model) must be ignored from the delete set.
-      // scopingElem is the direct violator; the requested partition is reported as blocked by it.
+      // `external` is NOT in the delete set and uses scopingElem as its code scope -> the cascaded sub-model member is a
+      // violator and the whole call is rejected, including the unrelated element.
       const result = txn.deleteElements([partitionId, unrelated]);
-      assertResult(result, partialSuccess(new Set([scopingElem, partitionId]), codeScopeViolator(scopingElem), blockedByRelative(partitionId, scopingElem)), [unrelated], [partitionId, scopingElem, otherElem, external]);
-      assertExists(partitionId, "partition should be ignored (retained)");
+      assertResult(result, constraintViolation(new Set([scopingElem]), codeScopeViolator(scopingElem)), [], [partitionId, scopingElem, otherElem, external, unrelated]);
       assertModelExists(partitionId, "sub-model should be retained");
-      assertExists(scopingElem, "scopingElem should be retained");
-      assertExists(otherElem, "otherElem should be retained");
-      assertExists(external, "external should be retained");
-      assertDeleted(unrelated, "unrelated should still be deleted");
     });
 
     /**
@@ -944,6 +903,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(p2, "sub-model of p2 should be deleted");
       assertDeleted(dependentElem, "dependentElem should be deleted");
       assertDeleted(dependentId, "dependentId should be deleted");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -973,6 +933,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(innerElem1, "innerElem1 should be deleted");
       assertDeleted(innerElem2, "innerElem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -990,6 +951,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "empty sub-model should be deleted");
       assertExists(unrelated, "unrelated should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -1018,6 +980,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
+      assertNoFkViolations(iModelDb);
     });
 
     /**
@@ -1046,6 +1009,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
+      assertNoFkViolations(iModelDb);
     });
 
     it("deleting a partition element directly (not via its regular parent) cascades into the sub-model; parent survives", () => {
@@ -1061,6 +1025,156 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
+      assertNoFkViolations(iModelDb);
+    });
+  });
+
+  /**
+   * Members of a sub-model that are *also* listed explicitly in the input. Native expands the delete set from the element itself
+   * (children + sub-model contents), so a violator inside the sub-model must reject the call regardless of whether it was
+   * requested or cascaded, and a rejected call must never delete the model row out from under explicitly-requested members.
+   *
+   *   [P:defPartition]  [M:defPartition] -> catA (used by wall1, outside the set), catB (unused)
+   *   wall1 (in modelId, category = catA)
+   */
+  describe("explicit sub-model members", () => {
+    let defPartition: Id64String;
+    let catA: Id64String, catB: Id64String;
+    let subA: Id64String, subB: Id64String;
+    let wall1: Id64String;
+
+    beforeEach(() => {
+      defPartition = DefinitionModel.insert(txn, IModel.rootSubjectId, "DefPartition");
+      catA = SpatialCategory.insert(txn, defPartition, "CatA", new SubCategoryAppearance());
+      catB = SpatialCategory.insert(txn, defPartition, "CatB", new SubCategoryAppearance());
+      subA = IModel.getDefaultSubCategoryId(catA);
+      subB = IModel.getDefaultSubCategoryId(catB);
+      wall1 = txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: modelId, category: catA, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      txn.saveChanges();
+    });
+
+    const assertPartitionIntact = () => {
+      assert.isDefined(iModelDb.models.tryGetModelProps(defPartition), "sub-model row must survive when the call is rejected");
+      assert.equal(iModelDb.elements.getElement(catA).model, defPartition, "catA must still live in the sub-model");
+    };
+
+    it("1.1 only the modeled element requested: violator inside rejects it, nothing deleted", () => {
+      expectRejected("partition only", [defPartition], [defPartition, catA, subA, catB, subB, wall1],
+        new Set([catA]), categoryInUse3d(catA));
+      assertPartitionIntact();
+    });
+
+    it("1.2 modeled element + members requested explicitly: nothing deleted, only the direct violator is reported", () => {
+      // The reviewer's case: pre-fix native treated catB as a root (it was requested) and deleted it together with the model row
+      // while catA survived, leaving catA pointing at a model that no longer existed.
+      expectRejected("partition + members", [defPartition, catA, catB], [defPartition, catA, subA, catB, subB, wall1],
+        new Set([catA]), categoryInUse3d(catA));
+      assertPartitionIntact();
+    });
+
+    it("1.3 only members requested (modeled element not listed): the in-use one rejects the call, the model survives", () => {
+      expectRejected("members only", [catA, catB], [defPartition, catA, subA, catB, subB, wall1],
+        new Set([catA]), categoryInUse3d(catA));
+      assertPartitionIntact();
+    });
+
+    it("1.3b only the unused member requested: deleted, the model survives", () => {
+      executeTestCase("unused member only", [catB], [catB, subB], [defPartition, catA, subA, wall1]);
+      assertPartitionIntact();
+    });
+
+    it("1.4 once the external user is gone, modeled element + members delete cleanly", () => {
+      txn.deleteElement(wall1);
+      txn.saveChanges();
+      const result = txn.deleteElements([defPartition, catA, catB]);
+      assertResult(result, success, [defPartition, catA, subA, catB, subB], []);
+      assert.isUndefined(iModelDb.models.tryGetModelProps(defPartition), "sub-model row must be deleted with its modeled element");
+    });
+
+    it("1.5 requested member deep in a parent chain inside the sub-model rejects the call", () => {
+      const partition = PhysicalModel.insert(txn, IModel.rootSubjectId, "ChainPartition");
+      const insertIn = (parentId?: Id64String) => txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: partition, category: categoryId, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
+      } as PhysicalElementProps);
+      const p = insertIn();
+      const c = insertIn(p);
+      const g = insertIn(c);
+      txn.saveChanges();
+      const external = insertElement({ codeScope: g, codeValue: "ext-g" });
+
+      // g is requested *and* a cascaded grandchild of a sub-model member; it is a violator either way.
+      expectRejected("partition + deep member", [partition, g], [partition, p, c, g, external],
+        new Set([g]), codeScopeViolator(g));
+      assert.isDefined(iModelDb.models.tryGetModelProps(partition));
+    });
+  });
+
+  /**
+   * `DefinitionInUse` is reported for definitions referenced from geometry streams or other non-FK usages. Every category test
+   * elsewhere in this file is caught by the `CategoryId` *foreign key* path first, so these are the only tests that reach
+   * `DefinitionElementUsageInfo`. The RenderMaterial / GeometryPart cases force a full geometry-stream scan natively; fine on
+   * a tiny db, do not copy this pattern into a performance test.
+   *
+   *   [M:defModel] -> cat (-> sub, non-default), mat, part
+   *   elem (in modelId, category = cat): geometry uses sub, mat and part
+   */
+  describe("DefinitionInUse via geometry streams", () => {
+    let defModel: Id64String;
+    let cat: Id64String, sub: Id64String, defaultSub: Id64String, mat: Id64String, part: Id64String;
+    let elem: Id64String;
+
+    beforeEach(() => {
+      defModel = DefinitionModel.insert(txn, IModel.rootSubjectId, "Defs");
+      cat = SpatialCategory.insert(txn, defModel, "Cat", new SubCategoryAppearance());
+      defaultSub = IModel.getDefaultSubCategoryId(cat);
+      sub = SubCategory.insert(txn, cat, "Sub", new SubCategoryAppearance());
+      mat = RenderMaterialElement.insert(txn, defModel, "Mat", { paletteName: "p" });
+      part = txn.insertElement({
+        classFullName: GeometryPart.classFullName, model: defModel, code: GeometryPart.createCode(iModelDb, defModel, "Part"),
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      } as GeometryPartProps);
+      elem = txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: modelId, category: cat, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), cat, sub, mat, part),
+      } as PhysicalElementProps);
+      txn.saveChanges();
+    });
+
+    it("2.1 a non-default SubCategory referenced from a geometry stream is DefinitionInUse", () => {
+      expectRejected("sub-category in geometry", [sub], [cat, defaultSub, sub, elem], new Set([sub]), definitionInUse(sub));
+    });
+
+    it("2.2 an in-use Category rejects the call that also requests its SubCategory (nothing deleted)", () => {
+      // Pre-fix native pruned only *upwards* from the violator: `sub` was deleted while `cat` survived. With all-or-nothing
+      // semantics the sub-category must survive together with its category.
+      const elem2 = txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: modelId, category: cat, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      txn.saveChanges();
+      // Remove the geometry-stream user so the only thing keeping `cat` alive is the CategoryId FK from elem2.
+      txn.deleteElement(elem);
+      txn.saveChanges();
+
+      expectRejected("category + sub-category", [cat, sub], [cat, defaultSub, sub, elem2], new Set([cat]), categoryInUse3d(cat));
+    });
+
+    it("2.3 a RenderMaterial referenced from a geometry stream is DefinitionInUse", () => {
+      expectRejected("material in geometry", [mat], [mat, elem], new Set([mat]), definitionInUse(mat));
+    });
+
+    it("2.4 a GeometryPart referenced from a geometry stream is DefinitionInUse", () => {
+      expectRejected("part in geometry", [part], [part, elem], new Set([part]), definitionInUse(part));
+    });
+
+    it("2.5 definitions whose only user is in the delete set are deleted with it", () => {
+      executeTestCase("definitions + their user", [mat, part, sub, elem], [mat, part, sub, elem], [cat, defaultSub]);
     });
   });
 
@@ -1131,25 +1245,21 @@ describe("deleteElements (native bulk delete API)", () => {
       txn.saveChanges();
 
       const fkDetails = ["bis_GeometricElement3d.CategoryId", "bis_Element.CodeScopeId"];
-      const assertSingleFailure = (resultObj: BulkDeleteElementsResult, status: BulkDeleteElementsStatus) => {
-        assert.equal(resultObj.status, status);
-        assert.equal(resultObj.failures.length, 1, `expected a single failure, got ${JSON.stringify(resultObj.failures)}`);
-        const [failure] = resultObj.failures;
-        assert.equal(failure.elementId, multiRefCategory);
-        assert.equal(failure.reason, BulkDeleteFailureReason.ReferencedByForeignKey);
-        assert.include(fkDetails, failure.detail, "detail must name one of the referencing foreign keys");
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        assert.deepEqual(resultObj.failedIds, new Set([multiRefCategory]));
-        for (const id of [multiRefCategory, usesAsCategory, usesAsCodeScope])
-          assertExists(id);
-      };
-
-      assertSingleFailure(txn.deleteElements([multiRefCategory], { deleteMode: BulkDeleteMode.RemoveFKViolators }), BulkDeleteElementsStatus.PartialSuccess);
-      assertSingleFailure(txn.deleteElements([multiRefCategory], { deleteMode: BulkDeleteMode.FailFast }), BulkDeleteElementsStatus.ConstraintViolation);
+      const result = txn.deleteElements([multiRefCategory]);
+      assert.equal(result.status, BulkDeleteElementsStatus.ConstraintViolation);
+      assert.equal(result.failures.length, 1, `expected a single failure, got ${JSON.stringify(result.failures)}`);
+      const [failure] = result.failures;
+      assert.equal(failure.elementId, multiRefCategory);
+      assert.equal(failure.reason, BulkDeleteFailureReason.ReferencedByForeignKey);
+      assert.include(fkDetails, failure.detail, "detail must name one of the referencing foreign keys");
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      assert.deepEqual(result.failedIds, new Set([multiRefCategory]));
+      for (const id of [multiRefCategory, usesAsCategory, usesAsCodeScope])
+        assertExists(id);
 
       // Once both referencing elements are in the delete set the category is no longer a violator.
-      const result = txn.deleteElements([multiRefCategory, usesAsCategory, usesAsCodeScope]);
-      assertResult(result, success, [multiRefCategory, usesAsCategory, usesAsCodeScope], []);
+      const retry = txn.deleteElements([multiRefCategory, usesAsCategory, usesAsCodeScope]);
+      assertResult(retry, success, [multiRefCategory, usesAsCategory, usesAsCodeScope], []);
     });
   });
 
@@ -1194,7 +1304,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assert.isUndefined(iModelDb.elements.tryGetElementProps(inner), "cached sub-model element must not be served after deletion");
     });
 
-    it("on PartialSuccess, retained elements stay readable and deleted ones are evicted", () => {
+    it("on ConstraintViolation, every cached element stays readable", () => {
       const rootA = insertElement();
       const external = insertElement({ codeScope: rootA, codeValue: "ext" });
       const rootB = insertElement();
@@ -1202,9 +1312,9 @@ describe("deleteElements (native bulk delete API)", () => {
       prime([rootA, external, rootB, childB]);
 
       const result = txn.deleteElements([rootA, rootB]);
-      assertResult(result, partialSuccess(new Set([rootA]), codeScopeViolator(rootA)), [rootB, childB], [rootA, external]);
-      assert.strictEqual(iModelDb.elements.getElement(rootA).id, rootA);
-      assert.isUndefined(iModelDb.elements.tryGetElementProps(childB));
+      assertResult(result, constraintViolation(new Set([rootA]), codeScopeViolator(rootA)), [], [rootA, external, rootB, childB]);
+      for (const id of [rootA, external, rootB, childB])
+        assert.strictEqual(iModelDb.elements.getElement(id).id, id);
     });
 
     it("a cached parent reflects the removal of its children", () => {
@@ -1264,6 +1374,63 @@ describe("deleteElements (native bulk delete API)", () => {
       const result = txn.deleteElements([scopeElem, owner]);
       assertResult(result, success, [scopeElem, owner], []);
       assert.throws(() => iModelDb.elements.getAspect(aspectId));
+    });
+
+    it("3.4 aspects owned by cascaded sub-model members are removed", async () => {
+      // Existing aspect tests only cover parent/child cascades; sub-model members reach the delete set through a different path.
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "AspectPartition");
+      const insertMember = () => txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: partitionId, category: categoryId, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      const member1 = insertMember();
+      const member2 = insertMember();
+      insertAspect(member1);
+      insertAspect(member2);
+      insertAspect(member2);
+      txn.saveChanges();
+      assert.equal(await countAspects(member1), 1);
+      assert.equal(await countAspects(member2), 2);
+
+      const result = txn.deleteElements([partitionId]);
+      assertResult(result, success, [partitionId, member1, member2], []);
+      assert.equal(await countAspects(member1), 0, "aspects of cascaded sub-model member must be removed");
+      assert.equal(await countAspects(member2), 0, "aspects of cascaded sub-model member must be removed");
+    });
+
+    describe("3.2 ElementDrivesElement link table", () => {
+      const countDrives = async (): Promise<number> => {
+        const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementDrivesElement", undefined, { usePrimaryConn: true });
+        assert.isTrue(await reader.step());
+        return reader.current.toArray()[0];
+      };
+
+      const insertDrives = (sourceId: Id64String, targetId: Id64String): Id64String =>
+        txn.insertRelationship({ classFullName: ElementDrivesElement.classFullName, sourceId, targetId, status: 0, priority: 0 } as ElementDrivesElementProps);
+
+      it("deleting the source removes the row; the target survives", async () => {
+        const a = insertElement();
+        const b = insertElement();
+        insertDrives(a, b);
+        txn.saveChanges();
+        assert.equal(await countDrives(), 1);
+
+        const result = txn.deleteElements([a]);
+        assertResult(result, success, [a], [b]);
+        assert.equal(await countDrives(), 0, "ElementDrivesElement row referencing the deleted source must be removed");
+      });
+
+      it("deleting the target removes the row; the source survives", async () => {
+        const a = insertElement();
+        const b = insertElement();
+        insertDrives(a, b);
+        txn.saveChanges();
+        assert.equal(await countDrives(), 1);
+
+        const result = txn.deleteElements([b]);
+        assertResult(result, success, [b], [a]);
+        assert.equal(await countDrives(), 0, "ElementDrivesElement row referencing the deleted target must be removed");
+      });
     });
 
     describe("ElementRefersToElements link table", () => {
@@ -1332,23 +1499,19 @@ describe("deleteElements (native bulk delete API)", () => {
     });
   });
 
-  describe("FailFast with hierarchy", () => {
-    it("reports the direct violator and the blocked requested ancestor, and deletes nothing", () => {
+  describe("rejection with hierarchy", () => {
+    it("reports the cascaded child violator (not the requested ancestor) and deletes nothing", () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext" });
       const unrelated = insertElement();
 
-      executeTestCase("FailFast: violator is a cascaded child",
-        [rootA, unrelated],
-        [],
-        [rootA, childA, external, unrelated],
-        constraintViolation(new Set([childA, rootA]), codeScopeViolator(childA), blockedByRelative(rootA, childA)),
-        BulkDeleteMode.FailFast);
+      expectRejected("violator is a cascaded child", [rootA, unrelated], [rootA, childA, external, unrelated],
+        new Set([childA]), codeScopeViolator(childA));
     });
 
-    it("sub-model partition blocked by an element inside its sub-model", () => {
-      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "FailFastPartition");
+    it("sub-model partition rejected by an element inside its sub-model", () => {
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "RejectedPartition");
       const inner = txn.insertElement({
         classFullName: "Generic:PhysicalObject",
         model: partitionId,
@@ -1359,13 +1522,9 @@ describe("deleteElements (native bulk delete API)", () => {
       txn.saveChanges();
       const external = insertElement({ codeScope: inner, codeValue: "ext" });
 
-      executeTestCase("FailFast: violator is inside the sub-model",
-        [partitionId],
-        [],
-        [partitionId, inner, external],
-        constraintViolation(new Set([inner, partitionId]), codeScopeViolator(inner), blockedByRelative(partitionId, inner)),
-        BulkDeleteMode.FailFast);
-      assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must survive a FailFast rejection");
+      expectRejected("violator is inside the sub-model", [partitionId], [partitionId, inner, external],
+        new Set([inner]), codeScopeViolator(inner));
+      assert.isDefined(iModelDb.models.tryGetModelProps(partitionId), "sub-model must survive a rejection");
     });
   });
 
@@ -1417,6 +1576,7 @@ describe("deleteElements (native bulk delete API)", () => {
         assert.equal(result.status, BulkDeleteElementsStatus.Success);
         assert.isEmpty(result.failures);
       });
+      assertNoFkViolations(sdb);
       for (const id of [parent, child, partition, inner])
         assert.isUndefined(sdb.elements.tryGetElement(id));
       assert.isUndefined(sdb.models.tryGetModelProps(partition));
@@ -1428,6 +1588,7 @@ describe("deleteElements (native bulk delete API)", () => {
       for (const id of [parent, child, partition, inner, survivor])
         assert.isDefined(sdb.elements.tryGetElement(id), `${id} must be restored by undo`);
       assert.isDefined(sdb.models.tryGetModelProps(partition), "sub-model must be restored by undo");
+      assertNoFkViolations(sdb);
 
       // Redo: deleted again.
       assert.isTrue(sdb.txns.isRedoPossible);
@@ -1436,9 +1597,10 @@ describe("deleteElements (native bulk delete API)", () => {
         assert.isUndefined(sdb.elements.tryGetElement(id), `${id} must be deleted again by redo`);
       assert.isUndefined(sdb.models.tryGetModelProps(partition));
       assert.isDefined(sdb.elements.tryGetElement(survivor));
+      assertNoFkViolations(sdb);
     });
 
-    it("a PartialSuccess delete leaves retained elements untouched after undo/redo", () => {
+    it("a rejected (ConstraintViolation) delete records nothing to undo", () => {
       const { rootA, external, rootB } = withEditTxn(sdb, "insert", (t) => {
         const a = insertInStandalone(t);
         const specId = sdb.codeSpecs.insert(t, "UndoScopeSpec", CodeScopeSpec.Type.RelatedElement);
@@ -1450,21 +1612,75 @@ describe("deleteElements (native bulk delete API)", () => {
         return { rootA: a, external: ext, rootB: insertInStandalone(t) };
       });
 
-      withEditTxn(sdb, "partial delete", (t) => {
+      withEditTxn(sdb, "rejected delete", (t) => {
         const result = t.deleteElements([rootA, rootB]);
-        assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
+        assert.equal(result.status, BulkDeleteElementsStatus.ConstraintViolation);
+        assert.isFalse(sdb[_nativeDb].hasUnsavedChanges(), "a rejected delete must not dirty the txn");
       });
-      assert.isDefined(sdb.elements.tryGetElement(rootA));
-      assert.isUndefined(sdb.elements.tryGetElement(rootB));
-
-      assert.equal(sdb.txns.reverseSingleTxn(), IModelStatus.Success);
       for (const id of [rootA, external, rootB])
         assert.isDefined(sdb.elements.tryGetElement(id));
+      assertNoFkViolations(sdb);
+
+      // The only undoable txn is the insert above; undoing it must remove all three, proving the rejected delete left no txn behind.
+      assert.isTrue(sdb.txns.isUndoPossible);
+      assert.equal(sdb.txns.reverseSingleTxn(), IModelStatus.Success);
+      for (const id of [rootA, external, rootB])
+        assert.isUndefined(sdb.elements.tryGetElement(id), `${id} must be removed by undoing the insert txn`);
 
       assert.equal(sdb.txns.reinstateTxn(), IModelStatus.Success);
-      assert.isDefined(sdb.elements.tryGetElement(rootA));
-      assert.isDefined(sdb.elements.tryGetElement(external));
-      assert.isUndefined(sdb.elements.tryGetElement(rootB));
+      for (const id of [rootA, external, rootB])
+        assert.isDefined(sdb.elements.tryGetElement(id));
+    });
+  });
+
+  describe("robustness / negative path tests", () => {
+    it("deleting the root Subject does not delete anything", () => {
+      // The root Subject is the modeled element of the RepositoryModel, which in turn contains the root Subject: a cycle in
+      // the expansion graph. The call must terminate; it must never remove the root of the iModel.
+      const sentinel = insertElement();
+      const result = txn.deleteElements([IModel.rootSubjectId]);
+      assert.notEqual(result.status, BulkDeleteElementsStatus.Success, "root Subject must not be deletable");
+      assert.notEqual(result.status, BulkDeleteElementsStatus.DeletionFailed, "root Subject delete must be rejected by validation, not by a SQLite error");
+      assertExists(IModel.rootSubjectId, "root Subject must survive");
+      assert.isDefined(iModelDb.models.tryGetModelProps(IModel.repositoryModelId), "RepositoryModel must survive");
+      assert.isDefined(iModelDb.models.tryGetModelProps(IModel.dictionaryId), "DictionaryModel must survive");
+      assertExists(modelId, "seed partition must survive");
+      assertExists(categoryId, "seed category must survive");
+      assertExists(sentinel, "unrelated element must survive");
+      assertNoFkViolations(iModelDb);
+    });
+
+    it("plain element, parent tree, partition, in-use category and unused material in one call", () => {
+      const plainElem = insertElement();
+      const parent = insertElement();
+      const child1 = insertElement({ parentId: parent });
+      const child2 = insertElement({ parentId: parent });
+      const partition = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestPartition");
+      const inner = txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: partition, category: categoryId, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      const violatorCat = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory2", new SubCategoryAppearance());
+      const violatorSub = IModel.getDefaultSubCategoryId(violatorCat);
+      const externalUser = txn.insertElement({
+        classFullName: "Generic:PhysicalObject", model: modelId, category: violatorCat, code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      } as PhysicalElementProps);
+      const unusedMat = RenderMaterialElement.insert(txn, IModel.dictionaryId, "TestMaterial", { paletteName: "p" });
+      txn.saveChanges();
+
+      // One in-use category rejects the whole call: the plain element, the tree, the partition and the unused material all survive.
+      expectRejected("test rejection with FK violators",
+        [plainElem, parent, partition, violatorCat, unusedMat],
+        [plainElem, parent, child1, child2, partition, inner, unusedMat, violatorCat, violatorSub, externalUser],
+        new Set([violatorCat]), categoryInUse3d(violatorCat));
+      assert.isDefined(iModelDb.models.tryGetModelProps(partition), "partition sub-model must be untouched");
+
+      // Without the violator everything else goes in one call.
+      executeTestCase("success without violators",
+        [plainElem, parent, partition, unusedMat],
+        [plainElem, parent, child1, child2, partition, inner, unusedMat],
+        [violatorCat, violatorSub, externalUser]);
     });
   });
 });

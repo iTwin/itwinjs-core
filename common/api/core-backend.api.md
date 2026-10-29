@@ -773,8 +773,7 @@ export class BriefcaseManager {
 
 // @beta
 export interface BulkDeleteElementsArgs {
-    deleteMode?: BulkDeleteMode;
-    // @deprecated
+    // @deprecated (undocumented)
     skipFKConstraintValidations?: boolean;
 }
 
@@ -789,9 +788,8 @@ export interface BulkDeleteElementsResult {
 
 // @beta
 export enum BulkDeleteElementsStatus {
-    ConstraintViolation = 2,
-    DeletionFailed = 3,
-    PartialSuccess = 1,
+    ConstraintViolation = 1,
+    DeletionFailed = 2,
     Success = 0
 }
 
@@ -804,15 +802,10 @@ export interface BulkDeleteFailure {
 
 // @beta
 export enum BulkDeleteFailureReason {
-    BlockedByRelative = 2,
     DefinitionInUse = 1,
+    ProtectedElement = 2,
+    ReadOnlyDomain = 3,
     ReferencedByForeignKey = 0
-}
-
-// @beta
-export enum BulkDeleteMode {
-    FailFast = 1,
-    RemoveFKViolators = 0
 }
 
 // @public
@@ -2873,7 +2866,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
-    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
+    deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;

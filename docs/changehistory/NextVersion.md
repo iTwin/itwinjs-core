@@ -88,20 +88,24 @@ By default, the queries run on the primary connection, so unsaved changes are vi
 
 ### Bulk Element Deletion API changes
 
-[EditTxn.deleteElements]($backend) now accepts a [deleteMode]($backend:BulkDeleteElementsArgs.deleteMode) option that controls how elements still referenced from *outside* the delete set are handled:
-
-- `BulkDeleteMode.RemoveFKViolators` (current default) - best effort. Referenced elements (and their logical subtree inside the delete set) are skipped; everything else is deleted. Status is `PartialSuccess` if anything was skipped, otherwise `Success`.
-- `BulkDeleteMode.FailFast` - all-or-nothing. If any element is still referenced, nothing is deleted and the status is `ConstraintViolation`.
+[EditTxn.deleteElements]($backend) *(beta)* is now **all-or-nothing**. Previously the call deleted whatever it could and returned `PartialSuccess` with the ids it had to skip. Now, if any element in the expanded delete set (requested elements plus their children and sub-model contents) is still referenced from *outside* the set, nothing is deleted and the status is `ConstraintViolation`. The validation runs before anything is modified, so a rejected call leaves the iModel and the current txn untouched.
 
 ```ts
-const result = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.FailFast });
+const result = txn.deleteElements(ids);
+if (result.status === BulkDeleteElementsStatus.ConstraintViolation) {
+  for (const failure of result.failures)
+    console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+}
 ```
 
-> The default will change to `BulkDeleteMode.FailFast` in a future release. Pass `deleteMode` explicitly now to be insulated from that change.
+Changes to the beta types:
 
-[BulkDeleteElementsResult.failures]($backend) replaces the former failed-id set with a detailed, per-element report: each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, or `BlockedByRelative`), and - for `ReferencedByForeignKey` - the referencing `table.column`. `BulkDeleteElementsResult.failedIds` is now deprecated in favor of the more detailed `failures`.
+- `BulkDeleteElementsStatus.PartialSuccess` has been **removed**. The enum is now `Success` (0), `ConstraintViolation` (1) and `DeletionFailed` (2). Code that handled `PartialSuccess` should handle `ConstraintViolation` instead - and note that in that case *nothing* was deleted.
+- New [BulkDeleteElementsResult.failures]($backend): a per-element report. Each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `ProtectedElement` or `ReadOnlyDomain`) and, for `ReferencedByForeignKey`, the referencing `table.column` in `detail`. Only the direct violators are reported; a requested ancestor whose cascaded child is the violator is not listed separately.
+- `BulkDeleteElementsResult.failedIds` is deprecated in favor of `failures`. It is still populated with the unique ids appearing in `failures`.
+- `BulkDeleteElementsArgs.skipFKConstraintValidations` is deprecated and **ignored**. Skipping the validation pass could leave the iModel with dangling references (e.g. a deleted GeometryPart still used by a geometry stream), so that behavior was removed. The option object is still accepted so existing calls keep compiling.
 
-`BulkDeleteElementsArgs.skipFKConstraintValidations` is now deprecated. It no longer bypasses the foreign-key validation pass - doing so could leave the iModel in an inconsistent state. Passing `true` is now equivalent to `{ deleteMode: BulkDeleteMode.FailFast }`, and is ignored if `deleteMode` is also set. Use `deleteMode` instead.
+If you relied on the previous best-effort behavior, inspect `failures`, remove (or add the referencing elements of) the reported violators, and call `deleteElements` again.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 

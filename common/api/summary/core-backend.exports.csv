@@ -35,7 +35,6 @@ beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
 beta;interface;BulkDeleteFailure
 beta;enum;BulkDeleteFailureReason
-beta;enum;BulkDeleteMode
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb

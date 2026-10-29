@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsStatus, BulkDeleteMode, ChannelControl, EditTxn, GeometryPart, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { BulkDeleteElementsStatus, ChannelControl, EditTxn, GeometryPart, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 import { Point3d } from "@itwin/core-geometry";
@@ -154,40 +154,14 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         reporter.addEntry("DeleteElementsPerfTest", `deleteElement for ${count} elements`, "Execution time(ms)", elapsed);
       }
 
-      // With FailFast delete mode
       {
-        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_FailFast_bulk_${count}.bim`);
+        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_bulk_${count}.bim`);
         const { db, ids } = createIModelWithElements(fileName, count);
-        const txn = new EditTxn(db, "deleteElements perf test with FailFast mode");
+        const txn = new EditTxn(db, "deleteElements perf test");
         txn.start();
 
         const startTime = performance.now();
-        const deletionResult = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.FailFast });
-        const elapsed = performance.now() - startTime;
-
-        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
-
-        txn.saveChanges();
-        for (const id of ids) {
-          assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
-        }
-
-        txn.end();
-        db.close();
-        IModelJsFs.unlinkSync(fileName);
-
-        reporter.addEntry("DeleteElementsPerfTest", `deleteElements for ${count} elements`, "Execution time(ms)", elapsed);
-      }
-
-      // With RemoveFKViolators delete mode
-      {
-        const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_RemoveFKViolators_bulk_${count}.bim`);
-        const { db, ids } = createIModelWithElements(fileName, count);
-        const txn = new EditTxn(db, "deleteElements perf test with RemoveFKViolators mode");
-        txn.start();
-
-        const startTime = performance.now();
-        const deletionResult = txn.deleteElements(ids, { deleteMode: BulkDeleteMode.RemoveFKViolators });
+        const deletionResult = txn.deleteElements(ids);
         const elapsed = performance.now() - startTime;
 
         assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
@@ -248,17 +222,31 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         const txn = new EditTxn(db, "deleteElements perf test");
         txn.start();
 
+        // deleteElements is all-or-nothing: the mixed set is rejected and nothing is deleted. Measure the validation cost of that rejection...
+        const rejectStart = performance.now();
+        const rejected = txn.deleteElements(allIds);
+        const rejectElapsed = performance.now() - rejectStart;
+
+        assert.equal(rejected.status, BulkDeleteElementsStatus.ConstraintViolation, "in-use definition elements must reject the whole call");
+        const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
+        assert.equal(rejected.failures.length, expectedFailedCount, "every in-use and externally-blocked part should be reported");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.equal(rejected.failedIds.size, expectedFailedCount, "failedIds must mirror failures");
+        for (const id of allIds)
+          assert.isDefined(db.elements.tryGetElement(id), `${id} must survive a rejected call`);
+
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements (rejected, mixed set) for ${count} elements`, "Execution time(ms)", rejectElapsed);
+
+        // ...then delete only the elements the report says are deletable, which is what a caller would do on retry.
+        const deletableIds = unusedPartIds.filter((id) => !externallyBlockedPartIds.has(id));
         const startTime = performance.now();
-        const deletionResult = txn.deleteElements(allIds);
+        const deletionResult = txn.deleteElements(deletableIds);
         const elapsed = performance.now() - startTime;
 
-        assert.equal(deletionResult.status, BulkDeleteElementsStatus.PartialSuccess, "Some in-use definition elements should have been pruned");
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success, "deletable parts should be deleted in one call");
 
         txn.saveChanges();
 
-        const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        assert.equal(deletionResult.failedIds.size, expectedFailedCount, "in-use and externally-blocked parts should fail to delete");
         for (const id of unusedPartIds) {
           if (externallyBlockedPartIds.has(id))
             assert.isDefined(db.elements.tryGetElement(id), `externally-blocked part ${id} should be retained`);

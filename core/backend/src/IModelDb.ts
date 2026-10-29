@@ -3173,10 +3173,10 @@ export namespace IModelDb {
     }
 
     /**
-     * Delete multiple elements from the iModel.
+     * Delete multiple elements from the iModel in a single bulk operation. See [[EditTxn.deleteElements]].
      * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-     * @param deleteOptions Options for the delete operation.
-     * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+     * @param deleteOptions Deprecated and ignored; kept for backward compatibility of the signature.
+     * @returns A result object describing the outcome of the operation and the elements that block it (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
      * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
