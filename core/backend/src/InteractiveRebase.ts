@@ -48,17 +48,39 @@ export namespace InteractiveRebaseError {
   }
 }
 
+/**
+ * Problems detected while replaying a direct local change against the incoming changes and earlier rebase groups.
+ * A single entry can describe multiple problems on the same instance:
+ *
+ * | Problem | Identifying fields | Initial handling |
+ * | --- | --- | --- |
+ * | Data conflict (Update) | `original`, `ours`, and `theirs` defined; `conflictingProperties` nonempty | Apply our changed properties, preserving their changes to untouched properties. |
+ * | Instance doesn't exist (Update) | `original` and `ours` defined; `theirs` undefined | Leave the instance deleted; discard our update. |
+ * | Instance already exists (Insert) | `original` undefined; `ours` and `theirs` defined | Update their existing instance with our values. |
+ * | Instance doesn't exist (Delete) | `original` defined; `ours` and `theirs` undefined | Leave the instance deleted. |
+ * | Data conflict (Delete) | `original` and `theirs` defined; `ours` undefined; `theirModifiedProperties` nonempty | Delete the instance, discarding their changes. |
+ * | Instance is referenced (Delete) | `original` defined; `ours` undefined; `deletionEffects` nonempty | Report the effects of the deletion on other instances. |
+ * | UNIQUE constraint violation | `uniqueConstraintViolations` nonempty | Substitute a non-conflicting value where possible. |
+ * | Broken relationship | `brokenRelationships` nonempty | Keep their reference, use null if nullable, or leave the insert unapplied. |
+ *
+ * Constraint violations can prevent or modify the initial handling. The snapshots describe the input sides,
+ * not the instance's current state after replay or subsequent resolutions. Accepting a side only changes
+ * eligible conflicting properties; it never restores or deletes an instance.
+ */
 export interface RebaseConflict {
+  /** The unique instance key, distinguishing instances such as a model and its modeled element that share an id. */
   instanceKey: string;
 
+  /** The instance's ECInstanceId. */
   id: Id64String;
+  /** The instance's schema-qualified EC class name. */
   classFullName: string;
 
   /**
    * The instance that was in place just before we originally modified the instance. This is the common
    * baseline between {@link theirs} and {@link ours}.
    *
-   * This will be undefined if this instance is newly-inserted.
+   * Undefined for an Insert. Defined for an Update or Delete, even if the instance no longer exists.
    */
   original: RebaseConflictProperties | undefined;
 
@@ -73,8 +95,8 @@ export interface RebaseConflict {
   theirs: RebaseConflictProperties | undefined;
 
   /**
-   * The instance after applying our local changes. This is the state of the instance that we are
-   * trying to apply to the database.
+   * The complete instance after our original local change, before applying it to the new baseline.
+   * This does not include substitutions made to resolve constraints during replay.
    *
    * This property will be undefined if our change deleted the instance. {@link acceptOurs} does not
    * restore or delete an instance when one side has no instance.
@@ -83,6 +105,7 @@ export interface RebaseConflict {
 
   /**
    * The properties that were modified by {@link theirs} changes, relative to the {@link original} baseline.
+   * Empty when either snapshot is undefined.
    *
    * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
    */
@@ -90,6 +113,7 @@ export interface RebaseConflict {
 
   /**
    * The properties that were modified by {@link ours} changes, relative to the {@link original} baseline.
+   * Empty when either snapshot is undefined.
    *
    * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
    */
@@ -97,9 +121,9 @@ export interface RebaseConflict {
 
   /**
    * The properties that are in conflict between the incoming (their) changes and the local (our) changes.
-   * Specifically, these are the properties where the "original" value is different from "their" value,
-   * meaning that the value has changed from when we originally modified it. A property is reported
-   * as a conflict even if both "theirs" and "ours" are the same.
+   * These are properties touched by our Update whose incoming value differs from {@link original}.
+   * A property is reported even if both sides changed it to the same value. This includes timestamp
+   * properties such as `lastMod`, even when the other edits are disjoint.
    *
    * If one side or the other deleted the instance, this array will be empty. Look at
    * {@link theirModifiedProperties} or {@link ourModifiedProperties} to see which properties were
@@ -111,6 +135,8 @@ export interface RebaseConflict {
 
   /**
    * The properties that are different between the {@link theirs} and {@link ours} instances.
+   * Empty when either snapshot is undefined. For an Insert collision, these are the properties eligible
+   * for {@link acceptOurs} and {@link acceptTheirs}.
    *
    * Don't confuse this with {@link conflictingProperties}. If both "theirs" and "ours" changed a property to the
    * same value, that property will appear in {@link conflictingProperties} but not in {@link differentProperties}.
@@ -146,11 +172,6 @@ export interface RebaseConflict {
 
   /** @deprecated Dependent conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
   dependentConflicts: ReadonlyArray<RebaseConflict>;
-
-  // TODO: I think we need an explicit property indicating whether "ours" was applied (with caveats
-  // described in uniqueConstraintViolations and brokenRelationships), or whether it couldn't be
-  // applied at all (for instance, it's an insert with a non-nullable, broken navigation property).
-  // Can also indicate whether acceptOurs or acceptTheirs was last called.
 
   /**
    * Accepts the local (our) values of the properties that conflict, without restoring or deleting the instance.
@@ -1206,16 +1227,10 @@ export class InteractiveRebase {
       return;
     }
 
-    // Does the updated instance exist at all? A live read here is exactly this instance's pre-replay
-    // "theirs" state: our own write above is the first (and only) thing this replay ever does to this
-    // row, so nothing has changed it since `pullMergeRebaseNext()` merged in the incoming changes.
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
-      // The incoming changes deleted the instance that our local change updated. Their delete stands.
-      RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, instanceKey, oldProps, newProps, result.conflictingProperties);
+      RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, instanceKey, oldProps, newProps);
     } else {
-      // The row still exists, but at least one property we touched (result.conflictingProperties) no
-      // longer matches our captured baseline, meaning the incoming changes also modified it.
       RebaseConflictImpl.recordUpdate(this, this._conflicts, instanceKey, oldProps, theirs, newProps, result.conflictingProperties);
       this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
     }
@@ -1224,11 +1239,10 @@ export class InteractiveRebase {
   private applyInteractiveDelete(instanceKey: string, oldProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
-    // A live read here is exactly this instance's pre-replay "theirs" state - see the analogous comment in
-    // [[applyInteractiveUpdate]].
+    // Read before replay so the conflict retains their values even after our delete succeeds.
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
-      // The incoming changes already deleted it - nothing more to do.
+      RebaseConflictImpl.recordBothDeleted(this, this._conflicts, instanceKey, oldProps);
       return;
     }
 
@@ -1245,7 +1259,7 @@ export class InteractiveRebase {
     // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs, result.conflictingProperties);
+    RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs);
     this.deleteWithReferentialActionTracking(key, () => nativeDb.deleteInstance(key, { useJsNames: true }));
   }
 
@@ -1710,10 +1724,7 @@ export class InteractiveRebase {
   }
 }
 
-/** Computes which of `baseline`'s properties (excluding identity properties) differ in `compare`.
- * Used by the JS-driven (Data txn) conflict-detection path; the native changeset-conflict path
- * gets this list directly from `ecConflict.dataConflictProperties` instead.
- */
+/** Computes which properties differ between two snapshots, excluding identity properties. */
 function computeChangedProperties(baseline: RebaseConflictProperties, compare: RebaseConflictProperties): string[] {
   const valuesDiffer = (a: any, b: any): boolean => {
     if ((a === undefined || a === null) && (b === undefined || b === null))
@@ -1728,8 +1739,7 @@ function computeChangedProperties(baseline: RebaseConflictProperties, compare: R
 
 /** Strips the identity properties (`id`/`classFullName`) from a captured instance snapshot, since they aren't
  * regular properties and can't be used for `CompareBeforeUpdate`/`CompareBeforeDelete`. The class's
- * TimeStampProperty (e.g. `lastMod`), if any, is left in: native excludes it from the optimistic-concurrency
- * check itself (it always changes on any write) while still reporting it via `conflictingProperties`.
+ * TimeStampProperty (e.g. `lastMod`), if any, is left in so native can detect timestamp-only conflicts.
  */
 function withoutIdentityProperties(props: RebaseConflictProperties): RebaseConflictProperties {
   const { id: _id, classFullName: _classFullName, ...rest } = props;
@@ -1971,25 +1981,31 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** The incoming (their) changes modified properties on an instance that was deleted by the local (our) changes. */
-  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
 
-    addPropsAccessStrings(conflict.theirModifiedProperties, classDef, updatedProperties);
+    addPropsAccessStrings(conflict.theirModifiedProperties, classDef, computeChangedProperties(original, theirs));
 
     conflict._original = original;
     conflict._theirs = theirs;
   }
 
   /** The incoming (their) changes deleted an instance that was modified by the local (our) changes. */
-  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, ours: RebaseConflictProperties): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
 
-    addPropsAccessStrings(conflict.ourModifiedProperties, classDef, updatedProperties);
+    addPropsAccessStrings(conflict.ourModifiedProperties, classDef, computeChangedProperties(original, ours));
 
     conflict._original = original;
     conflict._ours = ours;
+  }
+
+  /** Both sides deleted an instance that existed in the original baseline. */
+  public static recordBothDeleted(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties): void {
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
+    conflict._original = original;
   }
 
   /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
