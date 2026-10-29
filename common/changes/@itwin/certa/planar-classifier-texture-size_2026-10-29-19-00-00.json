@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "On Linux, start the Electron test runner on SwiftShader directly instead of relying on the GPU-process fallback, which intermittently loses the WebGL context under xvfb.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
