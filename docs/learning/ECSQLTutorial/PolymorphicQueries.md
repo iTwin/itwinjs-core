@@ -4,6 +4,8 @@ By default, any ECClass in the FROM or JOIN clause of an ECSQL is treated polymo
 
 > This also applies to [Mixins](../../bis/guide/fundamentals/mixins.md). From an ECSQL perspective there is nothing special about mixins because they are technically just ECClasses (abstract Entity ECClasses to be precise). You can simply query against a mixin class without knowing which classes actually implement the mixin.
 
+Although the query syntax is the same, the execution cost can differ. Querying Mixin properties may expand into `UNION ALL` branches across implementing classes, with additional preparation, filtering and sorting costs. See [Mixin query performance](../../bis/guide/fundamentals/mixins.md#query-performance). `ONLY` on a Mixin returns no instances because Mixins are abstract; it is not a way to optimize a query that needs their implementers.
+
 We begin the lesson by using a simple ECSQL similar to the ones used at the beginning of the tutorial.
 
 > **Try it yourself**
