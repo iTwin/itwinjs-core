@@ -406,9 +406,12 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._doDebugFrustum = context.target.debugControl?.displayMaskFrustum ?? false;
 
-    const maxTextureSize = System.instance.maxTexSizeAllow;
-    const requiredHeight = maxTextureSize;
-    const requiredWidth = maxTextureSize;
+    // Size the texture to the view (2x, as BackgroundMapDrape does) instead of always using the maximum:
+    // every frame rasterized 4096x4096 texels regardless of how few screen pixels sampled them. Round up to
+    // a multiple of 256 so interactive resizing does not reallocate the buffers on every frame.
+    const viewRect = context.target.viewRect;
+    const requiredWidth = Math.min(System.instance.maxTexSizeAllow, Math.ceil(2 * Math.max(viewRect.width, viewRect.height) / 256) * 256);
+    const requiredHeight = requiredWidth;
     if (requiredWidth !== this._width || requiredHeight !== this._height)
       this[Symbol.dispose]();
 
