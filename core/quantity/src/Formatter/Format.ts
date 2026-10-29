@@ -43,7 +43,7 @@ export class BaseFormat {
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _ratioFormatType?: RatioFormatType; // defaults to Decimal if not specified
-  protected _ratioSeparator?: string; // default is ":"; separator character used in ratio formatting
+  protected _ratioSeparator?: string; // default is ":"; separator string used in ratio formatting
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -179,11 +179,12 @@ export class BaseFormat {
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
 
-      if (undefined !== formatProps.ratioSeparator) { // optional; default is 0.0
+      if (undefined !== formatProps.ratioSeparator) { // optional; default is ":"
         if (typeof (formatProps.ratioSeparator) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
-        if (formatProps.ratioSeparator.length !== 1)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be a one character string.`);
+        const nonSpaceCharacters = [...formatProps.ratioSeparator].filter((character) => character !== " ");
+        if (nonSpaceCharacters.length !== 1 || nonSpaceCharacters[0].trim().length === 0)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should contain exactly one non-space character, optionally surrounded by spaces.`);
         this._ratioSeparator = formatProps.ratioSeparator;
       } else {
         this._ratioSeparator = ":"; // Apply default

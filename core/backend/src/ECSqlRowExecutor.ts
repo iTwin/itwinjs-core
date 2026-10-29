@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelError, QueryPropertyMetaData } from "@itwin/core-common";
+import { IModelError, PropertyMetaDataMap } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { BentleyError, DbResult, Logger } from "@itwin/core-bentley";
@@ -160,13 +160,13 @@ export class ECSqlRowExecutor implements Disposable {
   /** Get column metadata directly from the prepared statement.
    * Call once after `prepareAndBind` — the metadata does not change between rows.
    * @param options - Native row-adaptor options that influence property naming.
-   * @returns Array of column metadata.
+   * @returns Column metadata owned by the caller.
    * @internal
    */
-  public fetchMetadata(options: IModelJsNative.ECSqlRowAdaptorOptions): QueryPropertyMetaData[] {
+  public fetchMetadata(options: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap {
     if (this._isDisposed || !this._stmt.isPrepared)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
-    return this._stmt.getMetadata(options).properties;
+    return this._stmt.getMetadata(options);
   }
 
   // --------------------------------------------------------------------------------------------

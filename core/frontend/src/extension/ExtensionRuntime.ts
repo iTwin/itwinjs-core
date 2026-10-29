@@ -9,6 +9,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @itwin/no-internal-barrel-imports */
 /* eslint-disable sort-imports */
+/* eslint-disable @typescript-eslint/no-deprecated -- the extension runtime must keep exposing deprecated public APIs until they are removed */
 
 import { ExtensionHost } from "./ExtensionHost";
 
@@ -19,9 +20,9 @@ if ((globalThis as any)[globalSymbol]) {
 
   const error = new Error(
     "Multiple @itwin/core-frontend imports detected! This may happen if:\n" +
-      "- You have multiple versions of the package installed\n" +
-      "- Your bundling configuration is incorrect\n" +
-      "- You're importing from both ESM and CommonJS versions"
+    "- You have multiple versions of the package installed\n" +
+    "- Your bundling configuration is incorrect\n" +
+    "- You're importing from both ESM and CommonJS versions"
   );
 
   /* eslint-disable no-console */
@@ -294,6 +295,7 @@ import {
   QPoint3dBufferBuilder,
   QPoint3dList,
   Quantization,
+  isPersisted,
 } from "@itwin/core-common";
 
 const extensionExports = {
@@ -544,6 +546,7 @@ const extensionExports = {
   imageBufferToPngDataUrl,
   imageElementFromImageSource,
   imageElementFromUrl,
+  isPersisted,
   queryTerrainElevationOffset,
   readElementGraphics,
   readGltfGraphics,

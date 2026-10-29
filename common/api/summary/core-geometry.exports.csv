@@ -119,6 +119,7 @@ public;class;Ellipsoid
 public;class;EllipsoidPatch
 public;class;EllipticalArcApproximationOptions
 public;enum;EllipticalArcSampleMethod
+public;enum;ExteriorFractionSelector
 public;class;FacetFaceData
 public;type;FacetIntersectCallback
 public;class;FacetIntersectOptions

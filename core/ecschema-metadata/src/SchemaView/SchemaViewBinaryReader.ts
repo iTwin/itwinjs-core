@@ -685,6 +685,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
         defIdx,
         labelStringIdx: pr.labelStringIdx,
         priority: pr.priority,
+        overriddenProperty: undefined,
       });
     }
 

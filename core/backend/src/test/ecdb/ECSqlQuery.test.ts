@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64 } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { assert, expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -22,10 +22,16 @@ describe("ECSql Query", () => {
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
   let imodel6: SnapshotDb;
+  let drawingCategoryClassId: Id64String;
+  let parentRelationshipClassId: Id64String;
 
   before(async () => {
 
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    drawingCategoryClassId = imodel1[_nativeDb].classNameToId("BisCore:DrawingCategory");
+    parentRelationshipClassId = imodel1[_nativeDb].classNameToId("BisCore:SubjectOwnsPartitionElements");
+    assert.isTrue(Id64.isValid(drawingCategoryClassId));
+    assert.isTrue(Id64.isValid(parentRelationshipClassId));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
@@ -78,23 +84,23 @@ describe("ECSql Query", () => {
     assert.equal(queries.length, 18);
     const results = [
       { className: "BisCore.DrawingCategory" },
-      { aClassId: "0x4c" },
+      { aClassId: drawingCategoryClassId },
       { parent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
       { "parent.relClassName": "BisCore.SubjectOwnsPartitionElements" },
       { aParent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
-      { aRelClassId: "0xcf" },
-      { aClassId: "0x4c" },
-      { aClassId: "0x4c" },
-      { bClassId: "0x4c" },
+      { aRelClassId: parentRelationshipClassId },
+      { aClassId: drawingCategoryClassId },
+      { aClassId: drawingCategoryClassId },
+      { bClassId: drawingCategoryClassId },
       { className: "BisCore.DrawingCategory" },
-      { aClassId: "0x4c", className: "BisCore.DrawingCategory" },
+      { aClassId: drawingCategoryClassId, className: "BisCore.DrawingCategory" },
       { parent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
       { "parent.relClassName": "BisCore.SubjectOwnsPartitionElements" },
       { aParent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
-      { aRelClassId: "0xcf" },
-      { aClassId: "0x4c" },
-      { aClassId: "0x4c" },
-      { bClassId: "0x4c" },
+      { aRelClassId: parentRelationshipClassId },
+      { aClassId: drawingCategoryClassId },
+      { aClassId: drawingCategoryClassId },
+      { bClassId: drawingCategoryClassId },
     ];
     assert.equal(results.length, 18);
     const builder = new QueryOptionsBuilder();
@@ -132,7 +138,7 @@ describe("ECSql Query", () => {
         query: "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
         result: {
           "myParentId": "0x1",
-          "myParentRelClassId": "0xcf",
+          "myParentRelClassId": parentRelationshipClassId,
           "parent.id": "0x1",
           "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
         },

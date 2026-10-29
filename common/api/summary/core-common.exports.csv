@@ -350,6 +350,8 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;interface;FormatFieldValueArgs
+internal;type;FormatMagnitude
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -522,6 +524,8 @@ internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
 internal;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
+public;function;isPersisted
+preview;function;isPersisted
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -656,6 +660,8 @@ beta;interface;ParagraphProps
 internal;interface;ParsedTileTreeIdAndContentId
 internal;function;parseTileTreeIdAndContentId
 public;interface;PartReference
+public;type;Persisted
+preview;type;Persisted
 public;type;PersistentBackgroundMapProps
 public;interface;PersistentGraphicsRequestProps
 beta;interface;PerStatementHealthStats
@@ -725,6 +731,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit
@@ -1039,8 +1046,8 @@ public;class;Tweens
 public;enum;TxnAction
 public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
-alpha;interface;TxnProps
-alpha;type;TxnType
+beta;interface;TxnProps
+beta;type;TxnType
 public;class;TypeDefinition
 preview;class;TypeDefinition
 public;interface;TypeDefinitionElementProps

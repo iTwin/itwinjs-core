@@ -282,6 +282,21 @@ export namespace CloudSqlite {
      * @note this value is only present when running in daemon mode.
      */
     readonly memoryClientManifest?: string;
+    /** The number of blocks downloaded on demand by the CloudContainer's metadata connection.
+     * This counter is specific to that connection, not an aggregate for the container or cache. Downloads by
+     * database connections opened from this container (including iModel connections) are not included.
+     * This applies in both daemon and daemonless modes; in daemon mode, the counter belongs to the
+     * daemon client serving the metadata connection, not all clients connected to the daemon.
+     */
+    readonly onDemandBlocksDownloaded?: string;
+    /** The number of bytes downloaded on demand by this connection.
+     * @see [[onDemandBlocksDownloaded]] for the connection scope in daemon and daemonless modes.
+     */
+    readonly onDemandBytesDownloaded?: string;
+    /** The cumulative time spent downloading blocks on demand by this connection, in milliseconds.
+     * @see [[onDemandBlocksDownloaded]] for the connection scope in daemon and daemonless modes.
+     */
+    readonly onDemandDownloadTimeMs?: string;
   }
 
   /** The base name of a CloudSqlite database, without any version information.

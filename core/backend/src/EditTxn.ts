@@ -7,14 +7,15 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
 import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
 import type { ChangeElementModelProps, ChangeElementParentProps, IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _updateIModelProps, _verifyChannel, _verifyTxnWrite } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -115,6 +116,7 @@ export class EditTxn {
   }
 
   public verifyWriteable(): void {
+    this.iModel[_verifyTxnWrite]();
     // Explicit transactions must always be active before writing.
     if (!this.isActive)
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
@@ -122,8 +124,10 @@ export class EditTxn {
 
   /** Start this EditTxn, making it the active transaction for the iModel.
    * @throws EditTxnError if this EditTxn is already active, another EditTxn is already active, or if unsaved changes are present.
+   * @throws IModelError if the geographic coordinate system is being restored.
    */
   public start(): void {
+    this.iModel[_verifyTxnWrite]();
     if (this.isActive)
       EditTxnError.throwError("already-active", "This EditTxn is already active", this.iModel.key);
 
@@ -142,6 +146,7 @@ export class EditTxn {
    * @param args Save changes arguments when saving.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if saving changes fails.
+   * @throws Re-throws any error propagated by a geographic coordinate system restoration listener after completing abandonment.
    */
   public end(): void;
   public end(mode: "save" | "abandon", args?: string | SaveChangesArgs): void;
@@ -152,9 +157,11 @@ export class EditTxn {
     if (mode === "save") {
       this.saveChanges(args);
     } else {
-      this.abandonChanges();
+      this.abandonDatabaseChanges();
     }
     this.iModel[_activeTxn] = undefined;
+    if (mode === "abandon")
+      this.iModel[_refreshGeographicCoordinateSystem]();
   }
 
   /** Invoked when the owning iModel is closing.
@@ -172,6 +179,11 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    */
   public abandonChanges(): void {
+    this.abandonDatabaseChanges();
+    this.iModel[_refreshGeographicCoordinateSystem]();
+  }
+
+  private abandonDatabaseChanges(): void {
     this.verifyWriteable();
     this.iModel.clearCaches({ instanceCachesOnly: true });
     this.iModel[_nativeDb].abandonChanges();
@@ -752,11 +764,12 @@ export class EditTxn {
   }
 
   /** Update the iModel props in the database from the current in-memory state.
+   * An unchanged geographic coordinate system is not replaced or re-resolved from its dictionary identifiers.
    * @throws EditTxnError if this EditTxn is not active.
    */
   public updateIModelProps(): void {
     this.verifyWriteable();
-    this.iModel[_nativeDb].updateIModelProps(this.iModel.toJSON());
+    this.iModel[_updateIModelProps]();
   }
 
   private static readonly _settingPropNamespace = "settings";
@@ -811,6 +824,7 @@ export class EditTxn {
  * and passed to `fn`. If `fn` returns normally (or its returned Promise resolves), the transaction
  * is committed. If `fn` throws (or its returned Promise rejects), the transaction is abandoned —
  * none of the changes made during the callback are saved — and the error is re-thrown.
+ * If abandonment also throws, logging that secondary error is attempted without allowing a logging failure to replace the callback error.
  *
  * This is the recommended way to perform a scoped unit of work on an iModel. It ensures that
  * edits are committed atomically on success and rolled back on failure, without the caller needing
@@ -857,26 +871,32 @@ export function withEditTxn<T>(iModel: IModelDb, saveArgsOrFn: string | SaveChan
   const txn = new EditTxn(iModel, "");
   txn.start();
 
+  const abandonOnError = (error: unknown): never => {
+    try {
+      if (txn.isActive)
+        txn.end("abandon");
+    } catch (abandonError) {
+      try {
+        Logger.logError(BackendLoggerCategory.IModelDb, abandonError);
+      } catch {
+        throw error;
+      }
+    }
+    throw error;
+  };
+
   try {
     const result = fn(txn);
     if (result instanceof Promise) {
       return result.then((value) => {
         txn.end("save", saveArgs);
         return value;
-      }, (err) => {
-        if (txn.isActive)
-          txn.end("abandon");
-
-        throw err;
-      });
+      }, abandonOnError);
     }
 
     txn.end("save", saveArgs);
     return result;
   } catch (err) {
-    if (txn.isActive)
-      txn.end("abandon");
-
-    throw err;
+    return abandonOnError(err);
   }
 }

@@ -4,11 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { stub } from "sinon";
 import {
-  GeographicCRSInterpretRequestProps, GeographicCRSProps,
-  Helmert2DWithZOffset,
+  GeoCoordStatus, GeographicCRS, GeographicCRSInterpretRequestProps, GeographicCRSProps,
+  Helmert2DWithZOffset, IModelProps, SchemaState,
 } from "@itwin/core-common";
-import { GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, IModelNative } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, GcsDbProps, GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, getAvailableVerticalCoordinateReferenceSystems, IModelDb, IModelHost, IModelNative, SnapshotDb, withEditTxn } from "@itwin/core-backend";
+import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
@@ -808,6 +813,377 @@ describe("GeoServices", () => {
     });
   });
 
+  describe("Vertical CRS production workspace acceptance", function () {
+    this.timeout(120_000);
+
+    before(() => IModelNative.platform.enableLocalGcsFiles(false));
+    after(() => IModelNative.platform.enableLocalGcsFiles(true));
+
+    const namedModelCrs: GeographicCRSProps = {
+      horizontalCRS: { id: "LL84" },
+      verticalCRS: { id: "GEOID", crsName: "EGM96 height" },
+    };
+    const verticalMetadataProperty = { namespace: "dgn_Db", name: "DgnGCSVerticalCRS" };
+
+    it("preserves native per-point vertical failure status and unreliable elevations in both directions", async () => {
+      const fileName = path.join(IModelHost.cacheDir, "VerticalCrsStatusForwarding.bim");
+      const iModel = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "Vertical CRS status forwarding" } });
+      const points = [
+        { p: { x: 20, y: 30, z: 40 }, s: GeoCoordStatus.Success },
+        { p: { x: 21, y: 30, z: 10 }, s: GeoCoordStatus.VerticalDatumConvertError },
+        { p: { x: 22, y: 30, z: 15 }, s: GeoCoordStatus.VerticalDatumConvertError },
+        { p: { x: 23, y: 30, z: Number.NaN }, s: GeoCoordStatus.VerticalDatumConvertError },
+      ];
+      const toModel = stub(iModel[_nativeDb], "getIModelCoordinatesFromGeoCoordinates").returns({ iModelCoords: points, fromCache: 7 });
+      const fromModel = stub(iModel[_nativeDb], "getGeoCoordinatesFromIModelCoordinates").returns({ geoCoords: points, fromCache: 7 });
+      try {
+        const inputs = points.map(({ p }) => ({ ...p, z: 10 }));
+        const toRequest = { source: "WGS84", geoCoords: inputs };
+        const fromRequest = { target: "WGS84", iModelCoords: inputs };
+        assert.deepEqual(await iModel.getIModelCoordinatesFromGeoCoordinates(toRequest), { iModelCoords: points, fromCache: 0 });
+        assert.deepEqual(await iModel.getGeoCoordinatesFromIModelCoordinates(fromRequest), { geoCoords: points, fromCache: 0 });
+        assert.isTrue(toModel.calledOnceWithExactly(toRequest));
+        assert.isTrue(fromModel.calledOnceWithExactly(fromRequest));
+      } finally {
+        toModel.restore();
+        fromModel.restore();
+        iModel.close();
+        fs.rmSync(fileName, { force: true });
+      }
+    });
+
+    it("reports native status 26 with valid XY when a custom vertical grid is unavailable", async () => {
+      const fileName = path.join(IModelHost.cacheDir, "VerticalCrsMissingGrid.bim");
+      const gridFile = path.join(IModelHost.cacheDir, "VerticalCrsDeliberatelyMissing.GRD");
+      assert.isFalse(fs.existsSync(gridFile));
+      const missingGridCrs = JSON.stringify({
+        horizontalCRS: { id: "LL84" },
+        verticalCRS: {
+          id: "GEOID",
+          crsName: "MissingGridTestHeight",
+          datumName: "MissingGridTestDatum",
+          type: "GEOID",
+          units: "Meter",
+          extent: {
+            southWest: { latitude: -90, longitude: -180 },
+            northEast: { latitude: 90, longitude: 180 },
+          },
+          transforms: [{
+            target: "WGS84",
+            geoidSeparationGrid: { direction: "Direct", format: "GRD", files: [gridFile] },
+          }],
+        },
+      });
+      const interpreted = IModelNative.platform.GeoServices.getGeographicCRSInterpretation({ format: "JSON", geographicCRSDef: missingGridCrs });
+      assert.equal(interpreted.status, 0, "missing grid must not be confused with invalid CRS interpretation");
+      const iModel = SnapshotDb.createEmpty(fileName, {
+        rootSubject: { name: "Vertical CRS missing grid" },
+        geographicCoordinateSystem: { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } },
+      });
+      try {
+        withEditTxn(iModel, "Persist ellipsoidal CRS", (txn) => txn.updateIModelProps());
+        const input = { x: 23.700523, y: 37.944210, z: 10 };
+        const control = await iModel.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords: [input] });
+        assert.equal(control.geoCoords[0].s, GeoCoordStatus.Success);
+        const toGeo = await iModel.getGeoCoordinatesFromIModelCoordinates({ target: missingGridCrs, iModelCoords: [input] });
+        const toModel = await iModel.getIModelCoordinatesFromGeoCoordinates({ source: missingGridCrs, geoCoords: [input] });
+        for (const converted of [toGeo.geoCoords[0], toModel.iModelCoords[0]]) {
+          assert.equal(converted.s, GeoCoordStatus.VerticalDatumConvertError);
+          const result = Point3d.fromJSON(converted.p);
+          assert.closeTo(result.x, input.x, 0.000001);
+          assert.closeTo(result.y, input.y, 0.000001);
+        }
+      } finally {
+        iModel.close();
+        fs.rmSync(fileName, { force: true });
+      }
+    });
+
+    async function verifyPersistedVerticalCrs(iModel: IModelDb, named = true) {
+      const expectedName = named ? "EGM96 height" : "WGS84";
+      const expectedId = named ? "GEOID" : "ELLIPSOID";
+      assert.equal(iModel.geographicCoordinateSystem?.verticalCRS?.crsName, expectedName);
+      assert.equal(iModel.geographicCoordinateSystem?.verticalCRS?.id, named ? "GEOID" : "ELLIPSOID");
+      const metadata = iModel.queryFilePropertyString(verticalMetadataProperty);
+      assert.isDefined(metadata);
+      const stored = JSON.parse(metadata!);
+      assert.include(stored.verticalCRS, { crsName: expectedName, id: expectedId });
+      assert.isString(stored.type66Hash);
+      assert.isNotEmpty(stored.type66Hash);
+      const response = await iModel.getGeoCoordinatesFromIModelCoordinates({
+        target: JSON.stringify({ horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }),
+        iModelCoords: [{ x: 23.700523, y: 37.944210, z: 0 }],
+      });
+      assert.equal(response.geoCoords[0].s, GeoCoordStatus.Success);
+      const result = Point3d.fromJSON(response.geoCoords[0].p);
+      assert.closeTo(result.x, 23.700523, 0.000001);
+      assert.closeTo(result.y, 37.944210, 0.000001);
+      assert.closeTo(result.z, named ? 38.3 : 0, named ? 0.5 : 0.000001);
+    }
+
+    it("enumerates every definition in the production Vertical Datum dictionary", async () => {
+      const defaults = IModelHost.appWorkspace.settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases);
+      const baseProps = defaults?.find((entry) => entry.dbName === "base");
+      assert.isDefined(baseProps, "shipped defaults must include the base workspace");
+      const baseDb = await IModelHost.appWorkspace.getWorkspaceDb(baseProps!);
+      const dictionaryBlob = baseDb.getBlob("VerticalDatumDefinitions.json");
+      assert.isDefined(dictionaryBlob, "VerticalDatumDefinitions.json is missing from the PROD base workspace");
+      const dictionary = JSON.parse(new TextDecoder().decode(dictionaryBlob)) as {
+        definitions: Array<{ verticalCRS: { crsName: string } }>;
+      };
+      assert.isNotEmpty(dictionary.definitions);
+      assert.sameMembers(
+        getAvailableVerticalCoordinateReferenceSystems().map((entry) => entry.crsName),
+        dictionary.definitions.map((entry) => entry.verticalCRS.crsName),
+      );
+    });
+
+    it("enumerates vertical systems using the shipped defaults", () => {
+      const systems = getAvailableVerticalCoordinateReferenceSystems();
+      assert.isNotEmpty(systems);
+      const egm96 = systems.find((entry) => entry.crsName === "EGM96 height");
+      assert.isDefined(egm96);
+      assert.equal(egm96!.id, "GEOID");
+      assert.equal(egm96!.epsg, 5773);
+      assert.equal(egm96!.unit, "Meter");
+      for (const system of systems) {
+        assert.isString(system.description);
+        assert.isBoolean(system.deprecated);
+        assert.isString(system.type);
+        assert.isFalse(Range2d.fromJSON(system.extent).isNull);
+      }
+    });
+
+    it("filters vertical systems by geographic point", () => {
+      const point = { x: 23.700523, y: 37.944210 };
+      const allSystems = getAvailableVerticalCoordinateReferenceSystems();
+      const systems = getAvailableVerticalCoordinateReferenceSystems({ point });
+      assert.isNotEmpty(systems);
+      const names = systems.map((entry) => entry.crsName);
+      assert.include(names, "EGM96 height");
+      assert.include(names, "EGM2008 height");
+      assert.notInclude(names, "NAVD88 height");
+      assert.notInclude(names, "NGVD29 height");
+      assert.isBelow(systems.length, allSystems.length);
+    });
+
+    it("filters vertical systems by containing or intersecting extent", () => {
+      const extent: Range2dProps = { low: { x: -10, y: 40 }, high: { x: 10, y: 60 } };
+      const contained = getAvailableVerticalCoordinateReferenceSystems({ extent });
+      const intersecting = getAvailableVerticalCoordinateReferenceSystems({ extent, includeIntersecting: true });
+      assert.isNotEmpty(contained);
+      const containedNames = contained.map((entry) => entry.crsName);
+      assert.include(containedNames, "EGM96 height");
+      assert.notInclude(containedNames, "NAVD88 height");
+      assert.notInclude(containedNames, "NGVD29 height");
+      assert.includeMembers(intersecting.map((entry) => entry.crsName), containedNames);
+      assert.isAbove(intersecting.length, contained.length);
+    });
+
+    it("filters vertical systems by canonical unit name case-insensitively", () => {
+      const allSystems = getAvailableVerticalCoordinateReferenceSystems();
+      const meters = getAvailableVerticalCoordinateReferenceSystems({ unit: "mEtEr" });
+      assert.isNotEmpty(meters);
+      assert.sameMembers(
+        meters.map((entry) => entry.crsName),
+        allSystems.filter((entry) => entry.unit === "Meter").map((entry) => entry.crsName),
+      );
+      assert.isEmpty(getAvailableVerticalCoordinateReferenceSystems({ unit: "not-a-unit" }));
+    });
+
+    it("rejects mutually exclusive point and extent filters", () => {
+      assert.throws(() => getAvailableVerticalCoordinateReferenceSystems({
+        point: { x: 0, y: 0 },
+        extent: { low: { x: -1, y: -1 }, high: { x: 1, y: 1 } },
+      }));
+    });
+
+    it("preserves named vertical identity and conversion in a copied readonly snapshot", async () => {
+      const sourceFile = path.join(IModelHost.cacheDir, "VerticalCrsPersistenceSource.bim");
+      const copiedFile = path.join(IModelHost.cacheDir, "VerticalCrsPersistenceCopy.bim");
+      const source = SnapshotDb.createEmpty(sourceFile, {
+        rootSubject: { name: "Vertical CRS persistence acceptance" },
+        geographicCoordinateSystem: namedModelCrs,
+      });
+      withEditTxn(source, "Persist named Vertical CRS", (txn) => txn.updateIModelProps());
+      source.close();
+      fs.copyFileSync(sourceFile, copiedFile);
+      const copy = SnapshotDb.openFile(copiedFile);
+      try {
+        assert.isTrue(copy.isReadonly);
+        await verifyPersistedVerticalCrs(copy);
+      } finally {
+        copy.close();
+        fs.rmSync(sourceFile, { force: true });
+        fs.rmSync(copiedFile, { force: true });
+      }
+    });
+
+    describe("named Vertical CRS briefcase persistence", () => {
+      beforeEach(() => HubMock.startup("VerticalCrsPersistence", IModelHost.cacheDir));
+      afterEach(() => HubMock.shutdown());
+
+      it("refreshes named CRS identity and conversion after changeset pull, reversal, and replay without reopening", async () => {
+        const writerToken = "vertical writer";
+        const readerToken = "vertical reader";
+        const iTwinId = HubMock.iTwinId;
+        const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "Vertical CRS changesets", noLocks: true });
+        const writerProps = await BriefcaseManager.downloadBriefcase({ accessToken: writerToken, iTwinId, iModelId });
+        const readerProps = await BriefcaseManager.downloadBriefcase({ accessToken: readerToken, iTwinId, iModelId });
+        const copiedFile = path.join(IModelHost.cacheDir, "VerticalCrsCopiedBriefcase.bim");
+        let writer: BriefcaseDb | undefined;
+        let reader: BriefcaseDb | undefined;
+        let copy: BriefcaseDb | undefined;
+        try {
+          writer = await BriefcaseDb.open({ fileName: writerProps.fileName });
+          writer.setGeographicCoordinateSystem(GeographicCRS.fromJSON(namedModelCrs));
+          withEditTxn(writer, "Set named Vertical CRS", (txn) => txn.updateIModelProps());
+          await writer.pushChanges({ accessToken: writerToken, description: "Set named Vertical CRS" });
+          const namedIndex = writer.changeset.index!;
+          const namedMetadata = writer.queryFilePropertyString(verticalMetadataProperty);
+          assert.isAbove(namedIndex, 0);
+          writer.close();
+          writer = undefined;
+
+          fs.copyFileSync(writerProps.fileName, copiedFile);
+          copy = await BriefcaseDb.open({ fileName: copiedFile, readonly: true });
+          assert.isTrue(copy.isReadonly);
+          assert.equal(copy.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(copy);
+          copy.close();
+          copy = undefined;
+
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await reader.pullChanges({ accessToken: readerToken });
+          assert.equal(reader.changeset.index, namedIndex);
+          assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(reader);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await verifyPersistedVerticalCrs(reader);
+
+          writer = await BriefcaseDb.open({ fileName: writerProps.fileName });
+          writer.setGeographicCoordinateSystem(GeographicCRS.fromJSON({ horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }));
+          withEditTxn(writer, "Set ellipsoidal Vertical CRS", (txn) => txn.updateIModelProps());
+          await writer.pushChanges({ accessToken: writerToken, description: "Set ellipsoidal Vertical CRS" });
+          const legacyIndex = writer.changeset.index!;
+          const legacyMetadata = writer.queryFilePropertyString(verticalMetadataProperty);
+          await reader.pullChanges({ accessToken: readerToken });
+          assert.equal(reader.changeset.index, legacyIndex);
+          assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), legacyMetadata);
+          await verifyPersistedVerticalCrs(reader, false);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await verifyPersistedVerticalCrs(reader, false);
+
+          await reader.pullChanges({ accessToken: readerToken, toIndex: namedIndex });
+          assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(reader);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await verifyPersistedVerticalCrs(reader);
+          await reader.pullChanges({ accessToken: readerToken, toIndex: legacyIndex });
+          assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), legacyMetadata);
+          await verifyPersistedVerticalCrs(reader, false);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await verifyPersistedVerticalCrs(reader, false);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName, readonly: true });
+          assert.isTrue(reader.isReadonly);
+          await verifyPersistedVerticalCrs(reader, false);
+        } finally {
+          copy?.close();
+          reader?.close();
+          writer?.close();
+          fs.rmSync(copiedFile, { force: true });
+          await BriefcaseManager.deleteBriefcaseFiles(writerProps.fileName, writerToken);
+          await BriefcaseManager.deleteBriefcaseFiles(readerProps.fileName, readerToken);
+        }
+      });
+
+      it("preserves named metadata through an actual schema upgrade and upgrade changeset pull", async () => {
+        const writerToken = "vertical upgrade writer";
+        const readerToken = "vertical upgrade reader";
+        const iTwinId = HubMock.iTwinId;
+        const iModelId = await HubMock.createNewIModel({
+          iTwinId,
+          iModelName: "Vertical CRS schema upgrade",
+          version0: IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"),
+        });
+        const writerProps = await BriefcaseManager.downloadBriefcase({ accessToken: writerToken, iTwinId, iModelId });
+        const readerProps = await BriefcaseManager.downloadBriefcase({ accessToken: readerToken, iTwinId, iModelId });
+        let writer: BriefcaseDb | undefined;
+        let reader: BriefcaseDb | undefined;
+        try {
+          writer = await BriefcaseDb.open({ fileName: writerProps.fileName });
+          assert.equal(writer.querySchemaVersion("BisCore"), "1.0.0");
+          writer.setGeographicCoordinateSystem(GeographicCRS.fromJSON(namedModelCrs));
+          withEditTxn(writer, "Set named Vertical CRS before upgrade", (txn) => txn.updateIModelProps());
+          await writer.pushChanges({ accessToken: writerToken, description: "Set named Vertical CRS before upgrade" });
+          const namedMetadata = writer.queryFilePropertyString(verticalMetadataProperty);
+          writer.close();
+          writer = undefined;
+
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await reader.pullChanges({ accessToken: readerToken });
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await verifyPersistedVerticalCrs(reader);
+          reader.close();
+          reader = undefined;
+
+          assert.equal(BriefcaseDb.validateSchemas(writerProps.fileName, true), SchemaState.UpgradeRecommended);
+          await BriefcaseDb.upgradeSchemas(writerProps);
+          assert.equal(BriefcaseDb.validateSchemas(writerProps.fileName, true), SchemaState.UpToDate);
+          writer = await BriefcaseDb.open({ fileName: writerProps.fileName, readonly: true });
+          assert.notEqual(writer.querySchemaVersion("BisCore"), "1.0.0");
+          assert.equal(writer.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          await verifyPersistedVerticalCrs(writer);
+
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName });
+          await reader.pullChanges({ accessToken: readerToken });
+          assert.equal(reader.changeset.id, writer.changeset.id);
+          assert.equal(reader.querySchemaVersion("BisCore"), writer.querySchemaVersion("BisCore"));
+          assert.equal(reader.queryFilePropertyString(verticalMetadataProperty), namedMetadata);
+          reader.close();
+          reader = await BriefcaseDb.open({ fileName: readerProps.fileName, readonly: true });
+          assert.isTrue(reader.isReadonly);
+          await verifyPersistedVerticalCrs(reader);
+        } finally {
+          reader?.close();
+          writer?.close();
+          await BriefcaseManager.deleteBriefcaseFiles(writerProps.fileName, writerToken);
+          await BriefcaseManager.deleteBriefcaseFiles(readerProps.fileName, readerToken);
+        }
+      });
+    });
+
+    it("converts EGM96 height to ellipsoid height using production resources", async () => {
+      const iModelFileName = path.join(IModelHost.cacheDir, "VerticalCrsProduction.bim");
+      const iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Vertical CRS PROD acceptance" } });
+      try {
+        const modelCrs: GeographicCRSProps = {
+          horizontalCRS: { id: "LL84" },
+          verticalCRS: { id: "GEOID", crsName: "EGM96 height" },
+        };
+        iModel[_nativeDb].updateIModelProps({ geographicCoordinateSystem: modelCrs } as IModelProps);
+        const response = await iModel.getGeoCoordinatesFromIModelCoordinates({
+          target: JSON.stringify({ horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }),
+          iModelCoords: [{ x: 23.700523, y: 37.944210, z: 0 }],
+        });
+        assert.equal(response.geoCoords[0].s, GeoCoordStatus.Success);
+        const result = Point3d.fromJSON(response.geoCoords[0].p);
+        assert.closeTo(result.x, 23.700523, 0.000001);
+        assert.closeTo(result.y, 37.944210, 0.000001);
+        assert.closeTo(result.z, 38.3, 0.5);
+      } finally {
+        iModel.close();
+        fs.rmSync(iModelFileName, { force: true });
+      }
+    });
+  });
+
   describe("Verify list of CRS", async () => {
     const validationRange = 50;
     const validationRangeSmall = 10;
@@ -851,28 +1227,28 @@ describe("GeoServices", () => {
     };
 
     it("should get all CRS", async () => {
-      await validateCRSList({expectedCount: 12_332, allowedRange: validationRange, includeWorld: true});
+      await validateCRSList({expectedCount: 12_355, allowedRange: validationRange, includeWorld: true});
     });
 
     it("should get all CRS, excluding world crs", async () => {
-      await validateCRSList({expectedCount: 11_975, allowedRange: validationRange});
+      await validateCRSList({expectedCount: 11_997, allowedRange: validationRange});
     })
 
     it("should return CRS that are in the specified range (1)", async () => {
       const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
-      await validateCRSList({expectedCount: 82, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 81, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 439, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (2)", async () => {
       const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
-      await validateCRSList({expectedCount: 67, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 66, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 424, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (3)", async () => {
       const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
-      await validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 61, allowedRange: validationRangeSmall, extent});
       await validateCRSList({expectedCount: 419, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 

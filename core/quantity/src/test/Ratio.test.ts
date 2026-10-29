@@ -4,8 +4,8 @@ import { FormatType } from "../Formatter/FormatEnums";
 import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
+import { TestUnitsProvider, withEmptyUnitLabels } from "./TestUtils/TestHelper";
+import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vHUnitName = "Units.VERTICAL_PER_HORIZONTAL";
@@ -544,10 +544,84 @@ describe("Ratio format tests", () => {
         expect(parseResult4.error).to.equal(ParseError.UnableToConvertParseTokensToQuantity);
       }
     });
+
+    it("formats and parses ratio separators with optional whitespace", async () => {
+      const cases = [
+        { ratioSeparator: "=", formatted: "1\"=1'" },
+        { ratioSeparator: " = ", formatted: "1\" = 1'" },
+        { ratioSeparator: "   =   ", formatted: "1\"   =   1'" },
+        { ratioSeparator: ":", formatted: "1\":1'" },
+        { ratioSeparator: " : ", formatted: "1\" : 1'" },
+      ];
+
+      for (const { ratioSeparator, formatted } of cases) {
+        const formatProps: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator,
+          precision: 4,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [
+              { name: "Units.IN", label: "\"" },
+              { name: "Units.FT", label: "'" },
+            ],
+          },
+        };
+
+        const { formatterSpec, parserSpec } = await createFormatAndSpecs(
+          `RatioSeparator_${ratioSeparator.trim()}`,
+          formatProps,
+          "Units.IN_PER_FT_LENGTH_RATIO",
+        );
+
+        expect(Formatter.formatQuantity(1, formatterSpec)).to.equal(formatted);
+
+        const parsed = Parser.parseQuantityString(formatted, parserSpec);
+        expect(Parser.isParsedQuantity(parsed), formatted).to.be.true;
+        if (Parser.isParsedQuantity(parsed))
+          expect(parsed.value, formatted).to.be.closeTo(1, 0.0001);
+      }
+    });
+    it("rejects ratio separators with multiple non-whitespace characters", async () => {
+      const invalidSeparators = [
+        "==",
+        " a=a ",
+        " :=",
+        "a b",
+        " ",
+        "",
+      ];
+
+      for (const ratioSeparator of invalidSeparators) {
+        const formatProps: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator,
+          precision: 4,
+          composite: {
+            units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
+          },
+        };
+
+        const format = new Format(`InvalidSeparator_${ratioSeparator}`);
+
+        try {
+          await format.fromJSON(new TestUnitsProvider(), formatProps);
+          assert.fail(`Expected '${ratioSeparator}' to be rejected`);
+        } catch (error) {
+          expect(error).to.be.instanceOf(QuantityError);
+          expect((error as QuantityError).message)
+            .to.contain("exactly one non-space character");
+        }
+      }
+    });
   });
 
+
   describe("specific parse ratio string tests", () => {
-    async function testRatioParser(testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName) {
+    /** @param formatUnitsProvider Provider used to resolve the format's units. Defaults to the provider used to build the parser spec. */
+    async function testRatioParser(testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName, formatUnitsProvider?: UnitsProvider) {
       const ratioJson: FormatProps = {
         type: "Ratio",
         ratioType: "NToOne",
@@ -561,7 +635,7 @@ describe("Ratio format tests", () => {
       const ratioFormat = new Format("Ratio");
 
       try {
-        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        await ratioFormat.fromJSON(formatUnitsProvider ?? unitsProvider, ratioJson);
       } catch {
         assert.fail("Failed to create ratio format from JSON");
       }
@@ -619,6 +693,11 @@ describe("Ratio format tests", () => {
         { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity },
       ];
       await testRatioParser(testData);
+    });
+
+    it("format unit label differs from the unit conversion label", async () => {
+      // See https://github.com/iTwin/itwinjs-core/issues/9819
+      await testRatioParser([{ magnitude: 0.5, ratio: "2:1" }], hVUnitName, vHUnitName, withEmptyUnitLabels(new TestUnitsProvider()));
     });
   });
 

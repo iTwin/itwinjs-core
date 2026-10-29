@@ -126,6 +126,7 @@ import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
+import { GeographicCRS } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
 import { GeometricModel3dProps } from '@itwin/core-common';
@@ -226,6 +227,7 @@ import { PackedFeatureTable } from '@itwin/core-common';
 import { ParseResults } from '@itwin/appui-abstract';
 import { ParserSpec } from '@itwin/core-quantity';
 import { Path } from '@itwin/core-geometry';
+import { Persisted } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
@@ -3573,6 +3575,7 @@ export class FormatsProviderManager implements FormatsProvider, SyncFormatsProvi
     getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void;
 }
 
 // @beta @deprecated
@@ -3804,6 +3807,8 @@ export interface GeoConverterOptions {
     readonly datum: string;
     // (undocumented)
     fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    getGcs?: () => GeographicCRS | undefined;
     // (undocumented)
     isIModelClosed: () => boolean;
     // (undocumented)
@@ -5114,6 +5119,8 @@ export class IModelApp {
     static resetFormatsProvider(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
+    // @beta
+    static setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void>;
     static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
@@ -5209,6 +5216,8 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     readonly geoServices: GeoServices;
+    // @internal
+    static getFiniteGeoPoint(props: XYZProps): Point3d;
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string>;
     // @internal (undocumented)
@@ -5308,10 +5317,10 @@ export namespace IModelConnection {
         getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & {
             elementId: Id64String;
         }>>;
-        getProps(arg: Id64Arg): Promise<ElementProps[]>;
-        loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+        getProps(arg: Id64Arg): Promise<Persisted<ElementProps>[]>;
+        loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<Persisted<ElementProps> | undefined>;
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
-        queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
+        queryProps(params: EntityQueryParams): Promise<Persisted<ElementProps>[]>;
         get rootSubjectId(): Id64String;
     }
     export interface GetPlacementsOptions {
@@ -5325,14 +5334,14 @@ export namespace IModelConnection {
         // @internal (undocumented)
         getDictionaryModel(): Promise<Id64String>;
         getLoaded(id: string): ModelState | undefined;
-        getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
+        getProps(modelIds: Id64Arg): Promise<Persisted<ModelProps>[]>;
         load(modelIds: Id64Arg): Promise<void>;
         // @internal (undocumented)
         get loaded(): Map<string, ModelState>;
-        query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
+        query(queryParams: ModelQueryParams): AsyncIterableIterator<Persisted<ModelProps>>;
         queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
-        queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
+        queryProps(queryParams: ModelQueryParams): Promise<Persisted<ModelProps>[]>;
         get repositoryModelId(): string;
         // @internal
         unload(modelId: Id64String): void;
@@ -5346,7 +5355,7 @@ export namespace IModelConnection {
         load(viewDefinitionId: ViewIdString): Promise<ViewState>;
         // @deprecated
         queryDefaultViewId(): Promise<Id64String>;
-        queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
+        queryProps(queryParams: ViewQueryParams): Promise<Persisted<ViewDefinitionProps>[]>;
         // (undocumented)
         get viewsStoreReader(): PickAsyncMethods<ViewStoreRpc.Reader>;
         // (undocumented)
@@ -8282,6 +8291,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
     // @internal
+    runAndWaitForReload(action: () => void): Promise<void>;
+    // @internal
     protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
@@ -9952,6 +9963,11 @@ export function setBasicAuthorization(headers: Headers, credentials: RequestBasi
 
 // @internal (undocumented)
 export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @beta
+export interface SetFormatsProviderOptions {
+    readonly unitSystem?: UnitSystemKey;
+}
 
 // @internal
 export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
