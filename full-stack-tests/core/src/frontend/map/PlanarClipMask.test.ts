@@ -31,6 +31,8 @@ describe("Planar clip mask (#integration #graphics)", () => {
 
     // Inspect the active test renderer without depending on the internal WebGL System type.
     const gl = (IModelApp.renderSystem as unknown as { context?: WebGL2RenderingContext }).context;
+    // A lost context (e.g. the Electron GPU process died under xvfb) never renders; fail now rather than per-test timeouts.
+    assert(gl !== undefined && !gl.isContextLost(), "WebGL context is unavailable or lost");
     const debugInfo = gl?.getExtension("WEBGL_debug_renderer_info");
     const text = (value: unknown) => typeof value === "string" ? value.slice(0, 256) : "unavailable";
     const vendor = gl ? text(gl.getParameter(gl.VENDOR)) : "unavailable";

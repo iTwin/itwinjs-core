@@ -26,6 +26,11 @@ export class ElectronTestRunner {
     // Since headless Electron tests run with xvfb, GPU is not reachable even if it is available on the host machine.
     // More info: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md
     app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+    // Under xvfb the first GPU process attempt fails ("Exiting GPU process due to errors during initialization")
+    // and Chromium retries on SwiftShader; when that retry also fails the WebGL context is lost and every
+    // rendering test hangs until its timeout. Start on SwiftShader directly instead of racing the fallback.
+    if (process.platform === "linux")
+      app.commandLine.appendSwitch("use-angle", "swiftshader");
 
     const timeout = new Promise((_resolve, reject) => setTimeout(() => reject(new Error("Timed out after 2 minutes when starting electron")), 2 * 60 * 1000));
     await Promise.race([app.whenReady(), timeout]);
