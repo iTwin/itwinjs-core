@@ -868,7 +868,10 @@ export interface DbQueryConfig {
    * has no effect on behavior.
    */
   doNotUsePrimaryConnToPrepare?: boolean;
-  /** After no activity for given time concurrent query will automatically shutdown */
+  /** After no activity for the given time, concurrent query automatically shuts down on read-only databases.
+   * Once the manager has used the primary connection for queries or synchronous statement leases, it remains
+   * alive until explicit shutdown, cache clearing, or database close.
+   */
   autoShutdownWhenIdleForSeconds?: number;
   /** Maximum number of statement cache per worker. Default to 40 */
   statementCacheSizePerWorker?: number;

@@ -26,10 +26,10 @@ const maxBatchSize = 128;
 /** Number of distinct row-flag combinations; metadata keys pack the statement id and the row flags into one number. */
 const rowFlagCombinations = 16;
 const metadataCache = new WeakMap<IModelDb | ECDb, Map<number, PropertyMetaDataMap>>();
-/** Receives the first batch and statement id from `concurrentQuerySyncPrepare`. Read immediately after each call. */
+/** Receives the first batch and statement id from `prepareECSqlBatchReader`. Read immediately after each call. */
 const prepareOut: any[] = [];
 
-/** Row rendering flags passed to `concurrentQuerySyncPrepare`.
+/** Row rendering flags passed to `prepareECSqlBatchReader`.
  * @internal
  */
 export enum SyncReaderRowFlags {
@@ -72,7 +72,7 @@ function getCachedMetadata(db: IModelDb | ECDb, key: number, fetch: () => Proper
  */
 export class ECSqlRowExecutor implements Disposable {
   private _removeListener: () => void;
-  private _reader?: IModelJsNative.ConcurrentQuerySyncReader;
+  private _reader?: IModelJsNative.ECSqlBatchReader;
   /** Key of this statement's metadata in `metadataCache`, or undefined when its metadata must not be cached. */
   private _metadataKey: number | undefined;
   private _rows: any[] = [];
@@ -127,7 +127,7 @@ export class ECSqlRowExecutor implements Disposable {
   public prepareAndBind(query: string, args: any[] | undefined, rowFlags: SyncReaderRowFlags): void {
     this.releaseReader();
     try {
-      this._reader = this._db[_nativeDb].concurrentQuerySyncPrepare(query, args, rowFlags, this._batchSize, prepareOut);
+      this._reader = this._db[_nativeDb].prepareECSqlBatchReader(query, args, rowFlags, this._batchSize, prepareOut);
     } catch (error) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, BentleyError.getErrorMessage(error));
     }

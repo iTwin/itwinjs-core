@@ -112,7 +112,7 @@ describe("WithQueryReaderTests", () => {
       if (options.rowFormat === QueryRowFormat.UseJsPropertyNames)
         rowFlags |= SyncReaderRowFlags.UseJsName;
       const out: any[] = [];
-      const reader = iModel[_nativeDb].concurrentQuerySyncPrepare(ecsql, undefined, rowFlags, 0, out);
+      const reader = iModel[_nativeDb].prepareECSqlBatchReader(ecsql, undefined, rowFlags, 0, out);
       try {
         expect(out[0]).to.be.undefined;
         const rows: any[] = [];
@@ -281,10 +281,10 @@ describe("WithQueryReaderTests", () => {
    */
   function instrumentSyncReaders(db: IModelDb | ECDb) {
     const nativeDb = db[_nativeDb];
-    const prepare = nativeDb.concurrentQuerySyncPrepare.bind(nativeDb);
+    const prepare = nativeDb.prepareECSqlBatchReader.bind(nativeDb);
     const statementIds: number[] = [];
     const getMetadataSpy = sinon.spy();
-    Object.defineProperty(nativeDb, "concurrentQuerySyncPrepare", {
+    Object.defineProperty(nativeDb, "prepareECSqlBatchReader", {
       configurable: true,
       value: (ecsql: string, args: any[] | undefined, rowFlags: number, maxRows: number, out: any[], logErrors?: boolean) => {
         const reader = prepare(ecsql, args, rowFlags, maxRows, out, logErrors);
@@ -304,7 +304,7 @@ describe("WithQueryReaderTests", () => {
     return {
       statementIds,
       getMetadataSpy,
-      [Symbol.dispose]: () => { delete (nativeDb as any).concurrentQuerySyncPrepare; },
+      [Symbol.dispose]: () => { delete (nativeDb as any).prepareECSqlBatchReader; },
     };
   }
 
