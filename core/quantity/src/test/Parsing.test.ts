@@ -94,6 +94,7 @@ describe("Parsing tests:", () => {
       {input: "10 km/h + 5 m/s", expectedTokens: [{ value: 10 }, { value: "km/h" }, { value: "+" }, { value: 5 }, { value: "m/s" }]},
       {input: "10 m / 2", expectedTokens: [{ value: 10 }, { value: "m" }, { value: "/" }, { value: 2 }]},
       {input: "10 m/2", expectedTokens: [{ value: 10 }, { value: "m" }, { value: "/" }, { value: 2 }]},
+      {input: "10 ft /m 2", expectedTokens: [{ value: 10 }, { value: "ft" }, { value: "/" }, { value: "m" }, { value: 2 }]},
       {input: "1 ft/ft", expectedTokens: [{ value: 1 }, { value: "ft/ft" }]},
     ];
     tests.forEach(({ input, expectedTokens }) => {
@@ -509,6 +510,32 @@ describe("Parsing tests:", () => {
       expect(quantityProps.isValid).to.be.true;
       expect(quantityProps.magnitude).closeTo(testEntry.magnitude, 0.0001);
       expect(quantityProps.unit.name).toEqual("Units.KM_PER_HR");
+    }
+  });
+
+  it("treats a slash next to whitespace as an operator, not part of a unit label", async () => {
+    const unitsProvider = new TestUnitsProvider();
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+    const inputs = ["10 ft/\t2", "10 ft/\n2", "10 ft /\n2", "10 ft /m 2"];
+
+    for (const allowMathematicOperations of [false, true]) {
+      const format = new Format("test");
+      await format.fromJSON(unitsProvider, {
+        type: "Decimal",
+        precision: 4,
+        formatTraits: ["showUnitLabel"],
+        composite: { units: [{ name: "Units.FT", label: "ft" }] },
+        allowMathematicOperations,
+      });
+      const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit, unitsProvider);
+
+      for (const input of inputs) {
+        const result = parserSpec.parseToQuantityValue(input);
+        if (allowMathematicOperations)
+          expect(result.ok, input).to.be.false;
+        else
+          expect(result, input).toEqual({ ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed });
+      }
     }
   });
 

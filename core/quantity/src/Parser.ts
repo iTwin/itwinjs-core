@@ -365,10 +365,16 @@ export class Parser {
             continue;
           }
 
-          // A slash inside a unit label (e.g. "km/h") is part of the label, not a division.
+          // A slash directly between two label characters (e.g. "km/h") is part of the label, not a division.
           const nextCharCode = str.charCodeAt(i + 1);
-          const isUnitLabelSlash = charCode === QuantityConstants.CHAR_SLASH && wipToken.length > 0 && i + 1 < str.length
-            && nextCharCode !== QuantityConstants.CHAR_SPACE && !Parser.isDigitOrDecimalSeparator(nextCharCode, format) && !isOperator(nextCharCode);
+          const isUnitLabelSlash =
+            charCode === QuantityConstants.CHAR_SLASH &&
+            wipToken.length > 0 &&
+            i + 1 < str.length &&
+            !/\s/.test(str[i - 1]) &&
+            !/\s/.test(str[i + 1]) &&
+            !Parser.isDigitOrDecimalSeparator(nextCharCode, format) &&
+            !isOperator(nextCharCode);
 
           if (isCharOperator && !isUnitLabelSlash) {
             if (wipToken.length > 0) {
