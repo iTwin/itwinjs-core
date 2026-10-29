@@ -9,11 +9,11 @@
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
-import { ECJsNames, ElementProps, IModelError, QueryBinder, RelatedElementProps, TxnProps } from "@itwin/core-common";
+import { ECJsNames, IModelError, QueryBinder, RelatedElementProps, TxnProps } from "@itwin/core-common";
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { _activeTxn, _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef, rebaseOwnerKey, RebaseOwnerKind, RebaseOwnerRef } from "./internal/RebaseInstanceStore";
+import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef, RebaseOwnerKind } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 import { ChangesetReader } from "./ChangesetReader";
 import { TxnIdString } from "./TxnManager";
@@ -36,10 +36,7 @@ export namespace InteractiveRebaseError {
     /** The rebase process has already moved past the last group */
     "already-past-last-group" |
     /** The rebase process has already moved past the first group */
-    "already-past-first-group" |
-    /** The conflict cannot be resolved because one of its embedding owners does not currently exist and that
-     * owner's own conflict (see {@link RebaseConflict.ownerConflicts}) has not yet been resolved. */
-    "owner-not-resolved";
+    "already-past-first-group";
 
   /** Instantiate and throw an InteractiveRebaseError */
   export function throwError(key: Key, message: string): never {
@@ -70,8 +67,8 @@ export interface RebaseConflict {
    * This is the state of the instance in the database just before applying our local changes.
    *
    * This property will be undefined if the instance does not exist prior to our changes, either
-   * because it was deleted or because it never existed. In both cases {@link acceptTheirs} deletes
-   * the instance, since "their" version of it is that it does not exist.
+   * because it was deleted or because it never existed. {@link acceptTheirs} does not restore or delete
+   * an instance when one side has no instance.
    */
   theirs: RebaseConflictProperties | undefined;
 
@@ -79,7 +76,8 @@ export interface RebaseConflict {
    * The instance after applying our local changes. This is the state of the instance that we are
    * trying to apply to the database.
    *
-   * This property will be undefined if our change deleted the instance.
+   * This property will be undefined if our change deleted the instance. {@link acceptOurs} does not
+   * restore or delete an instance when one side has no instance.
    */
   ours: RebaseConflictProperties | undefined;
 
@@ -140,27 +138,13 @@ export interface RebaseConflict {
    */
   brokenRelationships: BrokenRelationship[];
 
-  /** Unexpected referential actions currently applied by deleting this instance, whether the
-   * deletion comes from ours or theirs. Restoring the instance reverses the recorded effects and
-   * removes the entries; deleting it again records fresh entries. Upstream effects are limited to
-   * conflicting local work. Entries must not be retained across full conflict resolutions. */
+  /** Unexpected referential actions currently applied by deleting this instance. */
   deletionEffects: ReadonlyArray<DeletionEffect>;
 
-  /**
-   * The conflicts recorded for this instance's embedding owners (e.g. an aspect's element, a child element's
-   * parent and model, or a model's parent model and modeled element). An owner is given a conflict entry of its
-   * own whenever this instance has one, even if applying the owner's own change (if it even had one) succeeded
-   * cleanly, since resolving this instance's conflict may require restoring the owner too - see
-   * [[InteractiveRebase.createImplicitOwnerConflicts]]. Owners that were never touched or removed by this Txn
-   * at all (so they aren't part of this group's dependency forest in the first place) are not included.
-   */
+  /** @deprecated Owner conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
   ownerConflicts: ReadonlyArray<RebaseConflict>;
 
-  /**
-   * The conflicts recorded for this instance's embedded dependents (aspects, child elements, a model's
-   * elements and sub-models), if this instance is itself an embedding owner. Empty if this instance owns no
-   * dependents, or none of them have conflicts.
-   */
+  /** @deprecated Dependent conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
   dependentConflicts: ReadonlyArray<RebaseConflict>;
 
   // TODO: I think we need an explicit property indicating whether "ours" was applied (with caveats
@@ -169,26 +153,16 @@ export interface RebaseConflict {
   // Can also indicate whether acceptOurs or acceptTheirs was last called.
 
   /**
-   * Accepts the local (our) vesion of the instance.
-   *
-   * @param properties The properties for which to accept "our" value. If not specified, or if
-   * the array is empty, then the "our" value of all properties will be accepted. Properties
-   * that are not accepted are left unmodified. Unknown properties are ignored.
-   * @throws InteractiveRebaseError with key `"owner-not-resolved"` if this is a full resolution (`properties`
-   * unspecified/empty) and one of this instance's embedding owners does not currently exist - resolve
-   * {@link ownerConflicts} first.
+   * Accepts the local (our) values of the properties that conflict, without restoring or deleting the instance.
+   * @param properties A subset of {@link conflictingProperties} (or {@link differentProperties} for an insert).
+   * If omitted or empty, all of those properties are accepted. Other properties are ignored.
    */
   acceptOurs(properties?: string[]): void;
 
   /**
-   * Accepts the upstream (their) vesion of the instance.
-   *
-   * @param properties The properties for which to accept "their" value. If not specified, or if
-   * the array is empty, then the "their" value of all properties will be accepted. Properties
-   * that are not accepted are left unmodified. Unknown properties are ignored.
-   * @throws InteractiveRebaseError with key `"owner-not-resolved"` if this is a full resolution (`properties`
-   * unspecified/empty) and one of this instance's embedding owners does not currently exist - resolve
-   * {@link ownerConflicts} first.
+   * Accepts the upstream (their) values of the properties that conflict, without restoring or deleting the instance.
+   * @param properties A subset of {@link conflictingProperties} (or {@link differentProperties} for an insert).
+   * If omitted or empty, all of those properties are accepted. Other properties are ignored.
    */
   acceptTheirs(properties?: string[]): void;
 
@@ -392,7 +366,7 @@ interface ReplayEdge {
   deferrable?: DeferredWrite;
 }
 
-/** A node in the per-Txn embedding-ownership forest built by [[InteractiveRebase.buildDependencyForest]].
+/** A node in the per-Txn dependency graph built by [[InteractiveRebase.buildDependencyForest]].
  * Carries only lightweight metadata (never the potentially large `old`/`new` snapshots) - see
  * [[InteractiveRebase.getChange]] for loading a captured node's change on demand.
  */
@@ -400,20 +374,10 @@ interface DependencyNode {
   instanceKey: string;
   id: Id64String;
   classFullName: string;
-  /** False for a node discovered live (section 6 of the design) - a dependent upstream inserted or
-   * otherwise left behind that our own local Txn never captured a change for, so it has no row in
-   * [[RebaseInstanceStore]] and no change of its own to apply. */
-  isCaptured: boolean;
-  /** For a captured node, the operation its change represents. Always `"Delete"` for a discovered node,
-   * since [[InteractiveRebase.applyUpstreamDependentDelete]] only ever removes it. */
+  /** The operation its captured change represents. */
   operation: RebaseInstanceOperation;
-  isIndirect: boolean;
-  /** Every embedding owner this instance references - see [[RebaseInstanceStore]]'s `owners` classification.
-   * Resolve against [[InteractiveRebase._ownersByKey]] via [[rebaseOwnerKey]], never by id alone. */
-  owners: RebaseOwnerRef[];
   /** The kind of embedding owner this instance can itself be, if any. */
   ownerKind: RebaseOwnerKind | undefined;
-  dependents: DependencyNode[];
   /** This node's schema-declared UNIQUE-constraint values and navigation-property references, extracted
    * at capture time by [[RebaseInstanceStore.set]] - consumed directly by [[orderNodes]], which never
    * needs to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
@@ -445,26 +409,14 @@ export class InteractiveRebase {
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
   private _conflicts: RebaseConflict[] = [];
-  private _conflictsByInstanceKey = new Map<string, RebaseConflict>();
 
-  /** The store backing the current group's replay - kept open for the whole group's lifetime (not just
-   * during [[reinstateDataTxn]]) because conflict resolution loads a node's captured `old`/`new` change
-   * on demand (see [[getChange]]/[[capturedOriginalProps]]) well after replay itself has finished, e.g.
-   * to restore an unconflicted dependent as part of its owner's closure. Disposed when moving to a new
-   * group's store, or when this `InteractiveRebase` itself is disposed.
+  /** The store backing the current group's replay. Disposed when moving to a new group's store, or when
+   * this `InteractiveRebase` itself is disposed.
    */
   private _store: RebaseInstanceStore | undefined;
 
-  /** Every node of the current group's dependency forest (section 5 of the design), keyed by
-   * `instanceKey`. Includes both captured changes and any live-discovered dependents (section 6).
-   */
+  /** Every directly captured node of the current group's dependency forest, keyed by `instanceKey`. */
   private _dependencyNodesByInstanceKey = new Map<string, DependencyNode>();
-
-
-  /** The nodes that can be an embedding owner (Elements and Models), keyed by [[rebaseOwnerKey]] - a Model
-   * shares its id with its modeled Element, so the key must include the kind as well as the id.
-   */
-  private _ownersByKey = new Map<string, DependencyNode>();
 
   /** Captured nodes that reference each provider through a navigation property, keyed by provider instance key. */
   private _referenceDependents = new Map<string, DependencyNode[]>();
@@ -686,7 +638,7 @@ export class InteractiveRebase {
   public getReferenceDependentConflicts(providerInstanceKey: string): RebaseConflict[] {
     const dependents = this._referenceDependents.get(providerInstanceKey) ?? [];
     return dependents
-      .map((node) => this._conflictsByInstanceKey.get(node.instanceKey))
+      .map((node) => this._conflicts.find((conflict) => conflict.instanceKey === node.instanceKey))
       .filter((conflict): conflict is RebaseConflict => conflict !== undefined);
   }
 
@@ -858,11 +810,7 @@ export class InteractiveRebase {
    * against the current row (which already reflects the incoming "their" changes) instead of relying
    * on the native changeset-apply conflict callback.
    *
-   * Replay is ordered by [[orderNodes]]'s topological sort over the per-Txn embedding-ownership forest
-   * (see [[buildDependencyForest]]), which guarantees a dependent is always replayed before the owner
-   * whose deletion would otherwise cascade it away - so a live read always sees a node's true pre-replay
-   * "theirs" state at the moment this replay actually gets around to touching it (see
-   * [[tryReadCurrentInstance]]'s callers below), with no need to snapshot every node's state up front.
+   * Replay is ordered by [[orderNodes]]'s topological sort over the directly captured changes.
    */
   private reinstateDataTxn(txnProps: TxnProps): void {
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
@@ -875,14 +823,10 @@ export class InteractiveRebase {
     this.buildDependencyForest(this._store);
     this.replayNodes();
     this.applyDeferredCorrections();
-    this.createImplicitOwnerConflicts();
-    this.linkConflictOwnership();
-    this.recordExistingDeletionEffects();
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
-  /** Loads a captured node's change from the [[RebaseInstanceStore]], or throws if `node` wasn't actually captured (a
-   * discovered node - see [[discoverUnknownDependents]] - has no row to load).
+  /** Loads a node's change from the [[RebaseInstanceStore]].
    *
    * If [[orderNodes]] deferred one of `node`'s own properties as part of breaking a self-contained
    * ordering cycle (see [[_pendingSubstitutions]]), the returned change's `new` side carries the
@@ -891,7 +835,6 @@ export class InteractiveRebase {
    * real value once the whole forest has been replayed.
    */
   private getChange(node: DependencyNode): RebaseInstanceChange {
-    assert(node.isCaptured, "getChange requires a captured node");
     assert(this._store !== undefined, "getChange requires an active replay (see reinstateDataTxn)");
     const change = this._store.get(node.instanceKey);
     assert(change !== undefined, "a captured node must have a row in the store");
@@ -906,185 +849,29 @@ export class InteractiveRebase {
     return { ...change, new: substitutedNew };
   }
 
-  /** True for a captured Delete on an instance whose class has an embedding owner - an aspect or child
-   * element removed as a side effect of its owner's deletion. Scoped to deletes only; other indirect
-   * changes (including an `ON DELETE SET NULL` side effect) are unaffected and keep force-applying.
-   */
-  private isCascadedDependentDelete(node: DependencyNode): boolean {
-    return node.operation === "Delete" && node.owners.length > 0;
-  }
-
-  /** The nodes in this group's dependency forest for each of `node`'s embedding owners. */
-  private getOwnerNodes(node: DependencyNode): DependencyNode[] {
-    const owners: DependencyNode[] = [];
-    for (const { kind, id } of node.owners) {
-      const owner = this._ownersByKey.get(rebaseOwnerKey(kind, id));
-      if (owner !== undefined)
-        owners.push(owner);
-    }
-    return owners;
-  }
-
-  /** `node`'s captured pre-local-edit baseline (its `old` snapshot), or undefined if `node` isn't
-   * captured (a live-discovered dependent - see [[discoverUnknownDependents]]) or was itself an Insert.
-   * Used wherever a node's "theirs" (pre-replay) state is needed but the node has no conflict of its own
-   * recorded: no conflict means its own captured change, if any, applied against the current row
-   * without any discrepancy, so that row's state right before this replay wrote anything - i.e. "theirs" -
-   * is provably identical to this baseline (see [[ensureImplicitOwnerConflicts]]/[[restoreClosureNode]]).
-   */
-  private capturedOriginalProps(node: DependencyNode): RebaseConflictProperties | undefined {
-    if (!node.isCaptured)
-      return undefined;
-    const old = this.getChange(node).old;
-    if (old === undefined)
-      return undefined;
-    const { $meta: _oldMeta, ...oldProps } = old;
-    return oldProps;
-  }
-
-  /**
-   * Builds the current group's per-Txn embedding-ownership forest (design doc section 5) from a
-   * metadata-only scan of the store (see [[RebaseInstanceStore.allMetadata]]) - `old`/`new` snapshots,
-   * which can be large (e.g. geometry), are not parsed here and are loaded lazily per node only when
-   * actually needed (see [[getChange]]) - populating [[_dependencyNodesByInstanceKey]] and [[_ownersByKey]].
-   * [[replayNodes]] operates over every node this populates - see [[orderNodes]], so
-   * this no longer needs to return anything itself.
-   *
-   * A node's `owners` were classified from its `new` snapshot when one exists (Insert/Update), falling
-   * back to `old` only for a pure Delete - this is what makes reparenting correct, since a child moved
-   * from `A` to `B` in the same edit set must link to `B`, not be dragged into an unrelated deletion of
-   * `A` - see [[RebaseInstanceStore.set]].
-   *
-   * Also performs the design doc section 6 live discovery: for every captured pure-Delete on an Element
-   * (or subclass) instance, queries the live DB for dependents our Txn never touched (e.g. an aspect
-   * upstream inserted after our local edit), recursively, and adds them to the forest and to
-   * [[_dependencyNodesByInstanceKey]] with `isCaptured: false` so they can still be reported and cascaded away.
+  /** Builds the current group's dependency graph from directly captured changes. Indirect changes are
+   * shared with the automatic semantic-rebase path, so they are excluded here rather than at capture time.
    */
   private buildDependencyForest(store: RebaseInstanceStore): void {
     this._store = store;
-    this._dependencyNodesByInstanceKey = new Map();
-    this._ownersByKey = new Map();
-
-    // Create a forest node for every instance.
+    this._dependencyNodesByInstanceKey.clear();
     for (const meta of store.allMetadata()) {
+      if (meta.isIndirect)
+        continue;
       const node: DependencyNode = {
         instanceKey: meta.instanceKey,
         id: meta.id,
         classFullName: meta.classFullName,
-        isCaptured: true,
         operation: meta.operation,
-        isIndirect: meta.isIndirect,
-        owners: meta.owners,
         ownerKind: meta.ownerKind,
-        dependents: [],
         identityValues: meta.identityValues,
         navigationRefs: meta.navigationRefs,
       };
       this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
-      if (node.ownerKind !== undefined)
-        this._ownersByKey.set(rebaseOwnerKey(node.ownerKind, node.id), node);
-    }
-
-    // Discover any not-yet-known dependents for captured element and model deletions.
-    // The delete will cascade to these instances when applied.
-    for (const node of this._dependencyNodesByInstanceKey.values()) {
-      if (node.isCaptured && node.operation === "Delete" && node.ownerKind !== undefined) {
-        // This will potentially add new nodes to _dependencyNodesByInstanceKey while we're iterating over it,
-        // but the Map class guarantees this is safe. Our new entries will be iterated at the end.
-        this.discoverUnknownDependents(node);
-      }
-    }
-
-    // Link each node to its owners only now, since a discovered node's owners may be discovered after it.
-    // Used for reporting/cascade - see [[DependencyNode.dependents]] - not for replay ordering.
-    // Insertion order matters: a cascade must reach a modeled element before its sub-model, so the element records it.
-    for (const node of this._dependencyNodesByInstanceKey.values()) {
-      for (const owner of this.getOwnerNodes(node))
-        owner.dependents.push(node);
     }
   }
 
-  /**
-   * Queries the live DB for `ownerNode`'s current embedded dependents (an element's aspects, child elements
-   * and sub-model; a model's elements and sub-models) that are currently unknown to the dependency forest. These were inserted by "theirs" or otherwise never captured
-   * by our local edits. If we delete this instance, the delete will cascade to these aspects and
-   * sub-elements, too.
-   *
-   * We need to know about these dependent instances explicitly in order to give the user a complete
-   * picture of the effect of "our" deletion. We will also use them when the user chooses to "accept theirs"
-   * instead of accepting "our" deletion, because in that scenario these instances will be preserved
-   * rather than deleted.
-   *
-   * This method operates recursively, discovering and adding all transitive dependent instances that
-   * are not yet known to the dependency forest.
-   */
-  private discoverUnknownDependents(ownerNode: DependencyNode): void {
-    const recurse: DependencyNode[] = [];
-
-    // Each query selects the dependent's full set of embedding owners (columns 3+, of `ownerKinds`), since a
-    // dependent reachable from several owners is only created by whichever query finds it first.
-    // `Element` is declared separately on ElementUniqueAspect (via ElementOwnsUniqueAspect) and
-    // ElementMultiAspect (via ElementOwnsMultiAspects), not on the abstract ElementAspect base -
-    // querying the base class directly fails with "No property or enumeration found for
-    // expression 'Element.Id'".
-    const select = "SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c')";
-    const elementDependents = { ownerKind: "element" as const, ownerKinds: ["element", "model"] as const, from: `${select}, Parent.Id, Model.Id FROM BisCore:Element` };
-    const modelDependents = { ownerKind: "model" as const, ownerKinds: ["model", "element"] as const, from: `${select}, ParentModel.Id, ModeledElement.Id FROM BisCore:Model` };
-    const queries: { sql: string, ownerKind: RebaseOwnerKind | undefined, ownerKinds: ReadonlyArray<RebaseOwnerKind> }[] = ownerNode.ownerKind === "model" ? [
-      { ...elementDependents, sql: `${elementDependents.from} WHERE Model.Id = ?` },
-      { ...modelDependents, sql: `${modelDependents.from} WHERE ParentModel.Id = ?` },
-    ] : [
-      { ownerKind: undefined, ownerKinds: ["element"], sql: `${select}, Element.Id FROM BisCore:ElementUniqueAspect WHERE Element.Id = ?` },
-      { ownerKind: undefined, ownerKinds: ["element"], sql: `${select}, Element.Id FROM BisCore:ElementMultiAspect WHERE Element.Id = ?` },
-      { ...elementDependents, sql: `${elementDependents.from} WHERE Parent.Id = ?` },
-      { ...modelDependents, sql: `${modelDependents.from} WHERE ModeledElement.Id = ?` },
-    ];
-    for (const { sql, ownerKind, ownerKinds } of queries) {
-      const binder = new QueryBinder().bindId(1, ownerNode.id);
-      this._db.withQueryReader(sql, (reader) => {
-        for (const row of reader) {
-          const id = row[0];
-          const classId = row[1];
-          const instanceKey = `${id}-${classId}`;
-          if (this._dependencyNodesByInstanceKey.has(instanceKey))
-            continue;
-
-          // Previously unknown instance. Create a node for it and add it to the forest.
-          const owners: RebaseOwnerRef[] = [];
-          ownerKinds.forEach((kind, index) => {
-            const ownerId = row[3 + index];
-            // A model can be its own parent model (e.g. the RepositoryModel).
-            if (typeof ownerId === "string" && Id64.isValidId64(ownerId) && !(kind === ownerKind && ownerId === id))
-              owners.push({ kind, id: ownerId });
-          });
-          const node: DependencyNode = {
-            instanceKey, id, classFullName: row[2],
-            isCaptured: false,
-            operation: "Delete",
-            isIndirect: false,
-            owners,
-            ownerKind,
-            dependents: [],
-          };
-          this._dependencyNodesByInstanceKey.set(instanceKey, node);
-          if (ownerKind !== undefined) {
-            this._ownersByKey.set(rebaseOwnerKey(ownerKind, id), node);
-            recurse.push(node);
-          }
-        }
-      }, binder);
-    }
-
-    for (const node of recurse) {
-      this.discoverUnknownDependents(node);
-    }
-  }
-
-  /** Replays the whole dependency forest (owners and dependents, captured and live-discovered alike -
-   * see [[buildDependencyForest]]) in the order [[orderNodes]] computes, applying each node exactly once
-   * via [[applyNode]] - no recursion into `node.dependents` here; an owner/dependent pair's ordering is
-   * just another instance of an existence edge (see [[orderNodes]]) now, not a separate tree walk.
-   */
+  /** Replays the directly captured changes in the order [[orderNodes]] computes. */
   private replayNodes(): void {
     for (const node of this.orderNodes([...this._dependencyNodesByInstanceKey.values()]))
       this.applyNode(node);
@@ -1095,7 +882,7 @@ export class InteractiveRebase {
    * a topological sort over three kinds of real dependency edges between them - there is no other
    * justification for preferring one node's replay order over another's, so nodes with no edges between
    * them keep their original (stable) input order. Every edge is built directly from each node's own
-   * lightweight fields (identity values, `navigationRefs`, `owners`) - all extracted once at capture
+   * lightweight fields (identity values and `navigationRefs`) - all extracted once at capture
    * time by [[RebaseInstanceStore.set]] - so this never needs [[getChange]] to load a node's `old`/`new`
    * snapshot, nor any schema/[[SchemaView]] lookup, just to compute its edges:
    *
@@ -1116,13 +903,6 @@ export class InteractiveRebase {
    *   no extra logic. Relationship (link-table) instances need no special-casing here - BIS deliberately
    *   gives them no real foreign key into `bis_Element`, so [[RebaseInstanceStore.set]] never populates
    *   their `navigationRefs` in the first place.
-   * - A discovered-dependent edge: a live-discovered (uncaptured) dependent (see
-   *   [[discoverUnknownDependents]]) has no store-backed change of its own for `navigationRefs` to have
-   *   been extracted from, so its synthesized delete needs a small edge sourced directly from its
-   *   already-known owner instead: if its owner is itself a captured Delete, the dependent's delete
-   *   must happen first, or the owner's delete would remove a row the dependent's (still-live) FK still
-   *   points at.
-   *
    * Every schema-declared UNIQUE constraint (single-property or composite, declared on the class itself
    * or any base class) is discovered and extracted at capture time - see
    * [[RebaseInstanceStore.getIdentityGroups]] - so this is not limited to `federationGuid`/`code` the way
@@ -1165,7 +945,7 @@ export class InteractiveRebase {
         entries.push({ node, identity });
     };
     for (const node of nodes) {
-      if (!node.isCaptured || node.identityValues === undefined)
+      if (node.identityValues === undefined)
         continue;
       for (const identity of node.identityValues) {
         if (identity.old === identity.new)
@@ -1206,8 +986,6 @@ export class InteractiveRebase {
     const providesById = new Map<Id64String, DependencyNode[]>();
     const removesById = new Map<Id64String, DependencyNode[]>();
     for (const node of nodes) {
-      if (!node.isCaptured)
-        continue;
       const map = node.operation === "Insert" ? providesById : node.operation === "Delete" ? removesById : undefined;
       if (map === undefined)
         continue;
@@ -1221,7 +999,7 @@ export class InteractiveRebase {
       (map.get(id) ?? []).filter((candidate) => targetKind === undefined || candidate.ownerKind === targetKind);
 
     for (const node of nodes) {
-      if (!node.isCaptured || node.navigationRefs === undefined)
+      if (node.navigationRefs === undefined)
         continue;
       for (const { jsName, nullable, targetKind, oldId, newId } of node.navigationRefs) {
         if (newId !== undefined) {
@@ -1245,20 +1023,6 @@ export class InteractiveRebase {
               edges.push({ from: node, to: remover }); // Nothing to defer - a Delete has no property to null.
           }
         }
-      }
-    }
-
-    // A live-discovered (uncaptured) dependent has no store-backed change for `navigationRefs` to have
-    // been extracted from, so give it a direct edge from its already-known owner instead: its
-    // synthesized delete must precede its owner's own Delete, or the owner's row would be removed while
-    // this dependent's (still-live) FK still points at it. Discovered nodes are always Deletes by
-    // construction (see [[discoverUnknownDependents]]), so no provides/requires case applies.
-    for (const node of nodes) {
-      if (node.isCaptured)
-        continue;
-      for (const owner of this.getOwnerNodes(node)) {
-        if (owner.operation === "Delete")
-          edges.push({ from: node, to: owner }); // Nothing to defer - a Delete has no property to null.
       }
     }
 
@@ -1399,169 +1163,10 @@ export class InteractiveRebase {
     }
   }
 
-  /** Applies a single node's change, in the order [[orderNodes]] computed - see [[replayNodes]]. No
-   * longer recurses into `node.dependents` itself; owner/dependent replay order is now just another
-   * consequence of the edges [[orderNodes]] builds.
-   */
+  /** Applies a single node's change in the order computed by [[orderNodes]]. */
   private applyNode(node: DependencyNode): void {
-    if (!node.isCaptured) {
-      // Discovered live (section 6) - our Txn never captured a change for it, so nothing in the store
-      // will ever apply or report it, yet replaying our own owner's delete cascades it away regardless.
-      this.applyUpstreamDependentDelete(node);
-      return;
-    }
-
     const change = this.getChange(node);
-    if (node.isIndirect && !this.isCascadedDependentDelete(node)) {
-      // Indirect changes are derived side effects (e.g. a Model's GeometryGuid updated as a side
-      // effect of a GeometricElement change) rather than deliberate edits, so they are force-applied
-      // without conflict detection, matching the automatic semantic-rebase path's `applyInstanceChange`.
-      this._db.txns.withIndirectTxnMode(() => {
-        this.applyIndirectInstanceChange(change);
-      });
-    } else {
-      this.applyInteractiveInstanceChange(change);
-    }
-  }
-
-  /** Reports (and then removes) a dependent discovered via [[discoverUnknownDependents]] - an instance
-   * our local Txn never touched that would otherwise be silently cascaded away by our owner's delete.
-   * Reads its current row live: nothing has written to it yet at this point in replay (this node is
-   * always ordered before the owner whose delete would otherwise cascade it away - see [[orderNodes]]),
-   * so a live read here is exactly its pre-replay "theirs" state.
-   */
-  private applyUpstreamDependentDelete(node: DependencyNode): void {
-    const theirs = this.tryReadCurrentInstance(node.id, node.classFullName);
-    if (theirs === undefined) {
-      // Already gone by the time we discovered it (e.g. a real ON DELETE CASCADE already removed an
-      // aspect earlier in this same replay) - nothing to report or remove.
-      return;
-    }
-
-    // Attribute the cascade to every owner being deleted, so restoring any one of them alone can't lose track of it.
-    const deletedOwners = this.getOwnerNodes(node).filter((candidate) => candidate.operation === "Delete");
-    assert(deletedOwners.length > 0, `Missing deleted owner for ${node.instanceKey}`);
-    const nodeClass = this._schemaView.findClass(node.classFullName);
-    const entries = deletedOwners.map((owner) => {
-      const reference = this.getDeletionReferences(owner.classFullName).find((candidate) =>
-        candidate.action === "CASCADE" && nodeClass?.is(candidate.referencingClassFullName) &&
-        getPropertyValue(theirs, `${candidate.navigationPropertyJsName}.id`) === owner.id);
-      assert(reference !== undefined);
-      const entry = { instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs, reference };
-      this.recordDeletionEffectsForTarget(owner, [entry]);
-      return { owner, entry };
-    });
-    this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
-    for (const { owner, entry } of entries) {
-      const conflict = this._conflicts.find((candidate) => candidate.instanceKey === owner.instanceKey) as RebaseConflictImpl;
-      conflict.recordDeletionEffect(entry);
-    }
-  }
-
-  /** Ensures every embedding owner of a conflicted dependent has its own {@link RebaseConflict} entry,
-   * even when applying the owner's own change (if it even had one) succeeded cleanly - previously this
-   * was left implicit, reconstructed on demand only when [[ensureOwnersExist]] or
-   * [[restoreDependentClosure]] happened to need it. Making it explicit here means the owner shows up
-   * in {@link conflicts} and is directly resolvable via `acceptOurs`/`acceptTheirs`, rather than only ever
-   * being touched as a side effect of resolving one of its dependents. Walks upward through nested
-   * embedding (e.g. an aspect owned by a child element) as far as it goes. Must run after [[replayNodes]],
-   * since it only seeds the walk from dependents that actually ended up with a conflict.
-   */
-  private createImplicitOwnerConflicts(): void {
-    // Each call recurses all the way up its own owner chains, so this only needs to seed the walk from
-    // every dependent that already has a real, replay-detected conflict.
-    const visited = new Set<string>();
-    for (const conflict of this._conflicts)
-      this.ensureImplicitOwnerConflicts(conflict.instanceKey, visited);
-  }
-
-  private ensureImplicitOwnerConflicts(instanceKey: string, visited: Set<string>): void {
-    if (visited.has(instanceKey))
-      return;
-    visited.add(instanceKey);
-
-    const node = this._dependencyNodesByInstanceKey.get(instanceKey);
-    if (node === undefined)
-      return;
-
-    for (const ownerNode of this.getOwnerNodes(node)) {
-      // An owner whose change is force-applied as a derived side effect (e.g. a Model's GeometryGuid) is not
-      // offered for resolution - see [[applyNode]].
-      if (ownerNode.isIndirect && !this.isCascadedDependentDelete(ownerNode))
-        continue;
-      if (!this._conflicts.some((c) => c.instanceKey === ownerNode.instanceKey)) {
-        const original = this.capturedOriginalProps(ownerNode);
-        let ours: RebaseConflictProperties | undefined;
-        if (ownerNode.isCaptured) {
-          const change = this.getChange(ownerNode);
-          if (change.new !== undefined) {
-            const { $meta: _newMeta, ...newProps } = change.new;
-            ours = newProps;
-          }
-        }
-        // No conflict was recorded applying the owner's own change (if it even had one), meaning it
-        // applied uncontested - so theirs (the state right before this replay wrote anything) is
-        // provably identical to our own captured baseline: `original` for a captured node (an Update's
-        // `expectedOldValues`/a Delete's check both already confirmed the row matched it), or undefined
-        // for a discovered node (which would otherwise have its own upstream-dependent conflict recorded
-        // - see [[applyUpstreamDependentDelete]]).
-        const theirs = ours !== undefined && this.tryReadCurrentInstance(ownerNode.id, ownerNode.classFullName) === undefined ? undefined : original;
-        RebaseConflictImpl.recordImplicitOwner(this, this._conflicts, ownerNode.instanceKey, ownerNode.id, ownerNode.classFullName, original, theirs, ours);
-      }
-
-      // Recurse regardless of whether an entry already existed - a pre-existing owner conflict still needs
-      // its own owners (if any) to get one too.
-      this.ensureImplicitOwnerConflicts(ownerNode.instanceKey, visited);
-    }
-  }
-
-  /** Design doc section 10: populates `ownerConflicts`/`dependentConflicts` for every pair of recorded
-   * conflicts where one instance is one of the other's `owners`, once every conflict for this group is known
-   * (including the implicit ones [[createImplicitOwnerConflicts]] just added).
-   */
-  private linkConflictOwnership(): void {
-    // First conflict wins, should an instance somehow have recorded more than one.
-    const conflictByInstanceKey = new Map<string, RebaseConflictImpl>();
-    for (const conflict of this._conflicts) {
-      if (!conflictByInstanceKey.has(conflict.instanceKey))
-        conflictByInstanceKey.set(conflict.instanceKey, conflict as RebaseConflictImpl);
-    }
-    this._conflictsByInstanceKey = conflictByInstanceKey;
-
-    if (this._conflicts.length === 0)
-      return;
-
-    for (const node of this._dependencyNodesByInstanceKey.values()) {
-      const dependentConflict = conflictByInstanceKey.get(node.instanceKey);
-      if (dependentConflict === undefined)
-        continue;
-      for (const ownerNode of this.getOwnerNodes(node)) {
-        const ownerConflict = conflictByInstanceKey.get(ownerNode.instanceKey);
-        if (ownerConflict !== undefined && !dependentConflict.ownerConflicts.includes(ownerConflict)) {
-          dependentConflict.ownerConflicts.push(ownerConflict);
-          ownerConflict.dependentConflicts.push(dependentConflict);
-        }
-      }
-    }
-  }
-
-  /** Applies a single instance's captured old/new snapshot pair directly (Insert/Update/Delete inferred
-   * from which of "old"/"new" were captured), without any conflict detection. Used for indirect/derived
-   * changes, which should not participate in user-facing conflict resolution.
-   */
-  private applyIndirectInstanceChange(change: RebaseInstanceChange): void {
-    const nativeDb = this._db[_nativeDb];
-    if (change.new) {
-      const { $meta: _newMeta, ...newProps } = change.new;
-      if (change.old) {
-        nativeDb.updateInstance(newProps, { useJsNames: true });
-      } else {
-        nativeDb.insertInstance(newProps, { forceUseId: true, useJsNames: true });
-      }
-    } else if (change.old) {
-      const { $meta: _oldMeta, ...oldProps } = change.old;
-      nativeDb.deleteInstance({ id: oldProps.id, classFullName: oldProps.classFullName }, { useJsNames: true });
-    }
+    this.applyInteractiveInstanceChange(change);
   }
 
   /** Applies a single instance's captured old/new snapshot pair, inferring Insert/Update/Delete from
@@ -1646,28 +1251,16 @@ export class InteractiveRebase {
 
   private deleteWithReferentialActionTracking<T>(key: { id: Id64String, classFullName: string }, deleteInstance: () => T): T {
     const affected = this.findOnDeleteAffectedInstances(key.id, key.classFullName);
-    const theirs = this.tryReadCurrentInstance(key.id, key.classFullName);
     const result = deleteInstance();
     const deleted = typeof result !== "object" || result === null || !("deleted" in result) || Boolean((result as { deleted: boolean }).deleted);
-    const conflict = deleted ? this.recordDeletionEffectsForTarget(key, affected, theirs) : undefined;
-    if (deleted && conflict !== undefined) {
+    const conflict = deleted
+      ? this._conflicts.find((candidate) => candidate.id === key.id && candidate.classFullName === key.classFullName) as RebaseConflictImpl | undefined
+      : undefined;
+    if (conflict !== undefined) {
       for (const entry of affected)
         conflict.recordDeletionEffect(entry);
     }
     return result;
-  }
-
-  private recordDeletionEffectsForTarget(key: { id: Id64String, classFullName: string }, affected: AffectedOnDeleteInstance[], theirs = this.tryReadCurrentInstance(key.id, key.classFullName)): RebaseConflictImpl | undefined {
-    if (affected.length === 0)
-      return undefined;
-    const existing = this._conflicts.find((candidate) => candidate.id === key.id && candidate.classFullName === key.classFullName) as RebaseConflictImpl | undefined;
-    if (existing !== undefined)
-      return existing;
-    const node = [...this._dependencyNodesByInstanceKey.values()].find((candidate) => candidate.id === key.id && candidate.classFullName === key.classFullName);
-    assert(node !== undefined);
-    RebaseConflictImpl.recordImplicitOwner(this, this._conflicts, node.instanceKey, key.id, key.classFullName,
-      node.isCaptured ? this.capturedOriginalProps(node) : undefined, theirs, undefined);
-    return this._conflicts.find((candidate) => candidate.instanceKey === node.instanceKey) as RebaseConflictImpl;
   }
 
   private getDeletionReferences(targetClassFullName: string): OnDeleteReference[] {
@@ -1690,54 +1283,6 @@ export class InteractiveRebase {
     return references;
   }
 
-  private recordExistingDeletionEffects(): void {
-    const referencingNodes = new Map<Id64String, Set<DependencyNode>>();
-    for (const node of this._dependencyNodesByInstanceKey.values()) {
-      const targetIds = new Set([...node.owners.map((owner) => owner.id), ...(node.navigationRefs ?? []).flatMap((reference) => [reference.oldId, reference.newId])]);
-      for (const id of targetIds) {
-        if (id === undefined)
-          continue;
-        let nodes = referencingNodes.get(id);
-        if (nodes === undefined)
-          referencingNodes.set(id, nodes = new Set());
-        nodes.add(node);
-      }
-    }
-    for (const target of this._conflicts as RebaseConflictImpl[]) {
-      if (this.tryReadCurrentInstance(target.id, target.classFullName) !== undefined)
-        continue;
-      const deletingSide = target.getRaw("ours") === undefined && target.getRaw("theirs") !== undefined ? "ours"
-        : target.getRaw("theirs") === undefined && target.getRaw("ours") !== undefined ? "theirs" : undefined;
-      if (deletingSide === undefined)
-        continue;
-      const survivingSide = deletingSide === "ours" ? "theirs" : "ours";
-      for (const node of referencingNodes.get(target.id) ?? []) {
-        if (node.instanceKey === target.instanceKey)
-          continue;
-        const affected = this._conflicts.find((candidate) => candidate.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
-        let before = affected?.getRaw(survivingSide);
-        if (before === undefined && deletingSide === "theirs" && node.isCaptured && !node.isIndirect) {
-          const change = this.getChange(node);
-          if (change.new !== undefined) {
-            const { $meta: _meta, ...props } = change.new;
-            before = props;
-          }
-        }
-        if (before === undefined)
-          continue;
-        for (const reference of this.getDeletionReferences(target.classFullName)) {
-          if (!this._schemaView.findClass(node.classFullName)?.is(reference.referencingClassFullName) ||
-            getPropertyValue(before, `${reference.navigationPropertyJsName}.id`) !== target.id)
-            continue;
-          const after = this.tryReadCurrentInstance(node.id, node.classFullName);
-          if (reference.action === "CASCADE" ? after !== undefined : getPropertyValue(after ?? {}, `${reference.navigationPropertyJsName}.id`) === target.id)
-            continue;
-          target.recordDeletionEffect({ instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs: before, reference });
-        }
-      }
-    }
-  }
-
   /** Finds live rows that reference `targetId` through the cached set of FK navigation properties
    * with ON DELETE CASCADE or SET NULL. The dependency graph has already replayed known removals. */
   private findOnDeleteAffectedInstances(targetId: Id64String, targetClassFullName: string, visited = new Set<string>()): AffectedOnDeleteInstance[] {
@@ -1747,8 +1292,7 @@ export class InteractiveRebase {
     visited.add(key);
     const references = this.getDeletionReferences(targetClassFullName);
 
-    const knownInstances = new Set([...this._dependencyNodesByInstanceKey.values()].filter((node) => node.isCaptured).map((node) => `${node.id}|${node.classFullName}`));
-    const targetConflict = this._conflicts.find((conflict) => conflict.id === targetId && conflict.classFullName === targetClassFullName) as RebaseConflictImpl | undefined;
+    const knownInstances = new Set([...this._dependencyNodesByInstanceKey.values()].map((node) => `${node.id}|${node.classFullName}`));
     const affected: AffectedOnDeleteInstance[] = [];
     for (const reference of references) {
       const binder = new QueryBinder().bindId(1, targetId);
@@ -1762,7 +1306,7 @@ export class InteractiveRebase {
             const classFullName = row[2] as string;
             if (reference.action === "CASCADE")
               affected.push(...this.findOnDeleteAffectedInstances(id, classFullName, visited));
-            if (knownInstances.has(`${id}|${classFullName}`) && !targetConflict?.hasTrackedDeletionEffect(id, classFullName) &&
+            if (knownInstances.has(`${id}|${classFullName}`) &&
               !this._conflicts.some((conflict) => conflict.id === id && conflict.classFullName === classFullName))
               continue;
             const theirs = this.tryReadCurrentInstance(id, classFullName);
@@ -2109,218 +1653,14 @@ export class InteractiveRebase {
     return fallbackProps;
   }
 
-  /**
-   * Applies a resolved conflict's properties directly to the iModel via the native instance writer.
-   * Used by conflict resolution methods (`acceptOurs`/`acceptTheirs`) once native reinstatement of the
-   * txn is no longer in progress, so there is no changeset-apply conflict callback to defer to.
-   *
-   * For a full resolution (`properties` unspecified/empty), every one of this instance's embedding owners must
-   * already exist (see [[ensureOwnersExist]], which throws otherwise - resolving this instance's
-   * `ownerConflicts` is a precondition, not something done as a side effect here), and this instance's
-   * own embedded dependents are cascaded afterward (deleted if `props` is undefined, otherwise restored
-   * per the design doc section 10.1 - see [[cascadeDeleteToDependents]] and [[restoreDependentClosure]]).
-   *
-   * @param fullReplace When true, properties absent from `props` are cleared instead of left as-is, so
-   * that `props` fully replaces the instance rather than incrementally updating it.
-   * @param side Which side of `conflict` is being applied - "ours" unless a caller resolves to "theirs".
-   * Determines which side of an as-yet-unresolved dependent conflict is restored alongside this one.
+  /** Applies a conflict resolution to the selected properties of an existing instance.
    * @internal
    */
-  public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties | undefined, fullReplace: boolean = false, properties?: string[], side: "ours" | "theirs" = "ours"): void {
+  public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties, properties: string[]): void {
     const conflictImpl = conflict as RebaseConflictImpl;
-    const isFullResolution = properties === undefined || properties.length === 0;
-
-    if (props === undefined) {
-      const key = { id: conflict.id, classFullName: conflict.classFullName };
-      // Dependents must be removed before the owner itself - unlike aspects (a real SQL
-      // `ON DELETE CASCADE`), a child element's cascade-on-parent-delete is implemented by the Element
-      // API rather than a declared FK action, so a raw instance delete of the owner does not remove it,
-      // and would leave a dangling `ParentId` that violates the FK if the owner is deleted first.
-      this.deleteWithReferentialActionTracking(key, () => {
-        if (isFullResolution)
-          this.cascadeDeleteToDependents(conflictImpl);
-        return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
-      });
-      conflictImpl.clearSupersededConstraintFixes(undefined);
-      this._db.clearCaches({ instanceCachesOnly: true });
-      return;
-    }
-
-    if (isFullResolution)
-      this.ensureOwnersExist(conflictImpl);
-
     conflictImpl.clearSupersededConstraintFixes(properties);
-    this.writeConflictResolution(conflictImpl, props, fullReplace, 0);
-
-    if (isFullResolution) {
-      this.restoreDependentClosure(conflictImpl, side);
-      this.restoreDeletionEffects(conflictImpl);
-    }
-
+    this.writeConflictResolution(conflictImpl, props, 0);
     this._db.clearCaches({ instanceCachesOnly: true });
-  }
-
-  private restoreDeletionEffects(conflict: RebaseConflictImpl): void {
-    if (this.tryReadCurrentInstance(conflict.id, conflict.classFullName) === undefined)
-      return;
-    const pending: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl)[] = [];
-    for (const effect of [...conflict.deletionEffects].reverse()) {
-      if (effect.action === "set-null") {
-        const current = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
-        if (current !== undefined && getPropertyValue(current, `${effect.reference.navigationPropertyJsName}.id`) === undefined) {
-          const propsToWrite = { id: effect.affectedId, classFullName: effect.affectedClassFullName };
-          setPropertyValue(propsToWrite, effect.reference.navigationPropertyJsName, effect.rawPreviousValue);
-          this._db[_nativeDb].updateInstance(propsToWrite, { useJsNames: true });
-        }
-      } else {
-        // The dependent can't come back until every one of its owners exists - the last owner restored brings it back.
-        if (this.hasMissingOwner(effect.affectedInstanceKey)) {
-          pending.push(effect);
-          continue;
-        }
-        const affectedConflict = effect.affectedConflict as RebaseConflictImpl | undefined;
-        const selectedProps = affectedConflict !== undefined && affectedConflict._selectedSide !== undefined
-          ? affectedConflict.getRaw(affectedConflict._selectedSide) : effect.rawDeletedInstance;
-        if (selectedProps !== undefined && this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName) === undefined)
-          this.writeRestoredInstance(selectedProps);
-        this.removeCascadeEffectsFromOtherConflicts(effect.affectedInstanceKey, conflict);
-      }
-    }
-    conflict.deletionEffects.length = 0;
-    conflict.deletionEffects.push(...pending.reverse());
-  }
-
-  private hasMissingOwner(instanceKey: string): boolean {
-    const node = this._dependencyNodesByInstanceKey.get(instanceKey);
-    return node !== undefined && this.getOwnerNodes(node).some((owner) => this.tryReadCurrentInstance(owner.id, owner.classFullName) === undefined);
-  }
-
-  private removeCascadeEffectsFromOtherConflicts(affectedInstanceKey: string, except: RebaseConflictImpl): void {
-    for (const other of this._conflicts as RebaseConflictImpl[]) {
-      if (other === except)
-        continue;
-      for (let i = other.deletionEffects.length - 1; i >= 0; --i) {
-        const effect = other.deletionEffects[i];
-        if (effect.action === "cascade" && effect.affectedInstanceKey === affectedInstanceKey)
-          other.deletionEffects.splice(i, 1);
-      }
-    }
-  }
-
-  /**
-   * A dependent cannot be restored while any of its embedding owners doesn't exist, but which side (if either)
-   * an owner should be restored to is a decision belonging to the owner's own conflict, not something
-   * this resolution of `conflict` should silently choose on its behalf - see
-   * [[InteractiveRebase.createImplicitOwnerConflicts]], which guarantees every such owner already has
-   * a {@link RebaseConflict} of its own to resolve first.
-   *
-   * @throws InteractiveRebaseError with key `"owner-not-resolved"` if any of `conflict`'s embedding owners
-   * doesn't currently exist.
-   */
-  private ensureOwnersExist(conflict: RebaseConflictImpl): void {
-    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
-    if (node === undefined)
-      return;
-    for (const ownerNode of this.getOwnerNodes(node)) {
-      if (this.tryReadCurrentInstance(ownerNode.id, ownerNode.classFullName) !== undefined)
-        continue;
-
-      InteractiveRebaseError.throwError(
-        "owner-not-resolved",
-        `Cannot resolve conflict for Instance ${conflict.instanceKey} because its embedding owner ${ownerNode.instanceKey} ` +
-        `does not exist. Resolve the ownerConflicts first.`);
-    }
-  }
-
-  /** Design doc section 10: resolving an owner conflict to "deleted" cascades that same resolution to
-   * every member of its closure, recursively, automatically and silently - a dependent cannot survive
-   * its owner's deletion.
-   */
-  private cascadeDeleteToDependents(conflict: RebaseConflictImpl): void {
-    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
-    if (node === undefined)
-      return;
-    // A dependent with several owners in this closure (e.g. an element's parent and model) is reachable more than once.
-    const visited = new Set<DependencyNode>([node]);
-    for (const dependent of node.dependents)
-      this.cascadeDeleteDependentNode(dependent, visited);
-  }
-
-  private cascadeDeleteDependentNode(node: DependencyNode, visited: Set<DependencyNode>): void {
-    if (visited.has(node))
-      return;
-    visited.add(node);
-    const key = { id: node.id, classFullName: node.classFullName };
-    this.deleteWithReferentialActionTracking(key, () => {
-      for (const child of node.dependents)
-        this.cascadeDeleteDependentNode(child, visited);
-      return this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
-    });
-    const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
-    conflict?.clearSupersededConstraintFixes(undefined);
-  }
-
-  /**
-   * Design doc section 10.1: resolving an owner conflict to "restored" restores its whole closure, not
-   * just the owner itself, because a cascade removes dependents whether or not they conflicted:
-   * - a dependent with its own recorded conflict restores whichever side it currently has selected
-   *   (`_selectedSide`, set only by an explicit, direct `acceptOurs`/`acceptTheirs` call on that
-   *   dependent) so an explicit user choice is preserved, falling back to `side` - the side just chosen
-   *   for `conflict` - otherwise;
-   * - a dependent with no recorded conflict restores verbatim from [[capturedOriginalProps]], its
-   *   pre-replay state (unmodified by either side, since no conflict means its own captured change, if
-   *   any, applied uncontested).
-   */
-  private restoreDependentClosure(conflict: RebaseConflictImpl, side: "ours" | "theirs"): void {
-    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
-    if (node === undefined)
-      return;
-    const visited = new Set<DependencyNode>([node]);
-    for (const dependent of node.dependents)
-      this.restoreClosureNode(dependent, side, visited);
-  }
-
-  private restoreClosureNode(node: DependencyNode, inheritedSide: "ours" | "theirs", visited: Set<DependencyNode>): void {
-    if (visited.has(node))
-      return;
-    // A dependent with several owners is reached again from each of them, so wait until the last one exists.
-    if (this.getOwnerNodes(node).some((owner) => this.tryReadCurrentInstance(owner.id, owner.classFullName) === undefined))
-      return;
-    visited.add(node);
-
-    const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
-    const side = conflict?._selectedSide ?? inheritedSide;
-    const props = conflict !== undefined
-      ? conflict.getRaw(side)
-      : this.capturedOriginalProps(node);
-
-    if (conflict === undefined && !node.isCaptured) {
-      // A discovered dependent is restored by its deleted owner's deletionEffects instead - see restoreDeletionEffects.
-    } else if (props === undefined) {
-      this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
-    } else if (conflict !== undefined) {
-      conflict.clearSupersededConstraintFixes(undefined);
-      this.writeConflictResolution(conflict, props, true, 0);
-    } else {
-      this.writeRestoredInstance(props);
-    }
-
-    for (const child of node.dependents)
-      this.restoreClosureNode(child, side, visited);
-    if (conflict !== undefined && props !== undefined)
-      this.restoreDeletionEffects(conflict);
-  }
-
-  /** Writes an instance with no [[RebaseConflict]] of its own (an untouched dependent being restored
-   * from [[capturedOriginalProps]] as part of its owner's closure), without the UNIQUE-constraint retry
-   * machinery [[writeConflictResolution]] provides for a real conflict.
-   */
-  private writeRestoredInstance(props: RebaseConflictProperties): void {
-    const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true });
-    if (result === false || result !== true && !result.updated) {
-      // Row does not exist - try inserting it.
-      this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
-    }
   }
 
   /** Writes a resolved conflict's properties, resolving any UNIQUE constraint violation the write provokes the
@@ -2328,12 +1668,11 @@ export class InteractiveRebase {
    * of the constrained properties, and retry. Re-applying "our" values necessarily reintroduces whatever
    * violation they caused in the first place, so this must not escape as an exception.
    */
-  private writeConflictResolution(conflict: RebaseConflictImpl, props: RebaseConflictProperties, fullReplace: boolean, attempt: number): void {
+  private writeConflictResolution(conflict: RebaseConflictImpl, props: RebaseConflictProperties, attempt: number): void {
     try {
-      const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
+      const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: true });
       if (result === false || result !== true && !result.updated) {
-        // Row does not exist - try inserting it.
-        this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
+        return;
       }
     } catch (err: any) {
       if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
@@ -2346,7 +1685,7 @@ export class InteractiveRebase {
         if (current === undefined && brokenRelationships.some((relationship) => !relationship.nullable))
           return;
         const fallbackProps = this.fixBrokenNavigationProperties(props, brokenRelationships, current)!;
-        this.writeConflictResolution(conflict, fallbackProps, fullReplace, attempt);
+        this.writeConflictResolution(conflict, fallbackProps, attempt);
         conflict.recordBrokenRelationshipFix(brokenRelationships, fallbackProps);
         return;
       }
@@ -2366,7 +1705,7 @@ export class InteractiveRebase {
         property: this._db.getJsClass<typeof Element>(conflict.classFullName).toPropsAccessString(fix.property),
         value: fix.value,
       };
-      this.writeConflictResolution(conflict, fix.props, fullReplace, attempt + 1);
+      this.writeConflictResolution(conflict, fix.props, attempt + 1);
     }
   }
 }
@@ -2479,44 +1818,31 @@ function addPropsAccessStrings(target: string[], classDef: typeof Element, insta
   }
 }
 
-/** Resolves a conflict by writing `properties` (props access strings) taken from `source` onto the instance,
- * leaving its other properties as they are. If `properties` is not specified, or is empty, every property of
- * `source` is written instead, fully replacing the instance with `source`'s version. `source` is read via
- * [[RebaseConflictImpl.getRaw]] - already in the native/instance shape a write needs - rather than the public
- * (lazily deserialized) {@link RebaseConflict.ours}/{@link RebaseConflict.theirs}, so no deserialize-then-
- * reserialize round-trip is needed just to write it back out.
+/** Resolves conflicting properties from one side, using the native row shape stored by
+ * [[RebaseConflictImpl.getRaw]] to avoid a deserialize-then-reserialize round-trip.
  */
 function applyResolution(
   rebase: InteractiveRebase,
   conflict: RebaseConflictImpl,
   side: "ours" | "theirs",
-  properties?: string[]
+  requestedProperties?: string[],
 ): void {
   const source = conflict.getRaw(side);
-  let fullReplace = true;
-  let updateProps: RebaseConflictProperties | undefined = undefined;
+  const conflictingProperties = conflict.original === undefined ? conflict.differentProperties : conflict.conflictingProperties;
+  const properties = requestedProperties !== undefined && requestedProperties.length > 0
+    ? conflictingProperties.filter((property) => requestedProperties.includes(property))
+    : conflictingProperties;
+  if (source === undefined || properties.length === 0)
+    return;
 
-  if (source !== undefined) {
-    // Shallow-copy so the write path never mutates the conflict's own stored snapshot.
-    updateProps = { ...source };
-
-    if (properties !== undefined && properties.length > 0) {
-      // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
-      // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
-      // any property it isn't given untouched, so an `undefined` here must become an explicit `null` rather
-      // than being omitted, or it would silently keep whatever value is currently in the iModel.
-      const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
-      fullReplace = false;
-      updateProps = { id: conflict.id, classFullName: conflict.classFullName };
-      for (const prop of properties) {
-        const instanceAccessString = classDef.toInstanceAccessString(prop);
-        const value = getPropertyValue(source, instanceAccessString);
-        setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
-      }
-    }
+  const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
+  const updateProps: RebaseConflictProperties = { id: conflict.id, classFullName: conflict.classFullName };
+  for (const prop of properties) {
+    const instanceAccessString = classDef.toInstanceAccessString(prop);
+    const value = getPropertyValue(source, instanceAccessString);
+    setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
   }
-
-  rebase.applyConflictResolution(conflict, updateProps, fullReplace, properties, side);
+  rebase.applyConflictResolution(conflict, updateProps, properties);
 }
 
 abstract class DeletionEffectImpl implements DeletionEffectDetails {
@@ -2591,17 +1917,10 @@ class RebaseConflictImpl implements RebaseConflict {
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
   public readonly brokenRelationships: BrokenRelationship[] = [];
   public readonly deletionEffects: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl)[] = [];
-  private readonly _trackedDeletionEffectInstances = new Set<string>();
-  public readonly ownerConflicts: RebaseConflict[] = [];
-  public readonly dependentConflicts: RebaseConflict[] = [];
-
-  /** Which side this conflict was last explicitly (directly) resolved to, or undefined if it never has
-   * been. Set only by a direct, full (no `properties` filter) `acceptOurs`/`acceptTheirs` call on this
-   * conflict itself - not by a cascade propagating a resolution down from an owner - so that an explicit
-   * user choice for a dependent survives a later resolution of its owner (design doc section 10.1).
-   * @internal
-   */
-  public _selectedSide: "ours" | "theirs" | undefined = undefined;
+  /** @deprecated Owner conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
+  public readonly ownerConflicts: ReadonlyArray<RebaseConflict> = [];
+  /** @deprecated Dependent conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
+  public readonly dependentConflicts: ReadonlyArray<RebaseConflict> = [];
 
   private constructor(private readonly _rebase: InteractiveRebase, instanceKey: string, id: Id64String, classFullName: string) {
     this.instanceKey = instanceKey;
@@ -2685,29 +2004,9 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   public recordDeletionEffect(entry: AffectedOnDeleteInstance): void {
-    this._trackedDeletionEffectInstances.add(`${entry.id}|${entry.classFullName}`);
     if (!this.deletionEffects.some((effect) => effect.affectedInstanceKey === entry.instanceKey && effect.reference.navigationProperty === entry.reference.navigationProperty))
       this.deletionEffects.push(entry.reference.action === "SET NULL"
         ? new SetNullDeletionEffectImpl(this._rebase, entry) : new CascadeDeletionEffectImpl(this._rebase, entry));
-  }
-
-  public hasTrackedDeletionEffect(id: Id64String, classFullName: string): boolean {
-    return this._trackedDeletionEffectInstances.has(`${id}|${classFullName}`);
-  }
-
-  /** An embedding owner with no conflict of its own - applying its own change, if it even had one,
-   * succeeded cleanly - synthesized solely so that one of its embedded dependents' conflicts has an
-   * owner conflict to link to (see [[InteractiveRebase.createImplicitOwnerConflicts]]) and can itself be
-   * resolved via `acceptOurs`/`acceptTheirs`. Has no effect if `instanceKey` already has a conflict
-   * recorded, so a genuine conflict already known for the owner is never overwritten.
-   */
-  public static recordImplicitOwner(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, id: Id64String, classFullName: string, original: RebaseConflictProperties | undefined, theirs: RebaseConflictProperties | undefined, ours: RebaseConflictProperties | undefined): void {
-    if (conflicts.some((c) => c.instanceKey === instanceKey))
-      return;
-    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, id, classFullName);
-    conflict._original = original;
-    conflict._theirs = theirs;
-    conflict._ours = ours;
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
@@ -2799,35 +2098,26 @@ class RebaseConflictImpl implements RebaseConflict {
     return violation;
   }
 
-  /** Discards the violations and broken relationships that `properties` (all of them, when it is undefined or empty)
-   * is about to overwrite, so that {@link uniqueConstraintViolations} and {@link brokenRelationships} keep describing
-   * the substitutions currently in effect. One whose property is left untouched still holds, and one that was never
-   * fixed describes a write that was abandoned, so it is dropped and re-reported if it recurs.
-   */
-  public clearSupersededConstraintFixes(properties: string[] | undefined): void {
-    const partial = properties !== undefined && properties.length > 0 ? properties : undefined;
-    const survives = (property: string | undefined) => partial !== undefined && property !== undefined && !partial.includes(property);
-
+  public clearSupersededConstraintFixes(properties: string[]): void {
     for (let i = this.uniqueConstraintViolations.length - 1; i >= 0; --i) {
-      if (!survives(this.uniqueConstraintViolations[i].appliedFix?.property))
+      const violation = this.uniqueConstraintViolations[i];
+      const overwritten = violation.appliedFix !== undefined
+        ? properties.includes(violation.appliedFix.property)
+        : violation.uniqueConstraintProperties.some((property) => properties.includes(property));
+      if (overwritten)
         this.uniqueConstraintViolations.splice(i, 1);
     }
     for (let i = this.brokenRelationships.length - 1; i >= 0; --i) {
-      const relationship = this.brokenRelationships[i];
-      if (!survives(relationship.appliedValue !== undefined ? relationship.navigationProperty : undefined))
+      if (properties.includes(this.brokenRelationships[i].navigationProperty))
         this.brokenRelationships.splice(i, 1);
     }
   }
 
   public acceptOurs(properties?: string[]): void {
-    if (properties === undefined || properties.length === 0)
-      this._selectedSide = "ours";
     applyResolution(this._rebase, this, "ours", properties);
   }
 
   public acceptTheirs(properties?: string[]): void {
-    if (properties === undefined || properties.length === 0)
-      this._selectedSide = "theirs";
     applyResolution(this._rebase, this, "theirs", properties);
   }
 
