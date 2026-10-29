@@ -33,6 +33,10 @@ export namespace InteractiveRebaseError {
     "invalid-txn-indices" |
     /** The specified property is not a conflicting property */
     "not-conflicting-property" |
+    /** The conflict does not describe our deletion */
+    "not-deletion-conflict" |
+    /** The replacement does not satisfy every affected relationship */
+    "invalid-replacement" |
     /** The rebase process is already complete */
     "rebase-complete" |
     /** The rebase process has already moved past the last group */
@@ -188,6 +192,21 @@ export interface RebaseConflict {
    * If omitted or empty, all of those properties are accepted. Other properties are ignored.
    */
   acceptTheirs(properties?: string[]): void;
+
+  /**
+   * Redirects references to our deleted instance to an existing instance.
+   *
+   * The replacement must satisfy every affected relationship's constraint classes. Validation completes
+   * before any changes are made. Cascaded instances are restored with their original ids once all their
+   * referenced deletion-set members have been replaced or restored. Other references can remain pending
+   * until another deletion conflict is replaced. A blocked deletion is retried after references are redirected.
+   *
+   * Synthetic updates and inserts can report new constraint conflicts on the affected instances.
+   * @param newId The existing replacement instance's id.
+   * @throws InteractiveRebaseError with key `"invalid-replacement"` if the replacement is missing or incompatible.
+   * @throws InteractiveRebaseError with key `"not-deletion-conflict"` if this is not our deletion.
+   */
+  replaceDeletedInstance(newId: Id64String): void;
 
   /**
    * Resolves a broken relationship by supplying a new value for the navigation property.
@@ -430,22 +449,26 @@ interface DeletionNavigationProperty {
   navigationProperty: string;
   navigationPropertyJsName: string;
   relationshipClass: SchemaView.RelationshipClass;
+  direction: StrengthDirection;
   owned: boolean;
   nullable: boolean;
 }
 
-interface DeletionSetInstance {
+interface DeletionInstanceKey {
   instanceKey: string;
   id: Id64String;
   classFullName: string;
+}
+
+interface DeletionSetInstance extends DeletionInstanceKey {
   theirs: RebaseConflictProperties;
-  references: { property: DeletionNavigationProperty, target: DeletionSetInstance }[];
+  references: { property: DeletionNavigationProperty, target: DeletionInstanceKey }[];
 }
 
 interface DeletionSet {
   /** Owned members precede their owners. Includes the primary instance. */
   instances: DeletionSetInstance[];
-  effects: DeletionEffect[];
+  effects: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl | BlockingDeletionEffectImpl)[];
 }
 
 export class InteractiveRebase {
@@ -470,6 +493,11 @@ export class InteractiveRebase {
 
   /** All navigation properties indexed by the classes they can reference, independently of database FKs. */
   private _deletionReferencesByTargetClass = new Map<string, DeletionNavigationProperty[]>();
+
+  private _deletionInstances = new Map<Id64String, DeletionInstanceKey[]>();
+  private _deletionEffects: DeletionSet["effects"] = [];
+  private _blockedDeletes = new Map<string, DeletionSet>();
+  private _replacementIds = new Map<string, Id64String>();
 
   /** A placeholder value [[orderNodes]] is substituting in for a node's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
@@ -516,6 +544,7 @@ export class InteractiveRebase {
             navigationProperty: property.name,
             navigationPropertyJsName: ECJsNames.toJsName(property.name),
             relationshipClass: relationship,
+            direction: property.direction,
             owned: relationship.strength === StrengthType.Embedding && property.direction !== relationship.strengthDirection,
             nullable: constraint.multiplicityLower === 0,
           });
@@ -834,6 +863,10 @@ export class InteractiveRebase {
    * Replay is ordered by [[orderNodes]]'s topological sort over the directly captured changes.
    */
   private reinstateDataTxn(txnProps: TxnProps): void {
+    this._deletionInstances.clear();
+    this._deletionEffects = [];
+    this._blockedDeletes.clear();
+    this._replacementIds.clear();
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
       throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
     }
@@ -844,6 +877,8 @@ export class InteractiveRebase {
     this.buildDependencyForest(this._store);
     this.replayNodes();
     this.applyDeferredCorrections();
+    for (const effect of this._deletionEffects)
+      effect.addReferences({ ...effect.entry, references: this.getEffectDeletionReferences(effect) });
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
@@ -1237,23 +1272,55 @@ export class InteractiveRebase {
   }
 
   private applyInteractiveDelete(instanceKey: string, oldProps: RebaseConflictProperties): void {
+    this.rememberDeletedInstance({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName });
+    // An earlier cascade may have removed this Delete's dependents before its live set is computed.
+    const pendingEffects = this._deletionEffects.filter((effect) => effect.action === "cascade" && effect.affectedInstanceKey !== instanceKey
+      && this.getEffectDeletionReferences(effect).some((reference) => reference.target.instanceKey === instanceKey));
     // Read before replay so the conflict retains their values even after our delete succeeds.
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
-      RebaseConflictImpl.recordBothDeleted(this, this._conflicts, instanceKey, oldProps);
+      const conflict = RebaseConflictImpl.recordBothDeleted(this, this._conflicts, instanceKey, oldProps);
+      conflict.deletionEffects.push(...pendingEffects);
       return;
     }
 
     const deletionSet = this.computeDeletionSet({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName, theirs, references: [] });
-    if (deletionSet.effects.length > 0 || computeChangedProperties(oldProps, theirs).length > 0) {
+    if (deletionSet.effects.length > 0 || pendingEffects.length > 0 || computeChangedProperties(oldProps, theirs).length > 0) {
       const conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs);
-      conflict.deletionEffects.push(...deletionSet.effects);
+      this.recordDeletionSet(conflict, deletionSet);
+      for (const effect of pendingEffects)
+        if (!conflict.deletionEffects.some((existing) => existing.affectedInstanceKey === effect.affectedInstanceKey))
+          conflict.deletionEffects.push(effect);
     }
 
-    if (deletionSet.effects.some((effect) => effect.action === "blocks-deletion"))
+    if (deletionSet.effects.some((effect) => effect.action === "blocks-deletion")) {
+      this._blockedDeletes.set(instanceKey, deletionSet);
       return;
+    }
 
     this.applyDeletionSet(deletionSet);
+  }
+
+  private recordDeletionSet(conflict: RebaseConflictImpl, deletionSet: DeletionSet): void {
+    for (const instance of deletionSet.instances)
+      this.rememberDeletedInstance(instance);
+    for (const effect of deletionSet.effects) {
+      const existing = conflict.deletionEffects.find((candidate) => candidate.affectedInstanceKey === effect.affectedInstanceKey && candidate.action === effect.action && !candidate.resolved);
+      if (existing instanceof DeletionEffectImpl) {
+        existing.addReferences(effect.entry);
+        continue;
+      }
+      this._deletionEffects.push(effect);
+      conflict.deletionEffects.push(effect);
+    }
+  }
+
+  private rememberDeletedInstance(instance: DeletionInstanceKey): void {
+    let instances = this._deletionInstances.get(instance.id);
+    if (instances === undefined)
+      this._deletionInstances.set(instance.id, instances = []);
+    if (!instances.some((candidate) => candidate.instanceKey === instance.instanceKey))
+      instances.push({ instanceKey: instance.instanceKey, id: instance.id, classFullName: instance.classFullName });
   }
 
   private computeDeletionSet(target: DeletionSetInstance): DeletionSet {
@@ -1296,7 +1363,7 @@ export class InteractiveRebase {
     };
     visit(target);
 
-    const effects: DeletionEffect[] = [];
+    const effects: DeletionSet["effects"] = [];
     for (const entry of affected.values()) {
       if (entry.instanceKey === target.instanceKey)
         continue;
@@ -1327,6 +1394,177 @@ export class InteractiveRebase {
         throw new IModelError(IModelStatus.BadRequest, `Failed to delete ${instance.classFullName} ${instance.id}`);
     }
     this._db.clearCaches({ instanceCachesOnly: true });
+  }
+
+  /** @internal */
+  public replaceDeletedInstance(conflict: RebaseConflict, newId: Id64String): void {
+    if (this.currentGroup === undefined || !this._conflicts.includes(conflict) || conflict.original === undefined || conflict.ours !== undefined
+      || !this._deletionInstances.get(conflict.id)?.some((instance) => instance.instanceKey === conflict.instanceKey))
+      InteractiveRebaseError.throwError("not-deletion-conflict", "Only our deletion in the current group can be replaced");
+    if (!Id64.isValidId64(newId))
+      InteractiveRebaseError.throwError("invalid-replacement", `Invalid replacement id ${newId}`);
+
+    const blockedSets = [...this._blockedDeletes].map(([instanceKey, previous]) => {
+      const target = previous.instances[previous.instances.length - 1];
+      const current = this.tryReadCurrentInstance(target.id, target.classFullName);
+      return { instanceKey, set: current === undefined ? previous : this.computeDeletionSet({ ...target, theirs: current, references: [] }) };
+    });
+    const effects = [...this._deletionEffects, ...blockedSets.flatMap(({ set }) => set.effects)];
+    const references = effects.flatMap((effect) => this.getEffectDeletionReferences(effect))
+      .filter((reference) => reference.target.instanceKey === conflict.instanceKey);
+    for (const { property } of references) {
+      if (!this.navigationTargetExists(property.relationshipClass, property.direction, newId))
+        InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} does not satisfy ${property.relationshipClass.fullName}`);
+    }
+    if (references.length === 0 && this.tryReadCurrentInstance(newId, conflict.classFullName) === undefined)
+      InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} does not exist in ${conflict.classFullName}`);
+    for (const instance of blockedSets.flatMap(({ set }) => set.instances)) {
+      const canReference = references.some(({ property }) => (this._deletionReferencesByTargetClass.get(instance.classFullName) ?? [])
+        .some((candidate) => candidate.relationshipClass.fullName === property.relationshipClass.fullName && candidate.direction === property.direction));
+      if (instance.id === newId && (canReference || references.length === 0 && instance.classFullName === conflict.classFullName)
+        && this.tryReadCurrentInstance(newId, instance.classFullName) !== undefined)
+        InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} is itself pending deletion`);
+    }
+
+    for (const { instanceKey, set } of blockedSets) {
+      const deletionConflict = this._conflicts.find((candidate) => candidate.instanceKey === instanceKey);
+      assert(deletionConflict instanceof RebaseConflictImpl);
+      this.recordDeletionSet(deletionConflict, set);
+      this._blockedDeletes.set(instanceKey, set);
+    }
+    this._replacementIds.set(conflict.instanceKey, newId);
+    this.applyDeletionReplacements();
+    this._db.clearCaches({ instanceCachesOnly: true });
+  }
+
+  private navigationTargetExists(relationship: SchemaView.RelationshipClass, direction: StrengthDirection, id: Id64String): boolean {
+    const constraint = direction === StrengthDirection.Backward ? relationship.source : relationship.target;
+    if (constraint === undefined)
+      return false;
+    const classes = constraint.constraintClasses.length > 0 ? constraint.constraintClasses
+      : constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint];
+    return classes.some((schemaClass) => this._db.withQueryReader(
+      `SELECT 1 FROM ${constraint.polymorphic ? "" : "ONLY "}${schemaClass.fullName} WHERE ECInstanceId = ? LIMIT 1`,
+      (reader) => reader.step(), new QueryBinder().bindId(1, id),
+    ));
+  }
+
+  private isPendingDeletion(instanceKey: string): boolean {
+    return [...this._blockedDeletes.values()].some((set) => set.instances.some((instance) => instance.instanceKey === instanceKey));
+  }
+
+  private getEffectDeletionReferences(effect: DeletionEffectImpl): DeletionSetInstance["references"] {
+    const references = [...effect.entry.references];
+    const schemaClass = this._schemaView.findClass(effect.affectedClassFullName);
+    assert(schemaClass !== undefined);
+    // A later Delete may remove another provider after this instance has already cascaded.
+    // Discover those dependencies from the retained snapshot, not from the now-missing row.
+    for (const navigation of schemaClass.getProperties()) {
+      if (!navigation.isNavigation())
+        continue;
+      const jsName = ECJsNames.toJsName(navigation.name);
+      const value = getPropertyValue(effect.entry.theirs, jsName);
+      const id = typeof value === "string" ? value : value?.id;
+      if (typeof id !== "string")
+        continue;
+      for (const target of this._deletionInstances.get(id) ?? []) {
+        const property = this._deletionReferencesByTargetClass.get(target.classFullName)?.find((candidate) =>
+          candidate.navigationPropertyJsName === jsName && candidate.relationshipClass.fullName === navigation.relationshipClass.fullName
+          && candidate.direction === navigation.direction && schemaClass.is(candidate.referencingClassFullName));
+        if (property !== undefined && !references.some((reference) => reference.property.navigationPropertyJsName === jsName && reference.target.instanceKey === target.instanceKey))
+          references.push({ property, target });
+      }
+    }
+    return references;
+  }
+
+  private replacementTargetId(target: DeletionInstanceKey): Id64String | undefined {
+    const replacement = this._replacementIds.get(target.instanceKey);
+    if (replacement !== undefined)
+      return replacement;
+    return !this.isPendingDeletion(target.instanceKey) && this.tryReadCurrentInstance(target.id, target.classFullName) !== undefined ? target.id : undefined;
+  }
+
+  private applyDeletionReplacements(): void {
+    const attempted = new Map<DeletionEffectImpl, string>();
+    let progress: boolean;
+    do {
+      progress = false;
+      for (const effect of this._deletionEffects) {
+        effect.addReferences({ ...effect.entry, references: this.getEffectDeletionReferences(effect) });
+        if (this._dependencyNodesByInstanceKey.get(effect.affectedInstanceKey)?.operation === "Delete")
+          continue;
+        const references = effect.entry.references;
+        const current = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
+        const props = { ...(current ?? effect.entry.theirs) };
+        const available = references.map((reference) => ({ ...reference, id: this.replacementTargetId(reference.target) }));
+        const ready = available.every((reference) => reference.id !== undefined);
+        for (const { property, id } of available) {
+          if (id === undefined)
+            continue;
+          const value = getPropertyValue(effect.entry.theirs, property.navigationPropertyJsName);
+          setPropertyValue(props, property.navigationPropertyJsName, typeof value === "string" ? id : { ...value, id });
+        }
+
+        const signature = JSON.stringify([current !== undefined, available.map((reference) => reference.id)]);
+        if (attempted.get(effect) !== signature) {
+          if (current === undefined) {
+            if (effect.action !== "cascade" || !ready || !this.allNavigationTargetsExist(props))
+              continue;
+            attempted.set(effect, signature);
+            this.applyInteractiveInsert(effect.affectedInstanceKey, props);
+            progress = true;
+          } else {
+            const changes = computeChangedProperties(current, props);
+            if (changes.length > 0) {
+              attempted.set(effect, signature);
+              this.applyInteractiveUpdate(effect.affectedInstanceKey, current, props, changes);
+              progress = true;
+            }
+          }
+        }
+        const applied = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
+        effect.resolved = ready && applied !== undefined && available.every(({ property, id }) => {
+          const value = getPropertyValue(applied, property.navigationPropertyJsName);
+          return (typeof value === "string" ? value : value?.id) === id;
+        });
+      }
+
+      for (const [instanceKey, previous] of this._blockedDeletes) {
+        const target = previous.instances[previous.instances.length - 1];
+        const current = this.tryReadCurrentInstance(target.id, target.classFullName);
+        if (current === undefined) {
+          this._blockedDeletes.delete(instanceKey);
+          progress = true;
+          continue;
+        }
+        const deletionSet = this.computeDeletionSet({ ...target, theirs: current, references: [] });
+        const conflict = this._conflicts.find((candidate) => candidate.instanceKey === instanceKey);
+        assert(conflict instanceof RebaseConflictImpl);
+        this.recordDeletionSet(conflict, deletionSet);
+        if (deletionSet.effects.some((effect) => effect.action === "blocks-deletion")) {
+          this._blockedDeletes.set(instanceKey, deletionSet);
+          continue;
+        }
+        this.applyDeletionSet(deletionSet);
+        this._blockedDeletes.delete(instanceKey);
+        progress = true;
+      }
+    } while (progress);
+  }
+
+  private allNavigationTargetsExist(props: RebaseConflictProperties): boolean {
+    const schemaClass = this._schemaView.findClass(props.classFullName);
+    assert(schemaClass !== undefined);
+    for (const property of schemaClass.getProperties()) {
+      if (!property.isNavigation())
+        continue;
+      const value = getPropertyValue(props, ECJsNames.toJsName(property.name));
+      const id = typeof value === "string" ? value : value?.id;
+      if (id !== undefined && !this.navigationTargetExists(property.relationshipClass, property.direction, id))
+        return false;
+    }
+    return true;
   }
 
   private applyInteractiveInsert(instanceKey: string, newProps: RebaseConflictProperties): void {
@@ -1562,11 +1800,11 @@ export class InteractiveRebase {
   }
 
   private tryReadCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties | undefined {
-    try {
-      return this.readCurrentInstance(id, classFullName);
-    } catch {
-      return undefined;
-    }
+    const exists = this._db.withQueryReader(
+      `SELECT 1 FROM ${classFullName} WHERE ECInstanceId = ? LIMIT 1`,
+      (reader) => reader.step(), new QueryBinder().bindId(1, id),
+    );
+    return exists ? this.readCurrentInstance(id, classFullName) : undefined;
   }
 
   private findBrokenRelationships(props: RebaseConflictProperties): BrokenRelationshipDetail[] {
@@ -1848,10 +2086,10 @@ abstract class DeletionEffectImpl implements DeletionEffectDetails {
   public readonly affectedInstanceKey: string;
   public readonly affectedId: Id64String;
   public readonly affectedClassFullName: string;
-  public readonly references: ReadonlyArray<DeletionEffectReference>;
+  public readonly references: DeletionEffectReference[];
   public resolved = false;
 
-  public constructor(protected readonly _rebase: InteractiveRebase, entry: DeletionSetInstance) {
+  public constructor(protected readonly _rebase: InteractiveRebase, public readonly entry: DeletionSetInstance) {
     this.affectedInstanceKey = entry.instanceKey;
     this.affectedId = entry.id;
     this.affectedClassFullName = entry.classFullName;
@@ -1862,6 +2100,23 @@ abstract class DeletionEffectImpl implements DeletionEffectDetails {
       targetId: target.id,
       targetInstanceKey: target.instanceKey,
     }));
+  }
+
+  public addReferences(entry: DeletionSetInstance): void {
+    const classDef = this._rebase.getConflictClass(this.affectedClassFullName);
+    for (const reference of entry.references) {
+      if (this.entry.references.some((existing) => existing.property.navigationPropertyJsName === reference.property.navigationPropertyJsName && existing.target.instanceKey === reference.target.instanceKey))
+        continue;
+      this.entry.references.push(reference);
+      this.references.push({
+        navigationProperty: classDef.toPropsAccessString(reference.property.navigationPropertyJsName),
+        relationshipClass: reference.property.relationshipClass,
+        targetId: reference.target.id,
+        targetInstanceKey: reference.target.instanceKey,
+      });
+      this.entry.theirs = { ...this.entry.theirs };
+      setPropertyValue(this.entry.theirs, reference.property.navigationPropertyJsName, getPropertyValue(entry.theirs, reference.property.navigationPropertyJsName));
+    }
   }
 
   /** @deprecated Use `references` instead. */
@@ -2002,9 +2257,10 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** Both sides deleted an instance that existed in the original baseline. */
-  public static recordBothDeleted(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties): void {
+  public static recordBothDeleted(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties): RebaseConflictImpl {
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
     conflict._original = original;
+    return conflict;
   }
 
   /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
@@ -2128,6 +2384,10 @@ class RebaseConflictImpl implements RebaseConflict {
 
   public acceptTheirs(properties?: string[]): void {
     applyResolution(this._rebase, this, "theirs", properties);
+  }
+
+  public replaceDeletedInstance(newId: Id64String): void {
+    this._rebase.replaceDeletedInstance(this, newId);
   }
 
   public resolveBrokenRelationship(brokenRelationship: BrokenRelationship | string, value: Id64String): void {
