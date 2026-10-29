@@ -3,8 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+<<<<<<< HEAD
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
+=======
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { assert as bAssert } from "@itwin/core-bentley";
+>>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
 import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, SyncFormatsProvider, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
@@ -219,6 +224,14 @@ describe("Quantity formatter", async () => {
       expect(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value)).toBe(true);
       expect(withinTolerance(overrideValueInMeters4.value, overrideValueInMeters5.value)).toBe(true);
     }
+  });
+
+  it("parser spec for an inactive unit system uses alternate unit labels", async () => {
+    expect(quantityFormatter.activeUnitSystem).toBe("imperial");
+    const metricParserSpec = await quantityFormatter.getParserSpecByQuantityTypeAndSystem(QuantityType.Length, "metric");
+    const result = quantityFormatter.parseToQuantityValue("1 F", metricParserSpec);
+    expect(result.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(0.3048, 6);
   });
 
   it("createQuantityDescription returns the correct property metadata", () => {
@@ -1538,6 +1551,7 @@ describe("Deferred unit-system-changed emit (race condition validation)", () => 
   });
 });
 
+<<<<<<< HEAD
 describe("_rebuildRegistryFromProvider", () => {
   const simpleDecimalFormat = {
     type: "Decimal" as const,
@@ -1545,6 +1559,15 @@ describe("_rebuildRegistryFromProvider", () => {
     formatTraits: ["keepSingleZero", "showUnitLabel"],
     composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
   };
+=======
+describe("Velocity parsing through the spec registry", () => {
+  const createVelocityFormatProps = (unitName: string) => ({
+    type: "Decimal",
+    precision: 3,
+    formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+    composite: { units: [{ name: unitName }] },
+  });
+>>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
 
   beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
@@ -1554,6 +1577,7 @@ describe("_rebuildRegistryFromProvider", () => {
     await IModelApp.shutdown();
   });
 
+<<<<<<< HEAD
   it("rebuilds registry when formatsProvider raises formatsChanged with 'all'", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
@@ -1698,5 +1722,60 @@ describe("_rebuildRegistryFromProvider", () => {
       qf[Symbol.dispose]();
       IModelApp.resetFormatsProvider();
     }
+=======
+  let qf: QuantityFormatter;
+  beforeEach(async () => {
+    qf = new QuantityFormatter();
+    await qf.onInitialized();
+  });
+
+  afterEach(() => {
+    qf[Symbol.dispose]();
+  });
+
+  async function createVelocityHandle({ displayUnitName }: { displayUnitName: string }) {
+    await qf.addFormattingSpecsToRegistry({
+      name: "Test.VELOCITY",
+      persistenceUnitName: "Units.M_PER_SEC",
+      formatProps: createVelocityFormatProps(displayUnitName),
+      system: "metric",
+    });
+    return qf.getFormatSpecHandle("Test.VELOCITY", "Units.M_PER_SEC", "metric");
+  }
+
+  // Labels are parsed with a format in a different unit, so falling back to the format's unit would give a different value.
+  it.each([
+    { displayUnitName: "Units.MPH", displayValues: ["10 km/h", "10 kph", "10 kmh"], expectedPersistenceValue: 10 / 3.6 },
+    { displayUnitName: "Units.KM_PER_HR", displayValues: ["10 mi/h", "10 mph"], expectedPersistenceValue: 4.4704 },
+  ])(
+    "parses labels and alternate labels of another unit with a $displayUnitName format",
+    async ({ displayUnitName, displayValues, expectedPersistenceValue }) => {
+      using handle = await createVelocityHandle({ displayUnitName });
+      for (const value of displayValues) {
+        const result = handle.parserSpec?.parseToQuantityValue(value);
+        expect(result?.ok, value).toBe(true);
+        expect((result as ParsedQuantity).value, value).toBeCloseTo(expectedPersistenceValue, 4);
+      }
+    },
+  );
+
+  it("round-trips a formatted velocity", async () => {
+    using handle = await createVelocityHandle({ displayUnitName: "Units.KM_PER_HR" });
+    const formatted = handle.format(10 / 3.6);
+    expect(formatted).toBe("10.0 km/h");
+
+    const result = handle.parserSpec?.parseToQuantityValue(formatted);
+    expect(result?.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(10 / 3.6, 4);
+  });
+
+  it("applies alternate labels added for a unit without default alternate labels", async () => {
+    qf.addAlternateLabels("Units.FT_PER_SEC", "fps");
+    expect(qf.alternateUnitLabelsProvider.getAlternateUnitLabels({ name: "Units.FT_PER_SEC" } as UnitProps)).toEqual(["fps"]);
+    using handle = await createVelocityHandle({ displayUnitName: "Units.KM_PER_HR" });
+    const result = handle.parserSpec?.parseToQuantityValue("10 fps");
+    expect(result?.ok).toBe(true);
+    expect((result as ParsedQuantity).value).toBeCloseTo(3.048, 4);
+>>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
   });
 });
