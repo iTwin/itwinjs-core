@@ -3,13 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-<<<<<<< HEAD
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
-=======
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { assert as bAssert } from "@itwin/core-bentley";
->>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
+import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
 import { FormatDefinition, FormatsChangedArgs, FormatsProvider, FormatsProviderContext, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, SyncFormatsProvider, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
@@ -1551,7 +1546,6 @@ describe("Deferred unit-system-changed emit (race condition validation)", () => 
   });
 });
 
-<<<<<<< HEAD
 describe("_rebuildRegistryFromProvider", () => {
   const simpleDecimalFormat = {
     type: "Decimal" as const,
@@ -1559,15 +1553,6 @@ describe("_rebuildRegistryFromProvider", () => {
     formatTraits: ["keepSingleZero", "showUnitLabel"],
     composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
   };
-=======
-describe("Velocity parsing through the spec registry", () => {
-  const createVelocityFormatProps = (unitName: string) => ({
-    type: "Decimal",
-    precision: 3,
-    formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
-    composite: { units: [{ name: unitName }] },
-  });
->>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
 
   beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
@@ -1577,7 +1562,6 @@ describe("Velocity parsing through the spec registry", () => {
     await IModelApp.shutdown();
   });
 
-<<<<<<< HEAD
   it("rebuilds registry when formatsProvider raises formatsChanged with 'all'", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
@@ -1722,7 +1706,25 @@ describe("Velocity parsing through the spec registry", () => {
       qf[Symbol.dispose]();
       IModelApp.resetFormatsProvider();
     }
-=======
+  });
+});
+
+describe("Velocity parsing through the spec registry", () => {
+  const createVelocityFormatProps = (unitName: string) => ({
+    type: "Decimal",
+    precision: 3,
+    formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+    composite: { units: [{ name: unitName }] },
+  });
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
   let qf: QuantityFormatter;
   beforeEach(async () => {
     qf = new QuantityFormatter();
@@ -1776,6 +1778,5 @@ describe("Velocity parsing through the spec registry", () => {
     const result = handle.parserSpec?.parseToQuantityValue("10 fps");
     expect(result?.ok).toBe(true);
     expect((result as ParsedQuantity).value).toBeCloseTo(3.048, 4);
->>>>>>> d3b9c17 (Quantities: Fix parser failure with velocity formats and alternate unit labels (#9893))
   });
 });
