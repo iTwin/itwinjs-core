@@ -38,6 +38,9 @@ export class ElectronTestRunner {
       nodeIntegration: true,
       contextIsolation: false,
       sandbox: false,
+      // The window is hidden outside debug mode; without this Chromium throttles requestAnimationFrame
+      // in hidden windows to ~1 fps, making every frame-waiting test take ~1s per frame under xvfb.
+      backgroundThrottling: false,
     };
 
     const rendererWindow = new BrowserWindow({
