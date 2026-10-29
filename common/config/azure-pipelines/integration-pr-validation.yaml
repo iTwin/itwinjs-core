@@ -3,6 +3,9 @@
 # To decrease build load, only the latest Node version is tested on pull requests.
 # All other versions are run on `master` and `release/*` branches.
 #
+# Core graphics tests run in a separate blocking job, parallel to the remaining suites.
+# Move the graphics job's pool to a GPU/Mac lane for #2355 once pool access policy is settled.
+#
 # Note: Currently a subset of all integration tests
 
 trigger:
@@ -42,3 +45,18 @@ jobs:
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: 24.x
+          coreFullStackTests: no-graphics
+
+  - job: Core_Graphics_Node_24_x
+    dependsOn: []
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - template: templates/integration-test-steps.yaml
+        parameters:
+          nodeVersion: 24.x
+          coreFullStackTests: graphics
