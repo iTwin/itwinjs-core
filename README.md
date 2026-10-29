@@ -20,7 +20,7 @@ An open source library for creating, querying, modifying, and displaying Infrast
 
 ## About this Repository
 
-[![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=12)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iTwin/itwinjs-core) [![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=12)
 
 This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iTwin.js npm packages. It is built using [Rush](http://rushjs.io/).
 

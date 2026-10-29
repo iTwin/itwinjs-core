@@ -18,10 +18,10 @@ import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
-  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeographicCRS, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, Persisted, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -72,7 +72,8 @@ import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _refreshGeographicCoordinateSystem, _refreshIModelProps, _releaseAllLocks, _resetIModelDb, _updateIModelProps, _verifyTxnWrite } from "./internal/Symbols";
+import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -106,6 +107,7 @@ class ImplicitWriteTxn extends EditTxn {
   }
 
   public override verifyWriteable(): void {
+    this.iModel[_verifyTxnWrite]();
     const enforcement = EditTxn.implicitWriteEnforcement;
     if (enforcement === "allow")
       return;
@@ -501,6 +503,7 @@ export interface CloseIModelArgs {
  */
 export abstract class IModelDb extends IModel {
   private _initialized = false;
+  private _lastUpdatedGeographicCoordinateSystem?: GeographicCRS;
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
 
@@ -516,6 +519,7 @@ export abstract class IModelDb extends IModel {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  private readonly _queryMetadataCache = new QueryMetadataCache();
   private _codeSpecs?: CodeSpecs;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
@@ -799,8 +803,10 @@ export abstract class IModelDb extends IModel {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
-    this.clearCaches({ instanceCachesOnly: true });
+    // Unsaved changes here can include schema changes, e.g. after a failed schema import.
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
+    this[_refreshGeographicCoordinateSystem]();
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -921,6 +927,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected initializeIModelDb(when?: "pullMerge") {
     const props = this[_nativeDb].getIModelProps(when);
+    this._lastUpdatedGeographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -937,6 +944,44 @@ export abstract class IModelDb extends IModel {
     db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
     db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
     db.onGeographicCoordinateSystemChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGeographicCoordinateSystemChanged", db.geographicCoordinateSystem?.toJSON()));
+  }
+
+  /** Reload the cached iModel properties (extents, geolocation, name, etc.) from the database, e.g. after changesets were merged.
+   * @internal
+   */
+  public [_refreshIModelProps](): void {
+    this.initializeIModelDb("pullMerge");
+  }
+
+  /** @internal */
+  public [_refreshGeographicCoordinateSystem](): void {
+    const wasRefreshing = this._isRefreshingGeographicCoordinateSystem;
+    this._isRefreshingGeographicCoordinateSystem = true;
+    try {
+      const props = this[_nativeDb].getIModelProps().geographicCoordinateSystem;
+      this._lastUpdatedGeographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+      this.geographicCoordinateSystem = props ? new GeographicCRS(props) : undefined;
+    } finally {
+      this._isRefreshingGeographicCoordinateSystem = wasRefreshing;
+    }
+  }
+
+  private _isRefreshingGeographicCoordinateSystem = false;
+
+  /** @internal */
+  public [_verifyTxnWrite](): void {
+    if (this._isRefreshingGeographicCoordinateSystem)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot write while restoring the geographic coordinate system");
+  }
+
+  /** @internal */
+  public [_updateIModelProps](): void {
+    const { geographicCoordinateSystem, ...props } = this.toJSON();
+    const gcs = geographicCoordinateSystem ? new GeographicCRS(geographicCoordinateSystem) : undefined;
+    const gcsChanged = gcs !== undefined && !this._lastUpdatedGeographicCoordinateSystem?.equals(gcs);
+    this[_nativeDb].updateIModelProps(gcsChanged ? { ...props, geographicCoordinateSystem } : props);
+    if (gcsChanged)
+      this._lastUpdatedGeographicCoordinateSystem = gcs;
   }
 
   /** Returns true if this is a BriefcaseDb
@@ -1032,17 +1077,18 @@ export abstract class IModelDb extends IModel {
       throw err;
     }
   }
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Creates a reader for asynchronous ECSQL query execution.
+   * Execution starts when the reader is consumed using asynchronous iteration or awaited calls to `step()` or `toArray()`.
+   * Results are fetched and buffered in batches. For synchronous, callback-scoped execution, use [[withQueryReader]].
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Asynchronous query examples]($docs/learning/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * Should be used when we donot want true step by step behaviour and want to take advantage of caching capabilities of the reader.
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -1051,26 +1097,27 @@ export abstract class IModelDb extends IModel {
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
+        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+  /** Executes a callback with a synchronous ECSQL reader on the owning database connection.
+   * The reader steps one row at a time without buffering result batches. Finish using it before the callback completes.
+   * Return materialized rows or computed values rather than the reader. For asynchronous execution, use [[createQueryReader]].
+   * The prepared statement may be reused from the statement cache between completed calls.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
-   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param callback the callback to invoke on the prepared ECSqlSyncReader
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Use this method for true step-by-step row consumption without intermediate result or page caching.
-   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
@@ -1267,6 +1314,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches(params?: ClearCachesOptions) {
     if (!params?.instanceCachesOnly) {
       this._statementCache.clear();
+      this._queryMetadataCache.clear();
       this._sqliteStatementCache.clear();
       this._classMetaDataRegistry = undefined;
       this._jsClassMap = undefined;
@@ -1606,6 +1654,7 @@ export abstract class IModelDb extends IModel {
           const status = this[_nativeDb].cancelTo(txnBeforeAdopt, true);
           if (IModelStatus.Success !== status)
             Logger.logError(loggerCategory, `Failed to roll back the adopted schema rows after a failed import: ${IModelStatus[status] ?? status}`);
+          this.clearCaches();
         }
         throw err;
       }
@@ -1926,7 +1975,10 @@ export abstract class IModelDb extends IModel {
         const result = await reader.next();
         if (result.done)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
-        return result.value.sha3_256 as string;
+        const token: unknown = result.value.sha3_256;
+        if (typeof token !== "string")
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned an invalid sha3_256 column");
+        return token;
       },
     };
   }
@@ -1943,10 +1995,12 @@ export abstract class IModelDb extends IModel {
     if (result.done)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
-    const token = result.value.schemaToken as string | undefined;
+    const token: unknown = result.value.schemaToken;
     if (data === undefined || data === null)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
-    return { data, schemaToken: token ?? "" };
+    if (typeof token !== "string")
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned an invalid schemaToken column`);
+    return { data, schemaToken: token };
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -2666,7 +2720,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelProps
      */
-    public getModelProps<T extends ModelProps>(id: Id64String): T {
+    public getModelProps<T extends ModelProps>(id: Id64String): Persisted<T> {
       const model = this.tryGetModelProps<T>(id);
       if (undefined === model)
         throw new IModelError(IModelStatus.NotFound, `Model=${id}`);
@@ -2680,22 +2734,22 @@ export namespace IModelDb {
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
-    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): Persisted<T> | undefined {
       try {
         if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getModel({ id }) as T;
+          return this._iModel[_nativeDb].getModel({ id }) as Persisted<T>;
         }
 
         const cachedMdl = this[_cache].get(id);
         if (cachedMdl) {
-          return cachedMdl as T;
+          return cachedMdl as Persisted<T>;
         }
 
         const options = { useJsNames: true }
         const instanceKey = this.resolveModelKey({ id });
         const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
         const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
-        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as Persisted<T>;
         this[_cache].set(id, modelProps);
         return modelProps;
       } catch {
@@ -2758,8 +2812,6 @@ export namespace IModelDb {
         args = { partialKey: { id: modelIdArg.id, baseClassName } };
       } else if (modelIdArg.code) {
         const modelId = this._iModel.elements.getElementProps<ElementProps>({ code: modelIdArg.code }).id;
-        if (!modelId)
-          throw new IModelError(IModelStatus.NotFound, `Model not found with code: [spec:${modelIdArg.code.spec}, scope:${modelIdArg.code.scope}, value:${modelIdArg.code.value}])`);
         args = { partialKey: { id: modelId, baseClassName } };
       } else {
         throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
@@ -2784,7 +2836,7 @@ export namespace IModelDb {
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
+      if (modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
       return this.getModel<T>(modeledElementProps.id, modelClass);
     }
@@ -2798,7 +2850,7 @@ export namespace IModelDb {
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
+      if (undefined === modeledElementProps || IModel.rootSubjectId === modeledElementProps.id)
         return undefined;
 
       return this.tryGetModel<T>(modeledElementProps.id, modelClass);
@@ -2916,8 +2968,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elProp = this.tryGetElementProps<T>(props);
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> {
+      const elProp = this.tryGetElementProps<Persisted<T>>(props);
       if (undefined === elProp)
         throw new IModelError(IModelStatus.NotFound, `element not found`);
       return elProp;
@@ -2960,7 +3012,7 @@ export namespace IModelDb {
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> | undefined {
       if (typeof props === "string") {
         props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
       } else if (props instanceof Code) {
@@ -2968,19 +3020,19 @@ export namespace IModelDb {
       }
       try {
         if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
-          return this._iModel[_nativeDb].getElement(props) as T;
+          return this._iModel[_nativeDb].getElement(props) as Persisted<T>;
         }
 
         const cachedElm = this[_cache].get(props);
         if (cachedElm) {
-          return cachedElm.elProps as T;
+          return cachedElm.elProps as Persisted<T>;
         }
 
         const options = { ...props, useJsNames: true };
         const instanceKey = this.resolveElementKey(props);
         const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
         const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
-        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as Persisted<T>;
         this[_cache].set({ elProps: elementProps, loadOptions: props });
         return elementProps;
       } catch {
@@ -4037,7 +4089,8 @@ export class BriefcaseDb extends IModelDb {
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
-        nativeDb.clearECDbCache();
+        // The other connection may have changed the schema, so drop everything prepared against the old one.
+        briefcaseDb.clearCaches();
         nativeDb.restartDefaultTxn();
         briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
       });
@@ -4311,7 +4364,7 @@ export class BriefcaseDb extends IModelDb {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       SchemaSync.updateDbSchema(this);
-      this.initializeIModelDb("pullMerge");
+      this[_refreshIModelProps]();
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
@@ -4504,7 +4557,6 @@ export class BriefcaseDb extends IModelDb {
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
       await BriefcaseManager.pullMergePush(this, arg);
-      this.initializeIModelDb("pullMerge");
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized

@@ -27,7 +27,8 @@ rushx lint
 ```
 
 > Older Mocha packages test compiled output, so run `rushx build` before `rushx test`. **Use repository-wide Rush commands only when the change spans packages or the package-specific script does not cover the change.**
-5. Before pushing, complete the checks required by the final diff.
+
+1. Before pushing, complete the checks required by the final diff.
 
 ### Before you push
 
@@ -38,6 +39,7 @@ rushx lint
 | Published package | Run `rush change` and commit the generated change file |
 | External dependency manifest | Run `rush check` and `rush update` |
 | Documentation extract or package docs | Run the package's `rushx docs` command when available |
+| GCS resource loading, production workspace settings/resources, prefetching, durable cache behavior, or a native-addon update affecting these paths | Run [manual Vertical CRS offline acceptance](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance) on the affected supported platforms and record results in the PR |
 
 Do not commit `.only` tests.
 
@@ -51,7 +53,7 @@ Published packages use lockstep versioning. `rush change` creates entries with `
 - Use an empty `comment` for test-only changes, development-dependency updates, linting fixes, and internal refactoring that does not change consumer behavior.
 - Changes only to non-published packages, such as display-test-app, do not need a change entry.
 
-For breaking API or behavior changes, and significant features, add migration guidance to `docs/changehistory/NextVersion.md`. A runtime or logical change can be breaking even when existing consumer code still compiles.
+For breaking API or behavior changes, and significant features, add migration guidance to `docs/changehistory/NextVersion.md`. A runtime or logical change can be breaking even when existing consumer code still compiles. Entries go under a fixed set of sections: list them with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`, and run the script without arguments to check the file.
 
 ### Documentation examples
 
@@ -78,12 +80,15 @@ Check the package's `package.json` to identify Mocha or Vitest. Use the existing
 Some tests are too slow or too repetitive to run on every build, so they are skipped unless an environment variable asks for them. A normal run reports them as pending rather than hiding them, which is the signal that one of these exists.
 
 | Variable | Turns on | Where |
-|---|---|---|
+| --- | --- | --- |
 | `ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS` | the extended tier of the schema sync suites - further permutations of behaviour the core tier already covers | `full-stack-tests/backend/src/integration/SchemaSync*.test.ts` |
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS` | native prefetch and fresh-process cache regression with a test-owned local resource endpoint | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | one manual production acceptance operation selected by `ITWIN_VERTICAL_CRS_OFFLINE_PHASE`, using the dedicated cache in `ITWIN_VERTICAL_CRS_OFFLINE_CACHE`; follow the [manual procedure](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance) | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
-Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
+Set one to `1`, `true` or `yes` and run the package's usual test script. CI enables selected suites through pipeline or job variables. The vertical tests are described in the [Vertical CRS testing guide](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md).
 
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 

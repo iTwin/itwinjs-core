@@ -1,6 +1,55 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Fri, 18 Sep 2026 15:12:40 GMT and should not be manually modified.
+This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+
+## 5.14.5
+Tue, 27 Oct 2026 12:19:48 GMT
+
+### Updates
+
+- Bump `i18next-http-backend` dependency to `4.0.5`.
+
+## 5.14.4
+Fri, 23 Oct 2026 19:58:24 GMT
+
+_Version update only_
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+_Version update only_
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
+
+## 5.14.0
+Fri, 02 Oct 2026 14:55:04 GMT
+
+### Updates
+
+- Fixed false namespace load errors when localization namespaces are registered concurrently.
+
+## 5.13.7
+Thu, 01 Oct 2026 15:15:30 GMT
+
+_Version update only_
+
+## 5.13.6
+Fri, 25 Sep 2026 22:27:22 GMT
+
+_Version update only_
+
+## 5.13.5
+Tue, 22 Sep 2026 22:38:08 GMT
+
+_Version update only_
 
 ## 5.13.4
 Fri, 18 Sep 2026 15:11:19 GMT

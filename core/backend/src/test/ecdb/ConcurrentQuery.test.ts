@@ -1,5 +1,6 @@
-import { DbQueryRequest, DbQueryResponse, DbResponseStatus } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbResponseStatus, DbValueFormat, QueryBinder } from "@itwin/core-common";
 import { expect } from "chai";
+import * as os from "os";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { SnapshotDb } from "../../IModelDb";
 import { _nativeDb } from "../../core-backend";
@@ -9,6 +10,15 @@ async function delay(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
+}
+
+/**
+ * The native default for `workerThreads` is 4, capped at the machine's hardware concurrency
+ * (2-core CI agents report 2). An explicit request above hardware concurrency is rejected and
+ * falls back to that default rather than being clamped.
+ */
+function defaultWorkerThreads(): number {
+  return Math.min(4, os.availableParallelism());
 }
 
 describe("ConcurrentQuery", () => {
@@ -26,7 +36,10 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 5000,
       requestQueueSize: 2000,
       statementCacheSizePerWorker: 40,
-      workerThreads: 4,
+      enableCursors: true,
+      maxCursorsPerWorker: -1,
+      cursorIdleTimeout: 30,
+      workerThreads: defaultWorkerThreads(),
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], {});
     expect(config).deep.eq(defaultConfig);
@@ -47,11 +60,112 @@ describe("ConcurrentQuery", () => {
       progressOpCount: 6000,
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 20,
-      workerThreads: 3,
+      enableCursors: false,
+      maxCursorsPerWorker: 3,
+      cursorIdleTimeout: 10,
+      workerThreads: 1,
     };
     const config = ConcurrentQuery.resetConfig(db[_nativeDb], modifiedConfig);
     expect(config).deep.eq(modifiedConfig);
     db.close();
+  });
+
+  it("workerThreads above hardware concurrency falls back to the default", () => {
+    const testFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const db = SnapshotDb.openFile(testFile);
+    const requested = os.availableParallelism() + 8;
+    const config = ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: requested });
+    expect(config.workerThreads).eq(defaultWorkerThreads());
+    db.close();
+  });
+
+  it("round-trips the page-cache target in KiB and rejects invalid sizes", () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      expect(ConcurrentQuery.resetConfig(db[_nativeDb], {}).cacheSizeInKB).eq(undefined);
+      for (const cacheSizeInKB of [0, 8192, 2147483647])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(cacheSizeInKB);
+      for (const cacheSizeInKB of [-1, 1.5, 2147483648, NaN, Infinity, -Infinity])
+        expect(ConcurrentQuery.resetConfig(db[_nativeDb], { cacheSizeInKB }).cacheSizeInKB).eq(undefined);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("resumes finite pages without losing rows, with OFFSET fallback when disabled", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      for (const enableCursors of [false, true]) {
+        ConcurrentQuery.shutdown(db[_nativeDb]);
+        ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: 1, enableCursors, globalQuota: { time: 60, memory: 1 } });
+        const rows: number[] = [];
+        let resumed = 0;
+        while (rows.length < 20) {
+          const resp = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], {
+            query: "WITH sequence(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM sequence WHERE n<50) SELECT n FROM sequence ORDER BY n DESC",
+            cursorId: "finite-reader",
+            limit: { offset: 5 + rows.length, count: 20 - rows.length },
+          });
+          expect(resp.status).eq(DbResponseStatus.Partial);
+          expect(resp.data).deep.eq([[45 - rows.length]]);
+          rows.push(resp.data[0][0]);
+          if (resp.stats.resumed)
+            ++resumed;
+        }
+        expect(rows).deep.eq(Array.from({ length: 20 }, (_, i) => 45 - i));
+        expect(resumed).eq(enableCursors ? 19 : 0);
+      }
+    } finally {
+      db.close();
+    }
+  });
+
+  it("isolates readers and bindings and falls back after cursor eviction", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: 1, maxCursorsPerWorker: 1, globalQuota: { time: 60, memory: 1 } });
+      const query = "WITH sequence(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM sequence WHERE n<10) SELECT n+? FROM sequence ORDER BY n";
+      const page = async (cursorId: string, offset: number, value: number) => ConcurrentQuery.executeQueryRequest(db[_nativeDb], {
+        query, cursorId, args: new QueryBinder().bindInt(1, value).serialize(), limit: { offset, count: -1 },
+      });
+      expect((await page("a", 0, 0)).data).deep.eq([[1]]);
+      expect((await page("a", 1, 0)).stats.resumed).eq(true);
+      expect((await page("b", 0, 100)).data).deep.eq([[101]]);
+      const evicted = await page("a", 2, 0);
+      expect(evicted.stats.resumed).eq(false);
+      expect(evicted.data).deep.eq([[3]]);
+      const rebound = await page("a", 3, 100);
+      expect(rebound.stats.resumed).eq(false);
+      expect(rebound.data).deep.eq([[104]]);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("preserves class and navigation rendering across worker connections", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { workerThreads: defaultWorkerThreads(), globalQuota: { time: 60, memory: 8388608 } });
+      const query = "SELECT ECClassId, Schema FROM meta.ECClassDef ORDER BY ECInstanceId LIMIT 20";
+      for (const valueFormat of [DbValueFormat.ECSqlNames, DbValueFormat.JsNames]) {
+        const request: DbQueryRequest = {
+          query, valueFormat,
+          convertClassIdsToClassNames: true,
+        };
+        const primary = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], { ...request, usePrimaryConn: true });
+        expect(primary.status).eq(DbResponseStatus.Done);
+        expect(primary.data.length).eq(20);
+        const workers = await Promise.all(Array.from({ length: defaultWorkerThreads() * 2 },
+          async () => ConcurrentQuery.executeQueryRequest(db[_nativeDb], request)));
+        for (const worker of workers) {
+          expect(worker.status).eq(DbResponseStatus.Done);
+          expect(worker.data).deep.eq(primary.data);
+          expect(worker.meta).deep.eq(primary.meta);
+        }
+      }
+    } finally {
+      db.close();
+    }
   });
 
   it("time limit check", async () => {
@@ -143,41 +257,46 @@ describe("ConcurrentQuery", () => {
   it("queue limit check", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
-    ConcurrentQuery.resetConfig(db[_nativeDb], { requestQueueSize: 40, globalQuota: { time: 5, memory: 100000 } });
-    const req: DbQueryRequest = {
-      query: `WITH sequence(n) AS (
-                SELECT  1 UNION ALL SELECT n + 1 FROM sequence WHERE n < 10000000
-              ) SELECT n FROM sequence s`,
-    };
+    try {
+      const requestQueueSize = 40;
+      const requestCount = 60;
+      ConcurrentQuery.resetConfig(db[_nativeDb], { requestQueueSize, ignoreDelay: false, globalQuota: { time: 5, memory: 100000 } });
+      // A delay keeps accepted requests in the queue (workers only dequeue requests whose delay has elapsed),
+      // so the queue fills up deterministically regardless of how fast the worker threads are.
+      const req: DbQueryRequest = { query: "SELECT 1", delay: 2000 };
 
-    const responsePromises: Promise<DbQueryResponse>[] = [];
-    for (let i = 0; i < 60; ++i) {
-      responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      const responsePromises: Promise<DbQueryResponse>[] = [];
+      for (let i = 0; i < requestCount; ++i) {
+        responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      }
+      const responses = await Promise.all(responsePromises);
+      const queueFullResponses = responses.filter((x) => x.status === DbResponseStatus.QueueFull);
+      expect(queueFullResponses.length).to.equal(requestCount - requestQueueSize);
+      const otherStatuses = responses.filter((x) => x.status !== DbResponseStatus.QueueFull).map((x) => x.status);
+      expect(otherStatuses).to.have.lengthOf(requestQueueSize);
+      expect(otherStatuses.every((x) => x === DbResponseStatus.Done)).to.be.true;
+    } finally {
+      db.close();
     }
-    const responses = await Promise.all(responsePromises);
-    const queueResponses = Array.from(responses.filter((x) => x.status === DbResponseStatus.QueueFull));
-    expect(queueResponses.length).to.be.greaterThanOrEqual(10);
-    db.close();
   });
 
   it("timeout check", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
-    ConcurrentQuery.resetConfig(db[_nativeDb], { monitorPollInterval: 1, globalQuota: { time: 5, memory: 10000000 } });
-    const req: DbQueryRequest = {
-      query: `WITH sequence(n) AS (
-                SELECT  1 UNION ALL SELECT n + 1 FROM sequence WHERE n < 10000000
-              ) SELECT n FROM sequence s`,
-    };
-
-    const responsePromises: Promise<DbQueryResponse>[] = [];
-    for (let i = 0; i < 100; ++i) {
-      responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { ignoreDelay: false, monitorPollInterval: 1000, globalQuota: { time: 1, memory: 1000 } });
+      // Keep requests queued past their deadline without generating large result sets.
+      const req: DbQueryRequest = { query: "SELECT 1", delay: 2000 };
+      const responsePromises: Promise<DbQueryResponse>[] = [];
+      for (let i = 0; i < 100; ++i) {
+        responsePromises.push(ConcurrentQuery.executeQueryRequest(db[_nativeDb], req));
+      }
+      const responses = await Promise.all(responsePromises);
+      for (const response of responses)
+        expect(response.status).equals(DbResponseStatus.Timeout);
+    } finally {
+      db.close();
     }
-    const responses = await Promise.all(responsePromises);
-    const queueResponses = Array.from(responses.filter((x) => x.status === DbResponseStatus.Timeout));
-    expect(queueResponses.length).to.be.greaterThanOrEqual(10);
-    db.close();
   });
 
   it("should handle concurrent queries during shutdown without deadlock", async () => {
@@ -187,10 +306,20 @@ describe("ConcurrentQuery", () => {
     const config = {
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
+      ignoreDelay: false, // Honor request delays so some requests are guaranteed to still be queued at shutdown
     };
 
     // Reset configuration
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], config);
+
+    // Requests that are still queued when shutdown happens are rejected with ShuttingDown. A delay keeps these
+    // requests from being dequeued by a worker, so they are deterministically queued at shutdown regardless of
+    // how fast or slow the worker threads are. They are enqueued first so they cannot be rejected with QueueFull.
+    const queuedRequestCount = 10;
+    const queuedPromises: Promise<DbQueryResponse>[] = [];
+    for (let i = 0; i < queuedRequestCount; ++i) {
+      queuedPromises.push(ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], { query: "SELECT 1", delay: 5000 }));
+    }
 
     const responsePromises: Promise<DbQueryResponse>[] = [];
     const spamPromises: Promise<void>[] = [];
@@ -220,13 +349,15 @@ describe("ConcurrentQuery", () => {
 
     shouldStop = true;
 
-    // Wait for all promises to complete
+    // Wait for all promises to complete. If shutdown deadlocked, these would never settle and the test would time out.
+    const queuedResults = await Promise.allSettled(queuedPromises);
     const results = await Promise.allSettled(responsePromises);
     await Promise.allSettled(spamPromises);
 
-    const satisfiesShutDownResponse = results.some((result) => result.status === "fulfilled" && result.value.status === DbResponseStatus.ShuttingDown);
-
-    expect(satisfiesShutDownResponse).to.be.true; // some queries should face shutdown
+    expect(results.every((result) => result.status === "fulfilled")).to.be.true;
+    // Every request that was still queued at shutdown must be rejected with ShuttingDown.
+    const queuedStatuses = queuedResults.map((result) => result.status === "fulfilled" ? result.value.status : undefined);
+    expect(queuedStatuses).to.deep.equal(new Array(queuedRequestCount).fill(DbResponseStatus.ShuttingDown));
 
     // Restore original config by resetting to default
     ConcurrentQuery.resetConfig(iModelDb[_nativeDb], {});

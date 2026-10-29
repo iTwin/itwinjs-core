@@ -87,10 +87,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/icons-generic",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/icons-generic-webfont",
       "allowedCategories": [ "internal" ]
     },
@@ -447,10 +443,6 @@
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
-      "name": "cache-require-paths",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "canonical-path",
       "allowedCategories": [ "tools" ]
     },
@@ -767,10 +759,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "openid-client",
-      "allowedCategories": [ "integration-testing" ]
-    },
-    {
       "name": "os-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -787,10 +775,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "raf",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react",
       "allowedCategories": [ "internal" ]
     },
@@ -805,10 +789,6 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "rollup-plugin-copy",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "rollup-plugin-external-globals",
@@ -857,10 +837,6 @@
     {
       "name": "source-map-support",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "spdy",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sql-formatter",
@@ -949,10 +925,6 @@
     {
       "name": "vite-plugin-inspect",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "vite-plugin-static-copy",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "vitest",

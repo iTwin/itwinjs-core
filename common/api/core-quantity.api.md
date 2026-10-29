@@ -187,10 +187,12 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
-export class BasicUnitsProvider implements UnitsProvider {
+export class BasicUnitsProvider implements UnitsProvider, SyncUnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
+    findUnitByNameSync(unitName: string): UnitProps;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
@@ -273,6 +275,7 @@ export class Format extends BaseFormat {
     // (undocumented)
     static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
+    static createFromJSONSync(name: string, unitsProvider: SyncUnitsProvider, formatProps: FormatProps): Format;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
@@ -362,8 +365,13 @@ export interface FormatSpecHandleArgs extends FormattingSpecArgs {
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): Promise<FormatDefinition | undefined>;
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+}
+
+// @beta
+export interface FormatsProviderContext {
+    readonly providerChain: ReadonlySet<FormatsProvider>;
 }
 
 // @internal
@@ -387,6 +395,7 @@ export class FormatterSpec {
     // (undocumented)
     protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
+    static createSync(name: string, format: Format, unitsProvider: SyncUnitsProvider, inputUnit?: UnitProps): FormatterSpec;
     // (undocumented)
     get format(): Format;
     // (undocumented)
@@ -498,7 +507,7 @@ export enum FractionalPrecision {
 }
 
 // @beta
-export function getDefaultPersistenceUnit(phenomenon: Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>): UnitName;
+export function getDefaultPersistenceUnit(phenomenon: PhenomenonName): UnitName;
 
 // @internal (undocumented)
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
@@ -982,6 +991,17 @@ export enum ShowSignOption {
 // @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
+// @beta
+export interface SyncFormatsProvider {
+    getFormatSync(name: string, system?: UnitSystemKey, context?: FormatsProviderContext): FormatDefinition | undefined;
+}
+
+// @beta
+export interface SyncUnitsProvider {
+    findUnitByNameSync(unitName: string): UnitProps;
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
+}
+
 // @internal
 export class UnitConversion {
     constructor(factor?: number, offset?: number);
@@ -1341,6 +1361,11 @@ export const Units: {
         readonly US_SURVEY_MILE: "Units.US_SURVEY_MILE";
         readonly US_SURVEY_YRD: "Units.US_SURVEY_YRD";
         readonly YRD: "Units.YRD";
+    };
+    readonly LENGTH_RATIO: {
+        readonly DECIMAL_LENGTH_RATIO: "Units.DECIMAL_LENGTH_RATIO";
+        readonly IN_PER_FT_LENGTH_RATIO: "Units.IN_PER_FT_LENGTH_RATIO";
+        readonly M_PER_M_LENGTH_RATIO: "Units.M_PER_M_LENGTH_RATIO";
     };
     readonly LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION: {
         readonly STRAIN_PER_CELSIUS: "Units.STRAIN_PER_CELSIUS";

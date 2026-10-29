@@ -11,7 +11,7 @@ import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRo
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings";
 import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RelatedElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
-import { EntityQueryParams } from "./EntityProps";
+import { EntityQueryParams, Persisted } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
@@ -81,12 +81,12 @@ export interface HydrateViewStateRequestProps {
  * @internal
  */
 export interface HydrateViewStateResponseProps {
-  acsElementProps?: ElementProps;
-  modelSelectorStateModels?: ModelProps[];
+  acsElementProps?: Persisted<ElementProps>;
+  modelSelectorStateModels?: Persisted<ModelProps>[];
   // cast this to viewAttachmentInfo[] on the frontend.
-  sheetViewAttachmentProps?: ViewAttachmentProps[];
+  sheetViewAttachmentProps?: Persisted<ViewAttachmentProps>[];
   sheetViewViews?: (ViewStateProps | undefined)[];
-  baseModelProps?: ModelProps;
+  baseModelProps?: Persisted<ModelProps>;
   spatialViewProps?: ViewStateProps;
 }
 

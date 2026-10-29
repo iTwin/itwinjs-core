@@ -15,6 +15,7 @@ import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import { QueryMetadataCache } from "./internal/QueryMetadataCache";
 import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
@@ -86,6 +87,7 @@ export class ECDb implements Disposable {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
+  private readonly _queryMetadataCache = new QueryMetadataCache();
 
   /** Event called when the ECDb is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -181,6 +183,7 @@ export class ECDb implements Disposable {
    * @beta
   */
   public clearCaches(): void {
+    this._queryMetadataCache.clear();
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this[_nativeDb].clearECDbCache();
@@ -525,11 +528,13 @@ export class ECDb implements Disposable {
     return this._nativeDb;
   }
 
-  /** Allow to execute query and read results along with meta data. The result are streamed.
+  /** Creates a reader for asynchronous ECSQL query execution.
+   * Execution starts when the reader is consumed using asynchronous iteration or awaited calls to `step()` or `toArray()`.
+   * Results are fetched and buffered in batches. For synchronous, callback-scoped execution, use [[withQueryReader]].
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Asynchronous query examples]($docs/learning/ECSQLCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    *
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -543,17 +548,20 @@ export class ECDb implements Disposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
+        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+  /** Executes a callback with a synchronous ECSQL reader on the owning database connection.
+   * The reader steps one row at a time without buffering result batches. Finish using it before the callback completes.
+   * Return materialized rows or computed values rather than the reader. For asynchronous execution, use [[createQueryReader]].
+   * The prepared statement may be reused from the statement cache between completed calls.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Choosing a query reader]($docs/learning/backend/ExecutingECSQL)
+   * - [Synchronous query examples]($docs/learning/backend/WithQueryReaderCodeExamples)
    * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
    * @param ecsql The ECSQL query to execute.
    * @param callback the callback to invoke on the prepared ECSqlSyncReader

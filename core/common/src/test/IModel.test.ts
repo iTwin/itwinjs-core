@@ -148,6 +148,25 @@ describe("IModel", () => {
       });
     });
 
+    it("preserves vertical fallback corrections and EPSG enrichment", () => {
+      const imodel = new TestIModel({
+        key: "",
+        rootSubject: { name: "subject" },
+        projectExtents: { low: [0, 0, 0], high: [1, 1, 1] },
+      });
+      const initial = new GeographicCRS({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "GEOID", crsName: "NAVD88 height" } });
+      imodel.geographicCoordinateSystem = initial;
+
+      const corrected = new GeographicCRS({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88", crsName: "NAVD88 height" } });
+      expectChange(imodel, () => imodel.geographicCoordinateSystem = corrected, { gcs: { prev: initial, curr: corrected } });
+      expect(imodel.toJSON().geographicCoordinateSystem?.verticalCRS).to.deep.equal(corrected.toJSON().verticalCRS);
+
+      const enriched = new GeographicCRS({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88", crsName: "NAVD88 height", epsg: 5703 } });
+      expectChange(imodel, () => imodel.setGeographicCoordinateSystem(enriched.toJSON()), { gcs: { prev: corrected, curr: enriched } });
+      expect(imodel.toJSON().geographicCoordinateSystem?.verticalCRS).to.deep.equal(enriched.toJSON().verticalCRS);
+      expectNoChange(imodel, () => imodel.setGeographicCoordinateSystem(enriched.toJSON()));
+    });
+
     it("are not dispatched when no net property change", () => {
       const ecefLocation: EcefLocationProps = {
         origin: [0, 1, 2],

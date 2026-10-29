@@ -8,7 +8,7 @@
 
 A single EC entity may typically map to multiple tables or a single table.
 
-[ChangesetReader]($backend) reads these raw table-row changes and emits one [ChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [PartialChangeUnifier]($backend).
+[ChangesetReader]($backend) reads these raw table-row changes and emits one [ChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [PartialChangeUnifier]($backend), or into [ChangeUnifier]($backend), which merges the rows in native code with bounded memory (see [ChangeUnifier — native merging with bounded memory](#changeunifier--native-merging-with-bounded-memory)).
 
 ### The reader–unifier pipeline
 
@@ -29,7 +29,7 @@ interface ChangeMeta {
   tables: string[];          // SQLite tables that contributed rows
   changeIndexes: number[];   // stream positions of those rows
   instanceKey: string;       // ECInstanceId-ECClassId key used for merging
-  propFilter: PropertyFilter; // PropertyFilter.All | PropertyFilter.BisCoreElement | PropertyFilter.InstanceKey
+  propFilter: PropertyFilter; // PropertyFilter.All | PropertyFilter.BisCoreElement | PropertyFilter.InstanceKey | PropertyFilter.InstanceKeyAndIdentifiers
   changeFetchedPropNames: string[]; // property names actually read from the change binary
   rowOptions?: RowFormatOptions; // the rowOptions passed when opening the reader
   isIndirectChange: boolean; // true when the change was applied indirectly
@@ -208,6 +208,7 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 | `All` (default) | All EC properties mapped to changed tables |
 | `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
+| `InstanceKeyAndIdentifiers` | `ECInstanceId` and `ECClassId`, plus the identifiers listed [below](#identifiers-returned-by-instancekeyandidentifiers) |
 
 ```ts
 [[include:ChangesetReader.ModeInstanceKey]]
@@ -218,6 +219,19 @@ The active filter is stored as a `PropertyFilter` enum value in `instance.$meta.
 ```ts
 assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 ```
+
+### Identifiers returned by `InstanceKeyAndIdentifiers`
+
+Along with `ECInstanceId` and `ECClassId`, `InstanceKeyAndIdentifiers` returns these properties:
+
+| Row | Properties |
+|---|---|
+| Any `BisCore:ElementAspect` | `Element` |
+| Deleted `BisCore:Element` | `FederationGuid` |
+| Deleted link-table relationship | `SourceECInstanceId`, `TargetECInstanceId` |
+| Deleted `BisCore:ExternalSourceAspect` | `Scope`, `Kind`, `Identifier` |
+
+The reader takes these properties only from the changeset, so reading still works after the rows were deleted from the iModel. A property the changeset does not contain is omitted, and navigation values contain only `Id`. `ECClassId` is resolved as for `InstanceKey`: when the changeset lacks it, the reader looks it up in the iModel, and for an instance that no longer exists it falls back to the table's base class (see [Deleted instance — class identity lost](#1-deleted-instance--class-identity-lost)).
 
 ---
 
@@ -354,7 +368,7 @@ reader.disableStrictMode();
 
 | Active configuration | Default |
 |---|---|
-| `propFilter: InstanceKey` | 100 |
+| `propFilter: InstanceKey` or `InstanceKeyAndIdentifiers` | 100 |
 | `propFilter: BisCoreElement` | 20 |
 | `propFilter: All`, `abbreviateBlobs: false` | 5 |
 | `propFilter: All` (blobs abbreviated or unset) | 10 |
@@ -376,6 +390,40 @@ By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For
 ```ts
 [[include:ChangesetReader.CacheStrategies]]
 ```
+
+---
+
+## ChangeUnifier — native merging with bounded memory
+
+The `@beta` [ChangeUnifier]($backend) merges the rows of one or more readers into complete EC instances, like [PartialChangeUnifier]($backend), but in native code. Each reader is drained natively when the unifier is created, rows of non-EC tables are skipped, and merged data beyond a memory budget is spilled to sorted temporary files, so peak memory stays bounded. Instances have the same [ChangeInstance]($backend) shape, with `$meta.propFilter` and `$meta.rowOptions` taken from the reader.
+
+```ts
+[[include:ChangesetReader.ChangeUnifier]]
+```
+
+To merge several changesets into one set of instances, use [ChangeUnifier.fromReaders]($backend). Readers are requested one at a time, so a generator can open each reader when it is needed and dispose it once it has been drained. Where property values conflict, rows of later readers win. All readers must read the same iModel and be opened with the same `propFilter` and `rowOptions`.
+
+```ts
+[[include:ChangesetReader.ChangeUnifierFromReaders]]
+```
+
+[ChangeUnifierArgs]($backend):
+
+| Option | Default | Meaning |
+|---|---|---|
+| `propNames` | all properties | Properties to keep. `ECInstanceId` and `ECClassId` are always kept. Other properties are dropped before they are stored, which reduces memory use and spilling. |
+| `memoryBudgetBytes` | 64 MiB | Bytes of merged data held in memory before sorted runs are spilled to temporary files. `0` means never spill. |
+| `batchSize` | 1000 | Instances fetched from native code at a time while iterating `instances()`. A batch ends early once it holds 16 MiB of strings and binary data. |
+
+Differences from [PartialChangeUnifier]($backend):
+
+- **Sort order:** `instances()` yields instances sorted numerically by (root ECClassId, ECInstanceId, stage), with `"Old"` before `"New"`.
+- **`$meta.op` and `$meta.isIndirectChange`:** taken from the row of the main (non-overflow) table of the class family. If only overflow tables changed, `op` is `"Updated"` and `isIndirectChange` comes from the first row. [PartialChangeUnifier]($backend) takes both from the first row appended.
+- **`ECClassId`:** if the rows of one instance report different classes of the same class family, the most-derived class is kept.
+- **Readers are consumed:** a reader must not have been stepped before it is passed to the unifier. Open it with the row options you need and configure filters and strict mode first; they are honored. Afterward the reader can no longer be configured, [ChangesetReader.step]($backend) returns `false`, and the reader can be disposed.
+- **Single pass:** each instance is returned once. Calling `instances()` again continues after the last instance returned.
+
+Like the reader, a [ChangeUnifier]($backend) holds native resources, including its temporary spill files, and must be disposed — preferably with `using`.
 
 ---
 
@@ -461,3 +509,4 @@ This risk is not specific to changesets — it arises any time the iModel's stat
 |---|---|---|
 | Reading a changeset after entity is deleted | `ECClassId` resolves to the per-table base class; rows are not merged into the leaf domain class | Read changesets before the entity is deleted from the live iModel |
 | Reading a historical transaction after new transactions have been saved | Property values not recorded in that txn's changeset reflect the current live state, not the historical state | Filter trustworthy properties using `$meta.changeFetchedPropNames` |
+| Reading identifiers, such as an aspect's owning element, after the entity is deleted | Missing components of navigation values cannot be fetched, so reading can fail | Use `PropertyFilter.InstanceKeyAndIdentifiers`, which reads its identifiers only from the changeset |

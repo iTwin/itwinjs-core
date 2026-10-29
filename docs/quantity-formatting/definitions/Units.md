@@ -63,7 +63,7 @@ EC schemas define a rich set of `UnitSystem` elements (SI, IMPERIAL, USCUSTOM, U
 | `"usCustomary"`  | US Customary             | USCUSTOM, INTERNATIONAL, FINANCE                |
 | `"usSurvey"`     | US Survey                | USSURVEY, USCUSTOM, INTERNATIONAL, FINANCE      |
 
-When a [SchemaFormatsProvider]($ecschema-metadata) resolves a format for a [KindOfQuantity]($docs/bis/ec/kindofquantity/), it walks the active `UnitSystemKey`'s priority list and returns the first matching presentation format. This means that a single `UnitSystemKey` can match formats from several EC `UnitSystem` elements, providing sensible fallback behavior (e.g., the "metric" group falls back through INTERNATIONAL and FINANCE if a KindOfQuantity does not define an SI-specific format).
+When a [SchemaFormatsProvider]($ecschema-metadata) resolves a format for a [KindOfQuantity]($docs/bis/ec/kindofquantity/), it checks presentation formats in the active `UnitSystemKey`'s priority order. If none match, it checks the persistence unit and then uses the default presentation format. A single `UnitSystemKey` can match formats from several EC `UnitSystem` elements, so the "metric" group can fall back through INTERNATIONAL and FINANCE when a KindOfQuantity has no SI-specific format.
 
 EC `UnitSystem` elements not covered by any preference group (e.g. CGS, MARITIME, INDUSTRIAL) will only appear if a KindOfQuantity explicitly references them. Applications that need these systems should implement a custom [FormatsProvider]($quantity).
 
@@ -79,7 +79,7 @@ await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
 const system = IModelApp.quantityFormatter.activeUnitSystem; // "metric"
 ```
 
-For more details on unit system configuration, see [Providers — Configuring Unit System](../usage/Providers.md#configuring-unit-system).
+For more details on unit system configuration, see [Providers: Configuring Unit System](../usage/Providers.md#configuring-unit-system).
 
 ## See Also
 

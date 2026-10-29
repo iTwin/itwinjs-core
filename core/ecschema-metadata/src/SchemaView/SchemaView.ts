@@ -6,9 +6,10 @@
  * @module Schema
  */
 
-import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
+import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type ResolvedPropertyRef, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "../ECObjects";
+import { ECName } from "../ECName";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
 // core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
@@ -24,16 +25,6 @@ const _storage = Symbol("SchemaView.storage");
 interface SchemaViewStorage extends SchemaViewData {
   readonly transitiveBaseCache: Map<number, ReadonlySet<number>>;
   derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
-}
-
-/** A property reference paired with the index of the class that declared it. Used for
- * property inheritance resolution - the classIdx tracks where each property originates
- * (base class, mixin, or own) so consumers can discover the declaring class.
- * @internal
- */
-export interface ResolvedPropertyRef {
-  readonly ref: PropertyRef;
-  readonly classIdx: number;
 }
 
 /** Internal data bag passed from the builder to the context constructor.
@@ -67,8 +58,9 @@ export interface SchemaViewData {
  * stateless wrappers that hold a reference to this view plus an index. They allocate nothing
  * and cache nothing.
  *
- * The view is immutable after construction. Build it via `SchemaViewBuilder` or parse
- * from a binary blob via `fromBinary`.
+ * Use {@link SchemaViewManager} to load schemas incrementally into one view, or parse a standalone
+ * binary blob via {@link (SchemaView:class).fromBinary}. Consumers cannot modify the metadata; a manager
+ * can extend its view with additional schemas while previously obtained view objects remain valid.
  * @beta
  */
 export class SchemaView {
@@ -169,7 +161,8 @@ export class SchemaView {
   }
 
   /** Parse a binary blob into a SchemaView. Synchronous.
-   * @param blob - The binary blob from `PRAGMA schema_view`.
+   * @param blob - The binary blob from `PRAGMA schema_view`, or a standalone `PRAGMA schema_view_fragment`
+   * containing the requested schemas and their references.
    * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA checksum(schema_token)`).
    * @beta
    */
@@ -200,8 +193,8 @@ export class SchemaView {
       throw new Error("SchemaView is not mergeable: create it via SchemaView.createMergeable to merge fragments.");
     this._mergeContext.mergeBlob(blob);
     // A new fragment can add subclasses to an already-present base class, so the derived-class map
-    // must be rebuilt. transitiveBaseCache stays valid: a class's ancestors are always merged
-    // before it (dependency order), so an append never adds an ancestor to an already-cached class.
+    // must be rebuilt. transitiveBaseCache and PropertyRef.overriddenProperty stay valid: a class's ancestors
+    // are always merged before it (dependency order), so an append never adds an ancestor to an already-cached class.
     this[_storage].derivedClassMap = undefined;
   }
 
@@ -306,11 +299,17 @@ export class SchemaView {
     if (cls.baseClassIdx !== -1)
       this._collectProperties(cls.baseClassIdx, merged);
 
-    // 2. Mixins in declaration order
+    // 2. Mixins in declaration order. Each mixin is resolved on its own so its overrides win over its
+    // ancestors, then only adds names not already provided by the base class or an earlier mixin.
     for (let i = 0; i < cls.mixinCount; i++) {
       const mixinIdx = this[_storage].classMixins[cls.mixinStartIdx + i];
       if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
-      this._collectMixinProperties(mixinIdx, merged);
+      const mixinProperties = new Map<string, ResolvedPropertyRef>();
+      this._collectProperties(mixinIdx, mixinProperties);
+      for (const [nameKey, resolved] of mixinProperties) {
+        if (!merged.has(nameKey))
+          merged.set(nameKey, resolved);
+      }
     }
 
     // 3. Own properties - always override
@@ -321,31 +320,66 @@ export class SchemaView {
     }
   }
 
-  private _collectMixinProperties(
-    mixinIdx: number,
-    merged: Map<string, ResolvedPropertyRef>,
-  ): void {
-    const mixin = this[_storage].classes[mixinIdx];
-    if (mixin === undefined) return; // safety: dangling index from excluded schema
+  /** Finds the property declaration that a property of the given class overrides.
+   * Searches the base class and its ancestors first, then each mixin in declaration order.
+   */
+  private _findOverriddenProperty(classIdx: number, nameKey: string): ResolvedPropertyRef | undefined {
+    const cls = this[_storage].classes[classIdx];
+    if (cls === undefined || cls.type === ClassType.View)
+      return undefined;
 
-    // Walk mixin's own base chain (mixins can extend other mixins)
-    if (mixin.baseClassIdx !== -1)
-      this._collectMixinProperties(mixin.baseClassIdx, merged);
-
-    // Mixin's own mixins
-    for (let i = 0; i < mixin.mixinCount; i++) {
-      const subMixinIdx = this[_storage].classMixins[mixin.mixinStartIdx + i];
-      if (subMixinIdx === -1 || subMixinIdx === undefined) continue; // safety: dangling mixin ref
-      this._collectMixinProperties(subMixinIdx, merged);
+    if (cls.baseClassIdx !== -1) {
+      const found = this._findPropertyDeclaration(cls.baseClassIdx, nameKey);
+      if (found !== undefined)
+        return found;
     }
 
-    // Mixin's own properties - only set if not already present (first mixin wins)
-    for (let i = 0; i < mixin.ownPropCount; i++) {
-      const ref = this[_storage].propertyRefs[mixin.ownPropStart + i];
+    for (let i = 0; i < cls.mixinCount; i++) {
+      const mixinIdx = this[_storage].classMixins[cls.mixinStartIdx + i];
+      if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
+      const found = this._findPropertyDeclaration(mixinIdx, nameKey);
+      if (found !== undefined)
+        return found;
+    }
+    return undefined;
+  }
+
+  private _findPropertyDeclaration(classIdx: number, nameKey: string): ResolvedPropertyRef | undefined {
+    const cls = this[_storage].classes[classIdx];
+    if (cls === undefined) return undefined; // safety: dangling index from excluded schema
+
+    for (let i = 0; i < cls.ownPropCount; i++) {
+      const ref = this[_storage].propertyRefs[cls.ownPropStart + i];
+      if (this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx] === nameKey)
+        return { ref, classIdx };
+    }
+    return this._findOverriddenProperty(classIdx, nameKey);
+  }
+
+  /** Returns the first declaration matching `predicate`, starting with the given declaration and
+   * continuing with the declarations it overrides.
+   * @internal
+   */
+  public findPropertyDefInOverrides(ref: PropertyRef, classIdx: number, predicate: (def: PropertyDef) => boolean): PropertyDef | undefined {
+    let current: ResolvedPropertyRef | null = { ref, classIdx };
+    while (current !== null) {
+      const def = this[_storage].propDefs[current.ref.defIdx];
+      if (predicate(def))
+        return def;
+      current = this._getOverriddenProperty(current.ref, current.classIdx);
+    }
+    return undefined;
+  }
+
+  /** Returns the declaration the given one overrides, resolving and storing it on the ref on first access.
+   * Caching per ref is sound because a ref belongs to exactly one class; view properties (classIdx -1) never override.
+   */
+  private _getOverriddenProperty(ref: PropertyRef, classIdx: number): ResolvedPropertyRef | null {
+    if (ref.overriddenProperty === undefined) {
       const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
-      if (!merged.has(nameKey))
-        merged.set(nameKey, { ref, classIdx: mixinIdx });
+      ref.overriddenProperty = classIdx !== -1 ? this._findOverriddenProperty(classIdx, nameKey) ?? null : null;
     }
+    return ref.overriddenProperty;
   }
 
   /** @internal */
@@ -373,6 +407,9 @@ export class SchemaView {
 // SchemaView namespace - flyweight view types
 // =====================================================================================
 
+function hasCategory(def: PropertyDef): boolean { return def.categoryIdx !== -1; }
+function hasKindOfQuantity(def: PropertyDef): boolean { return def.koqIdx !== -1; }
+function isHiddenDef(def: PropertyDef): boolean { return def.isHidden; }
 
 /** @beta */
 export namespace SchemaView {
@@ -400,9 +437,10 @@ export namespace SchemaView {
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get alias(): string { return this._ctx[_storage].strings[this._data.aliasStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -505,9 +543,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -619,7 +658,8 @@ export namespace SchemaView {
       return this._ctx.getTransitiveBases(this.idx).has(targetIdx);
     }
 
-    /** Direct derived classes. Expensive on first call (builds reverse map across all classes). */
+    /** Direct derived classes among the currently loaded schemas. A partial view may omit derived
+     * classes from other schemas. Expensive on first call (builds reverse map across all loaded classes). */
     public get derivedClasses(): readonly Class[] {
       const map = this._ctx.buildDerivedClassMap();
       const indices = map.get(this.idx);
@@ -717,11 +757,11 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._ref.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._def.nameStringIdx]; }
-    /** Display label. Falls back to the property name if no explicit label is set.
+    /** Display label, or the decoded property name when the label is absent or empty.
      * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
     public get label(): string {
       const labelStringIdx = this._ref.labelStringIdx;
-      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : this.name;
+      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._def.descriptionStringIdx;
@@ -729,10 +769,21 @@ export namespace SchemaView {
     }
     public get kind(): PropertyKind { return this._def.kind; }
     public get isReadOnly(): boolean { return this._def.isReadOnly; }
-    /** Reflects the `HiddenProperty` custom attribute from `CoreCustomAttributes`.
-     * Properties marked hidden are typically excluded from UI display but remain accessible programmatically. */
+    /** Reflects the `HiddenProperty` custom attribute from `CoreCustomAttributes` on this declaration only;
+     * see `isEffectivelyHidden`. Properties marked hidden are typically excluded from UI display but remain
+     * accessible programmatically. */
     public get isHidden(): boolean { return this._def.isHidden; }
-    /** Display priority. Higher values should be displayed more prominently. 0 means default. */
+    /** True if this declaration is hidden. If it is not and the property is an override, we take this from the
+     * overridden property. Limitation: `HiddenProperty(Show=true)` reads the same as no `HiddenProperty`, so it does not
+     * unhide a property whose overridden property is hidden. */
+    public get isEffectivelyHidden(): boolean {
+      if (this._def.isHidden)
+        return true;
+      return this._ctx.findPropertyDefInOverrides(this._ref, this._classIdx, isHiddenDef) !== undefined;
+    }
+    /** Display priority. Higher values should be displayed more prominently. 0 means default.
+     * Not inherited from the overridden property: an omitted priority is stored as 0, which cannot be told
+     * apart from an explicit 0 that overrides a base priority. */
     public get priority(): number { return this._ref.priority; }
 
     /** The class that declared or contributed this property through inheritance.
@@ -745,10 +796,21 @@ export namespace SchemaView {
       return this._classIdx !== -1 ? createClass(this._ctx, this._classIdx) : undefined;
     }
 
-    /** Property category, or undefined if none assigned. Available on all property kinds. */
+    /** Property category. If there is no local category and the property is an override, we take this from
+     * the overridden property. Available on all property kinds. */
     public get category(): PropertyCategory | undefined {
-      const idx = this._def.categoryIdx;
+      let idx = this._def.categoryIdx;
+      if (idx === -1 && this._ctx[_storage].propCategories.length !== 0)
+        idx = this._ctx.findPropertyDefInOverrides(this._ref, this._classIdx, hasCategory)?.categoryIdx ?? -1;
       return idx !== -1 ? new PropertyCategory(this._ctx, idx) : undefined;
+    }
+
+    /** @internal */
+    protected get _kindOfQuantity(): KindOfQuantity | undefined {
+      let idx = this._def.koqIdx;
+      if (idx === -1 && this._ctx[_storage].koqs.length !== 0)
+        idx = this._ctx.findPropertyDefInOverrides(this._ref, this._classIdx, hasKindOfQuantity)?.koqIdx ?? -1;
+      return idx !== -1 ? new KindOfQuantity(this._ctx, idx) : undefined;
     }
 
     // Type guards - real type predicates that narrow `this`
@@ -815,10 +877,9 @@ export namespace SchemaView {
       const idx = this._def.enumIdx;
       return idx !== -1 ? new Enumeration(this._ctx, idx) : undefined;
     }
-    public get kindOfQuantity(): KindOfQuantity | undefined {
-      const idx = this._def.koqIdx;
-      return idx !== -1 ? new KindOfQuantity(this._ctx, idx) : undefined;
-    }
+    /** KindOfQuantity. If there is no local KindOfQuantity and the property is an override, we take this
+     * from the overridden property. */
+    public get kindOfQuantity(): KindOfQuantity | undefined { return this._kindOfQuantity; }
   }
 
   /** An array of primitive values. Same primitive/enum fields as `PrimitiveProperty`,
@@ -835,10 +896,9 @@ export namespace SchemaView {
       const idx = this._def.enumIdx;
       return idx !== -1 ? new Enumeration(this._ctx, idx) : undefined;
     }
-    public get kindOfQuantity(): KindOfQuantity | undefined {
-      const idx = this._def.koqIdx;
-      return idx !== -1 ? new KindOfQuantity(this._ctx, idx) : undefined;
-    }
+    /** KindOfQuantity. If there is no local KindOfQuantity and the property is an override, we take this
+     * from the overridden property. */
+    public get kindOfQuantity(): KindOfQuantity | undefined { return this._kindOfQuantity; }
     public get arrayMinOccurs(): number | undefined { return this._def.arrayMinOccurs; }
     public get arrayMaxOccurs(): number | undefined { return this._def.arrayMaxOccurs; }
   }
@@ -928,9 +988,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -987,9 +1048,10 @@ export namespace SchemaView {
     private get _data() { return this._ctx[_storage].enumerators[this.idx]; }
 
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1057,9 +1119,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;
@@ -1134,9 +1197,10 @@ export namespace SchemaView {
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
     public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    /** Display label, or the decoded name when the label is absent or empty. */
     public get label(): string {
       const sid = this._data.labelStringIdx;
-      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : ECName.decode(this.name);
     }
     public get description(): string {
       const sid = this._data.descriptionStringIdx;

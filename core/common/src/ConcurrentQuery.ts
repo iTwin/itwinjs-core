@@ -86,6 +86,10 @@ export interface DbRuntimeStats {
   memUsed: number;
   /** In milliseconds */
   prepareTime: number;
+  /** Whether this page resumed an unfinished native statement.
+   * @internal
+   */
+  resumed?: boolean;
 }
 
 /**
@@ -382,7 +386,7 @@ export enum QueryParamType {
  * @see
  * - [ECSQL Parameters]($docs/learning/ECSQL.md#ecsql-parameters)
  * - [ECSQL Parameter Types]($docs/learning/ECSQLParameterTypes)
- * - [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples#parameter-bindings)
+ * - [ECSQL Code Examples]($docs/learning/ECSQLCodeExamples#parameter-bindings)
  *
  * @public
  */
@@ -790,6 +794,11 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
   valueFormat?: DbValueFormat;
   query: string;
   args?: object;
+  /** Reader identity used as a hint for opportunistic native cursor reuse.
+   * Requests sharing an id are assumed to come from one reader issuing one batch at a time; a non-contiguous
+   * request with the same id releases that reader's earlier retained cursor.
+   */
+  cursorId?: string;
 }
 
 /** @internal */
@@ -849,7 +858,7 @@ export interface DbQueryConfig {
   ignorePriority?: boolean;
   /** Max queue size after which queries are rejected with error QueueFull */
   requestQueueSize?: number;
-  /** Number of worker thread, default to 4 */
+  /** Number of worker threads. Defaults to 4, capped at the machine's hardware concurrency. Requests above hardware concurrency fall back to the default. */
   workerThreads?: number;
   /**
    * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. No longer used. Worker connections now prepare statements against a shared, dedicated
@@ -862,10 +871,27 @@ export interface DbQueryConfig {
   autoShutdownWhenIdleForSeconds?: number;
   /** Maximum number of statement cache per worker. Default to 40 */
   statementCacheSizePerWorker?: number;
+  /** Enables opportunistic reuse of unfinished statements between pages. Defaults to true.
+   * Retention is disabled for databases not using WAL journal mode, connections with attached data databases,
+   * and primary-connection queries.
+   */
+  enableCursors?: boolean;
+  /** Maximum parked cursors per worker, bounded by statementCacheSizePerWorker.
+   * Defaults to -1: the statement-cache size for a read-only primary, or 4 for a writable primary.
+   * Set to 0 to disable cursor retention. Non-integer values are ignored.
+   */
+  maxCursorsPerWorker?: number;
+  /** Positive integer idle timeout in seconds for parked cursors. Defaults to 30; cleanup uses monitorPollInterval. */
+  cursorIdleTimeout?: number;
   /* Monitor poll interval in milliseconds. Its responsible for cancelling queries that pass quota. It can be set between 1000 and Max time quota for query */
   monitorPollInterval?: number;
   /** Set memory map io for each worker connection size in bytes. Default to zero mean do not use mmap io */
   memoryMapFileSize?: number;
+  /** SQLite page-cache target per secondary connection in KiB (1024 bytes).
+   * Must be an integer from 0 to 2147483647. Omit to preserve SQLite's default.
+   * Applies when connections are opened; restart an existing concurrent-query pool to change it.
+   */
+  cacheSizeInKB?: number;
   /** How often to measure progress of a running ECSql statement which is used to enforced time limit */
   progressOpCount?: number;
 }
