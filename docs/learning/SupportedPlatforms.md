@@ -17,11 +17,14 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | iTwin.js - Node Support | iTwin.js 4.x | iTwin.js 5.x |
 | ----------------------- | ------------ | ------------ |
+| Node 26 (>=26.13)       | ❌           | ✅ (>= 5.16) |
 | Node 24 (>=24.11)       | ❌           | ✅ (>= 5.4) |
 | Node 22 (>=22.11)       | ✅ (>= 4.10) | ✅          |
 | Node 20 (>=20.11)       | ✅ (>= 4.3)  | ✅ (except on Linux arm64) |
 | Node 18 (>=18.12)       | ✅           | ❌          |
 | Node 16 (>=16.13)       | ❌           | ❌          |
+
+> Note: Node.js 26 is not yet supported by `@itwin/core-mobile`. Mobile native applications should continue to use Node.js 24 or earlier.
 
 ### Supported iTwin.js versions
 

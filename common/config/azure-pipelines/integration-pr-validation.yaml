@@ -30,7 +30,7 @@ variables:
   - group: Rush Build Cache SAS Token
 
 jobs:
-  - job: Node_24_x
+  - job: Node_26_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
@@ -41,4 +41,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 26.x
