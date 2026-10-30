@@ -67,11 +67,16 @@ export interface BulkDeleteElementsResult {
   /**
    * One entry per element that blocks the deletion, with the reason. Only populated on `ConstraintViolation`.
    * Empty on `Success` and `DeletionFailed`.
+   * Because the whole expanded delete set is validated, a reported element may be a child or sub-model member
+   * that was not in the requested ids; its requested ancestor is not listed separately.
    */
   failures: BulkDeleteFailure[];
   /**
    * The set of element ids that could not be deleted.
-   * Empty when `status` is `Success` or `DeletionFailed`.
+   * - On `ConstraintViolation`: the unique element ids appearing in `failures`. May include cascaded descendants
+   *   that were not in the requested ids, so this is not guaranteed to be a subset of the input. Never empty.
+   * - On `DeletionFailed`: every requested id (the iModel may be partially modified; abandon the current txn).
+   * - On `Success`: empty.
    * @deprecated Use `failures` for a more detailed failure report.
    */
   failedIds: Id64Set;

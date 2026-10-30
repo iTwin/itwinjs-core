@@ -4,7 +4,7 @@ import { Point3d } from "@itwin/core-geometry";
 import { Code, CodeScopeSpec, ExternalSourceAspectProps, GeometryPartProps, IModel, PhysicalElementProps, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
 import {
   _nativeDb, BulkDeleteElementsResult, BulkDeleteElementsStatus, BulkDeleteFailureReason, ChannelControl, DefinitionModel, EditTxn, ElementDrivesElement, ElementDrivesElementProps, ElementGroupsMembers, ExternalSourceAspect,
-  GeometryPart, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs, PhysicalModel, RenderMaterialElement, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
+  GeometryPart, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs, ModelSelector, PhysicalModel, RenderMaterialElement, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1620,6 +1620,123 @@ describe("deleteElements (native bulk delete API)", () => {
         const result = txn.deleteElements([parent]);
         assertResult(result, success, [parent, child], [group]);
         assert.isUndefined(iModelDb.relationships.tryGetInstanceProps(ElementGroupsMembers.classFullName, rel));
+      });
+    });
+
+    describe("ModelSelectorRefersToModels link table", () => {
+      let selectorCounter = 0;
+
+      /** Insert a partition + PhysicalModel and return the partition id (which doubles as the model id). */
+      const insertPhysicalModel = (name: string): Id64String => {
+        const id = PhysicalModel.insert(txn, IModel.rootSubjectId, name);
+        txn.saveChanges();
+        return id;
+      };
+
+      const insertModelSelector = (models: Id64Array): Id64String => {
+        const id = ModelSelector.insert(txn, IModel.dictionaryId, `Selector-${++selectorCounter}`, models);
+        txn.saveChanges();
+        return id;
+      };
+
+      /** Count link-table rows, optionally restricted to a given selector (source) or model (target). */
+      const countRows = async (filter: { sourceId?: Id64String, targetId?: Id64String } = {}): Promise<number> => {
+        const clauses: string[] = [];
+        const binder = new QueryBinder();
+        let idx = 1;
+        if (filter.sourceId) {
+          clauses.push(`SourceECInstanceId=?`);
+          binder.bindId(idx++, filter.sourceId);
+        }
+        if (filter.targetId) {
+          clauses.push(`TargetECInstanceId=?`);
+          binder.bindId(idx++, filter.targetId);
+        }
+        const where = clauses.length > 0 ? ` WHERE ${clauses.join(" AND ")}` : "";
+        const reader = iModelDb.createQueryReader(`SELECT COUNT(*) FROM bis.ModelSelectorRefersToModels${where}`, binder, { usePrimaryConn: true });
+        assert.isTrue(await reader.step());
+        return reader.current.toArray()[0];
+      };
+
+      /** Rows whose source (ModelSelector) or target (modeled element) no longer exists in bis.Element. */
+      const countDanglingRows = async (): Promise<number> => {
+        const reader = iModelDb.createQueryReader(
+          `SELECT COUNT(*) FROM bis.ModelSelectorRefersToModels r
+             WHERE NOT EXISTS (SELECT 1 FROM bis.Element e WHERE e.ECInstanceId = r.SourceECInstanceId)
+                OR NOT EXISTS (SELECT 1 FROM bis.Element e WHERE e.ECInstanceId = r.TargetECInstanceId)`,
+          undefined, { usePrimaryConn: true });
+        assert.isTrue(await reader.step());
+        return reader.current.toArray()[0];
+      };
+
+      it("deleting a referenced model (target) removes only its rows; the selector and other models survive", async () => {
+        const modelA = insertPhysicalModel("MsTargetA");
+        const modelB = insertPhysicalModel("MsTargetB");
+        const selector = insertModelSelector([modelA, modelB]);
+        assert.equal(await countRows({ sourceId: selector }), 2);
+
+        const result = txn.deleteElements([modelA]);
+        assertResult(result, success, [modelA], [modelB, selector]);
+        assert.equal(await countRows({ targetId: modelA }), 0, "rows targeting the deleted model must be removed");
+        assert.equal(await countRows({ sourceId: selector, targetId: modelB }), 1, "rows targeting a surviving model must be untouched");
+        assert.equal(await countDanglingRows(), 0);
+      });
+
+      it("deleting the ModelSelector itself (source) removes all of its rows; the referenced models survive", async () => {
+        // Regression: cleanup used to only match on TargetId, so deleting the selector left its rows dangling on the source side.
+        const modelA = insertPhysicalModel("MsSourceA");
+        const modelB = insertPhysicalModel("MsSourceB");
+        const selector = insertModelSelector([modelA, modelB]);
+        assert.equal(await countRows({ sourceId: selector }), 2);
+
+        const result = txn.deleteElements([selector]);
+        assertResult(result, success, [selector], [modelA, modelB]);
+        assert.equal(await countRows({ sourceId: selector }), 0, "rows sourced from the deleted ModelSelector must be removed");
+        assert.equal(await countDanglingRows(), 0, "no ModelSelectorRefersToModels row may reference a deleted element");
+        assertNoFkViolations(iModelDb);
+      });
+
+      it("deleting one selector leaves another selector's rows for the same models untouched", async () => {
+        const modelA = insertPhysicalModel("MsSharedA");
+        const selector1 = insertModelSelector([modelA]);
+        const selector2 = insertModelSelector([modelA]);
+        assert.equal(await countRows({ targetId: modelA }), 2);
+
+        const result = txn.deleteElements([selector1]);
+        assertResult(result, success, [selector1], [selector2, modelA]);
+        assert.equal(await countRows({ sourceId: selector1 }), 0);
+        assert.equal(await countRows({ sourceId: selector2, targetId: modelA }), 1, "the surviving selector's row must be untouched");
+        assert.equal(await countDanglingRows(), 0);
+      });
+
+      it("deleting both a selector and one of its models in the same call removes every affected row", async () => {
+        const modelA = insertPhysicalModel("MsBothA");
+        const modelB = insertPhysicalModel("MsBothB");
+        const selector = insertModelSelector([modelA, modelB]);
+        const otherSelector = insertModelSelector([modelB]);
+        assert.equal(await countRows(), 3);
+
+        const result = txn.deleteElements([selector, modelA]);
+        assertResult(result, success, [selector, modelA], [modelB, otherSelector]);
+        assert.equal(await countRows({ sourceId: selector }), 0);
+        assert.equal(await countRows({ targetId: modelA }), 0);
+        assert.equal(await countRows({ sourceId: otherSelector, targetId: modelB }), 1);
+        assert.equal(await countDanglingRows(), 0);
+      });
+
+      it("link-table cleanup is rolled back when the txn is abandoned", async () => {
+        const modelA = insertPhysicalModel("MsUndoA");
+        const selector = insertModelSelector([modelA]);
+        assert.equal(await countRows({ sourceId: selector }), 1);
+
+        const result = txn.deleteElements([selector]);
+        assertResult(result, success, [selector], [modelA]);
+        assert.equal(await countRows({ sourceId: selector }), 0);
+
+        txn.abandonChanges();
+        assertExists(selector);
+        assert.equal(await countRows({ sourceId: selector, targetId: modelA }), 1, "abandoning the txn must restore the link-table row");
+        assert.isTrue((iModelDb.elements.getElement<ModelSelector>(selector)).models.includes(modelA));
       });
     });
   });
