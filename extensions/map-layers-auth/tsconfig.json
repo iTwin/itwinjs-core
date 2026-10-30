@@ -6,7 +6,6 @@
     "moduleResolution": "NodeNext",
     "jsx": "react",
     "types": [
-      "sinon-chai",
       "mocha"
     ]
   },
