@@ -192,18 +192,24 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
-    const execQuery = async (req: DbQueryRequest) => {
+    const execQuery = (req: DbQueryRequest): DbQueryResponse | Promise<DbQueryResponse> => {
       const startTime = Date.now();
-      const rs = await this._executor.execute(req);
-      this.stats.totalTime += (Date.now() - startTime);
-      return rs;
+      const updateTiming = (rs: DbQueryResponse) => {
+        this.stats.totalTime += (Date.now() - startTime);
+        return rs;
+      };
+      const result = this._executor.execute(req);
+      return "then" in result ? result.then(updateTiming) : updateTiming(result);
     };
     let retry = ECSqlReader._maxRetryCount;
-    let resp = await execQuery(request);
+    let pending = execQuery(request);
+    let resp = "then" in pending ? await pending : pending;
     DbQueryError.throwIfError(resp, request);
     while (--retry > 0 && needRetry(resp)) {
-      resp = await execQuery(request);
+      pending = execQuery(request);
+      resp = "then" in pending ? await pending : pending;
       this._stats.retryCount += 1;
+      DbQueryError.throwIfError(resp, request);
       if (needRetry(resp)) {
         updateStats(resp);
       }
@@ -261,13 +267,21 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
 
   /**
    * Get all remaining rows from the query result.
+   * Buffered pages are materialized without awaiting each individual row.
    *
    * @returns An array of all remaining rows from the query result.
    */
   public async toArray(): Promise<any[]> {
     const rows = [];
+    const drainPage = this.step === ECSqlReader.prototype.step;
     while (await this.step()) {
       rows.push(this.formatCurrentRow());
+      if (drainPage) {
+        while (this._localOffset < this._localRows.length - 1) {
+          ++this._localOffset;
+          rows.push(this.formatCurrentRow());
+        }
+      }
     }
     return rows;
   }
