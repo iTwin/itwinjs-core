@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "@cesium/core",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@cesium/engine",
       "allowedCategories": [ "frontend", "internal" ]
     },
