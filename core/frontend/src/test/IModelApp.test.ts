@@ -13,6 +13,7 @@ import { MockRender } from "../internal/render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
+import { ToolAdmin } from "../tools/ToolAdmin";
 import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
 
@@ -343,6 +344,84 @@ describe("Undo/redo edit command cleanup", () => {
     selectedViewSpy.mockRestore();
     activeToolSpy.mockRestore();
     outputMessageSpy.mockRestore();
+  });
+});
+
+describe("Undo/redo txn operation errors", () => {
+  class TestToolAdmin extends ToolAdmin {
+    public readonly onTxnOperationErrorSpy = vi.fn(async (_operation: "undo" | "redo", _error: unknown) => { });
+
+    protected override async onTxnOperationError(operation: "undo" | "redo", error: unknown): Promise<void> {
+      return this.onTxnOperationErrorSpy(operation, error);
+    }
+  }
+
+  function mockSelectedIModel(txns: { reverseSingleTxnAsync?: () => Promise<void>, reinstateTxnAsync?: () => Promise<void> }): void {
+    vi.spyOn(IModelApp.toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns,
+        },
+      },
+    } as any);
+  }
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("redo calls onTxnOperationError and returns false when reinstateTxnAsync fails", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const error = new Error("Lock owned by another briefcase");
+    const reinstateTxnAsync = vi.fn(async () => { throw error; });
+    mockSelectedIModel({ reinstateTxnAsync });
+
+    expect(await toolAdmin.doRedoOperation()).toBe(false);
+    expect(reinstateTxnAsync).toHaveBeenCalledOnce();
+    expect(toolAdmin.onTxnOperationErrorSpy).toHaveBeenCalledExactlyOnceWith("redo", error);
+  });
+
+  it("undo calls onTxnOperationError and returns false when reverseSingleTxnAsync fails", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const error = new Error("Nothing to undo");
+    const reverseSingleTxnAsync = vi.fn(async () => { throw error; });
+    mockSelectedIModel({ reverseSingleTxnAsync });
+
+    expect(await toolAdmin.doUndoOperation()).toBe(false);
+    expect(reverseSingleTxnAsync).toHaveBeenCalledOnce();
+    expect(toolAdmin.onTxnOperationErrorSpy).toHaveBeenCalledExactlyOnceWith("undo", error);
+  });
+
+  it("does not call onTxnOperationError when undo and redo succeed", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    mockSelectedIModel({ reverseSingleTxnAsync: async () => { }, reinstateTxnAsync: async () => { } });
+
+    expect(await toolAdmin.doUndoOperation()).toBe(true);
+    expect(await toolAdmin.doRedoOperation()).toBe(true);
+    expect(toolAdmin.onTxnOperationErrorSpy).not.toHaveBeenCalled();
+  });
+
+  it("default onTxnOperationError keeps returning false without throwing", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    mockSelectedIModel({
+      reverseSingleTxnAsync: async () => { throw new Error("undo failed"); },
+      reinstateTxnAsync: async () => { throw new Error("redo failed"); },
+    });
+
+    expect(await IModelApp.toolAdmin.doUndoOperation()).toBe(false);
+    expect(await IModelApp.toolAdmin.doRedoOperation()).toBe(false);
   });
 });
 
