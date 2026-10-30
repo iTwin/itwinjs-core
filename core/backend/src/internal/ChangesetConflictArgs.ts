@@ -11,6 +11,9 @@ import { DbChangeStage, DbConflictCause, DbOpcode, DbValueType, Id64String } fro
 import { SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "../SqliteChangesetReader";
 import { IModelDb } from "../IModelDb";
 
+/** The conflict passed by native code to a changeset conflict handler.
+ * Native code reuses the same object for every conflict, and its functions throw once the handler has returned.
+ */
 export interface DbChangesetConflictArgs {
   cause: DbConflictCause;
   opcode: DbOpcode;
@@ -47,6 +50,7 @@ export interface DbRebaseChangesetConflictArgs extends DbChangesetConflictArgs {
 
 export type SqliteConflictCause = "Conflict" | "Data" | "Constraint" | "ForeignKey" | "NotFound";
 
+/** A conflict found while rebasing local changes. Only valid during the conflict handler call. */
 export class RebaseChangesetConflictArgs {
   constructor(private _dbConflictArg: DbRebaseChangesetConflictArgs, private _iModel: IModelDb){}
   public get cause() : SqliteConflictCause {

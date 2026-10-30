@@ -161,8 +161,10 @@ describe("Merge conflict & locking", () => {
     }[] = [];
 
     // we will not handle conflict and let the default conflict handler deal with it.
+    let firstConflictArg: RebaseChangesetConflictArgs | undefined;
     b2.txns.rebaser.addConflictHandler({
       id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
+        firstConflictArg ??= arg;
         conflicts.push({
           cause: arg.cause,
           tableName: arg.tableName,
@@ -176,6 +178,7 @@ describe("Merge conflict & locking", () => {
     await b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` });
 
     expect(conflicts.length).to.be.equals(3);
+    expect(() => firstConflictArg?.getValueId(0, "Old")).to.throw("only be used during the conflict handler call");
 
     chai.expect(
       [
