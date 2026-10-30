@@ -6,7 +6,7 @@
 import { EcefLocation } from "@itwin/core-common";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Cartesian3, Cartographic as CesiumCartographic } from "@cesium/engine";
+import { Cartesian3, Cartographic as CesiumCartographic } from "@cesium/core";
 
 /**
  * Coordinate conversion utilities between iTwin.js and CesiumJS

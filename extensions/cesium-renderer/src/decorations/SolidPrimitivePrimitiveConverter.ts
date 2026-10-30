@@ -12,11 +12,13 @@ import {
   CylinderGeometry,
   GeometryInstance,
   Matrix4,
+  SphereGeometry,
+  VertexFormat,
+} from "@cesium/core";
+import {
   PerInstanceColorAppearance,
   Primitive,
   PrimitiveCollection,
-  SphereGeometry,
-  VertexFormat,
 } from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
