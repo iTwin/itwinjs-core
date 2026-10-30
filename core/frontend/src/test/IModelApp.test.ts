@@ -5,7 +5,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { EmptyLocalization } from "@itwin/core-common";
+import { EmptyLocalization, IModelError } from "@itwin/core-common";
 import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
@@ -349,14 +349,14 @@ describe("Undo/redo edit command cleanup", () => {
 
 describe("Undo/redo txn operation errors", () => {
   class TestToolAdmin extends ToolAdmin {
-    public readonly onTxnOperationErrorSpy = vi.fn(async (_operation: "undo" | "redo", _error: unknown) => { });
+    public readonly onTxnOperationErrorSpy = vi.fn(async (_operation: "undo" | "redo" | "undoAll", _error: unknown) => { });
 
-    protected override async onTxnOperationError(operation: "undo" | "redo", error: unknown): Promise<void> {
+    protected override async onTxnOperationError(operation: "undo" | "redo" | "undoAll", error: unknown): Promise<void> {
       return this.onTxnOperationErrorSpy(operation, error);
     }
   }
 
-  function mockSelectedIModel(txns: { reverseSingleTxnAsync?: () => Promise<void>, reinstateTxnAsync?: () => Promise<void> }): void {
+  function mockSelectedIModel(txns: { reverseSingleTxnAsync?: () => Promise<void>, reinstateTxnAsync?: () => Promise<void>, reverseAll?: () => Promise<IModelStatus> }): void {
     vi.spyOn(IModelApp.toolAdmin, "activeTool", "get").mockReturnValue(undefined);
     vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
       view: {
@@ -412,16 +412,75 @@ describe("Undo/redo txn operation errors", () => {
     expect(toolAdmin.onTxnOperationErrorSpy).not.toHaveBeenCalled();
   });
 
+  it("undo all calls onTxnOperationError and returns false when reverseAll fails", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const error = new Error("IPC failure");
+    const reverseAll = vi.fn(async (): Promise<IModelStatus> => { throw error; });
+    mockSelectedIModel({ reverseAll });
+
+    expect(await toolAdmin.doUndoAllOperation()).toBe(false);
+    expect(reverseAll).toHaveBeenCalledOnce();
+    expect(toolAdmin.onTxnOperationErrorSpy).toHaveBeenCalledExactlyOnceWith("undoAll", error);
+  });
+
+  it("undo all calls onTxnOperationError with an IModelError when reverseAll returns an unsuccessful status", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    mockSelectedIModel({ reverseAll: async () => IModelStatus.BadRequest });
+
+    expect(await toolAdmin.doUndoAllOperation()).toBe(false);
+    expect(toolAdmin.onTxnOperationErrorSpy).toHaveBeenCalledOnce();
+    const [operation, error] = toolAdmin.onTxnOperationErrorSpy.mock.calls[0];
+    expect(operation).toBe("undoAll");
+    expect(error).toBeInstanceOf(IModelError);
+    expect((error as IModelError).errorNumber).toBe(IModelStatus.BadRequest);
+  });
+
+  it("undo all does not call onTxnOperationError when it succeeds or there is nothing to undo", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const reverseAll = vi.fn(async () => IModelStatus.Success).mockResolvedValueOnce(IModelStatus.NothingToUndo);
+    mockSelectedIModel({ reverseAll });
+
+    expect(await toolAdmin.doUndoAllOperation()).toBe(true);
+    expect(await toolAdmin.doUndoAllOperation()).toBe(true);
+    expect(reverseAll).toHaveBeenCalledTimes(2);
+    expect(toolAdmin.onTxnOperationErrorSpy).not.toHaveBeenCalled();
+  });
+
+  it("undo all finishes active edit command before reversing txns and skips them when it fails", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+    vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    const reverseAll = vi.fn(async () => IModelStatus.Success);
+    mockSelectedIModel({ reverseAll });
+
+    expect(await toolAdmin.doUndoAllOperation()).toBe(false);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reverseAll).not.toHaveBeenCalled();
+    expect(toolAdmin.onTxnOperationErrorSpy).not.toHaveBeenCalled();
+  });
+
   it("default onTxnOperationError keeps returning false without throwing", async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
 
     mockSelectedIModel({
       reverseSingleTxnAsync: async () => { throw new Error("undo failed"); },
       reinstateTxnAsync: async () => { throw new Error("redo failed"); },
+      reverseAll: async () => { throw new Error("undo all failed"); },
     });
 
     expect(await IModelApp.toolAdmin.doUndoOperation()).toBe(false);
     expect(await IModelApp.toolAdmin.doRedoOperation()).toBe(false);
+    expect(await IModelApp.toolAdmin.doUndoAllOperation()).toBe(false);
   });
 });
 

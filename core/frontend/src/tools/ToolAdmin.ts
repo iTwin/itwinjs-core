@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BentleyError, BeTimePoint, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BentleyError, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
-import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
+import { Easing, GeometryStreamProps, IModelError, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
@@ -1729,13 +1729,40 @@ export class ToolAdmin {
     }
   }
 
-  /** Called when [[doUndoOperation]] or [[doRedoOperation]] fails to reverse or reinstate a Txn.
-   * @param _operation The operation that failed.
-   * @param _error The error thrown by [[BriefcaseTxns.reverseSingleTxnAsync]] or [[BriefcaseTxns.reinstateTxnAsync]].
-   * @note Implementations should not throw. Any exception thrown by this method propagates to the caller of [[doUndoOperation]] or [[doRedoOperation]].
+  /** Called to undo all changes made to the briefcase in the current session.
+   * @returns `true` if all changes were reversed or there was nothing to undo, `false` otherwise.
+   * @see [[doUndoOperation]] to undo only the most recent operation.
    * @beta
    */
-  protected async onTxnOperationError(_operation: "undo" | "redo", _error: unknown): Promise<void> { }
+  public async doUndoAllOperation(): Promise<boolean> {
+    const imodel = IModelApp.viewManager.selectedView?.view.iModel;
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
+      return false;
+
+    if (!await this.finishEditCommandForTxnOperation())
+      return false;
+
+    try {
+      const status = await imodel.txns.reverseAll();
+      if (IModelStatus.Success === status || IModelStatus.NothingToUndo === status)
+        return true;
+
+      await this.onTxnOperationError("undoAll", new IModelError(status, "Failed to undo all changes"));
+      return false;
+    } catch (error) {
+      await this.onTxnOperationError("undoAll", error);
+      return false;
+    }
+  }
+
+  /** Called when [[doUndoOperation]], [[doRedoOperation]] or [[doUndoAllOperation]] fails to reverse or reinstate Txns.
+   * @param _operation The operation that failed.
+   * @param _error The error thrown by [[BriefcaseTxns.reverseSingleTxnAsync]], [[BriefcaseTxns.reinstateTxnAsync]] or [[BriefcaseTxns.reverseAll]].
+   * If [[BriefcaseTxns.reverseAll]] returns an unsuccessful status, this is an [IModelError]($common) with that status as its `errorNumber`.
+   * @note Implementations should not throw. Any exception thrown by this method propagates to the caller of [[doUndoOperation]], [[doRedoOperation]] or [[doUndoAllOperation]].
+   * @beta
+   */
+  protected async onTxnOperationError(_operation: "undo" | "redo" | "undoAll", _error: unknown): Promise<void> { }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
     this.clearMotionPromises();
