@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport } from "../TestViewport";
+import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
 import { Point2d } from "@itwin/core-geometry";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
@@ -17,45 +17,84 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 // minutes per test on software renderers). Node-compatibility CI lanes exclude #graphics suites.
 describe("Planar clip mask (#integration #graphics)", () => {
   let imodel: IModelConnection;
+  let viewport: ScreenTestViewport;
+  let originalModelIds: Id64String[];
 
   before(async () => {
-    assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
-    assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
-
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,
       },
-      mapLayerOptions: {
-        BingMaps: { // eslint-disable-line
-          key: "key",
-          value: process.env.TEST_BING_MAPS_KEY!, // will be caught in the assert above if undefined.
-        },
-        MapBoxImagery: { // eslint-disable-line
-          key: "access_token",
-          value: process.env.TEST_MAPBOX_KEY!, // will be caught in the assert above if undefined.
-        },
-      },
     });
 
+    const gl = TestUtility.getWebGLContext();
+    // A lost context (e.g. the Electron GPU process died under xvfb) never renders; fail now rather than per-test timeouts.
+    assert(gl !== undefined && !gl.isContextLost(), "WebGL context is unavailable or lost");
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const text = (value: unknown) => typeof value === "string" ? value.slice(0, 256) : "unavailable";
+    const renderer = text(gl.getParameter(gl.RENDERER));
+    const unmaskedRenderer = debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)) : "unavailable";
+    // eslint-disable-next-line no-console -- One renderer summary per suite for CI performance diagnostics.
+    console.log(`PlanarClipMask renderer: ${JSON.stringify({
+      vendor: text(gl.getParameter(gl.VENDOR)),
+      renderer,
+      unmaskedVendor: debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)) : "unavailable",
+      unmaskedRenderer,
+      version: text(gl.getParameter(gl.VERSION)),
+      maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+      // SwiftShader (Chromium), llvmpipe/softpipe (Mesa), WARP ("Microsoft Basic Render Driver").
+      software: /swiftshader|llvmpipe|softpipe|software|basic render|warp/i.test(`${renderer} ${unmaskedRenderer}`) ? true : debugInfo ? false : null,
+      userAgent: text(navigator.userAgent),
+    })}`);
+
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    const view = await imodel.views.load("0x24");
+    assert(view.isSpatialView());
+    originalModelIds = Array.from(view.modelSelector.models);
+    // Map tile trees are viewport-specific; retain their loaded quadtree across cases.
+    viewport = await createOnScreenTestViewport(view, imodel, 100, 100);
+    // Re-assigning the base purges loaded map tiles; no case changes this color.
+    viewport.displayStyle.backgroundMapBase = ColorDef.red;
+    viewport.continuousRendering = true;
+    const { backgroundLayers, overlayLayers } = viewport.displayStyle.settings.mapImagery;
+    // eslint-disable-next-line no-console -- Confirm the fixture does not require external imagery.
+    console.log(`PlanarClipMask imagery: ${JSON.stringify({ backgroundLayers: backgroundLayers.length, overlayLayers: overlayLayers.length })}`);
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    try {
+      if (viewport) {
+        viewport.continuousRendering = false;
+        try {
+          viewport[Symbol.dispose]();
+        } finally {
+          await IModelApp.viewManager.waitForSelectedViewportChange();
+        }
+      }
+    } finally {
+      if (imodel)
+        await imodel.close();
 
-    await TestUtility.shutdownFrontend();
+      await TestUtility.shutdownFrontend();
+    }
   });
 
   // map and dynamic have transient Ids. model has Id 0x1c. background has invalid Id.
-  // dynamic is blue. model is white. background is black. map is multi-colored.
+  // dynamic is blue. model is white. background is black. map is solid red (no imagery credentials required).
   type PixelType = "map" | "model" | "bg" | "dynamic";
 
-  async function expectPixels(planarClipMask: PlanarClipMaskProps | undefined, expectedCenter: PixelType, setup?: (vp: Viewport) => void): Promise<void> {
-    return testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
+  async function expectPixels(label: string, planarClipMask: PlanarClipMaskProps | undefined, expectedCenter: PixelType, setup?: (vp: Viewport) => void): Promise<void> {
+    const start = performance.now();
+    const vp = viewport;
+    const ms = { setup: 0, firstWait: 0, colorReads: 0, pickReads: 0, total: 0 };
+    const frames = { firstWait: 0 };
+    const requestedTiles = { start: 0, end: 0 };
+    try {
+      let phaseStart = performance.now();
+      requestedTiles.start = vp.numRequestedTiles;
+      vp.changeViewedModels(originalModelIds);
       vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
       vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
         planarClipMask,
@@ -64,15 +103,29 @@ describe("Planar clip mask (#integration #graphics)", () => {
         groundBias: 10,
       });
 
-      vp.displayStyle.backgroundMapBase = ColorDef.red;
       if (setup) {
         setup(vp);
       }
 
-      await vp.waitForAllTilesToRender();
-      vp.invalidateRenderPlan();
-      await vp.waitForAllTilesToRender();
+      // Dynamic trees must be ready before the first frame, not just when the render wait returns.
+      for (const provider of vp.tiledGraphicsProviders) {
+        assert(undefined !== provider.getReferences);
+        for (const ref of provider.getReferences(vp))
+          await ref.treeOwner.loadTree();
+      }
 
+      ms.setup = performance.now() - phaseStart;
+      phaseStart = performance.now();
+      const removeOnRender = vp.onRender.addListener(() => ++frames.firstWait);
+      try {
+        await vp.waitForAllTilesToRender();
+        ms.firstWait = performance.now() - phaseStart;
+      } finally {
+        requestedTiles.end = vp.numRequestedTiles;
+        removeOnRender();
+      }
+
+      phaseStart = performance.now();
       const cx = Math.floor(vp.viewRect.width / 2);
       const cy = Math.floor(vp.viewRect.height / 2);
 
@@ -94,6 +147,9 @@ describe("Planar clip mask (#integration #graphics)", () => {
       expectColor(cx, cy, expectedCenter);
       expectColor(1, 1, "map");
 
+      ms.colorReads = performance.now() - phaseStart;
+      phaseStart = performance.now();
+
       // Test what's rendered to the pick buffers.
       const expectFeature = (x: number, y: number, expectedFeature: PixelType) => {
         const px = vp.readPixel(x, y, true);
@@ -111,11 +167,22 @@ describe("Planar clip mask (#integration #graphics)", () => {
 
       expectFeature(cx, cy, expectedCenter);
       expectFeature(1, 1, "map");
-    });
+      ms.pickReads = performance.now() - phaseStart;
+    } finally {
+      for (const provider of vp.tiledGraphicsProviders)
+        vp.dropTiledGraphicsProvider(provider);
+
+      ms.total = performance.now() - start;
+      for (const phase of Object.keys(ms) as Array<keyof typeof ms>)
+        ms[phase] = Math.round(ms[phase]);
+
+      // eslint-disable-next-line no-console -- One timing summary per invocation, never per frame.
+      console.log(`PlanarClipMask timing: ${JSON.stringify({ label, ms, frames, requestedTiles })}`);
+    }
   }
 
   it("is not masked by default", async () => {
-    await expectPixels(undefined, "map");
+    await expectPixels("default", undefined, "map");
   });
 
   it("is masked by specific model", async function () {
@@ -124,10 +191,10 @@ describe("Planar clip mask (#integration #graphics)", () => {
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
     // If the model is visible, it fills the masked region of the mask.
-    await expectPixels(mask, "model");
+    await expectPixels("models visible", mask, "model");
 
     // If the model is not visible, it makes a hole in the map revealing the background color.
-    await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
+    await expectPixels("models invisible", mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
   it("is masked by DesignModel priority",  async function () {
@@ -136,14 +203,14 @@ describe("Planar clip mask (#integration #graphics)", () => {
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
-    await expectPixels(mask, "model");
-    await expectPixels(mask, "map", (vp) => vp.changeViewedModels([]));
+    await expectPixels("priority visible", mask, "model");
+    await expectPixels("priority invisible", mask, "map", (vp) => vp.changeViewedModels([]));
   });
 
   it("is not masked if priority threshold > DesignModel", async () => {
     // This just proves that the next test doesn't just *look* like it passed because the dynamic geometry is naturally drawing
     // in front of the map.
-    await expectPixels({ mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.DesignModel }, "map");
+    await expectPixels("priority above DesignModel", { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.DesignModel }, "map");
   });
 
   function addDynamicGeometry(vp: Viewport): void {
@@ -181,7 +248,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
   }
 
   it("is not masked by dynamic geometry by default", async () => {
-    await expectPixels(undefined, "map", addDynamicGeometry);
+    await expectPixels("dynamic default", undefined, "map", addDynamicGeometry);
   });
 
   it("is masked by dynamic element geometry",  async function () {
@@ -200,7 +267,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
       modelId: "0x1c",
     });
 
-    await expectPixels({
+    await expectPixels("dynamic element", {
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
     }, "model", (vp) => {
@@ -215,7 +282,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
   it("is masked by priority by dynamic geometry", async function () {
     // These tests can exceed the default timeout due to shader compilation for draping.
     this.timeout(480000);
-    await expectPixels({
+    await expectPixels("dynamic priority", {
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
     }, "dynamic", addDynamicGeometry);

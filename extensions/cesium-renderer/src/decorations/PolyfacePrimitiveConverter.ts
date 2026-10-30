@@ -14,10 +14,12 @@ import {
   GeometryAttribute,
   GeometryAttributes,
   GeometryInstance,
+  PrimitiveType,
+} from "@cesium/core";
+import {
   PerInstanceColorAppearance,
   Primitive,
   PrimitiveCollection,
-  PrimitiveType,
 } from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";

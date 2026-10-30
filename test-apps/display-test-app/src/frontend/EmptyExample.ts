@@ -152,12 +152,12 @@ export class CesiumDecorator implements Decorator {
     const center = this._iModel.projectExtents.center;
 
     const shapes = [
-      {
+      { // Offset east so it doesn't cover tilesets placed at the project center.
         points: [
-          new Point3d(center.x - 80000, center.y - 80000, center.z + 15000),
-          new Point3d(center.x + 80000, center.y - 80000, center.z + 15000),
-          new Point3d(center.x, center.y + 80000, center.z + 15000),
-          new Point3d(center.x - 80000, center.y - 80000, center.z + 15000),
+          new Point3d(center.x + 120000, center.y - 80000, center.z + 15000),
+          new Point3d(center.x + 280000, center.y - 80000, center.z + 15000),
+          new Point3d(center.x + 200000, center.y + 80000, center.z + 15000),
+          new Point3d(center.x + 120000, center.y - 80000, center.z + 15000),
         ],
         type: GraphicType.WorldDecoration,
         color: ColorDef.from(0, 255, 0),
