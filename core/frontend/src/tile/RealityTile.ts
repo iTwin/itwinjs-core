@@ -16,6 +16,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
+import { RealityTileBoundingSphere, RealityTileBoundingVolume, RealityTileOrientedBox } from "../internal/tile/RealityTileBoundingVolume";
 import {
   RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
   TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
@@ -31,6 +32,10 @@ export interface RealityTileParams extends TileParams {
   readonly geometricError?: number;
   /** The URL of this tile's content, used to resolve resources (e.g. external glTF images) referenced relatively by the content. */
   readonly contentUrl?: string;
+  /** The tile's bounding volume, if its tileset declares it as a sphere. */
+  readonly sphere?: { readonly center: Point3d, readonly radius: number };
+  /** True if the tile is the root of an external tileset, referenced by its parent's content. */
+  readonly isExternalTilesetRoot?: boolean;
 }
 
 /** The geometry representing the contents of a reality tile. Currently only polyfaces are returned.
@@ -73,6 +78,9 @@ export class RealityTile extends Tile {
   /** The URL of this tile's content, used to resolve resources (e.g. external glTF images) referenced relatively by the content.
    * @internal */
   public readonly contentUrl?: string;
+  /** True if the tile is the root of an external tileset, referenced by its parent's content.
+   * @internal */
+  public readonly isExternalTilesetRoot: boolean;
   /** @internal */
   protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
@@ -80,6 +88,10 @@ export class RealityTile extends Tile {
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
+  /** The bounding sphere the tileset declares, if any, in tile tree coordinates. */
+  private _declaredSphere?: RealityTileBoundingSphere;
+  private _boundingVolume?: RealityTileBoundingVolume;
+  private _worldBoundingVolume?: { location: Transform, volume: RealityTileBoundingVolume };
   /** @internal */
   protected _copyright?: string;
   /** @internal */
@@ -99,8 +111,11 @@ export class RealityTile extends Tile {
     this.region = props.region;
     this.contentUrl = props.contentUrl;
     this._geometricError = props.geometricError;
+    this.isExternalTilesetRoot = true === props.isExternalTilesetRoot;
     this.tree = tree;
 
+    const declaredSphere = props.sphere && new RealityTileBoundingSphere(props.sphere.center, props.sphere.radius);
+    this._declaredSphere = this.transformToRoot ? declaredSphere?.transformBy(this.transformToRoot) : declaredSphere;
     if (undefined === this.transformToRoot)
       return;
 
@@ -151,6 +166,10 @@ export class RealityTile extends Tile {
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
   /** @internal */
   public get copyright(): string | undefined { return this._copyright; }
+  /** True if the tile is selected by its geometric error, which [[TileAdmin.memoryScreenSpaceErrorFactor]] coarsens.
+   * @internal
+   */
+  public get selectsByGeometricError(): boolean { return undefined !== this._geometricError; }
 
   /** @internal */
   public override get isDisplayable(): boolean {
@@ -300,6 +319,32 @@ export class RealityTile extends Tile {
       rootReprojection.multiplyRange(this.contentRange, this.contentRange);
     if (this.rangeCorners)
       rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
+
+    this._declaredSphere = this._declaredSphere?.transformBy(rootReprojection);
+    this._boundingVolume = this._worldBoundingVolume = undefined;
+  }
+
+  /** The bounding volume the tileset declares (oriented box, region or sphere), in tile tree coordinates.
+   * @internal
+   */
+  public get boundingVolume(): RealityTileBoundingVolume {
+    return this._boundingVolume ??= this._declaredSphere ?? this.boundingBox();
+  }
+
+  private boundingBox(): RealityTileOrientedBox {
+    if (!this.rangeCorners)
+      return RealityTileOrientedBox.fromRange(this.range);
+
+    // A region's corners are not a parallelepiped, so they are enclosed. A box keeps its own axes, even a flat one.
+    return this.region ? RealityTileOrientedBox.enclosingCorners(this.rangeCorners) : RealityTileOrientedBox.fromBoxCorners(this.rangeCorners);
+  }
+
+  /** [[boundingVolume]] in world coordinates, recomputed only when the tree's location changes. */
+  private worldBoundingVolume(location: Transform): RealityTileBoundingVolume {
+    if (!this._worldBoundingVolume?.location.isAlmostEqual(location))
+      this._worldBoundingVolume = { location: location.clone(), volume: this.boundingVolume.transformBy(location) };
+
+    return this._worldBoundingVolume.volume;
   }
 
   /** @internal */
@@ -428,6 +473,172 @@ export class RealityTile extends Tile {
     }
   }
 
+  /** Select tiles for a tree that [[RealityTileTree.refinesWhenChildrenReady]], as CesiumJS 1.146 does without skipping levels
+   * of detail (Cesium3DTilesetBaseTraversal):
+   * - a displayed tile with replacement refinement is replaced only once every child is ready, even children outside the
+   *   view (or, for an external tileset root without content, its nearest descendants with content). It stays displayed
+   *   meanwhile. It is never replaced by a child whose content failed to load;
+   * - every tile the final selection needs is requested at once, and kept in the tile cache while it is needed.
+   * Unlike CesiumJS, while a tile that should be displayed is missing, its loaded descendants stand in for it; and an additive
+   * tile is not drawn while its parent waits for its siblings, since that would draw both.
+   * @returns whether ready content covers the visible region (see [[RealityTileCoverage.complete]]).
+   * @internal
+   */
+  public selectRefiningWhenChildrenReady(context: TraversalSelectionContext, args: TileDrawArgs): boolean {
+    return this.selectWhenChildrenReady(context, args, true);
+  }
+
+  /** Select this tile or its descendants if `parentRefines`, else only request what they need.
+   * @returns false if part of the tile's visible region is left without ready content.
+   */
+  private selectWhenChildrenReady(context: TraversalSelectionContext, args: TileDrawArgs, parentRefines: boolean): boolean {
+    if (this.isBoundingVolumeCulled(args))
+      return true;
+
+    // Children are prepared even while this tile waits for them: they still need their content requested.
+    const needsChildren = !context.selectionCountExceeded && !this.meetsErrorTolerance(args);
+    const children = needsChildren ? this.loadedChildren(context, args) : undefined;
+    const refines = undefined !== children && this.childrenCanReplace(children, context, args) && parentRefines;
+    const stopsRefining = parentRefines && !refines;
+
+    let covered = true;
+    if (this.isDisplayable) {
+      this.markNeeded(context, args);
+      const drawnBeneathChildren = this.additiveRefinement && parentRefines;
+      if (stopsRefining || drawnBeneathChildren)
+        covered = this.selectOrStandIn(context, args, !drawnBeneathChildren);
+    } else if (stopsRefining) {
+      covered = this.selectReadyDescendants(context, args);
+    }
+
+    for (const child of children ?? [])
+      covered = child.selectWhenChildrenReady(context, args, refines) && covered;
+
+    return covered;
+  }
+
+  /** The tile's children, or undefined while they are loading or if it has none. */
+  private loadedChildren(context: TraversalSelectionContext, args: TileDrawArgs): RealityTile[] | undefined {
+    if (TileTreeLoadStatus.Loading === this.loadChildren()) {
+      context.markChildrenLoading(args);
+      return undefined;
+    }
+
+    const children = this.realityChildren;
+    return children?.length ? children : undefined;
+  }
+
+  /** Keep the tile's content in the tile cache while the traversal needs it, and request it if it is missing. */
+  private markNeeded(context: TraversalSelectionContext, args: TileDrawArgs): void {
+    if (!this.isDisplayable)
+      return;
+
+    this.markTouched(args);
+    if (!this.isLoaded && !this.isNotFound)
+      context.missing.push(this);
+  }
+
+  private markTouched(args: TileDrawArgs): void {
+    this.markUsed(args);
+    args.touchedTiles.add(this);
+  }
+
+  /** Whether `children` can replace this tile (Cesium3DTilesetBaseTraversal.updateAndPushChildren): at least one is visible, and
+   * if this tile is displayed with replacement refinement, every child can be displayed, including those outside the view,
+   * whose content is requested here.
+   */
+  private childrenCanReplace(children: RealityTile[], context: TraversalSelectionContext, args: TileDrawArgs): boolean {
+    const waitsForChildren = !this.additiveRefinement && this.isDisplayable;
+    let anyChildVisible = false;
+    let allChildrenReady = true;
+    for (const child of children) {
+      const childCulled = child.isBoundingVolumeCulled(args);
+      anyChildVisible ||= !childCulled;
+      if (!waitsForChildren)
+        continue;
+
+      if (childCulled)
+        child.markNeeded(context, args);
+
+      const childReady = child.isDisplayable ? child.isReady : child.nearestContentReady(context, args);
+      allChildrenReady &&= childReady;
+    }
+
+    return anyChildVisible && allChildrenReady;
+  }
+
+  /** For a tile without content, whether its nearest descendants with content are ready (CesiumJS's executeEmptyTraversal).
+   * Only an external tileset's root can hold back its parent's refinement; CesiumJS refines into any other tile without content.
+   */
+  private nearestContentReady(context: TraversalSelectionContext, args: TileDrawArgs): boolean {
+    if (!this.isExternalTilesetRoot)
+      return true;
+
+    let allReady = true;
+    const pending: RealityTile[] = [this];
+    for (let tile = pending.pop(); tile; tile = pending.pop()) {
+      const refinesThroughTile = !tile.isDisplayable && !context.selectionCountExceeded && !tile.meetsErrorTolerance(args);
+      const children = refinesThroughTile ? tile.loadedChildren(context, args) : undefined;
+      if (!children && !(tile.isDisplayable && tile.isReady))
+        allReady = false;
+
+      if (tile.isBoundingVolumeCulled(args))
+        tile.markNeeded(context, args);
+
+      pending.push(...children ?? []);
+    }
+
+    return allReady;
+  }
+
+  /** Select this tile if it is ready. While it is missing, its loaded descendants stand in for it if `descendantsReplaceIt`,
+   * that is, unless they only add to it (additive refinement).
+   * @returns false if part of the tile's visible region is left without ready content.
+   */
+  private selectOrStandIn(context: TraversalSelectionContext, args: TileDrawArgs, descendantsReplaceIt: boolean): boolean {
+    if (this.isReady) {
+      this.selectIfContentVisible(context, args);
+      return true;
+    }
+
+    return descendantsReplaceIt && this.selectReadyDescendants(context, args);
+  }
+
+  private selectIfContentVisible(context: TraversalSelectionContext, args: TileDrawArgs): void {
+    if (!this.hasContentRange || !this.isContentCulled(args))
+      context.selectOrQueue(this, args, new TraversalDetails());
+  }
+
+  /** Select the loaded descendants that cover this tile's visible region while it is not displayed. Nothing is requested.
+   * @returns false if part of the region has no loaded content.
+   */
+  private selectReadyDescendants(context: TraversalSelectionContext, args: TileDrawArgs): boolean {
+    const children = this.realityChildren;
+    if (!children?.length) {
+      // A tile without content draws nothing. That covers its region only if it needs no children (CesiumJS shows nothing
+      // there either).
+      return this.isDisplayable ? this.isNotFound : this.meetsErrorTolerance(args);
+    }
+
+    let covered = true;
+    for (const child of children) {
+      if (child.isBoundingVolumeCulled(args))
+        continue;
+
+      if (child.isDisplayable && child.isReady) {
+        child.selectIfContentVisible(context, args);
+        continue;
+      }
+
+      if (child.isLoaded)
+        child.markTouched(args);
+
+      covered = child.selectReadyDescendants(context, args) && covered;
+    }
+
+    return covered;
+  }
+
   /** @internal */
   public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void {
     const tilesToPurge = new Set<RealityTile>();
@@ -514,15 +725,7 @@ export class RealityTile extends Tile {
 
   /** @internal */
   public computeVisibilityFactor(args: TileDrawArgs): number {
-    if (this.isEmpty)
-      return -1;
-
-    if (this.rangeCorners)
-      scratchFrustum.setFromCorners(this.rangeCorners);
-    else
-      Frustum.fromRange(this.range, scratchFrustum);
-
-    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere))
+    if (this.isBoundingVolumeCulled(args))
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
@@ -532,16 +735,49 @@ export class RealityTile extends Tile {
     if (this.isLeaf)
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
-    if (undefined !== this._geometricError) {
-      const radius = args.getTileRadius(this);
-      const center = args.getTileCenter(this);
-      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
+    return this.computeDetailFactor(args);
+  }
 
-      const sse = this._geometricError / pixelSize;
-      return args.maximumScreenSpaceError / sse;
+  /** True if the tile is empty or outside the view.
+   * @internal
+   */
+  protected isBoundingVolumeCulled(args: TileDrawArgs): boolean {
+    if (this.isEmpty)
+      return true;
+
+    if (this.rangeCorners)
+      scratchFrustum.setFromCorners(this.rangeCorners);
+    else
+      Frustum.fromRange(this.range, scratchFrustum);
+
+    return this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere);
+  }
+
+  /** The tile's error tolerance relative to its error on screen: below 1, the tile is too coarse for the view. */
+  private computeDetailFactor(args: TileDrawArgs): number {
+    if (undefined !== this._geometricError) {
+      // As CesiumJS does, coarsen while the tiles in use exceed the memory limit (TileAdmin.memoryScreenSpaceErrorFactor).
+      const tolerance = args.maximumScreenSpaceError * IModelApp.tileAdmin.memoryScreenSpaceErrorFactor;
+      return tolerance / this.computeScreenSpaceError(this._geometricError, args);
     }
 
     return this.maximumSize / args.getPixelSize(this);
+  }
+
+  /** The size of `geometricError` on screen, in pixels, at the distance from the eye to the tile's bounding volume, as CesiumJS
+   * computes screen-space error. A bounding volume reaches the eye only if the eye is inside it, not merely because the tile
+   * is long, wide or close to the near plane.
+   * @internal
+   */
+  protected computeScreenSpaceError(geometricError: number, args: TileDrawArgs): number {
+    const eye = args.viewingSpace.eyePoint;
+    const distance = eye ? this.worldBoundingVolume(args.location).distanceTo(eye) : 0;
+    return geometricError / args.computePixelSizeInMetersAtDistance(distance);
+  }
+
+  /** True if the tile's error on screen is within its tolerance, so that it needs no children. */
+  private meetsErrorTolerance(args: TileDrawArgs): boolean {
+    return this.isLeaf || this.computeDetailFactor(args) >= 1;
   }
 
   /** @internal */

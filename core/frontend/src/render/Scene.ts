@@ -11,6 +11,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { SceneVolumeClassifier } from "../internal/render/SceneVolumeClassifier";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import type { RealityTileCoverage, TileTree } from "../tile/internal";
 
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
  * @see [[SceneContext]] for the context in which the scene is created.
@@ -30,4 +31,9 @@ export class Scene {
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   /** @internal */
   public volumeClassifier?: SceneVolumeClassifier;
+  /** How completely the reality tiles selected for the scene's graphics cover each tree's visible region.
+   * @see [[TileDrawArgs.realityTileCoverage]].
+   * @internal
+   */
+  public readonly realityTileCoverage = new Map<TileTree, RealityTileCoverage>();
 }

@@ -45,6 +45,8 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
+import type { GaussianSplatRenderer } from "./GaussianSplatRenderer";
+import { loadedGaussianSplatModule } from "../GaussianSplatModuleLoader";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -869,6 +871,7 @@ enum PrimitiveDrawState {
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
 class Compositor extends SceneCompositor {
+  private _gaussianSplats?: GaussianSplatRenderer;
   protected _width: number = -1;
   protected _height: number = -1;
   protected _includeOcclusion: boolean = false;
@@ -1283,6 +1286,7 @@ class Compositor extends SceneCompositor {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._gaussianSplats?.collectStatistics(stats);
     if (undefined !== this._depth)
       stats.addTextureAttachment(this._depth.bytesUsed);
     if (undefined !== this._depthMS)
@@ -1477,6 +1481,8 @@ class Compositor extends SceneCompositor {
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
 
+    this.renderGaussianSplats(commands, this.getBackgroundFbo(needComposite), this.useMsBuffers);
+
     this.target.frameStatsCollector.endTime("opaqueTime");
 
     this.target.frameStatsCollector.beginTime("translucentTime");
@@ -1664,9 +1670,25 @@ class Compositor extends SceneCompositor {
   }
 
   public [Symbol.dispose]() {
+    this._gaussianSplats = dispose(this._gaussianSplats);
     this.reset();
     dispose(this.solarShadowMap);
     dispose(this.eyeDomeLighting);
+  }
+
+  private renderGaussianSplats(commands: RenderCommands, fbo: FrameBuffer, multisampled: boolean): void {
+    const splatCommands = commands.getCommands(RenderPass.GaussianSplats);
+    if (!splatCommands.length && !this._gaussianSplats)
+      return;
+
+    this._gaussianSplats ??= this.createGaussianSplatRenderer();
+    this._gaussianSplats.draw(splatCommands, fbo, multisampled);
+  }
+
+  private createGaussianSplatRenderer(): GaussianSplatRenderer {
+    // Splat commands draw splat geometry, which only the loaded splat module creates.
+    const splatModule = expectDefined(loadedGaussianSplatModule());
+    return new splatModule.GaussianSplatRenderer(this.target);
   }
 
   // Resets anything that depends on the dimensions of the render target.

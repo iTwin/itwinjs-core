@@ -53,6 +53,8 @@ export interface BufferParameters {
   glOffset: number;
   /** Specifies whether the attribute is instanced.  If so, the WebGL instancing extension function 'vertexAttribDivisor' will be called. */
   glInstanced: boolean;
+  /** If true, the shader reads integer values, as the WebGL function 'vertexAttribIPointer' specifies; `glNormalized` is ignored. */
+  glInteger?: boolean;
 }
 
 /**
@@ -60,12 +62,12 @@ export interface BufferParameters {
  * @internal
  */
 export namespace BufferParameters {
-  export function create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean): BufferParameters {
-    return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced };
+  export function create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean, glInteger?: boolean): BufferParameters {
+    return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced, glInteger };
   }
 
   export function clone(params: BufferParameters): BufferParameters {
-    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced);
+    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced, params.glInteger);
   }
 }
 
@@ -121,7 +123,10 @@ export class BuffersContainer implements WebGLDisposable {
       if (p.glInstanced) {
         System.instance.vertexAttribDivisor(p.glAttribLoc, 1);
       }
-      System.instance.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
+      if (p.glInteger)
+        System.instance.context.vertexAttribIPointer(p.glAttribLoc, p.glSize, p.glType, p.glStride, p.glOffset);
+      else
+        System.instance.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
     }
     this.unbind();
   }

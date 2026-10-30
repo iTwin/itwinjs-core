@@ -27,6 +27,7 @@ export interface TestWorker {
   someVeryLongRunningAsyncOperation(): Promise<number>;
   someLongRunningAsyncOperation(): Promise<number>;
   someFastSynchronousOperation(): number;
+  throwOutsideOperation(): undefined;
 }
 
 let doTransfer = false;
@@ -108,5 +109,12 @@ registerWorker<TestWorker>({
   },
   someFastSynchronousOperation: () => {
     return ++globalTickCounter;
+  },
+  throwOutsideOperation: () => {
+    // An exception escaping the worker's message handler, as when a script fails.
+    setTimeout(() => {
+      throw new Error("uncaught in worker");
+    });
+    return undefined;
   },
 });

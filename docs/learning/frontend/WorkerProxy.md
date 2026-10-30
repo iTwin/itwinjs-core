@@ -63,6 +63,8 @@ We can continue invoking operations on the Worker for as long as we need it. Whe
 [[include:Worker_TerminateCalculatorProxy]]
 ```
 
+After the proxy is terminated, any further call rejects. The proxy also terminates the Worker, and rejects its pending calls, if the Worker's script fails to load. An error that the Worker throws outside of an operation is reported as an uncaught error, and the Worker keeps running. To guard against a Worker that stops responding, pass a `callTimeout` in milliseconds to `createWorkerProxy`: a call that remains pending for longer terminates the Worker. Check [WorkerProxy.isTerminated]($frontend) to find out whether you need to create a new proxy.
+
 ## Example: Creating graphics
 
 Graphics creation represents a more realistic use case for Workers than the contrived calculated example above. [GraphicBuilder]($frontend) is fine for creating simple [RenderGraphic]($frontend)s like decorations on the main thread. But imagine you are streaming large data sets like point clouds, GeoJSON, or Shapefiles which you must process into complex graphics - attempting to do so on the main thread would utterly degrade the responsiveness of the application.

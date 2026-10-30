@@ -97,6 +97,8 @@ export namespace RenderMemory {
     ShadowMaps,
     TextureAttachments,
     ThematicTextures,
+    /** CPU copies of Gaussian splat data: tiles' splats, which viewports sort, and the sort and decoder workers' memory. */
+    GaussianSplats,
     COUNT,
   }
 
@@ -151,6 +153,8 @@ export namespace RenderMemory {
     public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
     /** @internal */
     public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
+    /** @internal */
+    public get gaussianSplats() { return this.consumers[ConsumerType.GaussianSplats]; }
 
     /** @internal */
     public addBuffer(type: BufferType, numBytes: number): void {
@@ -194,6 +198,8 @@ export namespace RenderMemory {
     public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
     /** @internal */
     public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
+    /** @internal */
+    public addGaussianSplats(numBytes: number) { this.addConsumer(ConsumerType.GaussianSplats, numBytes); }
 
     /** @internal */
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
