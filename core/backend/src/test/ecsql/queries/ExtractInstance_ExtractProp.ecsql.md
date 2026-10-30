@@ -181,7 +181,7 @@ SELECT $ -> i from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-|           | i            | false     | 0     | i        | i    | json         | string   | Int  | i                  |
+|           | i            | false     | 0     | i        | i    | undefined    | string   | Int  | i                  |
 
 | i   |
 | --- |
@@ -217,7 +217,7 @@ SELECT $ -> d double_prop from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
-|           | d            | false     | 0     | d        | d    | json         | string   | Double | d                  |
+|           | d            | false     | 0     | d        | d    | undefined    | string   | Double | d                  |
 
 | d   |
 | --- |
@@ -253,7 +253,7 @@ SELECT $ -> l long_prop from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- | ------------------ |
-|           | l            | false     | 0     | l        | l    | json         | string   | Int64 | l                  |
+|           | l            | false     | 0     | l        | l    | undefined    | string   | Int64 | l                  |
 
 | l    |
 | ---- |
@@ -289,7 +289,7 @@ SELECT $ -> s string_prop from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
-|           | s            | false     | 0     | s        | s    | json         | string   | String | s                  |
+|           | s            | false     | 0     | s        | s    | undefined    | string   | String | s                  |
 
 | s    |
 | ---- |
@@ -325,7 +325,7 @@ SELECT $ -> dt dateTime_prop from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type     | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- | ------------------ |
-|           | dt           | false     | 0     | dt       | dt   | json         | string   | DateTime | dt                 |
+|           | dt           | false     | 0     | dt       | dt   | undefined    | string   | DateTime | dt                 |
 
 | dt                      |
 | ----------------------- |
@@ -361,7 +361,7 @@ SELECT $ -> bin binary_Prop from aps.TestElement limit 2
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-|           | bin          | false     | 0     | bin      | bin  | json         | string   | Blob | bin                |
+|           | bin          | false     | 0     | bin      | bin  | undefined    | string   | Blob | bin                |
 
 | bin                                         |
 | ------------------------------------------- |
