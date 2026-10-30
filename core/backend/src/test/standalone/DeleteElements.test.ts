@@ -52,6 +52,28 @@ const assertNoFkViolations = (db: IModelDb) => {
   assert.isEmpty(rows, `PRAGMA foreign_key_check reported violations after bulk delete: ${rows.join("; ")}`);
 };
 
+/**
+ * Minimal domain schema with a navigation property on an Element subclass. Navigation properties declared in domain
+ * schemas are NOT backed by a SQLite foreign key (only BisCore can declare FK-enforced nav props), so the bulk delete
+ * has to detect and NULL them itself rather than relying on `PRAGMA foreign_key_list`.
+ */
+const navTestSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="DeleteElementsNavTest" alias="dent" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+  <ECEntityClass typeName="NavObject">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECNavigationProperty propertyName="Target" relationshipName="NavObjectRefersToElement" direction="Forward"/>
+  </ECEntityClass>
+  <ECRelationshipClass typeName="NavObjectRefersToElement" strength="referencing" modifier="Sealed">
+    <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+      <Class class="NavObject"/>
+    </Source>
+    <Target multiplicity="(0..1)" roleLabel="is referred to by" polymorphic="true">
+      <Class class="bis:Element"/>
+    </Target>
+  </ECRelationshipClass>
+</ECSchema>`;
+
 describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
@@ -64,6 +86,7 @@ describe("deleteElements (native bulk delete API)", () => {
     IModelJsFs.recursiveMkDirSync(KnownTestLocations.outputDir);
     const seedFile = IModelTestUtils.prepareOutputFile("DeleteElements", "seed.bim");
     seedDb = SnapshotDb.createEmpty(seedFile, { rootSubject: { name: "DeleteElements" } });
+    await seedDb.importSchemaStrings([navTestSchemaXml]);
 
     await withEditTxn(seedDb, "create elements", async (editTxn) => {
       modelId = PhysicalModel.insert(editTxn, IModel.rootSubjectId, "TestModel");
@@ -1061,13 +1084,13 @@ describe("deleteElements (native bulk delete API)", () => {
       assert.equal(iModelDb.elements.getElement(catA).model, defPartition, "catA must still live in the sub-model");
     };
 
-    it("1.1 only the modeled element requested: violator inside rejects it, nothing deleted", () => {
+    it("Only the modeled element requested: violator inside rejects it, nothing deleted", () => {
       expectRejected("partition only", [defPartition], [defPartition, catA, subA, catB, subB, wall1],
         new Set([catA]), categoryInUse3d(catA));
       assertPartitionIntact();
     });
 
-    it("1.2 modeled element + members requested explicitly: nothing deleted, only the direct violator is reported", () => {
+    it("Modeled element + members requested explicitly: nothing deleted, only the direct violator is reported", () => {
       // The reviewer's case: pre-fix native treated catB as a root (it was requested) and deleted it together with the model row
       // while catA survived, leaving catA pointing at a model that no longer existed.
       expectRejected("partition + members", [defPartition, catA, catB], [defPartition, catA, subA, catB, subB, wall1],
@@ -1075,18 +1098,18 @@ describe("deleteElements (native bulk delete API)", () => {
       assertPartitionIntact();
     });
 
-    it("1.3 only members requested (modeled element not listed): the in-use one rejects the call, the model survives", () => {
+    it("Only members requested (modeled element not listed): the in-use one rejects the call, the model survives", () => {
       expectRejected("members only", [catA, catB], [defPartition, catA, subA, catB, subB, wall1],
         new Set([catA]), categoryInUse3d(catA));
       assertPartitionIntact();
     });
 
-    it("1.3b only the unused member requested: deleted, the model survives", () => {
+    it("Only the unused member requested: deleted, the model survives", () => {
       executeTestCase("unused member only", [catB], [catB, subB], [defPartition, catA, subA, wall1]);
       assertPartitionIntact();
     });
 
-    it("1.4 once the external user is gone, modeled element + members delete cleanly", () => {
+    it("Once the external user is gone, modeled element + members delete cleanly", () => {
       txn.deleteElement(wall1);
       txn.saveChanges();
       const result = txn.deleteElements([defPartition, catA, catB]);
@@ -1094,7 +1117,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assert.isUndefined(iModelDb.models.tryGetModelProps(defPartition), "sub-model row must be deleted with its modeled element");
     });
 
-    it("1.5 requested member deep in a parent chain inside the sub-model rejects the call", () => {
+    it("Requested member deep in a parent chain inside the sub-model rejects the call", () => {
       const partition = PhysicalModel.insert(txn, IModel.rootSubjectId, "ChainPartition");
       const insertIn = (parentId?: Id64String) => txn.insertElement({
         classFullName: "Generic:PhysicalObject", model: partition, category: categoryId, code: Code.createEmpty(),
@@ -1146,11 +1169,11 @@ describe("deleteElements (native bulk delete API)", () => {
       txn.saveChanges();
     });
 
-    it("2.1 a non-default SubCategory referenced from a geometry stream is DefinitionInUse", () => {
+    it("A non-default SubCategory referenced from a geometry stream is DefinitionInUse", () => {
       expectRejected("sub-category in geometry", [sub], [cat, defaultSub, sub, elem], new Set([sub]), definitionInUse(sub));
     });
 
-    it("2.2 an in-use Category rejects the call that also requests its SubCategory (nothing deleted)", () => {
+    it("A in-use Category rejects the call that also requests its SubCategory (nothing deleted)", () => {
       // Pre-fix native pruned only *upwards* from the violator: `sub` was deleted while `cat` survived. With all-or-nothing
       // semantics the sub-category must survive together with its category.
       const elem2 = txn.insertElement({
@@ -1165,15 +1188,15 @@ describe("deleteElements (native bulk delete API)", () => {
       expectRejected("category + sub-category", [cat, sub], [cat, defaultSub, sub, elem2], new Set([cat]), categoryInUse3d(cat));
     });
 
-    it("2.3 a RenderMaterial referenced from a geometry stream is DefinitionInUse", () => {
+    it("A RenderMaterial referenced from a geometry stream is DefinitionInUse", () => {
       expectRejected("material in geometry", [mat], [mat, elem], new Set([mat]), definitionInUse(mat));
     });
 
-    it("2.4 a GeometryPart referenced from a geometry stream is DefinitionInUse", () => {
+    it("A GeometryPart referenced from a geometry stream is DefinitionInUse", () => {
       expectRejected("part in geometry", [part], [part, elem], new Set([part]), definitionInUse(part));
     });
 
-    it("2.5 definitions whose only user is in the delete set are deleted with it", () => {
+    it("Definitions whose only user is in the delete set are deleted with it", () => {
       executeTestCase("definitions + their user", [mat, part, sub, elem], [mat, part, sub, elem], [cat, defaultSub]);
     });
   });
@@ -1376,7 +1399,7 @@ describe("deleteElements (native bulk delete API)", () => {
       assert.throws(() => iModelDb.elements.getAspect(aspectId));
     });
 
-    it("3.4 aspects owned by cascaded sub-model members are removed", async () => {
+    it("Aspects owned by cascaded sub-model members are removed", async () => {
       // Existing aspect tests only cover parent/child cascades; sub-model members reach the delete set through a different path.
       const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, "AspectPartition");
       const insertMember = () => txn.insertElement({
@@ -1398,7 +1421,109 @@ describe("deleteElements (native bulk delete API)", () => {
       assert.equal(await countAspects(member2), 0, "aspects of cascaded sub-model member must be removed");
     });
 
-    describe("3.2 ElementDrivesElement link table", () => {
+    describe("domain-schema navigation properties (no FK constraint)", () => {
+      const navObjectClass = "DeleteElementsNavTest:NavObject";
+      const navRelClass = "DeleteElementsNavTest:NavObjectRefersToElement";
+
+      /** Insert a `NavObject` that optionally points at `targetId` through its (non-FK) `Target` navigation property. */
+      const insertNavObject = (targetId?: Id64String, parentId?: Id64String): Id64String => {
+        const id = txn.insertElement({
+          classFullName: navObjectClass, model: modelId, category: categoryId, code: Code.createEmpty(),
+          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+          ...(targetId ? { target: { id: targetId, relClassName: navRelClass } } : {}),
+          ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
+        } as PhysicalElementProps);
+        assert.isNotEmpty(id);
+        txn.saveChanges();
+        return id;
+      };
+
+      /** Returns the raw `Target.Id` stored for `navObjectId`, or `undefined` if the column is NULL. */
+      const queryTargetId = async (navObjectId: Id64String): Promise<Id64String | undefined> => {
+        const reader = iModelDb.createQueryReader("SELECT Target.Id FROM dent.NavObject WHERE ECInstanceId=?", new QueryBinder().bindId(1, navObjectId), { usePrimaryConn: true });
+        assert.isTrue(await reader.step(), `NavObject ${navObjectId} must still exist`);
+        const value = reader.current.toArray()[0];
+        return value === undefined || value === null ? undefined : value;
+      };
+
+      it("the nav property is not FK-enforced, so the reference alone must not block the delete", async () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+        assert.equal(await queryTargetId(referrer), target);
+
+        // Sanity check the premise of this test suite: the domain nav property has no SQLite FK behind it.
+        const fkColumns = iModelDb.withSqliteStatement("PRAGMA foreign_key_list(dent_NavObject)", (stmt) => {
+          const cols: string[] = [];
+          while (stmt.step() === DbResult.BE_SQLITE_ROW)
+            cols.push(stmt.getValueString(3));
+          return cols;
+        });
+        assert.notInclude(fkColumns, "TargetId", "domain-schema nav props must not be FK-enforced; otherwise this test exercises the wrong code path");
+
+        const result = txn.deleteElements([target]);
+        assertResult(result, success, [target], [referrer]);
+      });
+
+      it("nav property on a surviving element is set to NULL when its target is deleted", async () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+        const unrelatedTarget = insertElement();
+        const unrelatedReferrer = insertNavObject(unrelatedTarget);
+
+        const result = txn.deleteElements([target]);
+        assertResult(result, success, [target], [referrer, unrelatedTarget, unrelatedReferrer]);
+        assert.isUndefined(await queryTargetId(referrer), "the dangling Target reference must be NULLed, not left pointing at a deleted element");
+        assert.equal(await queryTargetId(unrelatedReferrer), unrelatedTarget, "references to elements outside the delete set must be untouched");
+
+        // The surviving referrer must still be readable through the element API with the nav prop cleared.
+        const props = iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
+        assert.isTrue(props.target === undefined || props.target.id === undefined || !Id64.isValid(props.target.id), `expected cleared nav prop, got ${JSON.stringify(props.target)}`);
+      });
+
+      it("nav property pointing at a cascaded descendant is NULLed too", async () => {
+        const parent = insertElement();
+        const child = insertElement({ parentId: parent });
+        const referrer = insertNavObject(child);
+
+        const result = txn.deleteElements([parent]);
+        assertResult(result, success, [parent, child], [referrer]);
+        assert.isUndefined(await queryTargetId(referrer), "a reference to a cascaded child must be NULLed");
+      });
+
+      it("multiple referrers of the same target are all NULLed", async () => {
+        const target = insertElement();
+        const referrers = [insertNavObject(target), insertNavObject(target), insertNavObject(target)];
+
+        const result = txn.deleteElements([target]);
+        assertResult(result, success, [target], referrers);
+        for (const referrer of referrers)
+          assert.isUndefined(await queryTargetId(referrer));
+      });
+
+      it("referrer inside the delete set is simply deleted along with its target", async () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+        const childReferrer = insertNavObject(target, target); // child of target, so cascaded into the set
+
+        const result = txn.deleteElements([target, referrer]);
+        assertResult(result, success, [target, referrer, childReferrer], []);
+      });
+
+      it("NULLing is rolled back when the txn is abandoned", async () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+
+        const result = txn.deleteElements([target]);
+        assertResult(result, success, [target], [referrer]);
+        assert.isUndefined(await queryTargetId(referrer));
+
+        txn.abandonChanges();
+        assertExists(target);
+        assert.equal(await queryTargetId(referrer), target, "abandoning the txn must restore the nav property");
+      });
+    });
+
+    describe("ElementDrivesElement link table", () => {
       const countDrives = async (): Promise<number> => {
         const reader = iModelDb.createQueryReader("SELECT COUNT(*) FROM bis.ElementDrivesElement", undefined, { usePrimaryConn: true });
         assert.isTrue(await reader.step());
