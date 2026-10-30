@@ -29,6 +29,7 @@ describe("FeatureSymbology.Overrides", () => {
       expectNeverDrawn(vp.view, ["0x1"]);
       expectNeverDrawn(vp, ["0x1"]);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.setNeverDrawn(new Set(["0x2"]));
       expectNeverDrawn(vp.view, ["0x1"]);
       expectNeverDrawn(vp, ["0x1", "0x2"]);
@@ -37,7 +38,16 @@ describe("FeatureSymbology.Overrides", () => {
       expectNeverDrawn(vp.view, []);
       expectNeverDrawn(vp, ["0x2"]);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.clearNeverDrawn();
+      expectNeverDrawn(vp.view, []);
+      expectNeverDrawn(vp, []);
+
+      vp.primaryIModelRef.neverDrawnElements.add("0x3");
+      expectNeverDrawn(vp.view, []);
+      expectNeverDrawn(vp, ["0x3"]);
+
+      vp.primaryIModelRef.neverDrawnElements.delete("0x3");
       expectNeverDrawn(vp.view, []);
       expectNeverDrawn(vp, []);
     });

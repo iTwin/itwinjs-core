@@ -18,6 +18,7 @@ import { Contours } from "./Contours";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { FeatureAppearanceProvider } from "@itwin/core-common";
 import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "../../../IModelConnection";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -45,20 +46,20 @@ export class BatchUniforms {
   }
 
   public clearCurrentBatch(): void {
-    this._setCurrentBatch(undefined, undefined);
+    this._setCurrentBatch(undefined, undefined, undefined);
   }
 
-  public setCurrentBatch(batch: Batch, provider: FeatureAppearanceProvider): void {
-    this._setCurrentBatch(batch, provider);
+  public setCurrentBatch(batch: Batch, provider: FeatureAppearanceProvider, iModel: IModelConnection): void {
+    this._setCurrentBatch(batch, provider, iModel);
   }
 
-  private _setCurrentBatch(batch: Batch | undefined, provider: FeatureAppearanceProvider | undefined): void {
+  private _setCurrentBatch(batch: Batch | undefined, provider: FeatureAppearanceProvider | undefined, iModel: IModelConnection | undefined): void {
     desync(this);
 
     let overrides;
     if (undefined !== batch) {
-      assert(undefined !== provider);
-      overrides = batch.getOverrides(this._target, provider);
+      assert(undefined !== provider && undefined !== iModel);
+      overrides = batch.getOverrides(iModel, this._target, provider);
       this.state.push(batch, false);
     } else {
       this.state.pop();

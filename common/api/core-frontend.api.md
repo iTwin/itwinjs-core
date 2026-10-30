@@ -201,6 +201,7 @@ import { MeshPolyline } from '@itwin/core-common';
 import { MeshPolylineList } from '@itwin/core-common';
 import { MessagePresenter } from '@itwin/appui-abstract';
 import { MessageSeverity } from '@itwin/appui-abstract';
+import { ModelClipGroups } from '@itwin/core-common';
 import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelFeature } from '@itwin/core-common';
 import { ModelGeometryChanges } from '@itwin/core-common';
@@ -215,6 +216,7 @@ import { NativeAppFunctions } from '@itwin/core-common';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import { NormalMapParams } from '@itwin/core-common';
 import { NotifyEntitiesChangedArgs } from '@itwin/core-common';
+import { ObservableMap } from '@itwin/core-bentley';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
@@ -234,6 +236,7 @@ import { PlacementProps } from '@itwin/core-common';
 import { PlanarClipMaskProps } from '@itwin/core-common';
 import { PlanarClipMaskSettings } from '@itwin/core-common';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
+import { PlanProjectionSettings } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Point4d } from '@itwin/core-geometry';
@@ -1502,6 +1505,25 @@ export class BackgroundMapGeometry {
     readonly maxGeometryChordHeight: number;
 }
 
+// @internal (undocumented)
+export const _backingView: unique symbol;
+
+// @beta
+export interface BaseIModelDisplayReferences {
+    // @internal (undocumented)
+    readonly [_backingView]: ViewState;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    defaultFeatureAppearance: FeatureAppearance;
+    readonly iModels: Iterable<IModelConnection>;
+    readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
+    readonly onTimePointChanged: BeEvent<() => void>;
+    readonly primary: IModelDisplayReference;
+    // @internal (undocumented)
+    readonly subcategories: SubCategoriesCache.Queue;
+    timePoint: number | undefined;
+}
+
 // @beta
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
     constructor(_quantityFormatter: QuantityFormatter, _maintainOverridesPerIModel?: boolean | undefined);
@@ -2033,6 +2055,15 @@ export interface CesiumAssetEndpoint {
     url: string;
 }
 
+// @beta
+export interface ChangeCategoryDisplayArgs {
+    categories: Iterable<Id64String>;
+    display: boolean;
+    enableAllSubCategories?: boolean;
+    // @internal (undocumented)
+    noBatchNotify?: boolean;
+}
+
 // @public
 export enum ChangeFlag {
     All = 268435455,
@@ -2122,10 +2153,13 @@ export class Cluster<T extends Marker> {
 }
 
 // @internal (undocumented)
-export function collectMaskRefs(view: SpatialViewState, modelIds: OrderedId64Iterable, excludedModelIds: Set<Id64String> | undefined, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
+export function collectMaskRefs(iModelRef: SpatialIModelDisplayReference, modelIds: OrderedId64Iterable, excludedModelIds: Set<Id64String> | undefined, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
 
 // @public
 export type CollectTileStatus = "accept" | "reject" | "continue";
+
+// @public
+export function compareIModelElements(a: IModelAndElementId, b: IModelAndElementId): number;
 
 // @public
 export enum CompassMode {
@@ -2334,6 +2368,9 @@ export interface CreateGraphicFromTemplateArgs {
     template: GraphicTemplate;
 }
 
+// @internal (undocumented)
+export function createIModelDisplayReferences2d(view: ViewState2d): IModelDisplayReferences2d;
+
 // @beta
 export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription;
 
@@ -2358,7 +2395,7 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 }
 
 // @internal
-export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
+export function createSpatialTileTreeReferences(iModelRef: SpatialIModelDisplayReference, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
 
 // @public
 export interface CreateTextureArgs {
@@ -2702,6 +2739,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined;
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
+    // @internal
+    get activeViewFlags(): ViewFlags;
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
     attachMapLayer(options: {
@@ -3073,7 +3112,7 @@ export class ElementLocateManager {
 
 // @public (undocumented)
 export class ElementPicker {
-    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number;
+    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: ReadPixelsArgs["excludedElements"]): number;
     // (undocumented)
     empty(): void;
     getHit(i: number): HitDetail | undefined;
@@ -3115,7 +3154,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     // @internal
-    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
+    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: SelectionCandidate) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
     protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
@@ -3211,9 +3250,11 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean;
     // @internal (undocumented)
-    protected createAppearanceFromKey(key: number): FeatureAppearance;
+    createAppearanceFromKey(key: number): FeatureAppearance;
     createDefaultAppearance(): FeatureAppearance;
     createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    // (undocumented)
+    static get defaultAppearance(): FeatureAppearance;
     get defaultAppearance(): FeatureAppearance | undefined;
     set defaultAppearance(appearance: FeatureAppearance | undefined);
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
@@ -3248,8 +3289,62 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     get unanimatedAppearance(): FeatureAppearance | undefined;
     set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
-    protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
-    wantEmphasis: boolean;
+    updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+    get wantEmphasis(): boolean;
+    set wantEmphasis(value: boolean);
+}
+
+// @beta
+export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOverrideProvider {
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides): void;
+    static clear(ref: IModelDisplayReference, inactiveOnly?: boolean): void;
+    clearAlwaysDrawnElements(): boolean;
+    clearEmphasizedElements(): boolean;
+    clearEmphasizedIsolatedElements(setToAlwaysDrawn: boolean): boolean;
+    clearHiddenElements(): boolean;
+    clearIsolatedElements(): boolean;
+    clearNeverDrawnElements(): boolean;
+    clearOverriddenElements(keyOrIds?: number | Id64Arg): boolean;
+    // @internal (undocumented)
+    createAppearanceFromKey(key: number): FeatureAppearance;
+    createDefaultAppearance(): FeatureAppearance;
+    createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    // (undocumented)
+    static get defaultAppearance(): FeatureAppearance;
+    get defaultAppearance(): FeatureAppearance | undefined;
+    set defaultAppearance(appearance: FeatureAppearance | undefined);
+    emphasizeElements(ids: Id64Arg, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
+    emphasizeSelectedElements(ref: IModelDisplayReference, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
+    fromJSON(props: EmphasizeElementsProps): boolean;
+    static get(ref: IModelDisplayReference): EmphasizeIModelElements | undefined;
+    getAlwaysDrawnElements(): Id64Set | undefined;
+    getEmphasizedElements(): Id64Set | undefined;
+    getEmphasizedIsolatedElements(): Id64Set | undefined;
+    getHiddenElements(): Id64Set | undefined;
+    getIsolatedElements(): Id64Set | undefined;
+    getNeverDrawnElements(): Id64Set | undefined;
+    static getOrCreate(ref: IModelDisplayReference): EmphasizeIModelElements;
+    getOverriddenElements(): Map<number, Id64Set> | undefined;
+    getOverriddenElementsByKey(key: number): Id64Set | undefined;
+    getOverrideFromKey(key: number): {
+        overrideType: FeatureOverrideType;
+        color: ColorDef;
+    };
+    hideElements(ids: Id64Arg, replace?: boolean): boolean;
+    get isActive(): boolean;
+    isolateElements(ids: Id64Arg, replace?: boolean): boolean;
+    isolateSelectedElements(ref: IModelDisplayReference, replace?: boolean, clearSelection?: boolean): boolean;
+    overrideElements(ids: Id64Arg, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
+    overrideSelectedElements(ref: IModelDisplayReference, color: ColorDef, override?: FeatureOverrideType, replace?: boolean, clearSelection?: boolean): boolean;
+    setAlwaysDrawnElements(ids: Id64Arg, exclusive?: boolean, replace?: boolean): boolean;
+    setNeverDrawnElements(ids: Id64Arg, replace?: boolean): boolean;
+    toJSON(): EmphasizeElementsProps;
+    get unanimatedAppearance(): FeatureAppearance | undefined;
+    set unanimatedAppearance(appearance: FeatureAppearance | undefined);
+    // @internal (undocumented)
+    updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+    get wantEmphasis(): boolean;
+    set wantEmphasis(value: boolean);
 }
 
 // @beta @deprecated
@@ -3444,6 +3539,8 @@ export interface FeatureSymbolizedRenderer {
 export namespace FeatureSymbology {
     export class Overrides extends FeatureOverrides {
         constructor(view?: ViewState | Viewport);
+        // @internal (undocumented)
+        initFromIModelDisplayReference(ref: IModelDisplayReference): void;
         // @internal
         initFromView(view: ViewState): void;
         // @internal
@@ -3866,7 +3963,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     // (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    createTileTreeReference(view: ViewState): TileTreeReference;
+    createTileTreeReference(iModelRef: IModelDisplayReference): TileTreeReference;
     // @internal (undocumented)
     geometryGuid?: string;
     get is2d(): boolean;
@@ -3937,6 +4034,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
+
+// @internal (undocumented)
+export const _getModelClip: unique symbol;
 
 // @public
 export interface GetPixelDataWorldPointArgs {
@@ -4481,12 +4581,12 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
-    iModel?: IModelConnection;
+    // @beta
+    iModelRef?: IModelDisplayReference;
     // @internal (undocumented)
     inSectionDrawingAttachment?: boolean;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
-    transformFromIModel?: Transform;
     // @internal
     viewAttachmentId?: Id64String;
 }
@@ -4728,12 +4828,16 @@ export class HiliteSet {
 // @public
 export class HitDetail {
     constructor(props: HitDetailProps);
+    // @beta
+    constructor(props: HitDetailFeatureProps);
     // @deprecated
     constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
     get distFraction(): number;
     get distXY(): number;
     draw(_context: DecorateContext): void;
+    // @beta
+    get feature(): IModelDisplayFeature;
     get geometryClass(): GeometryClass | undefined;
     getHitType(): HitDetailType;
     getPoint(): Point3d;
@@ -4755,20 +4859,33 @@ export class HitDetail {
     get path(): HitPath | undefined;
     get priority(): HitPriority;
     get sourceId(): Id64String;
-    // @internal
-    get sourceIModel(): IModelConnection | undefined;
     get subCategoryId(): Id64String | undefined;
     get testPoint(): Point3d;
     // @internal
     get tileId(): string | undefined;
-    // @internal (undocumented)
-    get transformFromSourceIModel(): Transform | undefined;
     // @beta
     get viewAttachment(): ViewAttachmentHitInfo | undefined;
     get viewport(): ScreenViewport;
 }
 
-// @public
+// @beta
+export interface HitDetailFeatureProps {
+    readonly distFraction: number;
+    readonly distXY: number;
+    readonly feature: IModelDisplayFeature;
+    readonly hitPoint: Point3d;
+    readonly hitSource: HitSource;
+    // @alpha
+    readonly isClassifier?: boolean;
+    readonly path?: HitPath;
+    readonly priority: HitPriority;
+    readonly testPoint: Point3d;
+    // @internal
+    readonly tileId?: string;
+    readonly viewport: ScreenViewport;
+}
+
+// @public @deprecated
 export interface HitDetailProps {
     readonly distFraction: number;
     readonly distXY: number;
@@ -4782,14 +4899,10 @@ export interface HitDetailProps {
     readonly path?: HitPath;
     readonly priority: HitPriority;
     readonly sourceId: Id64String;
-    // @internal
-    readonly sourceIModel?: IModelConnection;
     readonly subCategoryId?: Id64String;
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
-    // @internal (undocumented)
-    readonly transformFromSourceIModel?: Transform;
     readonly viewport: ScreenViewport;
 }
 
@@ -5032,6 +5145,14 @@ export interface ImdlReader {
 export namespace ImdlReader {
     // (undocumented)
     export function create(args: ImdlReaderCreateArgs): ImdlReader;
+}
+
+// @public
+export interface IModelAndElementId {
+    // (undocumented)
+    readonly id: Id64String;
+    // (undocumented)
+    readonly iModel: IModelConnection;
 }
 
 // @public
@@ -5366,6 +5487,107 @@ export namespace IModelConnection {
         id: string;
         name: string;
     }
+}
+
+// @beta
+export interface IModelDisplayFeature extends ModelFeature {
+    iModelRef: IModelDisplayReference;
+}
+
+// @beta (undocumented)
+export namespace IModelDisplayFeature {
+    export function compare(lhs: IModelDisplayFeature, rhs: IModelDisplayFeature): number;
+    export function create(iModelRef: IModelDisplayReference): IModelDisplayFeature;
+}
+
+// @beta
+export interface IModelDisplayOverrides {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    clipStyle?: ClipStyle;
+    defaultFeatureAppearance?: FeatureAppearance;
+    readonly onClipStyleChanged: BeEvent<() => void>;
+    readonly onDefaultFeatureAppearanceChanged: BeEvent<() => void>;
+    readonly onViewFlagsChanged: BeEvent<() => void>;
+    viewFlags: ViewFlagOverrides;
+}
+
+// @beta
+export type IModelDisplayOverridesProps = Partial<Pick<IModelDisplayOverrides, "viewFlags" | "clipStyle" | "defaultFeatureAppearance">>;
+
+// @beta
+export interface IModelDisplayReference {
+    // @internal (undocumented)
+    readonly [_attachToViewport]: (args: AttachToViewportArgs) => void;
+    // @internal (undocumented)
+    readonly [_detachFromViewport]: () => void;
+    // (undocumented)
+    readonly [_excludedElements]?: Iterable<Id64String>;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    readonly [_scheduleScriptReference]: RenderSchedule.ScriptReference | undefined;
+    readonly activeClipStyle: ClipStyle;
+    readonly activeViewFlags: ViewFlags;
+    readonly alwaysDrawnElements: ObservableSet<Id64String>;
+    changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
+    changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
+    // (undocumented)
+    readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
+    getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
+    // @internal
+    getSymbologyOverrides(): FeatureSymbology.Overrides;
+    readonly guid: GuidString;
+    readonly iModel: IModelConnection;
+    invalidateSymbologyOverrides(): void;
+    readonly is2d: () => this is IModelDisplayReference2d;
+    isAlwaysDrawnExclusive: boolean;
+    readonly isLoadingComplete: boolean;
+    readonly isSpatial: () => this is SpatialIModelDisplayReference;
+    isSubCategoryVisible(id: Id64String): boolean;
+    readonly linearTransformToParent: Transform;
+    readonly modelAppearanceOverrides: ObservableMap<Id64String, FeatureAppearance>;
+    modelDisplayTransformProvider: ModelDisplayTransformProvider | undefined;
+    // (undocumented)
+    readonly neverDrawnElements: ObservableSet<Id64String>;
+    readonly onActiveClipStyleChanged: BeEvent<() => void>;
+    readonly onActiveViewFlagsChanged: BeEvent<() => void>;
+    readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
+    readonly onModelDisplayTransformProviderChanged: BeEvent<() => void>;
+    readonly onSymbologyOverridesInvalidated: BeEvent<() => void>;
+    readonly onViewedCategoriesLoaded: BeEvent<() => void>;
+    readonly overrides: IModelDisplayOverrides;
+    readonly parent: IModelDisplayReferences;
+    readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
+    readonly subCategoryOverrides: ObservableMap<Id64String, SubCategoryOverride>;
+    readonly tileTreeRefs: Iterable<TileTreeReference>;
+    readonly viewedCategories: ObservableSet<Id64String>;
+}
+
+// @beta
+export interface IModelDisplayReference2d extends IModelDisplayReference {
+    // @internal (undocumented)
+    readonly [_invalidateTileTreeRef]: () => void;
+    readonly parent: IModelDisplayReferences2d;
+    readonly viewedModel: Id64String;
+}
+
+// @beta
+export interface IModelDisplayReferenceFeatureOverrideProvider {
+    // (undocumented)
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
+}
+
+// @beta
+export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;
+
+// @beta
+export interface IModelDisplayReferences2d extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference2d> {
+    // @internal (undocumented)
+    readonly [_backingView]: ViewState2d;
+    readonly is2d: true;
+    readonly isSpatial?: never;
+    readonly primary: IModelDisplayReference2d;
 }
 
 // @internal (undocumented)
@@ -5775,6 +5997,16 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @beta
+export interface LinkSpatialIModelArgs {
+    excludedElements?: Iterable<Id64String>;
+    iModel: IModelConnection;
+    modelClipGroups?: ModelClipGroups;
+    overrides?: SpatialIModelDisplayOverridesProps;
+    viewedCategories?: Iterable<Id64String>;
+    viewedModels?: Iterable<Id64String>;
+}
 
 // @alpha
 export class LocalExtensionProvider implements ExtensionProvider {
@@ -7404,6 +7636,22 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
+// @beta
+export class MultiIModelSelectionTool extends SelectionToolBase {
+    // (undocumented)
+    protected get allowExternalIModels(): boolean;
+    // (undocumented)
+    processSelection(elementIds: ElementIdsByIModelConnection, process: SelectionProcessing): Promise<boolean>;
+    // (undocumented)
+    protected processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
+    // (undocumented)
+    static startTool(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateSelection(elementIds: ElementIdsByIModelConnection, process: SelectionProcessing): boolean;
+}
+
 // @public
 export class MutableChangeFlags extends ChangeFlags {
     constructor(flags?: ChangeFlag);
@@ -7604,8 +7852,6 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     setFlashed(): void;
     // (undocumented)
-    setHiliteSet(): void;
-    // (undocumented)
     setViewRect(): void;
     // (undocumented)
     updateViewRect(): boolean;
@@ -7643,7 +7889,7 @@ export interface OffScreenViewportOptions {
 // @public
 export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
 
-// @public
+// @public @deprecated
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
     readonly previous: Id64String;
@@ -7896,8 +8142,13 @@ export class PerformanceMetrics {
 
 // @public
 export namespace PerModelCategoryVisibility {
-    // (undocumented)
+    // @deprecated (undocumented)
     export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides;
+    // @internal
+    export interface CreateOverridesArgs {
+        iModel: IModelConnection;
+        queue: SubCategoriesCache.Queue;
+    }
     export enum Override {
         Hide = 2,
         None = 0,
@@ -7913,9 +8164,16 @@ export namespace PerModelCategoryVisibility {
         addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
+        // (undocumented)
+        readonly onChanged: BeEvent<() => void>;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
         // @beta
         setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+    }
+    // (undocumented)
+    export namespace Overrides {
+        // @internal
+        export function create(args: CreateOverridesArgs): Overrides;
     }
     // @beta
     export interface Props {
@@ -7960,38 +8218,33 @@ export namespace Pixel {
     export class Data {
         // @internal
         constructor(args?: {
-            feature?: ModelFeature;
+            feature?: IModelDisplayFeature;
             distanceFraction?: number;
             type?: GeometryType;
             planarity?: Planarity;
             batchType?: BatchType;
-            iModel?: IModelConnection;
             tileId?: string;
             viewAttachmentId?: string;
             inSectionDrawingAttachment?: boolean;
-            transformFromIModel?: Transform;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
         computeHitPriority(): HitPriority;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
-        readonly feature?: Feature;
+        // @beta
+        readonly feature?: IModelDisplayFeature;
         get geometryClass(): GeometryClass | undefined;
-        readonly iModel?: IModelConnection;
         // @beta
         readonly inSectionDrawingAttachment: boolean;
         // @internal (undocumented)
         get isClassifier(): boolean;
-        // (undocumented)
-        readonly modelId?: Id64String;
+        get modelId(): Id64String | undefined;
         readonly planarity: Planarity;
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
         readonly tileId?: string;
         toHitProps(viewport: Viewport): Pixel.HitProps;
-        // @internal (undocumented)
-        readonly transformFromIModel?: Transform;
         readonly type: GeometryType;
         // @beta
         readonly viewAttachmentId?: Id64String;
@@ -8006,21 +8259,15 @@ export namespace Pixel {
     }
     export interface HitProps {
         distFraction: number;
-        geometryClass?: GeometryClass;
+        // @beta
+        feature: IModelDisplayFeature;
         // @alpha
         isClassifier?: boolean;
-        modelId?: Id64String;
         // @beta
         path?: HitPath;
         priority: HitPriority;
-        sourceId: Id64String;
-        // @internal
-        sourceIModel?: IModelConnection;
-        subCategoryId?: Id64String;
         // @internal
         tileId?: string;
-        // @internal (undocumented)
-        transformFromSourceIModel?: Transform;
     }
     export enum Planarity {
         None = 1,
@@ -8031,7 +8278,7 @@ export namespace Pixel {
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
         All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -8111,6 +8358,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     exitTool(): Promise<void>;
     getPrompt(): string;
     get iModel(): IModelConnection;
+    // @beta
+    get iModels(): Iterable<IModelConnection>;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
@@ -8425,7 +8674,8 @@ export interface ReadMeshArgs {
 
 // @public
 export interface ReadPixelsArgs {
-    excludedElements?: Iterable<Id64String>;
+    // @beta
+    excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
     excludeNonLocatable?: boolean;
     receiver: Pixel.Receiver;
     rect?: ViewRect;
@@ -9405,6 +9655,8 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
     // @internal (undocumented)
+    invalidateHilites(): void;
+    // @internal (undocumented)
     onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void;
     // @internal (undocumented)
     onResized(): void;
@@ -9419,18 +9671,16 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     readImageToCanvas(_overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // @internal (undocumented)
-    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
-    reset(_realityMapLayerChanged?: boolean): void;
+    reset(_realityMapLayerChanged?: boolean, _primaryIModelRef?: IModelDisplayReference): void;
     // @internal (undocumented)
     abstract get screenSpaceEffects(): Iterable<string>;
     abstract set screenSpaceEffects(_effectNames: Iterable<string>);
     // @internal (undocumented)
-    setFlashed(_elementId: Id64String, _intensity: number): void;
-    // @internal (undocumented)
-    setHiliteSet(_hilited: HiliteSet): void;
+    setFlashed(_element: IModelAndElementId | undefined, _intensity: number): void;
     // @internal (undocumented)
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // @internal (undocumented)
@@ -9556,6 +9806,12 @@ export class Scene {
 // @public
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
+    // @internal
+    constructor(args: {
+        viewport: Viewport;
+        frustum?: Frustum;
+        iModelRef?: IModelDisplayReference;
+    });
     // @internal (undocumented)
     addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined;
     // @internal (undocumented)
@@ -9570,6 +9826,8 @@ export class SceneContext extends RenderContext {
     get graphicType(): TileGraphicType;
     // @internal (undocumented)
     get hasMissingTiles(): boolean;
+    // @beta
+    readonly iModelRef: IModelDisplayReference;
     insertMissingTile(tile: Tile): void;
     // @internal (undocumented)
     markChildrenLoading(): void;
@@ -9678,8 +9936,6 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
-    // @internal (undocumented)
-    protected onSceneVisibilityChanged(): void;
     // @internal
     onViewManagerAdd(): void;
     // @internal
@@ -9841,7 +10097,23 @@ export enum SelectionSetEventType {
 }
 
 // @public
-export class SelectionTool extends PrimitiveTool {
+export class SelectionTool extends SelectionToolBase {
+    // (undocumented)
+    processSelection(ids: Id64Arg, process: SelectionProcessing): Promise<boolean>;
+    // @beta (undocumented)
+    protected processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
+    // (undocumented)
+    static startTool(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateSelection(ids: Id64Arg, process: SelectionProcessing): boolean;
+}
+
+// @public
+export abstract class SelectionToolBase extends PrimitiveTool {
+    // (undocumented)
+    protected get allowExternalIModels(): boolean;
     // @beta
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
@@ -9856,6 +10128,10 @@ export class SelectionTool extends PrimitiveTool {
     static iconSpec: string;
     // (undocumented)
     protected initSelectTool(): void;
+    // (undocumented)
+    protected get isAnySelectionSetActive(): boolean;
+    // (undocumented)
+    protected isHitSelected(hit: HitDetail): boolean;
     // (undocumented)
     protected _isSelectByPoints: boolean;
     // (undocumented)
@@ -9896,8 +10172,10 @@ export class SelectionTool extends PrimitiveTool {
     processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled>;
     // (undocumented)
     protected processMiss(_ev: BeButtonEvent): boolean;
-    // (undocumented)
-    processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean>;
+    // @beta
+    protected processSelectionForReference(ids: Id64Arg, ref: IModelDisplayReference, process: SelectionProcessing): Promise<boolean>;
+    // @beta
+    protected abstract processSelections(elementIds: ReadonlyMap<IModelDisplayReference, Id64Arg>, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -9909,6 +10187,8 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled>;
     // (undocumented)
+    protected get selectionIModels(): Iterable<IModelConnection>;
+    // (undocumented)
     get selectionMethod(): SelectionMethod;
     set selectionMethod(method: SelectionMethod);
     // (undocumented)
@@ -9916,14 +10196,10 @@ export class SelectionTool extends PrimitiveTool {
     set selectionMode(mode: SelectionMode_2);
     // (undocumented)
     protected showPrompt(mode: SelectionMode_2, method: SelectionMethod): void;
-    // (undocumented)
-    static startTool(): Promise<boolean>;
     // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
-    // (undocumented)
-    static toolId: string;
-    // (undocumented)
-    updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean;
+    // @internal (undocumented)
+    protected syncSelectionMode(): void;
     // (undocumented)
     protected useOverlapSelection(ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -10273,6 +10549,55 @@ export class SpatialClassifiersState extends SpatialClassifiers {
     static create(container: SpatialClassifiersContainer): SpatialClassifiersState;
 }
 
+// @beta
+export interface SpatialIModelDisplayOverrides extends IModelDisplayOverrides {
+    contours?: ContourDisplay;
+    hiddenLineSettings?: HiddenLine.Settings;
+    readonly onContoursChanged: BeEvent<() => void>;
+    readonly onHiddenLineSettingsChanged: BeEvent<() => void>;
+}
+
+// @beta
+export type SpatialIModelDisplayOverridesProps = IModelDisplayOverridesProps & Pick<SpatialIModelDisplayOverrides, "hiddenLineSettings" | "contours">;
+
+// @beta
+export interface SpatialIModelDisplayReference extends IModelDisplayReference {
+    // @internal (undocumented)
+    [_getModelClip](modelId: Id64String): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    [_getPlanarClipMaskState](modelId: Id64String): PlanarClipMaskState | undefined;
+    // @internal (undocumented)
+    readonly [_treeRefs]: SpatialTileTreeReferences;
+    readonly activeContours: ContourDisplay;
+    readonly activeHiddenLineSettings: HiddenLine.Settings;
+    addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void>;
+    modelClipGroups: ModelClipGroups;
+    readonly onActiveContoursChanged: BeEvent<() => void>;
+    readonly onActiveHiddenLineSettingsChanged: BeEvent<() => void>;
+    readonly onModelClipGroupsChanged: BeEvent<() => void>;
+    readonly onViewedModelsLoaded: BeEvent<() => void>;
+    readonly overrides: SpatialIModelDisplayOverrides;
+    readonly parent: SpatialIModelDisplayReferences;
+    readonly planarClipMasks: ObservableMap<Id64String, PlanarClipMaskSettings>;
+    readonly planProjectionSettings: ObservableMap<Id64String, PlanProjectionSettings>;
+    readonly realityModelDisplaySettings: ObservableMap<Id64String, RealityModelDisplaySettings>;
+    readonly viewedModels: ObservableSet<Id64String>;
+}
+
+// @beta
+export interface SpatialIModelDisplayReferences extends BaseIModelDisplayReferences, Iterable<SpatialIModelDisplayReference> {
+    // @internal (undocumented)
+    readonly [_backingView]: SpatialViewState;
+    readonly is2d?: never;
+    readonly isSpatial: true;
+    link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
+    readonly linked: Iterable<SpatialIModelDisplayReference>;
+    readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+    readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+    readonly primary: SpatialIModelDisplayReference;
+    unlink(ref: IModelDisplayReference): void;
+}
+
 // @alpha
 export interface SpatialLocationAndExtents {
     isGeolocated: boolean;
@@ -10310,7 +10635,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
 
 // @internal
 export namespace SpatialTileTreeReferences {
-    export function create(view: SpatialViewState): SpatialTileTreeReferences;
+    export function create(iModelRef: SpatialIModelDisplayReference): SpatialTileTreeReferences;
 }
 
 // @public
@@ -10349,11 +10674,12 @@ export class SpatialViewState extends ViewState3d {
     getModelTreeRefs(): Iterable<TileTreeReference>;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @beta
+    readonly iModelRefs: SpatialIModelDisplayReferences;
     // (undocumented)
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     markModelSelectorChanged(): void;
-    // (undocumented)
     get modelSelector(): ModelSelectorState;
     set modelSelector(selector: ModelSelectorState);
     readonly onViewedModelsChanged: BeEvent<() => void>;
@@ -10705,9 +11031,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
-    get flashed(): Id64.Uint32Pair | undefined;
-    // (undocumented)
-    get flashedId(): Id64String;
+    get flashedElem(): FlashedElem | undefined;
     // (undocumented)
     get flashIntensity(): number;
     // (undocumented)
@@ -10715,6 +11039,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     freezeRealityTiles: boolean;
     getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined;
+    // (undocumented)
+    getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined;
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -10729,9 +11055,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly graphics: TargetGraphics;
     // (undocumented)
-    get hilites(): Hilites;
-    // (undocumented)
     get hiliteSyncTarget(): SyncTarget;
+    // (undocumented)
+    invalidateHilites(): void;
     // (undocumented)
     get is2d(): boolean;
     // (undocumented)
@@ -10763,8 +11089,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
     // (undocumented)
-    get pickExclusions(): Id64.Uint32Set;
-    // (undocumented)
     readonly pickExclusionsSyncTarget: SyncTarget;
     // (undocumented)
     plan: RenderPlan;
@@ -10795,23 +11119,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
-    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
     // (undocumented)
     get readPixelsSelector(): Pixel.Selector;
     // (undocumented)
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    reset(_realityMapLayerChanged?: boolean): void;
+    reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
     // (undocumented)
     get screenSpaceEffects(): Iterable<string>;
     set screenSpaceEffects(effects: Iterable<string>);
     // (undocumented)
-    setFlashed(id: Id64String, intensity: number): void;
-    // (undocumented)
-    setHiliteSet(hilite: HiliteSet): void;
+    setFlashed(flashed: IModelAndElementId, intensity: number): void;
     // (undocumented)
     get shadowFrustum(): Frustum | undefined;
     // (undocumented)
@@ -11415,8 +11737,6 @@ export interface TileDrawArgParams {
     now: BeTimePoint;
     parentsAndChildrenExclusive: boolean;
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
-    // @alpha (undocumented)
-    transformFromIModel?: Transform;
     tree: TileTree;
     viewFlagOverrides: ViewFlagOverrides;
 }
@@ -11483,8 +11803,6 @@ export class TileDrawArgs {
     get tileSizeModifier(): number;
     // @internal
     readonly touchedTiles: Set<Tile>;
-    // @alpha (undocumented)
-    transformFromIModel?: Transform;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;
@@ -11850,8 +12168,6 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
     getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined;
-    // @beta (undocumented)
-    getTransformFromIModel(): Transform | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
@@ -13416,13 +13732,13 @@ export abstract class Viewport implements Disposable, TileUser {
     addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     // @internal (undocumented)
     addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void;
-    // @internal
-    addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void;
     addScreenSpaceEffect(effectName: string): void;
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
+    // @deprecated
     addViewedModels(models: Id64Arg): Promise<void>;
-    get alwaysDrawn(): Id64Set | undefined;
+    // @deprecated
+    get alwaysDrawn(): ObservableSet<Id64String>;
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
@@ -13446,17 +13762,23 @@ export abstract class Viewport implements Disposable, TileUser {
     get backgroundMapTileTreeReference(): TileTreeReference | undefined;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
+    // @deprecated
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean, batchNotify?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)
     protected _changeFlags: MutableChangeFlags;
+    // @deprecated
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
+    // @deprecated
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState, _opts?: ViewChangeOptions): void;
     changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions & MarginOptions): Promise<void>;
+    // @deprecated
     changeViewedModels(modelIds: Id64Arg): boolean;
+    // @deprecated
     clearAlwaysDrawn(): void;
+    // @deprecated
     clearNeverDrawn(): void;
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
@@ -13481,14 +13803,15 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     get displayStyle(): DisplayStyleState;
-    set displayStyle(style: DisplayStyleState);
     // @deprecated (undocumented)
     dispose(): void;
     // @internal
     get drawingToSheetTransform(): Transform | undefined;
     set drawingToSheetTransform(_: Transform | undefined);
     dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
+    // @deprecated
     dropModelAppearanceOverride(id: Id64String): void;
+    // @deprecated
     dropSubCategoryOverride(id: Id64String): void;
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
@@ -13496,6 +13819,9 @@ export abstract class Viewport implements Disposable, TileUser {
     get featureOverrideProviders(): Iterable<FeatureOverrideProvider>;
     findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
     findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
+    get flashedElement(): IModelAndElementId | undefined;
+    set flashedElement(flashed: IModelAndElementId | undefined);
+    // @deprecated
     get flashedId(): Id64String | undefined;
     set flashedId(id: Id64String | undefined);
     get flashSettings(): FlashSettings;
@@ -13529,9 +13855,9 @@ export abstract class Viewport implements Disposable, TileUser {
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
-    // @internal (undocumented)
-    getSubCategories(categoryId: Id64String): Id64Set | undefined;
+    // @deprecated
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
+    // @deprecated
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     getTerrainHeightRange(): Range1d;
@@ -13546,6 +13872,8 @@ export abstract class Viewport implements Disposable, TileUser {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
+    // @beta
+    get iModelRefs(): IModelDisplayReferences;
     protected initialize(): void;
     invalidateController(): void;
     invalidateDecorations(): void;
@@ -13554,6 +13882,7 @@ export abstract class Viewport implements Disposable, TileUser {
     invalidateSymbologyOverrides(): void;
     // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
+    // @deprecated
     get isAlwaysDrawnExclusive(): boolean;
     // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
@@ -13571,7 +13900,10 @@ export abstract class Viewport implements Disposable, TileUser {
     isPointVisibleXY(point: Point3d, coordSys?: CoordSystem, borderPaddingFactor?: number): boolean;
     // @internal (undocumented)
     get isSnapAdjustmentRequired(): boolean;
+    // @deprecated
     isSubCategoryVisible(id: Id64String): boolean;
+    get lastFlashedElement(): IModelAndElementId | undefined;
+    // @deprecated
     get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
@@ -13581,7 +13913,8 @@ export abstract class Viewport implements Disposable, TileUser {
     get mapTileTreeRefs(): Iterable<TileTreeReference>;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
-    get neverDrawn(): Id64Set | undefined;
+    // @deprecated
+    get neverDrawn(): ObservableSet<Id64String>;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
     npcToViewArray(pts: Point3d[]): void;
     npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;
@@ -13595,6 +13928,8 @@ export abstract class Viewport implements Disposable, TileUser {
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    readonly onFlashedElementChanged: BeEvent<(previousFlashedElement: IModelAndElementId | undefined) => void>;
+    // @deprecated
     readonly onFlashedIdChanged: BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>;
     // @alpha
     readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
@@ -13607,8 +13942,6 @@ export abstract class Viewport implements Disposable, TileUser {
     readonly onResized: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
-    // @internal
-    protected onSceneVisibilityChanged(): void;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
@@ -13618,14 +13951,19 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     get overlayMap(): MapTileTreeReference | undefined;
     overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
+    // @deprecated
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
+    // @deprecated
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @deprecated
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
+    // @beta
+    get primaryIModelRef(): IModelDisplayReference;
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // @deprecated
@@ -13641,6 +13979,7 @@ export abstract class Viewport implements Disposable, TileUser {
     get renderPlanValid(): boolean;
     // @internal (undocumented)
     protected _renderPlanValid: boolean;
+    // @deprecated
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
     // @beta
@@ -13655,6 +13994,7 @@ export abstract class Viewport implements Disposable, TileUser {
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     // @internal
     setAllValid(): void;
+    // @deprecated
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
@@ -13662,6 +14002,7 @@ export abstract class Viewport implements Disposable, TileUser {
     setLightSettings(settings: LightSettings): void;
     // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
+    // @deprecated
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
     setRenderPlanValid(): void;
@@ -13677,8 +14018,6 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
     get solarShadowSettings(): SolarShadowSettings | undefined;
-    // @internal (undocumented)
-    readonly subcategories: SubCategoriesCache.Queue;
     synchWithView(_options?: ViewChangeOptions): void;
     // @internal (undocumented)
     get target(): RenderTarget;
@@ -13716,6 +14055,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;
     abstract get viewRect(): ViewRect;
+    // @deprecated
     viewsModel(modelId: Id64String): boolean;
     viewToNpc(pt: Point3d, out?: Point3d): Point3d;
     viewToNpcArray(pts: Point3d[]): void;
@@ -13880,6 +14220,7 @@ export abstract class ViewState extends ElementState {
     set categorySelector(selector: CategorySelectorState);
     // (undocumented)
     static get className(): string;
+    cloneWithDisplayStyle(style: DisplayStyleState): Promise<this>;
     // @internal
     collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
     // @internal
@@ -13957,6 +14298,8 @@ export abstract class ViewState extends ElementState {
     // @internal
     get globeMode(): GlobeMode;
     hasSameCoordinates(other: ViewState): boolean;
+    // @beta
+    abstract get iModelRefs(): IModelDisplayReferences;
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
     get isAttachedToViewport(): boolean;
@@ -13976,6 +14319,8 @@ export abstract class ViewState extends ElementState {
     get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined;
     set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined);
     get name(): string;
+    // @beta
+    readonly onAfterModelDisplayTransformProviderChanged: BeEvent<() => void>;
     readonly onDisplayStyleChanged: BeEvent<(newStyle: DisplayStyleState) => void>;
     // @beta
     readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>;
@@ -13994,10 +14339,7 @@ export abstract class ViewState extends ElementState {
     get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
-    setCategorySelector(categories: CategorySelectorState): void;
     setCenter(center: Point3d): void;
-    // (undocumented)
-    setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
     abstract setOrigin(viewOrg: XYAndZ): void;
@@ -14050,6 +14392,8 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @beta
+    readonly iModelRefs: IModelDisplayReferences2d;
     is3d(): this is ViewState3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
@@ -14066,12 +14410,8 @@ export abstract class ViewState2d extends ViewState {
     setOrigin(origin: XAndY): void;
     // (undocumented)
     setRotation(rot: Matrix3d): void;
-    // @internal (undocumented)
-    protected get _tileTreeRef(): TileTreeReference | undefined;
     // (undocumented)
     toJSON(): ViewDefinition2dProps;
-    // @internal (undocumented)
-    protected _treeRef?: TileTreeReference;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }

@@ -10,7 +10,7 @@ import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentl
 import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
+  CategorySelectorState, createIModelDisplayReferences2d, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
 } from "@itwin/core-frontend";
@@ -58,7 +58,8 @@ class ProxyTreeSupplier implements TileTreeSupplier {
       if (undefined === model || !(model instanceof GeometricModel2dState))
         return undefined;
 
-      const treeRef = model.createTileTreeReference(view);
+      const iModelRefs = createIModelDisplayReferences2d(view);
+      const treeRef = model.createTileTreeReference(iModelRefs.primary);
       const tree = await treeRef.treeOwner.loadTree();
       if (undefined === tree)
         return undefined;

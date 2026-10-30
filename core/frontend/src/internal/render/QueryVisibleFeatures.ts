@@ -65,7 +65,7 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
               subCategoryId: pixel.feature.subCategoryId,
               geometryClass: pixel.feature.geometryClass,
               modelId: pixel.modelId,
-              iModel: pixel.iModel ?? iModel,
+              iModel: pixel.feature?.iModelRef.iModel ?? iModel,
             };
           }
         }

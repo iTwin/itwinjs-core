@@ -42,7 +42,9 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _invalidateTileTreeRef, _scheduleScriptReference } from "./common/internal/Symbols";
+import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
+import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
 /** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
  * display metadata such as its name and description.
@@ -249,20 +251,26 @@ export abstract class ViewState extends ElementState {
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
+  public abstract get iModelRefs(): IModelDisplayReferences;
+
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
-
-  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
-   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
-   */
-  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
    * @beta
    */
   public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
+  /** Event raised just after assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onAfterModelDisplayTransformProviderChanged = new BeEvent<() => void>();
 
-  /** Selects the categories that are display by this ViewState. */
+  /** Selects the categories that are displayed by this ViewState.
+   * Prefer changing [[CategorySelectorState.categories]] over replacing the selector.
+   */
   public get categorySelector(): CategorySelectorState {
     return this._categorySelector;
   }
@@ -270,32 +278,45 @@ export abstract class ViewState extends ElementState {
   public set categorySelector(selector: CategorySelectorState) {
     if (selector === this._categorySelector)
       return;
+    if (selector.iModel !== this.iModel)
+      throw new Error("Category selector must be from the same iModel as the view");
 
     const isAttached = this.isAttachedToViewport;
     this.unregisterCategorySelectorListeners();
-
     this._categorySelector = selector;
-
     if (isAttached) {
       this.registerCategorySelectorListeners();
       this.onViewedCategoriesChanged.raiseEvent();
     }
   }
 
-  /** The style that controls how the contents of the view are displayed. */
+  /** The style that controls how the contents of the view are displayed.
+   * Prefer [[cloneWithDisplayStyle]] to create a view with a different display style.
+   */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
   }
 
   public set displayStyle(style: DisplayStyleState) {
-    if (style === this.displayStyle)
+    if (style === this._displayStyle)
       return;
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
 
     if (this.isAttachedToViewport)
       this.onDisplayStyleChanged.raiseEvent(style);
-
     this._displayStyle = style;
   }
+
+  /** Event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
+   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
@@ -420,6 +441,23 @@ export abstract class ViewState extends ElementState {
     await Promise.all(promises);
   }
 
+  /** Create a copy of this view with a different display style. */
+  public async cloneWithDisplayStyle(style: DisplayStyleState): Promise<this> {
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
+
+    const props = this.toProps();
+    props.displayStyleProps = style.toJSON();
+    const view = await this.iModel.views.convertViewStatePropsToViewState(props);
+    assert(view.classFullName === this.classFullName);
+    return view as this;
+  }
+
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
@@ -430,11 +468,13 @@ export abstract class ViewState extends ElementState {
    * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
-    for (const ref of this.getTileTreeRefs()) {
-      if (!ref.isLoadingComplete) {
+    for (const ref of this.displayStyle.getTileTreeRefs())
+      if (!ref.isLoadingComplete)
         return false;
-      }
-    }
+
+    for (const iModelRef of this.iModelRefs)
+      if (!iModelRef.isLoadingComplete)
+        return false;
 
     return true;
   }
@@ -633,9 +673,8 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    for (const ref of this.getTileTreeRefs()) {
+    for (const ref of this.getTileTreeRefs())
       ref.addToScene(context);
-    }
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -860,8 +899,6 @@ export abstract class ViewState extends ElementState {
    */
   public abstract get defaultExtentLimits(): ExtentLimits;
 
-  public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
@@ -932,9 +969,6 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
     this.setOrigin(origin);
   }
-
-  /** Set the CategorySelector for this view. */
-  public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
@@ -1349,6 +1383,8 @@ export abstract class ViewState extends ElementState {
       this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
 
     this._modelDisplayTransformProvider = provider;
+    if (this.isAttachedToViewport)
+      this.onAfterModelDisplayTransformProviderChanged.raiseEvent();
   }
 
   /** Compute the transform applied to a model or element at display time, if any.
@@ -1404,6 +1440,8 @@ export abstract class ViewState extends ElementState {
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
     this.registerCategorySelectorListeners();
+    for (const ref of this.iModelRefs)
+      ref[_attachToViewport](_args);
   }
 
   private registerCategorySelectorListeners(): void {
@@ -1424,6 +1462,9 @@ export abstract class ViewState extends ElementState {
   public detachFromViewport(): void {
     if (!this.isAttachedToViewport)
       throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+
+    for (const ref of this.iModelRefs)
+      ref[_detachFromViewport]();
 
     this.unregisterCategorySelectorListeners();
   }
@@ -1524,7 +1565,6 @@ export abstract class ViewState3d extends ViewState {
 
   /** @internal */
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
     const index = this.details.modelClipGroups.findGroupIndex(modelId);
     return -1 !== index ? this._modelClips[index] : undefined;
   }
@@ -1842,13 +1882,14 @@ export abstract class ViewState3d extends ViewState {
     return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation);
   }
 
-  /** The style that controls how the contents of the view are displayed. */
+  /** The style that controls how the contents of the view are displayed.
+   * Prefer [[cloneWithDisplayStyle]] to create a view with a different display style.
+   */
   public override get displayStyle(): DisplayStyle3dState {
     return this.getDisplayStyle3d();
   }
 
   public override set displayStyle(style: DisplayStyle3dState) {
-    assert(style instanceof DisplayStyle3dState);
     super.displayStyle = style;
   }
 
@@ -2380,19 +2421,10 @@ export abstract class ViewState2d extends ViewState {
   public readonly angle: Angle;
   protected _baseModelId: Id64String;
   public get baseModelId(): Id64String { return this._baseModelId; }
-  /** @internal */
-  protected _treeRef?: TileTreeReference;
-
-  /** @internal */
-  protected get _tileTreeRef(): TileTreeReference | undefined {
-    if (undefined === this._treeRef) {
-      const model = this.getViewedModel();
-      if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this);
-    }
-
-    return this._treeRef;
-  }
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
+  public readonly iModelRefs: IModelDisplayReferences2d;
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -2404,6 +2436,8 @@ export abstract class ViewState2d extends ViewState {
     this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
 
     this._details = new ViewDetails(this.jsonProperties);
+
+    this.iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {
@@ -2459,7 +2493,7 @@ export abstract class ViewState2d extends ViewState {
       throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
 
     this._baseModelId = newViewedModelId;
-    this._treeRef = undefined;
+    this.iModelRefs.primary[_invalidateTileTreeRef]();
     await this.load();
   }
 
@@ -2514,9 +2548,7 @@ export abstract class ViewState2d extends ViewState {
 
   /** @internal */
   public override * getModelTreeRefs(): Iterable<TileTreeReference> {
-    if (this._tileTreeRef) {
-      yield this._tileTreeRef;
-    }
+    yield* this.iModelRefs.primary.tileTreeRefs;
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }

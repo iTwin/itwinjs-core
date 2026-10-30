@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -18,7 +18,6 @@ import { _requestSnap } from "../common/internal/Symbols";
 interface HitDetailProps {
   hitPoint?: XYZProps; // defaults to [0, 0, 0]
   testPoint?: XYZProps; // defaults to hitPoint
-  iModel?: IModelConnection;
   sourceId?: Id64String;
   modelId?: Id64String;
   subCategoryId?: Id64String;
@@ -27,20 +26,24 @@ interface HitDetailProps {
 }
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
+  const feature = {
+    iModelRef: vp.view.iModelRefs.primary,
+    modelId: props?.modelId ?? Id64.invalid,
+    elementId: props?.sourceId ?? Id64.invalid,
+    subCategoryId: props?.subCategoryId ?? Id64.invalid,
+    geometryClass: props?.geometryClass ?? GeometryClass.Primary,
+  };
+
   const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
   return new HitDetail({
     testPoint: Point3d.fromJSON(props?.testPoint ?? hitPoint),
     viewport: vp,
     hitSource: HitSource.AccuSnap,
     hitPoint: Point3d.fromJSON(hitPoint),
-    sourceId: props?.sourceId ?? "0",
+    feature,
     priority: HitPriority.Unknown,
     distXY: 0,
     distFraction: 0,
-    subCategoryId: props?.subCategoryId,
-    geometryClass: props?.geometryClass,
-    modelId: props?.modelId,
-    sourceIModel: props?.iModel,
     isClassifier: props?.isClassifier,
   });
 }
