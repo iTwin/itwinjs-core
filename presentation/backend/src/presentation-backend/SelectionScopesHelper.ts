@@ -29,7 +29,7 @@ import { getElementKey } from "./Utils.js";
  */
 export class SelectionScopesHelper {
   /* c8 ignore next */
-  private constructor() {}
+  private constructor() { }
 
   public static getSelectionScopes(): SelectionScope[] {
     const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
@@ -73,7 +73,7 @@ export class SelectionScopesHelper {
       const el = iModel.elements.tryGetElement<GeometricElement>(id);
       const category = el?.category ? iModel.elements.tryGetElementProps(el.category) : undefined;
       if (category) {
-        categoryKeys.add({ className: category.classFullName, id: category.id! });
+        categoryKeys.add({ className: category.classFullName, id: category.id });
       }
     });
     return categoryKeys;
@@ -85,7 +85,7 @@ export class SelectionScopesHelper {
       const el = iModel.elements.tryGetElementProps(id);
       const model = el ? iModel.models.tryGetModelProps(el.model) : undefined;
       if (model) {
-        modelKeys.add({ className: model.classFullName, id: model.id! });
+        modelKeys.add({ className: model.classFullName, id: model.id });
       }
     });
     return modelKeys;

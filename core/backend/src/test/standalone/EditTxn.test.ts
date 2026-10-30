@@ -7,7 +7,8 @@ import { Logger, OpenMode } from "@itwin/core-bentley";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { EditTxnError } from "@itwin/core-common";
-import { EditTxn, type IModelDb, IModelJsFs, StandaloneDb } from "../../core-backend";
+import { BackendLoggerCategory, EditTxn, type IModelDb, IModelJsFs, StandaloneDb, withEditTxn } from "../../core-backend";
+import { _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 class TestEditTxn extends EditTxn {
@@ -222,6 +223,77 @@ describe("EditTxn", () => {
     expect(second.isActive).to.be.false;
   });
 
+  for (const mode of ["save", "abandon"] as const) {
+    it(`retains transaction ownership when native ${mode} fails`, () => {
+      const txn = new TestEditTxn(iModel);
+      txn.start();
+      txn.writeFileProperty("pending", "value");
+      const failure = new Error(`native ${mode} failed`);
+      const nativeOperation = sinon.stub(iModel[_nativeDb], mode === "save" ? "saveChanges" : "abandonChanges").throws(failure);
+      expect(() => txn.end(mode)).to.throw(failure);
+      expect(txn.isActive).to.be.true;
+      expect(iModel.txns.hasUnsavedChanges).to.be.true;
+      nativeOperation.restore();
+      txn.end("abandon");
+      expect(txn.isActive).to.be.false;
+      expect(iModel.queryFilePropertyString({ name: "pending", namespace: "EditTxnTest" })).to.be.undefined;
+    });
+  }
+
+  it("preserves the callback error and transaction ownership when scoped native abandonment fails", () => {
+    const failure = new Error("callback failure");
+    const abandonFailure = new Error("native abandonment failed");
+    const nativeOperation = sinon.stub(iModel[_nativeDb], "abandonChanges").throws(abandonFailure);
+    const logError = sinon.spy(Logger, "logError");
+    let activeTxn: EditTxn | undefined;
+    expect(() => withEditTxn(iModel, (txn) => {
+      activeTxn = txn;
+      txn.saveFileProperty({ name: "pending", namespace: "EditTxnTest" }, "value");
+      throw failure;
+    })).to.throw(failure);
+    expect(activeTxn?.isActive).to.be.true;
+    expect(iModel.txns.hasUnsavedChanges).to.be.true;
+    expect(logError.calledOnceWithExactly(BackendLoggerCategory.IModelDb, abandonFailure)).to.be.true;
+    nativeOperation.restore();
+    activeTxn?.end("abandon");
+    expect(iModel.queryFilePropertyString({ name: "pending", namespace: "EditTxnTest" })).to.be.undefined;
+  });
+
+  for (const asynchronous of [false, true]) {
+    it(`preserves the ${asynchronous ? "asynchronous" : "synchronous"} callback error when rollback and error logging both fail`, async () => {
+      const failure = new Error("callback failure");
+      const abandonFailure = new Error("native abandonment failed");
+      const loggingFailure = new Error("error logging failed");
+      const nativeOperation = sinon.stub(iModel[_nativeDb], "abandonChanges").throws(abandonFailure);
+      const logError = sinon.stub(Logger, "logError").throws(loggingFailure);
+      let activeTxn: EditTxn | undefined;
+      const edit = (txn: EditTxn) => {
+        activeTxn = txn;
+        txn.saveFileProperty({ name: "pending", namespace: "EditTxnTest" }, "value");
+        throw failure;
+      };
+      try {
+        if (asynchronous) {
+          const error = await withEditTxn(iModel, async (txn) => {
+            await Promise.resolve();
+            edit(txn);
+          }).catch((err: unknown) => err);
+          expect(error).to.equal(failure);
+        } else {
+          expect(() => withEditTxn(iModel, edit)).to.throw(failure);
+        }
+        expect(logError.calledOnceWithExactly(BackendLoggerCategory.IModelDb, abandonFailure)).to.be.true;
+        expect(logError.firstCall.exception).to.equal(loggingFailure);
+        expect(activeTxn?.isActive).to.be.true;
+        expect(iModel.txns.hasUnsavedChanges).to.be.true;
+      } finally {
+        nativeOperation.restore();
+        activeTxn?.end("abandon");
+      }
+      expect(iModel.queryFilePropertyString({ name: "pending", namespace: "EditTxnTest" })).to.be.undefined;
+    });
+  }
+
   it("uses the default description unless save is given an override", () => {
     const txn = new EditTxn(iModel, "default description");
 
@@ -273,4 +345,3 @@ describe("EditTxn", () => {
     expect(iModel.queryFilePropertyString({ name: "saved-on-close", namespace: "EditTxnTest" })).to.be.undefined;
   });
 });
-

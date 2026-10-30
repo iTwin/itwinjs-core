@@ -168,6 +168,19 @@ export interface PropertyRef {
   readonly defIdx: number;
   readonly labelStringIdx: number;
   readonly priority: number;
+  /** The declaration this one overrides, or `null` if it overrides nothing. `undefined` until SchemaView
+   * resolves it on first access. */
+  overriddenProperty: ResolvedPropertyRef | null | undefined;
+}
+
+/** A property reference paired with the index of the class that declared it. Used for
+ * property inheritance resolution - the classIdx tracks where each property originates
+ * (base class, mixin, or own) so consumers can discover the declaring class.
+ * @internal
+ */
+export interface ResolvedPropertyRef {
+  readonly ref: PropertyRef;
+  readonly classIdx: number;
 }
 
 /** Internal storage for a relationship constraint.
