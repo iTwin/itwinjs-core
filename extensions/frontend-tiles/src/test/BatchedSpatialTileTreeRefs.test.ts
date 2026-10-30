@@ -49,7 +49,7 @@ describe("BatchedSpatialTileTreeReferences", () => {
     });
     const linkedIModel = BlankConnection.create({
       name: "linked",
-      location: Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 }),
+      location: Cartographic.fromDegrees({ longitude: 1, latitude: 1, height: 0 }),
       extents: new Range3d(0, 0, 0, 1, 1, 1),
     });
     const primaryUrl = new URL("https://tiles.test/primary/");
@@ -87,6 +87,10 @@ describe("BatchedSpatialTileTreeReferences", () => {
       initializeFrontendTiles({ computeSpatialTilesetBaseUrl: baseUrlFor });
       view = SpatialViewState.createBlank(primaryIModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
       linkedRef = view.iModelRefs.link({ iModel: linkedIModel });
+      const ecefToPrimary = primaryIModel.getEcefTransform().inverse();
+      expect(ecefToPrimary).not.to.be.undefined;
+      const linkedToPrimary = ecefToPrimary!.multiplyTransformTransform(linkedIModel.ecefLocation!.getTransform());
+      expect(linkedRef.linearTransformToParent.isAlmostEqual(linkedToPrimary)).to.be.true;
 
       const getBatchedRef = async (refs: Iterable<TileTreeReference>): Promise<BatchedTileTreeReference> => {
         let allRefs: TileTreeReference[] = [];
