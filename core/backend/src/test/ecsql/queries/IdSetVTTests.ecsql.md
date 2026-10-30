@@ -158,7 +158,7 @@ SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?)))
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-|           | a            | true      | 0     | a        | a    | id           | long     | Id   | undefined          |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | undefined          |
 
 | a    |
 | ---- |

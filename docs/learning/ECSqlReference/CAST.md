@@ -2,7 +2,7 @@
 
 Converts a value from one type to another.
 
-Syntax: `CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])`
+Syntax: `CAST(<expr> AS <type>)` or `<expr>::<type>`
 
 Example:
 
@@ -15,11 +15,9 @@ Example:
     -- 3
 ```
 
-## Extended casting (`CAST_V2`)
+## Extended casting
 
-Extended casting is opt-in. It is enabled with the `CAST_V2` [ECSQL option](./ECSqlOptions.md). Without the option, `CAST` keeps its existing behavior and the `::` syntax is rejected.
-
-With `CAST_V2` enabled:
+Extended casting is always enabled, including in CTEs, compound queries, subqueries and data-modification statements. `CAST_V2` is no longer an [ECSQL option](./ECSqlOptions.md); statements that specify it fail to prepare. Remove the option, including `CAST_V2=false`, from existing queries.
 
 - PostgreSQL-style postfix casts are supported: `<expr>::<type>`. `<expr>::<type>` and `CAST(<expr> AS <type>)` behave identically.
 - Target types can be any EC primitive type (`INTEGER`, `LONG`, `DOUBLE`, `TEXT`, `BOOLEAN`, `DATETIME`, `DATE`, `BINARY`, `POINT2D`, `POINT3D`, ...), a schema-qualified EC enumeration, or one of the special targets listed below.
@@ -27,12 +25,10 @@ With `CAST_V2` enabled:
 - An unknown target type or an unsupported conversion fails when the statement is prepared.
 - Invalid input to the conversions described below (Id, `ClassName`, `Json`, `Guid`, points, `BOOLEAN`, `DATETIME` and strict enumerations) returns `NULL`. `INTEGER`, `LONG`, `DOUBLE` and `BINARY` targets keep SQLite's conversion rules: `'12abc'::INTEGER` returns `12` and `'abc'::INTEGER` returns `0`.
 
-> Enabling `CAST_V2` also changes existing `CAST(...)` expressions in the same scope. `CAST(TRUE AS TEXT)` returns `true` instead of `1`. A DateTime cast to `TEXT` returns an ISO-8601 string instead of a Julian day number. A Binary cast to `TEXT` returns Base64 instead of the raw bytes. A strict enumeration returns `NULL` for values that aren't enumerators.
+> Existing `CAST(...)` expressions now follow these rules too. `CAST(TRUE AS TEXT)` returns `true` instead of `1`. A DateTime cast to `TEXT` returns an ISO-8601 string instead of a Julian day number. A Binary cast to `TEXT` returns Base64 instead of the raw bytes. A strict enumeration returns `NULL` for values that aren't enumerators. There is no legacy-casting option.
 
 ```sql
 SELECT CAST(TRUE AS TEXT) b, CAST(dt AS TEXT) d FROM aps.TestElement LIMIT 1
--- 1    | 2457754.5
-SELECT CAST(TRUE AS TEXT) b, CAST(dt AS TEXT) d FROM aps.TestElement LIMIT 1 OPTIONS CAST_V2
 -- true | 2017-01-01T00:00:00.000
 ```
 
@@ -41,61 +37,55 @@ SELECT CAST(TRUE AS TEXT) b, CAST(dt AS TEXT) d FROM aps.TestElement LIMIT 1 OPT
 Postfix casts bind tighter than unary and binary operators and can be chained. Use an alias for cast columns, because otherwise the column name is generated from the expression.
 
 ```sql
-SELECT 1 + '2'::INTEGER a OPTIONS CAST_V2
+SELECT 1 + '2'::INTEGER a
 -- 3
-SELECT '7.9'::REAL::INTEGER a, 1.9::INTEGER b OPTIONS CAST_V2
+SELECT '7.9'::REAL::INTEGER a, 1.9::INTEGER b
 -- 7 | 1
-SELECT (2 + 3)::DOUBLE / 2 a, (5.0 / 2)::INTEGER b OPTIONS CAST_V2
+SELECT (2 + 3)::DOUBLE / 2 a, (5.0 / 2)::INTEGER b
 -- 2.5 | 2
-SELECT -'5'::INTEGER a OPTIONS CAST_V2
+SELECT -'5'::INTEGER a
 -- -5
-SELECT -5::TEXT a OPTIONS CAST_V2
+SELECT -5::TEXT a
 -- error: the cast applies to 5, and unary minus can't be applied to TEXT. Use (-5)::TEXT.
 ```
 
-### Scope of the option
+### Query contexts
 
-The option applies to the `SELECT` it is attached to, including its derived tables and scalar subqueries. `OPTIONS CAST_V2=false` disables it.
-
-- Each branch of a compound `SELECT` (`UNION`, ...) uses its own options. A trailing `OPTIONS` only applies to the last branch.
-- Each common table expression definition uses its own options. The type of a cast inside a CTE is kept when the CTE is used.
-- On `INSERT`, `UPDATE` and `DELETE` statements the option has no effect. A `SELECT` subquery inside them can enable it with its own `OPTIONS CAST_V2`.
+No per-query option is needed. Cast types are preserved through derived tables and CTEs. Casts can also be used in `INSERT` values, `UPDATE` assignments, and `DELETE` predicates.
 
 ```sql
-SELECT v FROM (SELECT 21::Id v) OPTIONS CAST_V2
--- 0x15 (the derived table is covered)
-WITH c(v) AS (SELECT 21::Id) SELECT v FROM c OPTIONS CAST_V2
--- error: the CTE definition needs its own option
-WITH c(v) AS (SELECT 21::Id OPTIONS CAST_V2) SELECT v, v::TEXT t FROM c OPTIONS CAST_V2
--- 0x15 | 21
-WITH c(v) AS (SELECT 21) SELECT v::Id a FROM c OPTIONS CAST_V2
+SELECT v FROM (SELECT 21::Id v)
 -- 0x15
-SELECT 21::Id a UNION ALL SELECT 22::Id OPTIONS CAST_V2
--- error: the first branch has no option
-SELECT 21::Id a OPTIONS CAST_V2 UNION ALL SELECT 22::Id OPTIONS CAST_V2
+WITH c(v) AS (SELECT 21::Id) SELECT v FROM c
+-- 0x15
+WITH c(v) AS (SELECT 21::Id) SELECT v, v::TEXT t FROM c
+-- 0x15 | 21
+WITH c(v) AS (SELECT 21) SELECT v::Id a FROM c
+-- 0x15
+SELECT 21::Id a UNION ALL SELECT 22::Id
 -- 0x15, 0x16
-DELETE FROM aps.TestElement WHERE ECInstanceId IN (SELECT ?::Id OPTIONS CAST_V2)
+DELETE FROM aps.TestElement WHERE ECInstanceId IN (SELECT ?::Id)
 ```
 
 ### Compound SELECT and scalar subqueries
 
-When a column of a compound `SELECT` contains a `CAST_V2` cast, all branches with a type must have the same extended type. A plain number doesn't match an Id, so cast every branch to the same type. A `NULL` literal takes the type of the other branches.
+When a column of a compound `SELECT` contains an explicit cast, all branches with a type must have the same extended type. A plain number doesn't match an Id, so cast every branch to the same type. A `NULL` literal takes the type of the other branches.
 
 A scalar subquery cannot return a `Point2d` or `Point3d` value; cast it to `TEXT` inside the subquery instead.
 
 ```sql
-SELECT 1::Id a OPTIONS CAST_V2 UNION SELECT 2::ClassId OPTIONS CAST_V2
+SELECT 1::Id a UNION SELECT 2::ClassId
 -- error: Id and ClassId differ
-SELECT 1::Id a OPTIONS CAST_V2 UNION ALL SELECT 2
+SELECT 1::Id a UNION ALL SELECT 2
 -- error: Id and plain Long differ
-SELECT 1::Id a OPTIONS CAST_V2 UNION ALL SELECT ECInstanceId FROM aps.TestElement
+SELECT 1::Id a UNION ALL SELECT ECInstanceId FROM aps.TestElement
 -- ECInstanceId is already an Id, so this works
-SELECT 21::Id a OPTIONS CAST_V2 UNION ALL SELECT NULL
-SELECT NULL a UNION ALL SELECT 21::Id OPTIONS CAST_V2
+SELECT 21::Id a UNION ALL SELECT NULL
+SELECT NULL a UNION ALL SELECT 21::Id
 -- column is an Id in both cases
-SELECT (SELECT '{"X":1,"Y":2}'::Point2d) a OPTIONS CAST_V2
+SELECT (SELECT '{"X":1,"Y":2}'::Point2d) a
 -- error
-SELECT (SELECT '{"X":1,"Y":2}'::Point2d::TEXT) a OPTIONS CAST_V2
+SELECT (SELECT '{"X":1,"Y":2}'::Point2d::TEXT) a
 -- {"X":1.0,"Y":2.0}
 ```
 
@@ -108,17 +98,17 @@ A cast parameter is bound using the input type the cast expects. For most target
 - Binding a value of the wrong kind, such as an integer to `?::Point2d`, fails when binding.
 
 ```sql
-SELECT ?::INTEGER + 1 a OPTIONS CAST_V2
+SELECT ?::INTEGER + 1 a
 -- bindInteger(1, 41) -> 42
-SELECT :p::Id a, :p b OPTIONS CAST_V2
+SELECT :p::Id a, :p b
 -- bindId("p", "0x1234") -> both columns are the id 0x1234
-SELECT :p::Id, :p::Point2d OPTIONS CAST_V2
+SELECT :p::Id, :p::Point2d
 -- error: conflicting types for :p
-SELECT ?::ClassName c OPTIONS CAST_V2
+SELECT ?::ClassName c
 -- bindId(1, classId) -> 'Schema:Class'
-SELECT (?::TEXT)::Point2d p OPTIONS CAST_V2
+SELECT (?::TEXT)::Point2d p
 -- bindString(1, '{"X":5,"Y":6}') -> point (5, 6)
-SELECT * FROM bis.Element WHERE ECInstanceId = ?::Id OPTIONS CAST_V2
+SELECT * FROM bis.Element WHERE ECInstanceId = ?::Id
 ```
 
 ### Id types
@@ -132,17 +122,17 @@ An integer, or text holding a decimal or `0x` hexadecimal number, can be cast to
 Casting an Id to `TEXT` returns its unsigned decimal value. Inside JSON results (navigation properties and arrays), ids are written as hexadecimal.
 
 ```sql
-SELECT 21::Id a, '0x15'::ClassId b, 'abc'::Id c OPTIONS CAST_V2
+SELECT 21::Id a, '0x15'::ClassId b, 'abc'::Id c
 -- 0x15 | 0x15 | NULL
-SELECT ' 21'::Id a, '-1'::Id b, ''::Id c, '0x1ffffffffffffffff'::Id d OPTIONS CAST_V2
+SELECT ' 21'::Id a, '-1'::Id b, ''::Id c, '0x1ffffffffffffffff'::Id d
 -- NULL | NULL | NULL | NULL
-SELECT 1.5::Id OPTIONS CAST_V2
+SELECT 1.5::Id
 -- error
-SELECT '0xffffffffffffffff'::Id::TEXT a OPTIONS CAST_V2
+SELECT '0xffffffffffffffff'::Id::TEXT a
 -- 18446744073709551615
-SELECT ECInstanceId::TEXT a FROM bis.Element LIMIT 1 OPTIONS CAST_V2
+SELECT ECInstanceId::TEXT a FROM bis.Element LIMIT 1
 -- decimal text, e.g. 20
-SELECT 21::Id::ClassId a OPTIONS CAST_V2
+SELECT 21::Id::ClassId a
 -- 0x15 (as a ClassId)
 ```
 
@@ -153,9 +143,9 @@ Prefer comparing ids as ids. For example, use `ECInstanceId = '0x1'::Id` rather 
 An integer or id text can be cast to `ClassName`. The result is the class's full name in the form `Schema:Class`, with a colon, or `NULL` if the class doesn't exist.
 
 ```sql
-SELECT ECClassId::ClassName c FROM meta.ECSchemaDef LIMIT 1 OPTIONS CAST_V2
+SELECT ECClassId::ClassName c FROM meta.ECSchemaDef LIMIT 1
 -- ECDbMeta:ECSchemaDef
-SELECT 'abc'::ClassName a, 0::ClassName b OPTIONS CAST_V2
+SELECT 'abc'::ClassName a, 0::ClassName b
 -- NULL | NULL
 ```
 
@@ -167,11 +157,11 @@ SELECT 'abc'::ClassName a, 0::ClassName b OPTIONS CAST_V2
 - `<text>::Guid` converts a GUID string to a 16-byte binary value with the `BeGuid` extended type. A 16-byte binary value can also be cast. An invalid GUID returns `NULL`. `<guid>::TEXT` returns the GUID string.
 
 ```sql
-SELECT '{bad'::Json a, '{ "a" : 1 }'::Json b, 'null'::Json c OPTIONS CAST_V2
+SELECT '{bad'::Json a, '{ "a" : 1 }'::Json b, 'null'::Json c
 -- NULL | { "a" : 1 } | null
-SELECT FederationGuid::TEXT g FROM bis.Element WHERE FederationGuid IS NOT NULL LIMIT 1 OPTIONS CAST_V2
+SELECT FederationGuid::TEXT g FROM bis.Element WHERE FederationGuid IS NOT NULL LIMIT 1
 -- 2d3d3239-4a1c-4375-88e9-af43a1ea6ad1
-SELECT * FROM bis.Element WHERE FederationGuid = '2d3d3239-4a1c-4375-88e9-af43a1ea6ad1'::Guid OPTIONS CAST_V2
+SELECT * FROM bis.Element WHERE FederationGuid = '2d3d3239-4a1c-4375-88e9-af43a1ea6ad1'::Guid
 ```
 
 ### Converting EC values to TEXT
@@ -191,11 +181,11 @@ SELECT * FROM bis.Element WHERE FederationGuid = '2d3d3239-4a1c-4375-88e9-af43a1
 A `NULL` source returns `NULL`. The content doesn't depend on row-format options.
 
 ```sql
-SELECT p2d::TEXT a, p3d::TEXT b, array_i::TEXT c FROM aps.TestElement LIMIT 1 OPTIONS CAST_V2
+SELECT p2d::TEXT a, p3d::TEXT b, array_i::TEXT c FROM aps.TestElement LIMIT 1
 -- {"X":1.034,"Y":2.034} | {"X":-1.0,"Y":2.3,"Z":3.0001} | [0,1,2]
-SELECT Origin::TEXT FROM bis.GeometricElement3d OPTIONS CAST_V2
+SELECT Origin::TEXT FROM bis.GeometricElement3d
 -- {"X":1.0,"Y":2.0,"Z":3.0}
-SELECT Model::TEXT FROM bis.Element LIMIT 1 OPTIONS CAST_V2
+SELECT Model::TEXT FROM bis.Element LIMIT 1
 -- {"Id":"0x1","RelECClassId":"0x63"}
 ```
 
@@ -208,13 +198,13 @@ SELECT Model::TEXT FROM bis.Element LIMIT 1 OPTIONS CAST_V2
 - `<value>::<enumeration>` returns `NULL` for a strict enumeration if the value isn't one of its enumerators. For integer enumerations, the value must be an integer, an integral number such as `2.0`, or integer text, so `'abc'` and `1.7` return `NULL`. A non-strict enumeration accepts any value. Casting an enumeration to `TEXT` returns its value, not the enumerator name.
 
 ```sql
-SELECT '{"x":1,"y":2}'::Point2d::TEXT a, '{"X":"1","Y":2}'::Point2d b OPTIONS CAST_V2
+SELECT '{"x":1,"y":2}'::Point2d::TEXT a, '{"X":"1","Y":2}'::Point2d b
 -- {"X":1.0,"Y":2.0} | NULL
-SELECT Model::Id a, Model::LONG b, Model.RelECClassId::NavRelClassId c FROM bis.Element LIMIT 1 OPTIONS CAST_V2
+SELECT Model::Id a, Model::LONG b, Model.RelECClassId::NavRelClassId c FROM bis.Element LIMIT 1
 -- 0x1 | 1 | 0x63
-SELECT 'TRUE'::BOOLEAN a, 'maybe'::BOOLEAN b, 0.5::BOOLEAN c, ' false '::BOOLEAN d OPTIONS CAST_V2
+SELECT 'TRUE'::BOOLEAN a, 'maybe'::BOOLEAN b, 0.5::BOOLEAN c, ' false '::BOOLEAN d
 -- true | NULL | true | false
-SELECT '2020-01-02T03:04:05Z'::DATETIME::TEXT a, '2020-01-02T10:00:00'::DATE::TEXT b, 2460000.5::DATETIME::TEXT c OPTIONS CAST_V2
+SELECT '2020-01-02T03:04:05Z'::DATETIME::TEXT a, '2020-01-02T10:00:00'::DATE::TEXT b, 2460000.5::DATETIME::TEXT c
 -- 2020-01-02T03:04:05.000 | 2020-01-02 | 2023-02-25T00:00:00.000
 ```
 

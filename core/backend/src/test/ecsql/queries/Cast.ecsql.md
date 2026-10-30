@@ -1,11 +1,11 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# CAST_V2 postfix cast to Id-family types
+# Extended cast postfix cast to Id-family types
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT 21::Id [a], '0x15'::ClassId [b], CAST('21' AS SourceId) [c], 'abc'::Id [d] OPTIONS CAST_V2
+SELECT 21::Id [a], '0x15'::ClassId [b], CAST('21' AS SourceId) [c], 'abc'::Id [d]
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
@@ -19,12 +19,12 @@ SELECT 21::Id [a], '0x15'::ClassId [b], CAST('21' AS SourceId) [c], 'abc'::Id [d
 | ---- | ---- | ---- |
 | 0x15 | 0x15 | 0x15 |
 
-# CAST_V2 Id to TEXT is unsigned decimal
+# Extended cast Id to TEXT is unsigned decimal
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT '0xffffffffffffffff'::Id::TEXT [a], 21::Id::TEXT [b] OPTIONS CAST_V2
+SELECT '0xffffffffffffffff'::Id::TEXT [a], 21::Id::TEXT [b]
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -36,12 +36,12 @@ SELECT '0xffffffffffffffff'::Id::TEXT [a], 21::Id::TEXT [b] OPTIONS CAST_V2
 | ---------------------- | ---- |
 | "18446744073709551615" | "21" |
 
-# CAST_V2 ClassId to ClassName
+# Extended cast ClassId to ClassName
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT e.ECClassId::ClassName [cn], 999999::ClassName [missing] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1 OPTIONS CAST_V2
+SELECT e.ECClassId::ClassName [cn], 999999::ClassName [missing] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1
 ```
 
 | className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
@@ -53,12 +53,12 @@ SELECT e.ECClassId::ClassName [cn], 999999::ClassName [missing] FROM aps.TestEle
 | ------------------------- |
 | AllProperties:TestElement |
 
-# CAST_V2 EC values to TEXT
+# Extended cast EC values to TEXT
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT e.p2d::TEXT [p2], e.p3d::TEXT [p3], e.array_i::TEXT [ai], e.Model::TEXT [m], e.bin::TEXT [bn], e.b::TEXT [bo], e.dt::TEXT [d] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1 OPTIONS CAST_V2
+SELECT e.p2d::TEXT [p2], e.p3d::TEXT [p3], e.array_i::TEXT [ai], e.Model::TEXT [m], e.bin::TEXT [bn], e.b::TEXT [bo], e.dt::TEXT [d] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1
 ```
 
 ```json
@@ -75,12 +75,12 @@ SELECT e.p2d::TEXT [p2], e.p3d::TEXT [p3], e.array_i::TEXT [ai], e.Model::TEXT [
 ]
 ```
 
-# CAST_V2 navigation to Id
+# Extended cast navigation to Id
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT e.Model::Id [mid] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1 OPTIONS CAST_V2
+SELECT e.Model::Id [mid] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -91,13 +91,13 @@ SELECT e.Model::Id [mid] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1 
 | ---- |
 | 0x11 |
 
-# CAST_V2 TEXT to Json, Guid and Point2d
+# Extended cast TEXT to Json, Guid and Point2d
 
 - dataset: AllProperties.bim
 - mode: QueryReader
 
 ```sql
-SELECT '[1,2]'::Json [j], '407bfa18-944d-11ee-b9d1-0242ac120002'::Guid [g], '{"X":1,"Y":2}'::Point2d [p], '{"X":1}'::Point2d [bad] OPTIONS CAST_V2
+SELECT '[1,2]'::Json [j], '407bfa18-944d-11ee-b9d1-0242ac120002'::Guid [g], '{"X":1,"Y":2}'::Point2d [p], '{"X":1}'::Point2d [bad]
 ```
 
 ```json
@@ -110,12 +110,12 @@ SELECT '[1,2]'::Json [j], '407bfa18-944d-11ee-b9d1-0242ac120002'::Guid [g], '{"X
 ]
 ```
 
-# CAST_V2 casts computed numeric values
+# Extended cast casts computed numeric values
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT (2 + 3)::DOUBLE / 2 [a], CAST((2 + 3) AS DOUBLE) / 2 [b], (5.0 / 2)::INTEGER [c] OPTIONS CAST_V2
+SELECT (2 + 3)::DOUBLE / 2 [a], CAST((2 + 3) AS DOUBLE) / 2 [b], (5.0 / 2)::INTEGER [c]
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -128,12 +128,12 @@ SELECT (2 + 3)::DOUBLE / 2 [a], CAST((2 + 3) AS DOUBLE) / 2 [b], (5.0 / 2)::INTE
 | --- | --- | - |
 | 2.5 | 2.5 | 2 |
 
-# CAST_V2 type propagates through derived table
+# Extended cast type propagates through derived table
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT v.a FROM (SELECT 21::Id [a]) v OPTIONS CAST_V2
+SELECT v.a FROM (SELECT 21::Id [a]) v
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -144,12 +144,12 @@ SELECT v.a FROM (SELECT 21::Id [a]) v OPTIONS CAST_V2
 | ---- |
 | 0x15 |
 
-# CAST_V2 type propagates through CTE
+# Extended cast type propagates through CTE
 
 - dataset: AllProperties.bim
 
 ```sql
-WITH c(v) AS (SELECT 21::Id OPTIONS CAST_V2) SELECT v, v::TEXT [t] FROM c OPTIONS CAST_V2
+WITH c(v) AS (SELECT 21::Id) SELECT v, v::TEXT [t] FROM c
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -161,12 +161,12 @@ WITH c(v) AS (SELECT 21::Id OPTIONS CAST_V2) SELECT v, v::TEXT [t] FROM c OPTION
 | ---- | ---- |
 | 0x15 | "21" |
 
-# CAST_V2 ClassName comparison in WHERE
+# Extended cast ClassName comparison in WHERE
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT COUNT(*) [n] FROM aps.TestElement e WHERE e.ECClassId::ClassName = 'AllProperties:TestElement' AND e.ECInstanceId::TEXT <> 'x' AND 'true'::BOOLEAN OPTIONS CAST_V2
+SELECT COUNT(*) [n] FROM aps.TestElement e WHERE e.ECClassId::ClassName = 'AllProperties:TestElement' AND e.ECInstanceId::TEXT <> 'x' AND 'true'::BOOLEAN
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
@@ -177,12 +177,12 @@ SELECT COUNT(*) [n] FROM aps.TestElement e WHERE e.ECClassId::ClassName = 'AllPr
 | -- |
 | 10 |
 
-# CAST_V2 boolean predicates in WHERE
+# Extended cast boolean predicates in WHERE
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT COUNT(*) [n] FROM aps.TestElement e WHERE 'false'::BOOLEAN OR e.ECClassId::ClassName = 'x:y' OR 'maybe'::BOOLEAN = TRUE OPTIONS CAST_V2
+SELECT COUNT(*) [n] FROM aps.TestElement e WHERE 'false'::BOOLEAN OR e.ECClassId::ClassName = 'x:y' OR 'maybe'::BOOLEAN = TRUE
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
@@ -193,12 +193,12 @@ SELECT COUNT(*) [n] FROM aps.TestElement e WHERE 'false'::BOOLEAN OR e.ECClassId
 | - |
 | 0 |
 
-# CAST_V2 typed parameter in WHERE
+# Extended cast typed parameter in WHERE
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT IIF(e.ECClassId::ClassName = :cn, 'y', 'n') [m] FROM aps.TestElement e WHERE e.ECInstanceId = ?::Id OPTIONS CAST_V2
+SELECT IIF(e.ECClassId::ClassName = :cn, 'y', 'n') [m] FROM aps.TestElement e WHERE e.ECInstanceId = ?::Id
 ```
 
 - bindString cn, AllProperties:TestElement
@@ -212,12 +212,12 @@ SELECT IIF(e.ECClassId::ClassName = :cn, 'y', 'n') [m] FROM aps.TestElement e WH
 | - |
 | y |
 
-# CAST_V2 typed positional parameter
+# Extended cast typed positional parameter
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT ?::INTEGER [a] OPTIONS CAST_V2
+SELECT ?::INTEGER [a]
 ```
 
 - bindInt 1, 42
@@ -230,12 +230,12 @@ SELECT ?::INTEGER [a] OPTIONS CAST_V2
 | --- |
 | 42  |
 
-# CAST_V2 typed named parameter
+# Extended cast typed named parameter
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT CAST(:p AS Id) [a] OPTIONS CAST_V2
+SELECT CAST(:p AS Id) [a]
 ```
 
 - bindId p, 0x15
@@ -248,12 +248,12 @@ SELECT CAST(:p AS Id) [a] OPTIONS CAST_V2
 | ---- |
 | 0x15 |
 
-# CAST_V2 leading NULL in UNION takes the typed branch type
+# Extended cast leading NULL in UNION takes the typed branch type
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT NULL [a] UNION ALL SELECT 21::Id OPTIONS CAST_V2
+SELECT NULL [a] UNION ALL SELECT 21::Id
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -264,22 +264,22 @@ SELECT NULL [a] UNION ALL SELECT 21::Id OPTIONS CAST_V2
 [{}, { "a": "0x15" }]
 ```
 
-# CAST_V2 UNION branches with different Id types fail to prepare
+# Extended cast UNION branches with different Id types fail to prepare
 
 - dataset: AllProperties.bim
 - errorDuringPrepare: true
 
 ```sql
-SELECT 1::Id OPTIONS CAST_V2 UNION SELECT 2::ClassId OPTIONS CAST_V2
+SELECT 1::Id UNION SELECT 2::ClassId
 ```
 
-# CAST_V2 scalar subquery returning a point fails to prepare
+# Extended cast scalar subquery returning a point fails to prepare
 
 - dataset: AllProperties.bim
 - errorDuringPrepare: true
 
 ```sql
-SELECT (SELECT '{"X":1,"Y":2}'::Point2d) OPTIONS CAST_V2
+SELECT (SELECT '{"X":1,"Y":2}'::Point2d)
 ```
 
 # Internal _ecsql_cast function cannot be called from ECSQL
@@ -291,47 +291,180 @@ SELECT (SELECT '{"X":1,"Y":2}'::Point2d) OPTIONS CAST_V2
 SELECT _ecsql_cast('id', '0x15')
 ```
 
-# CAST_V2 navigation cast to ClassId fails to prepare
+# Extended cast navigation cast to ClassId fails to prepare
 
 - dataset: AllProperties.bim
 - errorDuringPrepare: true
 
 ```sql
-SELECT Parent::ClassId FROM bis.Element OPTIONS CAST_V2
+SELECT Parent::ClassId FROM bis.Element
 ```
 
-# Postfix cast requires CAST_V2
+# Postfix cast is enabled by default
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
-SELECT 21::Id
+SELECT 21::Id [a]
 ```
 
-# Parameter cast requires CAST_V2
-
-- dataset: AllProperties.bim
-- errorDuringPrepare: true
-
-```sql
-SELECT CAST(? AS INTEGER)
+```json
+[{ "a": "0x15" }]
 ```
 
-# CAST_V2 unsupported conversion fails to prepare
+# Parameter cast is enabled by default
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
-SELECT e.p2d::Point3d FROM aps.TestElement e OPTIONS CAST_V2
+SELECT CAST(? AS INTEGER) [a]
 ```
 
-# CAST_V2 unknown target fails to prepare
+- bindInt 1, 42
+
+```json
+[{ "a": 42 }]
+```
+
+# Removed CAST_V2 option fails to prepare
 
 - dataset: AllProperties.bim
 - errorDuringPrepare: true
 
 ```sql
-SELECT NULL::NoSuchType OPTIONS CAST_V2
+SELECT 1 OPTIONS CAST_V2
+```
+
+# Removed CAST_V2=false option fails to prepare
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT 1 ECSQLOPTIONS CAST_V2=false
+```
+
+# CAST uses extended Boolean and DateTime text conversions by default
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CAST(TRUE AS TEXT) [b], CAST(e.dt AS TEXT) [d] FROM aps.TestElement e ORDER BY e.ECInstanceId LIMIT 1
+```
+
+```json
+[{ "b": "true", "d": "2017-01-01T00:00:00.000" }]
+```
+
+# Extended cast unsupported conversion fails to prepare
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT e.p2d::Point3d FROM aps.TestElement e
+```
+
+# Strict enum casts validate bound values
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CAST(? AS aps.TestIntEnum) [validInt], CAST(? AS aps.TestIntEnum) [invalidInt], CAST(? AS aps.TestStringEnum) [validString], CAST(? AS aps.TestStringEnum) [invalidString]
+```
+
+- bindInt 1, 1
+- bindInt 2, 5
+- bindString 3, 1
+- bindString 4, invalid
+
+```json
+[{ "validInt": 1, "validString": "1" }]
+```
+
+# Strict enum casts preserve bound NULL
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CAST(? AS aps.TestIntEnum) [i], CAST(? AS aps.TestStringEnum) [s]
+```
+
+- bindNull 1, null
+- bindNull 2, null
+
+```json
+[{}]
+```
+
+# Boolean casts preserve numeric NULL
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CAST(NULL AS INT)::BOOLEAN [a], (1/0)::BOOLEAN [b], v::BOOLEAN [c], 0::BOOLEAN [d], (-0.5)::BOOLEAN [e] FROM (SELECT CAST(NULL AS INT) v)
+```
+
+```json
+[{ "d": false, "e": true }]
+```
+
+# Text conversions reject embedded NUL and trailing input
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ('12' || CHAR(0) || 'junk')::Id [i], ('{}' || CHAR(0) || 'junk')::Json [j], ('true' || CHAR(0) || 'junk')::BOOLEAN [b], ('2020-01-02T03:04:05' || CHAR(0) || 'junk')::DateTime [d], ('{"X":1,"Y":2}' || CHAR(0) || 'junk')::Point2d [p], ('407bfa18-944d-11ee-b9d1-0242ac120002' || CHAR(0) || 'junk')::Guid [g], ('1' || CHAR(0) || 'junk')::aps.TestIntEnum [ei], ('1' || CHAR(0) || 'junk')::aps.TestStringEnum [es]
+```
+
+```json
+[{}]
+```
+
+# Point casts preserve explicit CTE columns and adjacent scalar values
+
+- dataset: AllProperties.bim
+
+```sql
+WITH c(s,p,p_0,_ecsql_point_p_0) AS (SELECT 'a','{"X":1,"Y":2}'::Point2d,'{"X":3,"Y":4,"Z":5}'::Point3d,7), d(a,b,c,e) AS (SELECT * FROM c) SELECT t.a, t.b::TEXT [p], t.c::TEXT [q], t.e FROM d t
+```
+
+```json
+[{ "a": "a", "p": "{\"X\":1.0,\"Y\":2.0}", "q": "{\"X\":3.0,\"Y\":4.0,\"Z\":5.0}", "e": 7 }]
+```
+
+# Scalar subquery cast cannot bypass compound extended types
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT (SELECT 21::Id) v UNION ALL SELECT 22
+```
+
+# Derived table cast cannot bypass compound extended types
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT 22 v UNION ALL SELECT v FROM (SELECT 21::Id v)
+```
+
+# CTE cast cannot bypass compound extended types
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+WITH c(v) AS (SELECT 21::Id) SELECT v FROM c UNION ALL SELECT 22
+```
+
+# Extended cast unknown target fails to prepare
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT NULL::NoSuchType
 ```
