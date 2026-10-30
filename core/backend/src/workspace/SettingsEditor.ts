@@ -73,7 +73,7 @@ export namespace SettingsContainers {
    * @throws if more than one settings container is found.
    */
   export async function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined> {
-    const containers = await queryContainers({ iTwinId });
+    const containers = (await queryContainers({ iTwinId })).filter((container) => undefined === container.iModelId);
     if (containers.length > 1) {
       ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
         message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
@@ -96,7 +96,8 @@ export namespace SettingsContainers {
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
     const userToken = await IModelHost.getAccessToken();
-    const containers = await queryContainers({ iTwinId, includeParentITwins: { filter: "accountOnly" } });
+    const containers = (await queryContainers({ iTwinId, includeParentITwins: { filter: "accountOnly" } }))
+      .filter((container) => undefined === container.iModelId);
     if (containers.length === 0) return undefined;
 
     const seenITwins = new Set<string>();
