@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration,
+  BentleyCloudRpcManager, ChangesetIndexAndId, IModelReadRpcInterface, IModelTileRpcInterface, IModelVersion, RpcConfiguration,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/renderer";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
-import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { FrontendHubAccess, IModelApp, IModelAppOptions, IModelIdArg } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -20,6 +20,29 @@ import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
 
 export const envConfiguration: DptaEnvConfig = {};
 let runner: TestRunner;
+
+/** Returns the api.bentley.com base URL, honoring the backend's IMJS_URL_PREFIX. */
+export function getApiBaseUrl(): string {
+  return `https://${envConfiguration.urlPrefix ?? ""}api.bentley.com`;
+}
+
+/** Creates the iModels client lazily, since the URL prefix is only known once the backend's env config is fetched after IModelApp startup. */
+class EnvHubAccess implements FrontendHubAccess {
+  private _access?: FrontendIModelsAccess;
+  private get _impl(): FrontendIModelsAccess {
+    return this._access ??= new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `${getApiBaseUrl()}/imodels` } }));
+  }
+
+  public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
+    return this._impl.getLatestChangeset(arg);
+  }
+  public async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId> {
+    return this._impl.getChangesetFromVersion(arg);
+  }
+  public async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId> {
+    return this._impl.getChangesetFromNamedVersion(arg);
+  }
+}
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -74,9 +97,7 @@ export class DisplayPerfTestApp {
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    iModelApp.hubAccess = import.meta.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
-      : new FrontendIModelsAccess();
+    iModelApp.hubAccess = new EnvHubAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
     if (ProcessDetector.isElectronAppFrontend)
@@ -86,6 +107,11 @@ export class DisplayPerfTestApp {
 
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
+    // Backend values win; fall back to the frontend build-time values for workflows that only set them there.
+    envConfiguration.urlPrefix ??= import.meta.env.IMJS_URL_PREFIX || undefined;
+    envConfiguration.oidcHeadless ??= import.meta.env.IMJS_OIDC_HEADLESS ? true : undefined;
+
+    await DisplayPerfRpcInterface.getClient().consoleLog(`Env configuration: ${JSON.stringify(envConfiguration)}`);
 
     const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
 
@@ -142,7 +168,7 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if (import.meta.env.IMJS_OIDC_HEADLESS)
+  if (envConfiguration.oidcHeadless)
     return;
   const clientId = requireEnv(import.meta.env.IMJS_OIDC_CLIENT_ID, "IMJS_OIDC_CLIENT_ID");
   let authorizationClient;

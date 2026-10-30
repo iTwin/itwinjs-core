@@ -40,7 +40,10 @@ Performance tests should automatically operate on Mac the same as on a Windows m
   * If defined, the API key supplying access to Cesium ION assets.
 * BRIEFCASE_CACHE_LOCATION
   * iModelHost.cacheDir location
+* IMJS_URL_PREFIX and IMJS_OIDC_HEADLESS are read by the backend and forwarded to the frontend; values baked into the frontend build are only used as a fallback when the backend doesn't define them.
 * Authentication
+  * Existing access token (takes precedence over the options below)
+    * DPTA_ACCESS_TOKEN (with or without the `Bearer ` prefix); the frontend gets the token from the backend, so IMJS_OIDC_HEADLESS isn't needed
   * [Headless](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool)
     * IMJS_OIDC_HEADLESS (any value, as long as it's set)
     * IMJS_OIDC_CLIENT_ID
@@ -144,7 +147,7 @@ Specifying where the imodels are located:
 If given the option of using a local file path or using iModelHub, the program will first attempt to access the imodel using the local file path; if that fails, the program will then attempt to use the iModelHub location to access the imodel.
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
-* To specify a remote iModel, set `iTwinId` and `iModelId`. External saved views will be downloaded as well.
+* To specify a remote iModel, set `iTwinId` and `iModelId`. External saved views will be downloaded as well. Optionally set `changesetId` to open the iModel at that changeset instead of the latest one.
 * To specify the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost, set "frontendTilesUrlTemplate".  It can include special tokens: `{iModel.key}`,
 `{iModel.filename}` and `{iModel.extension}`.  These will get replaced by the value of iModel.key, just the iModel filename (no path or extension), or just the iModel extension (including .), correspondingly (e.g.: "<http://localhost:8080{iModel.key}-tiles/3dft/>" or "<http://localhost:8080/MshX/{iModel.filename}{iModel.extension}/>").
  Note that the contents of iModel.key in DPTA is a GUID.

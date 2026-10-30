@@ -8,7 +8,7 @@ import {
   assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapType, BaseMapLayerSettings, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType, BaseMapLayerSettings, FeatureAppearance, Hilite, IModelVersion, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
@@ -20,7 +20,7 @@ import {
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
+import { DisplayPerfTestApp, envConfiguration, getApiBaseUrl } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
@@ -228,7 +228,7 @@ export class TestRunner {
         /** API Version. v1 by default */
         // version?: ApiVersion;
         /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-        baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+        baseUrl: getApiBaseUrl(),
       };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
@@ -262,7 +262,7 @@ export class TestRunner {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-      baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: getApiBaseUrl(),
     };
 
     let context: TestContext | undefined;
@@ -298,7 +298,7 @@ export class TestRunner {
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
-        const iModelKey = this.curConfig.iModelId ? this.curConfig.iModelId : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
+        const iModelKey = this.curConfig.iModelId ? `${this.curConfig.iModelId}@${this.curConfig.changesetId ?? "latest"}` : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
 
         try {
           const reuseContext = context && set.reuseContext && context.iModelKey === iModelKey;
@@ -702,38 +702,59 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
+  /** Reads saved views from the `<iModelName>_ESV.json` file next to `filepath`, if any. */
+  private async readLocalSavedViews(filepath: string): Promise<ViewStateSpec[]> {
+    const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
+    if (!esv)
+      return [];
+
+    const json = JSON.parse(esv) as ViewStateSpecProps[];
+    return json.map((x) => ({
+      name: x._name,
+      viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
+      elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
+      selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
+      displayTransformProvider: x._displayTransforms ? DisplayTransformProvider.fromJSON(JSON.parse(x._displayTransforms)) : undefined,
+    }));
+  }
+
   private async openIModel(): Promise<TestContext> {
     if (this.curConfig.iModelId) {
-      if (import.meta.env.IMJS_OIDC_HEADLESS) {
+      if (envConfiguration.oidcHeadless) {
+        await this.logToConsole(`Running in headless mode, using backend access token for authorization.`);
         const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
       // Download remote iModel and its saved views
-      const { iModelId, iTwinId } = this.curConfig;
+      const { iModelId, iTwinId, changesetId } = this.curConfig;
       if (iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
-      const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
-      const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
-      return { iModel, externalSavedViews, iModelKey: this.curConfig.iModelId };
+      const version = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
+      await this.logToConsole(`Opening remote iModel ${iModelId} at changeset ${changesetId ?? "latest"} from a V2 checkpoint...`);
+      const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, version);
+      // Remote opens always use V2 checkpoints (SnapshotDb.openCheckpoint / openCheckpointFromRpc on the backend).
+      const openedMsg = `  Opened iModel ${iModelId} from a V2 checkpoint at changeset ${iModel.changeset.id || "(none)"} (index ${iModel.changeset.index ?? "?"})`;
+      await this.logToConsole(openedMsg);
+      await this.logToFile(openedMsg);
+
+      let remoteSavedViews: ViewStateSpec[] = [];
+      try {
+        remoteSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
+      } catch (e: any) {
+        await this.logError(`Failed to fetch remote saved views for iModel ${iModelId}: ${(e as Error).message}`);
+      }
+
+      // Saved views from the local ESV file take precedence over remote ones with the same name.
+      const localSavedViews = await this.readLocalSavedViews(`${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`);
+      const localNames = new Set(localSavedViews.map((x) => x.name));
+      const externalSavedViews = [...remoteSavedViews.filter((x) => !localNames.has(x.name)), ...localSavedViews];
+
+      return { iModel, externalSavedViews, iModelKey: `${iModelId}@${changesetId ?? "latest"}` };
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
       const iModel = await TestSnapshotConnection.openFile(filepath);
-
-      const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
-      let externalSavedViews: ViewStateSpec[] = [];
-      if (esv) {
-        const json = JSON.parse(esv) as ViewStateSpecProps[];
-        externalSavedViews = json.map((x) => {
-          return {
-            name: x._name,
-            viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
-            elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
-            selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
-            displayTransformProvider: x._displayTransforms ? DisplayTransformProvider.fromJSON(JSON.parse(x._displayTransforms)) : undefined,
-          };
-        });
-      }
+      const externalSavedViews = await this.readLocalSavedViews(filepath);
       return { iModel, externalSavedViews, iModelKey: filepath };
     }
   }
