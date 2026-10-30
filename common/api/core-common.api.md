@@ -7934,7 +7934,6 @@ export interface QueryLimit {
 // @public
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
-    collectCloudSqliteStats?: boolean;
     // @deprecated
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
@@ -7949,7 +7948,6 @@ export class QueryOptionsBuilder {
     // (undocumented)
     getOptions(): QueryOptions;
     setAbbreviateBlobs(val: boolean): this;
-    setCollectCloudSqliteStats(value: boolean): this;
     // @deprecated
     setConvertClassIdsToNames(val: boolean): this;
     // @internal

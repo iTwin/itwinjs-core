@@ -15,7 +15,7 @@ import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { DbResult } from "@itwin/core-bentley";
 
 /** @beta */
-export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota" | "collectCloudSqliteStats">;
+export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
 /**
  * Execute ECSQL statements synchronously and read the results one row at a time.

@@ -193,6 +193,8 @@ describe("CloudSqlite", () => {
     const localFile = join(KnownLocations.tmpdir, `query-stats-${id}.bim`);
     const sql = "SELECT ECInstanceId, Description FROM bis.Subject WHERE Description <> '' ORDER BY ECInstanceId";
     let db: SnapshotDb | undefined;
+    const originalConfig = IModelHost.configuration;
+    const hostConfig = sinon.stub(IModelHost, "configuration").value({ ...originalConfig, collectCloudSqliteStats: true });
     try {
       const source = SnapshotDb.createEmpty(localFile, { rootSubject: { name: "Query statistics" } });
       let expectedRows: unknown[];
@@ -218,7 +220,7 @@ describe("CloudSqlite", () => {
       const before = container.queryDatabase("query-stats")!;
       expect(before.localBlocks).to.be.lessThan(before.totalBlocks);
 
-      const cold = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const cold = db.createQueryReader(sql);
       expect(await cold.toArray()).to.deep.equal(expectedRows);
       expect(cold.stats.backendDownloadTime).to.be.a("number").and.greaterThan(0);
       expect(cold.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
@@ -229,15 +231,16 @@ describe("CloudSqlite", () => {
       );
       expect(container.queryDatabase("query-stats")!.localBlocks).to.be.greaterThan(before.localBlocks);
 
-      const warm = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const warm = db.createQueryReader(sql);
       expect(await warm.toArray()).to.deep.equal(expectedRows);
       expect(warm.stats.backendDownloadTime).to.equal(0);
       expect(warm.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(warm.stats.backendDownloadBlocks).to.equal(0);
       expect(warm.stats.backendDownloadBlockSizes).to.deep.equal([]);
 
-      for (const options of [undefined, { collectCloudSqliteStats: false }]) {
-        const unmeasured = db.createQueryReader(sql, undefined, options);
+      for (const collectCloudSqliteStats of [undefined, false]) {
+        hostConfig.value({ ...originalConfig, collectCloudSqliteStats });
+        const unmeasured = db.createQueryReader(sql);
         expect(await unmeasured.toArray()).to.deep.equal(expectedRows);
         expect(unmeasured.stats).not.to.have.property("backendDownloadTime");
         expect(unmeasured.stats).not.to.have.property("backendExecutionTime");
@@ -245,6 +248,7 @@ describe("CloudSqlite", () => {
         expect(unmeasured.stats).not.to.have.property("backendDownloadBlockSizes");
       }
     } finally {
+      hostConfig.restore();
       db?.close();
       if (container.isConnected)
         container.disconnect({ detach: true });
@@ -263,6 +267,7 @@ describe("CloudSqlite", () => {
     const localFile = join(KnownLocations.tmpdir, `schema-stats-${id}.bim`);
     const sql = "SELECT ECInstanceId FROM qss.ColdElement WHERE ECInstanceId = 0";
     let db: SnapshotDb | undefined;
+    const hostConfig = sinon.stub(IModelHost, "configuration").value({ ...IModelHost.configuration, collectCloudSqliteStats: true });
     try {
       const source = SnapshotDb.createEmpty(localFile, { rootSubject: { name: "Schema statistics" } });
       try {
@@ -294,7 +299,7 @@ describe("CloudSqlite", () => {
       const before = container.queryDatabase("schema-stats")!;
       expect(before.localBlocks).to.be.lessThan(before.totalBlocks);
 
-      const cold = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const cold = db.createQueryReader(sql);
       expect(await cold.toArray()).to.deep.equal([]);
       const downloaded = container.queryDatabase("schema-stats")!.localBlocks - before.localBlocks;
       expect(downloaded).to.be.greaterThan(0);
@@ -305,11 +310,12 @@ describe("CloudSqlite", () => {
         Array<number>(cold.stats.backendDownloadBlocks!).fill(container.blockSize),
       );
 
-      const warm = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const warm = db.createQueryReader(sql);
       expect(await warm.toArray()).to.deep.equal([]);
       expect(warm.stats.backendDownloadTime).to.equal(0);
       expect(warm.stats.backendDownloadBlocks).to.equal(0);
     } finally {
+      hostConfig.restore();
       db?.close();
       if (container.isConnected)
         container.disconnect({ detach: true });
@@ -325,23 +331,27 @@ describe("CloudSqlite", () => {
     container.connect(caches[1]);
     const db = SnapshotDb.openFile("testBim", { container });
     const sql = "SELECT ECInstanceId FROM bis.Element";
+    const originalConfig = IModelHost.configuration;
+    const hostConfig = sinon.stub(IModelHost, "configuration").value({ ...originalConfig, collectCloudSqliteStats: true });
     try {
       const expectedRows = await db.createQueryReader(sql).toArray();
 
-      const asyncReader = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const asyncReader = db.createQueryReader(sql);
       expect(await asyncReader.toArray()).to.deep.equal(expectedRows);
       expect(asyncReader.stats.backendDownloadTime).to.equal(0);
       expect(asyncReader.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(asyncReader.stats.backendDownloadBlocks).to.equal(0);
       expect(asyncReader.stats.backendDownloadBlockSizes).to.deep.equal([]);
 
-      const disabled = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: false });
+      hostConfig.value({ ...originalConfig, collectCloudSqliteStats: false });
+      const disabled = db.createQueryReader(sql);
       await disabled.toArray();
       expect(disabled.stats).not.to.have.property("backendDownloadTime");
       expect(disabled.stats).not.to.have.property("backendExecutionTime");
       expect(disabled.stats).not.to.have.property("backendDownloadBlocks");
       expect(disabled.stats).not.to.have.property("backendDownloadBlockSizes");
     } finally {
+      hostConfig.restore();
       db.close();
       container.disconnect({ detach: true });
     }

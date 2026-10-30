@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { EditTxnError, RpcRegistry } from "@itwin/core-common";
+import { DbQueryResponse, DbResponseKind, DbResponseStatus, EditTxnError, RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { EditTxn } from "../EditTxn";
 import { IModelJsFs } from "../IModelJsFs";
@@ -19,7 +19,8 @@ import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
-import { _getHubAccess, _hubAccess } from "../internal/Symbols";
+import { _getHubAccess, _hubAccess, _nativeDb } from "../internal/Symbols";
+import { ECDbTestHelper } from "./ecdb/ECDbTestHelper";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -56,6 +57,44 @@ describe("IModelHost", () => {
     expect(EditTxn.implicitWriteEnforcement).to.equal("log");
     expect(IModelHost.configuration?.implicitWriteEnforcement).to.equal("log");
   });
+
+  for (const collectCloudSqliteStats of [undefined, false, true]) {
+    it(`controls Cloud SQLite collection for all readers from host configuration (${collectCloudSqliteStats})`, async () => {
+      await IModelHost.startup({ ...opts, collectCloudSqliteStats });
+      using ecdb = ECDbTestHelper.createECDb(KnownTestLocations.outputDir, "host-query-stats.ecdb");
+      const imodel = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+      try {
+        for (const db of [imodel, ecdb]) {
+          const execute = sinon.stub(db[_nativeDb], "concurrentQueryExecute").callsFake((request, callback) => {
+            expect(request).to.have.property("collectCloudSqliteStats", collectCloudSqliteStats === true);
+            const response: DbQueryResponse = {
+              kind: DbResponseKind.ECSql, status: DbResponseStatus.Done, data: [[1]], rowCount: 1, meta: [],
+              stats: {
+                cpuTime: 1000, totalTime: 1, prepareTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0,
+                ...(collectCloudSqliteStats ? {
+                  cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBlockSize: 4096,
+                } : {}),
+              },
+            };
+            callback(response);
+          });
+          // A legacy or untyped caller cannot override host policy.
+          const legacyOptions = { collectCloudSqliteStats: collectCloudSqliteStats !== true, limit: { count: 1 } };
+          for (const options of [undefined, legacyOptions]) {
+            const reader = db.createQueryReader("SELECT 1", undefined, options);
+            expect(await reader.toArray()).to.deep.equal([[1]]);
+            expect(reader.stats.backendDownloadTime).to.equal(collectCloudSqliteStats ? 0 : undefined);
+            expect(reader.stats.backendExecutionTime).to.equal(collectCloudSqliteStats ? 1 : undefined);
+            expect(reader.stats.backendDownloadBlocks).to.equal(collectCloudSqliteStats ? 0 : undefined);
+            expect(reader.stats.backendDownloadBlockSizes).to.deep.equal(collectCloudSqliteStats ? [] : undefined);
+          }
+          expect(execute.callCount).to.equal(2);
+        }
+      } finally {
+        imodel.close();
+      }
+    });
+  }
 
   it("should properly cleanup beforeExit event listeners on shutdown", async () => {
     const beforeCount = process.listenerCount("beforeExit");

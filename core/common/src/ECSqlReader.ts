@@ -19,6 +19,7 @@ import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlRead
 export interface QueryStats {
   /** Elapsed wait attributed to successful block downloads for the main Cloud SQLite database, in fractional milliseconds.
    * Shared downloads count each request's own wait; measured cache hits report zero.
+   * Collection is controlled by the backend host, not by reader options.
    * Absent when collection is disabled, unsupported, or incomplete, or the database is local-only.
    */
   backendDownloadTime?: number;
@@ -221,10 +222,6 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       this._stats.prepareTime += rs.stats.prepareTime;
       if (rs.stats.cloudSqliteTimingState === "notExecuted")
         return;
-      if (this._options.collectCloudSqliteStats !== true) {
-        this.invalidateCloudTiming();
-        return;
-      }
       if (this._cloudTimingUnavailable)
         return;
       if (rs.stats.cloudSqliteTimingState !== "unavailable" && rs.stats.downloadTime !== undefined && rs.stats.executionTime !== undefined) {

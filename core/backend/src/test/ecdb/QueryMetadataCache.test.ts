@@ -333,7 +333,7 @@ describe("createQueryReader metadata cache", () => {
         });
         return response;
       });
-      const reader = ecdb.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      const reader = ecdb.createQueryReader(sql);
       expect(await reader.toArray()).to.deep.equal([["kept"]]);
       expect(reader.stats.backendTotalTime).to.equal(120);
       expect(reader.stats.backendCpuTime).to.equal(120000);

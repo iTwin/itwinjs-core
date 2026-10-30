@@ -50,18 +50,20 @@ These are overlapping measurements, not separate components to add together. Nat
 
 ### Cloud SQLite download waits
 
-Pass `{ collectCloudSqliteStats: true }` to `createQueryReader` to collect:
+Enable collection once at backend startup with `await IModelHost.startup({ collectCloudSqliteStats: true })`. All asynchronous ECSQL readers served by that host can then report:
 
 - `backendDownloadTime`: elapsed time this reader's requests waited for required blocks of the **main** Cloud SQLite database, in fractional milliseconds.
 - `backendExecutionTime`: active backend elapsed time excluding those waits, in fractional milliseconds. Includes preparation, binding, metadata, stepping, and native row conversion, but not queueing, RPC, or application work between calls. It is not CPU usage.
 - `backendDownloadBlocks`: count of successful main-database block acquisitions that waited, including waits on shared downloads and excluding warm-cache hits.
 - `backendDownloadBlockSizes`: one logical size in bytes per waited-block acquisition, in request order. These are not actual HTTP payload sizes. Acquiring the same block again after eviction or a retry counts again; the count is not a count of unique block identities.
 
-Collection defaults to **off**; use `false` to disable it explicitly. These optional fields are absent when `main` is local-only, for unsupported native/daemon versions, or for incomplete measurements. Older timing-only responses can supply timings without block counts or sizes; incomplete block totals remain absent for the reader's lifetime. Supported Cloud SQLite cache hits report zero download time, zero waited blocks, and an empty sizes array. Check for `undefined` rather than treating absence as zero.
+Collection defaults to **off** and cannot be overridden per request. Set the host startup option to `false` or omit it to disable collection. Readers do not need additional options, including frontend readers using that backend. These optional fields are absent when `main` is local-only, for unsupported native/daemon versions, or for incomplete measurements. Older timing-only responses can supply timings without block counts or sizes; incomplete block totals remain absent for the reader's lifetime. Supported Cloud SQLite cache hits report zero download time, zero waited blocks, and an empty sizes array. Check for `undefined` rather than treating absence as zero.
 
 Both in-process and daemon/proxy Cloud SQLite files are supported, for `main` only. Attached-database waits are not measured; they remain part of the execution remainder. Each concurrent request counts its own wait on a shared download, so waits from different readers can overlap; a late-arriving request counts only its remaining wait. A request blocked on a prefetch counts that wait, but unrelated prefetch activity is excluded. Upstream counters account for successful downloads; failed downloads are not guaranteed to contribute wait time or block counts, and unaccounted waits remain in the execution remainder.
 
 Native collection reads connection-specific `nqueryus`, `nqueryblock`, and `nquerybyte` together in one `bcv_stat` query before and after each active request/page, never per row. It uses the upstream Cloud SQLite fix that replaces `nqueryms` with monotonic microsecond timing and accounts for shared/prefetch waits. Microsecond deltas are converted to fractional milliseconds. Logical block sizes come from `PRAGMA main.bcv_blocksize`, not from average downloaded bytes. Snapshot overhead is excluded from the new execution remainder. Legacy daemons lacking `nqueryus` continue to execute queries without reporting these optional fields. A request crossing an application JavaScript callback also omits these fields because upstream counters cannot exclude callback work from an unfinished wait.
+
+Enabling collection adds snapshot queries for every executed request/page, plus another pair when preparing against the shared schema connection. Daemon mode adds daemon round trips for these snapshots. The reader also retains one size entry per waited-block acquisition. No overhead benchmark has established a negligible cost; enable this host-wide diagnostic setting deliberately.
 
 The sum of the two new fields is measured active backend elapsed time, not client `totalTime` or queue-inclusive `backendTotalTime`. Download waits still count against query time quotas. `withQueryReader` does not collect or expose these statistics.
 

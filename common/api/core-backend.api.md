@@ -4646,6 +4646,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     cacheDir?: LocalDirName;
     // (undocumented)
+    collectCloudSqliteStats?: boolean;
+    // (undocumented)
     compressCachedTiles?: boolean;
     // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
@@ -4691,6 +4693,7 @@ export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
+    collectCloudSqliteStats?: boolean;
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
@@ -7612,7 +7615,7 @@ export namespace SynchronousChannel {
 }
 
 // @beta (undocumented)
-export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota" | "collectCloudSqliteStats">;
+export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {

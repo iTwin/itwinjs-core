@@ -19,9 +19,9 @@ describe("ECSQL reader examples", () => {
     iModel.close();
   });
 
-  it("requests Cloud SQLite timings for an asynchronous reader", async () => {
+  it("reads host-enabled Cloud SQLite timings from an asynchronous reader", async () => {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Cloud_Timing_Async
-    const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element LIMIT 5", undefined, { collectCloudSqliteStats: true });
+    const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element LIMIT 5");
     const rows = await reader.toArray();
     const { backendDownloadTime, backendExecutionTime, backendDownloadBlocks, backendDownloadBlockSizes } = reader.stats;
     // Statistics describe main only; sizes are logical bytes, not HTTP payload bytes.

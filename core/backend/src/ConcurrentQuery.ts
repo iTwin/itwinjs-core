@@ -4,6 +4,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbBlobRequest, DbBlobResponse, DbQueryConfig, DbQueryRequest, DbQueryResponse, DbRequestKind } from "@itwin/core-common";
+import { IModelHost } from "./IModelHost";
 
 /** @internal */
 export type OnResponse = (response: Response) => void;
@@ -14,7 +15,8 @@ export class ConcurrentQuery {
   public static async executeQueryRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbQueryRequest): Promise<DbQueryResponse> {
     return new Promise<DbQueryResponse>((resolve) => {
       request.kind = DbRequestKind.ECSql;
-      conn.concurrentQueryExecute(request, (response: any) => {
+      const nativeRequest = { ...request, collectCloudSqliteStats: IModelHost.configuration?.collectCloudSqliteStats === true };
+      conn.concurrentQueryExecute(nativeRequest, (response: any) => {
         resolve(response as DbQueryResponse);
       });
     });

@@ -146,11 +146,6 @@ export interface BaseReaderOptions {
  * @extensions
  * */
 export interface QueryOptions extends BaseReaderOptions {
-  /** Collect main-database Cloud SQLite block-wait timings, counts, and logical sizes for createQueryReader. Defaults to false.
-   * Unsupported native implementations and databases with a local-only main database do not supply these statistics.
-   * Download waits continue to count against query time quotas.
-   */
-  collectCloudSqliteStats?: boolean;
   /**
    * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
    * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
@@ -189,11 +184,6 @@ export interface BlobOptions extends BaseReaderOptions {
 export class QueryOptionsBuilder {
   public constructor(private _options: QueryOptions = {}) { }
   public getOptions(): QueryOptions { return this._options; }
-  /** Enable or disable Cloud SQLite timing collection. */
-  public setCollectCloudSqliteStats(value: boolean): this {
-    this._options.collectCloudSqliteStats = value;
-    return this;
-  }
   /**
    * @internal
    * Allow to set priority of query. Query will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Expose opt-in main-database Cloud SQLite timings, waited-block counts and logical sizes through asynchronous query readers, including discarded metadata-cache executions.",
+      "comment": "Add the host-wide IModelHost collectCloudSqliteStats startup option to expose main-database Cloud SQLite timings, waited-block counts and logical sizes through all asynchronous query readers, including discarded metadata-cache executions.",
       "type": "none"
     }
   ],
