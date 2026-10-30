@@ -166,6 +166,13 @@ export interface IModelHostOptions {
    */
   enableOpenTelemetry?: boolean;
 
+  /** Collect Cloud SQLite download-wait timings, execution timings, waited-block counts, and logical sizes
+   * for all asynchronous ECSQL readers on this host. Defaults to false; cannot be overridden per request.
+   * Only the main database is measured. Local-only databases and unsupported native implementations omit these statistics.
+   * Collection adds request-boundary statistics queries, including daemon round trips in daemon mode.
+   */
+  collectCloudSqliteStats?: boolean;
+
   /** Whether to compress cached tiles.
    * Defaults to `true`.
    */
@@ -252,6 +259,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
+  public collectCloudSqliteStats?: boolean;
 
   /** @beta */
   public workspace?: WorkspaceOpts;

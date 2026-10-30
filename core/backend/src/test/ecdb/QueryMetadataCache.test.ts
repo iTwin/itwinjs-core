@@ -210,6 +210,41 @@ describe("QueryMetadataCache", () => {
     expect(exec.requests.map((r) => r.includeMetaData)).to.deep.equal([true, true]);
   });
 
+  it("reports a discarded response exactly once before replay, including when replay rejects", async () => {
+    for (const rejectReplay of [false, true]) {
+      const cache = new QueryMetadataCache();
+      const request = makeRequest();
+      await cache.executeCachedQueryRequest(request, async () => makeResponse(makeMeta("Old")));
+      const discarded = makeResponse([]);
+      discarded.stats.totalTime = 100;
+      const observed: DbQueryResponse[] = [];
+      const error = new Error("replay failed");
+      const result = cache.executeCachedQueryRequest(request, async (req) => {
+        if (!req.includeMetaData) {
+          cache.clear();
+          return discarded;
+        }
+        expect(observed).to.deep.equal([discarded]);
+        if (rejectReplay)
+          throw error;
+        const replay = makeResponse(makeMeta("New"));
+        replay.stats.totalTime = 20;
+        return replay;
+      }, (rs) => observed.push(rs));
+      if (rejectReplay) {
+        try {
+          await result;
+          expect.fail("expected replay rejection");
+        } catch (caught) {
+          expect(caught).to.equal(error);
+        }
+      } else {
+        expect((await result).stats.totalTime).to.equal(20);
+      }
+      expect(observed).to.deep.equal([discarded]);
+    }
+  });
+
   it("evicts the least recently used entry when full", async () => {
     const cache = new QueryMetadataCache(2);
     const exec = new FakeExecutor(makeMeta("A"));
@@ -272,6 +307,43 @@ describe("createQueryReader metadata cache", () => {
 
   describe("ECDb", () => {
     const outDir = KnownTestLocations.outputDir;
+
+    it("includes discarded native execution timings in reader statistics without counting discarded rows", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "query-metadata-cache-timing.ecdb", schemaV1);
+      const execute = sinon.stub(ConcurrentQuery, "executeQueryRequest");
+      execute.resolves(makeResponse(makeMeta("PropA")));
+      const sql = "SELECT PropA FROM mct.Foo";
+      await ecdb.createQueryReader(sql).toArray();
+      execute.callsFake(async (_conn, request) => {
+        const discarded = !request.includeMetaData;
+        if (discarded)
+          ecdb.clearCaches();
+        const response = makeResponse(discarded ? [] : makeMeta("PropA"));
+        response.data = [[discarded ? "discarded" : "kept"]];
+        response.rowCount = 1;
+        Object.assign(response.stats, {
+          cpuTime: discarded ? 100000 : 20000,
+          totalTime: discarded ? 100 : 20,
+          prepareTime: discarded ? 10 : 2,
+          cloudSqliteTimingState: "measured",
+          downloadTime: discarded ? 80 : 5,
+          executionTime: discarded ? 20 : 15,
+          downloadBlocks: discarded ? 2 : 1,
+          downloadBlockSize: 4096,
+        });
+        return response;
+      });
+      const reader = ecdb.createQueryReader(sql);
+      expect(await reader.toArray()).to.deep.equal([["kept"]]);
+      expect(reader.stats.backendTotalTime).to.equal(120);
+      expect(reader.stats.backendCpuTime).to.equal(120000);
+      expect(reader.stats.prepareTime).to.equal(12);
+      expect(reader.stats.backendDownloadTime).to.equal(85);
+      expect(reader.stats.backendExecutionTime).to.equal(35);
+      expect(reader.stats.backendDownloadBlocks).to.equal(3);
+      expect(reader.stats.backendDownloadBlockSizes).to.deep.equal([4096, 4096, 4096]);
+      expect(reader.stats.backendRowsReturned).to.equal(1);
+    });
 
     function importSchemaXml(ecdb: ECDb, xml: string) {
       const schemaPath = path.join(outDir, `${Guid.createValue()}.ecschema.xml`);

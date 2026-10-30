@@ -73,8 +73,9 @@ export class QueryMetadataCache {
    * @param executeQueryRequest Sends a request to native without consulting this cache, typically
    * `ConcurrentQuery.executeQueryRequest` with the database already bound. Called once, or twice if the cache is cleared
    * while a successful cache hit is in flight. The second call has no `restartToken`.
+   * @param onDiscardedResponse Accounts for a discarded execution before replay, even if replay later rejects.
    */
-  public async executeCachedQueryRequest(request: DbQueryRequest, executeQueryRequest: (request: DbQueryRequest) => Promise<DbQueryResponse>): Promise<DbQueryResponse> {
+  public async executeCachedQueryRequest(request: DbQueryRequest, executeQueryRequest: (request: DbQueryRequest) => Promise<DbQueryResponse>, onDiscardedResponse?: (response: DbQueryResponse) => void): Promise<DbQueryResponse> {
     if (!request.includeMetaData)
       return executeQueryRequest(request);
 
@@ -97,6 +98,7 @@ export class QueryMetadataCache {
       // Invalidated while in flight: the cached metadata may not match the statement that produced the rows, so run
       // the request again with metadata. Drop the restart token: a newer request may already be using it, and
       // resubmitting with it would cancel that request.
+      onDiscardedResponse?.(hitResponse);
       missRequest = { ...request };
       delete missRequest.restartToken;
     }

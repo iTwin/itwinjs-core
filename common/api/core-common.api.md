@@ -2268,8 +2268,7 @@ export interface DbRequest extends BaseReaderOptions {
 
 // @internal (undocumented)
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-    // (undocumented)
-    execute(request: TRequest): Promise<TResponse>;
+    execute(request: TRequest, onDiscardedResponse?: (response: TResponse) => void): Promise<TResponse>;
 }
 
 // @internal (undocumented)
@@ -2322,7 +2321,13 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
+    // @internal
+    cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
     cpuTime: number;
+    downloadBlocks?: number;
+    downloadBlockSize?: number;
+    downloadTime?: number;
+    executionTime?: number;
     memLimit: number;
     memUsed: number;
     prepareTime: number;
@@ -8025,6 +8030,10 @@ export interface QueryRowProxy {
 // @public
 export interface QueryStats {
     backendCpuTime: number;
+    backendDownloadBlocks?: number;
+    backendDownloadBlockSizes?: number[];
+    backendDownloadTime?: number;
+    backendExecutionTime?: number;
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
