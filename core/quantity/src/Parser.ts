@@ -365,7 +365,18 @@ export class Parser {
             continue;
           }
 
-          if (isCharOperator) {
+          // A slash directly between two label characters (e.g. "km/h") is part of the label, not a division.
+          const nextCharCode = str.charCodeAt(i + 1);
+          const isUnitLabelSlash =
+            charCode === QuantityConstants.CHAR_SLASH &&
+            wipToken.length > 0 &&
+            i + 1 < str.length &&
+            !/\s/.test(str[i - 1]) &&
+            !/\s/.test(str[i + 1]) &&
+            !Parser.isDigitOrDecimalSeparator(nextCharCode, format) &&
+            !isOperator(nextCharCode);
+
+          if (isCharOperator && !isUnitLabelSlash) {
             if (wipToken.length > 0) {
               // There is a token is progress, process it now, before adding the new operator token.
               tokens.push(new ParseToken(wipToken));
@@ -554,11 +565,19 @@ export class Parser {
     return undefined;
   }
 
+  /** Get the Unit Conversion for a known unit. Matches by unit name first because labels can differ between units providers
+   * (e.g. an unlabeled schema unit may have an empty label in one provider and a name-derived label in another). Falls back to label lookup.
+   */
+  private static tryFindUnitConversionForUnit(unit: UnitProps, unitsConversions: UnitConversionSpec[]): UnitConversionProps | undefined {
+    const byName = unitsConversions.find((conversion) => conversion.name === unit.name);
+    return byName ? byName.conversion : Parser.tryFindUnitConversion(unit.label, unitsConversions, unit);
+  }
+
   /**
    * Get what the unit conversion is for a unitless value.
    */
   private static getDefaultUnitConversion(tokens: ParseToken[], unitsConversions: UnitConversionSpec[], defaultUnit?: UnitProps) {
-    let unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions, defaultUnit) : undefined;
+    let unitConversion = defaultUnit ? Parser.tryFindUnitConversionForUnit(defaultUnit, unitsConversions) : undefined;
     if (!unitConversion) {
       // No default unit conversion, take the first valid unit.
       const uniqueUnitLabels = [...new Set(tokens.filter((token) => token.isString).map((token) => token.value as string))];
@@ -692,7 +711,7 @@ export class Parser {
           if (compositeUnitIndex > 0 && format.units && format.units.length > compositeUnitIndex) {
             // if this is not the first token, and we have a composite spec, look up the unit from the current index
             const presUnitAtIndex = format.units[compositeUnitIndex][0];
-            conversion = Parser.tryFindUnitConversion(presUnitAtIndex.label, unitsConversions, presUnitAtIndex);
+            conversion = Parser.tryFindUnitConversionForUnit(presUnitAtIndex, unitsConversions);
           } else if (defaultUnitConversion) {
             conversion = defaultUnitConversion;
           }
@@ -1015,7 +1034,7 @@ export class Parser {
 
     // Original flow for 1-unit composite - use Quantity.convertTo for proper unit conversion
     const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
-    const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
+    const unitConversion = defaultUnit ? Parser.tryFindUnitConversionForUnit(defaultUnit, spec.unitConversions) : undefined;
 
     if (!unitConversion) {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);

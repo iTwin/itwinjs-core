@@ -38,6 +38,7 @@ Read only the references relevant to the task:
 When editing `docs/changehistory/NextVersion.md`:
 
 - List the allowed `##` sections with `node .github/workflows/automation-scripts/check-nextversion.mjs --sections`. Add each entry as a `###` heading under the section it belongs to, reusing that section when it already exists, and add it to the table of contents.
+- If the table of contents is missing, create it below `# NextVersion` and before the first `##` section, following past release notes such as `docs/changehistory/5.14.0.md`. Use a nested Markdown list of heading links: `NextVersion` at the top level, `##` sections indented two spaces, `###` entries indented four spaces, and deeper headings nested accordingly. Include all existing headings in document order, not just the entry being added. A passing validator does not excuse a missing table of contents.
 - Done when `node .github/workflows/automation-scripts/check-nextversion.mjs` passes. It checks the whole file, so fix any problems already there in the same change, and tell the user what you fixed and why, since it is outside the task you were given.
 
 ## Before remote work
@@ -57,3 +58,7 @@ Before committing work that will be pushed, apply only the checks required by th
 - Treat a runtime or logical behavior change as breaking even when existing consumer code still compiles.
 - If a required check is blocked, state the command and blocker.
 - Do not commit `.only` tests.
+
+## Manual offline tests
+
+AI assistants require network access and cannot work while this machine is offline. Do not launch or supervise a test requiring machine-wide disconnection through assistant tools. While still online, give the operator the complete commands, expected results, cancellation steps, and manual network-restoration instructions, then end your turn before disconnection. Resume work only after the operator confirms networking is restored. For Vertical CRS acceptance, follow the [Vertical CRS testing guide](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance).

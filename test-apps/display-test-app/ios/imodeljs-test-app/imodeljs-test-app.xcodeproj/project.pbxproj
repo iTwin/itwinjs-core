@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -21,8 +21,19 @@
 		415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588E23E37F5300907B7B /* LaunchScreen.storyboard */; };
 		415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 415D589923E38CCF00907B7B /* WebKit.framework */; };
 		415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D58B623E4ACAA00907B7B /* AssetHandler.swift */; };
+		F10AA4123089D7260069EB10 /* IModelJsNative in Frameworks */ = {isa = PBXBuildFile; productRef = F4A4D85F28A599050015ED63 /* IModelJsNative */; };
 		F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */ = {isa = PBXBuildFile; productRef = F4A4D85F28A599050015ED63 /* IModelJsNative */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F10AA4463089D8D60069EB10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 415D587823E37F5200907B7B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10AA4203089D81C0069EB10;
+			remoteInfo = "imodeljs-test-app-tests-host";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		415D58A023E38DCB00907B7B /* Embed Libraries */ = {
@@ -54,7 +65,14 @@
 		415D589B23E38D0C00907B7B /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "imodeljs-test-app-Bridging-Header.h"; sourceTree = "<group>"; };
 		415D58B623E4ACAA00907B7B /* AssetHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetHandler.swift; sourceTree = "<group>"; };
+		F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "imodeljs-test-app-tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10AA4213089D81C0069EB10 /* imodeljs-test-app-tests-host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "imodeljs-test-app-tests-host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "imodeljs-test-app-tests"; sourceTree = "<group>"; };
+		F10AA4223089D81C0069EB10 /* imodeljs-test-app-tests-host */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "imodeljs-test-app-tests-host"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		415D587D23E37F5200907B7B /* Frameworks */ = {
@@ -68,6 +86,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F103E5D23077A3B00074BFFB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10AA4123089D7260069EB10 /* IModelJsNative in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10AA41E3089D81C0069EB10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -76,6 +109,8 @@
 			children = (
 				415D589B23E38D0C00907B7B /* Config.xcconfig */,
 				415D588223E37F5200907B7B /* imodeljs-test-app */,
+				F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */,
+				F10AA4223089D81C0069EB10 /* imodeljs-test-app-tests-host */,
 				415D588123E37F5200907B7B /* Products */,
 				415D589823E38CCF00907B7B /* Frameworks */,
 			);
@@ -85,6 +120,8 @@
 			isa = PBXGroup;
 			children = (
 				415D588023E37F5200907B7B /* imodeljs-test-app.app */,
+				F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */,
+				F10AA4213089D81C0069EB10 /* imodeljs-test-app-tests-host.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,19 +181,73 @@
 			productReference = 415D588023E37F5200907B7B /* imodeljs-test-app.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F103E5D43077A3B00074BFFB /* imodeljs-test-app-tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F103E5D93077A3B00074BFFB /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests" */;
+			buildPhases = (
+				F103E5D13077A3B00074BFFB /* Sources */,
+				F103E5D23077A3B00074BFFB /* Frameworks */,
+				F103E5D33077A3B00074BFFB /* Resources */,
+				F105816B3077A6930026DB5B /* Run Script */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F10AA4473089D8D60069EB10 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F103E5D63077A3B00074BFFB /* imodeljs-test-app-tests */,
+			);
+			name = "imodeljs-test-app-tests";
+			packageProductDependencies = (
+				F4A4D85F28A599050015ED63 /* IModelJsNative */,
+			);
+			productName = "imodeljs-test-app-tests";
+			productReference = F103E5D53077A3B00074BFFB /* imodeljs-test-app-tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F10AA4203089D81C0069EB10 /* imodeljs-test-app-tests-host */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10AA4433089D81D0069EB10 /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests-host" */;
+			buildPhases = (
+				F10AA41D3089D81C0069EB10 /* Sources */,
+				F10AA41E3089D81C0069EB10 /* Frameworks */,
+				F10AA41F3089D81C0069EB10 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F10AA4223089D81C0069EB10 /* imodeljs-test-app-tests-host */,
+			);
+			name = "imodeljs-test-app-tests-host";
+			packageProductDependencies = (
+			);
+			productName = "imodeljs-test-app-tests-host";
+			productReference = F10AA4213089D81C0069EB10 /* imodeljs-test-app-tests-host.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		415D587823E37F5200907B7B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1130;
+				LastSwiftUpdateCheck = 2710;
 				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Bentley Systems Inc.";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
 						CreatedOnToolsVersion = 11.3;
 						LastSwiftMigration = 1130;
+					};
+					F103E5D43077A3B00074BFFB = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = F10AA4203089D81C0069EB10;
+					};
+					F10AA4203089D81C0069EB10 = {
+						CreatedOnToolsVersion = 27.1;
 					};
 				};
 			};
@@ -178,6 +269,8 @@
 			projectRoot = "";
 			targets = (
 				415D587F23E37F5200907B7B /* imodeljs-test-app */,
+				F103E5D43077A3B00074BFFB /* imodeljs-test-app-tests */,
+				F10AA4203089D81C0069EB10 /* imodeljs-test-app-tests-host */,
 			);
 		};
 /* End PBXProject section */
@@ -190,6 +283,20 @@
 				415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */,
 				415D588D23E37F5300907B7B /* Assets.xcassets in Resources */,
 				415D588B23E37F5200907B7B /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F103E5D33077A3B00074BFFB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10AA41F3089D81C0069EB10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +322,26 @@
 			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/lib/ $AppBundleRoot/Assets/www/\n";
 			showEnvVarsInLog = 0;
 		};
+		F105816B3077A6930026DB5B /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "AssetsRoot=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/Assets\"\n\n# Only the backend is needed; the bridge tests run without a frontend.\nrm -rf \"$AssetsRoot\"\nmkdir -p \"$AssetsRoot/www\"\ncp -L -R \"$PROJECT_DIR/../../lib/mobile\" \"$AssetsRoot/www/\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -233,7 +360,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F103E5D13077A3B00074BFFB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10AA41D3089D81C0069EB10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F10AA4473089D8D60069EB10 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F10AA4203089D81C0069EB10 /* imodeljs-test-app-tests-host */;
+			targetProxy = F10AA4463089D8D60069EB10 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		415D588923E37F5200907B7B /* Main.storyboard */ = {
@@ -418,6 +567,130 @@
 			};
 			name = Release;
 		};
+		F103E5DA3077A3B00074BFFB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/imodeljs-test-app-tests-host.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/imodeljs-test-app-tests-host";
+			};
+			name = Debug;
+		};
+		F103E5DB3077A3B00074BFFB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/imodeljs-test-app-tests-host.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/imodeljs-test-app-tests-host";
+			};
+			name = Release;
+		};
+		F10AA43D3089D81D0069EB10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests-host";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F10AA43E3089D81D0069EB10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app-tests-host";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -439,6 +712,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		F103E5D93077A3B00074BFFB /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F103E5DA3077A3B00074BFFB /* Debug */,
+				F103E5DB3077A3B00074BFFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10AA4433089D81D0069EB10 /* Build configuration list for PBXNativeTarget "imodeljs-test-app-tests-host" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10AA43D3089D81D0069EB10 /* Debug */,
+				F10AA43E3089D81D0069EB10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -455,7 +746,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 5.15.6;
+				version = 5.16.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

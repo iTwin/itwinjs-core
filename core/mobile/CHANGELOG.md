@@ -1,6 +1,33 @@
 # Change Log - @itwin/core-mobile
 
-This log was last generated on Fri, 02 Oct 2026 14:56:23 GMT and should not be manually modified.
+This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+
+## 5.14.5
+Tue, 27 Oct 2026 12:19:48 GMT
+
+_Version update only_
+
+## 5.14.4
+Fri, 23 Oct 2026 19:58:24 GMT
+
+_Version update only_
+
+## 5.14.3
+Mon, 12 Oct 2026 17:37:54 GMT
+
+### Updates
+
+- Authenticate mobile RPC WebSocket connections with a per-launch secret to reject unauthorized on-device clients. Requires an updated mobile native runtime.
+
+## 5.14.2
+Tue, 06 Oct 2026 19:48:29 GMT
+
+_Version update only_
+
+## 5.14.1
+Tue, 06 Oct 2026 14:00:55 GMT
+
+_Version update only_
 
 ## 5.14.0
 Fri, 02 Oct 2026 14:55:04 GMT

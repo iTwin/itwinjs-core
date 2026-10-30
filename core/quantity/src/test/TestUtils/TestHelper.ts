@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AlternateUnitLabelsProvider, UnitConversionInvert, UnitConversionProps, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
+import { Phenomena, Units, UnitSystems } from "../../generated/Units.generated";
 
 interface ConversionDef {
   numerator: number;
@@ -79,13 +80,17 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_FT", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", phenomenon: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
+  // conversion => specified unit to base unit m/s
+  { name: "Units.M_PER_SEC", phenomenon: "Units.VELOCITY", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/s", altDisplayLabels: [] },
+  { name: "Units.KM_PER_HR", phenomenon: "Units.VELOCITY", system: "Units.INTERNATIONAL", conversion: { numerator: 3.6, denominator: 1.0, offset: 0.0 }, displayLabel: "km/h", altDisplayLabels: [] },
+  { name: "Units.MPH", phenomenon: "Units.VELOCITY", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.44704, offset: 0.0 }, displayLabel: "mi/h", altDisplayLabels: [] },
 
   { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
   { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, isInverted: true, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
   // Ratio units for scale factors and length ratios
-  { name: "Units.DECIMAL_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "decimal length ratio", altDisplayLabels: [] },
-  { name: "Units.M_PER_M_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/m", altDisplayLabels: [] },
-  { name: "Units.IN_PER_FT_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.USCUSTOM", conversion: { numerator: 12.0, denominator: 1.0, offset: 0.0 }, displayLabel: "\"/'", altDisplayLabels: ["in:ft"] },
+  { name: Units.LENGTH_RATIO.DECIMAL_LENGTH_RATIO, phenomenon: Phenomena.LENGTH_RATIO, system: UnitSystems.INTERNATIONAL, conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "decimal length ratio", altDisplayLabels: [] },
+  { name: Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO, phenomenon: Phenomena.LENGTH_RATIO, system: UnitSystems.SI, conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m:m", altDisplayLabels: [] },
+  { name: Units.LENGTH_RATIO.IN_PER_FT_LENGTH_RATIO, phenomenon: Phenomena.LENGTH_RATIO, system: UnitSystems.USCUSTOM, conversion: { numerator: 12.0, denominator: 1.0, offset: 0.0 }, displayLabel: "in:ft", altDisplayLabels: [] },
 ];
 
 export class ConversionData implements UnitConversionProps {
@@ -190,4 +195,16 @@ export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProv
     return unitDefinition?.altDisplayLabels;
   }
 
+}
+
+/** Wraps a units provider so `findUnitByName` returns units with an empty label, the way `SchemaUnitProvider` reports
+ * units that have no label in the Units schema. Useful for testing units whose labels differ between providers.
+ */
+export function withEmptyUnitLabels(provider: UnitsProvider): UnitsProvider {
+  return {
+    findUnit: async (unitLabel, schemaName, phenomenon, unitSystem) => provider.findUnit(unitLabel, schemaName, phenomenon, unitSystem),
+    getUnitsByFamily: async (phenomenon) => provider.getUnitsByFamily(phenomenon),
+    getConversion: async (fromUnit, toUnit) => provider.getConversion(fromUnit, toUnit),
+    findUnitByName: async (unitName) => ({ ...(await provider.findUnitByName(unitName)), label: "" }),
+  };
 }

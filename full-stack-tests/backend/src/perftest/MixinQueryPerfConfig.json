@@ -1,0 +1,7 @@
+{
+  "rowCount": 100000,
+  "classCounts": [1, 10, 50, 100, 250],
+  "compoundSelectLimit": 500,
+  "warmups": 2,
+  "repetitions": 7
+}

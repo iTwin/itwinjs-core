@@ -37,6 +37,7 @@ export const defaultPersistenceUnits = {
   [Phenomena.ILLUMINANCE]: Units.ILLUMINANCE.LUX,
   [Phenomena.KINEMATIC_VISCOSITY]: Units.KINEMATIC_VISCOSITY.SQ_M_PER_SEC,
   [Phenomena.LENGTH]: Units.LENGTH.M,
+  [Phenomena.LENGTH_RATIO]: Units.LENGTH_RATIO.M_PER_M_LENGTH_RATIO,
   [Phenomena.LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION]: Units.LINEAR_COEFFICIENT_OF_THERMAL_EXPANSION.STRAIN_PER_KELVIN,
   [Phenomena.LINEAR_DENSITY]: Units.LINEAR_DENSITY.KG_PER_M,
   [Phenomena.LINEAR_LOAD]: Units.LINEAR_LOAD.N_PER_M,
@@ -87,5 +88,4 @@ export const defaultPersistenceUnits = {
   [Phenomena.VOLUME_RATIO]: Units.VOLUME_RATIO.CUB_M_PER_CUB_M,
   [Phenomena.VOLUMETRIC_FLOW]: Units.VOLUMETRIC_FLOW.CUB_M_PER_SEC,
   [Phenomena.WORK]: Units.WORK.J,
-  // Phenomena.LENGTH_RATIO is intentionally omitted because the bundled built-in unit set does not yet provide an agreed default for that phenomenon.
-} as const satisfies Record<Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>, UnitName>;
+} as const satisfies Record<PhenomenonName, UnitName>;
