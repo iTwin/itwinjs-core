@@ -495,7 +495,12 @@ export class EditTxn {
       ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     const nativeResult = this.iModel[_nativeDb].deleteElements(ids);
-    const failedIds = new Set<Id64String>(nativeResult.failures.map((failure) => failure.elementId));
+
+    // When deletion fails with `DeletionFailed`, all requested ids are returned to maintain backward compatibilty.
+    // Once `failedIds` is deprecated, we will change this to throw instead as this is a SQLite failure.
+    const failedIds = nativeResult.status === BulkDeleteElementsStatus.DeletionFailed
+      ? new Set<Id64String>(ids)
+      : new Set<Id64String>(nativeResult.failures.map((failure: BulkDeleteFailure) => failure.elementId));
 
     const result: BulkDeleteElementsResult = {
       status: nativeResult.status,
