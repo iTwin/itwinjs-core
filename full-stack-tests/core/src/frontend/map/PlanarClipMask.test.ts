@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { assert, CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, expect } from "chai";
+import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -29,22 +29,23 @@ describe("Planar clip mask (#integration #graphics)", () => {
       },
     });
 
-    // Inspect the active test renderer without depending on the internal WebGL System type.
-    const gl = (IModelApp.renderSystem as unknown as { context?: WebGL2RenderingContext }).context;
+    const gl = TestUtility.getWebGLContext();
     // A lost context (e.g. the Electron GPU process died under xvfb) never renders; fail now rather than per-test timeouts.
     assert(gl !== undefined && !gl.isContextLost(), "WebGL context is unavailable or lost");
-    const debugInfo = gl?.getExtension("WEBGL_debug_renderer_info");
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
     const text = (value: unknown) => typeof value === "string" ? value.slice(0, 256) : "unavailable";
-    const vendor = gl ? text(gl.getParameter(gl.VENDOR)) : "unavailable";
-    const renderer = gl ? text(gl.getParameter(gl.RENDERER)) : "unavailable";
-    const unmaskedVendor = gl && debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)) : "unavailable";
-    const unmaskedRenderer = gl && debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)) : "unavailable";
+    const renderer = text(gl.getParameter(gl.RENDERER));
+    const unmaskedRenderer = debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)) : "unavailable";
     // eslint-disable-next-line no-console -- One renderer summary per suite for CI performance diagnostics.
     console.log(`PlanarClipMask renderer: ${JSON.stringify({
-      vendor, renderer, unmaskedVendor, unmaskedRenderer,
-      version: gl ? text(gl.getParameter(gl.VERSION)) : "unavailable",
-      maxTextureSize: gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : "unavailable",
-      software: /swiftshader|llvmpipe|softpipe|software/i.test(`${renderer} ${unmaskedRenderer}`) ? true : debugInfo ? false : null,
+      vendor: text(gl.getParameter(gl.VENDOR)),
+      renderer,
+      unmaskedVendor: debugInfo ? text(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)) : "unavailable",
+      unmaskedRenderer,
+      version: text(gl.getParameter(gl.VERSION)),
+      maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+      // SwiftShader (Chromium), llvmpipe/softpipe (Mesa), WARP ("Microsoft Basic Render Driver").
+      software: /swiftshader|llvmpipe|softpipe|software|basic render|warp/i.test(`${renderer} ${unmaskedRenderer}`) ? true : debugInfo ? false : null,
       userAgent: text(navigator.userAgent),
     })}`);
 
