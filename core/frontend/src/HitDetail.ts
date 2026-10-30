@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, Geometry, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
@@ -151,6 +151,7 @@ export interface HitPath {
 
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
+ * @deprecated in 5.15.0 - will not be removed until after 2027-10-29. Use [[HitDetailFeatureProps]] instead.
  */
 export interface HitDetailProps {
   /** The point in world coordinates that was used as the initial locate point. */
@@ -161,7 +162,45 @@ export interface HitDetailProps {
   readonly hitSource: HitSource;
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   readonly hitPoint: Point3d;
-  /** @beta */
+  /** The source of the geometry, including transient Ids for pickable decorations. */
+  readonly sourceId: Id64String;
+  /** The [SubCategory]($backend) to which the hit geometry belongs. */
+  readonly subCategoryId?: Id64String;
+  /** The class of the hit geometry. */
+  readonly geometryClass?: GeometryClass;
+  /** The Id of the [[ModelState]] from which the hit originated. */
+  readonly modelId?: string;
+  /** The hit geometry priority/classification. */
+  readonly priority: HitPriority;
+  /** The xy distance to the hit in view coordinates. */
+  readonly distXY: number;
+  /** The distance in view coordinates between the hit and the near plane. */
+  readonly distFraction: number;
+  /** @internal chiefly for debugging */
+  readonly tileId?: string;
+  /** True if the hit originated from a reality model classifier.
+   * @alpha
+   */
+  readonly isClassifier?: boolean;
+  /** Describes the path by which the hit was located through a series of attached views.
+   * @beta
+   */
+  readonly path?: HitPath;
+}
+
+/** Arguments supplied to the [[HitDetail]] constructor when identifying the hit using a display feature.
+ * @beta
+ */
+export interface HitDetailFeatureProps {
+  /** The point in world coordinates that was used as the initial locate point. */
+  readonly testPoint: Point3d;
+  /** The viewport in which the locate operation was performed. */
+  readonly viewport: ScreenViewport;
+  /** The procedure that requested the locate operation. */
+  readonly hitSource: HitSource;
+  /** The approximate location in world coordinates on the hit geometry. */
+  readonly hitPoint: Point3d;
+  /** The feature from which the hit originated. */
   readonly feature: IModelDisplayFeature;
   /** The hit geometry priority/classification. */
   readonly priority: HitPriority;
@@ -187,7 +226,12 @@ export interface HitDetailProps {
  * @extensions
  */
 export class HitDetail {
-  private readonly _props: HitDetailProps;
+  private readonly _props: HitDetailFeatureProps;
+  private readonly _undefinedLegacyProps?: {
+    readonly subCategoryId: boolean;
+    readonly geometryClass: boolean;
+    readonly modelId: boolean;
+  };
 
   /** The point in world coordinates that was used as the initial locate point. */
   public get testPoint(): Point3d { return this._props.testPoint; }
@@ -210,11 +254,11 @@ export class HitDetail {
   /** The distance in view coordinates between the hit and the near plane. */
   public get distFraction(): number { return this._props.distFraction; }
   /** The [SubCategory]($backend) to which the hit geometry belongs. */
-  public get subCategoryId(): Id64String | undefined { return this._props.feature.subCategoryId; }
+  public get subCategoryId(): Id64String | undefined { return this._undefinedLegacyProps?.subCategoryId ? undefined : this.feature.subCategoryId; }
   /** The class of the hit geometry. */
-  public get geometryClass(): GeometryClass | undefined { return this._props.feature.geometryClass; }
+  public get geometryClass(): GeometryClass | undefined { return this._undefinedLegacyProps?.geometryClass ? undefined : this.feature.geometryClass; }
   /** The Id of the [[ModelState]] from which the hit originated. */
-  public get modelId(): string | undefined { return this._props.feature.modelId; }
+  public get modelId(): string | undefined { return this._undefinedLegacyProps?.modelId ? undefined : this.feature.modelId; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
@@ -232,11 +276,72 @@ export class HitDetail {
   public get path(): HitPath | undefined { return this._props.path; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
-  public constructor(props: HitDetailProps) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- retains the legacy constructor overload
+  public constructor(props: HitDetailProps);
+
+  /** Create a new HitDetail identified by a display feature.
+   * @beta
+   */
+  public constructor(props: HitDetailFeatureProps);
+
+  /** @deprecated in 4.1 - might be removed in next major version. Use the overload that takes a [[HitDetailProps]]. */
+  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
+
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- supports legacy construction
+  public constructor(arg0: Point3d | HitDetailProps | HitDetailFeatureProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- supports legacy construction
+    let props: HitDetailProps | HitDetailFeatureProps;
+    if (arg0 instanceof Point3d) {
+      assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
+      assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
+      props = { testPoint: arg0, viewport, hitSource, hitPoint, sourceId, priority, distXY, distFraction, subCategoryId, geometryClass, modelId, tileId, isClassifier };
+    } else {
+      props = arg0;
+    }
+
+    if (arg0 instanceof HitDetail)
+      this._undefinedLegacyProps = arg0._undefinedLegacyProps;
+
+    if (!("feature" in props)) {
+      const elementId = "sourceId" in props ? props.sourceId : undefined;
+      if (undefined === elementId)
+        throw new Error("HitDetail requires a feature or sourceId");
+
+      this._undefinedLegacyProps = {
+        subCategoryId: undefined === props.subCategoryId,
+        geometryClass: undefined === props.geometryClass,
+        modelId: undefined === props.modelId,
+      };
+
+      const refs = props.viewport.view.iModelRefs;
+      const iModelRef = sourceIModel ? [...refs].find((ref) => ref.iModel === sourceIModel) ?? refs.primary : refs.primary;
+
+      props = {
+        testPoint: props.testPoint,
+        viewport: props.viewport,
+        hitSource: props.hitSource,
+        hitPoint: props.hitPoint,
+        feature: {
+          elementId,
+          subCategoryId: props.subCategoryId ?? Id64.invalid,
+          geometryClass: props.geometryClass ?? GeometryClass.Primary,
+          modelId: props.modelId ?? Id64.invalid,
+          iModelRef,
+        },
+        priority: props.priority,
+        distXY: props.distXY,
+        distFraction: props.distFraction,
+        tileId: props.tileId,
+        isClassifier: props.isClassifier,
+        path: props.path,
+      };
+    }
+
     // Ignore an empty path.
     const path = props.path?.sectionDrawingAttachment || props.path?.viewAttachment ? props.path : undefined;
 
-    // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
+    // Spread omits getters, so explicitly copy properties from inputs such as HitDetail.
     this._props = {
       testPoint: props.testPoint,
       viewport: props.viewport,

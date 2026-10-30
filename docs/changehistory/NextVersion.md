@@ -25,6 +25,8 @@ publish: false
     - [Async formats provider setter](#async-formats-provider-setter)
   - [Platform support](#platform-support)
     - [Electron 45 support](#electron-45-support)
+  - [API deprecations](#api-deprecations)
+    - [HitDetail feature identity](#hitdetail-feature-identity)
   - [Breaking changes](#breaking-changes)
     - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
     - [Mobile RPC authentication](#mobile-rpc-authentication)
@@ -135,6 +137,12 @@ Assigning `IModelApp.formatsProvider` still works and still starts the same relo
 ### Electron 45 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 45](https://www.electronjs.org/blog/electron-45-0).
+
+## API deprecations
+
+### HitDetail feature identity
+
+The [HitDetailProps]($frontend) interface is deprecated in favor of [HitDetailFeatureProps]($frontend).
 
 ## Breaking changes
 

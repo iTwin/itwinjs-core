@@ -306,7 +306,9 @@ public;interface;GroupMark
 internal;function;headersIncludeAuthMethod
 public;class;HiliteSet
 public;class;HitDetail
+beta;interface;HitDetailFeatureProps
 public;interface;HitDetailProps
+deprecated;interface;HitDetailProps
 public;enum;HitDetailType
 public;enum;HitGeomType
 public;class;HitList

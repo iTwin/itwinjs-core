@@ -5,7 +5,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
+import { GraphicType, HitDetail, HitDetailFeatureProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
 import { testBlankViewportAsync } from "../../openBlankViewport";
 import { Feature, GeometryClass } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
@@ -74,7 +74,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
         geometryClass: GeometryClass.Primary,
       };
 
-      const hitProps: HitDetailProps = {
+      const hitProps: HitDetailFeatureProps = {
         feature,
         testPoint: new Point3d(),
         viewport: vp,

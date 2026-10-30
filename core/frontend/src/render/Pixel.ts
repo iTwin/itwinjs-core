@@ -152,7 +152,7 @@ export namespace Pixel {
     }
   }
 
-  /** Describes a subset of [[HitDetailProps]] computed from a [[Pixel.Data]], suitable for constructing a [[HitDetail]].
+  /** Describes a subset of [[HitDetailFeatureProps]] computed from a [[Pixel.Data]], suitable for constructing a [[HitDetail]].
    * For example, the following function creates a `HitDetail` from a `Pixel.Data` and other hit information:
    * ```ts
    *  function makeHitDetail(pixel: Pixel.Data, viewport: ScreenViewport, testPoint: Point3d, hitSource: HitSource, hitPoint: Point3d, distXY: number): HitDetail {

@@ -4828,6 +4828,10 @@ export class HiliteSet {
 // @public
 export class HitDetail {
     constructor(props: HitDetailProps);
+    // @beta
+    constructor(props: HitDetailFeatureProps);
+    // @deprecated
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
     get distFraction(): number;
     get distXY(): number;
@@ -4864,19 +4868,38 @@ export class HitDetail {
     get viewport(): ScreenViewport;
 }
 
-// @public
-export interface HitDetailProps {
+// @beta
+export interface HitDetailFeatureProps {
     readonly distFraction: number;
     readonly distXY: number;
-    // @beta (undocumented)
     readonly feature: IModelDisplayFeature;
     readonly hitPoint: Point3d;
     readonly hitSource: HitSource;
     // @alpha
     readonly isClassifier?: boolean;
+    readonly path?: HitPath;
+    readonly priority: HitPriority;
+    readonly testPoint: Point3d;
+    // @internal
+    readonly tileId?: string;
+    readonly viewport: ScreenViewport;
+}
+
+// @public @deprecated
+export interface HitDetailProps {
+    readonly distFraction: number;
+    readonly distXY: number;
+    readonly geometryClass?: GeometryClass;
+    readonly hitPoint: Point3d;
+    readonly hitSource: HitSource;
+    // @alpha
+    readonly isClassifier?: boolean;
+    readonly modelId?: string;
     // @beta
     readonly path?: HitPath;
     readonly priority: HitPriority;
+    readonly sourceId: Id64String;
+    readonly subCategoryId?: Id64String;
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
