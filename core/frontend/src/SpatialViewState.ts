@@ -42,7 +42,7 @@ export class SpatialViewState extends ViewState3d {
     return this.iModelRefs.primary[_treeRefs];
   }
 
-  private readonly _modelSelector: ModelSelectorState;
+  private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
   /** The set of iModels displayed by this view.
@@ -55,8 +55,27 @@ export class SpatialViewState extends ViewState3d {
    */
   public readonly onViewedModelsChanged = new BeEvent<() => void>();
 
+  /** Selects the models that are displayed by this view.
+   * Prefer changing [[ModelSelectorState.models]] over replacing the selector.
+   */
   public get modelSelector(): ModelSelectorState {
     return this._modelSelector;
+  }
+
+  public set modelSelector(selector: ModelSelectorState) {
+    if (selector === this._modelSelector)
+      return;
+    if (selector.iModel !== this.iModel)
+      throw new Error("Model selector must be from the same iModel as the view");
+
+    const isAttached = this.isAttachedToViewport;
+    this.unregisterModelSelectorListeners();
+    this._modelSelector = selector;
+    if (isAttached) {
+      this.registerModelSelectorListeners();
+      this.onViewedModelsChanged.raiseEvent();
+    }
+    this.markModelSelectorChanged();
   }
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],

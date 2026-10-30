@@ -247,8 +247,8 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
-  private readonly _categorySelector: CategorySelectorState;
-  private readonly _displayStyle: DisplayStyleState;
+  private _categorySelector: CategorySelectorState;
+  private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
   /** The set of iModels displayed by this view.
@@ -268,15 +268,55 @@ export abstract class ViewState extends ElementState {
    */
   public readonly onAfterModelDisplayTransformProviderChanged = new BeEvent<() => void>();
 
-  /** Selects the categories that are display by this ViewState. */
+  /** Selects the categories that are displayed by this ViewState.
+   * Prefer changing [[CategorySelectorState.categories]] over replacing the selector.
+   */
   public get categorySelector(): CategorySelectorState {
     return this._categorySelector;
   }
 
-  /** The style that controls how the contents of the view are displayed. */
+  public set categorySelector(selector: CategorySelectorState) {
+    if (selector === this._categorySelector)
+      return;
+    if (selector.iModel !== this.iModel)
+      throw new Error("Category selector must be from the same iModel as the view");
+
+    const isAttached = this.isAttachedToViewport;
+    this.unregisterCategorySelectorListeners();
+    this._categorySelector = selector;
+    if (isAttached) {
+      this.registerCategorySelectorListeners();
+      this.onViewedCategoriesChanged.raiseEvent();
+    }
+  }
+
+  /** The style that controls how the contents of the view are displayed.
+   * Prefer [[cloneWithDisplayStyle]] to create a view with a different display style.
+   */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
   }
+
+  public set displayStyle(style: DisplayStyleState) {
+    if (style === this._displayStyle)
+      return;
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
+
+    if (this.isAttachedToViewport)
+      this.onDisplayStyleChanged.raiseEvent(style);
+    this._displayStyle = style;
+  }
+
+  /** Event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
+   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
@@ -1842,9 +1882,15 @@ export abstract class ViewState3d extends ViewState {
     return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation);
   }
 
-  /** The style that controls how the contents of the view are displayed. */
+  /** The style that controls how the contents of the view are displayed.
+   * Prefer [[cloneWithDisplayStyle]] to create a view with a different display style.
+   */
   public override get displayStyle(): DisplayStyle3dState {
     return this.getDisplayStyle3d();
+  }
+
+  public override set displayStyle(style: DisplayStyle3dState) {
+    super.displayStyle = style;
   }
 
   /** The style that controls how the contents of the view are displayed.

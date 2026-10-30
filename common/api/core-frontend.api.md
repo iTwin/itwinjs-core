@@ -10680,8 +10680,8 @@ export class SpatialViewState extends ViewState3d {
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     markModelSelectorChanged(): void;
-    // (undocumented)
     get modelSelector(): ModelSelectorState;
+    set modelSelector(selector: ModelSelectorState);
     readonly onViewedModelsChanged: BeEvent<() => void>;
     // @internal (undocumented)
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
@@ -14217,6 +14217,7 @@ export abstract class ViewState extends ElementState {
     calculateFocusCorners(): Point3d[];
     calculateFrustum(result?: Frustum): Frustum | undefined;
     get categorySelector(): CategorySelectorState;
+    set categorySelector(selector: CategorySelectorState);
     // (undocumented)
     static get className(): string;
     cloneWithDisplayStyle(style: DisplayStyleState): Promise<this>;
@@ -14247,6 +14248,7 @@ export abstract class ViewState extends ElementState {
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     get displayStyle(): DisplayStyleState;
+    set displayStyle(style: DisplayStyleState);
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
     equals(other: this): boolean;
@@ -14319,6 +14321,7 @@ export abstract class ViewState extends ElementState {
     get name(): string;
     // @beta
     readonly onAfterModelDisplayTransformProviderChanged: BeEvent<() => void>;
+    readonly onDisplayStyleChanged: BeEvent<(newStyle: DisplayStyleState) => void>;
     // @beta
     readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>;
     readonly onViewedCategoriesChanged: BeEvent<() => void>;
@@ -14444,6 +14447,7 @@ export abstract class ViewState3d extends ViewState {
     detachFromViewport(): void;
     get details(): ViewDetails3d;
     get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected enableCamera(): void;
     readonly extents: Vector3d;
