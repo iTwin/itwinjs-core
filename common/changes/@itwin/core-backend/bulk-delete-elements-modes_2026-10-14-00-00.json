@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "`EditTxn.deleteElements` is now all-or-nothing: if any element in the expanded delete set is still referenced from outside the set, nothing is deleted and the status is `ConstraintViolation`. `BulkDeleteElementsStatus.PartialSuccess` has been removed. `BulkDeleteElementsResult.failures` reports each blocking element with a `BulkDeleteFailureReason`. Deprecated `skipFKConstraintValidations` (now ignored) and `failedIds`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
