@@ -68,9 +68,10 @@ export namespace SettingsContainers {
   }
 
   /**
-   * Query the [[BlobContainer]] service for the single settings container associated with a given iTwin.
-   * @returns The containerId, or `undefined` if no container exists.
-   * @throws if more than one settings container is found.
+   * Query the [[BlobContainer]] service for the iTwin-root settings container associated with a given iTwin.
+   * Only containers without an iModelId in their query metadata are considered.
+   * @returns The containerId, or `undefined` if no matching container is found.
+   * @throws if more than one matching container is found.
    */
   export async function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined> {
     const containers = (await queryContainers({ iTwinId })).filter((container) => undefined === container.iModelId);
