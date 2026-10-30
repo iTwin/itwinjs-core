@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add `ToolAdmin.doUndoAllOperation`, which calls `ToolAdmin.onTxnOperationError` with `\"undoAll\"` when undoing all changes fails.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

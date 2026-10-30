@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "`UndoAllTool` now uses `ToolAdmin.doUndoAllOperation`, so failures are reported through `ToolAdmin.onTxnOperationError` and an unsuccessful status makes the tool return `false`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}
