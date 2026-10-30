@@ -162,8 +162,17 @@ describe("Merge conflict & locking", () => {
 
     // we will not handle conflict and let the default conflict handler deal with it.
     let firstConflictArg: RebaseChangesetConflictArgs | undefined;
+    const firstArgCallsDuringLaterConflicts: string[] = [];
     b2.txns.rebaser.addConflictHandler({
       id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
+        if (firstConflictArg) {
+          try {
+            firstConflictArg.getValueId(0, "Old");
+            firstArgCallsDuringLaterConflicts.push("returned");
+          } catch {
+            firstArgCallsDuringLaterConflicts.push("threw");
+          }
+        }
         firstConflictArg ??= arg;
         conflicts.push({
           cause: arg.cause,
@@ -178,6 +187,8 @@ describe("Merge conflict & locking", () => {
     await b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` });
 
     expect(conflicts.length).to.be.equals(3);
+    expect(firstArgCallsDuringLaterConflicts).to.deep.equal(["threw", "threw"]);
+    expect(firstConflictArg?.tableName).to.equal("bis_Element");
     expect(() => firstConflictArg?.getValueId(0, "Old")).to.throw("only be used during the conflict handler call");
 
     chai.expect(

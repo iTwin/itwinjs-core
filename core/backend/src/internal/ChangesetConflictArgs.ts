@@ -12,7 +12,7 @@ import { SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "../Sqli
 import { IModelDb } from "../IModelDb";
 
 /** The conflict passed by native code to a changeset conflict handler.
- * Native code reuses the same object for every conflict, and its functions throw once the handler has returned.
+ * Each conflict gets its own object. Its functions must be called on that object and only work during the handler call.
  */
 export interface DbChangesetConflictArgs {
   cause: DbConflictCause;
