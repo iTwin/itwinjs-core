@@ -2007,7 +2007,7 @@ describe("SphericalMeshData", () => {
     // solid primitives: all solids are centered at zero
     const geometry: (IndexedPolyface | SolidPrimitive | undefined)[] = [];
     geometry.push(Box.createRange(Range3d.create(Point3d.create(-1.5, -1, -0.5), Point3d.create(1.5, 1, 0.5)), true));
-    geometry.push(Box.createDgnBoxWithAxes(Point3d.create(-3/8, -1/2, -5/8), Matrix3d.createColumns(Vector3d.unitZ(), Vector3d.unitX(), Vector3d.unitY()), Point3d.create(-3/8, 1/2, -5/8), 2, 1, 0.5, 0.5, true));
+    geometry.push(Box.createDgnBoxWithAxes(Point3d.create(-3 / 8, -1 / 2, -5 / 8), Matrix3d.createColumns(Vector3d.unitZ(), Vector3d.unitX(), Vector3d.unitY()), Point3d.create(-3 / 8, 1 / 2, -5 / 8), 2, 1, 0.5, 0.5, true));
     geometry.push(Cone.createAxisPoints(Point3d.create(-1), Point3d.create(1), 2, 1, true));
     const sweepLength = 3;
     const washer = RegionOps.sortOuterAndHoleLoopsXY([
@@ -2225,4 +2225,27 @@ describe("ClashExamples", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClashExamples", "PolyfaceNegativeVolume");
     expect(ck.getNumErrors()).toBe(0);
   });
+});
+
+
+describe("PolyfaceBuilder does not triangulate as expected", () => {
+  const ck = new Checker();
+
+  const rotationalSweepJson = JSON.parse(fs.readFileSync("./src/test/data/solid/rotationalSweep.imjs", "utf8"));
+  const rotationalSweep = IModelJson.Reader.parse(rotationalSweepJson) as RotationalSweep;
+  expect(rotationalSweep).toBeInstanceOf(RotationalSweep);
+
+  const strokeOptions = StrokeOptions.createForFacets();
+  strokeOptions.shouldTriangulate = true;
+
+  const builder = PolyfaceBuilder.create(strokeOptions);
+  builder.addRotationalSweep(rotationalSweep);
+
+  const pf = builder.claimPolyface(false);
+
+  const visitor = pf.createVisitor(0);
+  while (visitor.moveToNextFacet()) {
+    ck.testExactNumber(visitor.pointCount, 3, "facet not triangulated");
+  }
+
 });
