@@ -35,11 +35,16 @@ const scratchRange2d = Range2d.createNull();
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
 class LayerTextureParam implements Disposable {
-  constructor(public texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
+  constructor(private _texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
+  /** The classifier owns its texture and recreates it when its size changes, so resolve it at bind time rather than retaining it. */
+  public get texture(): RenderTexture | undefined {
+    return this._projectedTextureOrMatrix instanceof ProjectedTexture ? this._projectedTextureOrMatrix.classifier.getOrCreateClassifierTexture() : this._texture;
+  }
+
   public [Symbol.dispose](): void {
-    this.texture = dispose(this.texture);
+    this._texture = dispose(this._texture);
   }
 
   /* There are two methods of applying a texture to a reality mesh.  the first member of "params" denotes which
@@ -139,8 +144,7 @@ export class LayerTextureParams implements Disposable {
         matrix.data[9] = terrainTexture.featureId;
         textureParams.push(new LayerTextureParam(terrainTexture.texture, matrix));
       } else {
-        const classifier = texture.classifier;
-        textureParams.push(new LayerTextureParam(classifier.getOrCreateClassifierTexture(), texture));
+        textureParams.push(new LayerTextureParam(undefined, texture));
       }
     }
 
