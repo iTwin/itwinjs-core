@@ -27,11 +27,11 @@ jobs:
   - job:
     strategy:
       matrix:
-        "Windows_Node_24":
+        "Windows_Node_26":
           OS: windows-latest
-        "Linux_Node_24":
+        "Linux_Node_26":
           OS: ubuntu-latest
-        "MacOS_Node_24":
+        "MacOS_Node_26":
           OS: macOS-latest
 
     pool:
@@ -46,4 +46,4 @@ jobs:
       - checkout: self
       - template: ./templates/core-build.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 26.x
