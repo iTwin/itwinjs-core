@@ -13,11 +13,11 @@ describe("Schema Difference Conflicts", () => {
 
   async function findConflictItem({ conflicts }: SchemaDifferenceResult, name: string, path?: string) {
     return conflicts && conflicts.find(({ difference }) => {
-      if(!("itemName" in difference) || difference.itemName !== name) {
+      if (!("itemName" in difference) || difference.itemName !== name) {
         return false;
       }
 
-      if(path && (!("path" in difference) || difference.path !== path)) {
+      if (path && (!("path" in difference) || difference.path !== path)) {
         return false;
       }
 
@@ -1167,6 +1167,120 @@ describe("Schema Difference Conflicts", () => {
                 type: "PrimitiveProperty",
                 typeName: "int",
                 kindOfQuantity: "ConflictSchema.KoQ_2",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.undefined;
+    });
+
+    it("should find a conflict when array property bounds differ", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestStruct: {
+            schemaItemType: "StructClass",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PrimitiveArray",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                minOccurs: 0,
+                maxOccurs: 2147483647,
+              },
+              {
+                name: "StructArray",
+                type: "StructArrayProperty",
+                typeName: "ConflictSchema.TestStruct",
+                minOccurs: 0,
+                maxOccurs: 2147483647,
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestStruct: {
+            schemaItemType: "StructClass",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PrimitiveArray",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                minOccurs: 1,
+                maxOccurs: 1,
+              },
+              {
+                name: "StructArray",
+                type: "StructArrayProperty",
+                typeName: "ConflictSchema.TestStruct",
+                minOccurs: 1,
+                maxOccurs: 1,
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(differences.conflicts).to.have.lengthOf(2);
+      for (const propertyName of ["PrimitiveArray", "StructArray"]) {
+        const conflict = differences.conflicts!.find((c) => "path" in c.difference && c.difference.path === propertyName);
+        expect(conflict, `conflict for ${propertyName}`).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyArrayBounds);
+        expect(conflict).to.have.a.property("source").deep.equals({ minOccurs: 0, maxOccurs: 2147483647 });
+        expect(conflict).to.have.a.property("target").deep.equals({ minOccurs: 1, maxOccurs: 1 });
+        expect(conflict).to.have.a.property("description", "Changing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "TestItem");
+        expect(conflict).to.have.a.nested.property("difference.path", propertyName);
+      }
+    });
+
+    it("should not find a conflict when array property bounds are equal", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PrimitiveArray",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                label: "Changed label",
+                minOccurs: 0,
+                maxOccurs: 10,
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PrimitiveArray",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                minOccurs: 0,
+                maxOccurs: 10,
               },
             ],
           },

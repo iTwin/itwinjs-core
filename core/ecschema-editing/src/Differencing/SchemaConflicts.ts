@@ -63,6 +63,7 @@ export enum ConflictCode {
   ConflictingPropertyName = "C-1300",
   ConflictingPropertyKindOfQuantity = "C-1301",
   ConflictingPropertyKindOfQuantityUnit = "C-1302",
+  ConflictingPropertyArrayBounds = "C-1303",
 
   AbstractConstraintMustNarrowBaseConstraints = "C-1500",
   DerivedConstraintsMustNarrowBaseConstraints = "C-1501",
@@ -92,7 +93,7 @@ interface SchemaDifferenceConflict<TCode extends ConflictCode, TType extends Sch
 }
 
 /** Union type of class types */
-type EcClassTypes = SchemaItemType.CustomAttributeClass |  SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.Mixin | SchemaItemType.RelationshipClass;
+type EcClassTypes = SchemaItemType.CustomAttributeClass | SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.Mixin | SchemaItemType.RelationshipClass;
 
 /**
  * Union of all supported schema differencing conflict types.
@@ -114,9 +115,10 @@ export type AnySchemaDifferenceConflict =
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingPropertyArrayBounds, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnit, SchemaOtherTypes.FormatUnit> |
   SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnitPhenomenon, SchemaOtherTypes.FormatUnit> |
   SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>
-;
+  ;
