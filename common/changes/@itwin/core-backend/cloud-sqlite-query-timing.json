@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Expose opt-in main-database Cloud SQLite timings, waited-block counts and logical sizes through asynchronous query readers, including discarded metadata-cache executions.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

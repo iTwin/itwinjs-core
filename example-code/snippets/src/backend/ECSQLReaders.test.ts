@@ -19,6 +19,21 @@ describe("ECSQL reader examples", () => {
     iModel.close();
   });
 
+  it("requests Cloud SQLite timings for an asynchronous reader", async () => {
+    // __PUBLISH_EXTRACT_START__ ExecuteECSql_Cloud_Timing_Async
+    const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element LIMIT 5", undefined, { collectCloudSqliteStats: true });
+    const rows = await reader.toArray();
+    const { backendDownloadTime, backendExecutionTime, backendDownloadBlocks, backendDownloadBlockSizes } = reader.stats;
+    // Statistics describe main only; sizes are logical bytes, not HTTP payload bytes.
+    // Values are undefined for a local-only main database or unsupported native implementation.
+    // __PUBLISH_EXTRACT_END__
+    assert.isNotEmpty(rows);
+    assert.isUndefined(backendDownloadTime);
+    assert.isUndefined(backendExecutionTime);
+    assert.isUndefined(backendDownloadBlocks);
+    assert.isUndefined(backendDownloadBlockSizes);
+  });
+
   it("iterates synchronously", () => {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Sync_Iteration
     const ids: Id64String[] = [];

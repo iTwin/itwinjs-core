@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, use as useFromChai } from "chai";
+import { randomBytes } from "node:crypto";
 import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb, Subject } from "@itwin/core-backend";
 import { KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
-import { CloudSqliteError } from "@itwin/core-common";
+import { CloudSqliteError, IModel } from "@itwin/core-common";
 
 // spell:ignore localstore itwindb
 
@@ -182,6 +183,168 @@ describe("CloudSqlite", () => {
     });
     db.close();
     container.disconnect({ detach: true });
+  });
+
+  it("reports cold-cache download stats and warm-cache zeros through createQueryReader", async () => {
+    const id = Guid.createValue();
+    const container = (await azSqlite.createContainers([{ containerId: id }]))[0];
+    const cache = azSqlite.makeCache(`query-stats-${id}`);
+    const cacheDir = cache.rootDir;
+    const localFile = join(KnownLocations.tmpdir, `query-stats-${id}.bim`);
+    const sql = "SELECT ECInstanceId, Description FROM bis.Subject WHERE Description <> '' ORDER BY ECInstanceId";
+    let db: SnapshotDb | undefined;
+    try {
+      const source = SnapshotDb.createEmpty(localFile, { rootSubject: { name: "Query statistics" } });
+      let expectedRows: unknown[];
+      try {
+        // Overflow pages keep the query data separate from metadata read while
+        // opening the iModel. Random content also prevents block deduplication.
+        withEditTxn(source, (txn) => {
+          for (let i = 0; i < 48; ++i)
+            Subject.insert(txn, IModel.rootSubjectId, `Subject ${i}`, randomBytes(32 * 1024).toString("hex"));
+        });
+        expectedRows = await source.createQueryReader(sql).toArray();
+        expect(expectedRows).to.have.lengthOf(48);
+      } finally {
+        source.close();
+      }
+
+      azSqlite.initializeContainers([container]);
+      await azSqlite.uploadFile(container, caches[0], "query-stats", localFile);
+      // Uploads use a different cache so none of their blocks warm the reader.
+      container.connect(cache);
+      expect(cache.isDaemon).to.equal(false);
+      db = SnapshotDb.openFile("query-stats", { container });
+      const before = container.queryDatabase("query-stats")!;
+      expect(before.localBlocks).to.be.lessThan(before.totalBlocks);
+
+      const cold = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      expect(await cold.toArray()).to.deep.equal(expectedRows);
+      expect(cold.stats.backendDownloadTime).to.be.a("number").and.greaterThan(0);
+      expect(cold.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
+      expect(cold.stats.backendDownloadBlocks).to.be.a("number").and.greaterThan(0);
+      expect(cold.stats.backendDownloadBlockSizes).to.have.lengthOf(cold.stats.backendDownloadBlocks!);
+      expect(cold.stats.backendDownloadBlockSizes).to.deep.equal(
+        Array<number>(cold.stats.backendDownloadBlocks!).fill(container.blockSize),
+      );
+      expect(container.queryDatabase("query-stats")!.localBlocks).to.be.greaterThan(before.localBlocks);
+
+      const warm = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      expect(await warm.toArray()).to.deep.equal(expectedRows);
+      expect(warm.stats.backendDownloadTime).to.equal(0);
+      expect(warm.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
+      expect(warm.stats.backendDownloadBlocks).to.equal(0);
+      expect(warm.stats.backendDownloadBlockSizes).to.deep.equal([]);
+
+      for (const options of [undefined, { collectCloudSqliteStats: false }]) {
+        const unmeasured = db.createQueryReader(sql, undefined, options);
+        expect(await unmeasured.toArray()).to.deep.equal(expectedRows);
+        expect(unmeasured.stats).not.to.have.property("backendDownloadTime");
+        expect(unmeasured.stats).not.to.have.property("backendExecutionTime");
+        expect(unmeasured.stats).not.to.have.property("backendDownloadBlocks");
+        expect(unmeasured.stats).not.to.have.property("backendDownloadBlockSizes");
+      }
+    } finally {
+      db?.close();
+      if (container.isConnected)
+        container.disconnect({ detach: true });
+      cache.destroy();
+      removeSync(cacheDir);
+      removeSync(localFile);
+      await AzuriteTest.createAzClient(id).delete();
+    }
+  });
+
+  it("includes cold schema-source downloads in query statistics", async () => {
+    const id = Guid.createValue();
+    const container = (await azSqlite.createContainers([{ containerId: id }]))[0];
+    const cache = azSqlite.makeCache(`schema-stats-${id}`);
+    const cacheDir = cache.rootDir;
+    const localFile = join(KnownLocations.tmpdir, `schema-stats-${id}.bim`);
+    const sql = "SELECT ECInstanceId FROM qss.ColdElement WHERE ECInstanceId = 0";
+    let db: SnapshotDb | undefined;
+    try {
+      const source = SnapshotDb.createEmpty(localFile, { rootSubject: { name: "Schema statistics" } });
+      try {
+        // Large descriptions require uncached overflow pages when preparation
+        // lazily loads this class, even though the query returns no elements.
+        const properties = Array.from({ length: 32 }, (_, i) =>
+          `<ECProperty propertyName="Property${i}" typeName="string" description="${randomBytes(16 * 1024).toString("hex")}" />`,
+        ).join("");
+        await source.importSchemaStrings([`
+          <ECSchema schemaName="QuerySchemaStats" alias="qss" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+            <ECEntityClass typeName="ColdElement">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+              ${properties}
+            </ECEntityClass>
+          </ECSchema>`,
+        ]);
+      } finally {
+        source.close();
+      }
+
+      azSqlite.initializeContainers([container]);
+      await azSqlite.uploadFile(container, caches[0], "schema-stats", localFile);
+      container.connect(cache);
+      db = SnapshotDb.openFile("schema-stats", { container });
+      // Initialize the workers and shared schema connection without loading
+      // the custom class, so connection initialization is outside the check.
+      expect(await db.createQueryReader("SELECT 1").toArray()).to.deep.equal([[1]]);
+      const before = container.queryDatabase("schema-stats")!;
+      expect(before.localBlocks).to.be.lessThan(before.totalBlocks);
+
+      const cold = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      expect(await cold.toArray()).to.deep.equal([]);
+      const downloaded = container.queryDatabase("schema-stats")!.localBlocks - before.localBlocks;
+      expect(downloaded).to.be.greaterThan(0);
+      expect(cold.stats.backendDownloadTime).to.be.a("number").and.greaterThan(0);
+      expect(cold.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
+      expect(cold.stats.backendDownloadBlocks).to.be.a("number").and.at.least(downloaded);
+      expect(cold.stats.backendDownloadBlockSizes).to.deep.equal(
+        Array<number>(cold.stats.backendDownloadBlocks!).fill(container.blockSize),
+      );
+
+      const warm = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      expect(await warm.toArray()).to.deep.equal([]);
+      expect(warm.stats.backendDownloadTime).to.equal(0);
+      expect(warm.stats.backendDownloadBlocks).to.equal(0);
+    } finally {
+      db?.close();
+      if (container.isConnected)
+        container.disconnect({ detach: true });
+      cache.destroy();
+      removeSync(cacheDir);
+      removeSync(localFile);
+      await AzuriteTest.createAzClient(id).delete();
+    }
+  });
+
+  it("reports measured warm-cache query timings through createQueryReader", async () => {
+    const container = testContainers[0];
+    container.connect(caches[1]);
+    const db = SnapshotDb.openFile("testBim", { container });
+    const sql = "SELECT ECInstanceId FROM bis.Element";
+    try {
+      const expectedRows = await db.createQueryReader(sql).toArray();
+
+      const asyncReader = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: true });
+      expect(await asyncReader.toArray()).to.deep.equal(expectedRows);
+      expect(asyncReader.stats.backendDownloadTime).to.equal(0);
+      expect(asyncReader.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
+      expect(asyncReader.stats.backendDownloadBlocks).to.equal(0);
+      expect(asyncReader.stats.backendDownloadBlockSizes).to.deep.equal([]);
+
+      const disabled = db.createQueryReader(sql, undefined, { collectCloudSqliteStats: false });
+      await disabled.toArray();
+      expect(disabled.stats).not.to.have.property("backendDownloadTime");
+      expect(disabled.stats).not.to.have.property("backendExecutionTime");
+      expect(disabled.stats).not.to.have.property("backendDownloadBlocks");
+      expect(disabled.stats).not.to.have.property("backendDownloadBlockSizes");
+    } finally {
+      db.close();
+      container.disconnect({ detach: true });
+    }
   });
 
   it("writeLockExpires getter", async () => {

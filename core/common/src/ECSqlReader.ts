@@ -17,15 +17,38 @@ import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlRead
  * @public
  */
 export interface QueryStats {
-  /** Time spent running the query; not including time spent queued. Time is in microseconds */
+  /** Elapsed wait attributed to successful block downloads for the main Cloud SQLite database, in fractional milliseconds.
+   * Shared downloads count each request's own wait; measured cache hits report zero.
+   * Absent when collection is disabled, unsupported, or incomplete, or the database is local-only.
+   */
+  backendDownloadTime?: number;
+  /** Active backend elapsed time excluding main-database block waits, in fractional milliseconds; not CPU usage.
+   * Includes preparation but excludes queueing, RPC, and application work between reader calls.
+   * Available under the same conditions as [[backendDownloadTime]].
+   */
+  backendExecutionTime?: number;
+  /** Number of successful main-database block acquisitions that waited, including shared downloads but excluding cache hits.
+   * Reacquiring a block after eviction or a retry counts again. Absent when block statistics are unsupported or incomplete.
+   */
+  backendDownloadBlocks?: number;
+  /** Logical size in bytes of each waited-block acquisition, in request order; not HTTP payload sizes.
+   * Contains one entry per [[backendDownloadBlocks]], including repeated acquisitions.
+   * A measured cache hit contributes no entries. Absent under the same conditions as [[backendDownloadBlocks]].
+   */
+  backendDownloadBlockSizes?: number[];
+  /** Elapsed backend execution time, including preparation and blocking waits but not queueing, in microseconds.
+   * Despite its name, this does not measure CPU usage.
+   */
   backendCpuTime: number;
-  /** Total time it took the backend to run the query. Time is in milliseconds. */
+  /** Backend time through response construction, including queueing, in milliseconds. */
   backendTotalTime: number;
   /** Estimated memory used for the query. */
   backendMemUsed: number;
   /** Total number of rows returned by the backend. */
   backendRowsReturned: number;
-  /** The total round trip time from the client's perspective. Time is in milliseconds. */
+  /** Sum of executor-call elapsed times, including failed calls, in fractional milliseconds.
+   * Excludes application work between reader calls.
+   */
   totalTime: number;
   /** The number of retries attempted to execute the query. */
   retryCount: number;
@@ -66,7 +89,9 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
   private _cursorId: string = "";
-  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
+  private _stats: QueryStats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
+  private _cloudTimingUnavailable = false;
+  private _cloudBlocksUnavailable = false;
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
   /**
@@ -138,7 +163,8 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   }
 
   /**
-   * Get performance-related statistics for the current query.
+   * Get accumulated statistics for this reader's lifetime, including retries, discarded executions,
+   * and failed attempts with available timings. Deprecated resets do not clear these statistics.
    */
   public get stats(): QueryStats {
     return this._stats;
@@ -186,17 +212,53 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   protected async runWithRetry(request: DbQueryRequest) {
     const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout || rs.status === DbResponseStatus.ShuttingDown) && (rs.data === undefined || rs.data.length === 0);
     const updateStats = (rs: DbQueryResponse) => {
-      this._stats.backendCpuTime += rs.stats.cpuTime;
-      this._stats.backendTotalTime += rs.stats.totalTime;
       this._stats.backendMemUsed += rs.stats.memUsed;
-      this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
+    const updateTiming = (rs: DbQueryResponse) => {
+      this._stats.backendCpuTime += rs.stats.cpuTime;
+      this._stats.backendTotalTime += rs.stats.totalTime;
+      this._stats.prepareTime += rs.stats.prepareTime;
+      if (rs.stats.cloudSqliteTimingState === "notExecuted")
+        return;
+      if (this._options.collectCloudSqliteStats !== true) {
+        this.invalidateCloudTiming();
+        return;
+      }
+      if (this._cloudTimingUnavailable)
+        return;
+      if (rs.stats.cloudSqliteTimingState !== "unavailable" && rs.stats.downloadTime !== undefined && rs.stats.executionTime !== undefined) {
+        this._stats.backendDownloadTime = (this._stats.backendDownloadTime ?? 0) + rs.stats.downloadTime;
+        this._stats.backendExecutionTime = (this._stats.backendExecutionTime ?? 0) + rs.stats.executionTime;
+        if (!this._cloudBlocksUnavailable) {
+          const { downloadBlocks, downloadBlockSize } = rs.stats;
+          if (downloadBlocks !== undefined && Number.isSafeInteger(downloadBlocks) && downloadBlocks >= 0
+            && downloadBlockSize !== undefined && Number.isSafeInteger(downloadBlockSize) && downloadBlockSize > 0) {
+            this._stats.backendDownloadBlocks = (this._stats.backendDownloadBlocks ?? 0) + downloadBlocks;
+            const sizes = this._stats.backendDownloadBlockSizes ??= [];
+            for (let i = 0; i < downloadBlocks; ++i)
+              sizes.push(downloadBlockSize);
+          } else {
+            this.invalidateCloudBlocks();
+          }
+        }
+      } else {
+        this.invalidateCloudTiming();
+      }
+    };
     const execQuery = async (req: DbQueryRequest) => {
-      const startTime = Date.now();
-      const rs = await this._executor.execute(req);
-      this.stats.totalTime += (Date.now() - startTime);
-      return rs;
+      const startTime = performance.now();
+      let receivedResponse = false;
+      try {
+        const rs = await this._executor.execute(req, updateTiming);
+        receivedResponse = true;
+        updateTiming(rs);
+        return rs;
+      } finally {
+        this._stats.totalTime += performance.now() - startTime;
+        if (!receivedResponse)
+          this.invalidateCloudTiming();
+      }
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
@@ -213,6 +275,19 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     }
     updateStats(resp);
     return resp;
+  }
+
+  private invalidateCloudTiming(): void {
+    this._cloudTimingUnavailable = true;
+    delete this._stats.backendDownloadTime;
+    delete this._stats.backendExecutionTime;
+    this.invalidateCloudBlocks();
+  }
+
+  private invalidateCloudBlocks(): void {
+    this._cloudBlocksUnavailable = true;
+    delete this._stats.backendDownloadBlocks;
+    delete this._stats.backendDownloadBlockSizes;
   }
 
   /**

@@ -7611,7 +7611,7 @@ export namespace SynchronousChannel {
 }
 
 // @beta (undocumented)
-export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
+export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota" | "collectCloudSqliteStats">;
 
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {

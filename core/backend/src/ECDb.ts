@@ -7,7 +7,7 @@
  */
 import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
 import { serialize } from "node:v8";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -547,8 +547,8 @@ export class ECDb implements Disposable {
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
     }
     const executor = {
-      execute: async (request: DbQueryRequest) => {
-        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
+      execute: async (request: DbQueryRequest, onDiscardedResponse?: (response: DbQueryResponse) => void) => {
+        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req), onDiscardedResponse);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);

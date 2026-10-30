@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add opt-in main-database Cloud SQLite wait/execution timings, waited-block counts and logical sizes, and correct timing accounting across retries, failures, and metadata-cache replays.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
