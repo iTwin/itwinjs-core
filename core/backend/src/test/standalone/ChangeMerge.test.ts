@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbConflictResolution, Guid } from "@itwin/core-bentley";
+import { DbConflictResolution, DbValueType, Guid } from "@itwin/core-bentley";
 import { EditTxn } from "../../EditTxn";
 import {
   IModel,
@@ -543,6 +543,84 @@ describe("Change merge method", () => {
 
     // when placement is changed the element is not deleted after pullChanges();
     assert.isUndefined(eb2);
+
+    b1.close();
+    b2.close();
+  });
+
+  it("reads column values of a rebase conflict", async () => {
+    const b1 = await ctx.openB1(true /* = noLock */);
+    const b1Txn = startTestTxn(b1);
+    const b2 = await ctx.openB2(true /* = noLock */);
+    const b2Txn = startTestTxn(b2);
+
+    const e1 = await insertPhysicalObject(b1Txn);
+    const props = b1.elements.getElementProps<PhysicalElementProps>(e1);
+    props.userLabel = "original";
+    props.federationGuid = Guid.createValue();
+    b1Txn.updateElement(props);
+    b1Txn.saveChanges();
+    await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
+    await b2.pullChanges();
+
+    props.userLabel = "changed";
+    b1Txn.updateElement(props);
+    b1Txn.saveChanges();
+    await b1.pushChanges({ description: `updated physical object [id=${e1}]` });
+
+    // The local delete carries the full old row, which no longer matches the updated one.
+    b2Txn.deleteElement(e1);
+    b2Txn.saveChanges();
+
+    let values: object | undefined;
+    b2.txns.rebaser.addConflictHandler({
+      id: "read-values", handler: (args: RebaseChangesetConflictArgs) => {
+        if (args.tableName !== "bis_Element" || values !== undefined)
+          return undefined;
+
+        const columnNames = args.getColumnNames();
+        const column = (name: string) => columnNames.indexOf(name);
+        values = {
+          opcode: args.opcode,
+          columnCountMatchesNames: args.columnCount === columnNames.length,
+          primaryKeyColumns: args.getPrimaryKeyColumns(),
+          id: args.getValueId(column("Id"), "Old"),
+          idType: args.getValueType(column("Id"), "Old"),
+          idInteger: args.getValueInteger(column("Id"), "Old"),
+          userLabel: args.getValueText(column("UserLabel"), "Old"),
+          userLabelIsNull: args.isValueNull(column("UserLabel"), "Old"),
+          codeValue: args.getValueText(column("CodeValue"), "Old"),
+          codeValueIsNull: args.isValueNull(column("CodeValue"), "Old"),
+          lastModType: args.getValueType(column("LastMod"), "Old"),
+          lastModIsJulianDay: (args.getValueDouble(column("LastMod"), "Old") ?? 0) > 2400000,
+          federationGuidType: args.getValueType(column("FederationGuid"), "Old"),
+          federationGuidLength: args.getValueBinary(column("FederationGuid"), "Old")?.length,
+          columnOutOfRange: args.getValueText(args.columnCount, "Old"),
+          negativeColumn: args.isValueNull(-1, "Old"),
+        };
+        return undefined;
+      },
+    });
+    await b2.pullChanges();
+
+    chai.expect(values).to.deep.equal({
+      opcode: "Deleted",
+      columnCountMatchesNames: true,
+      primaryKeyColumns: [0],
+      id: e1,
+      idType: DbValueType.IntegerVal,
+      idInteger: Number.parseInt(e1, 16),
+      userLabel: "original",
+      userLabelIsNull: false,
+      codeValue: null,
+      codeValueIsNull: true,
+      lastModType: DbValueType.FloatVal,
+      lastModIsJulianDay: true,
+      federationGuidType: DbValueType.BlobVal,
+      federationGuidLength: 16,
+      columnOutOfRange: undefined,
+      negativeColumn: undefined,
+    });
 
     b1.close();
     b2.close();
