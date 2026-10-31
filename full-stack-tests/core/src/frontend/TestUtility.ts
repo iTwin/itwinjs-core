@@ -194,6 +194,13 @@ export class TestUtility {
     };
   }
 
+  /** The WebGL context of the active render system, for renderer diagnostics in tests. The WebGL `System` is internal
+   * to core-frontend and not exported, so this reads its `context` property structurally; undefined with a mock render system.
+   */
+  public static getWebGLContext(): WebGL2RenderingContext | undefined {
+    return (IModelApp.renderSystem as unknown as { context?: WebGL2RenderingContext }).context;
+  }
+
   public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
   private static createDefaultRenderSystem() { return new MockRender.System(); }
 
