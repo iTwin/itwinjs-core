@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "@cesium/engine";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PolygonGeometry, PolygonHierarchy } from "@cesium/core";
+import { PerInstanceColorAppearance, Primitive, PrimitiveCollection } from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, LoopEntry } from "./DecorationTypes.js";
