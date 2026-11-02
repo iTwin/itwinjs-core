@@ -59,9 +59,9 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/aec-units-schema": "^1.0.3",
-    "@bentley/formats-schema": "^1.0.0",
-    "@bentley/units-schema": "^1.0.12",
+    "@bentley/aec-units-schema": "catalog:schemas",
+    "@bentley/formats-schema": "catalog:schemas",
+    "@bentley/units-schema": "catalog:schemas",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",

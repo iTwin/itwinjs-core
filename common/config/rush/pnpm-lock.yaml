@@ -167,6 +167,97 @@ catalogs:
     '@itwin/reality-data-client':
       specifier: ^1.3.1
       version: 1.6.0
+  schemas:
+    '@bentley/aec-units-schema':
+      specifier: ^1.0.3
+      version: 1.0.3
+    '@bentley/architectural-physical-schema':
+      specifier: ^1.0.3
+      version: 1.0.3
+    '@bentley/bis-core-schema':
+      specifier: ^1.0.15
+      version: 1.0.25
+    '@bentley/bis-custom-attributes-schema':
+      specifier: ^1.0.0
+      version: 1.0.0
+    '@bentley/cif-bridge-schema':
+      specifier: ^1.0.5
+      version: 1.0.19
+    '@bentley/cif-common-schema':
+      specifier: ^1.0.3
+      version: 1.0.16
+    '@bentley/cif-geometric-rules-schema':
+      specifier: ^1.0.1
+      version: 1.0.6
+    '@bentley/cif-hydraulic-analysis-schema':
+      specifier: ^1.0.3
+      version: 1.0.9
+    '@bentley/cif-hydraulic-results-schema':
+      specifier: ^1.0.3
+      version: 1.0.7
+    '@bentley/cif-quantity-takeoffs-schema':
+      specifier: ^1.0.1
+      version: 1.0.2
+    '@bentley/cif-rail-schema':
+      specifier: ^1.0.2
+      version: 1.0.12
+    '@bentley/cif-roads-schema':
+      specifier: ^1.0.1
+      version: 1.0.4
+    '@bentley/cif-subsurface-conflict-analysis-schema':
+      specifier: ^1.0.3
+      version: 1.0.8
+    '@bentley/cif-subsurface-schema':
+      specifier: ^1.0.3
+      version: 1.0.10
+    '@bentley/cif-units-schema':
+      specifier: ^1.0.7
+      version: 1.0.7
+    '@bentley/construction-schema':
+      specifier: ^1.0.4
+      version: 1.0.4
+    '@bentley/core-custom-attributes-schema':
+      specifier: ^1.0.4
+      version: 1.0.4
+    '@bentley/ecdb-map-schema':
+      specifier: ^2.0.1
+      version: 2.0.4
+    '@bentley/ecdb-schema-policies-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/formats-schema':
+      specifier: ^1.0.0
+      version: 1.0.0
+    '@bentley/linear-referencing-schema':
+      specifier: ^2.0.3
+      version: 2.0.3
+    '@bentley/physical-material-schema':
+      specifier: ^1.0.2
+      version: 1.0.2
+    '@bentley/plant-custom-attributes-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/process-functional-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/process-physical-schema':
+      specifier: ^1.0.2
+      version: 1.0.2
+    '@bentley/quantity-takeoffs-aspects-schema':
+      specifier: ^1.0.1
+      version: 1.0.2
+    '@bentley/road-rail-units-schema':
+      specifier: ^1.0.3
+      version: 1.0.5
+    '@bentley/spatial-composition-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/structural-physical-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/units-schema':
+      specifier: ^1.0.12
+      version: 1.0.12
   testing:
     '@types/chai':
       specifier: 4.3.1
@@ -597,52 +688,52 @@ importers:
         version: 13.0.6
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/architectural-physical-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/bis-core-schema':
-        specifier: ^1.0.15
+        specifier: catalog:schemas
         version: 1.0.25
       '@bentley/bis-custom-attributes-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/construction-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/core-custom-attributes-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/ecdb-map-schema':
-        specifier: ^2.0.1
+        specifier: catalog:schemas
         version: 2.0.4
       '@bentley/ecdb-schema-policies-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/linear-referencing-schema':
-        specifier: ^2.0.3
+        specifier: catalog:schemas
         version: 2.0.3
       '@bentley/physical-material-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/plant-custom-attributes-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/quantity-takeoffs-aspects-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/spatial-composition-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/structural-physical-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -702,25 +793,25 @@ importers:
   ../../core/ecschema-metadata:
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/bis-custom-attributes-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/cif-units-schema':
-        specifier: ^1.0.7
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/core-custom-attributes-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/road-rail-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.5
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -1066,13 +1157,13 @@ importers:
         version: 0.6.0
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/appui-abstract':
         specifier: workspace:*
@@ -1528,7 +1619,7 @@ importers:
   ../../core/quantity:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2369,55 +2460,55 @@ importers:
         specifier: ^12.28.0
         version: 12.34.0
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/cif-bridge-schema':
-        specifier: ^1.0.5
+        specifier: catalog:schemas
         version: 1.0.19
       '@bentley/cif-common-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.16
       '@bentley/cif-geometric-rules-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.6
       '@bentley/cif-hydraulic-analysis-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.9
       '@bentley/cif-hydraulic-results-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/cif-quantity-takeoffs-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/cif-rail-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.12
       '@bentley/cif-roads-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/cif-subsurface-conflict-analysis-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.8
       '@bentley/cif-subsurface-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.10
       '@bentley/cif-units-schema':
-        specifier: ^1.0.7
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/plant-custom-attributes-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/process-functional-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/process-physical-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/quantity-takeoffs-aspects-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/road-rail-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.5
       '@itwin/core-backend':
         specifier: workspace:*

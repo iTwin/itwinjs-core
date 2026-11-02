@@ -153,6 +153,7 @@ Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-co
 | `linting` | ESLint, its shared plugin/parser, and formatting tools |
 | `presentation` | External presentation packages and their shared RxJS baseline |
 | `reality-capture` | The reality-data client owned by the reality-capture project |
+| `schemas` | Bentley schema packages used by tests and examples |
 | `testing` | Test libraries and typings, environment setup, coverage, and services |
 | `types` | Typings for runtime libraries that are not cataloged yet |
 
