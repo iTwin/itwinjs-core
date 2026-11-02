@@ -12303,6 +12303,8 @@ export class ToolAdmin {
     dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     doRedoOperation(): Promise<boolean>;
+    // @beta
+    doUndoAllOperation(): Promise<boolean>;
     doUndoOperation(): Promise<boolean>;
     // @internal (undocumented)
     endDynamics(): void;
@@ -12355,7 +12357,7 @@ export class ToolAdmin {
     // @internal (undocumented)
     onShutDown(): void;
     // @beta
-    protected onTxnOperationError(_operation: "undo" | "redo", _error: unknown): Promise<void>;
+    protected onTxnOperationError(_operation: "undo" | "redo" | "undoAll", _error: unknown): Promise<void>;
     // (undocumented)
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
