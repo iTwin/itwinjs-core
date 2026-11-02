@@ -9,34 +9,36 @@
 import { Id64String } from "@itwin/core-bentley";
 
 /**
- * @alpha
- * Transaction types
+ * The type of changes contained in a transaction.
+ * - `"Data"`: data changes only.
+ * - `"ECSchema"` or `"Schema"`: EC schema changes. Both values may be reported for schema transactions.
+ * - `"Ddl"`: database schema (DDL) changes.
+ * @beta
  */
 export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl"; // TODO: Remove "Schema" in favor of "ECSchema". Currently thats a bug in native code....for schema txns we get txn type as "Schema" instead of "ECSchema".
 
 /**
- * @alpha
  * Represents the properties of a transaction within the transaction manager.
- *
- * @property id - The unique identifier for the transaction.
- * @property sessionId - The identifier of the session to which the transaction belongs.
- * @property nextId - (Optional) The identifier of the next transaction in the sequence.
- * @property prevId - (Optional) The identifier of the previous transaction in the sequence.
- * @property props - The arguments or properties associated with the save changes operation.
- * @property type - The type of transaction, which can be "Data", "ECSchema", or "Ddl".
- * @property reversed - Indicates whether the transaction has been reversed.
- * @property grouped - Indicates whether the transaction is grouped with others.
- * @property timestamp - The timestamp when the transaction was created.
+ * @beta
  */
 export interface TxnProps {
+  /** The unique identifier for the transaction. */
   id: Id64String;
+  /** The identifier of the session in which the transaction was created. */
   sessionId: number;
+  /** The identifier of the next transaction in the sequence, if any. */
   nextId?: Id64String;
+  /** The identifier of the previous transaction in the sequence, if any. */
   prevId?: Id64String;
+  /** The arguments supplied when the transaction's changes were saved. */
   props: SaveChangesArgs;
+  /** The type of changes contained in the transaction. */
   type: TxnType;
+  /** Whether the transaction has been reversed. */
   reversed: boolean;
+  /** Whether the transaction is grouped with others. */
   grouped: boolean;
+  /** The time at which the transaction was created. */
   timestamp: string;
 }
 

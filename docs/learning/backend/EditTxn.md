@@ -87,6 +87,18 @@ Recommended follow-up:
 - Unsaved changes exist before `start()`: in practice this usually means legacy implicit-write APIs have already produced pending changes on the iModel; save or abandon those changes before starting a new explicit transaction.
 - A callback creates a new transaction instead of reusing the transaction associated with the operation: use the callback argument's `indirectEditTxn` when provided; otherwise use `arg.iModel.getIndirectTxn()`.
 
+## Updating iModel properties
+
+[EditTxn.updateIModelProps]($backend) persists the current in-memory iModel properties, but only sends the geographic coordinate system to native code when its definition has changed since loading or the last successful property update. This preserves the complete stored CRS definition during unrelated writes without resolving its dictionary identifiers again.
+
+[EditTxn.updateProjectExtents]($backend) and [EditTxn.updateEcefLocation]($backend) use the same path. They still persist other pending property changes, including an intentionally changed CRS. Set the desired CRS using [IModel.setGeographicCoordinateSystem]($common) before calling one of these update methods.
+
+Abandoning an editing transaction reloads the cached geographic coordinate system from the database. Undo and redo also refresh it. Do not retain an abandoned in-memory CRS edit and assume it will be persisted by a later unrelated update; explicitly set it again if it is still wanted.
+
+CRS restoration raises [IModel.onGeographicCoordinateSystemChanged]($common). These restoration notifications are read-only: starting an editing transaction and transaction writes, including legacy implicit writes, are rejected while the cached CRS is being restored. Perform any follow-up edits after restoration completes instead of writing from the notification listener.
+
+After a successful database rollback, `end("abandon")` releases transaction ownership even if a restoration listener propagates an error. Calling `abandonChanges()` directly instead keeps the transaction active. If rollback also throws while [withEditTxn]($backend) is handling a callback failure, logging the rollback error is attempted and the original callback error is re-thrown, even if logging fails.
+
 ## implicitWriteEnforcement
 
 [EditTxn.implicitWriteEnforcement]($backend), initialized from [IModelHostOptions.implicitWriteEnforcement]($backend), controls how legacy implicit writes behave while you migrate:

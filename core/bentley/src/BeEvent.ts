@@ -13,6 +13,12 @@ import { UnexpectedErrors } from "./UnexpectedErrors";
  */
 export type Listener = (...arg: any[]) => void;
 
+/**
+ * A function invoked when a BeAsyncEvent is raised.
+ * @beta
+ */
+export type AsyncListener = (...arg: any[]) => Promise<void>;
+
 interface EventContext {
   listener: Listener | undefined;
   scope: any;
@@ -97,16 +103,21 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
+        const listener = context.listener;
+
+        if (context.once) {
+          context.listener = undefined;
+          dropped = true;
+        }
+
         try {
-          context.listener.apply(context.scope, args);
+          listener.apply(context.scope, args);
         } catch (e) {
           UnexpectedErrors.handle(e);
         }
+
         if (!context.listener) {
           // listener was removed during its own callback
-          dropped = true;
-        } else if (context.once) {
-          context.listener = undefined;
           dropped = true;
         }
       }
@@ -164,8 +175,6 @@ interface UnorderedEventContext {
  */
 export class BeUnorderedEvent<T extends Listener> {
   private _listeners: Set<UnorderedEventContext> = new Set();
-  private _emitDepth: number = 0;
-  private _hasTombstones: boolean = false;
 
   /** The number of listeners currently subscribed to the event.
    * @note During `raiseEvent()`, this may include listeners that have been removed or are one-shot
@@ -199,12 +208,7 @@ export class BeUnorderedEvent<T extends Listener> {
 
   /** Remove a specific context entry, deferring during emit. */
   private _removeCtx(ctx: UnorderedEventContext): void {
-    if (this._emitDepth > 0) {
-      ctx.listener = undefined; // tombstone for deferred cleanup
-      this._hasTombstones = true;
-    } else {
-      this._listeners.delete(ctx);
-    }
+    this._listeners.delete(ctx);
   }
 
   /**
@@ -212,31 +216,19 @@ export class BeUnorderedEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    */
   public raiseEvent(...args: Parameters<T>) {
-    this._emitDepth++;
-
     for (const ctx of this._listeners) {
       if (!ctx.listener) {
         continue;
       }
+
+      if (ctx.once) {
+        this._listeners.delete(ctx);
+      }
+
       try {
         ctx.listener.apply(ctx.scope, args);
       } catch (e) {
         UnexpectedErrors.handle(e);
-      }
-      if (ctx.listener && ctx.once) {
-        ctx.listener = undefined;
-        this._hasTombstones = true;
-      }
-    }
-
-    this._emitDepth--;
-
-    // Only clean up tombstoned entries when we're back at the outermost emit
-    if (this._hasTombstones && this._emitDepth === 0) {
-      this._hasTombstones = false;
-      for (const ctx of this._listeners) {
-        if (ctx.listener === undefined)
-          this._listeners.delete(ctx);
       }
     }
   }
@@ -254,6 +246,160 @@ export class BeUnorderedEvent<T extends Listener> {
 export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
   /** Raises event with single strongly typed argument. */
   public emit(args: TEventArgs): void { this.raiseEvent(args); }
+}
+
+interface UnorderedAsyncEventContext {
+  listener: AsyncListener | undefined;
+  scope: any;
+  once: boolean;
+}
+
+/**
+ * Options for configuring the behavior of a BeAsyncEvent.
+ * @beta
+ */
+interface BeAsyncEventOptions {
+  /**
+   * If true, listeners will be invoked concurrently rather than in series. The listeners will all be invoked
+   * immediately, and the Promise returned by [[BeAsyncEvent.raiseEvent]] will be invoked after all listeners'
+   * Promises have resolved.
+   *
+   * If false, [[BeAsyncEvent.raiseEvent]] will wait for each listener's Promise to resolve before invoking the
+   * next listener.
+   *
+   * Note that "concurrent" does not necessarily imply the use of multiple threads.
+   * It just means that the next listener is invoked before the Promise returned by
+   * the previous listener has resolved.
+   */
+  concurrent?: boolean;
+
+  /**
+   * If true, and a listener rejects its returned Promise, [[UnexpectedError.handle]] is invoked
+   * and the error is otherwise ignored; the Promise returned by [[BeAsyncEvent.raiseEvent]] will only
+   * reject if [[UnexpectedError.handle]] itself throws an exception.
+   *
+   * If false or unspecified, promise rejection is considered normal, so [[UnexpectedError.handle]] is not
+   * invoked. Instead, the Promise returned by [[BeAsyncEvent.raiseEvent]] will reject. If [[concurrent]] is true,
+   * all listener Promises are awaited before the rejection is propagated, so all listeners run to completion.
+   * If [[concurrent]] is false, the rejection is propagated immediately after the first listener's Promise rejects,
+   * and subsequent listeners are not invoked.
+   */
+  promiseRejectionIsUnexpected?: boolean;
+}
+
+/**
+ * Manages a set of *listeners* for a particular event and notifies them when the event is raised.
+ * Each listener is async (return a Promise<void>). The listeners may be invoked in series
+ * or concurrently depending on the configuration of the instance.
+ *
+ * Like [[BeUnorderedEvent]], this class uses a `Set` internally to support more performant removal
+ * of old listeners. When a listener is removed during emit, it is marked for deferred removal instead
+ * of mutating the set immediately. Despite the "unordered" implication, items in a `Set` are enumerated
+ * in insertion order, which means that this class invokes the listeners in insertion order.
+ *
+ * Listeners are managed exclusively through the disposal closure returned by [[addListener]] and
+ * [[addOnce]]. There is no `removeListener` or `has` method — callers must capture the returned
+ * closure to unsubscribe.
+ * @beta
+ */
+export class BeAsyncEvent<T extends AsyncListener> {
+  private _listeners: Set<UnorderedAsyncEventContext> = new Set();
+  private _concurrent: boolean = false;
+  private _promiseRejectionIsUnexpected: boolean = false;
+
+  public constructor(options?: BeAsyncEventOptions) {
+    if (options?.concurrent)
+      this._concurrent = true;
+    if (options?.promiseRejectionIsUnexpected)
+      this._promiseRejectionIsUnexpected = true;
+  }
+
+  /** The number of listeners currently subscribed to the event.
+   * @note During `raiseEvent()`, this may include listeners that have been removed or are one-shot
+   * but are awaiting deferred cleanup. The count is accurate outside of `raiseEvent()`.
+   */
+  public get numberOfListeners() { return this._listeners.size; }
+
+  /**
+   * Registers a Listener to be executed whenever this event is raised.
+   * @param listener The function to be executed when the event is raised.
+   * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
+   * @returns A function that will remove this event listener in O(1).
+   */
+  public addListener(listener: T, scope?: any): () => void {
+    const ctx: UnorderedAsyncEventContext = { listener, scope, once: false };
+    this._listeners.add(ctx);
+    return () => this._removeCtx(ctx);
+  }
+
+  /**
+   * Registers a callback function to be executed *only once* when the event is raised.
+   * @param listener The function to be executed once when the event is raised.
+   * @param scope An optional object scope to serve as the `this` pointer in which the listener function will execute.
+   * @returns A function that will remove this event listener in O(1).
+   */
+  public addOnce(listener: T, scope?: any): () => void {
+    const ctx: UnorderedAsyncEventContext = { listener, scope, once: true };
+    this._listeners.add(ctx);
+    return () => this._removeCtx(ctx);
+  }
+
+  /** Remove a specific context entry, deferring during emit. */
+  private _removeCtx(ctx: UnorderedAsyncEventContext): void {
+    this._listeners.delete(ctx);
+  }
+
+  /**
+   * Raises the event by calling each registered listener with the supplied arguments.
+   *
+   * See [[BeAsyncEventOptions]] for options that control the behavior of this method.
+   *
+   * @param args This method takes any number of parameters and passes them through to the listeners.
+   * @returns A Promise that settles when the event invocation is complete.
+   */
+  public async raiseEvent(...args: Parameters<T>): Promise<void> {
+    const promises = [];
+
+    // Wrapper to ensure that an exception thrown immediately by a listener is captured as a rejected promise rather than
+    // allowed to propagate as an exception. A well-behaved Promise-returning function should never throw, but
+    // this defends against the poorly-behaved ones. In Node 23+ we could use `Promise.try` instead.
+    const invoke = async (ctx: UnorderedAsyncEventContext, args: Parameters<T>[]) => {
+      if (!ctx.listener) return;
+      await ctx.listener.apply(ctx.scope, args);
+    };
+
+    for (const ctx of this._listeners) {
+      if (!ctx.listener)
+        continue;
+
+      if (ctx.once) {
+        // Set guarantees this is safe during iteration.
+        this._listeners.delete(ctx);
+      }
+
+      let promise = invoke(ctx, args);
+      if (this._promiseRejectionIsUnexpected)
+        promise = promise.catch(reason => UnexpectedErrors.handle(reason));
+
+      if (this._concurrent)
+        promises.push(promise);
+      else
+        await promise;
+    }
+
+    if (this._concurrent) {
+      const result = await Promise.allSettled(promises);
+      const firstRejection = result.find(r => r.status === "rejected");
+      if (firstRejection)
+        throw firstRejection.reason;
+    }
+  }
+
+  /** Clear all listeners from this BeAsyncEvent.
+   * @note If called during `raiseEvent`, remaining listeners in the current iteration are skipped
+   * immediately rather than being tombstoned.
+   */
+  public clear(): void { this._listeners.clear(); }
 }
 
 /**

@@ -65,9 +65,25 @@ The [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) coordinate 
 
 ### The Geographic Coordinate System
 
-A projected iModel stores information used to convert its spatial coordinates to/from [Cartographic]($common) points in a property known as its "GCS" (Geographic Coordinate System). The GCS of a projected iModel describes both its [Geodetic datum](https://en.wikipedia.org/wiki/Geodetic_datum) and the [Map projection](https://en.wikipedia.org/wiki/Map_projection) system and parameters. The non-linear conversion can only be done on the backend, often with the use of external data tables.
+A projected iModel stores information used to convert its spatial coordinates to/from [Cartographic]($common) points in a property known as its "GCS" (Geographic Coordinate System). Its [GeographicCRS]($common) describes the horizontal [Geodetic datum](https://en.wikipedia.org/wiki/Geodetic_datum) and [Map projection](https://en.wikipedia.org/wiki/Map_projection), and can also identify a vertical coordinate reference system that defines the meaning of elevations. The GCS is available through [IModel.geographicCoordinateSystem]($common). The non-linear conversion can only be done on the backend, often with the use of external data tables.
 
 > For historical reasons, some applications such as MicroStation store a GCS, even for a Linear GeoLocation. This means that some iModels that are really Linear iModels instead appear as being Projected. This does not generally cause problems, since a Linear iModel cannot be very large geographically, and hence the projection "warping" throughout the project extents is negligible, if it is ever applied.
+
+#### The Vertical Coordinate Reference System
+
+The horizontal part of a GCS describes where a point is on the earth, but does not by itself explain what its elevation means. The vertical part, available through [GeographicCRS.verticalCRS]($common), describes the reference surface from which heights are measured. This can be an ellipsoid or a geoid (a surface approximating mean sea level).
+
+Two datasets can use the same horizontal coordinate reference system but different vertical coordinate reference systems. Their features may line up horizontally while appearing at different heights. For example, a point at zero height in `EGM96 height` generally has a nonzero height above the ellipsoid. The difference varies with location, so converting elevations between these systems is not generally equivalent to adding a constant offset.
+
+[Cartographic.height]($common) is a height above the ellipsoid, in meters. It is not a height above mean sea level or above the ground. The vertical CRS is therefore important when converting an iModel's elevations to Cartographic coordinates or positioning other data relative to the iModel.
+
+[VerticalCRS]($common) can identify a predefined vertical system by name using `crsName`, or by a numeric EPSG code using `epsg`. These properties are beta; `crsName` takes precedence when both are supplied. The required `id` property retains the legacy height convention for older readers, which may not reproduce the precise named system. Applications can use the beta backend function [getAvailableVerticalCoordinateReferenceSystems]($backend) to find predefined systems applicable to the project's geographic location.
+
+> Notes about Vertical CRS:
+
+- The vertical CRS should describe the elevations in the source data. Assigning a different CRS to an iModel changes the interpretation of its coordinates; it does not transform the element geometry.
+- Like horizontal transformations, vertical transformations can require external data. For offline use, the data needed for the intended conversions must be downloaded in advance. Being able to select a vertical CRS does not guarantee that all data needed to convert its elevations is available.
+- Check the [GeoCoordStatus]($common) of a conversion before using its elevation. `VerticalDatumConvertError` means that the horizontal coordinates remain valid, but the elevation could not be fully converted. A zero or unchanged elevation should not be treated as a successful conversion.
 
 ## How Geographic Coordinates are used in iTwin.js
 

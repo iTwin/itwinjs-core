@@ -76,6 +76,8 @@ export namespace BlobContainer {
     containerId: string;
     /** The iTwinId that owns this container. */
     iTwinId?: GuidString;
+    /** The iModelId that owns this container. */
+    iModelId?: GuidString;
     /** The account iTwinId of the owning iTwin. */
     accountITwinId?: GuidString;
   }

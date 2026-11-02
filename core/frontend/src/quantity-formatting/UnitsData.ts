@@ -53,4 +53,7 @@ export const UNIT_EXTRA_DATA = [
   { name: "Units.CUB_US_SURVEY_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", altDisplayLabels: ["cm"] },
+  // Velocity ( base unit m/s )
+  { name: "Units.KM_PER_HR", altDisplayLabels: ["kph", "kmh"] },
+  { name: "Units.MPH", altDisplayLabels: ["mph"] },
 ];
