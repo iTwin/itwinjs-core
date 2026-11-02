@@ -18,7 +18,9 @@ describe("SheetPrototype", () => {
     let db: SnapshotDb;
 
     before(() => {
-      db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("SheetPrototype", "OldBisCore.bim"), { rootSubject: { name: "SheetPrototype" } });
+      const seedFileName = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+      const testFileName = IModelTestUtils.prepareOutputFile("SheetPrototype", "OldBisCore.bim");
+      db = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     });
 
     after(() => db.close());
@@ -33,10 +35,8 @@ describe("SheetPrototype", () => {
     let db: SnapshotDb;
     let documentListModelId: Id64String;
 
-    before(async () => {
+    before(() => {
       db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("SheetPrototype", "NewBisCore.bim"), { rootSubject: { name: "SheetPrototype" } });
-      // TODO: remove this upgrade once @bentley/imodeljs-native ships BisCore 01.00.27.
-      await db.importSchemas([IModelTestUtils.resolveAssetFile("SheetPrototype/BisCore.01.00.27.ecschema.xml")]);
       documentListModelId = withEditTxn(db, (txn) => DocumentListModel.insert(txn, IModel.rootSubjectId, "DocumentList"));
     });
 
