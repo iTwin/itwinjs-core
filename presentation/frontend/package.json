@@ -86,7 +86,7 @@
     "eslint-config-prettier": "catalog:linting",
     "internal-tools": "workspace:*",
     "jsdom": "catalog:testing",
-    "mocha": "^11.1.0",
+    "mocha": "catalog:testing",
     "prettier": "catalog:linting",
     "rimraf": "catalog:build",
     "sinon": "catalog:testing",

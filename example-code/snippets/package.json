@@ -53,7 +53,7 @@
     "eslint": "catalog:linting",
     "jsdom": "catalog:testing",
     "mkdirp": "catalog:build",
-    "mocha": "^11.1.0",
+    "mocha": "catalog:testing",
     "npm-run-all2": "catalog:build",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"

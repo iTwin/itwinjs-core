@@ -56,6 +56,6 @@
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/node": "catalog:build",
     "eslint": "catalog:linting",
-    "mocha": "^11.1.0"
+    "mocha": "catalog:testing"
   }
 }

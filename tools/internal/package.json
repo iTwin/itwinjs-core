@@ -27,6 +27,6 @@
     "@itwin/build-tools": "workspace:*",
     "glob": "catalog:build",
     "magic-string": "^1.1.0",
-    "mocha": "^11.1.0"
+    "mocha": "catalog:testing"
   }
 }

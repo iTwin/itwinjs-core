@@ -40,7 +40,7 @@
     "@types/yargs": "catalog:build",
     "chai": "catalog:testing",
     "eslint": "catalog:linting",
-    "mocha": "^11.1.0",
+    "mocha": "catalog:testing",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"
   }

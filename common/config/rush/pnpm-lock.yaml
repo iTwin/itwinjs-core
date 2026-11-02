@@ -215,18 +215,30 @@ catalogs:
     deep-equal:
       specifier: ^1
       version: 1.1.2
+    dotenv:
+      specifier: ^16.4.5
+      version: 16.6.1
+    dotenv-expand:
+      specifier: ^5.1.0
+      version: 5.1.0
     fetch-mock:
       specifier: ~11.1.3
       version: 11.1.5
     jsdom:
       specifier: ^26.0.0
       version: 26.1.0
+    mocha:
+      specifier: ^11.1.0
+      version: 11.8.0
     node-simctl:
       specifier: ~7.6.1
       version: 7.6.5
     nyc:
       specifier: ^17.1.0
       version: 17.1.0
+    playwright:
+      specifier: ~1.56.1
+      version: 1.56.1
     sinon:
       specifier: ^17.0.2
       version: 17.0.2
@@ -396,7 +408,7 @@ importers:
         specifier: ^14.1.3
         version: 14.1.4
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       node-simctl:
         specifier: catalog:testing
@@ -547,7 +559,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -662,7 +674,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -779,7 +791,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -855,7 +867,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -915,7 +927,7 @@ importers:
         specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -982,7 +994,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1104,7 +1116,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       playwright:
-        specifier: ~1.56.1
+        specifier: catalog:testing
         version: 1.56.1
       rimraf:
         specifier: catalog:build
@@ -1251,7 +1263,7 @@ importers:
         specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -1452,7 +1464,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1491,7 +1503,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1576,7 +1588,7 @@ importers:
         specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -1630,7 +1642,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1684,7 +1696,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1753,7 +1765,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -1915,7 +1927,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -2021,7 +2033,7 @@ importers:
         specifier: catalog:build
         version: 1.0.4
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       npm-run-all2:
         specifier: catalog:build
@@ -2072,7 +2084,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       playwright:
-        specifier: ~1.56.1
+        specifier: catalog:testing
         version: 1.56.1
       rimraf:
         specifier: catalog:build
@@ -2144,7 +2156,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -2201,7 +2213,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -2295,7 +2307,7 @@ importers:
         specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -2443,10 +2455,10 @@ importers:
         specifier: catalog:build
         version: 8.0.2
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
         specifier: catalog:linting
@@ -2455,7 +2467,7 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -2652,10 +2664,10 @@ importers:
         specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
         specifier: catalog:linting
@@ -2760,13 +2772,13 @@ importers:
         specifier: catalog:testing
         version: 4.5.0
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
     devDependencies:
       '@itwin/core-backend':
@@ -2941,10 +2953,10 @@ importers:
         specifier: catalog:testing
         version: 1.1.2
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
         specifier: catalog:linting
@@ -2971,7 +2983,7 @@ importers:
         specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
         specifier: catalog:linting
@@ -3146,13 +3158,13 @@ importers:
         specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
     devDependencies:
       '@itwin/core-backend':
@@ -3340,7 +3352,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
         specifier: catalog:linting
@@ -3440,7 +3452,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
         specifier: catalog:linting
@@ -3555,7 +3567,7 @@ importers:
         specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
         specifier: catalog:linting
@@ -3664,10 +3676,10 @@ importers:
         specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       electron:
         specifier: ^45.0.0
@@ -3848,10 +3860,10 @@ importers:
         specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       electron:
         specifier: ^45.0.0
@@ -3985,7 +3997,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build
@@ -4175,7 +4187,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
 
   ../../tools/certa:
@@ -4196,10 +4208,10 @@ importers:
         specifier: ^4.18.0
         version: 4.18.1
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       playwright:
-        specifier: ~1.56.1
+        specifier: catalog:testing
         version: 1.56.1
       source-map-support:
         specifier: catalog:build
@@ -4309,7 +4321,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
         specifier: catalog:testing
@@ -4340,7 +4352,7 @@ importers:
         specifier: ^1.1.0
         version: 1.4.2
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
 
   ../../tools/perf-tools:
@@ -4407,7 +4419,7 @@ importers:
         specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
         specifier: catalog:build

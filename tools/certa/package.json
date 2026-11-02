@@ -63,8 +63,8 @@
     "express": "^4.22.1",
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.18.0",
-    "mocha": "^11.1.0",
-    "playwright": "~1.56.1",
+    "mocha": "catalog:testing",
+    "playwright": "catalog:testing",
     "source-map-support": "catalog:build",
     "yargs": "catalog:build"
   },

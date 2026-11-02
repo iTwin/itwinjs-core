@@ -79,7 +79,7 @@
     "@vitest/coverage-v8": "catalog:testing",
     "cpx2": "catalog:build",
     "eslint": "catalog:linting",
-    "playwright": "~1.56.1",
+    "playwright": "catalog:testing",
     "rimraf": "catalog:build",
     "sinon": "catalog:testing",
     "typescript": "catalog:build",

@@ -56,7 +56,7 @@
     "chai": "catalog:testing",
     "eslint": "catalog:linting",
     "glob": "catalog:build",
-    "mocha": "^11.1.0",
+    "mocha": "catalog:testing",
     "rimraf": "catalog:build",
     "sinon": "catalog:testing",
     "source-map-loader": "catalog:bundling",

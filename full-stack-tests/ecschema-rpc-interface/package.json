@@ -44,9 +44,9 @@
     "@itwin/object-storage-azure": "catalog:imodels-clients",
     "@itwin/oidc-signin-tool": "catalog:auth-clients",
     "chai": "catalog:testing",
-    "dotenv": "^16.4.5",
-    "dotenv-expand": "^5.1.0",
-    "mocha": "^11.1.0"
+    "dotenv": "catalog:testing",
+    "dotenv-expand": "catalog:testing",
+    "mocha": "catalog:testing"
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",

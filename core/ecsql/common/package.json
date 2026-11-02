@@ -45,7 +45,7 @@
     "@types/mocha": "catalog:testing",
     "chai": "catalog:testing",
     "eslint": "catalog:linting",
-    "mocha": "^11.1.0",
+    "mocha": "catalog:testing",
     "nyc": "catalog:testing",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"
