@@ -489,7 +489,7 @@ describe("TileIO (mock render)", () => {
     const modelProps = await imodel.models.getProps("0x22");
     expect(modelProps.length).to.equal(1);
 
-    const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!.toString());
+    const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id.toString());
 
     expect(tree.id).to.equal(modelProps[0].id);
     expect(tree.maxTilesToSkip).to.equal(1);
@@ -651,7 +651,7 @@ describe("mirukuru TileTree", () => {
     const modelProps = await imodel.models.getProps("0x1c");
     expect(modelProps.length).to.equal(1);
 
-    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!);
+    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id);
     expect(treeProps.id).to.equal(modelProps[0].id);
     expect(treeProps.rootTile).not.to.be.undefined;
 

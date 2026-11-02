@@ -141,9 +141,25 @@ describe("BeUnorderedEvent", () => {
     expect(event.numberOfListeners).toBe(0);
   });
 
+  it("addOnce — listener that re-raises the event is still invoked only once", () => {
+    const event = new BeUnorderedEvent<() => void>();
+    let count = 0;
+
+    event.addOnce(() => {
+      count++;
+      if (count < 10)
+        event.raiseEvent();
+    });
+
+    event.raiseEvent();
+
+    expect(count).toBe(1);
+    expect(event.numberOfListeners).toBe(0);
+  });
+
   it("closure removes only its own registration", () => {
     const event = new BeUnorderedEvent<() => void>();
-    const fn = () => {};
+    const fn = () => { };
 
     const r1 = event.addListener(fn);
     const r2 = event.addListener(fn);
@@ -158,7 +174,7 @@ describe("BeUnorderedEvent", () => {
 
   it("scope — listeners with different scopes are independent", () => {
     const event = new BeUnorderedEvent<() => void>();
-    const fn = () => {};
+    const fn = () => { };
     const scope = {};
 
     const r1 = event.addListener(fn);
@@ -174,8 +190,8 @@ describe("BeUnorderedEvent", () => {
 
   it("clear() — removes all listeners", () => {
     const event = new BeUnorderedEvent<() => void>();
-    event.addListener(() => {});
-    event.addListener(() => {});
+    event.addListener(() => { });
+    event.addListener(() => { });
     expect(event.numberOfListeners).toBe(2);
 
     event.clear();
@@ -186,10 +202,10 @@ describe("BeUnorderedEvent", () => {
     const event = new BeUnorderedEvent<() => void>();
     expect(event.numberOfListeners).toBe(0);
 
-    const r1 = event.addListener(() => {});
+    const r1 = event.addListener(() => { });
     expect(event.numberOfListeners).toBe(1);
 
-    const r2 = event.addListener(() => {});
+    const r2 = event.addListener(() => { });
     expect(event.numberOfListeners).toBe(2);
 
     r1();
@@ -212,7 +228,7 @@ describe("BeUnorderedEvent", () => {
       removeA(); // Remove A during emit — deferred while depth > 0
     });
 
-    event.addListener(() => {}); // C — passive listener
+    event.addListener(() => { }); // C — passive listener
 
     event.raiseEvent();
 

@@ -857,3 +857,79 @@ SELECT id FROM IdSet('[50,10,30,20,40,10]')
 | 0x1e |
 | 0x28 |
 | 0x32 |
+
+# High-bit ids: bindIdSet returns ids at or above 0x8000000000000000
+
+`Element ids reserved by schema synchronization start with 0xfffff6… SQLite stores them as negative 64-bit integers.`
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x7fffff0000000001, 0x8000000000000001, 0xfffff60000000001]
+
+```sql
+SELECT id FROM IdSet(?)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id                 |
+| ------------------ |
+| 0x7fffff0000000001 |
+| 0x8000000000000001 |
+| 0xfffff60000000001 |
+
+# High-bit ids: point lookup with id = ? returns the matching row
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x7fffff0000000001, 0x8000000000000001, 0xfffff60000000001]
+- bindId 2, 0xfffff60000000001
+
+```sql
+SELECT id FROM IdSet(?) WHERE id = ?
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id                 |
+| ------------------ |
+| 0xfffff60000000001 |
+
+# High-bit ids: id IN (...) returns the matching rows
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x7fffff0000000001, 0x8000000000000001, 0xfffff60000000001]
+- bindId 2, 0x8000000000000001
+- bindId 3, 0xfffff60000000001
+
+```sql
+SELECT id FROM IdSet(?) WHERE id IN (?, ?)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id                 |
+| ------------------ |
+| 0x8000000000000001 |
+| 0xfffff60000000001 |
+
+# High-bit ids: a negative JSON integer is read as the id with the same bits
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[-1, 5]')
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id                 |
+| ------------------ |
+| 0x5                |
+| 0xffffffffffffffff |

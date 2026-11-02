@@ -16,6 +16,8 @@ An entity class may implement multiple mixins, but may only have one entity base
 
 Mixins can be used as relationship endpoints with the same rules as any abstract entity class..
 
+For guidance on when to use propertyless or property-bearing mixins, query performance, and alternatives such as ElementAspects, see [Mixins](../guide/fundamentals/mixins.md#query-performance).
+
 ## Examples
 
 ### Mixin class definition

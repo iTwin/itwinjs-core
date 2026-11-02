@@ -9,6 +9,7 @@ import {
   DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
+import { Guid } from "@itwin/core-bentley";
 import { ECSqlReaderBase, PropertyMetaDataMap, QueryRowProxy } from "./ECSqlReaderBase";
 
 /**
@@ -64,6 +65,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   private _globalDone: boolean = false;
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
+  private _cursorId: string = "";
   private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
@@ -95,6 +97,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
    * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public reset(options?: QueryOptions) {
+    this._cursorId = Guid.createValue();
     if (options) {
       this._options = options;
     }
@@ -120,6 +123,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
    * @deprecated in 5.6 - will not be removed until after 2027-04-02. Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
+    this._cursorId = Guid.createValue();
     this._param = new QueryBinder().serialize();
     this._lockArgs = false;
   }
@@ -161,6 +165,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       valueFormat,
       query: this.query,
       args: this._param,
+      cursorId: this._cursorId,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };

@@ -26,7 +26,6 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/fs-extra": "^4.0.7",
-    "@types/lodash": "^4.14.202",
     "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
     "eslint": "^9.31.0",
