@@ -144,11 +144,18 @@ Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-co
 
 | Catalog | Dependencies |
 | --- | --- |
+| `auth-clients` | Browser, Electron, and service authorization clients, plus the OIDC sign-in tool, owned by the auth-clients project |
 | `build` | TypeScript, file and CLI utilities, and related typings |
 | `bundling` | Bundlers, loaders, plugins, and browser polyfills |
+| `imodels-clients` | iModels access/client and object-storage packages, which share a maintaining team |
+| `itwins-client` | The external iTwins service client |
 | `linting` | ESLint, its shared plugin/parser, and formatting tools |
+| `presentation` | External presentation-shared and unified-selection packages |
+| `reality-capture` | The reality-data client owned by the reality-capture project |
 | `testing` | Test libraries and their typings, coverage, and test services |
 | `types` | Typings for runtime libraries that are not cataloged yet |
+
+External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them.
 
 Keep a library's typings in the same catalog as the library. When cataloging a runtime library, move any corresponding entry out of the remaining `types` catalog too.
 
