@@ -53,7 +53,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/node": "catalog:types",
+    "@types/node": "catalog:build",
     "@vitest/browser-playwright": "catalog:testing",
     "eslint": "catalog:linting",
     "internal-tools": "workspace:*",

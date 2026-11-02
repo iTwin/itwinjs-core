@@ -50,7 +50,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/benchmark": "^2.1.0",
-    "@types/node": "catalog:types",
+    "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
     "@xmldom/xmldom": "~0.8.15",
     "benchmark": "^2.1.4",

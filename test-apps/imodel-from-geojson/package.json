@@ -26,8 +26,8 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/fs-extra": "catalog:types",
-    "@types/node": "catalog:types",
-    "@types/yargs": "catalog:types",
+    "@types/node": "catalog:build",
+    "@types/yargs": "catalog:build",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"

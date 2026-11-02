@@ -29,9 +29,9 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/chai": "catalog:types",
-    "@types/mocha": "catalog:types",
-    "@types/node": "catalog:types",
+    "@types/chai": "catalog:testing",
+    "@types/mocha": "catalog:testing",
+    "@types/node": "catalog:build",
     "chai": "catalog:testing",
     "cpx2": "catalog:build",
     "eslint": "catalog:linting",

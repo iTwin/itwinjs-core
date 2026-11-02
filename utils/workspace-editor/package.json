@@ -33,7 +33,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/yargs": "catalog:types",
+    "@types/yargs": "catalog:build",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"

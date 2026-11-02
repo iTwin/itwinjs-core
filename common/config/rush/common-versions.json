@@ -16,8 +16,8 @@
   },
   // Rush compares raw catalog references, but transitive preferences require SemVer ranges.
   "allowedAlternativeVersions": {
-    "@types/chai": ["catalog:types"],
-    "@types/node": ["catalog:types"],
+    "@types/chai": ["catalog:testing"],
+    "@types/node": ["catalog:build"],
     "typescript": ["catalog:build"]
   }
 }

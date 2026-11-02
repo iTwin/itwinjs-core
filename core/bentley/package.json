@@ -38,7 +38,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@opentelemetry/api": "1.0.4",
-    "@types/node": "catalog:types",
+    "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",

@@ -41,7 +41,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/node": "catalog:types",
+    "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",

@@ -6,6 +6,12 @@ settings:
 
 catalogs:
   build:
+    '@types/node':
+      specifier: ~20.17.0
+      version: 20.17.58
+    '@types/yargs':
+      specifier: 17.0.19
+      version: 17.0.19
     chalk:
       specifier: ^3.0.0
       version: 3.0.0
@@ -105,6 +111,33 @@ catalogs:
       specifier: ^3.2.5
       version: 3.9.9
   testing:
+    '@types/chai':
+      specifier: 4.3.1
+      version: 4.3.1
+    '@types/chai-as-promised':
+      specifier: ^7
+      version: 7.1.8
+    '@types/chai-jest-snapshot':
+      specifier: ^1.3.8
+      version: 1.3.8
+    '@types/chai-subset':
+      specifier: 1.3.1
+      version: 1.3.1
+    '@types/deep-equal':
+      specifier: ^1
+      version: 1.0.4
+    '@types/jsdom':
+      specifier: ^21.1.7
+      version: 21.1.7
+    '@types/mocha':
+      specifier: ^10.0.6
+      version: 10.0.10
+    '@types/sinon':
+      specifier: ^17.0.2
+      version: 17.0.4
+    '@types/sinon-chai':
+      specifier: ^3.2.0
+      version: 3.2.12
     '@vitest/browser-playwright':
       specifier: ^4.1.10
       version: 4.1.11
@@ -157,21 +190,6 @@ catalogs:
       specifier: ^4.1.10
       version: 4.1.11
   types:
-    '@types/chai':
-      specifier: 4.3.1
-      version: 4.3.1
-    '@types/chai-as-promised':
-      specifier: ^7
-      version: 7.1.8
-    '@types/chai-jest-snapshot':
-      specifier: ^1.3.8
-      version: 1.3.8
-    '@types/chai-subset':
-      specifier: 1.3.1
-      version: 1.3.1
-    '@types/deep-equal':
-      specifier: ^1
-      version: 1.0.4
     '@types/express':
       specifier: ^4.17.20
       version: 4.17.25
@@ -181,33 +199,15 @@ catalogs:
     '@types/fs-extra':
       specifier: ^4.0.7
       version: 4.0.15
-    '@types/jsdom':
-      specifier: ^21.1.7
-      version: 21.1.7
     '@types/lodash':
       specifier: ^4.14.202
       version: 4.17.25
-    '@types/mocha':
-      specifier: ^10.0.6
-      version: 10.0.10
-    '@types/node':
-      specifier: ~20.17.0
-      version: 20.17.58
     '@types/semver':
       specifier: 7.3.10
       version: 7.3.10
-    '@types/sinon':
-      specifier: ^17.0.2
-      version: 17.0.4
-    '@types/sinon-chai':
-      specifier: ^3.2.0
-      version: 3.2.12
     '@types/ws':
       specifier: ^7.0.0
       version: 7.4.7
-    '@types/yargs':
-      specifier: 17.0.19
-      version: 17.0.19
 
 overrides:
   browserslist: latest
@@ -292,10 +292,10 @@ importers:
         specifier: 1.0.4
         version: 1.0.4
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/deep-equal-in-any-order':
         specifier: ^1.0.4
@@ -304,19 +304,19 @@ importers:
         specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/multiparty':
         specifier: ^0.0.31
         version: 0.0.31
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
         specifier: catalog:types
         version: 7.3.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/touch':
         specifier: ^3.1.2
@@ -385,7 +385,7 @@ importers:
         specifier: 1.0.4
         version: 1.0.4
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
         specifier: catalog:testing
@@ -431,7 +431,7 @@ importers:
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
         specifier: catalog:testing
@@ -470,19 +470,19 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@xmldom/xmldom':
         specifier: ~0.8.15
@@ -585,22 +585,22 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
         specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       chai:
         specifier: catalog:testing
@@ -669,7 +669,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.5
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
         specifier: catalog:testing
@@ -717,13 +717,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       chai:
         specifier: catalog:testing
@@ -796,10 +796,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       chai:
         specifier: catalog:testing
@@ -844,13 +844,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -908,7 +908,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/express':
         specifier: catalog:types
@@ -917,13 +917,13 @@ importers:
         specifier: catalog:types
         version: 3.0.6
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/supertest':
         specifier: ^6.0.2
@@ -1039,10 +1039,10 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@vitest/browser-playwright':
         specifier: catalog:testing
@@ -1134,7 +1134,7 @@ importers:
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
         specifier: catalog:testing
@@ -1180,10 +1180,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
         specifier: catalog:bundling
@@ -1247,13 +1247,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       babel-loader:
         specifier: catalog:bundling
@@ -1314,10 +1314,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
         specifier: catalog:bundling
@@ -1381,16 +1381,16 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/lodash':
         specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/superagent':
         specifier: ^8.1.6
@@ -1426,13 +1426,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -1471,7 +1471,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
         specifier: catalog:testing
@@ -1508,10 +1508,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
         specifier: catalog:bundling
@@ -1562,13 +1562,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
         specifier: catalog:types
@@ -1619,13 +1619,13 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -1691,13 +1691,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -1850,13 +1850,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -1944,19 +1944,19 @@ importers:
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
         specifier: catalog:types
         version: 4.0.15
       '@types/jsdom':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -2013,7 +2013,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/browser-playwright':
         specifier: catalog:testing
@@ -2061,19 +2061,19 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       babel-loader:
         specifier: catalog:bundling
@@ -2133,13 +2133,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       chai:
         specifier: catalog:testing
@@ -2203,10 +2203,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/geojson':
         specifier: ~7946.0.14
@@ -2215,16 +2215,16 @@ importers:
         specifier: ~3.15.6
         version: 3.15.12
       '@types/jsdom':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       chai:
         specifier: catalog:testing
@@ -2424,19 +2424,19 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
         specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       internal-tools:
         specifier: workspace:*
@@ -2569,25 +2569,25 @@ importers:
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
         specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       assert:
         specifier: catalog:bundling
@@ -2735,13 +2735,13 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       assert:
         specifier: catalog:bundling
@@ -2840,37 +2840,37 @@ importers:
         specifier: ^1.4.0
         version: 1.8.6
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.1
       '@types/cpx2':
         specifier: npm:@types/cpx@1.5.2
         version: '@types/cpx@1.5.2'
       '@types/deep-equal':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.0.4
       '@types/jsdom':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       chai:
         specifier: catalog:testing
@@ -2985,16 +2985,16 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/express':
         specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
         specifier: catalog:types
@@ -3124,16 +3124,16 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/backend
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       assert:
         specifier: catalog:bundling
@@ -3227,25 +3227,25 @@ importers:
         specifier: ^11.2.2
         version: 11.3.1
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.1
       '@types/deep-equal':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.0.4
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/object-hash':
         specifier: ^1.3.0
@@ -3254,10 +3254,10 @@ importers:
         specifier: catalog:types
         version: 7.3.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
@@ -3336,31 +3336,31 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.1
       '@types/deep-equal':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.0.4
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       c8:
         specifier: catalog:testing
@@ -3457,28 +3457,28 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 1.3.8
       '@types/jsdom':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 3.2.12
       c8:
         specifier: catalog:testing
@@ -3599,7 +3599,7 @@ importers:
         specifier: catalog:types
         version: 4.17.25
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@typescript-eslint/parser':
         specifier: catalog:linting
@@ -3786,7 +3786,7 @@ importers:
         specifier: catalog:types
         version: 3.0.6
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@typescript-eslint/parser':
         specifier: catalog:linting
@@ -3880,10 +3880,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       eslint:
         specifier: catalog:linting
@@ -3920,16 +3920,16 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       chai:
         specifier: catalog:testing
@@ -3978,10 +3978,10 @@ importers:
         specifier: catalog:types
         version: 4.0.15
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       eslint:
         specifier: catalog:linting
@@ -4021,10 +4021,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       eslint:
         specifier: catalog:linting
@@ -4061,10 +4061,10 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       eslint:
         specifier: catalog:linting
@@ -4122,7 +4122,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       eslint:
         specifier: catalog:linting
@@ -4177,13 +4177,13 @@ importers:
         specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       electron:
         specifier: ^45.0.0
@@ -4241,16 +4241,16 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
         specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 20.17.58
       chai:
         specifier: catalog:testing
@@ -4336,13 +4336,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: catalog:types
+        specifier: catalog:testing
         version: 17.0.4
       babel-loader:
         specifier: catalog:bundling
@@ -4403,7 +4403,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/yargs':
-        specifier: catalog:types
+        specifier: catalog:build
         version: 17.0.19
       eslint:
         specifier: catalog:linting

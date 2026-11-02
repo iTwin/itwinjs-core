@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/node": "catalog:types",
+    "@types/node": "catalog:build",
     "eslint": "catalog:linting",
     "mocha": "^11.1.0"
   }

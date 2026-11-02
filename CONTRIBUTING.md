@@ -144,11 +144,13 @@ Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-co
 
 | Catalog | Dependencies |
 | --- | --- |
-| `build` | TypeScript and build-script, file, and CLI utilities |
+| `build` | TypeScript, file and CLI utilities, and related typings |
 | `bundling` | Bundlers, loaders, plugins, and browser polyfills |
 | `linting` | ESLint, its shared plugin/parser, and formatting tools |
-| `testing` | Test runners, assertions, mocks, coverage, and test services |
-| `types` | Shared `@types/*` declarations |
+| `testing` | Test libraries and their typings, coverage, and test services |
+| `types` | Typings for runtime libraries that are not cataloged yet |
+
+Keep a library's typings in the same catalog as the library. When cataloging a runtime library, move any corresponding entry out of the remaining `types` catalog too.
 
 When adding a dependency that is already cataloged, use its existing catalog reference. Rush generates the pnpm workspace configuration; do not edit `common/temp/pnpm-workspace.yaml` manually.
 
