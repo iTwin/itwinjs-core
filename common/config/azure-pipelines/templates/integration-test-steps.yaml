@@ -4,6 +4,9 @@ parameters:
 
   # Controls which Core full-stack integration suites run:
   #   full        - Chrome and Electron suites, including graphics-heavy (#graphics) tests.
+  #   no-graphics - Chrome and Electron suites, excluding #graphics-tagged suites.
+  #   graphics    - Only #graphics-tagged suites, in Chrome and Electron; build/rebundle
+  #                 only Core full-stack tests and omit secrets and unrelated suites.
   #   node-compat - Chrome suite only, excluding #graphics-tagged suites. Retains the
   #                 cross-layer contracts that exercise the host Node backend (remote iModel
   #                 connections, RPC, briefcase, tile/element-graphics requests) while
@@ -15,6 +18,8 @@ parameters:
     default: full
     values:
       - full
+      - no-graphics
+      - graphics
       - node-compat
 
   # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
@@ -26,7 +31,8 @@ parameters:
     default: 1
 
 steps:
-  - template: setup-integration-users.yaml
+  - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
+      - template: setup-integration-users.yaml
 
   - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
@@ -51,21 +57,34 @@ steps:
   # pipelines can be queued manually against arbitrary refs, so they must never
   # publish to the shared cache. Cache entries are written only by trusted
   # master/release CI builds (see core-build.yaml).
-  - script: >
-      node ./common/scripts/install-run-rush build -v
-      --to backend-integration-tests
-      --to core-full-stack-tests
-      --to @itwin/ecschema-rpcinterface-tests
-      --to rpc-full-stack-tests
-      --to rpcinterface-full-stack-tests
-    displayName: "Rush build"
-    env:
-      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
-      RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+  - ${{ if eq(parameters.coreFullStackTests, 'graphics') }}:
+      - script: node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
+        displayName: "Rush build"
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+          RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
-  - script: node ./common/scripts/install-run-rush webpack:test -v
-    displayName: "Rebundle integration tests with current environment"
+      - script: npm run -s webpack:test
+        workingDirectory: full-stack-tests/core
+        displayName: "Rebundle integration tests with current environment"
+
+  - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
+      - script: >
+          node ./common/scripts/install-run-rush build -v
+          --to backend-integration-tests
+          --to core-full-stack-tests
+          --to @itwin/ecschema-rpcinterface-tests
+          --to rpc-full-stack-tests
+          --to rpcinterface-full-stack-tests
+        displayName: "Rush build"
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+          RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+
+      - script: node ./common/scripts/install-run-rush webpack:test -v
+        displayName: "Rebundle integration tests with current environment"
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
   # Ensure the binary is present before configuring the AppArmor profile.
@@ -108,12 +127,13 @@ steps:
     displayName: "Setup AppArmor profile for Electron"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/backend"
-    env:
-      NODE_ENV: development
-    displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
+  - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/backend"
+        env:
+          NODE_ENV: development
+        displayName: "Run Backend Tests"
+        condition: succeededOrFailed()
 
   - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
       # Linux agents do not have a real display so use the virtual framebuffer
@@ -130,6 +150,21 @@ steps:
         env:
           NODE_ENV: development
         displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  - ${{ if or(eq(parameters.coreFullStackTests, 'no-graphics'), eq(parameters.coreFullStackTests, 'graphics')) }}:
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:${{ parameters.coreFullStackTests }}
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (${{ parameters.coreFullStackTests }})"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+      - script: npm run test:integration:${{ parameters.coreFullStackTests }}
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (${{ parameters.coreFullStackTests }})"
         condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # Node-compat: Chrome suite only (Certa's backend runs in the host Node process, so
@@ -150,119 +185,131 @@ steps:
         displayName: "Run Core Full Stack Tests (Chrome, no #graphics)"
         condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/ecschema-rpc-interface"
-    env:
-      NODE_ENV: development
-    displayName: "Run ECSchema RPC Interface Tests"
-    condition: succeededOrFailed()
-
-  # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
-    workingDirectory: "full-stack-tests/rpc"
-    env:
-      NODE_ENV: development
-    displayName: "Run RPC Full Stack Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test
-    workingDirectory: "full-stack-tests/rpc"
-    displayName: "Run RPC Full Stack Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
-
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/rpc-interface"
-    env:
-      NODE_ENV: development
-    displayName: "Run RPC Interface Full Stack Tests"
-    condition: succeededOrFailed()
-
-  # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend
-    workingDirectory: "core/electron"
-    env:
-      NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration:frontend
-    workingDirectory: "core/electron"
-    env:
-      NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
-
-  # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:backend
-    workingDirectory: "core/electron"
-    env:
-      NODE_ENV: development
-    displayName: "Run Electron Backend Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration:backend
-    workingDirectory: "core/electron"
-    displayName: "Run Electron Backend Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
-
-  - task: PublishTestResults@2
-    displayName: "Publish Backend Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend Tests - ${{ parameters.nodeVersion }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  # Chrome results are produced by both 'full' and 'node-compat' modes.
-  - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results (Chrome)"
-    inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
-      testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
-
-  - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
-      - task: PublishTestResults@2
-        displayName: "Publish Core Integration Test Results (Electron)"
-        inputs:
-          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
-          testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
+  - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/ecschema-rpc-interface"
+        env:
+          NODE_ENV: development
+        displayName: "Run ECSchema RPC Interface Tests"
         condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: "Publish ECSchema Rpc Interface Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
-      testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      # By default linux agents do not have a real display so use the virtual framebuffer
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
+        workingDirectory: "full-stack-tests/rpc"
+        env:
+          NODE_ENV: development
+        displayName: "Run RPC Full Stack Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: PublishTestResults@2
-    displayName: "Publish RPC Full Stack Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
-      testRunTitle: "RPC Full Stack - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test
+        workingDirectory: "full-stack-tests/rpc"
+        displayName: "Run RPC Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
-  - task: PublishTestResults@2
-    displayName: "Publish Rpc Interface Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
-      testRunTitle: "Rpc Interface - Integration Tests - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/rpc-interface"
+        env:
+          NODE_ENV: development
+        displayName: "Run RPC Interface Full Stack Tests"
+        condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: "Publish Presentation Integration Test Results"
-    inputs:
-      testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
-      testRunTitle: "Presentation - Integration Tests - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      # By default linux agents do not have a real display so use the virtual framebuffer
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend
+        workingDirectory: "core/electron"
+        env:
+          NODE_ENV: development
+        displayName: "Run Electron Frontend Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  - task: PublishTestResults@2
-    displayName: "Publish Electron Test Results"
-    inputs:
-      testResultsFiles: core/electron/lib/test/*_junit_results.xml
-      testRunTitle: "Core - Electron Tests - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test:integration:frontend
+        workingDirectory: "core/electron"
+        env:
+          NODE_ENV: development
+        displayName: "Run Electron Frontend Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+      # By default linux agents do not have a real display so use the virtual framebuffer
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:backend
+        workingDirectory: "core/electron"
+        env:
+          NODE_ENV: development
+        displayName: "Run Electron Backend Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test:integration:backend
+        workingDirectory: "core/electron"
+        displayName: "Run Electron Backend Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+      - task: PublishTestResults@2
+        displayName: "Publish Backend Test Results"
+        inputs:
+          testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
+          testRunTitle: "Core - Backend Tests - ${{ parameters.nodeVersion }}"
+        continueOnError: true
+        condition: succeededOrFailed()
+
+      # Chrome results are produced by full, no-graphics and node-compat modes.
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Chrome)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+          testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - ${{ if or(eq(parameters.coreFullStackTests, 'full'), eq(parameters.coreFullStackTests, 'no-graphics')) }}:
+          - task: PublishTestResults@2
+            displayName: "Publish Core Integration Test Results (Electron)"
+            inputs:
+              testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
+              testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
+            condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish ECSchema Rpc Interface Integration Test Results"
+        inputs:
+          testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
+          testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish RPC Full Stack Test Results"
+        inputs:
+          testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
+          testRunTitle: "RPC Full Stack - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Rpc Interface Integration Test Results"
+        inputs:
+          testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
+          testRunTitle: "Rpc Interface - Integration Tests - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Presentation Integration Test Results"
+        inputs:
+          testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
+          testRunTitle: "Presentation - Integration Tests - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Electron Test Results"
+        inputs:
+          testResultsFiles: core/electron/lib/test/*_junit_results.xml
+          testRunTitle: "Core - Electron Tests - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+  - ${{ if eq(parameters.coreFullStackTests, 'graphics') }}:
+      - ${{ each runner in split('chrome,electron', ',') }}:
+          - task: PublishTestResults@2
+            displayName: "Publish Core Graphics Integration Test Results (${{ runner }})"
+            inputs:
+              testResultsFiles: "full-stack-tests/core/lib/test/junit_results_graphics_${{ runner }}.xml"
+              testRunTitle: "Core - Graphics Integration Tests (${{ runner }}) - $(Agent.OS) - $(System.JobName) - ${{ parameters.nodeVersion }}"
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
+            condition: succeededOrFailed()
