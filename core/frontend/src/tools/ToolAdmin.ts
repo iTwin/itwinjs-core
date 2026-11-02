@@ -1742,17 +1742,19 @@ export class ToolAdmin {
     if (!await this.finishEditCommandForTxnOperation())
       return false;
 
+    let status: IModelStatus;
     try {
-      const status = await imodel.txns.reverseAll();
-      if (IModelStatus.Success === status || IModelStatus.NothingToUndo === status)
-        return true;
-
-      await this.onTxnOperationError("undoAll", new IModelError(status, "Failed to undo all changes"));
-      return false;
+      status = await imodel.txns.reverseAll();
     } catch (error) {
       await this.onTxnOperationError("undoAll", error);
       return false;
     }
+
+    if (IModelStatus.Success === status || IModelStatus.NothingToUndo === status)
+      return true;
+
+    await this.onTxnOperationError("undoAll", new IModelError(status, "Failed to undo all changes"));
+    return false;
   }
 
   /** Called when [[doUndoOperation]], [[doRedoOperation]] or [[doUndoAllOperation]] fails to reverse or reinstate Txns.

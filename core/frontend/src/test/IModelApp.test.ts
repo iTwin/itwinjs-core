@@ -439,6 +439,22 @@ describe("Undo/redo txn operation errors", () => {
     expect((error as IModelError).errorNumber).toBe(IModelStatus.BadRequest);
   });
 
+  it("undo all calls onTxnOperationError once and propagates its exception when the hook throws for an unsuccessful status", async () => {
+    const toolAdmin = new TestToolAdmin();
+    await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
+
+    const hookError = new Error("Hook failed");
+    toolAdmin.onTxnOperationErrorSpy.mockRejectedValue(hookError);
+    mockSelectedIModel({ reverseAll: async () => IModelStatus.BadRequest });
+
+    await expect(toolAdmin.doUndoAllOperation()).rejects.toBe(hookError);
+    expect(toolAdmin.onTxnOperationErrorSpy).toHaveBeenCalledOnce();
+    const [operation, error] = toolAdmin.onTxnOperationErrorSpy.mock.calls[0];
+    expect(operation).toBe("undoAll");
+    expect(error).toBeInstanceOf(IModelError);
+    expect((error as IModelError).errorNumber).toBe(IModelStatus.BadRequest);
+  });
+
   it("undo all does not call onTxnOperationError when it succeeds or there is nothing to undo", async () => {
     const toolAdmin = new TestToolAdmin();
     await IModelApp.startup({ localization: new EmptyLocalization(), toolAdmin });
