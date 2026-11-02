@@ -184,14 +184,18 @@ export interface RebaseConflict {
   /**
    * Accepts the local (our) values of the properties that conflict, without restoring or deleting the instance.
    * @param properties A subset of {@link conflictingProperties} (or {@link differentProperties} for an insert).
-   * If omitted or empty, all of those properties are accepted. Other properties are ignored.
+   * If omitted or empty, all of those properties are accepted. Other properties are ignored. Throws if no specified
+   * properties are eligible for resolution, or if our source does not exist.
+   * @throws InteractiveRebaseError with key `"not-conflicting-property"` if no specified properties are eligible or the source does not exist.
    */
   acceptOurs(properties?: string[]): void;
 
   /**
    * Accepts the upstream (their) values of the properties that conflict, without restoring or deleting the instance.
    * @param properties A subset of {@link conflictingProperties} (or {@link differentProperties} for an insert).
-   * If omitted or empty, all of those properties are accepted. Other properties are ignored.
+   * If omitted or empty, all of those properties are accepted. Other properties are ignored. Throws if no specified
+   * properties are eligible for resolution, or if their source does not exist.
+   * @throws InteractiveRebaseError with key `"not-conflicting-property"` if no specified properties are eligible or the source does not exist.
    */
   acceptTheirs(properties?: string[]): void;
 
@@ -1238,7 +1242,7 @@ export class InteractiveRebase {
       // defined `oldProps` so a UNIQUE violation isn't misclassified as a colliding primary-key insert.
       const oldProps = change.old ?? { id: node.id, classFullName: node.classFullName };
       this.applyOrRecordConstraintConflict(instanceKey, node.id, node.classFullName, oldProps, newProps, () =>
-        nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
+        nativeDb.updateInstance(propsToWrite, { useJsNames: true }), propsToWrite);
     }
   }
 
@@ -1276,7 +1280,7 @@ export class InteractiveRebase {
       ? newProps
       : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(newProps, changedProperties) };
     const result = this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () =>
-      nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] });
+      nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] }, propsToWrite);
     if (result === undefined) {
       // A constraint conflict occurred and was already recorded.
       return;
@@ -1290,7 +1294,7 @@ export class InteractiveRebase {
       RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, instanceKey, oldProps, newProps);
     } else {
       RebaseConflictImpl.recordUpdate(this, this._conflicts, instanceKey, oldProps, theirs, newProps, result.conflictingProperties);
-      this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
+      this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }), propsToWrite);
     }
   }
 
@@ -1607,10 +1611,10 @@ export class InteractiveRebase {
    * an id collision with an existing row (recorded via [[RebaseConflictImpl.recordInsert]] and retried as
    * an Update) before falling back to a UNIQUE constraint violation recorded via
    * [[RebaseConflictImpl.recordUniqueConstraint]] built from the error's [[UniqueConstraintConflictDetail]];
-   * for updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
-   * the write is not retried (it would just fail again).
+   * Update retries overlay only `propsToWrite` on the current row, preserving upstream-only changes.
+   * The complete `newProps` snapshot is retained for conflict reporting.
    */
-  private applyOrRecordConstraintConflict<T>(instanceKey: string, id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
+  private applyOrRecordConstraintConflict<T>(instanceKey: string, id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T, propsToWrite = newProps): T | undefined {
     try {
       return apply();
     } catch (err) {
@@ -1624,10 +1628,11 @@ export class InteractiveRebase {
           () => this.writeConstraintRetry(current, newProps));
         return undefined;
       }
+      const retryProps = { ...current, ...propsToWrite };
       const conflict = err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY
-        ? RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, this.findBrokenRelationships(newProps))
+        ? RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, this.findBrokenRelationships(retryProps))
         : RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, err.conflictDetail);
-      this.writeConstraintChange(conflict, { ...current, ...newProps }, current, true, err);
+      this.writeConstraintChange(conflict, retryProps, current, true, err);
       return undefined;
     }
   }
@@ -1734,8 +1739,11 @@ export class InteractiveRebase {
     if (stringProperty !== undefined) {
       const value = getPropertyValue(props, stringProperty);
       const base = typeof value === "string" ? value : "";
-      for (let attempt = 1; attempt <= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS; ++attempt) {
-        const numberedFix = tryValue(stringProperty, `${base} (Conflict ${attempt})`);
+      for (let attempt = 0; attempt < MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS; ++attempt) {
+        const newValue = attempt === 0
+          ? `${base} (Conflict)`
+          : `${base} (Conflict ${attempt})`;
+        const numberedFix = tryValue(stringProperty, newValue);
         if (numberedFix !== undefined)
           return numberedFix;
       }
@@ -2089,12 +2097,19 @@ function applyResolution(
   side: "ours" | "theirs",
   requestedProperties?: string[],
 ): void {
+  if (conflict.theirs === undefined || conflict.ours === undefined)
+    InteractiveRebaseError.throwError("not-conflicting-property", `Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist`);
   const source = conflict.getRaw(side);
+  if (source === undefined)
+    InteractiveRebaseError.throwError("not-conflicting-property", `Cannot accept ${side}: the source does not exist for this conflict`);
+
   const conflictingProperties = conflict.original === undefined ? conflict.differentProperties : conflict.conflictingProperties;
   const properties = requestedProperties !== undefined && requestedProperties.length > 0
     ? conflictingProperties.filter((property) => requestedProperties.includes(property))
     : conflictingProperties;
-  if (source === undefined || properties.length === 0)
+  if (requestedProperties !== undefined && requestedProperties.length > 0 && properties.length === 0)
+    InteractiveRebaseError.throwError("not-conflicting-property", "None of the specified properties can be resolved for this conflict");
+  if (properties.length === 0)
     return;
 
   const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);

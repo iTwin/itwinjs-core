@@ -130,7 +130,7 @@ describe("InteractiveRebase", () => {
     HubMock.shutdown();
   });
 
-  it("does not consider both deleting to be a conflict", async () => {
+  it("Delete-Delete", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.deleteElement(id);
     });
@@ -147,10 +147,15 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    chai.expect(interactive.conflicts.length).to.equal(0);
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.original).not.to.be.undefined;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.ours).to.be.undefined;
   });
 
-  it("can present a conflict where both users update the same element", async () => {
+  it("Update-Update", async () => {
     // Create a conflict on foo and somePoint between the two briefcases.
     // Also add a non-conflicting userLabel.
     await withEditTxn(briefcase1, async (txn) => {
@@ -216,8 +221,8 @@ describe("InteractiveRebase", () => {
     const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirs.foo).to.equal("User1");
     chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
-    // The userLabel had no value in "theirs", so make sure it is now null.
-    chai.expect(valuesTheirs.userLabel).to.be.undefined;
+    // The userLabel did not conflict, so it is not changed.
+    chai.expect(valuesTheirs.userLabel).to.equal("Wat");
 
     // And then switch back to "ours" again.
     conflict.acceptOurs();
@@ -241,6 +246,8 @@ describe("InteractiveRebase", () => {
     const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    chai.expect(() => conflict.acceptOurs(["userLabel"])).to.throw("None of the specified properties");
   });
 
   it("identifies conflicting properties by their name in the element props", async () => {
@@ -282,7 +289,7 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("User2Code");
   });
 
-  it("can present a conflict where we delete something the upstream modified", async () => {
+  it("Our Delete-Their Update", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
@@ -311,6 +318,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirs).to.not.be.undefined;
 
     // The properties that were updated in their changes should be called out.
+    chai.expect(conflict.conflictingProperties.length).to.equal(0);
     chai.expect(conflict.theirModifiedProperties.length).to.equal(3);
     chai.expect(conflict.theirModifiedProperties).to.include("somePoint");
     chai.expect(conflict.theirModifiedProperties).to.include("foo");
@@ -326,20 +334,12 @@ describe("InteractiveRebase", () => {
     const values = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
     chai.expect(values).to.be.undefined;
 
-    // Accepting "theirs" should restore the element to the state it was in after their changes.
-    conflict.acceptTheirs();
-    const theirsValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(theirsValues).to.not.be.undefined;
-    chai.expect(theirsValues!.foo).to.equal("User1");
-    chai.expect(Point2d.fromJSON(theirsValues!.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
-
-    // Accepting "ours" again should delete it.
-    conflict.acceptOurs();
-    const oursValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(oursValues).to.be.undefined;
+    // It is not valid to call acceptOurs or acceptTheirs on this conflict, since one side does not exist.
+    chai.expect(() => conflict.acceptOurs()).to.throw("Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist");
+    chai.expect(() => conflict.acceptTheirs()).to.throw("Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist");
   });
 
-  it("can present a conflict where we delete something the upstream modified from an unset value", async () => {
+  it("Our Delete-Their Update where updated property was originally null", async () => {
     chai.expect(briefcase1.elements.getElementProps(id).userLabel).to.be.undefined;
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({ id, userLabel: "User1" });
@@ -364,9 +364,10 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirModifiedProperties).to.include("userLabel");
     chai.expect(conflict.original!.userLabel).to.be.undefined;
     chai.expect(conflict.theirs!.userLabel).to.equal("User1");
+    chai.expect(() => conflict.acceptOurs()).to.throw("Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist");
   });
 
-  it("can present a conflict where we modify something the upstream deleted", async () => {
+  it("Our Update-Their Delete", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.deleteElement(id);
     });
@@ -404,26 +405,16 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours!["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
 
     // In most cases we try to let "our" changes stand. But not here.
-    // If "they" deleted the element, we let the delete stand by default. Deleting the
-    // element could lead to foreign key constraint problems. However, we need to deal
-    // with that possibility whether we modified the referenced instance or not.
+    // We let the delete stand.
     const values = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
     chai.expect(values).to.be.undefined;
 
-    // We can resurrect it by accepting "ours".
-    conflict.acceptOurs();
-    const oursValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(oursValues).to.not.be.undefined;
-    chai.expect(oursValues!.foo).to.equal("User2");
-    chai.expect(Point2d.fromJSON(oursValues!.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
-
-    // Accepting theirs deletes it again
-    conflict.acceptTheirs();
-    const theirsValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(theirsValues).to.be.undefined;
+    // Neither acceptOurs nor acceptTheirs are allowed.
+    chai.expect(() => conflict.acceptOurs()).to.throw("Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist");
+    chai.expect(() => conflict.acceptTheirs()).to.throw("Cannot use acceptOurs or acceptTheirs on a conflict where one side does not exist");
   });
 
-  it("can present a conflict where local and upstream both insert a row with the same primary key", async () => {
+  it("Insert-Insert", async () => {
     const guid = Guid.createValue();
     const id = "0x1234";
     await withEditTxn(briefcase1, async (txn) => {
@@ -513,7 +504,7 @@ describe("InteractiveRebase", () => {
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
   });
 
-  it("can present a conflict where a locally-inserted row triggers a unique constraint violation", async () => {
+  it("Insert triggers UNIQUE constraint violation", async () => {
     const guid = Guid.createValue();
     const newId = await withEditTxn(briefcase1, async (txn) => {
       return txn.insertElement({
@@ -556,40 +547,34 @@ describe("InteractiveRebase", () => {
     const conflict = interactive.conflicts[0];
 
     chai.expect(conflict.original).to.be.undefined;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.ours).not.to.be.undefined;
+    chai.expect(conflict.conflictingProperties.length).to.equal(0);
+
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.ours!.federationGuid).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
     chai.expect(conflict.ours!.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid);
 
-    // By default, the conflicting element is assigned a new federationGuid to resolve the conflict.
+    // The conflicting element is assigned a new federationGuid to resolve the conflict.
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement.federationGuid).not.to.equal(guid);
     chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid);
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("federationGuid");
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement.federationGuid);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.deep.equal(["federationGuid"]);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue).to.deep.equal([localElement.federationGuid]);
 
-    // Accepting "ours" will cause the conflict resolution to re-run, resulting in another new GUID.
-    conflict.acceptOurs();
-    const localElement2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
-    chai.expect(localElement2.federationGuid).not.to.equal(guid);
-    chai.expect(localElement2.federationGuid).not.to.equal(localElement.federationGuid);
+    // The violation can be resolved by supplying a new value.
+    const newGuid = Guid.createValue();
+    conflict.resolveUniqueConstraintViolation(conflict.uniqueConstraintViolations[0], [newGuid]);
 
-    // The same constraint was violated again, so the existing record is refreshed rather than duplicated.
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
-    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
-    chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid).to.equal(conflict.ours!.federationGuid);
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement2.federationGuid);
-
-    // Accepting "theirs" will delete our new element
-    conflict.acceptTheirs();
-    const localElement3 = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(localId);
-    chai.expect(localElement3).to.be.undefined;
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
+    // This will update the iModel, but not update the original `ours`.
+    const localElementUpdated = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
+    chai.expect(localElementUpdated.federationGuid).to.equal(newGuid);
+    chai.expect(conflict.ours!.federationGuid).not.to.equal(newGuid);
   });
 
-  it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
+  it("Update triggers UNIQUE constraint violation with their inserted element", async () => {
     const code = new Code({
       spec: IModel.dictionaryId,
       scope: IModel.dictionaryId,
@@ -646,30 +631,20 @@ describe("InteractiveRebase", () => {
 
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(localElement.code.value).to.equal("SomeValue (Conflict)");
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("code.value");
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal("SomeValue (Conflict)");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.deep.equal(["code.spec", "code.scope", "code.value"]);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue).to.deep.equal([IModel.dictionaryId, IModel.dictionaryId, "SomeValue (Conflict)"]);
 
-    // Accepting a property that the automatic fix did not touch leaves the fix - and its record - in place.
-    conflict.acceptOurs(["userLabel"]);
-    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("SomeValue (Conflict)");
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal("SomeValue (Conflict)");
+    // The violation can be resolved by supplying a new value.
+    const newCodeValue = "Newness";
+    conflict.resolveUniqueConstraintViolation(conflict.uniqueConstraintViolations[0], [IModel.dictionaryId, IModel.dictionaryId, newCodeValue]);
 
-    // Accepting the fixed-up property itself supersedes the record, which the re-triggered violation replaces.
-    conflict.acceptOurs(["code.value"]);
-    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("SomeValue (Conflict)");
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("code.value");
-
-    // "They" never touched this element, so accepting theirs reverts our change rather than deleting it.
-    conflict.acceptTheirs();
-    const theirsElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(theirsElement.code.value).to.equal(conflict.original!.code.value);
-    chai.expect(theirsElement.userLabel).to.be.undefined;
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
+    // This will update the iModel, but not update the original `ours`.
+    const localElementUpdated = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(localElementUpdated.code.value).to.equal(newCodeValue);
+    chai.expect(conflict.ours!.code.value).not.to.equal(newCodeValue);
   });
 
-  it("can present a conflict where a partial update of a code triggers a unique constraint violation", async () => {
+  it("Update triggers UNIQUE constraint violation with their updated element", async () => {
     const code1 = new Code({
       spec: IModel.dictionaryId,
       scope: IModel.dictionaryId,
@@ -739,15 +714,18 @@ describe("InteractiveRebase", () => {
 
     const conflict = interactive.conflicts[0];
 
-    // The codeValue should be included, because it was changed.
+    // The code.value should be included, because it was changed.
     chai.expect(conflict.original?.code.value).not.to.be.undefined;
     chai.expect(conflict.ours!.code.value).not.to.be.undefined;
+    chai.expect(conflict.theirs!.code.value).not.to.be.undefined;
 
-    // codeSpec and codeScope should also be included even though they were not changed.
+    // code.spec and code.scope should also be included even though they were not changed.
     chai.expect(conflict.original?.code.spec).not.to.be.undefined;
     chai.expect(conflict.original?.code.scope).not.to.be.undefined;
+    chai.expect(conflict.theirs!.code.spec).not.to.be.undefined;
     chai.expect(conflict.ours!.code.spec).not.to.be.undefined;
     chai.expect(conflict.ours!.code.scope).not.to.be.undefined;
+    chai.expect(conflict.theirs!.code.scope).not.to.be.undefined;
 
     // The conflict should correctly identify which unique constraint was violated.
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
@@ -756,16 +734,16 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
 
-    // The conflicting row should include the changed codeValue property
+    // The conflicting row should include the changed code.value property
     chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
     chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
 
-    // And it should also contain the unchanged codeSpec and codeScope properties, which are part of the unique constraint.
+    // And it should also contain the unchanged code.spec and code.scope properties, which are part of the unique constraint.
     chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.code.spec).to.equal(IModel.dictionaryId);
     chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.code.scope).to.equal(IModel.dictionaryId);
   });
 
-  it("reports a UNIQUE constraint conflict triggered by applying a conflicting data change", async () => {
+  it("Conflicting Update triggers UNIQUE constraint violation when applied", async () => {
     const code = new Code({
       spec: IModel.dictionaryId,
       scope: IModel.dictionaryId,
@@ -842,30 +820,37 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesInitial.code.spec).to.equal(code.spec);
     chai.expect(valuesInitial.code.scope).to.equal(code.scope);
     chai.expect(valuesInitial.code.value).to.equal("SomeValue (Conflict)");
+    chai.expect(Point2d.fromJSON(valuesInitial.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    chai.expect(valuesInitial.userLabel).to.equal("Wat");
 
-    // We can explicitly accept "theirs" instead. At which point there is no UNIQUE constraint violation anymore.
+    // When we explicitly accept "theirs" instead, only data-conflicting properties are updated,
+    // so the unique constraint violation is unaffected because it is not a data conflict.
     conflict.acceptTheirs();
     const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirs.foo).to.equal("User1");
-    chai.expect(valuesTheirs.code.value).to.equal("");
+    chai.expect(valuesTheirs.code.value).to.equal("SomeValue (Conflict)");
     chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
     chai.expect(valuesTheirs.userLabel).to.equal("Wat");
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
-
-    // And then switch back to "ours" again. The violation should be back.
-    conflict.acceptOurs();
-    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(valuesOurs.foo).to.equal("User2");
-    chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(1.23, 4.56))).to.be.true;
-    chai.expect(valuesOurs.userLabel).to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
 
-    // We can accept a subset of properties
-    conflict.acceptTheirs(["somePoint"]);
+    // Switching back to "ours" leaves upstream-only changes and the constraint fix intact.
+    conflict.acceptOurs();
+    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOurs.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    chai.expect(valuesOurs.userLabel).to.equal("Wat");
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
+
+    // Upstream-only properties are not eligible for conflict resolution.
+    chai.expect(() => conflict.acceptTheirs(["somePoint"])).to.throw("None of the specified properties");
     const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
@@ -880,13 +865,117 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // Accepting their code.value will clear the UNIQUE constraint violation.
+    // The non-data-conflicting code must be resolved through the constraint API.
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    conflict.acceptTheirs(["code.value"]);
+    chai.expect(() => conflict.acceptTheirs(["code.value"])).to.throw("None of the specified properties");
+    conflict.resolveUniqueConstraintViolation(conflict.uniqueConstraintViolations[0], [
+      conflict.theirs!.code.spec, conflict.theirs!.code.scope, conflict.theirs!.code.value,
+    ]);
+    chai.expect(briefcase2.elements.getElementProps(id).code).to.deep.equal(conflict.theirs!.code);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue).to.deep.equal([
+      conflict.theirs!.code.spec, conflict.theirs!.code.scope, conflict.theirs!.code.value,
+    ]);
+    chai.expect(conflict.uniqueConstraintViolations[0].stagedValue).to.be.undefined;
+  });
+
+  it("UNIQUE constraint violation on data-conflicting property can be cleared by acceptTheirs", async () => {
+    const conflictingGuid = Guid.createValue();
+    const otherGuid = Guid.createValue();
+    const code = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "SomeValue"
+    });
+
+    // Create a conflict on foo and somePoint between the two briefcases.
+    // Also add a non-conflicting userLabel.
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: code,
+        federationGuid: conflictingGuid,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+      } as SomeGraphicalElementProps);
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+        federationGuid: otherGuid,
+        userLabel: "Wat" // non-conflicting property
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        // data conflict _and_ unique constraint conflict
+        federationGuid: conflictingGuid,
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    // Both the data conflict (on "federationGuid") and the UNIQUE constraint violation (also on "federationGuid") are reported
+    // against the same instance, so they're merged into a single RebaseConflict entry.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(id);
+
+    chai.expect(conflict.differentProperties.length).to.equal(5);
+    chai.expect(conflict.differentProperties).to.include("federationGuid");
+    chai.expect(conflict.differentProperties).to.include("lastMod");
+    chai.expect(conflict.differentProperties).to.include("foo");
+    chai.expect(conflict.differentProperties).to.include("somePoint");
+    chai.expect(conflict.differentProperties).to.include("userLabel");
+
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue).not.to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue!.length).to.equal(1);
+
+    // Only the properties with actual conflicts should be found in conflictingProperties.
+    chai.expect(conflict.conflictingProperties.length).to.equal(2);
+    chai.expect(conflict.conflictingProperties).to.include("federationGuid");
+    chai.expect(conflict.conflictingProperties).to.include("lastMod");
+
+    // Initially, "our" values are selected.
+    // For the unique constraint conflict, a new value has been selected automatically to avoid the conflict.
+    const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesInitial.federationGuid).not.to.equal(conflictingGuid);
+    chai.expect(valuesInitial.federationGuid).not.to.equal(otherGuid);
+    chai.expect(valuesInitial.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].appliedValue![0]);
+
+    // We can explicitly accept "theirs" instead. At which point there is no UNIQUE constraint violation anymore.
+    conflict.acceptTheirs();
+    const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirs.federationGuid).to.equal(otherGuid);
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
+
+    // And then switch back to "ours" again. The violation should be back with another new guid
+    conflict.acceptOurs();
+    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOurs.federationGuid).not.to.equal(conflictingGuid);
+    chai.expect(valuesOurs.federationGuid).not.to.equal(otherGuid);
+    chai.expect(valuesOurs.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].appliedValue![0]);
+
+    // Accepting their federationGuid will clear the UNIQUE constraint violation.
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    conflict.acceptTheirs(["federationGuid"]);
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
   });
 
-  it("resolves a two-change federationGuid swap with zero reported conflicts", async () => {
+  it("Swaps two federationGuids with zero reported conflicts", async () => {
     const guidA = Guid.createValue();
     const guidB = Guid.createValue();
 
@@ -948,7 +1037,7 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elB).federationGuid).to.equal(guidA);
   });
 
-  it("resolves a large federationGuid cycle with zero reported conflicts", async () => {
+  it("Applies a large federationGuid cycle with zero reported conflicts", async () => {
     const numberOfElements = 100;
     const guids = Array.from({ length: numberOfElements }, () => Guid.createValue());
     const elementIds: Id64String[] = [];
@@ -989,7 +1078,7 @@ describe("InteractiveRebase", () => {
         txn.updateElement<SomeGraphicalElementProps>({ id: elementId, federationGuid: guid });
       }
 
-      // Unrelated - just forces a genuine rebase instead of a fast-forward merge.
+      // Unrelated - just forces a rebase instead of a fast-forward merge.
       txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
     });
 
@@ -1010,7 +1099,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.conflicts[0].id).to.equal(id);
   });
 
-  it("assigns a type definition onto a newly-inserted type in the same batch", async () => {
+  it("Assigns a type definition onto a newly-inserted type in the same Txn", async () => {
     const childId = await withEditTxn(briefcase1, async (txn) => {
       return txn.insertElement({
         classFullName: "irt:SomeGraphicalElement",
@@ -1032,12 +1121,13 @@ describe("InteractiveRebase", () => {
         model: IModel.dictionaryId,
         code: typeCode,
       } as TypeDefinitionElementProps);
-      // Referencing a same-batch Insert - previously failed spuriously because the old base order
-      // always replayed Inserts last, regardless of what referenced them.
+      // Referencing a same-batch Insert. Verifying the dependency (insertedTypeId) is
+      // inserted before the dependent (childId) is updated.
       txn.updateElement<SomeGraphicalElementProps>({
         id: childId,
         typeDefinition: { id: insertedTypeId, relClassName: "BisCore:GraphicalElement2dIsOfType" },
       });
+      // Unrelated, just forces a rebase instead of a fast-forward merge.
       txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
       return insertedTypeId;
     });
@@ -1059,7 +1149,7 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).typeDefinition?.id).to.equal(newTypeId);
   });
 
-  it("resolves a mutual new-insert existence cycle via a nullable navigation property with zero reported conflicts", async () => {
+  it("Inserts elements with circular references without reporting a conflict", async () => {
     const aId = "0xabc00a";
     const bId = "0xabc00b";
 
@@ -1084,6 +1174,7 @@ describe("InteractiveRebase", () => {
         somePoint: new Point2d(14.0, 14.0),
         peer: { id: aId, relClassName: "irt:SomeGraphicalElementRefersToPeer" },
       } as SomeGraphicalElementProps, { forceUseId: true });
+      // Unrelated - just forces a rebase instead of a fast-forward merge.
       txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
     });
 
@@ -1107,7 +1198,7 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(bId).peer?.id).to.equal(aId);
   });
 
-  it("reports a foreign key constraint violation when we add an element to a parent they deleted", async () => {
+  it("Foreign key constraint conflict - we add an element to a parent they deleted", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.deleteElement(id);
     });
@@ -1146,6 +1237,20 @@ describe("InteractiveRebase", () => {
     const child = briefcase2.elements.tryGetElementProps(childId);
     chai.expect(child).to.not.be.undefined;
     chai.expect((child as any).parent).to.be.undefined;
+
+    // The broken relationship can be resolved
+    const newId = interactive.editTxn.insertElement({
+      classFullName: "irt:SomeGraphicalElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      foo: "New Parent!",
+      somePoint: new Point2d(1.23, 4.56),
+    } as SomeGraphicalElementProps);
+
+    conflict.resolveBrokenRelationship(conflict.brokenRelationships[0], newId);
+
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)?.parent?.id).to.equal(newId);
   });
 
   it("reports deletionEffects for our cascaded delete of their inserted child", async () => {
