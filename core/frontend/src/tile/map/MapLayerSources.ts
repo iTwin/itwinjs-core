@@ -81,7 +81,7 @@ export class MapLayerSource {
 
   /** Former name of [[queryParams]], which stores the value; retained as the backing field so existing subclasses
    * and `delete` keep working.
-   * @deprecated in 5.15. Use [[queryParams]].
+   * @deprecated in 5.16. Use [[queryParams]].
    * @beta
   */
   public savedQueryParams?: { [key: string]: string };
