@@ -70,7 +70,6 @@
     "express": "^4.22.1",
     "internal-tools": "workspace:*",
     "npm-run-all2": "catalog:build",
-    "react": "^18.0.0",
     "rimraf": "catalog:build",
     "rollup-plugin-ignore": "catalog:bundling",
     "rollup-plugin-visualizer": "catalog:bundling",

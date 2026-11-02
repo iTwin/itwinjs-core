@@ -97,7 +97,6 @@
     "internal-tools": "workspace:*",
     "node-simctl": "catalog:testing",
     "npm-run-all2": "catalog:build",
-    "react": "^18.0.0",
     "rimraf": "catalog:build",
     "rollup-plugin-ignore": "catalog:bundling",
     "rollup-plugin-visualizer": "catalog:bundling",
