@@ -29,19 +29,19 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "yargs": "^17.4.0"
+    "yargs": "catalog:build"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~20.17.0",
-    "@types/yargs": "17.0.19",
-    "chai": "^4.3.10",
-    "eslint": "catalog:tooling",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:types",
+    "@types/mocha": "catalog:types",
+    "@types/node": "catalog:types",
+    "@types/yargs": "catalog:types",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
     "mocha": "^11.1.0",
-    "rimraf": "catalog:tooling",
-    "typescript": "~5.6.2"
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   }
 }

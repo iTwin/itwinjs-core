@@ -5,13 +5,209 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
-  tooling:
-    eslint:
-      specifier: ^9.31.0
-      version: 9.39.5
+  build:
+    chalk:
+      specifier: ^3.0.0
+      version: 3.0.0
+    cpx2:
+      specifier: ^8.0.0
+      version: 8.0.2
+    cross-env:
+      specifier: ^7.0.3
+      version: 7.0.3
+    glob:
+      specifier: ^13.0.6
+      version: 13.0.6
+    mkdirp:
+      specifier: ^1.0.4
+      version: 1.0.4
+    npm-run-all2:
+      specifier: ^7.0.2
+      version: 7.0.2
     rimraf:
       specifier: ^6.0.1
       version: 6.1.3
+    source-map-support:
+      specifier: ^0.5.6
+      version: 0.5.21
+    typescript:
+      specifier: ~5.6.2
+      version: 5.6.3
+    yargs:
+      specifier: ^17.4.0
+      version: 17.7.3
+  bundling:
+    assert:
+      specifier: ^2.0.0
+      version: 2.1.0
+    babel-loader:
+      specifier: ~8.2.5
+      version: 8.2.5
+    browserify-zlib:
+      specifier: ^0.2.0
+      version: 0.2.0
+    browserslist-to-esbuild:
+      specifier: ^1.2.0
+      version: 1.2.0
+    buffer:
+      specifier: ^6.0.3
+      version: 6.0.3
+    null-loader:
+      specifier: ^4.0.1
+      version: 4.0.1
+    path-browserify:
+      specifier: ^1.0.1
+      version: 1.0.1
+    rollup-plugin-external-globals:
+      specifier: 0.11.0
+      version: 0.11.0
+    rollup-plugin-ignore:
+      specifier: ^1.0.10
+      version: 1.0.10
+    rollup-plugin-visualizer:
+      specifier: ^5.14.0
+      version: 5.14.0
+    rollup-plugin-webpack-stats:
+      specifier: ^2.0.0
+      version: 2.1.11
+    source-map-loader:
+      specifier: ^5.0.0
+      version: 5.0.0
+    stream-browserify:
+      specifier: ^3.0.0
+      version: 3.0.0
+    vite:
+      specifier: ^6.4.4
+      version: 6.4.4
+    vite-plugin-env-compatible:
+      specifier: ^2.0.1
+      version: 2.0.1
+    webpack:
+      specifier: ^5.97.1
+      version: 5.111.1
+    webpack-cli:
+      specifier: ^5.0.1
+      version: 5.1.4
+  linting:
+    '@itwin/eslint-plugin':
+      specifier: ^6.0.0
+      version: 6.1.1
+    '@typescript-eslint/parser':
+      specifier: ~8.71.0
+      version: 8.71.0
+    eslint:
+      specifier: ^9.31.0
+      version: 9.39.5
+    eslint-config-prettier:
+      specifier: ^9.1.2
+      version: 9.1.2
+    prettier:
+      specifier: ^3.2.5
+      version: 3.9.9
+  testing:
+    '@vitest/browser-playwright':
+      specifier: ^4.1.10
+      version: 4.1.11
+    '@vitest/coverage-v8':
+      specifier: ^4.1.10
+      version: 4.1.11
+    azurite:
+      specifier: ^3.37.0
+      version: 3.37.0
+    babel-plugin-istanbul:
+      specifier: ^7.0.0
+      version: 7.0.1
+    c8:
+      specifier: ^10.1.3
+      version: 10.1.3
+    chai:
+      specifier: ^4.3.10
+      version: 4.5.0
+    chai-as-promised:
+      specifier: ^7.1.1
+      version: 7.1.2
+    chai-jest-snapshot:
+      specifier: ^2.0.0
+      version: 2.0.0
+    chai-subset:
+      specifier: 1.6.0
+      version: 1.6.0
+    deep-equal:
+      specifier: ^1
+      version: 1.1.2
+    fetch-mock:
+      specifier: ~11.1.3
+      version: 11.1.5
+    jsdom:
+      specifier: ^26.0.0
+      version: 26.1.0
+    node-simctl:
+      specifier: ~7.6.1
+      version: 7.6.5
+    nyc:
+      specifier: ^17.1.0
+      version: 17.1.0
+    sinon:
+      specifier: ^17.0.2
+      version: 17.0.2
+    sinon-chai:
+      specifier: ^3.7.0
+      version: 3.7.0
+    vitest:
+      specifier: ^4.1.10
+      version: 4.1.11
+  types:
+    '@types/chai':
+      specifier: 4.3.1
+      version: 4.3.1
+    '@types/chai-as-promised':
+      specifier: ^7
+      version: 7.1.8
+    '@types/chai-jest-snapshot':
+      specifier: ^1.3.8
+      version: 1.3.8
+    '@types/chai-subset':
+      specifier: 1.3.1
+      version: 1.3.1
+    '@types/deep-equal':
+      specifier: ^1
+      version: 1.0.4
+    '@types/express':
+      specifier: ^4.17.20
+      version: 4.17.25
+    '@types/express-ws':
+      specifier: ^3.0.3
+      version: 3.0.6
+    '@types/fs-extra':
+      specifier: ^4.0.7
+      version: 4.0.15
+    '@types/jsdom':
+      specifier: ^21.1.7
+      version: 21.1.7
+    '@types/lodash':
+      specifier: ^4.14.202
+      version: 4.17.25
+    '@types/mocha':
+      specifier: ^10.0.6
+      version: 10.0.10
+    '@types/node':
+      specifier: ~20.17.0
+      version: 20.17.58
+    '@types/semver':
+      specifier: 7.3.10
+      version: 7.3.10
+    '@types/sinon':
+      specifier: ^17.0.2
+      version: 17.0.4
+    '@types/sinon-chai':
+      specifier: ^3.2.0
+      version: 3.2.12
+    '@types/ws':
+      specifier: ^7.0.0
+      version: 7.4.7
+    '@types/yargs':
+      specifier: 17.0.19
+      version: 17.0.19
 
 overrides:
   browserslist: latest
@@ -87,7 +283,7 @@ importers:
         specifier: workspace:*
         version: link:../ecsql/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
@@ -96,55 +292,55 @@ importers:
         specifier: 1.0.4
         version: 1.0.4
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/deep-equal-in-any-order':
         specifier: ^1.0.4
         version: 1.0.4
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/multiparty':
         specifier: ^0.0.31
         version: 0.0.31
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:types
         version: 7.3.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/touch':
         specifier: ^3.1.2
         version: 3.1.5
       '@types/ws':
-        specifier: ^7.0.0
+        specifier: catalog:types
         version: 7.4.7
       '@xmldom/xmldom':
         specifier: ~0.8.15
         version: 0.8.15
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal-in-any-order:
         specifier: ^2.0.6
         version: 2.2.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
@@ -156,25 +352,25 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       node-simctl:
-        specifier: ~7.6.1
+        specifier: catalog:testing
         version: 7.6.5
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sql-formatter:
         specifier: ^15.4.6
         version: 15.9.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/bentley:
@@ -183,28 +379,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/common:
@@ -226,7 +422,7 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
@@ -235,22 +431,22 @@ importers:
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/ecschema-editing:
@@ -271,52 +467,52 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@xmldom/xmldom':
         specifier: ~0.8.15
         version: 0.8.15
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-locaters:
@@ -328,7 +524,7 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
     devDependencies:
       '@bentley/aec-units-schema':
@@ -386,52 +582,52 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-metadata:
@@ -467,16 +663,16 @@ importers:
         specifier: workspace:*
         version: link:../quantity
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.5
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       '@xmldom/xmldom':
         specifier: ~0.8.15
@@ -485,19 +681,19 @@ importers:
         specifier: ^2.1.4
         version: 2.1.4
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/ecschema-rpc/common:
@@ -518,37 +714,37 @@ importers:
         specifier: workspace:*
         version: link:../../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-rpc/impl:
@@ -575,16 +771,16 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecsql/common:
@@ -597,31 +793,31 @@ importers:
         specifier: workspace:*
         version: link:../../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/electron:
@@ -645,49 +841,49 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       electron:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../core/express-server:
@@ -709,52 +905,52 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:types
         version: 4.17.25
       '@types/express-ws':
-        specifier: ^3.0.3
+        specifier: catalog:types
         version: 3.0.6
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       supertest:
         specifier: ^7.0.0
         version: 7.3.1
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/extension:
@@ -767,16 +963,16 @@ importers:
         version: link:../frontend
     devDependencies:
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/frontend:
@@ -837,46 +1033,46 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@vitest/browser-playwright':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       playwright:
         specifier: ~1.56.1
         version: 1.56.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/frontend-devtools:
@@ -901,22 +1097,22 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/file-saver':
         specifier: ^2.0.1
         version: 2.0.7
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/geometry:
@@ -932,28 +1128,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/hypermodeling:
@@ -981,46 +1177,46 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../core/i18n:
@@ -1048,46 +1244,46 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../core/markup:
@@ -1115,43 +1311,43 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../core/mobile:
@@ -1182,43 +1378,43 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/lodash':
-        specifier: ^4.14.202
+        specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/superagent':
         specifier: ^8.1.6
         version: 8.1.11
       '@types/ws':
-        specifier: ^7.0.0
+        specifier: catalog:types
         version: 7.4.7
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/orbitgt:
@@ -1227,37 +1423,37 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/quantity:
@@ -1272,28 +1468,28 @@ importers:
         specifier: workspace:*
         version: link:../bentley
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       tsx:
         specifier: ~4.22.0
         version: 4.22.5
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/webgl-compatibility:
@@ -1309,43 +1505,43 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../domains/analytical/backend:
@@ -1363,43 +1559,43 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:types
         version: 7.3.10
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       semver:
         specifier: ^7.5.2
         version: 7.8.5
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/linear-referencing/backend:
@@ -1417,40 +1613,40 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/linear-referencing-common':
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/linear-referencing/common:
@@ -1465,16 +1661,16 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/physical-material/backend:
@@ -1492,34 +1688,34 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/backend:
@@ -1544,16 +1740,16 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/common:
@@ -1571,16 +1767,16 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/frontend:
@@ -1608,19 +1804,19 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../example-code/app:
@@ -1651,34 +1847,34 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../example-code/snippets:
@@ -1729,7 +1925,7 @@ importers:
         specifier: ~0.8.15
         version: 0.8.15
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@20.17.58)
       fs-extra:
         specifier: ^8.1.0
@@ -1742,52 +1938,52 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:types
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/cesium-renderer:
@@ -1814,16 +2010,16 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@vitest/browser-playwright':
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
@@ -1832,13 +2028,13 @@ importers:
         specifier: ~1.56.1
         version: 1.56.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.10
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../extensions/frontend-tiles:
@@ -1862,40 +2058,40 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
@@ -1904,19 +2100,19 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../extensions/map-layers-auth:
@@ -1934,25 +2130,25 @@ importers:
         specifier: workspace:*
         version: link:../../core/frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       fetch-mock:
-        specifier: ~11.1.3
+        specifier: catalog:testing
         version: 11.1.5
       internal-tools:
         specifier: workspace:*
@@ -1961,19 +2157,19 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/map-layers-formats:
@@ -2004,13 +2200,13 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/geojson':
         specifier: ~7946.0.14
@@ -2019,58 +2215,58 @@ importers:
         specifier: ~3.15.6
         version: 3.15.12
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:types
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       fetch-mock:
-        specifier: ~11.1.3
+        specifier: catalog:testing
         version: 11.1.5
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/test-extension:
@@ -2083,19 +2279,19 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       esbuild:
         specifier: ^0.13.8
         version: 0.13.15
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/backend:
@@ -2188,16 +2384,16 @@ importers:
         specifier: workspace:*
         version: link:../../tools/perf-tools
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@26.6.4)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       dotenv:
         specifier: ^16.4.5
@@ -2206,7 +2402,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       fs-extra:
         specifier: ^8.1.0
@@ -2215,44 +2411,44 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/core:
@@ -2333,13 +2529,13 @@ importers:
         specifier: ^1.3.1
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@20.17.58)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       electron:
         specifier: ^45.0.0
@@ -2348,10 +2544,10 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
     devDependencies:
       '@itwin/build-tools':
@@ -2361,7 +2557,7 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/itwins-client':
         specifier: ^1.6.1
@@ -2373,40 +2569,40 @@ importers:
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
         specifier: ^16.4.5
@@ -2415,10 +2611,10 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       https-browserify:
         specifier: ^1.0.0
@@ -2427,40 +2623,40 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       nock:
         specifier: ^12.0.3
         version: 12.0.3
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       stream-http:
         specifier: ^3.2.0
         version: 3.2.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../full-stack-tests/ecschema-rpc-interface:
@@ -2514,7 +2710,7 @@ importers:
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       dotenv:
         specifier: ^16.4.5
@@ -2530,7 +2726,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/backend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/express-server':
         specifier: workspace:*
@@ -2539,55 +2735,55 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../full-stack-tests/presentation:
@@ -2626,7 +2822,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-backend':
         specifier: workspace:*
@@ -2644,58 +2840,58 @@ importers:
         specifier: ^1.4.0
         version: 1.8.6
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:types
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:types
         version: 1.3.1
       '@types/cpx2':
         specifier: npm:@types/cpx@1.5.2
         version: '@types/cpx@1.5.2'
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:types
         version: 1.0.4
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:types
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       dotenv:
         specifier: ^16.4.5
@@ -2704,10 +2900,10 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       fast-sort:
         specifier: ^3.0.2
@@ -2725,28 +2921,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sanitize-filename:
         specifier: ^1.6.3
         version: 1.6.4
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/rpc:
@@ -2786,61 +2982,61 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:types
         version: 7.3.10
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       buffer:
-        specifier: ^6.0.3
+        specifier: catalog:bundling
         version: 6.0.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../full-stack-tests/rpc-interface:
@@ -2867,7 +3063,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
@@ -2897,10 +3093,10 @@ importers:
         specifier: ^2.0.0
         version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       dotenv:
         specifier: ^16.4.5
@@ -2928,61 +3124,61 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/backend
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       buffer:
-        specifier: ^6.0.3
+        specifier: catalog:bundling
         version: 6.0.3
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../presentation/backend:
@@ -3022,7 +3218,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
@@ -3031,67 +3227,67 @@ importers:
         specifier: ^11.2.2
         version: 11.3.1
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:types
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:types
         version: 1.3.1
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:types
         version: 1.0.4
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/object-hash':
         specifier: ^1.3.0
         version: 1.3.4
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:types
         version: 7.3.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
         version: 8.1.5
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
@@ -3100,19 +3296,19 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../presentation/common:
@@ -3137,61 +3333,61 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:types
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:types
         version: 1.3.1
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:types
         version: 1.0.4
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
@@ -3200,25 +3396,25 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       typescript-json-schema:
         specifier: ^0.67.4
         version: 0.67.4
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
 
   ../../presentation/frontend:
@@ -3255,79 +3451,79 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:types
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:types
         version: 1.3.8
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:types
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:types
         version: 3.2.12
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/display-performance-test-app:
@@ -3394,22 +3590,22 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:types
         version: 4.17.25
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@typescript-eslint/parser':
-        specifier: ~8.71.0
+        specifier: catalog:linting
         version: 8.71.0(eslint@9.39.5)(typescript@5.6.3)
       browserslist-to-esbuild:
-        specifier: ^1.2.0
+        specifier: catalog:bundling
         version: 1.2.0
       child_process:
         specifier: ^1.0.2
@@ -3418,7 +3614,7 @@ importers:
         specifier: ^0.15.2
         version: 0.15.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
         specifier: ^16.4.5
@@ -3430,7 +3626,7 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       express:
         specifier: ^4.22.1
@@ -3439,34 +3635,34 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       react:
         specifier: ^18.0.0
         version: 18.3.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       rollup-plugin-external-globals:
-        specifier: 0.11.0
+        specifier: catalog:bundling
         version: 0.11.0(rollup@4.64.0)
       rollup-plugin-ignore:
-        specifier: ^1.0.10
+        specifier: catalog:bundling
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.14.0
+        specifier: catalog:bundling
         version: 5.14.0(rollup@4.64.0)
       rollup-plugin-webpack-stats:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.11(rollup@4.64.0)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vite-plugin-env-compatible:
-        specifier: ^2.0.1
+        specifier: catalog:bundling
         version: 2.0.1
 
   ../../test-apps/display-test-app:
@@ -3581,28 +3777,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:types
         version: 4.17.25
       '@types/express-ws':
-        specifier: ^3.0.3
+        specifier: catalog:types
         version: 3.0.6
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@typescript-eslint/parser':
-        specifier: ~8.71.0
+        specifier: catalog:linting
         version: 8.71.0(eslint@9.39.5)(typescript@5.6.3)
       browserslist-to-esbuild:
-        specifier: ^1.2.0
+        specifier: catalog:bundling
         version: 1.2.0
       child_process:
         specifier: ^1.0.2
         version: 1.0.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
         specifier: ^16.4.5
@@ -3614,7 +3810,7 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       express:
         specifier: ^4.22.1
@@ -3626,37 +3822,37 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       node-simctl:
-        specifier: ~7.6.1
+        specifier: catalog:testing
         version: 7.6.5
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       react:
         specifier: ^18.0.0
         version: 18.3.1
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       rollup-plugin-external-globals:
-        specifier: 0.11.0
+        specifier: catalog:bundling
         version: 0.11.0(rollup@4.64.0)
       rollup-plugin-ignore:
-        specifier: ^1.0.10
+        specifier: catalog:bundling
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.14.0
+        specifier: catalog:bundling
         version: 5.14.0(rollup@4.64.0)
       rollup-plugin-webpack-stats:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.11(rollup@4.64.0)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vite-plugin-env-compatible:
-        specifier: ^2.0.1
+        specifier: catalog:bundling
         version: 2.0.1
 
   ../../test-apps/export-gltf:
@@ -3674,29 +3870,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imjs-importer:
@@ -3714,41 +3910,41 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-geojson:
@@ -3769,32 +3965,32 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-orbitgt:
@@ -3815,29 +4011,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/orbitgt
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-reality-model:
@@ -3855,29 +4051,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/build:
@@ -3886,10 +4082,10 @@ importers:
         specifier: ~7.58.7
         version: 7.58.13(@types/node@20.17.58)
       chalk:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.0.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       cross-spawn:
         specifier: ^7.0.5
@@ -3901,7 +4097,7 @@ importers:
         specifier: ^2.0.2
         version: 2.2.1(mocha@11.8.0)
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       tree-kill:
         specifier: ^1.2.2
@@ -3913,23 +4109,23 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0(typedoc@0.28.20(typescript@5.6.3))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       wtfnode:
         specifier: ^0.9.1
         version: 0.9.4
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -3959,50 +4155,50 @@ importers:
         specifier: ~1.56.1
         version: 1.56.1
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/detect-port':
         specifier: ~1.1.0
         version: 1.1.0
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:types
         version: 4.17.25
       '@types/lodash':
-        specifier: ^4.14.202
+        specifier: catalog:types
         version: 4.17.25
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       electron:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/ecschema2ts:
@@ -4029,7 +4225,7 @@ importers:
         specifier: ~0.8.15
         version: 0.8.15
       chalk:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.0.0
       commander:
         specifier: ^2.14.1
@@ -4042,56 +4238,56 @@ importers:
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:types
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/internal:
     dependencies:
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       magic-string:
         specifier: ^1.1.0
@@ -4110,19 +4306,19 @@ importers:
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:types
         version: 4.0.15
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../ui/appui-abstract:
@@ -4137,49 +4333,49 @@ importers:
         specifier: workspace:*
         version: link:../../core/bentley
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:types
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:types
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:types
         version: 17.0.4
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../utils/workspace-editor:
@@ -4194,29 +4390,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/common
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:types
         version: 17.0.19
       eslint:
-        specifier: catalog:tooling
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: catalog:tooling
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
 packages:

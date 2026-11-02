@@ -40,14 +40,14 @@
     "@bentley/units-schema": "^1.0.12",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/node": "~20.17.0",
-    "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "catalog:tooling",
-    "rimraf": "catalog:tooling",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/node": "catalog:types",
+    "@vitest/coverage-v8": "catalog:testing",
+    "eslint": "catalog:linting",
+    "rimraf": "catalog:build",
     "tsx": "~4.22.0",
-    "typescript": "~5.6.2",
-    "vitest": "^4.1.10"
+    "typescript": "catalog:build",
+    "vitest": "catalog:testing"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*"

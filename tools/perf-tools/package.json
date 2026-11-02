@@ -36,10 +36,10 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/fs-extra": "^4.0.7",
-    "eslint": "catalog:tooling",
-    "rimraf": "catalog:tooling",
-    "typescript": "~5.6.2"
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/fs-extra": "catalog:types",
+    "eslint": "catalog:linting",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   }
 }

@@ -45,16 +45,16 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
-    "@types/sinon": "^17.0.2",
-    "chai": "^4.3.10",
-    "eslint": "catalog:tooling",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:types",
+    "@types/mocha": "catalog:types",
+    "@types/sinon": "catalog:types",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
     "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "sinon": "^17.0.2",
-    "rimraf": "catalog:tooling",
-    "typescript": "~5.6.2"
+    "nyc": "catalog:testing",
+    "sinon": "catalog:testing",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   }
 }
