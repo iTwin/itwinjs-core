@@ -27,6 +27,7 @@
     "perftest:schemaloader": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaLoader.test.js\"",
     "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\"",
     "perftest:readQueryPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ReadQueryPerf.test.js\"",
+    "perftest:mixinQuery": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/MixinQueryPerf.test.js\"",
     "perftest:ecSqlReaderConcurrent": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlReaderConcurrentPerf.test.js\"",
     "perftest:metadataPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementGetMetadata \"./lib/cjs/perftest/ElementCRUD.test.js\"",
     "perftest:schemaContextPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaContextIModelDb.test.js\"",
@@ -66,7 +67,7 @@
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/perf-tools": "workspace:*",
-    "azurite": "^3.35.0",
+    "azurite": "^3.37.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
@@ -75,7 +76,6 @@
     "eslint": "^9.31.0",
     "fs-extra": "^8.1.0",
     "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2"
   },
@@ -91,8 +91,5 @@
     "mkdirp": "^1.0.4",
     "npm-run-all2": "^7.0.2",
     "typescript": "~5.6.2"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

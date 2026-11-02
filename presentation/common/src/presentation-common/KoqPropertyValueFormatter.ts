@@ -125,6 +125,33 @@ export class KoqPropertyValueFormatter {
     return formatterSpec.applyFormatting(value);
   }
 
+  /**
+   * Creates a formatter that reuses formatter specs for repeated formatting options.
+   * Each call creates an independent cache that lasts as long as the returned formatter.
+   * Cached specs and missing-format results are not invalidated by changes to formats,
+   * default formats, or schemas. Create a new formatter to pick up those changes.
+   * Failed spec lookups are not cached and may be retried by subsequent calls.
+   * @returns A formatter with its own cache, suitable for a single content-formatting operation.
+   */
+  public createCachedFormatter(): { format(value: number, options: FormatOptions): Promise<string | undefined> } {
+    const specs = new Map<string, Promise<FormatterSpec | undefined>>();
+    return {
+      format: async (value, options) => {
+        const key = JSON.stringify([options.koqName, options.unitSystem, Object.entries(options.formatOverride ?? {})]);
+        let specPromise = specs.get(key);
+        if (!specPromise) {
+          specPromise = this.getFormatterSpec(options).catch((error: unknown) => {
+            specs.delete(key);
+            throw error;
+          });
+          specs.set(key, specPromise);
+        }
+        const spec = await specPromise;
+        return spec?.applyFormatting(value);
+      },
+    };
+  }
+
   public async getFormatterSpec(options: FormatOptions) {
     const formattingProps = await this.#getFormattingProps(options);
     if (!formattingProps) {

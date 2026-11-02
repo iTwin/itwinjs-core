@@ -152,6 +152,22 @@ describe("BeEvent tests", () => {
       expect(resultNr, "resultNr should be 7.").to.equal(7);
     });
 
+    it("addOnce listener that re-raises the event is still invoked only once", () => {
+      const event = new BeEvent<() => void>();
+      let count = 0;
+
+      event.addOnce(() => {
+        count++;
+        if (count < 10)
+          event.raiseEvent();
+      });
+
+      event.raiseEvent();
+
+      expect(count).toBe(1);
+      expect(event.numberOfListeners).toBe(0);
+    });
+
     it("Unsubscribing from the event dispatcher.", () => {
 
       const carolus = new Dummy("Carolus");
@@ -447,7 +463,7 @@ describe("BeEvent tests", () => {
 
   describe("ListenerType", () => {
     it("Retrieves listener type", () => {
-      const dispatcher = new BeEvent<(args: {x: number, y: string}) => void>();
+      const dispatcher = new BeEvent<(args: { x: number, y: string }) => void>();
 
       type DispatcherListener = ListenerType<typeof dispatcher>;
       const fn: DispatcherListener = (args) => {
@@ -465,7 +481,7 @@ describe("BeEvent tests", () => {
         addListener(listener: TListener): () => void;
       }
 
-      const dispatcher: MyEvent<(args: {x: number, y: string}) => void> = new BeEvent();
+      const dispatcher: MyEvent<(args: { x: number, y: string }) => void> = new BeEvent();
       type DispatcherListener = ListenerType<typeof dispatcher>;
       const fn: DispatcherListener = (args) => {
         args.x === 0;

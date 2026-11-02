@@ -160,7 +160,7 @@ describe("IModelConnection (#integration)", () => {
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
 
-    const treeId = modelProps[0].id!.toString();
+    const treeId = modelProps[0].id.toString();
     const tree = await IModelApp.tileAdmin.requestTileTreeProps(iModel, treeId);
 
     expect(tree.id).to.equal(modelProps[0].id);
@@ -217,9 +217,9 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("properly deserializes gcs latitude", async () => {
-      const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
-      iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
-      assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
-    })
+    const iTwinId = await TestUtility.getTestITwinId();
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
+    iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+  })
 });

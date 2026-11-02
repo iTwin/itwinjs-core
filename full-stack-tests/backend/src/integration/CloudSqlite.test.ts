@@ -329,6 +329,17 @@ describe("CloudSqlite", () => {
     assert(stats.memoryManifest !== undefined);
     expect(parseInt(stats.memoryManifest, 16)).to.be.greaterThan(0);
 
+    expect(stats.onDemandBlocksDownloaded).to.not.be.undefined;
+    expect(stats.onDemandBytesDownloaded).to.not.be.undefined;
+    expect(stats.onDemandDownloadTimeMs).to.not.be.undefined;
+    assert(stats.onDemandBlocksDownloaded !== undefined);
+    assert(stats.onDemandBytesDownloaded !== undefined);
+    assert(stats.onDemandDownloadTimeMs !== undefined);
+
+    expect(parseInt(stats.onDemandBlocksDownloaded, 16)).to.equal(0);
+    expect(parseInt(stats.onDemandBytesDownloaded, 16)).to.equal(0);
+    expect(parseInt(stats.onDemandDownloadTimeMs, 16)).to.equal(0);
+
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
     let db = container.queryDatabase(dbs[0]);

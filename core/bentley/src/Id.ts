@@ -349,7 +349,7 @@ export namespace Id64 {
   /** Obtain iterator over the specified Ids.
    * @see [[Id64.iterable]].
    */
-  export function* iterator(ids: Id64Arg): Iterator<Id64String> {
+  export function* iterator(ids: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Iterator<Id64String> {
     if (typeof ids === "string") {
       yield ids;
     } else {
@@ -365,28 +365,29 @@ export namespace Id64 {
    *    console.log(id);
    * ```
    */
-  export function iterable(ids: Id64Arg): Iterable<Id64String> {
+  export function iterable(ids: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Iterable<Id64String> {
     return typeof ids === "string" ? [ids] : ids;
   }
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
-  export function getFirst(arg: Id64Arg): Id64String {
+  export function getFirst(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Id64String {
     return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value) ?? Id64.invalid;
   }
 
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
-  export function sizeOf(arg: Id64Arg): number {
-    return typeof arg === "string" ? 1 : (Array.isArray(arg) ? arg.length : arg.size);
+  export function sizeOf(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): number {
+    return typeof arg === "string" ? 1 : "size" in arg ? arg.size : arg.length;
   }
 
   /** Returns true if the [[Id64Arg]] contains the specified Id. */
-  export function has(arg: Id64Arg, id: Id64String): boolean {
-    if (typeof arg === "string")
+  export function has(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String, id: Id64String): boolean {
+    if (typeof arg === "string") {
       return arg === id;
-    if (Array.isArray(arg))
-      return -1 !== arg.indexOf(id);
-
-    return arg.has(id);
+    }
+    if ("has" in arg) {
+      return arg.has(id);
+    }
+    return -1 !== arg.indexOf(id);
   }
 
   /** The string representation of an invalid Id. */

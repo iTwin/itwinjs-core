@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import sinon from "sinon";
 import {
   KindOfQuantityProps,
   PhenomenonProps,
@@ -26,6 +27,94 @@ describe("KoqPropertyValueFormatter", () => {
       await Schema.fromJson(schemaProps, schemaContext);
       formatter = new KoqPropertyValueFormatter({
         schemaContext,
+      });
+    });
+
+    describe("createCachedFormatter", () => {
+      it("reuses a spec for concurrent and subsequent calls with equivalent options", async () => {
+        const getSpec = sinon.spy(formatter, "getFormatterSpec");
+        const format = sinon.spy(formatter, "format");
+        const cached = formatter.createCachedFormatter();
+        const options = { koqName: "TestSchema:TestKOQ", unitSystem: "metric" as const };
+        const values = [1.5, 2.5, 3.5];
+        // Establish expected output without the cache, then only count calls made through the cached formatter.
+        const expected = await Promise.all(values.map(async (value) => formatter.format(value, options)));
+        getSpec.resetHistory();
+        format.resetHistory();
+
+        // Concurrent calls should share the pending spec lookup.
+        expect(await Promise.all(values.map(async (value) => cached.format(value, { ...options })))).to.deep.equal(expected);
+        // A later call should reuse the resolved spec too.
+        expect(await cached.format(values[0], { ...options })).to.equal(expected[0]);
+        expect(getSpec.callCount).to.equal(1);
+        expect(format.called).to.be.false;
+      });
+
+      it("separates KOQs, unit systems, and format overrides", async () => {
+        const getSpec = sinon.spy(formatter, "getFormatterSpec");
+        const cached = formatter.createCachedFormatter();
+        const options = [
+          { koqName: "TestSchema:TestKOQ" },
+          { koqName: "TestSchema:InvalidKOQ" },
+          { koqName: "TestSchema:TestKOQ", unitSystem: "metric" as const },
+          { koqName: "TestSchema:TestKOQ", unitSystem: "imperial" as const },
+          { koqName: "TestSchema:TestKOQ", formatOverride: { precision: 1 } },
+          { koqName: "TestSchema:TestKOQ", formatOverride: { precision: 2 } },
+        ];
+        const expected = await Promise.all(options.map(async (entry) => formatter.format(1.234, entry)));
+        getSpec.resetHistory();
+
+        expect(await Promise.all(options.map(async (entry) => cached.format(1.234, entry)))).to.deep.equal(expected);
+        expect(await Promise.all(options.map(async (entry) => cached.format(1.234, { ...entry })))).to.deep.equal(expected);
+        expect(getSpec.callCount).to.equal(options.length);
+      });
+
+      it("retains undefined results for the operation and retries in a new operation", async () => {
+        const getSpec = sinon.stub(formatter, "getFormatterSpec").resolves(undefined);
+        const cached = formatter.createCachedFormatter();
+        const options = { koqName: "TestSchema:TestKOQ" };
+
+        expect(await cached.format(1, options)).to.be.undefined;
+        expect(await cached.format(2, { ...options })).to.be.undefined;
+        expect(getSpec.callCount).to.equal(1);
+        expect(await formatter.createCachedFormatter().format(1, options)).to.be.undefined;
+        expect(getSpec.callCount).to.equal(2);
+      });
+
+      it("keeps existing caches independent when a new formatter picks up changed specs", async () => {
+        const options = { koqName: "TestSchema:TestKOQ", unitSystem: "metric" as const };
+        const initialSpec = await formatter.getFormatterSpec({ ...options, formatOverride: { precision: 1 } });
+        const updatedSpec = await formatter.getFormatterSpec({ ...options, formatOverride: { precision: 2 } });
+        const getSpec = sinon.stub(formatter, "getFormatterSpec");
+        getSpec.onFirstCall().resolves(initialSpec);
+        getSpec.onSecondCall().resolves(updatedSpec);
+        const initial = formatter.createCachedFormatter();
+
+        const initialValue = await initial.format(1.234, options);
+        const updated = formatter.createCachedFormatter();
+        const updatedValue = await updated.format(1.234, options);
+        expect(updatedValue).not.to.equal(initialValue);
+        expect(await initial.format(1.234, options)).to.equal(initialValue);
+        expect(await updated.format(1.234, options)).to.equal(updatedValue);
+        expect(getSpec.callCount).to.equal(2);
+      });
+
+      it("evicts rejected promises so later calls can retry", async () => {
+        const error = new Error("Failed to load format");
+        const getSpec = sinon.stub(formatter, "getFormatterSpec");
+        getSpec.onFirstCall().rejects(error);
+        getSpec.onSecondCall().resolves(undefined);
+        const cached = formatter.createCachedFormatter();
+        const options = { koqName: "TestSchema:TestKOQ" };
+
+        const results = await Promise.allSettled([cached.format(1, options), cached.format(2, { ...options })]);
+        expect(results).to.deep.equal([
+          { status: "rejected", reason: error },
+          { status: "rejected", reason: error },
+        ]);
+        expect(getSpec.callCount).to.equal(1);
+        expect(await cached.format(3, options)).to.be.undefined;
+        expect(getSpec.callCount).to.equal(2);
       });
     });
 
