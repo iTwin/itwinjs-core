@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BoundingSphere, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection, PrimitiveType } from "@cesium/engine";
+import { BoundingSphere, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, PrimitiveType } from "@cesium/core";
+import { Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection } from "@cesium/engine";
 import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";

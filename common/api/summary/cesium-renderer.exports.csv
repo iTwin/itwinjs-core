@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+alpha;function;attachCesiumTileset
+alpha;interface;AttachCesiumTilesetArgs
 alpha;interface;CesiumCameraProps
 alpha;interface;CesiumFrustumProps
 alpha;function;createCesiumCameraProps

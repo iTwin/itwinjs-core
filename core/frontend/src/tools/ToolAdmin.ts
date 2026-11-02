@@ -1695,7 +1695,13 @@ export class ToolAdmin {
     if (!await this.finishEditCommandForTxnOperation())
       return false;
 
-    return imodel.txns.reverseSingleTxnAsync().then(() => true).catch(() => false);
+    try {
+      await imodel.txns.reverseSingleTxnAsync();
+      return true;
+    } catch (error) {
+      await this.onTxnOperationError("undo", error);
+      return false;
+    }
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1714,8 +1720,22 @@ export class ToolAdmin {
     if (!await this.finishEditCommandForTxnOperation())
       return false;
 
-    return imodel.txns.reinstateTxnAsync().then(() => true).catch(() => false);
+    try {
+      await imodel.txns.reinstateTxnAsync();
+      return true;
+    } catch (error) {
+      await this.onTxnOperationError("redo", error);
+      return false;
+    }
   }
+
+  /** Called when [[doUndoOperation]] or [[doRedoOperation]] fails to reverse or reinstate a Txn.
+   * @param _operation The operation that failed.
+   * @param _error The error thrown by [[BriefcaseTxns.reverseSingleTxnAsync]] or [[BriefcaseTxns.reinstateTxnAsync]].
+   * @note Implementations should not throw. Any exception thrown by this method propagates to the caller of [[doUndoOperation]] or [[doRedoOperation]].
+   * @beta
+   */
+  protected async onTxnOperationError(_operation: "undo" | "redo", _error: unknown): Promise<void> { }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
     this.clearMotionPromises();

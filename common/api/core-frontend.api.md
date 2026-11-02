@@ -12354,6 +12354,8 @@ export class ToolAdmin {
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): Promise<void>;
     // @internal (undocumented)
     onShutDown(): void;
+    // @beta
+    protected onTxnOperationError(_operation: "undo" | "redo", _error: unknown): Promise<void>;
     // (undocumented)
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
