@@ -56,7 +56,7 @@ function makeLabelViews(name: string, label?: string) {
     isHidden: false,
     arrayMinOccurs: undefined, arrayMaxOccurs: undefined,
   });
-  builder.addPropertyRef({ ecInstanceId: 3, defIdx, labelStringIdx: namedFields("Property").labelStringIdx, priority: 0 });
+  builder.addPropertyRef({ ecInstanceId: 3, defIdx, labelStringIdx: namedFields("Property").labelStringIdx, priority: 0, overriddenProperty: undefined });
   builder.addEnumeration({
     ...namedFields("Enumeration"),
     ecInstanceId: 4,
