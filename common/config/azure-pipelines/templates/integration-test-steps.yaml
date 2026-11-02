@@ -22,10 +22,8 @@ parameters:
       - graphics
       - node-compat
 
-  # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
-  # Node-version contribution, so lanes that exist to prove a specific Node version
-  # can build the packages must pass 0 to avoid restoring output built under a
-  # different Node version.
+  # Node-compatibility lanes still pass 0 to prove a fresh build. Other lanes
+  # can restore entries salted with the exact Node version by the cache helper.
   - name: rushBuildCacheEnabled
     type: number
     default: 1
@@ -48,10 +46,15 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
+  - script: node common/scripts/set-rush-write-cache-variables.js
+    displayName: "Configure read-only Rush build cache"
+    env:
+      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+      ITWIN_RUSH_CACHE_WRITE_ENABLED: false
+
   # Build every package needed by the integration test suites in a single Rush
-  # invocation. Each frontend test package (and @itwin/core-electron) already runs
-  # webpack:test as part of its normal build script, but cached bundles must be
-  # rebundled below to embed this job's integration-test environment variables.
+  # invocation. Keep rebundling with this job's environment even after a restore;
+  # secret-bearing Core bundles are excluded from caching altogether.
   #
   # The build cache is READ-ONLY here (RUSH_BUILD_CACHE_WRITE_ALLOWED: 0): these
   # pipelines can be queued manually against arbitrary refs, so they must never
@@ -62,7 +65,7 @@ steps:
         displayName: "Rush build"
         env:
           RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+          RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
       - script: npm run -s webpack:test
@@ -80,7 +83,7 @@ steps:
         displayName: "Rush build"
         env:
           RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+          RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
       - script: node ./common/scripts/install-run-rush webpack:test -v
