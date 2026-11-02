@@ -255,7 +255,10 @@ class PrimaryTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.iModelRef, this._id.modelId);
     const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.iModelRef[_scheduleScriptReference])?.timeline;
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline?.isEditingCommitted) {
+    // Frontend timeline changes can require different animation batches without changing the backend tree ID.
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)
+      || 0 !== comparePossiblyUndefined((x, y) => x.compareTo(y), timeline, this._id.timeline)
+      || timeline?.isEditingCommitted) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
