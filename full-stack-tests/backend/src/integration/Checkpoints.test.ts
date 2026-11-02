@@ -305,6 +305,10 @@ describe("Checkpoints", () => {
       expect(stats.memoryUsed).to.not.be.undefined;
       expect(stats.memoryHighwater).to.not.be.undefined;
       expect(stats.memoryManifest).to.not.be.undefined;
+      // Check that on-demand download statistics are available.
+      expect(stats.onDemandBlocksDownloaded).to.not.be.undefined;
+      expect(stats.onDemandBytesDownloaded).to.not.be.undefined;
+      expect(stats.onDemandDownloadTimeMs).to.not.be.undefined;
       iModel.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.populatedCacheslots).to.equal(populatedCacheslots);

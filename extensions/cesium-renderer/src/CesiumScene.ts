@@ -5,7 +5,8 @@
 
 import { ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, OrthographicFrustum, PerspectiveFrustum } from "@cesium/core";
+import { createWorldImageryAsync, Globe, ImageryLayer, Ion, IonWorldImageryStyle, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
@@ -16,6 +17,15 @@ export interface CesiumSceneOptions {
   shouldAnimate?: boolean; // Whether the scene should advance the simulation time. Default: false
 }
 
+const scenesByCanvas = new WeakMap<HTMLCanvasElement, CesiumScene>();
+
+/** Look up the [[CesiumScene]] that renders to `canvas`, if any.
+ * @internal
+ */
+export function getCesiumSceneForCanvas(canvas: HTMLCanvasElement): CesiumScene | undefined {
+  return scenesByCanvas.get(canvas);
+}
+
 /** A helper class, similar to CesiumWidget, which initializes a Cesium scene for use by iTwin.js.
  * @internal
  * */
@@ -23,7 +33,6 @@ export class CesiumScene {
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: Scene;
   private readonly _clock: Clock;
-  private readonly _screenSpaceEventHandler: ScreenSpaceEventHandler;
   private readonly _pointCollection: PointPrimitiveCollection;
   private readonly _polylineCollection: PolylineCollection;
   private readonly _primitivesCollection: PrimitiveCollection;
@@ -55,6 +64,7 @@ export class CesiumScene {
     const sceneOpts = args.sceneOptions ?? {};
 
     this._canvas = args.canvas;
+    scenesByCanvas.set(this._canvas, this);
     this._clock = sceneOpts.clock ?? new Clock();
     this._clock.shouldAnimate = sceneOpts.shouldAnimate ?? false;
 
@@ -110,7 +120,10 @@ export class CesiumScene {
     this._primitivesCollection = new PrimitiveCollection();
     this._scene.primitives.add(this._primitivesCollection);
 
-    this._screenSpaceEventHandler = new ScreenSpaceEventHandler(this._canvas);
+    // iTwin.js tools own input. Cesium's camera controller listens for pointer events on the canvas and calls preventDefault on
+    // pointerdown, which suppresses the mouse events iTwin.js relies on. The controller only updates in Scene.initializeFrame,
+    // which we never call, so its listeners are pure interference: remove them. No public API exists for this.
+    (this._scene.screenSpaceCameraController as unknown as { _aggregator?: { destroy(): void } })._aggregator?.destroy(); // eslint-disable-line @typescript-eslint/naming-convention
 
     const onRenderError = function (_scene: any, error: any) {
       const title =

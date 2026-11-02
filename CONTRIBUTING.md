@@ -39,6 +39,7 @@ rushx lint
 | Published package | Run `rush change` and commit the generated change file |
 | External dependency manifest | Run `rush check` and `rush update` |
 | Documentation extract or package docs | Run the package's `rushx docs` command when available |
+| GCS resource loading, production workspace settings/resources, prefetching, durable cache behavior, or a native-addon update affecting these paths | Run [manual Vertical CRS offline acceptance](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance) on the affected supported platforms and record results in the PR |
 
 Do not commit `.only` tests.
 
@@ -84,8 +85,10 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS` | native prefetch and fresh-process cache regression with a test-owned local resource endpoint | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
+| `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | one manual production acceptance operation selected by `ITWIN_VERTICAL_CRS_OFFLINE_PHASE`, using the dedicated cache in `ITWIN_VERTICAL_CRS_OFFLINE_CACHE`; follow the [manual procedure](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance) | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
-Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
+Set one to `1`, `true` or `yes` and run the package's usual test script. CI enables selected suites through pipeline or job variables. The vertical tests are described in the [Vertical CRS testing guide](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md).
 
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 

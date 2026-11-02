@@ -53,6 +53,8 @@ class Env:
     ''' The directory containing the Android test app. '''
     apk_path = f'{script_dir}/android/imodeljs-test-app/app/build/outputs/apk/debug/app-debug.apk'
     ''' The full path to the display-test-app APK. '''
+    test_apk_path = f"{script_dir}/android/imodeljs-test-app/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    ''' The full path to the display-test-app instrumented test APK. '''
     bim_dir = f'{script_dir}/test-models'
     ''' The directory containing the sample bim file. '''
     env_json_path = f'{script_dir}/lib/mobile/env.json'
@@ -88,6 +90,7 @@ class Env:
       adb_cmd: {self.adb_cmd}
    script_dir: {self.script_dir}
      apk_path: {self.apk_path}
+test_apk_path: {self.test_apk_path}
       bim_dir: {self.bim_dir}
 env_json_path: {self.env_json_path}'''
 
@@ -204,12 +207,12 @@ def start_emulator() -> Emulator:
     log('Emulator started.')
     return emulator
 
-def install_apk() -> None:
+def install_apk(apk_path: str) -> None:
     '''
-    Install the display-test-app APK onto the emulator.
+    Install the given APK onto the emulator.
     '''
-    log(f'Installing apk {env.apk_path}...')
-    run_command(f'{env.adb_cmd} install -r -g {env.apk_path}', 'Error installing APK!')
+    log(f'Installing apk {apk_path}...')
+    run_command(f'{env.adb_cmd} install -r -g {apk_path}', 'Error installing APK!')
     log('APK installed.')
 
 def start_app() -> None:
@@ -250,6 +253,65 @@ def run_app() -> bool:
         start_app()
         if wait_for_first_render(i * 4.0 + 1.0):
             return True
+    return False
+
+def prepare_imodel_and_run_app(env_json: dict[str, str]) -> bool:
+    '''
+    Run display-test-app to open a model and wait for its first render.
+    '''
+    bim_file = get_bim_file(env_json)
+    download = should_download(env_json)
+    if bim_file is None and not download:
+        raise Exception('Environment not configured for standalone or download mode!')
+    if download:
+        log(f'Will download iModel.')
+        log(f'IMJS_ITWIN_ID: {env_json["IMJS_ITWIN_ID"]}')
+        log(f'IMJS_IMODEL_ID: {env_json["IMJS_IMODEL_ID"]}')
+    if bim_file is not None:
+        copy_imodel_to_emulator(bim_file)
+    return run_app()
+
+def run_integration_tests() -> bool:
+    '''
+    Run the mobile backend integration tests (app/src/androidTest).
+    '''
+    log('Running mobile backend integration tests...')
+    INTEGRATION_TEST_RUNNER = 'com.bentley.imodeljs_test_app.test/androidx.test.runner.AndroidJUnitRunner'
+    INTEGRATION_TEST_TIMEOUT_SECONDS = 3 * 60
+    try:
+        output = subprocess.run(
+            [env.adb, '-e', 'shell', 'am', 'instrument', '-w', '-r', INTEGRATION_TEST_RUNNER],
+            capture_output=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=INTEGRATION_TEST_TIMEOUT_SECONDS,
+        ).stdout
+    except subprocess.TimeoutExpired:
+        log(f'Mobile backend integration tests timed out after {INTEGRATION_TEST_TIMEOUT_SECONDS} s.')
+        return False
+
+    # `am instrument` exits with 0 even when tests fail, so the result is parsed from its output.
+    # Status codes: 1 = started, 0 = passed, -1 = error, -2 = failed, -3 = ignored, -4 = assumption failed.
+    status_codes = [
+        line.split(':', 1)[1].strip()
+        for line in output.splitlines()
+        if line.startswith('INSTRUMENTATION_STATUS_CODE:')
+    ]
+    started = status_codes.count('1')
+
+    passed = (
+        started > 0
+        and not any(code in ('-1', '-2', '-3', '-4') for code in status_codes)
+        and 'INSTRUMENTATION_CODE: -1' in output
+        and 'FAILURES!!!' not in output
+        and 'Process crashed' not in output
+    )
+    if passed:
+        log(f'Mobile backend integration tests passed ({started} tests).')
+        return True
+
+    log(output)
+    log('Mobile backend integration tests FAILED.')
     return False
 
 def stop_emulator(emulator: Union[Emulator, None]) -> None:
@@ -400,14 +462,14 @@ def download_upacks_if_needed() -> None:
 
 def build_test_app() -> None:
     '''
-    Build the Android test app using the Android SDK upack.
+    Build the Android test app (and optionally its instrumented test APK) using the Android SDK upack.
     '''
     log('Building Android test app...')
     gradle_env = os.environ.copy()
     gradle_env['ANDROID_HOME'] = env.sdk_dir
     gradle_env['JAVA_HOME'] = env.jdk_dir
     if subprocess.run(
-        ['./gradlew', '--no-daemon', 'build'],
+        ['./gradlew', '--no-daemon', 'build', 'assembleDebugAndroidTest'],
         text=True,
         env=gradle_env,
         cwd=env.test_app_dir
@@ -431,21 +493,30 @@ def main() -> None:
         build_test_app()
         env_json = load_env_json()
         emulator = start_emulator()
-        bim_file = get_bim_file(env_json)
-        download = should_download(env_json)
-        if bim_file == None and not download:
-            raise Exception('Environment not configured for standalone or download mode!')
-        if download:
-            log(f'Will download iModel.')
-            log(f'IMJS_ITWIN_ID: {env_json["IMJS_ITWIN_ID"]}')
-            log(f'IMJS_IMODEL_ID: {env_json["IMJS_IMODEL_ID"]}')
-        install_apk()
-        if bim_file is not None:
-            copy_imodel_to_emulator(bim_file)
-        if run_app():
+        install_apk(env.apk_path)
+        install_apk(env.test_apk_path)
+
+        runs = [
+            ("Integration tests", run_integration_tests),
+            ("App launch", lambda: prepare_imodel_and_run_app(env_json))
+        ]
+
+        results: dict[str, bool] = {}
+        for name, startRun in runs:
+            try:
+                results[name] = startRun()
+            except Exception as e:
+                log(e)
+                results[name] = False
+
+        for name, succeeded in results.items():
+            log(f'{name}: {"SUCCESS" if succeeded else "FAIL"}')
+
+        if all(results.values()):
             exit_code = 0
     except Exception as e:
         log(e)
+
     stop_emulator(emulator)
     stop_adb()
     log('Done')

@@ -31,7 +31,7 @@ describe("IModel Views", () => {
 
   it("should load", async () => {
     const props = await views.queryProps({ from: SpatialViewState.classFullName });
-    const viewState = await views.load(props[0].id!);
+    const viewState = await views.load(props[0].id);
 
     expect(viewState).to.exist.and.be.not.empty;
   });

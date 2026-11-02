@@ -7,7 +7,7 @@
  * @module Editing
  */
 
-import { IModelApp, IpcApp, Tool } from "@itwin/core-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Undo all element changes
  * @beta
@@ -19,10 +19,7 @@ export class UndoAllTool extends Tool {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return true;
 
-    if (!await IModelApp.toolAdmin.finishEditCommandForTxnOperation())
-      return false;
-
-    return IpcApp.appFunctionIpc.reverseAllTxn(imodel.key).then(() => true).catch(() => false);
+    return IModelApp.toolAdmin.doUndoAllOperation();
   }
 }
 

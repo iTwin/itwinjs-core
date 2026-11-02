@@ -4,8 +4,8 @@ import { FormatType } from "../Formatter/FormatEnums";
 import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
+import { TestUnitsProvider, withEmptyUnitLabels } from "./TestUtils/TestHelper";
+import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vHUnitName = "Units.VERTICAL_PER_HORIZONTAL";
@@ -620,7 +620,8 @@ describe("Ratio format tests", () => {
 
 
   describe("specific parse ratio string tests", () => {
-    async function testRatioParser(testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName) {
+    /** @param formatUnitsProvider Provider used to resolve the format's units. Defaults to the provider used to build the parser spec. */
+    async function testRatioParser(testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName, formatUnitsProvider?: UnitsProvider) {
       const ratioJson: FormatProps = {
         type: "Ratio",
         ratioType: "NToOne",
@@ -634,7 +635,7 @@ describe("Ratio format tests", () => {
       const ratioFormat = new Format("Ratio");
 
       try {
-        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        await ratioFormat.fromJSON(formatUnitsProvider ?? unitsProvider, ratioJson);
       } catch {
         assert.fail("Failed to create ratio format from JSON");
       }
@@ -692,6 +693,11 @@ describe("Ratio format tests", () => {
         { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity },
       ];
       await testRatioParser(testData);
+    });
+
+    it("format unit label differs from the unit conversion label", async () => {
+      // See https://github.com/iTwin/itwinjs-core/issues/9819
+      await testRatioParser([{ magnitude: 0.5, ratio: "2:1" }], hVUnitName, vHUnitName, withEmptyUnitLabels(new TestUnitsProvider()));
     });
   });
 

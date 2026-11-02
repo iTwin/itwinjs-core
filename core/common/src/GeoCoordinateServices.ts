@@ -52,6 +52,9 @@ export enum GeoCoordStatus {
    *  Geoid separation data or vertical datum differential data (such as used by NGVD29 to NAVD88 conversion).
    *  The horizontal coordinates returned are valid but the elevation ordinate will be returned unchanged or partially changed.
    *  This status should be somehow reported so actions can be performed to provide the missing information.
+  *  A finite elevation, including one equal to the input elevation, is not evidence that vertical conversion succeeded.
+  *  Callers requiring converted elevations must reject this result. Horizontal-only callers may use XY while retaining
+  *  and reporting this status. A visual fallback must not be presented as a successful vertical conversion.
    */
   VerticalDatumConvertError = 26,
   /** General inner conversion engine error. Coordinates returned are invalid and should be discarded */
@@ -92,6 +95,10 @@ export interface IModelCoordinatesRequestProps {
 
 /** A point converted to iModel coordinates to geographic coordinates or vice-versa by a [[GeoConverter]].
  * The status [[s]] indicates the converted point [[p]]'s degree of accuracy.
+ * Always inspect the status before consuming coordinates. In particular, [[GeoCoordStatus.VerticalDatumConvertError]]
+ * permits horizontal use but does not provide a reliable converted elevation. Elevation-sensitive callers must reject it.
+ * Check required ordinates for finite values even when the status is [[GeoCoordStatus.Success]]; success is not a
+ * quantitative accuracy guarantee. Other warning statuses retain their separately documented accuracy limitations.
  * @public
  */
 export interface PointWithStatus {

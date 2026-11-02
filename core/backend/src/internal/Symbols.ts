@@ -32,5 +32,14 @@ export const _cache = Symbol.for(sym("cache"));
 export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));
 /** @internal */
 export const _activeTxn = Symbol.for(sym("activeTxn"));
+/** @internal */
+export const _refreshIModelProps = Symbol.for(sym("refreshIModelProps"));
+export const _refreshGeographicCoordinateSystem = Symbol.for(sym("refreshGeographicCoordinateSystem"));
+export const _verifyTxnWrite = Symbol.for(sym("verifyTxnWrite"));
+export const _updateIModelProps = Symbol.for(sym("updateIModelProps"));
 export const _resetIModelDb = Symbol.for(sym("resetIModelDb"));
 export const _onReservedElementInsert = Symbol.for(sym("onReservedElementInsert"));
+/** @internal */
+export const _readerOptions = Symbol.for(sym("readerOptions"));
+/** @internal */
+export const _appendToNativeUnifier = Symbol.for(sym("appendToNativeUnifier"));

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as fs from "fs";
 import path from "path";
 import * as sinon from "sinon";
-import { BriefcaseDb, BriefcaseManager, IModelDb, IpcHost, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelDb, IModelHost, IpcHost, SettingsPriority, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock.js";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
@@ -40,6 +40,15 @@ describe("Reacting to IModel data changes", () => {
       iModelHost: {
         cacheDir: cachesDirectory,
       },
+    });
+    // Temporarily disable GCS workspace loading to avoid unintended network traffic during iModel setup
+    // causing intermittent timeouts. These tests do not need cloud GCS data. We intend to fix the underlying
+    // loading behavior; once fixed, this override should probably be removed.
+    IModelHost.appWorkspace.settings.addDictionary({
+      name: "disable-gcs-workspaces-for-repro",
+      priority: SettingsPriority.application,
+    }, {
+      "itwin/core/gcs/disableWorkspaces": true,
     });
     updatesSpy = sinon.spy(IpcHost, "send");
     Presentation.initialize();
