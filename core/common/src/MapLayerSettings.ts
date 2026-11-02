@@ -342,7 +342,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public set queryParams(value: { [key: string]: string } | undefined) { this.savedQueryParams = value; }
 
   /** List of query parameters that will get appended to the settings URL that should *not* be be persisted part of the JSON representation.
-   * @deprecated in 5.15. Register a fetch handler (`MapLayerFormatRegistry.addMapLayerFetchHandler` in `@itwin/core-frontend`) to inject secret or per-session parameters, which unlike this field are protected against leaking through redirects; use [[queryParams]] for non-secret parameters.
+   * @deprecated in 5.16. Register a fetch handler (`MapLayerFormatRegistry.addMapLayerFetchHandler` in `@itwin/core-frontend`) to inject secret or per-session parameters, which unlike this field are protected against leaking through redirects; use [[queryParams]] for non-secret parameters.
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
