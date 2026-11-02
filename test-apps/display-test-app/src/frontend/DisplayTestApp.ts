@@ -6,7 +6,7 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
   GpuMemoryLimit,
-  IModelApp, IModelConnection, RenderSystem, TileAdmin,
+  IModelApp, IModelConnection, RenderSystem, ScreenViewport, TileAdmin,
   ViewManager,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
@@ -21,7 +21,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { createCesiumRenderSystem, createCesiumViewManager } from "@itwin/cesium-renderer";
+import { attachCesiumTileset, createCesiumRenderSystem, createCesiumViewManager } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 
@@ -182,6 +182,33 @@ function getFileExt(path: string): string {
   return str;
 }
 
+// Experimental: with the Cesium renderer, stream the published tileset straight into Cesium instead of using @itwin/frontend-tiles.
+function attachCesiumTilesetsOnViewOpen(computeBaseUrl: (iModel: IModelConnection) => Promise<URL | undefined>): void {
+  const removers = new Map<ScreenViewport, () => void>();
+  IModelApp.viewManager.onViewOpen.addListener(async (vp) => {
+    const baseUrl = await computeBaseUrl(vp.iModel);
+    if (!baseUrl)
+      return;
+
+    const url = new URL("tileset.json", baseUrl);
+    url.search = baseUrl.search;
+    try {
+      const remove = await attachCesiumTileset(vp, { url, zoomTo: true });
+      if (vp.isDisposed)
+        remove();
+      else
+        removers.set(vp, remove);
+    } catch (err) {
+      console.error(`Failed to attach Cesium tileset: ${String(err)}`); // eslint-disable-line no-console
+    }
+  });
+
+  IModelApp.viewManager.onViewClose.addListener((vp) => {
+    removers.get(vp)?.();
+    removers.delete(vp);
+  });
+}
+
 // main entry point.
 const dtaFrontendMain = async () => {
   RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
@@ -229,28 +256,30 @@ const dtaFrontendMain = async () => {
 
   // this needs to execute after all DisplayTestApp.startup executions so that env var will be current
   if (configuration.frontendTilesUrlTemplate) {
-    initializeFrontendTiles({
-      enableEdges: true,
-      computeSpatialTilesetBaseUrl: async (iModel) => {
-        let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
-        urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
-        urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
-        const url = new URL(urlStr);
-        const tilesetUrl = new URL("tileset.json", url);
-        tilesetUrl.search = url.search;
+    const computeSpatialTilesetBaseUrl = async (iModel: IModelConnection) => {
+      let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
+      urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
+      urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
+      const url = new URL(urlStr);
+      const tilesetUrl = new URL("tileset.json", url);
+      tilesetUrl.search = url.search;
 
-        // Check if a tileset has been published for this iModel.
-        try {
-          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
-          const response = await fetch(tilesetUrl);
-          await response.json();
-          return url;
-        } catch {
-          // No tileset available.
-          return undefined;
-        }
-      },
-    });
+      // Check if a tileset has been published for this iModel.
+      try {
+        console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+        const response = await fetch(tilesetUrl);
+        await response.json();
+        return url;
+      } catch {
+        // No tileset available.
+        return undefined;
+      }
+    };
+
+    if (configuration.useCesium)
+      attachCesiumTilesetsOnViewOpen(computeSpatialTilesetBaseUrl);
+    else
+      initializeFrontendTiles({ enableEdges: true, computeSpatialTilesetBaseUrl });
   }
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
