@@ -37,6 +37,8 @@ export namespace InteractiveRebaseError {
     "not-deletion-conflict" |
     /** The replacement does not satisfy every affected relationship */
     "invalid-replacement" |
+    /** The supplied values do not cover the entire unique constraint */
+    "invalid-constraint-values" |
     /** The rebase process is already complete */
     "rebase-complete" |
     /** The rebase process has already moved past the last group */
@@ -209,6 +211,14 @@ export interface RebaseConflict {
   replaceDeletedInstance(newId: Id64String): void;
 
   /**
+   * Supplies values for an entire UNIQUE constraint, in `uniqueConstraintProperties` order.
+   * A failed constraint write stages the values without applying automatic substitutions. A skipped Insert
+   * is retried using all staged resolutions; success also retries changes waiting on that instance.
+   * Unexpected database errors are thrown.
+   */
+  resolveUniqueConstraintViolation(violation: UniqueConstraintViolation, values: any[]): void;
+
+  /**
    * Resolves a broken relationship by supplying a new value for the navigation property.
    *
    * If this entity already exists in the iModel, its navigation property will be updated with the
@@ -222,12 +232,12 @@ export interface RebaseConflict {
    * broken non-nullable navigation property, then the insert will be attempted again with the
    * newly-supplied navigation property value. If the insert succeeds, [BrokenRelationship.appliedValue]]
    * will be set to the new value and [BrokenRelationship.stagedValue]] will be set to undefined.
-   * If it fails, whether because the supplied navigation property value is invalid, because some
-   * _other_ non-nullable navigation property is also broken, or for any other reason, then
+   * If it fails because a constraint is violated, including another unresolved constraint, then
    * the [[BrokenRelationship.stagedValue]] will be set to the new value, and
    * [[BrokenRelationship.appliedValue]] will be set to undefined.
    *
    * You can call this method multiple times to fix multiple broken navigation properties.
+   * Successful Inserts also retry changes waiting on this instance. Unexpected database errors are thrown.
    *
    * @param brokenRelationship The broken relationship to resolve. The relationship can be specified either
    * as an entry in [[brokenRelationships]] or as the access string for the navigation property, e.g., `"model"`.
@@ -293,7 +303,9 @@ export interface DeletionEffectDetails {
   readonly affectedConflict: RebaseConflict | undefined;
 }
 
-/** A substitution automatically applied so a conflicting change can be written. */
+/** A substitution automatically applied so a conflicting change can be written.
+ * @deprecated Use UniqueConstraintViolation.appliedValue instead. Retained until test refactoring.
+ */
 export interface AppliedFix {
   /** The property whose value was substituted, as an access string into the affected instance. */
   property: string;
@@ -314,13 +326,16 @@ export interface UniqueConstraintViolation {
    */
   conflictingInstance: RebaseConflictProperties;
 
-  /**
-   * The substitution that was automatically applied to one of the {@link uniqueConstraintProperties} so that
-   * our change could be applied without violating the constraint.
-   *
-   * This is `undefined` if no substitution could be found, in which case our change was not applied at all.
+  /** Values actually stored, in {@link uniqueConstraintProperties} order, including unchanged members.
+   * Undefined if the Insert was skipped; a null member represents a stored null.
    */
-  appliedFix?: AppliedFix;
+  appliedValue?: any[];
+
+  /** Requested values awaiting a successful write, in {@link uniqueConstraintProperties} order. */
+  stagedValue?: any[];
+
+  /** @deprecated Use appliedValue instead. Retained until test refactoring. */
+  appliedFix?: { property: string, value: any };
 }
 
 /**
@@ -383,13 +398,21 @@ interface UniqueConstraintConflictDetail {
   conflictingInstance?: RebaseConflictProperties;
 }
 
+interface ConstraintError extends Error {
+  errorNumber: number;
+  conflictDetail?: UniqueConstraintConflictDetail;
+}
+
+function isConstraintError(error: unknown): error is ConstraintError {
+  return error instanceof Error && "errorNumber" in error
+    && typeof error.errorNumber === "number" && (error.errorNumber & 0xff) === DbResult.BE_SQLITE_CONSTRAINT_BASE;
+}
+
 /** The result of [[InteractiveRebase.fixUniqueConstraintViolation]]: the properties to write, plus which property
  * it substituted and the value it chose. `property` is an ECSql instance access string, not a props access string.
  */
 interface UniqueConstraintFix {
   props: RebaseConflictProperties;
-  property: string;
-  value: string;
 }
 
 interface BrokenRelationshipDetail extends BrokenRelationship {
@@ -1580,116 +1603,102 @@ export class InteractiveRebase {
   /**
    * Runs `apply`, and on a UNIQUE/PRIMARYKEY or FOREIGNKEY constraint failure, records the appropriate
    * conflict instead of letting the exception propagate, returning `undefined` in that case. When
-   * oldProps is undefined (indicating
-   * that this is an Insert operation), a UNIQUE/PRIMARYKEY failure is first checked against whether it's
-   * an id collision with an existing row (recorded via [[RebaseConflictImpl.recordInsert]], which also
-   * retries the write via `acceptOurs`) before falling back to a UNIQUE constraint violation recorded via
+   * oldProps is undefined (indicating an Insert), a UNIQUE/PRIMARYKEY failure is first checked against
+   * an id collision with an existing row (recorded via [[RebaseConflictImpl.recordInsert]] and retried as
+   * an Update) before falling back to a UNIQUE constraint violation recorded via
    * [[RebaseConflictImpl.recordUniqueConstraint]] built from the error's [[UniqueConstraintConflictDetail]];
    * for updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
    * the write is not retried (it would just fail again).
    */
   private applyOrRecordConstraintConflict<T>(instanceKey: string, id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
-    // PRINCIPLE: The application of "our" change must succeed in the end, because that increases the chances
-    // that future changes and txns apply successfully. Explicit interactive resolution can restore "their" changes
-    // if desired.
-    //
-    // To that end:
-    // 1. An Insert that fails due to a primary key collision is treated as an Update to the colliding row. Our change wins.
-    // 2. On a UNIQUE constraint violation, we methodically change the value of one of the columns involved in the constraint
-    //   until we find a value that doesn't collide, then apply our change. Our change wins. For example, if the constraint
-    //   is on `code.value` and our change is trying to set it to "A", but "A" already exists, we try "A_1", "A_2", etc.
-    //   until we find a value that doesn't exist, then apply our change with that new value.
-    //
-    // Either of these forced applications can trigger further conflicts. For example, in (1), applying "our" values to the
-    // existing row could trigger a UNIQUE constraint violation on another column. In (2), we'll choose a value for that
-    // UNIQUE constraint that doesn't collide with any other existing row, but fixing that first violation could reveal
-    // a second violation of a different constraint. We report all such conflicts, and automatically resolve them in
-    // the same manner.
-    //
-    // However, when they delete something we modified, there's no great way for our change to win. We have to allow
-    // the delete to win, and anything fancier than that will probably have to be done manually. This can't lead to
-    // further conflicts, though. Our local changes might also reference this modified instance, but that can be true
-    // whether we modified the instance or not.
-    //
-    // When we reference something that they deleted - a foreign key constraint - we can't realistically reverse the delete
-    // for the benefit of our changes. Instead, if the foreign key property can be NULL, we should set it as such.
-    // If not, we should effectively cascade the delete to our changes as well. The only other option would be to restore
-    // a version of the referenced instance as a "tombstone", but that's probably tricky enough that we should only
-    // do it if we can see a clear benefit.
     try {
       return apply();
-    } catch (err: any) {
-      if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
-        const targetProps = newProps ?? oldProps;
-        const brokenRelationships = targetProps !== undefined ? this.findBrokenRelationships(targetProps) : [];
-        const isInsert = oldProps === undefined;
-        const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
-        const conflict = RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
-
-        const fallbackProps = newProps === undefined ? undefined : this.fixBrokenNavigationProperties(newProps, brokenRelationships, theirRow);
-        if (fallbackProps !== undefined) {
-          let fallbackApplied = false;
-          this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fallbackProps, () => {
-            this.writeConstraintRetry(oldProps, fallbackProps);
-            fallbackApplied = true;
-          });
-          if (fallbackApplied)
-            conflict.recordBrokenRelationshipFix(brokenRelationships, fallbackProps);
-        }
+    } catch (err) {
+      if (!isConstraintError(err) || newProps === undefined
+        || err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY)
+        throw err;
+      const current = this.tryReadCurrentInstance(id, classFullName);
+      if (oldProps === undefined && current !== undefined && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
+        RebaseConflictImpl.recordInsert(this, this._conflicts, instanceKey, newProps, current);
+        this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, current, newProps,
+          () => this.writeConstraintRetry(current, newProps));
         return undefined;
       }
-      if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
-        throw err;
-      }
-
-      const isInsert = oldProps === undefined;
-      const theirs = isInsert ? this.tryReadCurrentInstance(id, classFullName) : undefined;
-      if (theirs !== undefined) {
-        // Both local and incoming changes wrote an instance with the same id.
-        RebaseConflictImpl.recordInsert(this, this._conflicts, instanceKey, newProps!, theirs);
-
-        // Attempt to apply "our" change to the existing row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
-        this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
-      } else {
-        // Some other UNIQUE index (not the primary key) was violated.
-        const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-        // The write failed, so the row as it currently stands is still "their" version of it. For an insert
-        // there is no such row - they have no version of this instance at all - so `theirs` stays undefined.
-        const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
-        const violation = RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, instanceKey, oldProps, newProps!, theirRow, conflictDetail);
-
-        // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
-        // find a value that doesn't collide.
-        const fix = this.fixUniqueConstraintViolation(newProps!, conflictDetail?.uniqueConstraintProperties, oldProps?.id);
-
-        // Apply the updated row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
-        if (fix !== undefined) {
-          violation.appliedFix = {
-            property: this._db.getJsClass<typeof Element>(classFullName).toPropsAccessString(fix.property),
-            value: fix.value,
-          };
-          this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fix.props, () => {
-            this.writeConstraintRetry(oldProps, fix.props);
-          });
-        }
-      }
+      const conflict = err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY
+        ? RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, this.findBrokenRelationships(newProps))
+        : RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, err.conflictDetail);
+      this.writeConstraintChange(conflict, { ...current, ...newProps }, current, true, err);
       return undefined;
     }
+  }
+
+  private writeConstraintChange(conflict: RebaseConflictImpl, initialProps: RebaseConflictProperties, current: RebaseConflictProperties | undefined, automatic: boolean, initialError?: ConstraintError): boolean {
+    let props = initialProps;
+    let error = initialError;
+    const attempted = new Set<string>();
+    let applied = false;
+    while (true) {
+      if (error !== undefined) {
+        if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
+          const broken = this.findBrokenRelationships(props);
+          if (broken.length === 0)
+            throw error;
+          conflict.addBrokenRelationships(broken);
+          if (!automatic)
+            break;
+          const fallback = this.fixBrokenNavigationProperties(props, broken, current);
+          if (fallback === undefined)
+            break;
+          props = fallback;
+        } else if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE || error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
+          conflict.upsertUniqueConstraintViolation(error.conflictDetail);
+          if (!automatic)
+            break;
+          const fix = this.fixUniqueConstraintViolation(props, error.conflictDetail?.uniqueConstraintProperties, current);
+          if (fix === undefined)
+            break;
+          props = fix.props;
+        } else {
+          if (automatic)
+            throw error;
+          break;
+        }
+      }
+      const signature = JSON.stringify(props);
+      if (attempted.has(signature))
+        break;
+      attempted.add(signature);
+      try {
+        this.writeConstraintRetry(current, props);
+        applied = true;
+        break;
+      } catch (err) {
+        if (!isConstraintError(err))
+          throw err;
+        error = err;
+      }
+    }
+    const written = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
+    conflict.setRetryProps(written === undefined ? props : undefined);
+    conflict.refreshConstraintValues(written, applied);
+    return applied;
   }
 
   /** Writes a constraint-retry row using the operation represented by its captured old side. */
   private writeConstraintRetry(oldProps: RebaseConflictProperties | undefined, props: RebaseConflictProperties): void {
     if (oldProps === undefined)
       this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
-    else
-      this._db[_nativeDb].updateInstance(props, { useJsNames: true });
+    else {
+      const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true });
+      if (result === false || typeof result === "object" && !result.updated)
+        throw new IModelError(IModelStatus.BadRequest, `Failed to update ${props.classFullName} ${props.id} while resolving constraints`);
+    }
   }
 
-  /** Finds a value for one of `uniqueConstraintProperties` that doesn't collide with any existing row, returning
-   * `props` with that substitution applied plus a description of the substitution itself (in ECSql instance
-   * access strings, as `uniqueConstraintProperties` are). Returns `undefined` if no such value could be found.
+  /** Finds non-colliding values for `uniqueConstraintProperties`, returning `props` with the substitutions
+   * applied. Returns `undefined` if no fallback could be found.
    */
-  private fixUniqueConstraintViolation(props: RebaseConflictProperties, uniqueConstraintProperties: string[] | undefined, excludeId?: Id64String): UniqueConstraintFix | undefined {
+  private fixUniqueConstraintViolation(props: RebaseConflictProperties, uniqueConstraintProperties: string[] | undefined, current?: RebaseConflictProperties): UniqueConstraintFix | undefined {
     if (uniqueConstraintProperties === undefined || uniqueConstraintProperties.length === 0)
       return undefined;
 
@@ -1704,6 +1713,11 @@ export class InteractiveRebase {
     if (supportedProperties.length !== uniqueConstraintProperties.length)
       return undefined;
 
+    const tryValue = (accessString: string, value: any): UniqueConstraintFix | undefined => {
+      const fixedProps = { ...props };
+      setPropertyValue(fixedProps, accessString, value);
+      return this.hasUniqueConstraintConflict(fixedProps, uniqueConstraintProperties, current?.id) ? undefined : { props: fixedProps };
+    };
     const stringProperty = supportedProperties.find((accessString) => {
       const property = resolveSchemaViewProperty(this._schemaView, classFullName, accessString);
       return property?.isPrimitive() === true && property.primitiveType === SchemaViewPrimitiveType.String;
@@ -1712,36 +1726,81 @@ export class InteractiveRebase {
       const property = resolveSchemaViewProperty(this._schemaView, classFullName, accessString);
       return property?.isPrimitive() === true && property.primitiveType === SchemaViewPrimitiveType.Binary && property.extendedTypeName === "BeGuid";
     });
-    if (stringProperty === undefined && guidProperty === undefined)
-      return undefined;
-
-    const currentValue = stringProperty === undefined ? undefined : getPropertyValue(props, stringProperty);
-    const baseValue = typeof currentValue === "string" && currentValue.length > 0
-      ? currentValue.replace(/\(Conflict(?:-\d+)?\)$/, "").trimEnd()
-      : undefined;
-
-    for (let attempt = 0; attempt <= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS; attempt++) {
-      const fixedProps = { ...props };
-      const accessString = stringProperty ?? guidProperty!;
-      const property = resolveSchemaViewProperty(this._schemaView, classFullName, accessString);
-      if (property === undefined || !property.isPrimitive())
-        return undefined;
-
-      const replacement = property.primitiveType === SchemaViewPrimitiveType.Binary && property.extendedTypeName === "BeGuid"
-        ? Guid.createValue()
-        : baseValue === undefined
-          ? undefined
-          : `${baseValue}${attempt === 0 ? " (Conflict)" : ` (Conflict-${attempt})`}`;
-      if (replacement === undefined)
-        return undefined;
-
-      setPropertyValue(fixedProps, accessString, replacement);
-      const hasConflict = this.hasUniqueConstraintConflict(fixedProps, uniqueConstraintProperties, excludeId);
-      if (!hasConflict)
-        return { props: fixedProps, property: accessString, value: replacement };
+    if (guidProperty !== undefined) {
+      const fix = tryValue(guidProperty, Guid.createValue());
+      if (fix !== undefined)
+        return fix;
     }
-
+    if (stringProperty !== undefined) {
+      const value = getPropertyValue(props, stringProperty);
+      const base = typeof value === "string" ? value : "";
+      for (let attempt = 1; attempt <= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS; ++attempt) {
+        const numberedFix = tryValue(stringProperty, `${base} (Conflict ${attempt})`);
+        if (numberedFix !== undefined)
+          return numberedFix;
+      }
+      const fix = tryValue(stringProperty, `${base} (Conflict ${Guid.createValue()})`);
+      if (fix !== undefined)
+        return fix;
+    }
+    for (const accessString of supportedProperties) {
+      if (this.isConstraintPropertyNullable(classFullName, accessString)) {
+        const fix = tryValue(accessString, null);
+        if (fix !== undefined)
+          return fix;
+      }
+    }
+    if (current !== undefined) {
+      const fixedProps = { ...props };
+      for (const property of uniqueConstraintProperties)
+        setPropertyValue(fixedProps, property, getPropertyValue(current, property) ?? null);
+      if (!this.hasUniqueConstraintConflict(fixedProps, uniqueConstraintProperties, current.id))
+        return { props: fixedProps };
+    }
     return undefined;
+  }
+
+  private isConstraintPropertyNullable(classFullName: string, accessString: string): boolean {
+    const property = resolveSchemaViewProperty(this._schemaView, classFullName, accessString);
+    if (property === undefined)
+      return false;
+    if (property.isNavigation()) {
+      const constraint = property.direction === StrengthDirection.Backward ? property.relationshipClass.source : property.relationshipClass.target;
+      if (constraint === undefined || constraint.multiplicityLower > 0)
+        return false;
+    }
+    const explicitlyRequired = this._db.withQueryReader(
+      `SELECT ca.Instance FROM meta.PropertyCustomAttribute ca
+       JOIN meta.ECClassDef c ON ca.CustomAttributeClass.Id = c.ECInstanceId
+       JOIN meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId
+       WHERE ca.Property.Id = ? AND c.Name = 'PropertyMap' AND s.Name = 'ECDbMap'`,
+      (reader) => {
+        for (const row of reader)
+          return JSON.parse(row[0] as string).PropertyMap?.IsNullable === false;
+        return false;
+      },
+      new QueryBinder().bindId(1, Id64.fromLocalAndBriefcaseIds(property.ecInstanceId, 0)),
+    );
+    if (explicitlyRequired)
+      return false;
+    return this._db.withPreparedSqliteStatement(
+      `SELECT MAX(c.NotNullConstraint) FROM ec_PropertyMap pm
+       JOIN ec_PropertyPath p ON p.Id = pm.PropertyPathId JOIN ec_Column c ON c.Id = pm.ColumnId
+       WHERE pm.ClassId = ? AND p.AccessString = ? COLLATE NOCASE`,
+      (stmt) => {
+        const schemaClass = this._schemaView.findClass(classFullName);
+        assert(schemaClass !== undefined);
+        stmt.bindInteger(1, schemaClass.ecInstanceId);
+        stmt.bindString(2, property.isNavigation() && !accessString.endsWith(".id") ? `${accessString}.Id` : accessString);
+        assert(stmt.step() === DbResult.BE_SQLITE_ROW);
+        return !stmt.getValue(0).isNull && stmt.getValueInteger(0) === 0;
+      },
+    );
+  }
+
+  /** @internal */
+  public isNavigationProperty(classFullName: string, accessString: string): boolean {
+    return resolveSchemaViewProperty(this._schemaView, classFullName, accessString)?.isNavigation() === true;
   }
 
   private hasUniqueConstraintConflict(props: RebaseConflictProperties, uniqueConstraintProperties: string[], excludeId?: Id64String): boolean {
@@ -1757,10 +1816,11 @@ export class InteractiveRebase {
       if (property === undefined || property.isArray())
         return true;
 
-      const instanceAccessString = accessString;
-      const value = property.isNavigation() ? getPropertyValue(props, `${accessString}.id`) : getPropertyValue(props, accessString);
+      const instanceAccessString = property.isNavigation() && !accessString.endsWith(".id") ? `${accessString}.id` : accessString;
+      const value = getPropertyValue(props, instanceAccessString);
       if (value === undefined || value === null) {
-        predicates.push(`${instanceAccessString} IS NULL`);
+        // SQLite UNIQUE indexes permit multiple nulls, including in composite constraints.
+        return false;
       } else {
         predicates.push(`${instanceAccessString} = ?`);
         ++parameterIndex;
@@ -1792,7 +1852,14 @@ export class InteractiveRebase {
       binder.bindId(++parameterIndex, excludeId);
     }
 
-    return this._db.withQueryReader(`SELECT ECInstanceId FROM ${classFullName} WHERE ${predicates.join(" AND ")} LIMIT 1`, (reader) => reader.step(), binder);
+    let constraintClass = this._schemaView.findClass(classFullName);
+    while (constraintClass?.baseClass !== undefined) {
+      const base = constraintClass.baseClass;
+      if (!uniqueConstraintProperties.every((accessString) => resolveSchemaViewProperty(this._schemaView, base.fullName, accessString) !== undefined))
+        break;
+      constraintClass = base;
+    }
+    return this._db.withQueryReader(`SELECT ECInstanceId FROM ${constraintClass?.fullName ?? classFullName} WHERE ${predicates.join(" AND ")} LIMIT 1`, (reader) => reader.step(), binder);
   }
 
   private readCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties {
@@ -1816,13 +1883,7 @@ export class InteractiveRebase {
     if (schemaClassDef === undefined)
       return [];
 
-    let jsClassDef: typeof Element | undefined;
-    try {
-      jsClassDef = this._db.getJsClass<typeof Element>(classFullName);
-    } catch {
-      // Ignore if class is not registered in JS
-    }
-
+    const jsClassDef = this.getConflictClass(classFullName);
     const broken: BrokenRelationshipDetail[] = [];
     for (const prop of schemaClassDef.getProperties()) {
       if (!prop.isNavigation())
@@ -1837,7 +1898,7 @@ export class InteractiveRebase {
         continue;
 
       // 2. Translate `jsName` (instance access string) to the access string into `ours` (deserialized props).
-      const propsAccessString = jsClassDef ? jsClassDef.toPropsAccessString(jsName) : jsName;
+      const propsAccessString = jsClassDef.toPropsAccessString(jsName);
 
       // 3. Determine the targeted constraint based on the navigation property's relationship direction:
       // - Forward direction points to the relationship's target constraint.
@@ -1845,25 +1906,7 @@ export class InteractiveRebase {
       const relConstraint = prop.direction === StrengthDirection.Backward
         ? prop.relationshipClass.source
         : prop.relationshipClass.target;
-      const targetClass = relConstraint?.abstractConstraint?.fullName
-        ?? relConstraint?.constraintClasses[0]?.fullName
-        ?? "BisCore:Element";
-
-      // 4. Query whether the target instance exists. We attempt the query against the resolved constraint class first.
-      // If that query throws an exception (e.g. if the constraint class cannot be directly queried in ECSQL),
-      // we attempt a fallback check against "BisCore:Element" before concluding the relationship is broken.
-      let exists = false;
-      try {
-        const binder = new QueryBinder().bindId(1, navId);
-        exists = this._db.withQueryReader(`SELECT 1 FROM ${targetClass} WHERE ECInstanceId = ? LIMIT 1`, (reader) => reader.step(), binder);
-      } catch {
-        try {
-          const binder = new QueryBinder().bindId(1, navId);
-          exists = this._db.withQueryReader(`SELECT 1 FROM BisCore:Element WHERE ECInstanceId = ? LIMIT 1`, (reader) => reader.step(), binder);
-        } catch {
-          exists = false;
-        }
-      }
+      const exists = this.navigationTargetExists(prop.relationshipClass, prop.direction, navId);
 
       if (!exists) {
         broken.push({
@@ -1878,15 +1921,13 @@ export class InteractiveRebase {
   }
 
   private fixBrokenNavigationProperties(props: RebaseConflictProperties, brokenRelationships: BrokenRelationshipDetail[], currentProps: RebaseConflictProperties | undefined): RebaseConflictProperties | undefined {
-    const fixableRelationships = currentProps === undefined
-      ? brokenRelationships.filter((relationship) => relationship.nullable)
-      : brokenRelationships;
-    if (fixableRelationships.length === 0)
-      return undefined;
-
     const fallbackProps = { ...props };
-    for (const relationship of fixableRelationships) {
-      const value = currentProps === undefined ? null : getPropertyValue(currentProps, relationship.jsName);
+    for (const relationship of brokenRelationships) {
+      const theirValue = currentProps === undefined ? undefined : getPropertyValue(currentProps, relationship.jsName);
+      const theirId = typeof theirValue === "string" ? theirValue : theirValue?.id;
+      if (theirId === undefined && !relationship.nullable)
+        return undefined;
+      const value = theirId !== undefined ? theirValue : null;
       setPropertyValue(fallbackProps, relationship.jsName, value);
     }
 
@@ -1898,54 +1939,39 @@ export class InteractiveRebase {
    */
   public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties, properties: string[]): void {
     const conflictImpl = conflict as RebaseConflictImpl;
+    const current = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
+    if (current === undefined)
+      return;
     conflictImpl.clearSupersededConstraintFixes(properties);
-    this.writeConflictResolution(conflictImpl, props, 0);
+    this.writeConstraintChange(conflictImpl, { ...current, ...props }, current, true);
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
-  /** Writes a resolved conflict's properties, resolving any UNIQUE constraint violation the write provokes the
-   * same way the initial replay does: record the violation on the conflict, pick a non-colliding value for one
-   * of the constrained properties, and retry. Re-applying "our" values necessarily reintroduces whatever
-   * violation they caused in the first place, so this must not escape as an exception.
-   */
-  private writeConflictResolution(conflict: RebaseConflictImpl, props: RebaseConflictProperties, attempt: number): void {
-    try {
-      const result = this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: true });
-      if (result === false || result !== true && !result.updated) {
-        return;
+  /** @internal */
+  public resolveConstraint(conflict: RebaseConflictImpl, stage: () => void): void {
+    if (this.currentGroup === undefined || !this._conflicts.includes(conflict))
+      InteractiveRebaseError.throwError("not-conflicting-property", "The conflict is not in the current group");
+    stage();
+    const current = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
+    const props = conflict.getRetryProps(current);
+    if (!this.writeConstraintChange(conflict, props, current, false))
+      return;
+    if (current === undefined)
+      this.retryWaitingChanges(conflict);
+    this._db.clearCaches({ instanceCachesOnly: true });
+  }
+
+  private retryWaitingChanges(provider: RebaseConflictImpl): void {
+    const providers = [provider];
+    for (const restored of providers) {
+      for (const dependent of this._conflicts) {
+        if (!(dependent instanceof RebaseConflictImpl) || dependent === restored || !dependent.stageRestoredReferences(restored.id))
+          continue;
+        const current = this.tryReadCurrentInstance(dependent.id, dependent.classFullName);
+        const props = dependent.getRetryProps(current);
+        if (this.writeConstraintChange(dependent, props, current, false) && current === undefined)
+          providers.push(dependent);
       }
-    } catch (err: any) {
-      if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
-        const brokenRelationships = this.findBrokenRelationships(props);
-        if (brokenRelationships.length === 0)
-          throw err;
-        conflict.addBrokenRelationships(brokenRelationships);
-        const current = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
-        // A broken non-nullable relationship on an instance that doesn't exist leaves it unapplied, as during replay.
-        if (current === undefined && brokenRelationships.some((relationship) => !relationship.nullable))
-          return;
-        const fallbackProps = this.fixBrokenNavigationProperties(props, brokenRelationships, current)!;
-        this.writeConflictResolution(conflict, fallbackProps, attempt);
-        conflict.recordBrokenRelationshipFix(brokenRelationships, fallbackProps);
-        return;
-      }
-      if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY)
-        throw err;
-      if (attempt >= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS)
-        throw err;
-
-      const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-      const violation = conflict.upsertUniqueConstraintViolation(conflictDetail);
-
-      const fix = this.fixUniqueConstraintViolation(props, conflictDetail?.uniqueConstraintProperties, conflict.id);
-      if (fix === undefined)
-        throw err;
-
-      violation.appliedFix = {
-        property: this._db.getJsClass<typeof Element>(conflict.classFullName).toPropsAccessString(fix.property),
-        value: fix.value,
-      };
-      this.writeConflictResolution(conflict, fix.props, attempt + 1);
     }
   }
 }
@@ -2164,6 +2190,7 @@ class RebaseConflictImpl implements RebaseConflict {
   private _original: RebaseConflictProperties | undefined = undefined;
   private _theirs: RebaseConflictProperties | undefined = undefined;
   private _ours: RebaseConflictProperties | undefined = undefined;
+  private _retryProps: RebaseConflictProperties | undefined;
 
   /** Deserializes {@link _original}/{@link _theirs}/{@link _ours} into the public {@link RebaseConflictProperties}
    * shape on every access rather than at record time, so a conflict nobody inspects never pays for it, and a
@@ -2275,20 +2302,20 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
-  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, theirs: RebaseConflictProperties | undefined, detail?: UniqueConstraintConflictDetail): UniqueConstraintViolation {
+  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, theirs: RebaseConflictProperties | undefined, detail?: UniqueConstraintConflictDetail): RebaseConflictImpl {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId, classFullName);
 
-    if (original !== undefined) {
+    if (original !== undefined && conflict._original === undefined) {
       conflict._original = original;
     }
     if (theirs !== undefined && conflict._theirs === undefined) {
       conflict._theirs = theirs;
     }
-    conflict._ours = ours;
-
-    return conflict.upsertUniqueConstraintViolation(detail);
+    conflict._ours ??= ours;
+    conflict.upsertUniqueConstraintViolation(detail);
+    return conflict;
   }
 
   /** Our change (insert or update) violated a FOREIGN KEY constraint, e.g. referencing a deleted instance. */
@@ -2297,15 +2324,13 @@ class RebaseConflictImpl implements RebaseConflict {
     const classFullName = ours?.classFullName ?? original?.classFullName ?? theirs?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId!, classFullName!);
 
-    if (original !== undefined) {
+    if (original !== undefined && conflict._original === undefined) {
       conflict._original = original;
     }
     if (theirs !== undefined && conflict._theirs === undefined) {
       conflict._theirs = theirs;
     }
-    if (ours !== undefined) {
-      conflict._ours = ours;
-    }
+    conflict._ours ??= ours;
 
     conflict.addBrokenRelationships(brokenRelationships);
     return conflict;
@@ -2313,7 +2338,7 @@ class RebaseConflictImpl implements RebaseConflict {
 
   public addBrokenRelationships(brokenRelationships: BrokenRelationship[]): void {
     for (const broken of brokenRelationships) {
-      if (!this.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass === broken.relationshipClass)) {
+      if (!this.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass.fullName === broken.relationshipClass.fullName)) {
         this.brokenRelationships.push({
           navigationProperty: broken.navigationProperty,
           relationshipClass: broken.relationshipClass,
@@ -2322,16 +2347,76 @@ class RebaseConflictImpl implements RebaseConflict {
     }
   }
 
-  /** Records the navigation substitutions that were successfully written while replaying this conflict. */
-  public recordBrokenRelationshipFix(brokenRelationships: BrokenRelationshipDetail[], appliedProps: RebaseConflictProperties): void {
-    for (const broken of brokenRelationships) {
-      const relationship = this.brokenRelationships.find((candidate) =>
-        candidate.navigationProperty === broken.navigationProperty && candidate.relationshipClass === broken.relationshipClass);
-      if (relationship !== undefined) {
-        const value = getPropertyValue(appliedProps, broken.jsName);
-        relationship.appliedValue = typeof value === "object" && value !== null ? value.id : value;
-      }
+  public setRetryProps(props: RebaseConflictProperties | undefined): void {
+    this._retryProps = props;
+  }
+
+  public getRetryProps(current: RebaseConflictProperties | undefined): RebaseConflictProperties {
+    const props = { ...(current ?? this._retryProps ?? this._ours) };
+    for (const violation of this.uniqueConstraintViolations) {
+      const stagedValue = violation.stagedValue;
+      if (stagedValue === undefined)
+        continue;
+      violation.uniqueConstraintProperties.forEach((property, index) =>
+        this.setConstraintPropertyValue(props, property, stagedValue[index]));
     }
+    for (const relationship of this.brokenRelationships) {
+      if (relationship.stagedValue === undefined)
+        continue;
+      this.setConstraintPropertyValue(props, relationship.navigationProperty, relationship.stagedValue);
+    }
+    return props;
+  }
+
+  public refreshConstraintValues(current: RebaseConflictProperties | undefined, applied: boolean): void {
+    for (const violation of this.uniqueConstraintViolations) {
+      violation.appliedValue = current === undefined ? undefined : violation.uniqueConstraintProperties
+        .map((property) => this.getConstraintPropertyValue(current, property) ?? null);
+      let compatibilityFix: { property: string, value: any } | undefined;
+      if (violation.appliedValue !== undefined) {
+        const values = violation.appliedValue;
+        const index = violation.uniqueConstraintProperties.findIndex((property, i) =>
+          JSON.stringify(this.getConstraintPropertyValue(this._ours ?? {}, property) ?? null) !== JSON.stringify(values[i]));
+        if (index >= 0)
+          compatibilityFix = { property: violation.uniqueConstraintProperties[index], value: values[index] };
+      }
+      if (violation instanceof UniqueConstraintViolationImpl)
+        violation.setCompatibilityFix(compatibilityFix);
+      if (applied)
+        violation.stagedValue = undefined;
+    }
+    for (const relationship of this.brokenRelationships) {
+      relationship.appliedValue = current === undefined ? undefined : this.getConstraintPropertyValue(current, relationship.navigationProperty) ?? null;
+      if (applied)
+        relationship.stagedValue = undefined;
+    }
+  }
+
+  private getConstraintPropertyValue(props: RebaseConflictProperties, property: string): any {
+    const value = getPropertyValue(props, this._rebase.getConflictClass(this.classFullName).toInstanceAccessString(property));
+    return typeof value === "object" && value !== null && "id" in value ? value.id : value;
+  }
+
+  private setConstraintPropertyValue(props: RebaseConflictProperties, property: string, value: any): void {
+    const accessString = this._rebase.getConflictClass(this.classFullName).toInstanceAccessString(property);
+    const current = getPropertyValue(props, accessString);
+    const navigation = typeof current === "object" && current !== null && "id" in current
+      || this._rebase.isNavigationProperty(this.classFullName, accessString);
+    setPropertyValue(props, accessString, value === null || !navigation || accessString.endsWith(".id") ? value : { ...current, id: value });
+  }
+
+  public stageRestoredReferences(id: Id64String): boolean {
+    const classDef = this._rebase.getConflictClass(this.classFullName);
+    let staged = false;
+    for (const relationship of this.brokenRelationships) {
+      const value = getPropertyValue(this._ours ?? {}, classDef.toInstanceAccessString(relationship.navigationProperty));
+      const targetId = typeof value === "string" ? value : value?.id;
+      if ((relationship.stagedValue ?? targetId) !== id || relationship.appliedValue === id)
+        continue;
+      relationship.stagedValue = id;
+      staged = true;
+    }
+    return staged;
   }
 
   /** Returns the entry describing `detail`'s constraint, creating it if this is the first time that constraint has
@@ -2339,7 +2424,7 @@ class RebaseConflictImpl implements RebaseConflict {
    * rather than appending, since {@link uniqueConstraintViolations} describes the instance's current state.
    */
   public upsertUniqueConstraintViolation(detail: UniqueConstraintConflictDetail | undefined): UniqueConstraintViolation {
-    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
+    const classDef = this._rebase.getConflictClass(this.classFullName);
 
     const uniqueConstraintProperties: string[] = [];
     if (detail !== undefined) {
@@ -2354,7 +2439,6 @@ class RebaseConflictImpl implements RebaseConflict {
     const conflictingInstanceRaw = detail?.conflictingInstance ?? {};
     if (existing !== undefined) {
       existing.setRaw(conflictingInstanceRaw);
-      existing.appliedFix = undefined;
       return existing;
     }
 
@@ -2366,9 +2450,7 @@ class RebaseConflictImpl implements RebaseConflict {
   public clearSupersededConstraintFixes(properties: string[]): void {
     for (let i = this.uniqueConstraintViolations.length - 1; i >= 0; --i) {
       const violation = this.uniqueConstraintViolations[i];
-      const overwritten = violation.appliedFix !== undefined
-        ? properties.includes(violation.appliedFix.property)
-        : violation.uniqueConstraintProperties.some((property) => properties.includes(property));
+      const overwritten = violation.uniqueConstraintProperties.some((property) => properties.includes(property));
       if (overwritten)
         this.uniqueConstraintViolations.splice(i, 1);
     }
@@ -2390,6 +2472,14 @@ class RebaseConflictImpl implements RebaseConflict {
     this._rebase.replaceDeletedInstance(this, newId);
   }
 
+  public resolveUniqueConstraintViolation(violation: UniqueConstraintViolation, values: any[]): void {
+    if (!this.uniqueConstraintViolations.includes(violation))
+      InteractiveRebaseError.throwError("not-conflicting-property", "The UNIQUE constraint is not a violation for this conflict");
+    if (!Array.isArray(values) || values.length === 0 || values.length !== violation.uniqueConstraintProperties.length || Array.from(values).some((value) => value === undefined))
+      InteractiveRebaseError.throwError("invalid-constraint-values", "Supply a value (or null) for every property in the UNIQUE constraint");
+    this._rebase.resolveConstraint(this, () => { violation.stagedValue = [...values]; });
+  }
+
   public resolveBrokenRelationship(brokenRelationship: BrokenRelationship | string, value: Id64String): void {
     const relationship = typeof brokenRelationship === "string"
       ? this.brokenRelationships.find((candidate) => candidate.navigationProperty === brokenRelationship)
@@ -2400,81 +2490,7 @@ class RebaseConflictImpl implements RebaseConflict {
         `The navigation property ${typeof brokenRelationship === "string" ? brokenRelationship : brokenRelationship.navigationProperty} is not a broken relationship for this conflict`);
     }
 
-    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
-    const instanceAccessString = classDef.toInstanceAccessString(relationship.navigationProperty);
-    let current: RebaseConflictProperties | undefined;
-    try {
-      current = this._rebase.iModel[_nativeDb].readInstance({ id: this.id, classFullName: this.classFullName }, { useJsNames: true }) as RebaseConflictProperties;
-    } catch {
-      current = undefined;
-    }
-    const writeProps: RebaseConflictProperties = current === undefined
-      ? { ...(this._ours ?? {}) }
-      : { id: this.id, classFullName: this.classFullName };
-
-    if (current === undefined) {
-      for (const candidate of this.brokenRelationships) {
-        const candidateInstanceAccessString = classDef.toInstanceAccessString(candidate.navigationProperty);
-        if (candidate.stagedValue !== undefined)
-          setPropertyValue(writeProps, candidateInstanceAccessString, candidate.stagedValue);
-        else if (candidate.appliedValue !== undefined)
-          setPropertyValue(writeProps, candidateInstanceAccessString, candidate.appliedValue);
-      }
-    }
-    setPropertyValue(writeProps, instanceAccessString, value);
-
-    let inserted = false;
-    try {
-      if (current === undefined) {
-        this._rebase.iModel[_nativeDb].insertInstance(writeProps, { forceUseId: true, useJsNames: true });
-        for (const candidate of this.brokenRelationships) {
-          const candidateInstanceAccessString = classDef.toInstanceAccessString(candidate.navigationProperty);
-          candidate.appliedValue = getPropertyValue(writeProps, candidateInstanceAccessString);
-          candidate.stagedValue = undefined;
-        }
-        inserted = true;
-      } else {
-        const result = this._rebase.iModel[_nativeDb].updateInstance(writeProps, { useJsNames: true });
-        if (result === false || result !== true && !result.updated)
-          throw new IModelError(IModelStatus.BadRequest, "Failed to update instance while resolving a broken relationship");
-        relationship.appliedValue = value;
-        relationship.stagedValue = undefined;
-      }
-    } catch {
-      if (current === undefined) {
-        relationship.appliedValue = undefined;
-        relationship.stagedValue = value;
-      } else {
-        relationship.appliedValue = getPropertyValue(current, instanceAccessString);
-        relationship.stagedValue = value;
-      }
-    }
-
-    if (inserted)
-      this.restoreResolvedDependentRelationships();
-
-    this._rebase.iModel.clearCaches({ instanceCachesOnly: true });
-  }
-
-  private restoreResolvedDependentRelationships(): void {
-    for (const dependent of this._rebase.getReferenceDependentConflicts(this.instanceKey)) {
-      for (const relationship of dependent.brokenRelationships) {
-        const dependentProps = dependent.ours;
-        if (dependentProps === undefined)
-          continue;
-
-        const dependentRelationship = getPropertyValue(dependentProps, relationship.navigationProperty);
-        const dependentRelationshipId = typeof dependentRelationship === "string"
-          ? dependentRelationship
-          : dependentRelationship?.id;
-        if (dependentRelationshipId !== this.id)
-          continue;
-        if (dependentRelationshipId === relationship.appliedValue)
-          continue;
-
-        dependent.resolveBrokenRelationship(relationship, this.id);
-      }
-    }
+    this._rebase.resolveConstraint(this, () => { relationship.stagedValue = value; });
   }
 }
 
@@ -2483,7 +2499,15 @@ class RebaseConflictImpl implements RebaseConflict {
  */
 class UniqueConstraintViolationImpl implements UniqueConstraintViolation {
   public readonly uniqueConstraintProperties: string[];
-  public appliedFix?: AppliedFix;
+  public appliedValue?: any[];
+  public stagedValue?: any[];
+  private _compatibilityFix?: { property: string, value: any };
+  /** @deprecated Use appliedValue instead. */
+  public get appliedFix(): { property: string, value: any } | undefined { return this._compatibilityFix; }
+
+  public setCompatibilityFix(fix: { property: string, value: any } | undefined): void {
+    this._compatibilityFix = fix;
+  }
   private _conflictingInstance: RebaseConflictProperties;
 
   public constructor(private readonly _rebase: InteractiveRebase, private readonly _classFullName: string, uniqueConstraintProperties: string[], conflictingInstance: RebaseConflictProperties) {
@@ -2492,7 +2516,7 @@ class UniqueConstraintViolationImpl implements UniqueConstraintViolation {
   }
 
   public get conflictingInstance(): RebaseConflictProperties {
-    return this._rebase.iModel.getJsClass<typeof Element>(this._classFullName).deserialize({ row: this._conflictingInstance, iModel: this._rebase.iModel });
+    return this._rebase.getConflictClass(this._classFullName).deserialize({ row: this._conflictingInstance, iModel: this._rebase.iModel });
   }
 
   /** Updates the raw conflicting-instance row when this same constraint is re-violated (see
