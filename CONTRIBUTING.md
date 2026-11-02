@@ -147,17 +147,20 @@ Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-co
 | `auth-clients` | Browser, Electron, and service authorization clients, plus the OIDC sign-in tool, owned by the auth-clients project |
 | `build` | TypeScript, file and CLI utilities, and related typings |
 | `bundling` | Bundlers, loaders, plugins, and browser polyfills |
+| `electron` | App/test Electron baseline; supported peer ranges remain explicit |
 | `imodels-clients` | iModels access/client and object-storage packages, which share a maintaining team |
 | `itwins-client` | The external iTwins service client |
 | `linting` | ESLint, its shared plugin/parser, and formatting tools |
-| `presentation` | External presentation-shared and unified-selection packages |
+| `presentation` | External presentation packages and their shared RxJS baseline |
 | `reality-capture` | The reality-data client owned by the reality-capture project |
-| `testing` | Test libraries and their typings, coverage, and test services |
+| `testing` | Test libraries and typings, environment setup, coverage, and services |
 | `types` | Typings for runtime libraries that are not cataloged yet |
 
-External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them.
+External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them. The presentation catalog also holds the shared RxJS version policy managed by the presentation area; this does not imply ownership of the upstream RxJS projects.
 
 Keep a library's typings in the same catalog as the library. When cataloging a runtime library, move any corresponding entry out of the remaining `types` catalog too.
+
+The Electron catalog selects the app/test runtime, not the supported host range. Keep the Electron peers in `core/electron` and `tools/certa` explicit, as well as the optional Mocha peer in `tools/build`.
 
 When adding a dependency that is already cataloged, use its existing catalog reference. Rush generates the pnpm workspace configuration; do not edit `common/temp/pnpm-workspace.yaml` manually.
 
