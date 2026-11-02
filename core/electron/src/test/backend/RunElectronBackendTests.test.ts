@@ -30,8 +30,11 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
 
   const electronProcess = spawn(command, args, options);
 
+  // Prefer the result RunSingleTest sends over IPC: the process exit status is not reliable on Windows.
+  let reportedExitCode: number | undefined;
+  electronProcess.on("message", (message: { exitCode: number }) => reportedExitCode = message.exitCode);
   const exitCode = await new Promise<number>((resolve) => {
-    electronProcess.on("exit", (status) => resolve(status || 0));
+    electronProcess.on("exit", (status) => resolve(reportedExitCode ?? status ?? 0));
   });
   expect(exitCode).toBe(TestResult.Success);
 }

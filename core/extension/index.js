@@ -266,5 +266,6 @@ export const {
 	ThematicGradientTransparencyMode,
 	TxnAction,
 	TypeOfChange,
+	isPersisted,
 } = ext.exports;
 // END GENERATED CODE

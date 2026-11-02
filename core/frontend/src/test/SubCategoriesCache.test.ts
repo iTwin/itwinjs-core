@@ -351,6 +351,26 @@ describe("SubCategoriesCache", () => {
     expect(reloadedAppearance!.equals(freshAppearance)).toBe(true);
   });
 
+  it("caches appearances when preloading into an empty cache", async () => {
+    const categoryId = "0x17";
+    const subCategoryId = "0x18";
+    const appearanceProps: SubCategoryAppearance.Props = { color: 0x0000ff };
+    const queryAllUsedSpatialSubCategories = vi.fn(async () => [{ parentId: categoryId, id: subCategoryId, appearance: JSON.stringify(appearanceProps) }]);
+    const iModel = { isClosed: false, queryAllUsedSpatialSubCategories } as unknown as IModelConnection;
+    const cache = new SubCategoriesCache(iModel);
+
+    await cache.loadAllUsedSpatialSubCategories();
+
+    expect(queryAllUsedSpatialSubCategories).toHaveBeenCalledTimes(1);
+    expect(cache.getSubCategories(categoryId)?.has(subCategoryId)).toBe(true);
+    const appearance = cache.getSubCategoryAppearance(subCategoryId);
+    expect(appearance).not.toBeUndefined();
+    expect(appearance!.equals(new SubCategoryAppearance(appearanceProps))).toBe(true);
+
+    const categoryInfo = await cache.getCategoryInfo(categoryId);
+    expect(categoryInfo.get(categoryId)?.subCategories.has(subCategoryId)).toBe(true);
+  });
+
   it("removes cached subcategory appearances when a category is deleted", async () => {
     const categoryId = "0x1";
     const subCategoryId = "0x2";

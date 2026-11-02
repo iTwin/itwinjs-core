@@ -19,43 +19,10 @@ See the [iTwin.js](https://www.itwinjs.org) and [CesiumJS](https://cesium.com/le
 5. To control the Cesium camera you can use the following keyboard shortcuts:
     1. Press `ctrl` + `w`, `a`, `s`, `d` to move in and out and rotate
     2. Press `ctrl` + arrow keys to pan
-6. To control the camera using the default iTwin.js mouse controls, you need to make some small code changes:
-    1. Replace the following line in core/frontend/src/tools/EventController.ts which adds listeners for DOM events:
+6. The default iTwin.js mouse controls (wheel zoom, middle-drag pan, etc.) also drive the Cesium camera.
 
-```typescript
-this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-```
+## Experimental: streaming a 3D Tiles tileset
 
-With these lines that add support for pointer events:
+`attachCesiumTileset(viewport, { url, modelMatrix?, zoomTo? })` adds a 3D Tiles tileset directly to the Cesium scene behind a viewport, bypassing iTwin.js tile trees. `modelMatrix` defaults to identity, since published iModel tilesets are already in ECEF. `zoomTo` zooms the viewport to the tileset (geolocated iModels only). It returns a function that removes the tileset.
 
-```typescript
-const pointerSupported = window.PointerEvent !== undefined;
-if (pointerSupported) {
-  this.addDomListeners(["pointerdown", "pointerup", "pointermove"], element);
-} else {
-  this.addDomListeners(["mousedown", "mouseup", "mousemove"], element);
-}
-this.addDomListeners(["mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-```
-
-ii. To the following if statement in core/frontend/src/tools/ToolAdmin.ts, in the `ToolAdmin.tryReplace()` method:
-
-```typescript
-if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
-```
-
-Change the condition to this:
-
-```typescript
-if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove" && lastType !== "pointermove"))
-```
-
-iii. Also, add the following cases to the switch statement in `ToolAdmin.processNextEvent()` to call `ToolAdmin` methods for pointer events:
-
-```typescript
-case "pointerdown": return this.onMouseButton(event, true);
-case "pointerup": return this.onMouseButton(event, false);
-case "pointermove": return this.onMouseMove(event);
-```
-
->Note: see [this PR discussion](https://github.com/iTwin/itwinjs-core/pull/8697#discussion_r2482620677) for why these pointer event `EventController` and `ToolAdmin` changes may affect iTwin.js tools and why they are not merged into main.
+In display-test-app, set both `IMJS_USE_CESIUM=1` and `IMJS_FRONTEND_TILES_URL_TEMPLATE` to stream the published mesh export tileset through Cesium instead of `@itwin/frontend-tiles`.

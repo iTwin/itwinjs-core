@@ -3,13 +3,67 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
-import { GeoConverter, IModelConnection } from "@itwin/core-frontend";
+import { BriefcaseConnection, GeoConverter, IModelConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
+import { verticalCrsChangesCallbackName } from "../../certa/certaCommon";
 
 // spell-checker: disable
+
+if (ProcessDetector.isElectronAppFrontend) {
+  describe("Vertical CRS frontend changeset refresh", () => {
+    before(async () => TestUtility.startFrontend());
+    after(async () => TestUtility.shutdownFrontend());
+
+    it("refreshes CRS identity and cached conversions after pull, reversal, and replay without reopening", async () => {
+      let connection: BriefcaseConnection | undefined;
+      try {
+        const fixture = JSON.parse(await executeBackendCallback(verticalCrsChangesCallbackName, "setup")) as { fileName: string, index: number };
+        connection = await BriefcaseConnection.openFile({ fileName: fixture.fileName, readonly: true });
+        const converter = connection.geoServices.getConverter({
+          horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" },
+        })!;
+        const point = { x: 23.700523, y: 37.944210, z: 0 };
+        const verifyConversion = async (points: Array<{ x: number, y: number, z: number }>, named: boolean) => {
+          const response = await converter.getGeoCoordinatesFromIModelCoordinates(points);
+          for (let index = 0; index < points.length; ++index) {
+            const result = response.geoCoords[index];
+            const actual = Point3d.fromJSON(result.p);
+            expect(result.s).to.equal(GeoCoordStatus.Success);
+            expect(actual.x).to.be.closeTo(points[index].x, 1e-8);
+            expect(actual.y).to.be.closeTo(points[index].y, 1e-8);
+            expect(actual.z).to.be.closeTo(named ? 38.29672604417625 : 0, 0.01);
+          }
+          return response;
+        };
+
+        expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).to.equal("EGM96 height");
+        await verifyConversion([point], true);
+        expect((await verifyConversion([point], true)).fromCache).to.equal(1);
+        const updated = JSON.parse(await executeBackendCallback(verticalCrsChangesCallbackName, "update")) as { index: number };
+        let offset = 0;
+        for (const [index, named] of [[updated.index, false], [fixture.index, true], [updated.index, false]] as const) {
+          await connection.pullChanges(index);
+          expect(connection.changeset.index).to.equal(index);
+          expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).to.equal(named ? "EGM96 height" : "WGS84");
+          expect((await verifyConversion([{ ...point, x: point.x + ++offset * 0.000001 }], named)).fromCache).to.equal(0);
+          expect((await verifyConversion([point], named)).fromCache).to.equal(0);
+          expect((await verifyConversion([point], named)).fromCache).to.equal(1);
+        }
+      } finally {
+        try {
+          await connection?.close();
+        } finally {
+          await executeBackendCallback(verticalCrsChangesCallbackName, "cleanup");
+        }
+      }
+    });
+  });
+}
 
 describe("GeoCoord", () => {
   let iModel: IModelConnection;

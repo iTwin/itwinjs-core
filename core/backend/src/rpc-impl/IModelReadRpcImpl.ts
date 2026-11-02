@@ -16,7 +16,7 @@ import {
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, Persisted, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
   SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";
@@ -161,10 +161,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModel.models.queryExtents(modelIds);
   }
 
-  public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
+  public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Persisted<ModelProps>[]> {
     const modelIds = new Set(modelIdsList);
     const iModelDb = await getIModelForRpc(tokenProps);
-    const modelJsonArray: ModelProps[] = [];
+    const modelJsonArray: Persisted<ModelProps>[] = [];
     for (const id of modelIds) {
       try {
         const modelProps = iModelDb.models.getModelProps(id);
@@ -177,15 +177,15 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return modelJsonArray;
   }
 
-  public async queryModelProps(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<ModelProps[]> {
+  public async queryModelProps(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<Persisted<ModelProps>[]> {
     const ids = await this.queryEntityIds(tokenProps, params);
     return this.getModelProps(tokenProps, [...ids]);
   }
 
-  public async getElementProps(tokenProps: IModelRpcProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
+  public async getElementProps(tokenProps: IModelRpcProps, elementIdsList: Id64String[]): Promise<Persisted<ElementProps>[]> {
     const elementIds = new Set(elementIdsList);
     const iModelDb = await getIModelForRpc(tokenProps);
-    const elementProps: ElementProps[] = [];
+    const elementProps: Persisted<ElementProps>[] = [];
     for (const id of elementIds) {
       try {
         elementProps.push(iModelDb.elements.getElementProps({ id }));
@@ -197,7 +197,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return elementProps;
   }
 
-  public async loadElementProps(tokenProps: IModelRpcProps, identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+  public async loadElementProps(tokenProps: IModelRpcProps, identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<Persisted<ElementProps> | undefined> {
     const props: ElementLoadProps = options ? { ...options } : {};
     if (typeof identifier === "string") {
       if (Id64.isId64(identifier))
@@ -217,7 +217,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return generateGeometrySummaries(request, iModel);
   }
 
-  public async queryElementProps(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<ElementProps[]> {
+  public async queryElementProps(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<Persisted<ElementProps>[]> {
     const ids = await this.queryEntityIds(tokenProps, params);
     const res = this.getElementProps(tokenProps, [...ids]);
     return res;

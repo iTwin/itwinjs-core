@@ -178,6 +178,7 @@ export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): bo
   // Helper function to add fill parameters
   const addFillParams = () => {
     params.fillDisplay = FillDisplay.Always;
+    params.fillColor = params.lineColor;
     result = result && builder.appendGeometryParamsChange(params);
   };
 
@@ -297,6 +298,8 @@ export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): bo
  * @beta
  */
 export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number): Vector3d | undefined {
+  if (elbowLength <= 0)
+    return undefined;
 
   let elbowDirection: Vector3d | undefined;
   // Determine the direction based on the closest point's position relative to the frame

@@ -37,14 +37,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/core": "0.1.0",
+    "@cesium/engine": "26.4.0",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/core": "0.1.0",
+    "@cesium/engine": "26.4.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
@@ -53,7 +55,6 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
     "@vitest/browser-playwright": "^4.1.11",
-    "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "playwright": "~1.56.1",

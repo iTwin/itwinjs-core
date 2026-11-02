@@ -198,7 +198,7 @@ describe("iModel geolocation", () => {
     });
 
     it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
-      const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
+      const convertTest = async (fileName: string, fileGCS: GeographicCRSProps | undefined, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
         const args = {
           rootSubject: { name: "TestSubject", description: "test project" },
@@ -217,10 +217,12 @@ describe("iModel geolocation", () => {
         const testFile = IModelTestUtils.prepareOutputFile("IModel", fileName);
         const iModel = SnapshotDb.createEmpty(testFile, args);
 
-        withEditTxn(iModel, (txn) => {
-          iModel.setGeographicCoordinateSystem(fileGCS);
-          txn.updateIModelProps();
-        });
+        if (fileGCS) {
+          withEditTxn(iModel, (txn) => {
+            iModel.setGeographicCoordinateSystem(fileGCS);
+            txn.updateIModelProps();
+          });
+        }
 
         const testPoint1: XYZProps[] = [];
         testPoint1.push(inputCoord);
@@ -480,8 +482,8 @@ describe("iModel geolocation", () => {
 
       await convertTest("Error3.bim", userGCSWithinexistentGridFile, "WGS84", { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoDatumConverter });
 
-      // The model GCS is not valid
-      await convertTest("Error4.bim", { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
+      // The model has no GCS.
+      await convertTest("Error4.bim", undefined, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
 
       // The given GCS is not valid
       await convertTest("Error5.bim", { horizontalCRS: { id: "UTM84-17N" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });

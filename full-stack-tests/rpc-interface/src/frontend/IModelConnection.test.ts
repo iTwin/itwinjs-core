@@ -159,7 +159,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   it("getModelProps should work as expected", async () => {
     const modelQueryParams: ModelQueryParams = { limit: 10, from: SpatialModelState.classFullName, wantPrivate: false };
     const curModelProps = await iModel.models.queryProps(modelQueryParams);
-    const modelId = curModelProps[0].id!.toString();
+    const modelId = curModelProps[0].id.toString();
 
     await iModel.models.load(modelId); // "0x1c"
 
@@ -249,7 +249,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
   it("queryModelRanges should work as expected", async () => {
     const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    const modelId = modelProps[0].id!.toString();
+    const modelId = modelProps[0].id.toString();
 
     let idSet: Id64Set = Id64.toIdSet(modelId);
 
@@ -259,7 +259,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(ranges.length).to.be.equal(1);
     idSet = new Set<string>();
     for (const modelProp of modelProps) {
-      idSet.add(modelProp.id!.toString());
+      idSet.add(modelProp.id.toString());
     }
     ranges = await iModel.models.queryModelRanges(idSet);
     expect(ranges).to.not.be.undefined;
@@ -274,7 +274,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     let modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.Model", where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'" });
     let idSet: Id64Set = new Set<string>();
     for (const modelProp of modelProps) {
-      idSet.add(modelProp.id!.toString());
+      idSet.add(modelProp.id.toString());
     }
     if (idSet.size === 1) { // queryModelRanges throws error if idSet size is 1 AND the id in the set returns some error for querying its extents
       await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(Error);
@@ -288,7 +288,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(Error);
 
     modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
-    idSet.add(modelProps[0].id!.toString());
+    idSet.add(modelProps[0].id.toString());
     ranges = await iModel.models.queryModelRanges(idSet);
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.equal(1);
