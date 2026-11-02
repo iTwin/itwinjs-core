@@ -2,6 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/rushstack/main/libraries/rush-lib/src/schemas/pnpm-config.schema.json",
   "useWorkspaces": true,
   "strictPeerDependencies": false,
+  "globalCatalogs": {
+    "tooling": {
+      "eslint": "^9.31.0",
+      "rimraf": "^6.0.1"
+    }
+  },
   "globalPeerDependencyRules": {
     "ignoreMissing": [
       "@babel/core",

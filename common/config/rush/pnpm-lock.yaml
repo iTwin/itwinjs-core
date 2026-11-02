@@ -4,6 +4,15 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  tooling:
+    eslint:
+      specifier: ^9.31.0
+      version: 9.39.5
+    rimraf:
+      specifier: ^6.0.1
+      version: 6.1.3
+
 overrides:
   browserslist: latest
   serialize-javascript: ^7.0.5
@@ -135,7 +144,7 @@ importers:
         specifier: ^2.0.6
         version: 2.2.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
@@ -153,7 +162,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -186,10 +195,10 @@ importers:
         specifier: ^4.1.10
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -232,10 +241,10 @@ importers:
         specifier: ^4.1.10
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -292,7 +301,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -301,7 +310,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -407,7 +416,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -416,7 +425,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -479,10 +488,10 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -524,7 +533,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -533,7 +542,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -569,10 +578,10 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -600,7 +609,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -609,7 +618,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -657,7 +666,7 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -666,7 +675,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -727,7 +736,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -736,7 +745,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -761,10 +770,10 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -849,13 +858,13 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       playwright:
         specifier: ~1.56.1
         version: 1.56.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -901,10 +910,10 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -935,10 +944,10 @@ importers:
         specifier: ^4.1.10
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -993,7 +1002,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -1002,7 +1011,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -1060,13 +1069,13 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
         version: 13.0.6
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -1127,13 +1136,13 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
         version: 13.0.6
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -1197,7 +1206,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -1206,7 +1215,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1236,7 +1245,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -1245,7 +1254,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1272,10 +1281,10 @@ importers:
         specifier: ^4.1.10
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       tsx:
         specifier: ~4.22.0
@@ -1318,7 +1327,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -1327,7 +1336,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -1375,7 +1384,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -1384,7 +1393,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       semver:
         specifier: ^7.5.2
@@ -1429,7 +1438,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -1438,7 +1447,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1459,10 +1468,10 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1498,7 +1507,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -1507,7 +1516,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1538,10 +1547,10 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1565,10 +1574,10 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1605,10 +1614,10 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1660,13 +1669,13 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1760,7 +1769,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       jsdom:
         specifier: ^26.0.0
@@ -1775,7 +1784,7 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1814,7 +1823,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
@@ -1823,7 +1832,7 @@ importers:
         specifier: ~1.56.1
         version: 1.56.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -1883,7 +1892,7 @@ importers:
         specifier: ^7.1.1
         version: 7.1.2(chai@4.5.0)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -1895,7 +1904,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -1940,7 +1949,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       fetch-mock:
         specifier: ~11.1.3
@@ -1955,7 +1964,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -2031,7 +2040,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       fetch-mock:
         specifier: ~11.1.3
@@ -2049,7 +2058,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -2080,10 +2089,10 @@ importers:
         specifier: ^0.13.8
         version: 0.13.15
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -2197,7 +2206,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       fs-extra:
         specifier: ^8.1.0
@@ -2206,7 +2215,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -2406,7 +2415,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -2433,7 +2442,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -2545,7 +2554,7 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -2563,7 +2572,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -2695,7 +2704,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       eslint-config-prettier:
         specifier: ^9.1.2
@@ -2725,7 +2734,7 @@ importers:
         specifier: ^3.2.5
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sanitize-filename:
         specifier: ^1.6.3
@@ -2807,7 +2816,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -2816,7 +2825,7 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(webpack@5.111.1)
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -2940,7 +2949,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -2958,7 +2967,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-loader:
         specifier: ^5.0.0
@@ -3079,7 +3088,7 @@ importers:
         specifier: ^1
         version: 1.1.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       eslint-config-prettier:
         specifier: ^9.1.2
@@ -3094,7 +3103,7 @@ importers:
         specifier: ^3.2.5
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -3179,7 +3188,7 @@ importers:
         specifier: ^1
         version: 1.1.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       eslint-config-prettier:
         specifier: ^9.1.2
@@ -3194,7 +3203,7 @@ importers:
         specifier: ^3.2.5
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -3291,7 +3300,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       eslint-config-prettier:
         specifier: ^9.1.2
@@ -3309,7 +3318,7 @@ importers:
         specifier: ^3.2.5
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -3421,7 +3430,7 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       express:
         specifier: ^4.22.1
@@ -3436,7 +3445,7 @@ importers:
         specifier: ^18.0.0
         version: 18.3.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       rollup-plugin-external-globals:
         specifier: 0.11.0
@@ -3605,7 +3614,7 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       express:
         specifier: ^4.22.1
@@ -3626,7 +3635,7 @@ importers:
         specifier: ^18.0.0
         version: 18.3.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       rollup-plugin-external-globals:
         specifier: 0.11.0
@@ -3681,10 +3690,10 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -3730,13 +3739,13 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -3779,10 +3788,10 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -3822,10 +3831,10 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -3862,10 +3871,10 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -3892,7 +3901,7 @@ importers:
         specifier: ^2.0.2
         version: 2.2.1(mocha@11.8.0)
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       tree-kill:
         specifier: ^1.2.2
@@ -3920,7 +3929,7 @@ importers:
         specifier: ~20.17.0
         version: 20.17.58
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -3984,13 +3993,13 @@ importers:
         specifier: ^45.0.0
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -4054,7 +4063,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       mocha:
         specifier: ^11.1.0
@@ -4063,7 +4072,7 @@ importers:
         specifier: ^17.1.0
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       source-map-support:
         specifier: ^0.5.6
@@ -4107,10 +4116,10 @@ importers:
         specifier: ^4.0.7
         version: 4.0.15
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2
@@ -4149,7 +4158,7 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       glob:
         specifier: ^13.0.6
@@ -4158,7 +4167,7 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       sinon:
         specifier: ^17.0.2
@@ -4201,10 +4210,10 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:tooling
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:tooling
         version: 6.1.3
       typescript:
         specifier: ~5.6.2

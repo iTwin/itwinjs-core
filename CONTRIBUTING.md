@@ -140,8 +140,12 @@ Run `rush install` after switching branches or pulling dependency changes. If th
 
 Do not edit versions for internal monorepo dependencies. CI maintains them.
 
+Shared ESLint and rimraf version ranges are defined in `globalCatalogs.tooling` in [`pnpm-config.json`](./common/config/rush/pnpm-config.json). Package manifests reference them with `catalog:tooling`. Rush generates the pnpm workspace configuration; do not edit `common/temp/pnpm-workspace.yaml` manually.
+
 For an external dependency:
 
-1. Update its version range in the owning `package.json`.
+1. If its declaration uses `catalog:tooling`, update the corresponding catalog entry. Otherwise, update its version range in the owning `package.json`.
 2. Run `rush check`.
 3. Run `rush update`.
+
+For catalog changes, also verify that Rush's packed packages contain ordinary version ranges instead of `catalog:` references.

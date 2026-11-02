@@ -73,10 +73,10 @@
     "cpx2": "^8.0.0",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^9.31.0",
+    "eslint": "catalog:tooling",
     "fs-extra": "^8.1.0",
     "mocha": "^11.1.0",
-    "rimraf": "^6.0.1",
+    "rimraf": "catalog:tooling",
     "sinon": "^17.0.2"
   },
   "devDependencies": {

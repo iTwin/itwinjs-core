@@ -78,9 +78,9 @@
     "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
     "electron": "^45.0.0",
-    "eslint": "^9.31.0",
+    "eslint": "catalog:tooling",
     "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
+    "rimraf": "catalog:tooling",
     "typescript": "~5.6.2"
   },
   "peerDependencies": {

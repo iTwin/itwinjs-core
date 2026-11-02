@@ -36,7 +36,7 @@
     "cross-spawn": "^7.0.5",
     "fs-extra": "^8.1.0",
     "mocha-junit-reporter": "^2.0.2",
-    "rimraf": "^6.0.1",
+    "rimraf": "catalog:tooling",
     "tree-kill": "^1.2.2",
     "typedoc": "^0.28.19",
     "typedoc-plugin-merge-modules": "^7.0.0",
@@ -55,7 +55,7 @@
   "devDependencies": {
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
-    "eslint": "^9.31.0",
+    "eslint": "catalog:tooling",
     "mocha": "^11.1.0"
   }
 }

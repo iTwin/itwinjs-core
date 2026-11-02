@@ -55,10 +55,10 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
     "@vitest/browser-playwright": "^4.1.10",
-    "eslint": "^9.31.0",
+    "eslint": "catalog:tooling",
     "internal-tools": "workspace:*",
     "playwright": "~1.56.1",
-    "rimraf": "^6.0.1",
+    "rimraf": "catalog:tooling",
     "typescript": "~5.6.2",
     "vitest": "^4.1.10"
   }
