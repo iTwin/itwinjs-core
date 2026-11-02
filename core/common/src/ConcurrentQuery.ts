@@ -210,9 +210,9 @@ export class QueryOptionsBuilder {
     return this;
   }
   /**
-   * By default all blobs are abbreviated to save memory and network bandwidth. If set to false, all blob data will be returned by query as is.
+   * By default blobs are returned in full. Set to true to abbreviate blob values to a single byte, which saves memory and network bandwidth when using wildcards in the SELECT clause.
    * Use @type BlobReader to access blob data more efficiently.
-   * @param val A boolean value, if set to false will return complete blob type property data. This could cost time and network bandwidth.
+   * @param val A boolean value, if set to true will abbreviate blob type property data. Defaults to false (complete blob data is returned, which could cost time and network bandwidth).
    * @returns @type QueryOptionsBuilder for fluent interface.
    */
   public setAbbreviateBlobs(val: boolean) {

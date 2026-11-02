@@ -225,7 +225,14 @@ export class ITwinLocalization implements Localization {
 
 class TranslationLogger {
   public static readonly type = "logger";
-  public log(args: string[]) { Logger.logInfo("i18n", this.createLogMessage(args)); }
+  public log(args: string[]) {
+    const message = this.createLogMessage(args);
+    // Missing keys are worth a warning; i18next reports them at "log" level.
+    if (args[0]?.includes("missingKey"))
+      Logger.logWarning("i18n", message);
+    else
+      Logger.logInfo("i18n", message);
+  }
   public warn(args: string[]) { Logger.logWarning("i18n", this.createLogMessage(args)); }
   public error(args: string[]) { Logger.logError("i18n", this.createLogMessage(args)); }
   private createLogMessage(args: string[]) {

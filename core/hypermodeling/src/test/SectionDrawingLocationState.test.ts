@@ -50,7 +50,7 @@ describe("SectionDrawingLocationState constructor", () => {
     expect(state.sectionType).to.equal(SectionType.Plan);
   });
 
-  it("reconstructs origin but bbox stays null even when bboxLow/bboxHigh are present", () => {
+  it("reconstructs origin and bbox from bboxLow/bboxHigh", () => {
     const props = makeProps({
       origin: { x: 1, y: 2, z: 3 },
       bboxLow: { x: -1, y: -2, z: -3 },
@@ -61,7 +61,8 @@ describe("SectionDrawingLocationState constructor", () => {
     expect(state.placement.origin.x).to.equal(1);
     expect(state.placement.origin.y).to.equal(2);
     expect(state.placement.origin.z).to.equal(3);
-    expect(state.placement.bbox.isNull).to.be.true;
+    expect(state.placement.bbox.low.x).to.equal(-1);
+    expect(state.placement.bbox.high.z).to.equal(6);
   });
 
   it("produces a null-range bbox and zero origin when origin/bbox are entirely absent", () => {
