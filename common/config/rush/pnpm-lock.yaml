@@ -157,6 +157,12 @@ catalogs:
     '@itwin/unified-selection':
       specifier: ^1.4.0
       version: 1.8.6
+    rxjs:
+      specifier: ^7.8.1
+      version: 7.8.2
+    rxjs-for-await:
+      specifier: ^1.0.0
+      version: 1.0.0
   reality-capture:
     '@itwin/reality-data-client':
       specifier: ^1.3.1
@@ -3253,10 +3259,10 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       rxjs:
-        specifier: ^7.8.1
+        specifier: catalog:presentation
         version: 7.8.2
       rxjs-for-await:
-        specifier: ^1.0.0
+        specifier: catalog:presentation
         version: 1.0.0(rxjs@7.8.2)
       semver:
         specifier: ^7.5.2
@@ -3486,10 +3492,10 @@ importers:
         specifier: catalog:presentation
         version: 1.8.6
       rxjs:
-        specifier: ^7.8.1
+        specifier: catalog:presentation
         version: 7.8.2
       rxjs-for-await:
-        specifier: ^1.0.0
+        specifier: catalog:presentation
         version: 1.0.0(rxjs@7.8.2)
     devDependencies:
       '@itwin/build-tools':
