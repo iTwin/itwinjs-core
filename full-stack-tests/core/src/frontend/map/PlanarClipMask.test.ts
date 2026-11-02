@@ -94,6 +94,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
     try {
       let phaseStart = performance.now();
       requestedTiles.start = vp.numRequestedTiles;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels(originalModelIds);
       vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
       vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
