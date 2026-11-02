@@ -12,6 +12,8 @@ import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
+const INT32_MAX = 2147483647;
+
 /**
  * Validates the given array of schema differences and returns a list of conflicts if the
  * validation finds violation against rules.
@@ -396,17 +398,24 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     }
 
     if (entry.changeType === "modify" && targetProperty !== undefined) {
-      // ECDb does not support changing the bounds of an existing array property during a
-      // schema upgrade, so any minOccurs/maxOccurs delta must be reported as a conflict
-      // instead of being silently merged into a schema that cannot be imported.
-      if (("minOccurs" in entry.difference || "maxOccurs" in entry.difference) && sourceProperty.isArray() && targetProperty.isArray()) {
-        return this.addConflict({
-          code: ConflictCode.ConflictingPropertyArrayBounds,
-          difference: entry,
-          source: { minOccurs: sourceProperty.minOccurs, maxOccurs: sourceProperty.maxOccurs },
-          target: { minOccurs: targetProperty.minOccurs, maxOccurs: targetProperty.maxOccurs },
-          description: "Changing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.",
-        });
+      // ECDb accepts widening the bounds of an existing array property (lower minOccurs, higher maxOccurs),
+      // but rejects narrowing them on schema import, as that could invalidate existing data.
+      // Narrowing is reported as a conflict instead of being merged into a schema that cannot be imported.
+      if (sourceProperty.isArray() && targetProperty.isArray()) {
+        const sourcePropertyMaxOccurs = sourceProperty.maxOccurs ?? INT32_MAX;
+        const targetPropertyMaxOccurs = targetProperty.maxOccurs ?? INT32_MAX;
+
+        // The merge applies the source bounds to the target, so the bounds are narrowed if the source
+        // has a higher minOccurs or a lower maxOccurs than the target.
+        if (sourceProperty.minOccurs > targetProperty.minOccurs || sourcePropertyMaxOccurs < targetPropertyMaxOccurs) {
+          return this.addConflict({
+            code: ConflictCode.ConflictingPropertyArrayBounds,
+            difference: entry,
+            source: { minOccurs: sourceProperty.minOccurs, maxOccurs: sourcePropertyMaxOccurs },
+            target: { minOccurs: targetProperty.minOccurs, maxOccurs: targetPropertyMaxOccurs },
+            description: "Narrowing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.",
+          });
+        }
       }
 
       if ("kindOfQuantity" in entry.difference) {

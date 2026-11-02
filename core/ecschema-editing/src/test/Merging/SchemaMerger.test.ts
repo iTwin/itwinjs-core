@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { EntityClass, Schema, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaConflictsError } from "../../Differencing/Errors";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { AnySchemaDifference, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { AnySchemaDifference, getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
+import { deserializeXml } from "../TestUtils/DeserializationHelpers";
 import { expect } from "chai";
 import "chai-as-promised";
 
@@ -645,6 +646,142 @@ describe("Schema merge tests", () => {
       expect(report!.performanceMetrics.schemaDifferenceDurationMs).to.be.greaterThan(0);
       expect(report!.performanceMetrics.mergeDurationMs).to.be.greaterThan(0);
       expect(report!.performanceMetrics.averageMergeOpDurationMs).to.be.greaterThan(0);
+    });
+  });
+
+  describe("SchemaMerger array bounds tests", () => {
+    const schemaName = "ArrayBoundsSchema";
+    const className = "TestClass";
+    const INT32_MAX = 2147483647;
+
+    interface ArrayBounds { minOccurs: string, maxOccurs: string }
+
+    async function loadSchema(bounds: ArrayBounds): Promise<Schema> {
+      const context = await BisTestHelper.getNewContext();
+      return deserializeXml(`
+      <ECSchema schemaName="${schemaName}" alias="abs" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
+        <ECCustomAttributes>
+          <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
+        </ECCustomAttributes>
+        <ECStructClass typeName="TestStruct">
+          <ECProperty propertyName="Name" typeName="string"/>
+        </ECStructClass>
+        <ECEntityClass typeName="${className}">
+          <ECArrayProperty propertyName="PrimitiveArray" typeName="string" minOccurs="${bounds.minOccurs}" maxOccurs="${bounds.maxOccurs}"/>
+          <ECStructArrayProperty propertyName="StructArray" typeName="TestStruct" minOccurs="${bounds.minOccurs}" maxOccurs="${bounds.maxOccurs}"/>
+        </ECEntityClass>
+      </ECSchema>`, context);
+    }
+
+    async function getArrayBounds(schema: Schema, propertyName: string): Promise<{ minOccurs: number, maxOccurs?: number }> {
+      const ecClass = await schema.getItem(className, EntityClass);
+      const property = await ecClass?.getProperty(propertyName);
+      if (!property?.isArray())
+        throw new Error(`Array property '${className}.${propertyName}' was not found in schema '${schema.fullName}'.`);
+      return { minOccurs: property.minOccurs, maxOccurs: property.maxOccurs };
+    }
+
+    describe("widening", () => {
+      const testCases: Array<{
+        name: string,
+        source: ArrayBounds,
+        target: ArrayBounds,
+        /** The difference entries only contain the bounds that actually differ. */
+        expectedDifference: { minOccurs?: number, maxOccurs?: number },
+        expected: { minOccurs: number, maxOccurs: number },
+      }> = [
+          {
+            name: "min decreased and max increased to unbounded",
+            source: { minOccurs: "0", maxOccurs: "unbounded" },
+            target: { minOccurs: "1", maxOccurs: "1" },
+            expectedDifference: { minOccurs: 0, maxOccurs: INT32_MAX },
+            expected: { minOccurs: 0, maxOccurs: INT32_MAX },
+          },
+          {
+            name: "only min decreased",
+            source: { minOccurs: "0", maxOccurs: "5" },
+            target: { minOccurs: "2", maxOccurs: "5" },
+            expectedDifference: { minOccurs: 0 },
+            expected: { minOccurs: 0, maxOccurs: 5 },
+          },
+          {
+            name: "only max increased",
+            source: { minOccurs: "1", maxOccurs: "10" },
+            target: { minOccurs: "1", maxOccurs: "5" },
+            expectedDifference: { maxOccurs: 10 },
+            expected: { minOccurs: 1, maxOccurs: 10 },
+          },
+        ];
+
+      for (const testCase of testCases) {
+        it(`should merge the wider bounds into the target schema (${testCase.name})`, async () => {
+          const sourceSchema = await loadSchema(testCase.source);
+          const targetSchema = await loadSchema(testCase.target);
+
+          const differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
+          expect(differenceResult.conflicts, "widening array bounds must not produce conflicts").to.be.undefined;
+          expect(differenceResult.differences).to.deep.include.members([
+            { changeType: "modify", schemaType: SchemaOtherTypes.Property, itemName: className, path: "PrimitiveArray", difference: testCase.expectedDifference },
+            { changeType: "modify", schemaType: SchemaOtherTypes.Property, itemName: className, path: "StructArray", difference: testCase.expectedDifference },
+          ]);
+
+          const mergedSchema = await new SchemaMerger(targetSchema.context).merge(differenceResult);
+
+          expect(await getArrayBounds(mergedSchema, "PrimitiveArray")).to.deep.equal(testCase.expected);
+          expect(await getArrayBounds(mergedSchema, "StructArray")).to.deep.equal(testCase.expected);
+        });
+      }
+    });
+
+    describe("narrowing", () => {
+      const testCases: Array<{ name: string, source: ArrayBounds, target: ArrayBounds }> = [
+        {
+          name: "min increased and max decreased",
+          source: { minOccurs: "1", maxOccurs: "1" },
+          target: { minOccurs: "0", maxOccurs: "unbounded" },
+        },
+        {
+          name: "only min increased",
+          source: { minOccurs: "2", maxOccurs: "unbounded" },
+          target: { minOccurs: "0", maxOccurs: "unbounded" },
+        },
+        {
+          name: "only max decreased",
+          source: { minOccurs: "0", maxOccurs: "5" },
+          target: { minOccurs: "0", maxOccurs: "unbounded" },
+        },
+        {
+          name: "min decreased but max also decreased",
+          source: { minOccurs: "0", maxOccurs: "2" },
+          target: { minOccurs: "1", maxOccurs: "5" },
+        },
+        {
+          name: "both narrowed",
+          source: { minOccurs: "1", maxOccurs: "1" },
+          target: { minOccurs: "0", maxOccurs: "unbounded" },
+        },
+      ];
+
+      for (const testCase of testCases) {
+        it(`should report a conflict and refuse to merge (${testCase.name})`, async () => {
+          const sourceSchema = await loadSchema(testCase.source);
+          const targetSchema = await loadSchema(testCase.target);
+
+          const differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
+          expect(differenceResult.conflicts).to.have.lengthOf(2);
+          expect(differenceResult.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) =>
+            conflicts.every((conflict) => conflict.code === ConflictCode.ConflictingPropertyArrayBounds));
+
+          await expect(new SchemaMerger(targetSchema.context).merge(differenceResult))
+            .to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.");
+
+          // The target must be left untouched.
+          const targetBounds = { minOccurs: Number(testCase.target.minOccurs), maxOccurs: testCase.target.maxOccurs === "unbounded" ? INT32_MAX : Number(testCase.target.maxOccurs) };
+          expect(await getArrayBounds(targetSchema, "PrimitiveArray")).to.deep.equal(targetBounds);
+          expect(await getArrayBounds(targetSchema, "StructArray")).to.deep.equal(targetBounds);
+        });
+      }
     });
   });
 });

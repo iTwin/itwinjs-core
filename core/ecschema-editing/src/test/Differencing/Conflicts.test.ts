@@ -1177,8 +1177,9 @@ describe("Schema Difference Conflicts", () => {
       await expect(findConflictItem(differences, "TestItem")).to.be.eventually.undefined;
     });
 
-    it("should find a conflict when array property bounds differ", async () => {
-      const sourceSchema = {
+    // Creates a schema with a primitive and a struct array property using the given bounds.
+    function createArrayBoundsSchema(bounds: { minOccurs: number, maxOccurs: number }) {
+      return {
         ...schemaHeader,
         items: {
           TestStruct: {
@@ -1191,62 +1192,84 @@ describe("Schema Difference Conflicts", () => {
                 name: "PrimitiveArray",
                 type: "PrimitiveArrayProperty",
                 typeName: "string",
-                minOccurs: 0,
-                maxOccurs: 2147483647,
+                ...bounds,
               },
               {
                 name: "StructArray",
                 type: "StructArrayProperty",
                 typeName: "ConflictSchema.TestStruct",
-                minOccurs: 0,
-                maxOccurs: 2147483647,
+                ...bounds,
               },
             ],
           },
         },
       };
+    }
 
-      const targetSchema = {
-        ...schemaHeader,
-        items: {
-          TestStruct: {
-            schemaItemType: "StructClass",
-          },
-          TestItem: {
-            schemaItemType: "EntityClass",
-            properties: [
-              {
-                name: "PrimitiveArray",
-                type: "PrimitiveArrayProperty",
-                typeName: "string",
-                minOccurs: 1,
-                maxOccurs: 1,
-              },
-              {
-                name: "StructArray",
-                type: "StructArrayProperty",
-                typeName: "ConflictSchema.TestStruct",
-                minOccurs: 1,
-                maxOccurs: 1,
-              },
-            ],
-          },
-        },
-      };
+    const INT32_MAX = 2147483647;
 
-      const differences = await runDifferences(sourceSchema, targetSchema);
+    it("should find a conflict when array property bounds are narrowed", async () => {
+      const sourceBounds = { minOccurs: 1, maxOccurs: 1 };
+      const targetBounds = { minOccurs: 0, maxOccurs: INT32_MAX };
+
+      const differences = await runDifferences(createArrayBoundsSchema(sourceBounds), createArrayBoundsSchema(targetBounds));
       expect(differences.conflicts).to.have.lengthOf(2);
       for (const propertyName of ["PrimitiveArray", "StructArray"]) {
         const conflict = differences.conflicts!.find((c) => "path" in c.difference && c.difference.path === propertyName);
         expect(conflict, `conflict for ${propertyName}`).to.exist;
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyArrayBounds);
-        expect(conflict).to.have.a.property("source").deep.equals({ minOccurs: 0, maxOccurs: 2147483647 });
-        expect(conflict).to.have.a.property("target").deep.equals({ minOccurs: 1, maxOccurs: 1 });
-        expect(conflict).to.have.a.property("description", "Changing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.");
+        expect(conflict).to.have.a.property("source").deep.equals(sourceBounds);
+        expect(conflict).to.have.a.property("target").deep.equals(targetBounds);
+        expect(conflict).to.have.a.property("description", "Narrowing 'minOccurs' or 'maxOccurs' of an existing array property is not supported.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
         expect(conflict).to.have.a.nested.property("difference.itemName", "TestItem");
         expect(conflict).to.have.a.nested.property("difference.path", propertyName);
       }
+    });
+
+    it("should find a conflict when only the minOccurs of array property bounds is narrowed", async () => {
+      const differences = await runDifferences(
+        createArrayBoundsSchema({ minOccurs: 2, maxOccurs: INT32_MAX }),
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: INT32_MAX }));
+      expect(differences.conflicts).to.have.lengthOf(2);
+      expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
+    });
+
+    it("should find a conflict when only the maxOccurs of array property bounds is narrowed", async () => {
+      const differences = await runDifferences(
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: 5 }),
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: INT32_MAX }));
+      expect(differences.conflicts).to.have.lengthOf(2);
+      expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
+    });
+
+    it("should find a conflict when both bounds of an array property bounds are narrowed", async () => {
+      const differences = await runDifferences(
+        createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 1 }),
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: INT32_MAX }));
+      expect(differences.conflicts).to.have.lengthOf(2);
+      expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
+    });
+
+    it("should find a conflict when array property bounds are widened on one side but narrowed on the other", async () => {
+      // source lowers minOccurs (widened) but also lowers maxOccurs (narrowed)
+      const differences = await runDifferences(
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: 2 }),
+        createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 5 }));
+      expect(differences.conflicts).to.have.lengthOf(2);
+      expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
+    });
+
+    it("should not find a conflict when array property bounds are widened", async () => {
+      const differences = await runDifferences(
+        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: INT32_MAX }),
+        createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 1 }));
+      expect(differences.conflicts).to.be.undefined;
+      expect(differences.differences).to.have.lengthOf(2);
+      expect(differences.differences).to.deep.include.members([
+        { changeType: "modify", schemaType: "Property", itemName: "TestItem", path: "PrimitiveArray", difference: { minOccurs: 0, maxOccurs: INT32_MAX } },
+        { changeType: "modify", schemaType: "Property", itemName: "TestItem", path: "StructArray", difference: { minOccurs: 0, maxOccurs: INT32_MAX } },
+      ]);
     });
 
     it("should not find a conflict when array property bounds are equal", async () => {

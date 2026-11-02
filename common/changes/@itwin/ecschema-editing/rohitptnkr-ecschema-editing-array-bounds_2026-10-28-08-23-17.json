@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-editing",
-      "comment": "Schema differencing now reports a `ConflictingPropertyArrayBounds` conflict when `minOccurs`/`maxOccurs` of an existing array property differ, instead of producing a merged schema that ECDb rejects on import.",
+      "comment": "Schema differencing now reports a `ConflictingPropertyArrayBounds` conflict when the `minOccurs`/`maxOccurs` of an existing array property are narrowed. Widening the bounds is allowed and gets merged.",
       "type": "none"
     }
   ],
