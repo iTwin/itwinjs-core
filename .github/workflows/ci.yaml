@@ -33,7 +33,9 @@ jobs:
   rush-check:
     if: github.event_name == 'pull_request'
     name: rush check
-    runs-on: ubuntu-latest
+    # Pinned: @itwin/oidc-signin-tool postinstall uses Playwright <1.61, which fails on Ubuntu 26.04.
+    # Revert to ubuntu-latest once fixed: https://github.com/iTwin/auth-clients/issues/377
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         # Pin to full commit SHA instead of a mutable tag to prevent tag-hijacking
@@ -54,7 +56,7 @@ jobs:
   rush-change:
     if: github.event_name == 'pull_request'
     name: rush change
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # See rush-check job for why this is pinned.
     steps:
       - name: Checkout
         # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
@@ -88,7 +90,7 @@ jobs:
   audit:
     if: github.event_name == 'pull_request' || github.event_name == 'schedule'
     name: rush audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # See rush-check job for why this is pinned.
     steps:
       - name: Checkout
         # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
@@ -114,7 +116,7 @@ jobs:
   lint-and-extract-api:
     if: github.event_name == 'pull_request'
     name: rush lint + extract-api
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # See rush-check job for why this is pinned.
     steps:
       - name: Checkout
         # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
