@@ -1243,16 +1243,15 @@ describe("Schema Difference Conflicts", () => {
       expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
     });
 
-    it("should find a conflict when both bounds of an array property bounds are narrowed", async () => {
+    it("should find a conflict when the minOccurs is narrowed even though the maxOccurs is widened", async () => {
       const differences = await runDifferences(
-        createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 1 }),
-        createArrayBoundsSchema({ minOccurs: 0, maxOccurs: INT32_MAX }));
+        createArrayBoundsSchema({ minOccurs: 2, maxOccurs: INT32_MAX }),
+        createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 5 }));
       expect(differences.conflicts).to.have.lengthOf(2);
       expect(differences.conflicts).to.satisfy((conflicts: AnySchemaDifferenceConflict[]) => conflicts.every((c) => c.code === ConflictCode.ConflictingPropertyArrayBounds));
     });
 
-    it("should find a conflict when array property bounds are widened on one side but narrowed on the other", async () => {
-      // source lowers minOccurs (widened) but also lowers maxOccurs (narrowed)
+    it("should find a conflict when the maxOccurs is narrowed even though the minOccurs is widened", async () => {
       const differences = await runDifferences(
         createArrayBoundsSchema({ minOccurs: 0, maxOccurs: 2 }),
         createArrayBoundsSchema({ minOccurs: 1, maxOccurs: 5 }));

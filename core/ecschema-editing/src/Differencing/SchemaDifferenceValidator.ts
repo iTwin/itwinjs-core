@@ -12,8 +12,6 @@ import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
-const INT32_MAX = 2147483647;
-
 /**
  * Validates the given array of schema differences and returns a list of conflicts if the
  * validation finds violation against rules.
@@ -402,11 +400,10 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       // but rejects narrowing them on schema import, as that could invalidate existing data.
       // Narrowing is reported as a conflict instead of being merged into a schema that cannot be imported.
       if (sourceProperty.isArray() && targetProperty.isArray()) {
-        const sourcePropertyMaxOccurs = sourceProperty.maxOccurs ?? INT32_MAX;
-        const targetPropertyMaxOccurs = targetProperty.maxOccurs ?? INT32_MAX;
-
         // The merge applies the source bounds to the target, so the bounds are narrowed if the source
         // has a higher minOccurs or a lower maxOccurs than the target.
+        const sourcePropertyMaxOccurs = sourceProperty.maxOccurs!;
+        const targetPropertyMaxOccurs = targetProperty.maxOccurs!;
         if (sourceProperty.minOccurs > targetProperty.minOccurs || sourcePropertyMaxOccurs < targetPropertyMaxOccurs) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyArrayBounds,

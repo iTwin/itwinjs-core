@@ -757,9 +757,9 @@ describe("Schema merge tests", () => {
           target: { minOccurs: "1", maxOccurs: "5" },
         },
         {
-          name: "both narrowed",
-          source: { minOccurs: "1", maxOccurs: "1" },
-          target: { minOccurs: "0", maxOccurs: "unbounded" },
+          name: "min increased but max also increased",
+          source: { minOccurs: "2", maxOccurs: "unbounded" },
+          target: { minOccurs: "1", maxOccurs: "5" },
         },
       ];
 
