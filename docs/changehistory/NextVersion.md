@@ -83,16 +83,14 @@ By default, the queries run on the primary connection, so unsaved changes are vi
 
 The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) methods write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes. Each owning element is updated once per call instead of once per aspect, which makes these methods faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) for each aspect, especially when an element has several aspects.
 
-Invalid rows do not prevent the other rows from being written. The result lists the index, [IModelStatus]($bentley) and message of every row that failed. For example, a `classFullName` that is not in the iModel fails with `IModelStatus.BadSchema`, and a class that is not an aspect fails with `IModelStatus.WrongClass`.
+Like [EditTxn.deleteElements]($backend), each call is all-or-nothing. Every row is validated before anything is written. If any row is invalid, nothing is written, no handlers are called, and the result has status [BulkElementAspectsStatus.ValidationFailed]($backend) with one [BulkElementAspectFailure]($backend) per invalid row: its index, the aspect id when known, a [BulkElementAspectFailureReason]($backend) and an optional detail. For example, a `classFullName` that is not in the iModel fails with `ClassNotFound`, and a class that is not an aspect fails with `NotAnAspectClass`. If a write fails unexpectedly, the method throws and the changes must be abandoned.
 
 ```ts
-const { ids, failures } = txn.insertAspects(aspectProps);
-```
-
-To write nothing when any row is invalid, pass [BulkElementAspectsMode.FailFast]($backend) in [BulkElementAspectsArgs]($backend). The result then has status [BulkElementAspectsStatus.ValidationFailed]($backend) and lists the invalid rows, and no handlers are called.
-
-```ts
-const result = txn.updateAspects(aspectProps, { mode: BulkElementAspectsMode.FailFast });
+const result = txn.insertAspects(aspectProps);
+if (result.status === BulkElementAspectsStatus.ValidationFailed) {
+  for (const failure of result.failures)
+    console.log(`Row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+}
 ```
 
 The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`, `onBulkUpdated`, `onBulkDelete` and `onBulkDeleted` handlers are called once per aspect class. By default they call the existing per-aspect handlers, so existing overrides of `onInsert`, `onUpdate` and the other per-aspect handlers still run for every aspect. Within one bulk call, the default handlers check the lock of each owning element and the channel of each model only once. The existing single-aspect methods and handlers are unchanged.

@@ -70,57 +70,44 @@ export enum BulkDeleteElementsStatus {
  * @beta
  */
 export enum BulkElementAspectsStatus {
-  /** Every row succeeded, or the input was empty. */
+  /** Every aspect was written, or the input was empty. */
   Success = 0,
-  /** Some rows failed. See [[BulkElementAspectsResult.failures]]. */
-  PartialSuccess = 1,
-  /** Every row failed. */
-  Failed = 2,
-  /** Only with [[BulkElementAspectsMode.FailFast]]: some rows failed validation, so nothing was written and no handlers were called.
-   * [[BulkElementAspectsResult.failures]] lists the invalid rows.
-   */
-  ValidationFailed = 3,
+  /** Nothing was written and no handlers were called, because some rows are invalid; see [[BulkElementAspectsResult.failures]]. Fix those rows and retry. */
+  ValidationFailed = 1,
 }
 
 /**
- * How a bulk ElementAspect operation such as [[EditTxn.insertAspects]] treats invalid rows.
+ * Why a row of a bulk ElementAspect operation such as [[EditTxn.insertAspects]] is invalid.
  * @beta
  */
-export enum BulkElementAspectsMode {
-  /** Write the valid rows and report the invalid ones. This is the default. */
-  BestEffort = 0,
-  /** Validate every row first. If any row is invalid, write nothing, call no handlers, and return [[BulkElementAspectsStatus.ValidationFailed]].
-   * Failures that only show up while writing (for example, a database error) are still reported per row, with the other rows written.
-   */
-  FailFast = 1,
+export enum BulkElementAspectFailureReason {
+  /** The row is not an object, has no `classFullName`, or its properties cannot be converted to the aspect class. */
+  InvalidProps = 0,
+  /** The aspect id (for an update) or the owning element id is missing or not a valid [[Id64String]]. */
+  InvalidId = 1,
+  /** The aspect class is not in the iModel, e.g. because its schema has not been imported. */
+  ClassNotFound = 2,
+  /** The class is not an [[ElementUniqueAspect]] or [[ElementMultiAspect]] class. */
+  NotAnAspectClass = 3,
+  /** The owning element does not exist. */
+  ElementNotFound = 4,
+  /** The aspect to update or delete does not exist, or is not owned by the given element. */
+  AspectNotFound = 5,
 }
 
 /**
- * Options for the bulk ElementAspect operations such as [[EditTxn.insertAspects]].
- * @beta
- */
-export interface BulkElementAspectsArgs {
-  /** How to treat invalid rows. Defaults to [[BulkElementAspectsMode.BestEffort]]. */
-  mode?: BulkElementAspectsMode;
-}
-
-/**
- * A row that failed in a bulk ElementAspect operation.
+ * One invalid row of a bulk ElementAspect operation such as [[EditTxn.insertAspects]], and why.
  * @beta
  */
 export interface BulkElementAspectFailure {
   /** The index of the row in the input array. */
   index: number;
-  /** Why the row failed. For example:
-   * - [[IModelStatus.BadArg]]: the row is not an object or has no `classFullName`.
-   * - [[IModelStatus.BadSchema]]: the `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported.
-   * - [[IModelStatus.WrongClass]]: the class exists but is not an [[ElementUniqueAspect]] or [[ElementMultiAspect]].
-   * - [[IModelStatus.InvalidId]] or [[IModelStatus.MissingId]]: the owning element id is invalid or the element does not exist.
-   * - [[IModelStatus.NotFound]]: the aspect to update or delete does not exist.
-   */
-  status: IModelStatus;
-  /** A description of the failure. */
-  message: string;
+  /** The id of the aspect, when known. */
+  id?: Id64String;
+  /** Why the row is invalid. */
+  reason: BulkElementAspectFailureReason;
+  /** More information, such as the class name or element id that was not found. */
+  detail?: string;
 }
 
 /**
@@ -128,9 +115,9 @@ export interface BulkElementAspectFailure {
  * @beta
  */
 export interface BulkElementAspectsResult {
-  /** Overall status of the operation. */
+  /** Overall status of the operation. See [[BulkElementAspectsStatus]]. */
   status: BulkElementAspectsStatus;
-  /** The rows that failed, in ascending index order. Rows that are not listed succeeded. */
+  /** One entry per invalid row, in ascending index order. Only populated on `ValidationFailed`. */
   failures: BulkElementAspectFailure[];
 }
 
@@ -139,10 +126,9 @@ export interface BulkElementAspectsResult {
  * @beta
  */
 export interface BulkInsertElementAspectsResult extends BulkElementAspectsResult {
-  /** The Id of the inserted aspect for each input row, or [[Id64.invalid]] for rows that failed. */
+  /** On `Success`, the id of the inserted aspect for each input row. Empty on `ValidationFailed`. */
   ids: Id64String[];
 }
-
 /**
  * Represents an explicit editing transaction for an iModel.
  *
@@ -594,25 +580,30 @@ export class EditTxn {
     });
   }
 
-  /** Insert many aspects into the iModel.
+  /** Insert many aspects into the iModel in a single bulk operation.
    * Aspects may belong to any number of elements and classes. Each owning element is updated once, no matter how many of its aspects are inserted.
    * Inserting an [[ElementUniqueAspect]] for an element that already has one of that class replaces it; if the same element and class appear more than once, the last row wins.
-   * [[ElementAspect.onBulkInsert]] is called for every aspect class before anything is written, and [[ElementAspect.onBulkInserted]] after.
+   *
+   * The operation is all-or-nothing:
+   * - Every row is validated first. If any row is invalid, nothing is written, no handlers are called, and the result is `ValidationFailed`
+   *   with [[BulkElementAspectsResult.failures]] listing every invalid row and why.
+   * - Otherwise [[ElementAspect.onBulkInsert]] is called for every aspect class, the aspects are written, and [[ElementAspect.onBulkInserted]] is called for every aspect class.
+   * - If a write fails unexpectedly (e.g. a SQLite error), an IModelError is thrown, no post-insert handlers are called, and the iModel may be partially modified;
+   *   the caller must abandon the changes with [[EditTxn.abandonChanges]].
+   *
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param aspectProps The properties of the new aspects.
-   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to insert nothing if any row is invalid.
-   * @returns The Id of each inserted aspect and the rows that failed. By default, invalid rows do not prevent the other rows from being inserted.
+   * @returns A result object with the id of each inserted aspect, or the invalid rows.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if a pre-insert handler throws. Nothing is written in that case.
-   * @throws IModelError if the update of an owning element or a post-insert handler throws. Aspects already written stay in this EditTxn, as with the single-aspect methods;
-   * call [[EditTxn.abandonChanges]] to discard them.
+   * @throws IModelError if a write or a post-insert handler fails. The iModel may be partially modified; abandon the changes.
    * @beta
    */
-  public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkInsertElementAspectsResult {
+  public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkInsertElementAspectsResult {
     this.verifyWriteable();
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].insertElementAspects(aspectProps, args));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].insertElementAspects(aspectProps));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error inserting ElementAspects [${err.message}]`);
       error.cause = err;
@@ -620,24 +611,29 @@ export class EditTxn {
     }
   }
 
-  /** Update many existing aspects in the iModel.
+  /** Update many existing aspects in the iModel in a single bulk operation.
    * Each owning element is updated once, no matter how many of its aspects are updated.
-   * [[ElementAspect.onBulkUpdate]] is called for every aspect class before anything is written, and [[ElementAspect.onBulkUpdated]] after.
+   *
+   * The operation is all-or-nothing:
+   * - Every row is validated first. If any row is invalid or its aspect is not found, nothing is written, no handlers are called, and the result is
+   *   `ValidationFailed` with [[BulkElementAspectsResult.failures]] listing every invalid row and why.
+   * - Otherwise [[ElementAspect.onBulkUpdate]] is called for every aspect class, the aspects are written, and [[ElementAspect.onBulkUpdated]] is called for every aspect class.
+   * - If a write fails unexpectedly (e.g. a SQLite error), an IModelError is thrown, no post-update handlers are called, and the iModel may be partially modified;
+   *   the caller must abandon the changes with [[EditTxn.abandonChanges]].
+   *
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param aspectProps The properties of the aspects to update. [[ElementMultiAspect]]s are identified by `id`, [[ElementUniqueAspect]]s by `element` and `classFullName`.
-   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to update nothing if any row is invalid or its aspect is not found.
-   * @returns The rows that failed. By default, invalid rows do not prevent the other rows from being updated.
+   * @returns A result object describing the outcome of the operation and the invalid rows (if any).
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if a pre-update handler throws. Nothing is written in that case.
-   * @throws IModelError if the update of an owning element or a post-update handler throws. Aspects already written stay in this EditTxn, as with the single-aspect methods;
-   * call [[EditTxn.abandonChanges]] to discard them.
+   * @throws IModelError if a write or a post-update handler fails. The iModel may be partially modified; abandon the changes.
    * @beta
    */
-  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkElementAspectsResult {
+  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkElementAspectsResult {
     this.verifyWriteable();
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].updateElementAspects(aspectProps, args));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].updateElementAspects(aspectProps));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error updating ElementAspects [${err.message}]`);
       error.cause = err;
@@ -645,36 +641,45 @@ export class EditTxn {
     }
   }
 
-  /** Delete many aspects from the iModel.
+  /** Delete many aspects from the iModel in a single bulk operation.
    * Each owning element is updated once, no matter how many of its aspects are deleted. Duplicate ids are deleted once.
-   * [[ElementAspect.onBulkDelete]] is called for every aspect class before anything is written, and [[ElementAspect.onBulkDeleted]] after.
-   * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
-   * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
-   * @param ids The Ids of the aspects to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @param args Options. Use [[BulkElementAspectsMode.FailFast]] to delete nothing if any aspect is not found.
-   * @returns The rows that failed, e.g. because no aspect with that id exists. By default, failed rows do not prevent the other rows from being deleted.
+   *
+   * The operation is all-or-nothing:
+   * - Every aspect is looked up first. If any aspect is not found, nothing is deleted, no handlers are called, and the result is `ValidationFailed`
+   *   with [[BulkElementAspectsResult.failures]] listing every missing aspect.
+   * - Otherwise [[ElementAspect.onBulkDelete]] is called for every aspect class, the aspects are deleted, and [[ElementAspect.onBulkDeleted]] is called for every aspect class.
+   * - If the delete fails unexpectedly (e.g. a SQLite error), an IModelError is thrown, no post-delete handlers are called, and the iModel may be partially modified;
+   *   the caller must abandon the changes with [[EditTxn.abandonChanges]].
+   *
+   * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements
+   * of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
+   * @param ids The ids of the aspects to delete. All ids must be well-formed and valid [[Id64String]]s.
+   * @returns A result object describing the outcome of the operation and the missing aspects (if any).
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @throws IModelError if a pre-delete handler throws. Nothing is written in that case.
-   * @throws IModelError if the update of an owning element or a post-delete handler throws. Aspects already written stay in this EditTxn, as with the single-aspect methods;
-   * call [[EditTxn.abandonChanges]] to discard them.
+   * @throws IModelError if the delete or a post-delete handler fails. The iModel may be partially modified; abandon the changes.
    * @beta
    */
-  public deleteAspects(ids: Id64Array, args?: BulkElementAspectsArgs): BulkElementAspectsResult {
+  public deleteAspects(ids: Id64Array): BulkElementAspectsResult {
     this.verifyWriteable();
-    const invalidIds = ids.filter((id) => !Id64.isValidId64(id));
-    if (invalidIds.length > 0)
-      ITwinError.throwError({ message: `Invalid aspect ids: ${invalidIds.join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+    const invalidIds: Id64Set = new Set<Id64String>();
+    for (const id of ids) {
+      if (!Id64.isValidId64(id))
+        invalidIds.add(id);
+    }
+
+    if (invalidIds.size > 0)
+      ITwinError.throwError({ message: `Invalid aspect ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     try {
-      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].deleteElementAspects(ids, args));
+      return withBulkAspectChecks(this.iModel, () => this.iModel[_nativeDb].deleteElementAspects(ids));
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error deleting ElementAspects [${err.message}]`);
       error.cause = err;
       throw error;
     }
   }
-
   /** Delete definition elements from the iModel when they are not referenced.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.

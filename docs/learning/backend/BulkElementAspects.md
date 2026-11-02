@@ -9,6 +9,8 @@ They are faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAs
 
 These methods are `@beta`.
 
+Each operation is **all-or-nothing**: either every row is written, or - if any row is invalid - nothing is written and the invalid rows are reported.
+
 ## Basic usage
 
 ```typescript
@@ -16,7 +18,18 @@ const inserted: BulkInsertElementAspectsResult = txn.insertAspects([
   { classFullName: "MySchema:MyMultiAspect", element: { id: elementId }, label: "a" },
   { classFullName: "MySchema:MyUniqueAspect", element: { id: elementId }, label: "b" },
 ]);
-// inserted.ids[i] is the Id of the aspect inserted for row i, or Id64.invalid if row i failed.
+
+switch (inserted.status) {
+  case BulkElementAspectsStatus.Success:
+    // inserted.ids[i] is the Id of the aspect inserted for row i.
+    break;
+  case BulkElementAspectsStatus.ValidationFailed:
+    // Some rows are invalid, so nothing was written and no handlers were called.
+    // Inspect inserted.failures, fix those rows, and retry.
+    for (const failure of inserted.failures)
+      console.log(`Row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+    break;
+}
 
 txn.updateAspects([
   { classFullName: "MySchema:MyMultiAspect", element: { id: elementId }, id: inserted.ids[0], label: "a2" },
@@ -36,42 +49,20 @@ Each method returns a [BulkElementAspectsResult]($backend). `insertAspects` retu
 
 | Field | Description |
 |---|---|
-| `status` | [BulkElementAspectsStatus]($backend), see below |
-| `failures` | One [BulkElementAspectFailure]($backend) per failed row: its `index` in the input, an [IModelStatus]($bentley) and a `message` |
-| `ids` | `insertAspects` only: the Id of the aspect inserted for each row, or `Id64.invalid` for a failed row |
+| `status` | [BulkElementAspectsStatus]($backend): `Success` or `ValidationFailed` |
+| `failures` | [BulkElementAspectFailure]($backend) entries, only populated on `ValidationFailed`: the row `index` in the input, the aspect `id` when known, a [BulkElementAspectFailureReason]($backend) and an optional `detail` |
+| `ids` | `insertAspects` only: on `Success`, the Id of the aspect inserted for each row. Empty on `ValidationFailed` |
 
-| Status | Meaning |
-|---|---|
-| `Success` | Every row succeeded, or the input was empty. |
-| `PartialSuccess` | Some rows failed. The other rows were written. |
-| `Failed` | Every row failed. |
-| `ValidationFailed` | Only with `FailFast`: some rows were invalid, so nothing was written. |
+Every row is validated before anything is modified, so `ValidationFailed` always leaves the iModel - and the current txn - untouched. `failures` lists every invalid row, in ascending index order.
 
-Common row failures:
-
-| IModelStatus | Cause |
-|---|---|
-| `BadArg` | The row is not an object or has no `classFullName`. |
-| `BadSchema` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. |
-| `WrongClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend). |
-| `InvalidId`, `MissingId` | The owning element id is invalid, or the element does not exist. |
-| `NotFound` | The aspect to update or delete does not exist, or an updated [ElementMultiAspect]($backend) belongs to a different element than `element`. |
-
-## Modes
-
-By default ([BulkElementAspectsMode.BestEffort]($backend)), invalid rows are reported and the other rows are written.
-
-With [BulkElementAspectsMode.FailFast]($backend), every row is validated first. If any row is invalid, nothing is written, no handlers are called, and the status is `ValidationFailed`. `failures` lists only the invalid rows.
-
-```typescript
-const result = txn.insertAspects(aspectProps, { mode: BulkElementAspectsMode.FailFast });
-if (result.status === BulkElementAspectsStatus.ValidationFailed) {
-  for (const failure of result.failures)
-    console.log(`Row ${failure.index}: ${failure.message}`);
-}
-```
-
-FailFast only covers validation: unknown classes, missing owning elements, and, for update and delete, aspects that are not found. A failure that only shows up while writing, such as a database error, is still reported per row with `PartialSuccess` or `Failed`, and the other rows are written.
+| Reason | Cause | `detail` |
+|---|---|---|
+| `InvalidProps` | The row is not an object, has no `classFullName`, or its properties cannot be converted to the aspect class. | what is wrong |
+| `InvalidId` | The aspect id (for an update) or the owning element id is missing or not a valid [Id64String]($bentley). | what is wrong |
+| `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. | the class name |
+| `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. | the class name |
+| `ElementNotFound` | The owning element does not exist. | the element id |
+| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. | why the aspect was not found, when known |
 
 ## Handlers
 
@@ -83,7 +74,7 @@ Each method calls batch handlers once per aspect class:
 | `updateAspects` | `ElementAspect.onBulkUpdate` | `ElementAspect.onBulkUpdated` |
 | `deleteAspects` | `ElementAspect.onBulkDelete` | `ElementAspect.onBulkDeleted` |
 
-`arg.aspects` lists the aspects of that class in input order. The "after" handlers only get the aspects that were written. `onBulkDelete` and `onBulkDeleted` supply the owning element of each aspect.
+`arg.aspects` lists the aspects of that class in input order. `onBulkDelete` and `onBulkDeleted` supply the owning element of each aspect.
 
 The default handlers call the per-aspect handlers (`onInsert`, `onInserted`, `onUpdate`, ...) for each aspect, so existing overrides still run. Override a batch handler only to replace that loop with something faster, and call `super`.
 
@@ -92,7 +83,8 @@ Each owning element is updated once per call, so its `onUpdated` handler (and it
 ## Errors
 
 - If a "before" handler throws, nothing is written and the method throws.
-- If the update of an owning element or an "after" handler throws, the method throws, but aspects already written stay in the [EditTxn]($backend), as with the single-aspect methods. Call [EditTxn.abandonChanges]($backend) to discard them.
+- If a write fails unexpectedly (e.g. a SQLite error), the method throws an [IModelError]($common) and no "after" handlers are called.
+- If a write, the update of an owning element or an "after" handler fails, aspects already written stay in the [EditTxn]($backend), as with the single-aspect methods. Call [EditTxn.abandonChanges]($backend) to discard them.
 
 ## Batch size
 

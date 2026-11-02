@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Code, ElementAspectProps, IModel } from "@itwin/core-common";
+import { DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
+import { Code, ElementAspectProps, IModel, IModelError } from "@itwin/core-common";
 import {
-  BulkElementAspectsMode, BulkElementAspectsStatus, EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject,
+  BulkElementAspectFailureReason, BulkElementAspectsStatus, EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject,
 } from "../../core-backend";
-import { _verifyChannel } from "../../internal/Symbols";
+import { _nativeDb, _verifyChannel } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 
@@ -101,79 +101,42 @@ describe("EditTxn bulk ElementAspect operations", () => {
     });
   });
 
-  it("reports per-row failures and still writes the valid rows", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      const inserted = txn.insertAspects([
-        multiProps(e1, "ok1"),
-        multiProps("0xffffff", "noOwner"),
-        { ...multiProps(e1, "badClass"), classFullName: "BulkAspectTest:DoesNotExist" },
-        uniqueProps(e1, "ok2"),
-      ]);
-      expect(inserted.status).to.equal(BulkElementAspectsStatus.PartialSuccess);
-      expect(inserted.failures.map((f) => f.index)).to.deep.equal([1, 2]);
-      expect(inserted.ids[1]).to.equal(Id64.invalid);
-      expect(inserted.ids[2]).to.equal(Id64.invalid);
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:ok1", "TestUniqueAspect:ok2"]);
-
-      const updated = txn.updateAspects([
-        { ...multiProps(e1, "ok1-new"), id: inserted.ids[0] },
-        { ...multiProps(e1, "missing"), id: "0xffffff" },
-        uniqueProps(e1, "ok2-new"),
-      ]);
-      expect(updated.status).to.equal(BulkElementAspectsStatus.PartialSuccess);
-      expect(updated.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:ok1-new", "TestUniqueAspect:ok2-new"]);
-
-      const deleted = txn.deleteAspects([inserted.ids[0], "0xffffff"]);
-      expect(deleted.status).to.equal(BulkElementAspectsStatus.PartialSuccess);
-      expect(deleted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
-      expect(aspectsOf(e1)).to.deep.equal(["TestUniqueAspect:ok2-new"]);
-    });
-  });
-
-  it("FailFast writes nothing, and calls no handlers, if any row is invalid", () => {
+  it("writes nothing and calls no handlers if any row is invalid, listing every invalid row", () => {
     inAbandonedTxn((txn) => {
       const [e1, e2] = insertOwners(txn, 2);
       const { ids } = txn.insertAspects([multiProps(e1, "m1"), uniqueProps(e2, "u2")]);
-      const failFast = { mode: BulkElementAspectsMode.FailFast };
       const handlers = ["onInsert", "onInserted", "onUpdate", "onUpdated", "onDelete", "onDeleted"].map((name) => sinon.spy(ElementAspect as any, name));
       const ownerUpdates = spyOwnerUpdates();
 
-      const inserted = txn.insertAspects([multiProps(e1, "new"), multiProps("0xffffff", "noOwner")], failFast);
-      expect(inserted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
-      expect(inserted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.MissingId]]);
-      expect(inserted.ids).to.deep.equal([Id64.invalid, Id64.invalid]);
+      const inserted = txn.insertAspects([multiProps(e1, "new"), multiProps("0xffffff", "noOwner"), { ...multiProps(e1, "badClass"), classFullName: "BulkAspectTest:DoesNotExist" }]);
+      expect(inserted).to.deep.equal({
+        status: BulkElementAspectsStatus.ValidationFailed,
+        failures: [
+          { index: 1, reason: BulkElementAspectFailureReason.ElementNotFound, detail: "0xffffff" },
+          { index: 2, reason: BulkElementAspectFailureReason.ClassNotFound, detail: "BulkAspectTest:DoesNotExist" },
+        ],
+        ids: [],
+      });
 
-      const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }], failFast);
-      expect(updated.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
-      expect(updated.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
+      const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }]);
+      expect(updated).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, id: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
 
-      const deleted = txn.deleteAspects([ids[0], "0xffffff"], failFast);
-      expect(deleted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
-      expect(deleted.failures.map((f) => [f.index, f.status])).to.deep.equal([[1, IModelStatus.NotFound]]);
+      const deleted = txn.deleteAspects([ids[0], "0xffffff"]);
+      expect(deleted).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, id: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
 
       handlers.forEach((handler) => expect(handler.callCount).to.equal(0));
       expect(ownerUpdates()).to.deep.equal([]);
       expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
       expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2"]);
 
-      const valid = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, uniqueProps(e2, "u2-new")], failFast);
-      expect(valid.status).to.equal(BulkElementAspectsStatus.Success);
+      const valid = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, uniqueProps(e2, "u2-new")]);
+      expect(valid).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
       expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1-new"]);
       expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2-new"]);
     });
   });
 
-  it("throws for an invalid mode", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      expect(() => txn.insertAspects([multiProps(e1, "m1")], { mode: 2 as BulkElementAspectsMode })).to.throw("Invalid options.mode");
-      expect(aspectsOf(e1)).to.deep.equal([]);
-    });
-  });
-
-  it("reports distinct statuses for a missing class name, a class that is not in the iModel and a class that is not an aspect", () => {
+  it("reports distinct reasons for a missing class name, a class that is not in the iModel and a class that is not an aspect", () => {
     inAbandonedTxn((txn) => {
       const [e1] = insertOwners(txn, 1);
       const inserted = txn.insertAspects([
@@ -182,16 +145,17 @@ describe("EditTxn bulk ElementAspect operations", () => {
         { ...multiProps(e1, "notAnAspect"), classFullName: "BisCore:Subject" },
         multiProps(e1, "ok"),
       ]);
-      expect(inserted.failures.map((f) => [f.index, f.status])).to.deep.equal([
-        [0, IModelStatus.BadArg],
-        [1, IModelStatus.BadSchema],
-        [2, IModelStatus.WrongClass],
+      expect(inserted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
+      expect(inserted.failures.map((f) => [f.index, f.reason])).to.deep.equal([
+        [0, BulkElementAspectFailureReason.InvalidProps],
+        [1, BulkElementAspectFailureReason.ClassNotFound],
+        [2, BulkElementAspectFailureReason.NotAnAspectClass],
       ]);
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:ok"]);
+      expect(aspectsOf(e1)).to.deep.equal([]);
 
       const updated = txn.updateAspects([{ ...uniqueProps(e1, "unknown"), classFullName: "NotImported:SomeAspect" }]);
-      expect(updated.status).to.equal(BulkElementAspectsStatus.Failed);
-      expect(updated.failures.map((f) => [f.index, f.status])).to.deep.equal([[0, IModelStatus.BadSchema]]);
+      expect(updated.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
+      expect(updated.failures.map((f) => [f.index, f.reason])).to.deep.equal([[0, BulkElementAspectFailureReason.ClassNotFound]]);
     });
   });
 
@@ -284,13 +248,39 @@ describe("EditTxn bulk ElementAspect operations", () => {
     });
   });
 
-  it("deleteAspects throws for malformed ids without deleting anything", () => {
+  it("deleteAspects throws an ITwinError listing each malformed id once, without deleting anything", () => {
     inAbandonedTxn((txn) => {
       const [e1] = insertOwners(txn, 1);
       const { ids } = txn.insertAspects([multiProps(e1, "m1")]);
-      expect(() => txn.deleteAspects([ids[0], "not-an-id"])).to.throw("Invalid aspect ids: not-an-id");
-      expect(() => txn.deleteAspects([Id64.invalid])).to.throw("Invalid aspect ids: 0");
+      let error: any;
+      try {
+        txn.deleteAspects([ids[0], "not-an-id", Id64.invalid, "not-an-id"]);
+      } catch (err) {
+        error = err;
+      }
+      expect(ITwinError.isError(error, "imodel", "invalid-arguments")).to.be.true;
+      expect(error.message).to.equal("Invalid aspect ids: not-an-id, 0");
       expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
+    });
+  });
+
+  it("throws an IModelError, calling no post-handlers, if a write fails", () => {
+    inAbandonedTxn((txn) => {
+      const [e1] = insertOwners(txn, 1);
+      const { ids } = txn.insertAspects([multiProps(e1, "m1"), multiProps(e1, "m2")]);
+      const onDeleted = sinon.spy(ElementAspect as any, "onDeleted");
+      const onUpdated = sinon.spy(ElementAspect as any, "onUpdated");
+      expect(iModel[_nativeDb].executeSql("CREATE TEMP TRIGGER bulkAspectWriteFails BEFORE DELETE ON bis_ElementMultiAspect BEGIN SELECT RAISE(ABORT, 'rejected by test'); END")).to.equal(DbResult.BE_SQLITE_OK);
+      expect(iModel[_nativeDb].executeSql("CREATE TEMP TRIGGER bulkAspectUpdateFails BEFORE UPDATE ON bis_ElementMultiAspect BEGIN SELECT RAISE(ABORT, 'rejected by test'); END")).to.equal(DbResult.BE_SQLITE_OK);
+      try {
+        expect(() => txn.deleteAspects(ids)).to.throw(IModelError, "abandon the changes");
+        expect(() => txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }])).to.throw(IModelError, "abandon the changes");
+      } finally {
+        iModel[_nativeDb].executeSql("DROP TRIGGER temp.bulkAspectWriteFails");
+        iModel[_nativeDb].executeSql("DROP TRIGGER temp.bulkAspectUpdateFails");
+      }
+      expect(onDeleted.callCount).to.equal(0);
+      expect(onUpdated.callCount).to.equal(0);
     });
   });
 

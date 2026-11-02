@@ -791,20 +791,20 @@ export enum BulkDeleteElementsStatus {
 
 // @beta
 export interface BulkElementAspectFailure {
+    detail?: string;
+    id?: Id64String;
     index: number;
-    message: string;
-    status: IModelStatus;
+    reason: BulkElementAspectFailureReason;
 }
 
 // @beta
-export interface BulkElementAspectsArgs {
-    mode?: BulkElementAspectsMode;
-}
-
-// @beta
-export enum BulkElementAspectsMode {
-    BestEffort = 0,
-    FailFast = 1
+export enum BulkElementAspectFailureReason {
+    AspectNotFound = 5,
+    ClassNotFound = 2,
+    ElementNotFound = 4,
+    InvalidId = 1,
+    InvalidProps = 0,
+    NotAnAspectClass = 3
 }
 
 // @beta
@@ -815,10 +815,8 @@ export interface BulkElementAspectsResult {
 
 // @beta
 export enum BulkElementAspectsStatus {
-    Failed = 2,
-    PartialSuccess = 1,
     Success = 0,
-    ValidationFailed = 3
+    ValidationFailed = 1
 }
 
 // @beta
@@ -2879,7 +2877,7 @@ export class EditTxn {
     changeElementModel(props: ChangeElementModelProps): void;
     changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
-    deleteAspects(ids: Id64Array, args?: BulkElementAspectsArgs): BulkElementAspectsResult;
+    deleteAspects(ids: Id64Array): BulkElementAspectsResult;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
     deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
@@ -2895,7 +2893,7 @@ export class EditTxn {
     readonly iModel: IModelDb;
     static implicitWriteEnforcement: ImplicitWriteEnforcement;
     insertAspect(aspectProps: ElementAspectProps): Id64String;
-    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkInsertElementAspectsResult;
+    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkInsertElementAspectsResult;
     insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
     insertModel(props: ModelProps): Id64String;
     insertRelationship(props: RelationshipProps): Id64String;
@@ -2907,7 +2905,7 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
-    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, args?: BulkElementAspectsArgs): BulkElementAspectsResult;
+    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): BulkElementAspectsResult;
     updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;

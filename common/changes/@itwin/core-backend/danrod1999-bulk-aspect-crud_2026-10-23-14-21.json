@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add beta EditTxn.insertAspects, updateAspects and deleteAspects for bulk ElementAspect writes, with ElementAspect.onBulk* handlers and an optional FailFast mode.",
+      "comment": "Add beta EditTxn.insertAspects, updateAspects and deleteAspects for bulk ElementAspect writes, with ElementAspect.onBulk* handlers. Each call is all-or-nothing: invalid rows are reported and nothing is written.",
       "type": "none"
     }
   ],
