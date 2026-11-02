@@ -83,7 +83,7 @@
     "@types/node": "catalog:build",
     "chai": "catalog:testing",
     "cpx2": "catalog:build",
-    "electron": "^45.0.0",
+    "electron": "catalog:electron",
     "eslint": "catalog:linting",
     "glob": "catalog:build",
     "mocha": "catalog:testing",

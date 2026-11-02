@@ -90,7 +90,7 @@
     "cross-env": "catalog:build",
     "dotenv": "catalog:testing",
     "dotenv-expand": "catalog:testing",
-    "electron": "^45.0.0",
+    "electron": "catalog:electron",
     "eslint": "catalog:linting",
     "express": "^4.22.1",
     "express-ws": "^5.0.2",

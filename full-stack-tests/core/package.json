@@ -67,7 +67,7 @@
     "azurite": "catalog:testing",
     "chai-as-promised": "catalog:testing",
     "chai": "catalog:testing",
-    "electron": "^45.0.0",
+    "electron": "catalog:electron",
     "fs-extra": "^8.1.0",
     "sinon-chai": "catalog:testing",
     "sinon": "catalog:testing"

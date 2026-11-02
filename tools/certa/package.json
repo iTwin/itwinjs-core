@@ -77,7 +77,7 @@
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/yargs": "catalog:build",
-    "electron": "^45.0.0",
+    "electron": "catalog:electron",
     "eslint": "catalog:linting",
     "nyc": "catalog:testing",
     "rimraf": "catalog:build",

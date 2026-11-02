@@ -27,7 +27,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "electron": "^45.0.0",
+    "electron": "catalog:electron",
     "semver": "^7.5.2"
   },
   "devDependencies": {

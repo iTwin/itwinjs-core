@@ -107,6 +107,10 @@ catalogs:
     webpack-cli:
       specifier: ^5.0.1
       version: 5.1.4
+  electron:
+    electron:
+      specifier: ^45.0.0
+      version: 45.0.0
   imodels-clients:
     '@itwin/imodels-access-backend':
       specifier: ^6.0.2
@@ -918,7 +922,7 @@ importers:
         specifier: catalog:build
         version: 8.0.2
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
         specifier: catalog:linting
@@ -1899,7 +1903,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
     devDependencies:
       '@itwin/build-tools':
@@ -2597,7 +2601,7 @@ importers:
         specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       fs-extra:
         specifier: ^8.1.0
@@ -3028,7 +3032,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       semver:
         specifier: ^7.5.2
@@ -3682,7 +3686,7 @@ importers:
         specifier: catalog:testing
         version: 5.1.0
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
         specifier: catalog:linting
@@ -3866,7 +3870,7 @@ importers:
         specifier: catalog:testing
         version: 5.1.0
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
         specifier: catalog:linting
@@ -4245,7 +4249,7 @@ importers:
         specifier: catalog:build
         version: 17.0.19
       electron:
-        specifier: ^45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
         specifier: catalog:linting
