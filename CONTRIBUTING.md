@@ -140,12 +140,26 @@ Run `rush install` after switching branches or pulling dependency changes. If th
 
 Do not edit versions for internal monorepo dependencies. CI maintains them.
 
-Shared ESLint and rimraf version ranges are defined in `globalCatalogs.tooling` in [`pnpm-config.json`](./common/config/rush/pnpm-config.json). Package manifests reference them with `catalog:tooling`. Rush generates the pnpm workspace configuration; do not edit `common/temp/pnpm-workspace.yaml` manually.
+Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-config.json`](./common/config/rush/pnpm-config.json). Package manifests reference an entry with `catalog:<name>`:
+
+| Catalog | Dependencies |
+| --- | --- |
+| `build` | TypeScript and build-script, file, and CLI utilities |
+| `bundling` | Bundlers, loaders, plugins, and browser polyfills |
+| `linting` | ESLint, its shared plugin/parser, and formatting tools |
+| `testing` | Test runners, assertions, mocks, coverage, and test services |
+| `types` | Shared `@types/*` declarations |
+
+When adding a dependency that is already cataloged, use its existing catalog reference. Rush generates the pnpm workspace configuration; do not edit `common/temp/pnpm-workspace.yaml` manually.
 
 For an external dependency:
 
-1. If its declaration uses `catalog:tooling`, update the corresponding catalog entry. Otherwise, update its version range in the owning `package.json`.
+1. If its declaration uses `catalog:<name>`, update the corresponding entry in `globalCatalogs.<name>`. Otherwise, update its version range in the owning `package.json`.
 2. Run `rush check`.
 3. Run `rush update`.
+
+Catalogs do not replace preferred versions, overrides, or pnpm hooks. Keep the TypeScript, `@types/node`, and `@types/chai` catalog ranges coordinated with their literal preferred versions in `common-versions.json`. The corresponding `allowedAlternativeVersions` entries permit their catalog references without weakening the SemVer preferences used for transitive dependencies. For TypeScript upgrades, also update the API Extractor override in `.pnpmfile.cjs` to match the `build` catalog range. Keep peer dependency ranges explicit; they describe consumer compatibility rather than the development toolchain baseline.
+
+When moving a dependency into a catalog, review the lockfile's transitive snapshots as well as its package versions. Catalog references can stop Rush's implicit preferred-version rules from applying to wildcard dependencies; preserve an intentional baseline with an explicit preferred version when necessary.
 
 For catalog changes, also verify that Rush's packed packages contain ordinary version ranges instead of `catalog:` references.
