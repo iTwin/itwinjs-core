@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, credentialedFetchRedirect, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -98,7 +98,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       headers: request.headers,
       credentials: includeCredentials ? "include" : undefined,
       // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
-      redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
+      redirect: (includeCredentials || credentialed) ? (credentialedFetchRedirect() ?? options?.redirect) : options?.redirect,
     });
 
     if (includeCredentials || credentialed)

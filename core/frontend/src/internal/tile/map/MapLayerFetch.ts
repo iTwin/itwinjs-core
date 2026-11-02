@@ -107,9 +107,19 @@ export async function fetchMapLayerRequest(args: {
   return { response: await args.send(request, false), managedByHandler: false };
 }
 
-/** The redirect policy for a credentialed handler send (see [[MapLayerFetchRequest]]): refused while
- * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, so handler-injected values
- * cannot silently reach an unlisted origin through a redirect.
+/** The redirect policy for a request that carries credentials: browser credentials (see
+ * [[MapLayerImageryProvider.includeUserCredentials]]), settings-derived basic auth, or values a fetch handler
+ * injected (see [[MapLayerFetchRequest]]).
+ *
+ * When [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, redirects are refused
+ * outright (`"error"`). `fetch` cannot be asked to follow only same-origin redirects, and by the time a
+ * followed redirect can be inspected the credentials have already been delivered to the destination — so
+ * refusing is the only way to honour the guarantee that credentials reach none but the origins listed in
+ * [[MapLayerFormatRegistry.trustedCredentialsOrigins]]. Legitimate same-origin redirects fail as a result;
+ * that is the cost of the opt-in restriction.
+ *
+ * When the restriction is disabled (the default), redirects are followed as before and
+ * [[MapLayerImageryProvider.checkCredentialedRedirect]] reports the destination after the fact.
  * @internal
  */
 export function credentialedFetchRedirect(): RequestRedirect | undefined {

@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, fetchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerRequest, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, credentialedFetchRedirect, fetchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerRequest, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -482,29 +482,12 @@ export abstract class MapLayerImageryProvider {
     IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url);
   }
 
-  /** The redirect policy to apply to a request that carries browser credentials (see [[includeUserCredentials]]).
-   *
-   * When [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, redirects are refused
-   * outright (`"error"`). `fetch` cannot be asked to follow only same-origin redirects, and by the time a
-   * followed redirect can be inspected the credentials have already been delivered to the destination — so
-   * refusing is the only way to honour the guarantee that credentials reach none but the origins listed in
-   * [[MapLayerFormatRegistry.trustedCredentialsOrigins]]. Legitimate same-origin redirects fail as a result;
-   * that is the cost of the opt-in restriction.
-   *
-   * When the restriction is disabled (the default), redirects are followed as before and
-   * [[checkCredentialedRedirect]] reports the destination after the fact.
-   * @internal
-   */
-  protected get credentialedRedirect(): RequestRedirect | undefined {
-    return IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
-  }
-
   /** Detects that a request carrying browser credentials (see [[includeUserCredentials]]) was transparently
    * redirected to a different origin, and reports or logs that origin.
    *
    * This is a **best-effort, after-the-fact** signal used only while
    * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is disabled, where credentialed requests
-   * still follow redirects (see [[credentialedRedirect]]). It cannot prevent the exposure — the credentials
+   * still follow redirects (see [[credentialedFetchRedirect]]). It cannot prevent the exposure — the credentials
    * have already been sent — and it does not fire at all when the destination denies CORS, because `fetch`
    * then rejects instead of returning a `Response`. The destination origin is never latched as SSO-succeeded,
    * so credentials do not keep flowing to it.
@@ -532,7 +515,7 @@ export abstract class MapLayerImageryProvider {
       headers: request.headers,
       credentials: includeCredentials ? "include" : undefined,
       // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
-      redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+      redirect: (includeCredentials || credentialed) ? credentialedFetchRedirect() : undefined,
     };
 
     if (timeoutMs !== undefined)
@@ -694,7 +677,7 @@ export abstract class MapLayerImageryProvider {
             method: "GET",
             headers: request.headers,
             credentials: includeCredentials ? "include" : undefined,
-            redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+            redirect: (includeCredentials || credentialed) ? credentialedFetchRedirect() : undefined,
           });
           if (includeCredentials || credentialed)
             this.checkCredentialedRedirect(requestUrl, rsp);
