@@ -5,6 +5,19 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  auth-clients:
+    '@itwin/browser-authorization':
+      specifier: ^1.0.1
+      version: 1.1.4
+    '@itwin/electron-authorization':
+      specifier: ^0.24.0
+      version: 0.24.0
+    '@itwin/oidc-signin-tool':
+      specifier: ^5.0.2
+      version: 5.1.3
+    '@itwin/service-authorization':
+      specifier: ^2.0.0
+      version: 2.1.3
   build:
     '@types/node':
       specifier: ~20.17.0
@@ -94,6 +107,29 @@ catalogs:
     webpack-cli:
       specifier: ^5.0.1
       version: 5.1.4
+  imodels-clients:
+    '@itwin/imodels-access-backend':
+      specifier: ^6.0.2
+      version: 6.1.3
+    '@itwin/imodels-access-frontend':
+      specifier: ^6.0.2
+      version: 6.1.3
+    '@itwin/imodels-client-authoring':
+      specifier: ^6.0.2
+      version: 6.2.2
+    '@itwin/imodels-client-management':
+      specifier: ^6.0.2
+      version: 6.2.2
+    '@itwin/object-storage-azure':
+      specifier: ^3.0.4
+      version: 3.1.3
+    '@itwin/object-storage-core':
+      specifier: ^3.0.4
+      version: 3.1.3
+  itwins-client:
+    '@itwin/itwins-client':
+      specifier: ^1.6.1
+      version: 1.6.1
   linting:
     '@itwin/eslint-plugin':
       specifier: ^6.0.0
@@ -110,6 +146,17 @@ catalogs:
     prettier:
       specifier: ^3.2.5
       version: 3.9.9
+  presentation:
+    '@itwin/presentation-shared':
+      specifier: ^1.2.2
+      version: 1.2.22
+    '@itwin/unified-selection':
+      specifier: ^1.4.0
+      version: 1.8.6
+  reality-capture:
+    '@itwin/reality-data-client':
+      specifier: ^1.3.1
+      version: 1.6.0
   testing:
     '@types/chai':
       specifier: 4.3.1
@@ -231,7 +278,7 @@ importers:
         specifier: 5.16.3
         version: 5.16.3
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       form-data:
         specifier: ^4.0.6
@@ -286,7 +333,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@opentelemetry/api':
         specifier: 1.0.4
@@ -425,7 +472,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@types/flatbuffers':
         specifier: ~1.10.0
@@ -1036,7 +1083,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@types/node':
         specifier: catalog:build
@@ -1916,7 +1963,7 @@ importers:
         specifier: ^0.4.2
         version: 0.4.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)(@itwin/core-quantity@..+core+quantity)(@itwin/ecschema-metadata@..+core+ecschema-metadata)
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/map-layers-formats':
         specifier: workspace:*
@@ -1941,7 +1988,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: catalog:testing
@@ -2366,19 +2413,19 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/perf-tools':
         specifier: workspace:*
@@ -2502,7 +2549,7 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/express-server':
         specifier: workspace:*
@@ -2511,22 +2558,22 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
       azurite:
         specifier: catalog:testing
@@ -2560,13 +2607,13 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: catalog:testing
@@ -2692,22 +2739,22 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-rpc/impl
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
         specifier: catalog:testing
@@ -2732,7 +2779,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@types/chai':
         specifier: catalog:testing
@@ -2834,10 +2881,10 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
       '@itwin/unified-selection':
-        specifier: ^1.4.0
+        specifier: catalog:presentation
         version: 1.8.6
       '@types/chai':
         specifier: catalog:testing
@@ -3066,22 +3113,22 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/presentation-common':
         specifier: workspace:*
@@ -3090,7 +3137,7 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/service-authorization':
-        specifier: ^2.0.0
+        specifier: catalog:auth-clients
         version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
         specifier: catalog:testing
@@ -3118,7 +3165,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/presentation-backend':
         specifier: workspace:*
@@ -3184,7 +3231,7 @@ importers:
   ../../presentation/backend:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
       object-hash:
         specifier: ^1.3.1
@@ -3314,7 +3361,7 @@ importers:
   ../../presentation/common:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
     devDependencies:
       '@itwin/build-tools':
@@ -3420,7 +3467,7 @@ importers:
   ../../presentation/frontend:
     dependencies:
       '@itwin/unified-selection':
-        specifier: ^1.4.0
+        specifier: catalog:presentation
         version: 1.8.6
       rxjs:
         specifier: ^7.8.1
@@ -3532,7 +3579,7 @@ importers:
         specifier: workspace:*
         version: link:../../ui/appui-abstract
       '@itwin/browser-authorization':
-        specifier: ^1.0.1
+        specifier: catalog:auth-clients
         version: 1.1.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/core-backend':
         specifier: workspace:*
@@ -3556,7 +3603,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
@@ -3565,25 +3612,25 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
+        specifier: catalog:auth-clients
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
     devDependencies:
       '@itwin/build-tools':
@@ -3680,7 +3727,7 @@ importers:
         specifier: workspace:*
         version: link:../../ui/appui-abstract
       '@itwin/browser-authorization':
-        specifier: ^1.0.1
+        specifier: catalog:auth-clients
         version: 1.1.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/cesium-renderer':
         specifier: workspace:*
@@ -3734,7 +3781,7 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
@@ -3746,25 +3793,25 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/map-layers-formats':
         specifier: workspace:*
         version: link:../../extensions/map-layers-formats
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
       '@itwin/webgl-compatibility':
         specifier: workspace:*

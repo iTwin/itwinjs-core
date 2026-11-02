@@ -49,7 +49,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@itwin/object-storage-core": "^3.0.4",
+    "@itwin/object-storage-core": "catalog:imodels-clients",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",

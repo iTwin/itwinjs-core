@@ -99,7 +99,7 @@
     "typescript": "catalog:build"
   },
   "dependencies": {
-    "@itwin/presentation-shared": "^1.2.2",
+    "@itwin/presentation-shared": "catalog:presentation",
     "object-hash": "^1.3.1",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0",

@@ -32,7 +32,7 @@
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.4.2",
-    "@itwin/itwins-client": "^1.6.1",
+    "@itwin/itwins-client": "catalog:itwins-client",
     "@itwin/map-layers-formats": "workspace:*",
     "@xmldom/xmldom": "~0.8.15",
     "azurite": "catalog:testing",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@itwin/oidc-signin-tool": "^5.0.2",
+    "@itwin/oidc-signin-tool": "catalog:auth-clients",
     "@types/chai": "catalog:testing",
     "@types/fs-extra": "catalog:types",
     "@types/jsdom": "catalog:testing",
