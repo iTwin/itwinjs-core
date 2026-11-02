@@ -36,7 +36,7 @@
     "@itwin/map-layers-formats": "workspace:*",
     "@xmldom/xmldom": "~0.8.15",
     "azurite": "catalog:testing",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "catalog:utilities",
     "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
@@ -44,7 +44,7 @@
     "@itwin/eslint-plugin": "catalog:linting",
     "@itwin/oidc-signin-tool": "catalog:auth-clients",
     "@types/chai": "catalog:testing",
-    "@types/fs-extra": "catalog:types",
+    "@types/fs-extra": "catalog:utilities",
     "@types/jsdom": "catalog:testing",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",

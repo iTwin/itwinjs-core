@@ -34,7 +34,7 @@
     "chalk": "catalog:build",
     "cpx2": "catalog:build",
     "cross-spawn": "^7.0.5",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "catalog:utilities",
     "mocha-junit-reporter": "^2.0.2",
     "rimraf": "catalog:build",
     "tree-kill": "^1.2.2",

@@ -156,6 +156,7 @@ Selected shared dependencies use named catalogs in `globalCatalogs` in [`pnpm-co
 | `schemas` | Bentley schema packages used by tests and examples |
 | `testing` | Test libraries and typings, environment setup, coverage, and services |
 | `types` | Typings for runtime libraries that are not cataloged yet |
+| `utilities` | Shared fs-extra, lodash, and semver libraries and their typings |
 
 External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them. The presentation catalog also holds the shared RxJS version policy managed by the presentation area; this does not imply ownership of the upstream RxJS projects.
 

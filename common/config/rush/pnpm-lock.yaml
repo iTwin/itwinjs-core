@@ -356,6 +356,10 @@ catalogs:
     '@types/express-ws':
       specifier: ^3.0.3
       version: 3.0.6
+    '@types/ws':
+      specifier: ^7.0.0
+      version: 7.4.7
+  utilities:
     '@types/fs-extra':
       specifier: ^4.0.7
       version: 4.0.15
@@ -365,9 +369,15 @@ catalogs:
     '@types/semver':
       specifier: 7.3.10
       version: 7.3.10
-    '@types/ws':
-      specifier: ^7.0.0
-      version: 7.4.7
+    fs-extra:
+      specifier: ^8.1.0
+      version: 8.1.0
+    lodash:
+      specifier: ^4.18.0
+      version: 4.18.1
+    semver:
+      specifier: ^7.5.2
+      version: 7.8.5
 
 overrides:
   browserslist: latest
@@ -397,7 +407,7 @@ importers:
         specifier: ^4.0.6
         version: 4.0.6
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       json5:
         specifier: ^2.2.3
@@ -409,7 +419,7 @@ importers:
         specifier: ^4.3.0
         version: 4.3.1
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
       touch:
         specifier: ^3.1.0
@@ -461,7 +471,7 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
         specifier: catalog:testing
@@ -473,7 +483,7 @@ importers:
         specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 7.3.10
       '@types/sinon':
         specifier: catalog:testing
@@ -681,7 +691,7 @@ importers:
         specifier: ~0.8.15
         version: 0.8.15
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       glob:
         specifier: catalog:build
@@ -751,7 +761,7 @@ importers:
         specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
         specifier: catalog:testing
@@ -1513,7 +1523,7 @@ importers:
   ../../core/mobile:
     dependencies:
       lodash:
-        specifier: ^4.18.0
+        specifier: catalog:utilities
         version: 4.18.1
       superagent:
         specifier: ^9.0.1
@@ -1544,7 +1554,7 @@ importers:
         specifier: catalog:testing
         version: 4.3.1
       '@types/lodash':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.17.25
       '@types/mocha':
         specifier: catalog:testing
@@ -1731,7 +1741,7 @@ importers:
         specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 7.3.10
       chai:
         specifier: catalog:testing
@@ -1752,7 +1762,7 @@ importers:
         specifier: catalog:build
         version: 6.1.3
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
       typescript:
         specifier: catalog:build
@@ -2088,7 +2098,7 @@ importers:
         specifier: catalog:testing
         version: 3.37.0(@types/node@20.17.58)
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       get-system-fonts:
         specifier: ^2.0.2
@@ -2107,7 +2117,7 @@ importers:
         specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/jsdom':
         specifier: catalog:testing
@@ -2565,7 +2575,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.5
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       mocha:
         specifier: catalog:testing
@@ -2590,7 +2600,7 @@ importers:
         specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
         specifier: catalog:testing
@@ -2701,7 +2711,7 @@ importers:
         specifier: catalog:electron
         version: 45.0.0
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       sinon:
         specifier: catalog:testing
@@ -2735,7 +2745,7 @@ importers:
         specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
         specifier: catalog:testing
@@ -3132,7 +3142,7 @@ importers:
         specifier: catalog:electron
         version: 45.0.0
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
     devDependencies:
       '@itwin/build-tools':
@@ -3157,7 +3167,7 @@ importers:
         specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 7.3.10
       assert:
         specifier: catalog:bundling
@@ -3356,7 +3366,7 @@ importers:
         specifier: catalog:presentation
         version: 1.0.0(rxjs@7.8.2)
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
     devDependencies:
       '@itwin/build-tools':
@@ -3411,7 +3421,7 @@ importers:
         specifier: ^1.3.0
         version: 1.3.4
       '@types/semver':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 7.3.10
       '@types/sinon':
         specifier: catalog:testing
@@ -4122,7 +4132,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       yargs:
         specifier: catalog:build
@@ -4135,7 +4145,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/node':
         specifier: catalog:build
@@ -4251,7 +4261,7 @@ importers:
         specifier: ^7.0.5
         version: 7.0.6
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       mocha-junit-reporter:
         specifier: ^2.0.2
@@ -4306,7 +4316,7 @@ importers:
         specifier: ~2.0.3
         version: 2.0.3
       lodash:
-        specifier: ^4.18.0
+        specifier: catalog:utilities
         version: 4.18.1
       mocha:
         specifier: catalog:testing
@@ -4334,7 +4344,7 @@ importers:
         specifier: catalog:types
         version: 4.17.25
       '@types/lodash':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.17.25
       '@types/mocha':
         specifier: catalog:testing
@@ -4391,7 +4401,7 @@ importers:
         specifier: ^2.14.1
         version: 2.20.3
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
@@ -4404,7 +4414,7 @@ importers:
         specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
         specifier: catalog:testing
@@ -4459,7 +4469,7 @@ importers:
   ../../tools/perf-tools:
     dependencies:
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
@@ -4469,7 +4479,7 @@ importers:
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: catalog:types
+        specifier: catalog:utilities
         version: 4.0.15
       eslint:
         specifier: catalog:linting

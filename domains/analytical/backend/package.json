@@ -53,14 +53,14 @@
     "@types/chai": "catalog:testing",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
-    "@types/semver": "catalog:types",
+    "@types/semver": "catalog:utilities",
     "chai": "catalog:testing",
     "cpx2": "catalog:build",
     "eslint": "catalog:linting",
     "mocha": "catalog:testing",
     "nyc": "catalog:testing",
     "rimraf": "catalog:build",
-    "semver": "^7.5.2",
+    "semver": "catalog:utilities",
     "typescript": "catalog:build"
   },
   "nyc": {

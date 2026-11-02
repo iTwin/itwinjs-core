@@ -19,13 +19,13 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "catalog:utilities",
     "yargs": "catalog:build"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/fs-extra": "catalog:types",
+    "@types/fs-extra": "catalog:utilities",
     "@types/node": "catalog:build",
     "@types/yargs": "catalog:build",
     "eslint": "catalog:linting",

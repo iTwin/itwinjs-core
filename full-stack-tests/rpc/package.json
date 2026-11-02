@@ -28,7 +28,7 @@
     "@itwin/core-mobile": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "electron": "catalog:electron",
-    "semver": "^7.5.2"
+    "semver": "catalog:utilities"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -38,7 +38,7 @@
     "@types/express": "catalog:types",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
-    "@types/semver": "catalog:types",
+    "@types/semver": "catalog:utilities",
     "assert": "catalog:bundling",
     "buffer": "catalog:bundling",
     "browserify-zlib": "catalog:bundling",

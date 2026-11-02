@@ -32,12 +32,12 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0"
+    "fs-extra": "catalog:utilities"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/fs-extra": "catalog:types",
+    "@types/fs-extra": "catalog:utilities",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",
     "typescript": "catalog:build"

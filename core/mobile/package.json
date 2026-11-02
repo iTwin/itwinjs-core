@@ -39,7 +39,7 @@
     "@itwin/core-frontend": "workspace:*"
   },
   "dependencies": {
-    "lodash": "^4.18.0",
+    "lodash": "catalog:utilities",
     "superagent": "^9.0.1",
     "ws": "^7.5.11"
   },
@@ -51,7 +51,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/chai": "catalog:testing",
-    "@types/lodash": "catalog:types",
+    "@types/lodash": "catalog:utilities",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/superagent": "^8.1.6",

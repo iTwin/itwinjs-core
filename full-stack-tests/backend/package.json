@@ -74,7 +74,7 @@
     "dotenv": "catalog:testing",
     "dotenv-expand": "catalog:testing",
     "eslint": "catalog:linting",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "catalog:utilities",
     "mocha": "catalog:testing",
     "rimraf": "catalog:build",
     "sinon": "catalog:testing"
@@ -84,7 +84,7 @@
     "@itwin/build-tools": "workspace:*",
     "@types/chai": "catalog:testing",
     "@types/chai-as-promised": "catalog:testing",
-    "@types/fs-extra": "catalog:types",
+    "@types/fs-extra": "catalog:utilities",
     "@types/mocha": "catalog:testing",
     "@types/sinon": "catalog:testing",
     "internal-tools": "workspace:*",
