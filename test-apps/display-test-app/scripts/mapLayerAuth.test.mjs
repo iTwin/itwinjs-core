@@ -208,7 +208,12 @@ test("DTA reads the explicit auth-origin environment variable", () => {
  * @param {Record<string, unknown>} globals
  */
 function example(path, marker, setup = "", globals = {}) {
-  const markdown = readFileSync(new URL(path, repoRoot), "utf8");
+  const snippets = readFileSync(new URL("example-code/snippets/src/frontend/MapLayerAuthentication.ts", repoRoot), "utf8");
+  const markdown = readFileSync(new URL(path, repoRoot), "utf8").replace(/\[\[include:(\w+)\]\]/g, (_, name) => {
+    const extract = snippets.match(new RegExp(`__PUBLISH_EXTRACT_START__ ${name}\\r?\\n([\\s\\S]*?)// __PUBLISH_EXTRACT_END__`));
+    assert.ok(extract, `Missing snippet: ${name}`);
+    return extract[1];
+  });
   const blocks = [...markdown.matchAll(/```ts\r?\n([\s\S]*?)```/g)].map((match) => match[1]);
   const block = blocks.find((source) => source.includes(marker));
   assert.ok(block, `Missing example: ${marker}`);
@@ -218,9 +223,11 @@ function example(path, marker, setup = "", globals = {}) {
   return result.handlers[0];
 }
 
+const perLayerTokenSetup = `addPerLayerTokenHandler(); tokensByLayer.set(${JSON.stringify(layerUrl)}, "test-only");`;
+
 test("published auth examples check actual origins before injecting headers or parameters", async () => {
   const handlers = [
-    example("docs/learning/frontend/MapLayerAuthentication.md", "const tokensByLayer", `tokensByLayer.set(${JSON.stringify(layerUrl)}, "test-only");`),
+    example("docs/learning/frontend/MapLayerAuthentication.md", "const tokensByLayer", perLayerTokenSetup, { requestSignIn: () => {} }),
     example("docs/changehistory/NextVersion.md", "const secretParamsByLayer", "", { settings: { url: layerUrl }, secret: "test-only" }),
     example("docs/changehistory/NextVersion.md", "const authOrigins", `authOrigins.clear(); authOrigins.add(${JSON.stringify(origin)});`, { tokens: { current: "test-only" } }),
   ];
@@ -241,7 +248,7 @@ test("published auth examples check actual origins before injecting headers or p
 test("published auth examples report unrecoverable 401/403 as an authentication failure", async () => {
   const tokens = { current: "expired", refreshes: 0, async refresh() { this.refreshes++; this.current = "fresh"; } };
   const handlers = [
-    example("docs/learning/frontend/MapLayerAuthentication.md", "const tokensByLayer", `tokensByLayer.set(${JSON.stringify(layerUrl)}, "test-only");`),
+    example("docs/learning/frontend/MapLayerAuthentication.md", "const tokensByLayer", perLayerTokenSetup, { requestSignIn: () => {} }),
     example("docs/changehistory/NextVersion.md", "const secretParamsByLayer", "", { settings: { url: layerUrl }, secret: "test-only" }),
     example("docs/changehistory/NextVersion.md", "const authOrigins", `authOrigins.clear(); authOrigins.add(${JSON.stringify(origin)});`, { tokens }),
   ];
