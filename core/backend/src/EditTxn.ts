@@ -19,7 +19,7 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoo
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
- * @deprecated [[EditTxn.deleteElements]] no longer uses any options and ignores this argument.
+ * @deprecated Options are no longer used and [[EditTxn.deleteElements]] ignores this argument.
  */
 export interface BulkDeleteElementsArgs {
   /**
