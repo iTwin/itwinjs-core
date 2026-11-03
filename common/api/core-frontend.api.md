@@ -5521,7 +5521,7 @@ export interface IModelDisplayReference {
     readonly [_attachToViewport]: (args: AttachToViewportArgs) => void;
     // @internal (undocumented)
     readonly [_detachFromViewport]: () => void;
-    // (undocumented)
+    // @internal
     readonly [_excludedElements]?: Iterable<Id64String>;
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
@@ -5532,7 +5532,6 @@ export interface IModelDisplayReference {
     readonly alwaysDrawnElements: ObservableSet<Id64String>;
     changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
     changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
-    // (undocumented)
     readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     // @internal

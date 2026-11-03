@@ -107,7 +107,7 @@ export interface IModelDisplayReference {
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
   readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
 
-  /* Elements permanently hidden when displaying this reference.
+  /** Elements permanently hidden when displaying this reference.
    * Kinda redundant with neverDrawnElements, but can't be changed after instantiation.
    * (See DisplayStyleSettings.excludedElementIds).
    * @internal
@@ -126,7 +126,7 @@ export interface IModelDisplayReference {
   /** Event dispatched when the value of [[isAlwaysDrawnExclusive]] changes. */
   readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
 
-  /* App-supplied providers that apply symbology overrides when displaying this reference.
+  /** App-supplied providers that apply symbology overrides when displaying this reference.
    * Whenever the state of your provider changes such that the symbology overrides need to be recalculated,
    * invoke [[invalidateSymbologyOverrides]].
    */
