@@ -20,7 +20,7 @@ if (!refs.isSpatial)
 const buildingRef = refs.link({ iModel: buildingIModel });
 ```
 
-Displaying an iModel does not automatically make it available to every interaction tool. Picking linked content is opt-in through [LocateOptions.allowExternalIModels]($frontend), which is `false` by default. When enabled, handle the hit's [HitDetail.iModelRef]($frontend) rather than assuming it came from the primary iModel. Tools that do not opt in continue to operate on the primary iModel.
+Displaying an iModel does not automatically make it available to every interaction tool. Picking linked content is opt-in through [LocateOptions.allowExternalIModels]($frontend), which is `false` by default. When enabled, handle the hit's [IModelDisplayFeature.iModelRef]($frontend), available from [HitDetail.feature]($frontend), rather than assuming it came from the primary iModel. Tools that do not opt in continue to operate on the primary iModel.
 
 For selection across linked iModels, applications can make [MultiIModelSelectionTool]($frontend) the default tool:
 

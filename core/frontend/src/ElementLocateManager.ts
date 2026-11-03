@@ -65,7 +65,7 @@ export class LocateOptions {
   /** If true, also test graphics from linked [[IModelDisplayReference]]s in addition to the Viewport's primary
    * IModelDisplayReference.
    * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other iModels.
-   * @see [[HitDetail.iModelRef]] to determine from which reference the hit originated.
+   * @see [[HitDetail.feature]] to determine from which reference the hit originated.
    */
   public allowExternalIModels = false;
   /** If true, then the world point of a hit on a model will preserve any transforms applied to the model at display time,
