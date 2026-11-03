@@ -315,6 +315,8 @@ export class SpatialViewState extends ViewState3d {
     this._unregisterModelSelectorListeners.push(models.onAdded.addListener(func));
     this._unregisterModelSelectorListeners.push(models.onDeleted.addListener(func));
     this._unregisterModelSelectorListeners.push(models.onCleared.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onBatchAdded.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onBatchDeleted.addListener(func));
   }
 
   private unregisterModelSelectorListeners(): void {

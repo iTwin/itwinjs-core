@@ -273,6 +273,94 @@ describe("Viewport", () => {
     });
   });
 
+  describe("replacement of display style and selectors", () => {
+    it("responds to mutations of a replacement display style", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        const ref = viewport.iModelRefs.primary;
+        const oldStyle = view.displayStyle;
+        const newStyle = oldStyle.clone();
+        viewport.displayStyle = newStyle;
+        expect(view.displayStyle).toBe(newStyle);
+
+        // Mutations of the replacement style must invalidate the primary reference's cached overrides.
+        let warmed = ref.getSymbologyOverrides();
+        newStyle.settings.subCategoryOverrides.set("0x123", SubCategoryOverride.fromJSON({ invisible: true }));
+        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+
+        // View flag changes on the replacement style must be reflected in the reference's active view flags.
+        const vf = newStyle.viewFlags.with("dimensions", !newStyle.viewFlags.dimensions);
+        newStyle.viewFlags = vf;
+        expect(ref.activeViewFlags.dimensions).toBe(vf.dimensions);
+
+        // Mutations of the replaced (old) style must have no effect.
+        warmed = ref.getSymbologyOverrides();
+        oldStyle.settings.subCategoryOverrides.set("0x456", SubCategoryOverride.fromJSON({ invisible: true }));
+        expect(ref.getSymbologyOverrides()).toBe(warmed);
+      });
+    });
+
+    it("responds to mutations of a replacement category selector", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        const ref = viewport.iModelRefs.primary;
+        const oldSelector = view.categorySelector;
+        const newSelector = oldSelector.clone();
+        view.categorySelector = newSelector;
+
+        const warmed = ref.getSymbologyOverrides();
+        newSelector.categories.add("0x999");
+        expect(ref.viewedCategories.has("0x999")).toBe(true);
+        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+        expect((viewport as any)._changeFlags.viewedCategories).toBe(true);
+
+        // Mutations of the replaced (old) selector must have no effect.
+        const warmed2 = ref.getSymbologyOverrides();
+        oldSelector.categories.add("0xaaa");
+        expect(ref.viewedCategories.has("0xaaa")).toBe(false);
+        expect(ref.getSymbologyOverrides()).toBe(warmed2);
+      });
+    });
+
+    it("responds to mutations of a replacement model selector", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        if (!view.isSpatialView())
+          throw new Error("Expected a spatial view");
+
+        const newSelector = view.modelSelector.clone();
+        view.modelSelector = newSelector;
+        (viewport as any)._changeFlags.clear();
+
+        newSelector.models.add("0x77");
+        expect(view.iModelRefs.primary.viewedModels.has("0x77")).toBe(true);
+        expect((viewport as any)._changeFlags.viewedModels).toBe(true);
+      });
+    });
+
+    it("rebinds at attach after replacement while detached", () => {
+      testBlankViewport((viewport) => {
+        const view2 = viewport.view.clone();
+        const replacement = view2.displayStyle.clone();
+        view2.displayStyle = replacement; // detached - raises no events
+        const newSelector = view2.categorySelector.clone();
+        view2.categorySelector = newSelector;
+
+        viewport.changeView(view2);
+        const ref = viewport.iModelRefs.primary;
+
+        let warmed = ref.getSymbologyOverrides();
+        replacement.settings.subCategoryOverrides.set("0x123", SubCategoryOverride.fromJSON({ invisible: true }));
+        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+
+        warmed = ref.getSymbologyOverrides();
+        newSelector.categories.add("0x999");
+        expect(ref.viewedCategories.has("0x999")).toBe(true);
+        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+      });
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { ModelClipGroups, SubCategoryAppearance, ViewFlags } from "@itwin/core-common";
+import { DisplayStyleSettings, ModelClipGroups, SubCategoryAppearance, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
@@ -20,6 +20,7 @@ import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } fro
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import type { DisplayStyleState } from "../DisplayStyleState";
 import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
@@ -29,6 +30,18 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   #resolvedViewFlags: ViewFlags;
   #symbologyOverrides?: FeatureSymbology.Overrides;
   #removeSubCategoryChangesListener?: () => void;
+
+  // The view's display style and category selector can be replaced wholesale. Listeners registered on those objects (or
+  // objects they own) are tracked so they can be rebound to the replacement.
+  #boundStyleSettings: DisplayStyleSettings;
+  readonly #styleListenerRemovals: VoidFunction[] = [];
+  readonly #styleListenerBinders: Array<(settings: DisplayStyleSettings) => VoidFunction[]> = [];
+  #boundViewedCategories: ObservableSet<Id64String>;
+  #removeViewedCategoriesListener: VoidFunction;
+  readonly #viewedCategoriesChanged = () => {
+    this.invalidateSymbologyOverrides();
+    void loadViewedCategories(this);
+  };
 
   protected readonly _ovrs: IModelDisplayOverrides;
 
@@ -77,15 +90,23 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
-    view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
+    this.#boundStyleSettings = view.displayStyle.settings;
+    this._addStyleListenerBinder((settings) => [
+      settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags()),
+      settings.onAfterClipStyleChanged.addListener(() => {
+        if (undefined === this.overrides.clipStyle) {
+          this.onActiveClipStyleChanged.raiseEvent();
+        }
+      }),
+    ]);
+
+    view.onDisplayStyleChanged.addListener((newStyle) => this.#displayStyleReplaced(newStyle));
+
+    this.#boundViewedCategories = view.categorySelector.observableCategories;
+    this.#removeViewedCategoriesListener = this.#boundViewedCategories.onChanged.addListener(this.#viewedCategoriesChanged);
+    view.onViewedCategoriesChanged.addListener(() => this.#syncViewedCategoriesBinding());
 
     ovrs.onViewFlagsChanged.addListener(updateViewFlags);
-
-    view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
-      if (undefined === this.overrides.clipStyle) {
-        this.onActiveClipStyleChanged.raiseEvent();
-      }
-    });
 
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
@@ -100,6 +121,45 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       if (undefined === this._ovrs.defaultFeatureAppearance)
         this.invalidateSymbologyOverrides();
     });
+  }
+
+  /** Registers listeners on the view's current display style settings, re-registering them whenever the style is replaced. */
+  protected _addStyleListenerBinder(binder: (settings: DisplayStyleSettings) => VoidFunction[]): void {
+    this.#styleListenerBinders.push(binder);
+    this.#styleListenerRemovals.push(...binder(this.#boundStyleSettings));
+  }
+
+  #displayStyleReplaced(newStyle: DisplayStyleState): void {
+    this.#boundStyleSettings = newStyle.settings;
+    for (const removeListener of this.#styleListenerRemovals)
+      removeListener();
+
+    this.#styleListenerRemovals.length = 0;
+    for (const binder of this.#styleListenerBinders)
+      this.#styleListenerRemovals.push(...binder(newStyle.settings));
+
+    this._onDisplayStyleReplaced(newStyle);
+  }
+
+  /** Refreshes state derived from the display style after the style is replaced. Subclasses must call super. */
+  protected _onDisplayStyleReplaced(newStyle: DisplayStyleState): void {
+    this.#resolvedViewFlags = newStyle.viewFlags.override(this.overrides.viewFlags);
+    this.onActiveViewFlagsChanged.raiseEvent();
+    if (undefined === this.overrides.clipStyle)
+      this.onActiveClipStyleChanged.raiseEvent();
+
+    this.invalidateSymbologyOverrides();
+  }
+
+  #syncViewedCategoriesBinding(): void {
+    const current = this._view.categorySelector.observableCategories;
+    if (current === this.#boundViewedCategories)
+      return;
+
+    this.#removeViewedCategoriesListener();
+    this.#boundViewedCategories = current;
+    this.#removeViewedCategoriesListener = current.onChanged.addListener(this.#viewedCategoriesChanged);
+    this.#viewedCategoriesChanged();
   }
 
   public get iModel() { return this._view.iModel; }
@@ -155,6 +215,14 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public [_attachToViewport](_args: AttachToViewportArgs): void {
     this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
+
+    // The display style or category selector may have been replaced while the view was detached, in which case no events
+    // were raised - rebind now.
+    const style = this._view.displayStyle;
+    if (style.settings !== this.#boundStyleSettings)
+      this.#displayStyleReplaced(style);
+
+    this.#syncViewedCategoriesBinding();
   }
   public [_detachFromViewport](): void {
     this.#removeSubCategoryChangesListener?.();
@@ -213,11 +281,6 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
     void loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(() => {
-      this.invalidateSymbologyOverrides();
-      void loadViewedCategories(this);
-    });
-
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -261,6 +324,12 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public readonly onActiveContoursChanged = new BeEvent<() => void>();
   public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
+  #boundViewedModels?: ObservableSet<Id64String>;
+  #removeViewedModelsListener?: VoidFunction;
+  readonly #viewedModelsChanged = () => {
+    void loadViewedModels(this);
+  };
+
   public constructor(refs: SpatialIModelDisplayReferences) {
     super(refs, createSpatialIModelDisplayOverrides());
     this.parent = refs;
@@ -272,22 +341,45 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     );
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
-
-    this._view.displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
-      this.onActiveHiddenLineSettingsChanged.raiseEvent();
-    });
-
     this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent());
-    this._view.displayStyle.settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent());
+
+    this._addStyleListenerBinder((settings) => [
+      settings.onAfterHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent()),
+      settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()),
+    ]);
 
     void loadViewedCategories(this);
-    this.viewedCategories.onChanged.addListener(() => {
-      this.invalidateSymbologyOverrides();
-      void loadViewedCategories(this);
-    });
 
     void loadViewedModels(this);
-    this.viewedModels.onChanged.addListener(() => void loadViewedModels(this));
+    this.#boundViewedModels = this.viewedModels;
+    this.#removeViewedModelsListener = this.#boundViewedModels.onChanged.addListener(this.#viewedModelsChanged);
+    this._view.onViewedModelsChanged.addListener(() => this.#syncViewedModelsBinding());
+  }
+
+  protected override _onDisplayStyleReplaced(newStyle: DisplayStyleState): void {
+    super._onDisplayStyleReplaced(newStyle);
+    this.onActiveHiddenLineSettingsChanged.raiseEvent();
+    this.onActiveContoursChanged.raiseEvent();
+  }
+
+  #syncViewedModelsBinding(): void {
+    const current = this.viewedModels;
+    if (current === this.#boundViewedModels)
+      return;
+
+    this.#removeViewedModelsListener?.();
+    this.#boundViewedModels = current;
+    this.#removeViewedModelsListener = current.onChanged.addListener(this.#viewedModelsChanged);
+    this.#viewedModelsChanged();
+  }
+
+  public override [_attachToViewport](args: AttachToViewportArgs): void {
+    super[_attachToViewport](args);
+
+    // The model selector may have been replaced while the view was detached, in which case no events were raised - rebind now.
+    this.#syncViewedModelsBinding();
+
+    this[_treeRefs].attachToViewport(args);
   }
 
   public override isSpatial(): this is SpatialIModelDisplayReference { return true; }
@@ -334,11 +426,6 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public get activeContours() {
     return this.overrides.contours ?? this._view.displayStyle.settings.contours;
-  }
-
-  public override[_attachToViewport](args: AttachToViewportArgs): void {
-    super[_attachToViewport](args);
-    this[_treeRefs].attachToViewport(args);
   }
 
   public override[_detachFromViewport](): void {
