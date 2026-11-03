@@ -80,6 +80,33 @@ describe("QueryMetadataCache", () => {
     expect(cache.size).to.equal(1);
   });
 
+  it("serves cached metadata synchronously for primary-connection requests", () => {
+    const cache = new QueryMetadataCache();
+    const requests: DbQueryRequest[] = [];
+    let status = DbResponseStatus.Done;
+    const execute = (req: DbQueryRequest): DbQueryResponse => {
+      requests.push(req);
+      return makeResponse(req.includeMetaData ? makeMeta("A", "B") : [], status);
+    };
+    const request = makeRequest({ usePrimaryConn: true });
+
+    status = DbResponseStatus.Error;
+    expect(cache.executeCachedPrimaryQueryRequest(request, execute).meta).to.deep.equal(makeMeta("A", "B"));
+    expect(cache.size).to.equal(0); // failed responses are not cached
+
+    status = DbResponseStatus.Done;
+    const first = cache.executeCachedPrimaryQueryRequest(request, execute);
+    const second = cache.executeCachedPrimaryQueryRequest(request, execute);
+    expect(requests.map((r) => r.includeMetaData)).to.deep.equal([true, true, false]);
+    expect(request.includeMetaData).to.be.true;
+    expect(second.meta).to.deep.equal(first.meta);
+    expect(second.meta).to.not.equal(first.meta);
+
+    status = DbResponseStatus.Cancel;
+    expect(cache.executeCachedPrimaryQueryRequest(request, execute).meta).to.deep.equal([]);
+    expect(cache.executeCachedPrimaryQueryRequest({ ...request, includeMetaData: false }, execute).meta).to.deep.equal([]);
+  });
+
   it("keys entries by every option that affects metadata", async () => {
     const cache = new QueryMetadataCache();
     const exec = new FakeExecutor(makeMeta("A"));
@@ -256,12 +283,26 @@ async function readColumnNames(db: ECDb | IModelDb, ecsql: string, config?: Quer
   return (await readMetaData(db, ecsql, config)).map((p) => p.name);
 }
 
+/** Spy on both native entry points: worker requests are asynchronous, primary-connection requests complete synchronously. */
+function spyQueryRequests() {
+  const worker = sinon.spy(ConcurrentQuery, "executeQueryRequest");
+  const primary = sinon.spy(ConcurrentQuery, "executePrimaryQueryRequest");
+  return {
+    get requests(): DbQueryRequest[] {
+      const calls: sinon.SinonSpyCall[] = [...worker.getCalls(), ...primary.getCalls()];
+      return calls.sort((a, b) => a.calledBefore(b) ? -1 : 1).map((call) => call.args[1] as DbQueryRequest);
+    },
+    resetHistory: () => { worker.resetHistory(); primary.resetHistory(); },
+    restore: () => { worker.restore(); primary.restore(); },
+  };
+}
+
 /** Read the metadata of a fresh reader and check whether it had to ask native for it, i.e. whether the cache missed. */
 async function expectMetadataRequested(db: ECDb | IModelDb, ecsql: string, requested: boolean, config?: QueryOptions): Promise<void> {
-  const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
+  const spy = spyQueryRequests();
   try {
     await readMetaData(db, ecsql, config);
-    expect(spy.args[0][1].includeMetaData).to.equal(requested);
+    expect(spy.requests[0].includeMetaData).to.equal(requested);
   } finally {
     spy.restore();
   }
@@ -288,7 +329,7 @@ describe("createQueryReader metadata cache", () => {
       ecdb.withCachedWriteStatement("INSERT INTO mct.Foo(PropA) VALUES('a')", (stmt) => stmt.stepForInsert());
       ecdb.saveChanges();
 
-      const spy = sinon.spy(ConcurrentQuery, "executeQueryRequest");
+      const spy = spyQueryRequests();
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       for (const config of [{}, { usePrimaryConn: true }, { rowFormat: QueryRowFormat.UseJsPropertyNames }, { abbreviateBlobs: true }]) {
         spy.resetHistory();
@@ -300,7 +341,7 @@ describe("createQueryReader metadata cache", () => {
         const secondRows = await secondReader.toArray();
         const secondMeta = await secondReader.getMetaData();
 
-        expect(spy.args.map((args) => args[1].includeMetaData)).to.deep.equal([true, false]);
+        expect(spy.requests.map((request) => request.includeMetaData)).to.deep.equal([true, false]);
         expect(secondMeta).to.deep.equal(firstMeta);
         expect(secondRows).to.deep.equal(firstRows);
         expect(secondMeta.map((p) => p.name)).to.deep.equal(["ECInstanceId", "ECClassId", "PropA"]);

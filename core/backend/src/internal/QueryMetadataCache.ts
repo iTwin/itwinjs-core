@@ -108,6 +108,32 @@ export class QueryMetadataCache {
     return response;
   }
 
+  /**
+   * Synchronous counterpart of [[executeCachedQueryRequest]] for primary-connection requests, which native completes on
+   * the caller's thread. The cache cannot be cleared while the request runs, so a cache hit never needs to be re-requested.
+   * @param request The request to execute. It is not modified.
+   * @param executeQueryRequest Sends a request to native without consulting this cache, typically
+   * `ConcurrentQuery.executePrimaryQueryRequest` with the database already bound. Called exactly once.
+   */
+  public executeCachedPrimaryQueryRequest(request: DbQueryRequest, executeQueryRequest: (request: DbQueryRequest) => DbQueryResponse): DbQueryResponse {
+    if (!request.includeMetaData)
+      return executeQueryRequest(request);
+
+    const key = QueryMetadataCache.makeKey(request);
+    const cached = this.get(key);
+    if (cached) {
+      const hitResponse = executeQueryRequest({ ...request, includeMetaData: false });
+      if (QueryMetadataCache.hasResult(hitResponse) && (hitResponse.meta === undefined || hitResponse.meta.length === 0))
+        hitResponse.meta = QueryMetadataCache.copy(cached);
+      return hitResponse;
+    }
+
+    const response = executeQueryRequest(request);
+    if (QueryMetadataCache.hasResult(response) && response.meta !== undefined && response.meta.length > 0)
+      this.set(key, QueryMetadataCache.copy(response.meta));
+    return response;
+  }
+
   private static hasResult(response: DbQueryResponse): boolean {
     return response.status === DbResponseStatus.Done || response.status === DbResponseStatus.Partial;
   }
