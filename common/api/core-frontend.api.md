@@ -5521,7 +5521,7 @@ export interface IModelDisplayReference {
     readonly [_attachToViewport]: (args: AttachToViewportArgs) => void;
     // @internal (undocumented)
     readonly [_detachFromViewport]: () => void;
-    // (undocumented)
+    // @internal
     readonly [_excludedElements]?: Iterable<Id64String>;
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
@@ -5532,7 +5532,6 @@ export interface IModelDisplayReference {
     readonly alwaysDrawnElements: ObservableSet<Id64String>;
     changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
     changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
-    // (undocumented)
     readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     // @internal
@@ -13807,6 +13806,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     get displayStyle(): DisplayStyleState;
+    set displayStyle(style: DisplayStyleState);
     // @deprecated (undocumented)
     dispose(): void;
     // @internal
@@ -14343,7 +14343,11 @@ export abstract class ViewState extends ElementState {
     get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
+    // @deprecated
+    setCategorySelector(categories: CategorySelectorState): void;
     setCenter(center: Point3d): void;
+    // @deprecated
+    setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
     abstract setOrigin(viewOrg: XYAndZ): void;

@@ -20,7 +20,7 @@ Spatial views can display linked iModels, each with its own visibility, display 
 
 ### ViewState property updates
 
-The `categorySelector`, `modelSelector`, and `displayStyle` setters remain supported. Prefer updating selector contents instead of replacing selectors, and use `cloneWithDisplayStyle` to create a view with a different display style.
+The `categorySelector`, `modelSelector`, and `displayStyle` setters remain supported, but wholesale replacement of these objects is discouraged. Prefer updating selector contents instead of replacing selectors, and use `cloneWithDisplayStyle` to create a view with a different display style. The `ViewState.setDisplayStyle` and `ViewState.setCategorySelector` methods are deprecated in favor of those approaches.
 
 ## API deprecations
 

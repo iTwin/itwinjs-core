@@ -899,6 +899,11 @@ export abstract class ViewState extends ElementState {
    */
   public abstract get defaultExtentLimits(): ExtentLimits;
 
+  /** Set the [[displayStyle]] for this view.
+   * @deprecated in 5.16 - might be removed in next major version. Use [[cloneWithDisplayStyle]] to create a view with a different display style.
+   */
+  public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
+
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
@@ -969,6 +974,11 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
     this.setOrigin(origin);
   }
+
+  /** Set the CategorySelector for this view.
+   * @deprecated in 5.16 - might be removed in next major version. Prefer updating the contents of [[categorySelector]] via [[CategorySelectorState.categories]] instead of replacing the selector.
+   */
+  public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {

@@ -201,6 +201,34 @@ describe("Viewport", () => {
     });
   });
 
+  describe("display style and category selector forwarding", () => {
+    it("Viewport.displayStyle setter assigns the view's display style", () => {
+      testBlankViewport((viewport) => {
+        const style = viewport.view.displayStyle.clone();
+        expect(style).not.toBe(viewport.view.displayStyle);
+        viewport.displayStyle = style;
+        expect(viewport.view.displayStyle).toBe(style);
+        expect(viewport.displayStyle).toBe(style);
+      });
+    });
+
+    it("ViewState.setDisplayStyle and setCategorySelector forward to the property setters", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+
+        const style = view.displayStyle.clone();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- verifies compatibility of deprecated forwarding method
+        view.setDisplayStyle(style);
+        expect(view.displayStyle).toBe(style);
+
+        const categories = view.categorySelector.clone();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- verifies compatibility of deprecated forwarding method
+        view.setCategorySelector(categories);
+        expect(view.categorySelector).toBe(categories);
+      });
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);

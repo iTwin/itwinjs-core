@@ -181,7 +181,7 @@ declare global {
 
 /** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
  * @public
- * @deprecated Use [[Viewport.onFlashedElementChanged]].
+ * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[Viewport.onFlashedElementChanged]].
  */
 export type OnFlashedIdChangedEventArgs = {
   readonly current: Id64String;
@@ -389,7 +389,7 @@ export abstract class Viewport implements Disposable, TileUser {
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
   /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
-   * @deprecated Use [[onFlashedElementChanged]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[onFlashedElementChanged]].
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
@@ -522,7 +522,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Id of last flashed element. */
   private _lastFlashedElem?: IModelAndElementId;
   /** The Id of the most recently flashed element, if any.
-   * @deprecated Use [[lastFlashedElement]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[lastFlashedElement]].
    */
   public get lastFlashedElementId(): Id64String | undefined {
     return this._lastFlashedElem?.id;
@@ -695,6 +695,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
+  public set displayStyle(style: DisplayStyleState) {
+    this.view.displayStyle = style;
+  }
 
   /** Selectively override aspects of this viewport's display style.
    * @see [DisplayStyleSettings.applyOverrides]($common)
@@ -739,7 +742,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
    * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
-   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public dropSubCategoryOverride(id: Id64String): void {
     this.primaryIModelRef.subCategoryOverrides.delete(id);
@@ -749,7 +752,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
    * @see [[dropSubCategoryOverride]]
-   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
     this.primaryIModelRef.subCategoryOverrides.set(id, ovr);
@@ -759,7 +762,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    * @see [[overrideSubCategory]]
-   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.subCategoryOverrides]].
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
     return this.primaryIModelRef.subCategoryOverrides.get(id);
@@ -771,7 +774,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @return The symbology of the subcategory within this viewport, including any overrides.
    * @see [[overrideSubCategory]]
-   * @deprecated Use [[IModelDisplayReference.getSubCategoryAppearance]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.getSubCategoryAppearance]].
    */
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     return this.primaryIModelRef.getSubCategoryAppearance(id);
@@ -781,7 +784,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory
    * @returns true if the subcategory is visible in this viewport.
    * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
-   * @deprecated Use [[IModelDisplayReference.isSubCategoryVisible]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.isSubCategoryVisible]].
    */
   public isSubCategoryVisible(id: Id64String): boolean {
     return this.primaryIModelRef.isSubCategoryVisible(id);
@@ -791,7 +794,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the model.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified model.
    * @see [DisplayStyleSettings.overrideModelAppearance]($common)
-   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
     this.primaryIModelRef.modelAppearanceOverrides.set(id, ovr);
@@ -800,7 +803,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
    * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
-   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public dropModelAppearanceOverride(id: Id64String): void {
     this.primaryIModelRef.modelAppearanceOverrides.delete(id);
@@ -813,7 +816,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    * @param batchNotify If true, a single batch event is raised instead of one event per category. This is more efficient when changing many categories at once.
-   * @deprecated Use [[IModelDisplayReference.changeCategoryDisplay]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.changeCategoryDisplay]].
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
     this.primaryIModelRef.changeCategoryDisplay({
@@ -827,7 +830,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
-   * @deprecated Use [[IModelDisplayReference.changeSubCategoryDisplay]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.changeSubCategoryDisplay]].
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     this.primaryIModelRef.changeSubCategoryDisplay(subCategoryId, display);
@@ -956,7 +959,7 @@ export abstract class Viewport implements Disposable, TileUser {
   public resetMapLayer(mapLayerIndex: MapLayerIndex) { this._mapTiledGraphicsProvider?.resetMapLayer(mapLayerIndex); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id.
-   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]] or [[IModelDisplayReference2d.viewedModel]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[SpatialIModelDisplayReference.viewedModels]] or [[IModelDisplayReference2d.viewedModel]].
    */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
@@ -989,7 +992,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note This function returns immediately; any requested models that aren't yet loaded are subsequently loaded in the background.
    * @see [[replaceViewedModels]] for a similar function returning a promise that resolves after all unloaded models are loaded.
-   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
     const ref = this.primaryIModelRef;
@@ -1005,7 +1008,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param modelIds The Ids of the models to be displayed.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
-   * @deprecated Use `clear` on [[SpatialIModelDisplayReference.viewedModels]] and then [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use `clear` on [[SpatialIModelDisplayReference.viewedModels]] and then [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
     const ref = this.primaryIModelRef;
@@ -1023,7 +1026,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
    * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
-   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[SpatialIModelDisplayReference.viewedModels]].
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
     const ref = this.primaryIModelRef;
@@ -1039,7 +1042,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not to display the specified models in the viewport.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
-   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async addViewedModels(models: Id64Arg): Promise<void> {
     return this.primaryIModelRef.isSpatial() ? this.primaryIModelRef.addAndLoadViewedModels(Id64.iterable(models)) : Promise.resolve();
@@ -1534,7 +1537,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
-   * @deprecated Use [[IModelDisplayReference.neverDrawn]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.neverDrawn]].
    */
   public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
 
@@ -1542,13 +1545,13 @@ export abstract class Viewport implements Disposable, TileUser {
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
    * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearAlwaysDrawn(): void {
     const ref = this.primaryIModelRef;
@@ -1564,7 +1567,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Clear the set of never-drawn elements.
    * @see [[neverDrawn]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearNeverDrawn(): void {
     const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
@@ -1578,7 +1581,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Specify the Ids of a set of elements which should never be rendered within this view.
    * @see [[neverDrawn]].
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public setNeverDrawn(ids: Id64Set): void {
     const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
@@ -1594,7 +1597,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param exclusive If true, *only* the specified elements will be drawn.
    * @see [[alwaysDrawn]]
    * @see [[isAlwaysDrawnExclusive]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     const ref = this.primaryIModelRef;
@@ -1607,12 +1610,12 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view.
-   * @deprecated Use [[IModelDisplayReference.isAlwaysDrawnExclusive]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public get isAlwaysDrawnExclusive(): boolean { return this.primaryIModelRef.isAlwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
-   * @deprecated Use [[IModelDisplayReference.perModelCategoryVisibility]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[IModelDisplayReference.perModelCategoryVisibility]].
    */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
     return this.primaryIModelRef.perModelCategoryVisibility;
@@ -1866,7 +1869,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
    * @see [[flashSettings]] to customize the visual effect.
-   * @deprecated Use [[flashedElement]].
+   * @deprecated in 5.14.4 - will not be removed until after 2027-11-03. Use [[flashedElement]].
    */
   public get flashedId(): Id64String | undefined {
     return this._flashedElem?.id;
