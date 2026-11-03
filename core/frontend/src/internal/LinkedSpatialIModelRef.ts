@@ -60,7 +60,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public readonly subCategoryOverrides = new ObservableMap<Id64String, SubCategoryOverride>;
   public readonly modelAppearanceOverrides = new ObservableMap<Id64String, FeatureAppearance>;
 
-  public readonly [_scheduleScriptReference] = undefined; // ###TODO
+  // ###TODO When linked references support schedule scripts, Viewport's scheduleChanged handler must invalidate the cached
+  // symbology overrides of every reference that has a script when the time point changes - today it invalidates only the primary's.
+  public readonly [_scheduleScriptReference] = undefined;
 
   public readonly onPerModelCategoryVisibilityChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
@@ -136,6 +138,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.#disposalFunctions.push(this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent()));
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.neverDrawnElements.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.alwaysDrawnElements.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.onIsAlwaysDrawnExclusiveChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.subCategoryOverrides.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.modelAppearanceOverrides.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     this.#disposalFunctions.push(this.overrides.onDefaultFeatureAppearanceChanged.addListener(() => this.invalidateSymbologyOverrides()));
     this.#disposalFunctions.push(refs.onDefaultFeatureAppearanceChanged.addListener(() => {
       if (undefined === this.overrides.defaultFeatureAppearance)

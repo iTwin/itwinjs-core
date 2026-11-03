@@ -1297,7 +1297,11 @@ export abstract class Viewport implements Disposable, TileUser {
     const styleAndOverridesChanged = () => {
       this.invalidateRenderPlan();
       this._changeFlags.setDisplayStyle();
-      this.setFeatureOverrideProviderChanged();
+      this._changeFlags.setFeatureOverrideProvider();
+      // Invalidate the owning reference's cached overrides - setFeatureOverrideProviderChanged would invalidate only the primary's,
+      // even when the changed map belongs to a linked reference.
+      ref.invalidateSymbologyOverrides();
+      this.invalidateScene();
     };
 
     removals.push(ref.subCategoryOverrides.onChanged.addListener(styleAndOverridesChanged));
@@ -1706,6 +1710,8 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
    * [[FeatureSymbology.Overrides]] should be recomputed.
+   * @note This invalidates the overrides of the viewport's primary [[IModelDisplayReference]] only. For a provider registered
+   * with a linked reference via [[IModelDisplayReference.featureOverrideProviders]], use [[IModelDisplayReference.invalidateSymbologyOverrides]].
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
@@ -1716,6 +1722,8 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
    * @note The viewport monitors various events to automatically detect when the overrides should be recomputed. This method
    * is only needed for changes that are not observable by the viewport itself.
+   * @note This invalidates the overrides of the viewport's primary [[IModelDisplayReference]] only. For state associated with
+   * a linked reference, use [[IModelDisplayReference.invalidateSymbologyOverrides]].
    */
   public invalidateSymbologyOverrides(): void {
     this.setFeatureOverrideProviderChanged();

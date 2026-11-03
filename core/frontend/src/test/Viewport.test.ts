@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance,
+  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
@@ -226,6 +226,50 @@ describe("Viewport", () => {
         view.setCategorySelector(categories);
         expect(view.categorySelector).toBe(categories);
       });
+    });
+  });
+
+  describe("symbology override cache invalidation", () => {
+    it("invalidates cached overrides when visibility and appearance inputs change on primary and linked references", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        for (const ref of [refs.primary, linkedRef]) {
+          const expectInvalidation = (mutate: () => void) => {
+            const warmed = ref.getSymbologyOverrides();
+            expect(ref.getSymbologyOverrides()).toBe(warmed);
+            mutate();
+            expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+          };
+
+          expectInvalidation(() => ref.neverDrawnElements.add("0x123"));
+          expectInvalidation(() => ref.neverDrawnElements.clear());
+          expectInvalidation(() => ref.alwaysDrawnElements.add("0x456"));
+          expectInvalidation(() => { ref.isAlwaysDrawnExclusive = true; });
+          expect(ref.getSymbologyOverrides().isAlwaysDrawnExclusive).toBe(true);
+          expectInvalidation(() => { ref.isAlwaysDrawnExclusive = false; });
+          expect(ref.getSymbologyOverrides().isAlwaysDrawnExclusive).toBe(false);
+          expectInvalidation(() => ref.subCategoryOverrides.set("0x789", SubCategoryOverride.fromJSON({ invisible: true })));
+          expectInvalidation(() => ref.modelAppearanceOverrides.set("0xabc", FeatureAppearance.fromJSON({ transparency: 0.5 })));
+        }
+
+        // A linked reference's appearance maps must invalidate its own cache, not the primary's.
+        const primaryWarmed = refs.primary.getSymbologyOverrides();
+        const linkedWarmed = linkedRef.getSymbologyOverrides();
+        linkedRef.subCategoryOverrides.set("0xdef", SubCategoryOverride.fromJSON({ invisible: true }));
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
+        expect(refs.primary.getSymbologyOverrides()).toBe(primaryWarmed);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
     });
   });
 
