@@ -52,7 +52,11 @@ export interface BulkDeleteFailure {
   elementId: Id64String;
   /** Why the element could not be deleted. */
   reason: BulkDeleteFailureReason;
-  /** For `ReferencedByForeignKey`: the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId`. Absent for `DefinitionInUse`. */
+  /**
+   * Human-readable context for diagnostics and logging only. The format may change; do not parse it.
+   * Currently, for `ReferencedByForeignKey`: the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId`;
+   * for `ReadOnlyDomain`: the read-only domain name. Absent for `DefinitionInUse` and `ProtectedElement`.
+   */
   detail?: string;
 }
 
@@ -76,6 +80,7 @@ export interface BulkDeleteElementsResult {
    * The set of element ids that could not be deleted.
    * - On `ConstraintViolation`: the unique element ids appearing in `failures`. May include cascaded descendants
    *   that were not in the requested ids, so this is not guaranteed to be a subset of the input. Never empty.
+   *   Nothing was deleted, including requested ids that are not listed.
    * - On `DeletionFailed`: every requested id (the iModel may be partially modified; abandon the current txn).
    * - On `Success`: empty.
    * @deprecated Use `failures` for a more detailed failure report.
@@ -522,11 +527,9 @@ export class EditTxn {
     if (result.status !== BulkDeleteElementsStatus.Success)
       return result;
 
-    // Success is all-or-nothing: every requested element is gone, so evict them all from the caches.
-    for (const id of ids) {
-      this.iModel.elements[_cache].delete({ id });
-      this.iModel.elements[_instanceKeyCache].deleteById(id);
-    }
+    // Native deletion also nulls logical navigation properties on surviving elements that referenced the deleted ones,
+    // so evicting only the requested ids would leave stale cached referrers. Clear all instance caches.
+    this.iModel.clearCaches({ instanceCachesOnly: true });
 
     return result;
   }

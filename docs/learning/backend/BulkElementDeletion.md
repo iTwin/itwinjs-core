@@ -35,9 +35,9 @@ The `result` object has these fields:
 | `status` | [BulkDeleteElementsStatus]($backend): `Success`, `ConstraintViolation` or `DeletionFailed` |
 | `failures` | [BulkDeleteFailure]($backend) entries, only populated on `ConstraintViolation`: the element, a [BulkDeleteFailureReason]($backend) and an optional `detail` (see [Constraint violations](#constraint-violations)) |
 | `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement; only meaningful for `DeletionFailed` |
-| `failedIds` | _Deprecated._ The unique set of element ids appearing in `failures` |
+| `failedIds` | _Deprecated._ On `ConstraintViolation`: the unique element ids appearing in `failures` (may include cascaded descendants not in `ids`; nothing was deleted, including ids not listed). On `DeletionFailed`: every requested id. On `Success`: empty |
 
-The validation pass runs before anything is modified, so `ConstraintViolation` always leaves the iModel - and the current txn - untouched. Only `DeletionFailed` can leave partial changes behind; in that case the caller must abandon the txn.
+The validation pass runs before anything is modified, so `ConstraintViolation` always leaves the iModel - and the current txn - untouched. Only `DeletionFailed` can leave partial changes behind; in that case the caller must abandon the txn. Always check `status`: `failures` is also empty on `DeletionFailed`, so `failures.length === 0` does not imply success.
 
 You do **not** need to call [EditTxn.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and performs the same usage checks for definitions.
 The behavioral differences are that `deleteDefinitionElements` silently ignores non-definition elements in the input and deletes whatever it can, whereas `deleteElements` deletes either everything or nothing.
@@ -84,11 +84,19 @@ The delete set is first expanded (children and sub-model contents are added) and
 | One of the elements every iModel must keep: the root Subject, the DictionaryModel partition or the RealityDataSources partition | `ProtectedElement` | - |
 | An element whose handler belongs to a read-only `DgnDomain` | `ReadOnlyDomain` | the domain name |
 
+`detail` is intended for diagnostics and logging only. Its format may change, so do not parse it or base program logic on it; use `reason` instead.
+
 If there is at least one violator, the status is `ConstraintViolation`, **nothing** is deleted and `failures` lists every violator. Each element appears at most once; if it violates several constraints the first one found is reported.
 
 Only the *direct* violators are reported. If you request a parent whose cascaded child is still referenced, the child is listed, not the parent. Likewise, the expanded set is validated exactly once: an element that would only become a violator after another violator is removed from the input is not reported until you retry.
 
-To proceed, either add the referencing elements to the delete set (so the reference becomes intra-set), or remove the reported elements from the input, then call `deleteElements` again.
+To proceed, resolve each reported element in one of these ways, then call `deleteElements` again:
+
+- Add the elements that reference it to the delete set, so the reference becomes intra-set.
+- Update those elements so they no longer reference it.
+- Remove it from `ids`, together with every requested element it was cascaded from (an ancestor, or the modeled element of a sub-model containing it). Removing only the reported element has no effect while a requested ancestor still cascades to it.
+
+A retry may reveal further violators.
 
 > Such blocking constraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
 

@@ -1480,6 +1480,18 @@ describe("deleteElements (native bulk delete API)", () => {
         assert.isTrue(props.target === undefined || props.target.id === undefined || !Id64.isValid(props.target.id), `expected cleared nav prop, got ${JSON.stringify(props.target)}`);
       });
 
+      it("a cached surviving referrer does not keep a stale nav property after its target is deleted", () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+        const cached = iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
+        assert.equal(cached.target?.id, target, "premise: the cached referrer points at the target");
+
+        assertResult(txn.deleteElements([target]), success, [target], [referrer]);
+
+        const reloaded = iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
+        assert.isUndefined(reloaded.target?.id, "referrer must be reloaded, not served stale from the cache");
+      });
+
       it("nav property pointing at a cascaded descendant is NULLed too", async () => {
         const parent = insertElement();
         const child = insertElement({ parentId: parent });
