@@ -772,7 +772,7 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BulkDeleteElementsArgs {
     // @deprecated (undocumented)
     skipFKConstraintValidations?: boolean;
