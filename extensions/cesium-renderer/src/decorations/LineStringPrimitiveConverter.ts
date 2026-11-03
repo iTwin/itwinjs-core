@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Cartesian3, Material, Polyline, PolylineCollection } from "@cesium/engine";
+import { Cartesian3 } from "@cesium/core";
+import { Material, Polyline, PolylineCollection } from "@cesium/engine";
 import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
