@@ -812,8 +812,11 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     if (undefined === provider || (inactiveOnly && provider.isActive(vp)))
       return;
 
-    vp.primaryIModelRef.neverDrawnElements.clear();
-    vp.primaryIModelRef.alwaysDrawnElements.clear();
+    const ref = vp.primaryIModelRef;
+    ref.neverDrawnElements.clear();
+    ref.alwaysDrawnElements.clear();
+    // Isolation leaves exclusivity enabled; an empty exclusive set would draw no elements at all.
+    ref.isAlwaysDrawnExclusive = false;
     vp.dropFeatureOverrideProvider(provider);
   }
 }
@@ -1054,6 +1057,8 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
     ref.neverDrawnElements.clear();
     ref.alwaysDrawnElements.clear();
+    // Isolation leaves exclusivity enabled; an empty exclusive set would draw no elements at all.
+    ref.isAlwaysDrawnExclusive = false;
     ref.featureOverrideProviders.delete(provider);
   }
 }

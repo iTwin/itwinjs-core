@@ -115,6 +115,30 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
   });
 
+  it("Static clear resets always-drawn exclusivity after isolate", async () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const ref = vp.primaryIModelRef;
+
+    const emph = EmphasizeElements.getOrCreate(vp);
+    assert.isTrue(emph.isolateElements(new Set<string>(["0x1"]), vp, true));
+    assert.isTrue(ref.isAlwaysDrawnExclusive);
+    assert.isTrue(1 === ref.alwaysDrawnElements.size);
+
+    EmphasizeElements.clear(vp);
+    assert.isFalse(ref.isAlwaysDrawnExclusive, "EmphasizeElements.clear should reset exclusivity so ordinary visibility is restored");
+    assert.isTrue(0 === ref.alwaysDrawnElements.size);
+    assert.isTrue(0 === ref.neverDrawnElements.size);
+
+    const refEmph = EmphasizeIModelElements.getOrCreate(ref);
+    assert.isTrue(refEmph.isolateElements(new Set<string>(["0x2"]), true));
+    assert.isTrue(ref.isAlwaysDrawnExclusive);
+
+    EmphasizeIModelElements.clear(ref);
+    assert.isFalse(ref.isAlwaysDrawnExclusive, "EmphasizeIModelElements.clear should reset exclusivity so ordinary visibility is restored");
+    assert.isTrue(0 === ref.alwaysDrawnElements.size);
+  });
+
   it("Hide add/replace/clear", async () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
