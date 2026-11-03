@@ -293,6 +293,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
   public set modelClipGroups(groups: ModelClipGroups) {
     this.#modelClipGroups = groups;
+    // Rebuild the cached clip volumes before notifying listeners - _getModelClip indexes into #modelClips using the new groups.
+    // Replaced RenderClipVolumes hold no unmanaged resources and are simply released, as in ViewState3d.updateModelClips.
+    this.#updateModelClips();
     this.onModelClipGroupsChanged.raiseEvent();
   }
 

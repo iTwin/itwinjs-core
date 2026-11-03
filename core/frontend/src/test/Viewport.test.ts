@@ -5,11 +5,12 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, SubCategoryAppearance, SubCategoryOverride,
+  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
+import { _getModelClip } from "../common/internal/Symbols";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReference } from "../IModelDisplayReference";
@@ -358,6 +359,50 @@ describe("Viewport", () => {
         expect(ref.viewedCategories.has("0x999")).toBe(true);
         expect(ref.getSymbologyOverrides()).not.toBe(warmed);
       });
+    });
+  });
+
+  describe("linked reference model clip groups", () => {
+    function createClip(offset: number): ClipVector {
+      const clip = ClipVector.createEmpty();
+      expect(clip.appendShape([Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0)])).toBe(true);
+      return clip;
+    }
+
+    it("rebuilds cached clip volumes when model clip groups are assigned, reordered, or cleared", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        // Linked without clips - no model is clipped.
+        const ref = refs.link({ iModel: linkedIModel });
+        expect(ref[_getModelClip]("0x1")).toBeUndefined();
+
+        // Assigning groups after linking takes effect.
+        const clipA = createClip(0);
+        const clipB = createClip(10);
+        ref.modelClipGroups = new ModelClipGroups([ModelClipGroup.create(clipA, ["0x1"]), ModelClipGroup.create(clipB, ["0x2"])]);
+        expect(ref[_getModelClip]("0x1")?.clipVector).toBe(clipA);
+        expect(ref[_getModelClip]("0x2")?.clipVector).toBe(clipB);
+        expect(ref[_getModelClip]("0x3")).toBeUndefined();
+
+        // Replacing with reordered groups applies each clip to the correct group.
+        ref.modelClipGroups = new ModelClipGroups([ModelClipGroup.create(clipB, ["0x2"]), ModelClipGroup.create(clipA, ["0x1"])]);
+        expect(ref[_getModelClip]("0x1")?.clipVector).toBe(clipA);
+        expect(ref[_getModelClip]("0x2")?.clipVector).toBe(clipB);
+
+        // Clearing the groups removes all clips.
+        ref.modelClipGroups = new ModelClipGroups();
+        expect(ref[_getModelClip]("0x1")).toBeUndefined();
+        expect(ref[_getModelClip]("0x2")).toBeUndefined();
+
+        refs.unlink(ref);
+      } finally {
+        await linkedIModel.close();
+      }
     });
   });
 
