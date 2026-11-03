@@ -523,6 +523,59 @@ describe("Viewport", () => {
     });
   });
 
+  describe("texture drapes", () => {
+    it("registers and resolves drapes using reference-qualified keys for primary and linked models with matching Ids", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primaryContext = new SceneContext(viewport);
+        const linkedContext = new SceneContext({ viewport, iModelRef: linkedRef });
+
+        const modelId = "0x5";
+        const drapedTreeRef = { treeOwner: { tileTree: { modelId } } } as any;
+        const primaryDrape = { name: "primary" } as any;
+        const linkedDrape = { name: "linked" } as any;
+
+        const getDrape = vi.spyOn(viewport.target, "getTextureDrape");
+        try {
+          // Registration in each context, followed by the bare-model-Id lookup performed by TileDrawArgs.
+          getDrape.mockReturnValue(primaryDrape);
+          expect(primaryContext.addBackgroundDrapedModel(drapedTreeRef, undefined)).toBe(primaryDrape);
+          expect(primaryContext.getTextureDrapeForModel(modelId)).toBe(primaryDrape);
+
+          getDrape.mockReturnValue(linkedDrape);
+          expect(linkedContext.addBackgroundDrapedModel(drapedTreeRef, undefined)).toBe(linkedDrape);
+          expect(linkedContext.getTextureDrapeForModel(modelId)).toBe(linkedDrape);
+
+          // After the scene merge performed by SpatialViewState.createScene, the matching model Ids must not collide -
+          // each context still resolves its own reference's drape.
+          for (const [key, drape] of linkedContext.textureDrapes)
+            primaryContext.textureDrapes.set(key, drape);
+
+          expect(primaryContext.textureDrapes.size).toBe(2);
+          expect(primaryContext.getTextureDrapeForModel(modelId)).toBe(primaryDrape);
+          expect(linkedContext.getTextureDrapeForModel(modelId)).toBe(linkedDrape);
+
+          // Re-registration finds the already-registered drape without consulting the target again.
+          getDrape.mockClear();
+          expect(primaryContext.addBackgroundDrapedModel(drapedTreeRef, undefined)).toBe(primaryDrape);
+          expect(getDrape).not.toHaveBeenCalled();
+        } finally {
+          getDrape.mockRestore();
+        }
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);

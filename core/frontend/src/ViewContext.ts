@@ -499,24 +499,25 @@ export class SceneContext extends RenderContext {
     if (undefined === drapedTree)
       return undefined;
 
-    const id = this.referenceModelKey(drapedTree.modelId);
-    let drape = this.getTextureDrapeForModel(id);
+    const modelId = drapedTree.modelId;
+    let drape = this.getTextureDrapeForModel(modelId);
     if (undefined !== drape)
       return drape;
 
-    drape = this.viewport.target.getTextureDrape(id);
+    const key = this.referenceModelKey(modelId);
+    drape = this.viewport.target.getTextureDrape(key);
     if (undefined === drape && this.viewport.backgroundDrapeMap)
       drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.backgroundDrapeMap);
 
     if (undefined !== drape)
-      this.textureDrapes.set(id, drape);
+      this.textureDrapes.set(key, drape);
 
     return drape;
   }
 
   /** @internal */
   public getTextureDrapeForModel(modelId: Id64String) {
-    return this.textureDrapes.get(modelId);
+    return this.textureDrapes.get(this.referenceModelKey(modelId));
   }
 
   /** @internal */
