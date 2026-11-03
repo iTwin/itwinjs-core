@@ -70,7 +70,14 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   private listenForScriptChange(): void {
-    /* ###TODO onScheduleScriptChanged
+    // Scheduling is supported only for the primary reference - linked schedule scripts are deferred
+    // (see LinkedSpatialIModelRef[_scheduleScriptReference]).
+    const refs = this._iModelRef.parent;
+    if (this._iModelRef !== refs.primary)
+      return;
+
+    const view = refs[_backingView];
+
     const onScriptChanged = (newScript: RenderSchedule.Script | undefined) => {
       if (!newScript?.requiresBatching)
         newScript = undefined;
@@ -83,13 +90,13 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
           this._groups.setScript(newScript);
     };
 
-    let rmListener = this._iModelRef.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
-    this._iModelRef.onDisplayStyleChanged.addListener((newStyle) => {
+    let rmListener = view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+    view.onDisplayStyleChanged.addListener((newStyle) => {
+      // The event is raised just before the new style is assigned - bind to the event argument, not view.displayStyle.
       rmListener();
       onScriptChanged(newStyle.scheduleScript);
-      rmListener = this._iModelRef.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+      rmListener = newStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
     });
-    */
   }
 
   private loadRefs(): void {

@@ -147,6 +147,34 @@ describe("Batched schedule scripts", () => {
       displayStyle.settings.timePoint = 10;
       expect(getPrimaryTransforms()).to.deep.equal([0, 10]);
       expect(linkedRefs[0].getLocation()?.origin.x).to.equal(0);
+
+      // Replacing the script after the references have loaded must rebuild the groups and animated references.
+      displayStyle.settings.scheduleScriptProps = [{
+        modelId: "0x1",
+        elementTimelines: [{
+          batchId: 1,
+          elementIds: [],
+          transformTimeline: [
+            { time: 0, value: { transform: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]] } },
+            { time: 10, value: { transform: [[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0]] } },
+          ],
+        }],
+      }];
+      const replacedScript = displayStyle.scheduleScript;
+      expect(replacedScript?.requiresBatching).to.equal(true);
+      expect(replacedScript).not.to.equal(script);
+
+      const replacedRefs = await getBatchedReferences(view.iModelRefs.primary.tileTreeRefs, 2);
+      const replacedTree = await replacedRefs[0].treeOwner.loadTree();
+      expect((replacedTree as BatchedTileTree).scheduleScript).to.equal(replacedScript);
+      expect(replacedRefs.map((ref) => ref.getLocation()?.origin.x)).to.deep.equal([0, 20]);
+
+      // Clearing the script after the references have loaded must drop the animated references.
+      displayStyle.settings.scheduleScriptProps = undefined;
+      const clearedRefs = await getBatchedReferences(view.iModelRefs.primary.tileTreeRefs, 1);
+      const clearedTree = await clearedRefs[0].treeOwner.loadTree();
+      expect((clearedTree as BatchedTileTree).scheduleScript).to.be.undefined;
+      expect(clearedRefs[0].getLocation()?.origin.x).to.equal(0);
     } finally {
       sinon.restore();
       SpatialTileTreeReferences.create = createDefaultSpatialTileTreeReferences;
