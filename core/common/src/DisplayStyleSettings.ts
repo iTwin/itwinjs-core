@@ -376,6 +376,9 @@ class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Ov
 
     if (!this._preserveArrayOnClear)
       this._json[this._arrayKey] = undefined;
+    // The indices refer to the discarded array (or, when preserving, will be rebuilt by populate()) - stale
+    // entries would cause findOrAllocateIndex to return an index into an array that no longer exists.
+    this.#indexById.clear();
     super._clear();
   }
 

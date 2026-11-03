@@ -279,6 +279,22 @@ describe("DisplayStyleSettings", () => {
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 
+      // Regression: clear() must also reset the internal id->index map so that re-adding a previously-present
+      // id allocates a slot in a fresh JSON array instead of indexing into the discarded one.
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => {
+        map.clear();
+        map.set("0x1", makeSettings(3));
+      }, [["0x1", makeSettings(3)]], [makeProps(3, "0x1")]);
+
+      expectMasks(undefined, (map) => {
+        map.set("0x1", makeSettings(1));
+        map.set("0x2", makeSettings(2));
+        map.clear();
+        map.set("0x2", makeSettings(4));
+        map.set("0x1", makeSettings(5));
+      }, [["0x2", makeSettings(4)], ["0x1", makeSettings(5)]],
+      [makeProps(4, "0x2"), makeProps(5, "0x1")]);
+
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
         style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
         expect(typeof (map as any).populate).to.equal("function");
