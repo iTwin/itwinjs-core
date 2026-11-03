@@ -465,6 +465,7 @@ export namespace SchemaSync {
           const status = briefcase[_nativeDb].cancelTo(txnBeforeInit, true);
           if (status !== IModelStatus.Success)
             Logger.logError("SchemaSync", `Failed to roll back schema sync initialization after the container upload failed: ${IModelStatus[status] ?? status}`);
+          briefcase.clearCaches();
         }
         throw error;
       }

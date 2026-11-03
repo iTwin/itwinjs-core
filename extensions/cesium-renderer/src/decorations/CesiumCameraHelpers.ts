@@ -1,4 +1,4 @@
-import { Cartesian3 } from "@cesium/engine";
+import { Cartesian3 } from "@cesium/core";
 import { CesiumScene } from "../CesiumScene.js";
 
 export class CesiumCameraHelpers {

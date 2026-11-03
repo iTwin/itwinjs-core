@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Fix parsing of compound unit labels containing a slash, such as \"km/h\", which were previously split into separate tokens.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

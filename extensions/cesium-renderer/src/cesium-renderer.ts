@@ -4,5 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./CesiumCamera.js";
+export { attachCesiumTileset, type AttachCesiumTilesetArgs } from "./CesiumTileset.js";
 export { createCesiumRenderSystem } from "./System.js";
 export { createCesiumViewManager } from "./ViewManager.js";

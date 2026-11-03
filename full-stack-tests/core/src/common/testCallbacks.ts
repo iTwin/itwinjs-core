@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export const getTokenCallbackName = "setBackendAccessToken";
+export const verticalCrsChangesCallbackName = "verticalCrsChanges";
 
 declare module "vitest" {
   interface ProvidedContext {
