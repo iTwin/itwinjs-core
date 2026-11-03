@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ViewStateProps } from "@itwin/core-common";
 import { ViewStateSpec } from "./TestConfig";
+import { getApiBaseUrl } from "./DisplayPerformanceTestApp";
 
 export class SavedViewsFetcher {
   private readonly _cache: {[iModelId: string]: ViewStateSpec[]} = {};
@@ -70,7 +71,7 @@ interface SavedViewResponse {
  * */
 async function fetchSavedViewsList(projectId: string, iModelId: string, accessToken: string): Promise<SavedViewListResponse> {
   return fetch(
-    `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/?projectId=${projectId}&iModelId=${iModelId}`,
+    `${getApiBaseUrl()}/savedviews/?projectId=${projectId}&iModelId=${iModelId}`,
     {
       method: "GET",
       headers: {
@@ -82,7 +83,7 @@ async function fetchSavedViewsList(projectId: string, iModelId: string, accessTo
 /** Returns the saved view with the actual view data */
 async function fetchSavedView(savedViewId: string, accessToken: string): Promise<SavedViewResponse> {
   return fetch(
-    `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`,
+    `${getApiBaseUrl()}/savedviews/${savedViewId}`,
     {
       method: "GET",
       headers: {
