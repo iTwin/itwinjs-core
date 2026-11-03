@@ -19,6 +19,7 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _refreshGeographicCoo
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
+ * @deprecated [[EditTxn.deleteElements]] no longer uses any options and ignores this argument.
  */
 export interface BulkDeleteElementsArgs {
   /**
@@ -488,6 +489,7 @@ export class EditTxn {
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @beta
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
     this.verifyWriteable();
     const invalidIds: Id64Set = new Set<Id64String>();

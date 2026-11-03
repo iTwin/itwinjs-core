@@ -3181,6 +3181,7 @@ export namespace IModelDb {
      * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
       return this._iModel[_implicitTxn].deleteElements(ids, deleteOptions);
     }
