@@ -415,6 +415,10 @@ export abstract class Viewport implements Disposable, TileUser {
   private _view!: ViewState;
   /** A function executed by `setView()` when `this._view` changes. */
   private readonly _detachFromView: VoidFunction[] = [];
+  /** Removal functions for the listeners registered by addIModelRefListeners, tracked per reference so that they can be
+   * released when the reference is unlinked instead of accumulating until the view is detached.
+   */
+  private readonly _detachFromIModelRefs = new Map<IModelDisplayReference, VoidFunction[]>();
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   private readonly _viewportId: number;
@@ -1280,8 +1284,11 @@ export abstract class Viewport implements Disposable, TileUser {
       }));
 
       removals.push(this.iModelRefs.onUnlinked.addListener((ref) => {
-        // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
+        // The reference clears its own event listeners when unlinked, but the viewport must still release the removal
+        // closures it holds for that reference - they capture the reference and would otherwise accumulate until the
+        // view is detached.
         ref[_detachFromViewport]();
+        this.removeIModelRefListeners(ref);
         this.invalidateScene();
       }));
     }
@@ -1291,7 +1298,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   private addIModelRefListeners(ref: IModelDisplayReference): void {
-    const removals = this._detachFromView;
+    const removals: VoidFunction[] = [];
+    this._detachFromIModelRefs.set(ref, removals);
 
     // The primary reference's viewedCategories, viewedModels, appearance override maps, and planar clip masks delegate to the
     // view's current category selector, model selector, and display style - all of which can be replaced wholesale. Listeners
@@ -1359,6 +1367,15 @@ export abstract class Viewport implements Disposable, TileUser {
       if (!isPrimary)
         removals.push(ref.viewedModels.onChanged.addListener(modelsChanged));
       removals.push(ref.onViewedModelsLoaded.addListener(modelsChanged));
+    }
+  }
+
+  private removeIModelRefListeners(ref: IModelDisplayReference): void {
+    const removals = this._detachFromIModelRefs.get(ref);
+    if (removals) {
+      this._detachFromIModelRefs.delete(ref);
+      for (const removal of removals)
+        removal();
     }
   }
 
@@ -1507,6 +1524,12 @@ export abstract class Viewport implements Disposable, TileUser {
   protected detachFromView(): void {
     this._detachFromView.forEach((f) => f());
     this._detachFromView.length = 0;
+
+    for (const removals of this._detachFromIModelRefs.values())
+      for (const removal of removals)
+        removal();
+
+    this._detachFromIModelRefs.clear();
 
     if (this._view)
       this._view.detachFromViewport();

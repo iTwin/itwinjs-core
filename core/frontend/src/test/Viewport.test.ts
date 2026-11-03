@@ -462,6 +462,67 @@ describe("Viewport", () => {
     });
   });
 
+  describe("unlinking", () => {
+    it("disposes each unlinked reference's subscriptions regardless of unlink order", async () => {
+      for (const reverse of [false, true]) {
+        const iModelA = createBlankConnection();
+        const iModelB = createBlankConnection();
+        try {
+          using viewport = openBlankViewport();
+          const refs = viewport.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const refA = refs.link({ iModel: iModelA });
+          const refB = refs.link({ iModel: iModelB });
+
+          const counts = new Map<IModelDisplayReference, number>();
+          for (const ref of [refA, refB]) {
+            counts.set(ref, 0);
+            ref.onSymbologyOverridesInvalidated.addListener(() => counts.set(ref, counts.get(ref)! + 1));
+          }
+
+          const [first, second] = reverse ? [refB, refA] : [refA, refB];
+          refs.unlink(first);
+          refs.unlink(second);
+
+          // A disposed reference no longer reacts to inherited default-appearance changes; an undisposed one would.
+          refs.defaultFeatureAppearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
+          expect(counts.get(refA)).toBe(0);
+          expect(counts.get(refB)).toBe(0);
+        } finally {
+          await iModelA.close();
+          await iModelB.close();
+        }
+      }
+    });
+
+    it("returns the viewport's listener bookkeeping to its pre-link baseline after repeated link/unlink", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const detachFromView = (viewport as any)._detachFromView as unknown[];
+        const detachFromIModelRefs = (viewport as any)._detachFromIModelRefs as Map<unknown, unknown[]>;
+        const baselineDetach = detachFromView.length;
+        const baselineRefs = detachFromIModelRefs.size;
+
+        for (let i = 0; i < 3; i++) {
+          const ref = refs.link({ iModel: linkedIModel });
+          expect(detachFromIModelRefs.size).toBe(baselineRefs + 1);
+          refs.unlink(ref);
+          expect(detachFromIModelRefs.size).toBe(baselineRefs);
+          expect(detachFromView.length).toBe(baselineDetach);
+        }
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);

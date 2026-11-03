@@ -149,8 +149,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
         this.invalidateSymbologyOverrides();
     }));
 
-    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
+    // Note: addOnce would remove the listener on the first unlink event even if it was raised for a *different* reference,
+    // leaving this reference's subscriptions leaked - remove the listener only when this reference itself is unlinked.
+    const removeUnlinkListener = refs.onUnlinked.addListener((ref: IModelDisplayReference) => {
       if (ref === this) {
+        removeUnlinkListener();
         this.#dispose();
       }
     });
