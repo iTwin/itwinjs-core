@@ -86,7 +86,8 @@ describe("BatchedSpatialTileTreeReferences", () => {
 
       initializeFrontendTiles({ computeSpatialTilesetBaseUrl: baseUrlFor });
       view = SpatialViewState.createBlank(primaryIModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
-      linkedRef = view.iModelRefs.link({ iModel: linkedIModel });
+      view.modelSelector.models.add("0x1");
+      linkedRef = view.iModelRefs.link({ iModel: linkedIModel, viewedModels: ["0x2"] });
       const ecefToPrimary = primaryIModel.getEcefTransform().inverse();
       expect(ecefToPrimary).not.to.be.undefined;
       const linkedToPrimary = ecefToPrimary!.multiplyTransformTransform(linkedIModel.ecefLocation!.getTransform());
@@ -121,6 +122,31 @@ describe("BatchedSpatialTileTreeReferences", () => {
       expect(primaryTree?.iModel).to.equal(primaryIModel);
       expect(linkedTree?.iModel).to.equal(linkedIModel);
       expect(requestedUrls).to.have.members([`${primaryUrl}tileset.json`, `${linkedUrl}tileset.json`]);
+
+      // Tile locations: the linked reference's tiles must be placed into the primary's coordinate space, while the
+      // primary's remain in its own.
+      const primaryLocation = primaryBatchedRef.getLocation();
+      expect(primaryLocation).not.to.be.undefined;
+      expect(primaryLocation!.isAlmostEqual(primaryTree!.iModelTransform)).to.be.true;
+
+      const linkedLocation = linkedBatchedRef.getLocation();
+      expect(linkedLocation).not.to.be.undefined;
+      const expectedLinkedLocation = linkedRef.linearTransformToParent.multiplyTransformTransform(linkedTree!.iModelTransform);
+      expect(linkedLocation!.isAlmostEqual(expectedLinkedLocation)).to.be.true;
+      expect(linkedLocation!.isAlmostEqual(linkedTree!.iModelTransform)).to.be.false;
+
+      // Fit ranges: the linked reference's model extents must likewise be transformed into the primary's coordinate space.
+      const modelExtents = new Range3d(0, 0, 0, 1, 1, 1);
+      const primaryFit = Range3d.createNull();
+      primaryBatchedRef.unionFitRange(primaryFit);
+      expect(primaryFit.isAlmostEqual(modelExtents)).to.be.true;
+
+      const linkedFit = Range3d.createNull();
+      linkedBatchedRef.unionFitRange(linkedFit);
+      const expectedLinkedFit = Range3d.createNull();
+      linkedRef.linearTransformToParent.multiplyRange(modelExtents, expectedLinkedFit);
+      expect(linkedFit.isAlmostEqual(expectedLinkedFit)).to.be.true;
+      expect(linkedFit.isAlmostEqual(modelExtents)).to.be.false;
     } finally {
       sinon.restore();
       SpatialTileTreeReferences.create = createDefaultSpatialTileTreeReferences;

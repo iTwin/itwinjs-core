@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-common";
 import {
   DisclosedTileTreeSet, formatAnimationBranchId,
-  IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, SpatialIModelDisplayReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { BatchedModels } from "./BatchedModels.js";
@@ -23,7 +23,7 @@ export interface BatchedTileTreeReferenceArgs {
   readonly getCurrentTimePoint: () => number;
   readonly getBackgroundBase?: () => BaseLayerSettings | undefined;
   readonly getBackgroundLayers?: () => MapLayerSettings[] | undefined;
-  readonly iModel: IModelConnection;
+  readonly iModelRef: SpatialIModelDisplayReference;
 }
 
 export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
@@ -50,7 +50,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       assert(undefined !== this._groupInfo.timeline);
       this._branchId = formatAnimationBranchId(this._groupInfo.timeline.modelId, animationNodeId);
     }
-    this.iModel = args.iModel;
+    this.iModel = args.iModelRef.iModel;
     this._layerRefHandler = new LayerTileTreeReferenceHandler(
       this,
       false,
@@ -105,7 +105,14 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   }
 
   public override unionFitRange(range: Range3d): void {
-    this._args.models.unionRange(range);
+    const modelRange = new Range3d();
+    this._args.models.unionRange(modelRange);
+    if (modelRange.isNull)
+      return;
+
+    // Transform from the owning iModel's coordinates into the view's world coordinates (identity for the primary reference).
+    this._args.iModelRef.linearTransformToParent.multiplyRange(modelRange, modelRange);
+    range.extendRange(modelRange);
   }
 
   public override get castsShadows(): boolean {
@@ -141,6 +148,12 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       if (animTf)
         animTf.multiplyTransformTransform(baseTf, baseTf);
     }
+
+    // Compose the owning reference's precomputed placement into the view's world coordinate space (identity for the
+    // primary reference).
+    const toParent = this._args.iModelRef.linearTransformToParent;
+    if (!toParent.isIdentity)
+      baseTf = toParent.multiplyTransformTransform(baseTf);
 
     const displayTf = group.displayTransform;
     if (!displayTf)

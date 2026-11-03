@@ -298,16 +298,23 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
+    const treeTf = super.computeTransform(tree);
+    const placement = this.computePlacementTransform();
+    return placement ? placement.multiplyTransformTransform(treeTf, treeTf) : treeTf;
+  }
+
+  /** Transform from a non-primary reference's iModel coordinates to the primary iModel's coordinate space, computed from
+   * the ECEF locations of the two iModels, or undefined if no transform applies (e.g., for the primary reference itself).
+   */
+  protected computePlacementTransform(): Transform | undefined {
     const primary = this.iModelRef.parent.primary;
     const secondary = this.iModelRef;
     if (primary === secondary || !primary.iModel.ecefLocation?.isValid || !secondary.iModel.ecefLocation?.isValid)
-      return super.computeTransform(tree);
+      return undefined;
 
-    const treeToWorld = tree.iModelTransform;
     const secondaryToEcef = secondary.iModel.ecefLocation.getTransform();
-    const ecefTf = secondaryToEcef.multiplyTransformTransform(treeToWorld);
     const worldTf = primary.iModel.getEcefTransform().inverse();
-    return worldTf ? worldTf.multiplyTransformTransform(ecefTf, ecefTf) : treeToWorld.clone();
+    return worldTf?.multiplyTransformTransform(secondaryToEcef);
   }
 
   protected override computeTransform(tree: TileTree): Transform {
@@ -421,11 +428,14 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     assert(tree instanceof PlanProjectionTileTree);
     const transform = tree.iModelTransform.clone(this._baseTransform);
 
+    // The elevation replaces the model's Z in its own iModel's coordinate space, before any placement into the primary's.
     const elevation = this.getSettings()?.elevation;
     if (undefined !== elevation)
       transform.origin.z = elevation;
 
-    return transform;
+    // Compose a linked reference's placement into the primary coordinate space (no-op for the primary reference).
+    const placement = this.computePlacementTransform();
+    return placement ? placement.multiplyTransformTransform(transform, transform) : transform;
   }
 
   public override draw(args: TileDrawArgs): void {
