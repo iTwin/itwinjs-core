@@ -1,6 +1,6 @@
 # Map layers, basemaps, and Azure Maps
 
-Azure Maps setup uses the generic map-layer APIs from `@itwin/core-frontend` and the Azure Maps format support from `@itwin/map-layers-formats`.
+Azure Maps setup uses the generic map-layer APIs from `@itwin/core-frontend` and the Azure Maps format support from `@itwin/map-layers-formats` .
 
 Use `@itwin/core-frontend` to start the app and attach ordinary background or overlay layers. Use `@itwin/map-layers-formats` to register Azure Maps support, provide the Azure Maps subscription key, and apply Azure basemaps like Street, Aerial, and Hybrid.
 
