@@ -164,7 +164,7 @@ describe("IModelConnection (#integration)", () => {
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).toBe(1);
 
-    const treeId = modelProps[0].id!.toString();
+    const treeId = modelProps[0].id.toString();
     const tree = await IModelApp.tileAdmin.requestTileTreeProps(iModel, treeId);
 
     expect(tree.id).toBe(modelProps[0].id);

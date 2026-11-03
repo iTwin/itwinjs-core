@@ -1,0 +1,13 @@
+{
+  "checkLeaks": true,
+  "timeout": 10000,
+  "spec": [
+    "lib/cjs/test/**/*.test.js"
+  ],
+  "reporter": [
+    "node_modules/@itwin/build-tools/mocha-reporter"
+  ],
+  "reporterOptions": [
+    "mochaFile=lib/test/junit_results.xml"
+  ]
+}

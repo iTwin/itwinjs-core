@@ -184,7 +184,7 @@ export default defineConfig({
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/junit_results_chrome.xml" }],
+      ["junit", { outputFile: process.env.VITEST_CORE_JUNIT_FILE ?? "lib/test/junit_results_chrome.xml" }],
     ],
     browser: {
       api: { host: loopbackHost, port: frontendPort, strictPort: true },
