@@ -406,6 +406,62 @@ describe("Viewport", () => {
     });
   });
 
+  describe("linked volume classifier", () => {
+    it("preserves a linked reference's volume classifier when merging scenes, preferring the primary's", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const view = viewport.view;
+        if (!view.isSpatialView())
+          throw new Error("Expected a spatial view");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        // Both references classify a model with the same Id - model Ids are only unique within a single iModel.
+        const modelId = "0x123";
+        const linkedClassifier = { name: "linked" } as any;
+        const linkedTreeRefs = vi.spyOn(linkedRef, "tileTreeRefs", "get").mockReturnValue([
+          { addToScene: (ctx: SceneContext) => ctx.setVolumeClassifier(linkedClassifier, modelId) } as any,
+        ]);
+
+        try {
+          // With no primary classifier, the linked classifier survives the scene merge along with its originating reference.
+          let context = new SceneContext(viewport);
+          view.createScene(context);
+          expect(context.scene.volumeClassifier?.classifier).toBe(linkedClassifier);
+          expect(context.scene.volumeClassifier?.modelId).toBe(modelId);
+          expect(context.scene.volumeClassifier?.iModelRef).toBe(linkedRef);
+
+          // A primary classifier takes precedence and remains associated with the primary reference.
+          const primaryClassifier = { name: "primary" } as any;
+          const primaryTreeRefs = vi.spyOn(view, "getTileTreeRefs").mockReturnValue([
+            { addToScene: (ctx: SceneContext) => ctx.setVolumeClassifier(primaryClassifier, modelId) } as any,
+          ]);
+
+          try {
+            context = new SceneContext(viewport);
+            view.createScene(context);
+            expect(context.scene.volumeClassifier?.classifier).toBe(primaryClassifier);
+            expect(context.scene.volumeClassifier?.modelId).toBe(modelId);
+            expect(context.scene.volumeClassifier?.iModelRef).toBe(refs.primary);
+          } finally {
+            primaryTreeRefs.mockRestore();
+          }
+        } finally {
+          linkedTreeRefs.mockRestore();
+        }
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);

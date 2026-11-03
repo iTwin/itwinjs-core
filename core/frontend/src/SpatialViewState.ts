@@ -253,6 +253,10 @@ export class SpatialViewState extends ViewState3d {
       for (const [key, drape] of linkedContext.textureDrapes)
         context.textureDrapes.set(key, drape);
 
+      // Preserve a linked reality model's active volume classifier. Only one volume classifier can be active in the scene -
+      // the primary iModel's (or an earlier linked reference's) takes precedence.
+      context.scene.volumeClassifier ??= linkedContext.scene.volumeClassifier;
+
       for (const listName of ["foreground", "background", "overlay"] as const) {
         for (const entry of linkedContext.scene[listName])
           context.scene[listName].push(entry);

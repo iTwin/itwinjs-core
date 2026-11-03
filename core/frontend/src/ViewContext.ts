@@ -542,6 +542,6 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public setVolumeClassifier(classifier: ActiveSpatialClassifier, modelId: Id64String): void {
-    this.scene.volumeClassifier = { classifier, modelId };
+    this.scene.volumeClassifier = { classifier, modelId, iModelRef: this.iModelRef };
   }
 }

@@ -137,6 +137,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: ActiveSpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
+  public activeVolumeClassifierIModelRef?: IModelDisplayReference;
   private _currentAnimationTransformNodeId?: number;
 
   // RenderTargetDebugControl
@@ -430,6 +431,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
+    this.activeVolumeClassifierIModelRef = scene.volumeClassifier?.iModelRef;
   }
 
   public override onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
