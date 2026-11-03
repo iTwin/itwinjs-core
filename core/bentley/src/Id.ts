@@ -333,7 +333,7 @@ export namespace Id64 {
     if (arg instanceof Set)
       return makeCopy ? new Set<string>(arg) : arg;
 
-    return new Set<Id64String>(typeof arg === "string" ? [arg] : arg);
+    return new Set<Id64String>(iterable(arg));
   }
 
   /** Obtain iterator over the specified Ids.
