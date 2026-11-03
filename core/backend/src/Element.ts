@@ -1565,6 +1565,7 @@ export class SectionDrawing extends Drawing {
 
 /** The template for a SheetBorder
  * @public @preview
+ * @deprecated in 5.15 - might be removed in next major version. Use [[SheetBorderPrototype]] instead.
  */
 export class SheetBorderTemplate extends Document {
   public static override get className(): string { return "SheetBorderTemplate"; }
@@ -1579,6 +1580,7 @@ export class SheetBorderTemplate extends Document {
 
 /** The template for a [[Sheet]]
  * @public @preview
+ * @deprecated in 5.15 - might be removed in next major version. Use [[SheetPrototype]] instead.
  */
 export class SheetTemplate extends Document {
   public static override get className(): string { return "SheetTemplate"; }
@@ -1608,6 +1610,9 @@ export class Sheet extends Document {
   public height: number;
   public width: number;
   public scale?: number;
+  /** The [[SheetTemplate]] this sheet was created from, if any.
+   * @deprecated in 5.15 - might be removed in next major version. Use [[Sheet.sheetPrototype]] instead.
+   */
   public sheetTemplate?: Id64String;
   /** The [[SheetPrototype]] this sheet was created from, if any.
    * @beta
@@ -1619,13 +1624,16 @@ export class Sheet extends Document {
     this.height = JsonUtils.asDouble(props.height);
     this.width = JsonUtils.asDouble(props.width);
     this.scale = props.scale;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
     this.sheetPrototype = RelatedElement.fromJSON(props.sheetPrototype);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (undefined !== this.sheetTemplate)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       referenceIds.addElement(this.sheetTemplate);
     if (undefined !== this.sheetPrototype)
       referenceIds.addElement(this.sheetPrototype.id);
@@ -2193,9 +2201,15 @@ export class SheetPrototype extends DefinitionElement {
 
   /** Create a new SheetPrototype element ready to be inserted into the iModel.
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.27.
+   * @throws Error if `args.borderId` is supplied but does not identify a [[SheetBorderPrototype]].
    */
   public static create(args: SheetPrototypeCreateArgs): SheetPrototype {
     args.iModel.requireMinimumSchemaVersion("BisCore", minimumSheetPrototypeBisCoreVersion, this.className);
+    if (undefined !== args.borderId) {
+      const border = args.iModel.elements.tryGetElement(args.borderId);
+      if (!(border instanceof SheetBorderPrototype))
+        throw new Error(`${args.borderId} is not a SheetBorderPrototype`);
+    }
     const props: SheetPrototypeProps = {
       classFullName: this.classFullName,
       model: args.definitionModelId,

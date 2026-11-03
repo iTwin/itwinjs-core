@@ -9676,7 +9676,7 @@ export interface SheetBorderPrototypeProps extends DefinitionElementProps {
     width?: number;
 }
 
-// @beta
+// @beta @deprecated
 export interface SheetBorderTemplateProps extends ElementProps {
     // (undocumented)
     height?: number;
@@ -9725,7 +9725,7 @@ export interface SheetProps extends ElementProps {
     // (undocumented)
     scale?: number;
     sheetPrototype?: RelatedElementProps;
-    // (undocumented)
+    // @deprecated
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
@@ -9744,7 +9744,7 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
     sheet?: RelatedElementProps;
 }
 
-// @beta
+// @beta @deprecated
 export interface SheetTemplateProps extends ElementProps {
     // (undocumented)
     border?: Id64String;

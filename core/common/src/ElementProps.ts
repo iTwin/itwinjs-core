@@ -318,6 +318,7 @@ export interface SubjectProps extends ElementProps {
 
 /** Properties of a [SheetBorderTemplate]($backend)
  * @beta
+ * @deprecated in 5.15 - might be removed in next major version. Use [SheetBorderPrototypeProps]($common) instead.
  */
 export interface SheetBorderTemplateProps extends ElementProps {
   height?: number;
@@ -326,6 +327,7 @@ export interface SheetBorderTemplateProps extends ElementProps {
 
 /** Properties of a [SheetTemplate]($backend)
  * @beta
+ * @deprecated in 5.15 - might be removed in next major version. Use [SheetPrototypeProps]($common) instead.
  */
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
@@ -341,6 +343,9 @@ export interface SheetProps extends ElementProps {
   width?: number;
   height?: number;
   scale?: number;
+  /** The [SheetTemplate]($backend) this sheet was created from, if any.
+   * @deprecated in 5.15 - might be removed in next major version. Use [[SheetProps.sheetPrototype]] instead.
+   */
   sheetTemplate?: Id64String;
   /** The [SheetPrototype]($backend) this sheet was created from, if any. */
   sheetPrototype?: RelatedElementProps;

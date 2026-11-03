@@ -35,8 +35,20 @@ describe("SheetPrototype", () => {
     let db: SnapshotDb;
     let documentListModelId: Id64String;
 
-    before(() => {
+    const testSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestSheetProto" alias="tsp" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+  <ECEntityClass typeName="TestSheetModel">
+    <BaseClass>bis:SheetModel</BaseClass>
+  </ECEntityClass>
+  <ECEntityClass typeName="TestDrawingModel">
+    <BaseClass>bis:DrawingModel</BaseClass>
+  </ECEntityClass>
+</ECSchema>`;
+
+    before(async () => {
       db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("SheetPrototype", "NewBisCore.bim"), { rootSubject: { name: "SheetPrototype" } });
+      await db.importSchemaStrings([testSchemaXml]);
       documentListModelId = withEditTxn(db, (txn) => DocumentListModel.insert(txn, IModel.rootSubjectId, "DocumentList"));
     });
 
@@ -115,6 +127,35 @@ describe("SheetPrototype", () => {
         expect(() => txn.insertModel({ classFullName: SheetModel.classFullName, modeledElement: { id: borderId } }))
           .to.throw(IModelError).with.property("errorNumber", IModelStatus.WrongModel);
       });
+    });
+
+    it("accepts a SheetPrototype sub-modeled by a SheetModel subclass", () => {
+      const prototypeId = withEditTxn(db, (txn) => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
+      const modelId = withEditTxn(db, (txn) => txn.insertModel({ classFullName: "TestSheetProto:TestSheetModel", modeledElement: { id: prototypeId }, isTemplate: true }));
+      expect(modelId).to.equal(prototypeId);
+      expect(db.models.getModel(modelId).classFullName).to.equal("TestSheetProto:TestSheetModel");
+    });
+
+    it("accepts a SheetBorderPrototype sub-modeled by a DrawingModel subclass", () => {
+      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
+      const modelId = withEditTxn(db, (txn) => txn.insertModel({ classFullName: "TestSheetProto:TestDrawingModel", modeledElement: { id: borderId }, isTemplate: true }));
+      expect(modelId).to.equal(borderId);
+      expect(db.models.getModel(modelId).classFullName).to.equal("TestSheetProto:TestDrawingModel");
+    });
+
+    it("rejects a SheetPrototype sub-model whose modeled element does not exist", () => {
+      withEditTxn(db, (txn) => {
+        expect(() => txn.insertModel({ classFullName: SheetModel.classFullName, modeledElement: { id: "0x123456789" } }))
+          .to.throw(IModelError);
+      });
+    });
+
+    it("rejects creating a SheetPrototype whose borderId is not a SheetBorderPrototype", () => {
+      const prototypeId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
+      expect(() => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId, borderId: prototypeId }))
+        .to.throw("is not a SheetBorderPrototype");
+      expect(() => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId, borderId: "0x123456789" }))
+        .to.throw("is not a SheetBorderPrototype");
     });
   });
 });
