@@ -250,7 +250,7 @@ export class TestConfig {
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelId = props.iModelId ?? prevConfig?.iModelId;
     // Don't inherit a changeset that belongs to a different iModel.
-    this.changesetId = props.changesetId ?? (props.iModelId ? undefined : prevConfig?.changesetId);
+    this.changesetId = props.changesetId ?? (this.iModelId !== prevConfig?.iModelId ? undefined : prevConfig?.changesetId);
     this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? props.extViewName ?? prevConfig?.viewName ?? prevConfig?.extViewName ?? "*";

@@ -298,7 +298,7 @@ export class TestRunner {
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
-        const iModelKey = this.curConfig.iModelId ? `${this.curConfig.iModelId}@${this.curConfig.changesetId ?? "latest"}` : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
+        const iModelKey = this.curConfig.iModelId ? this.getRemoteKey() : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
 
         try {
           const reuseContext = context && set.reuseContext && context.iModelKey === iModelKey;
@@ -702,6 +702,12 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
+  /** Key identifying a remote iModel, its changeset and the local saved views file. */
+  private getRemoteKey(): string {
+    const { iModelId, changesetId, iModelLocation, iModelName } = this.curConfig;
+    return `${iModelId}@${changesetId ?? "latest"}|${iModelLocation}${separator}${iModelName}`;
+  }
+
   /** Reads saved views from the `<iModelName>_ESV.json` file next to `filepath`, if any. */
   private async readLocalSavedViews(filepath: string): Promise<ViewStateSpec[]> {
     const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
@@ -729,7 +735,7 @@ export class TestRunner {
       const { iModelId, iTwinId, changesetId } = this.curConfig;
       if (iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
-      const version = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
+      const version = changesetId !== undefined ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
       await this.logToConsole(`Opening remote iModel ${iModelId} at changeset ${changesetId ?? "latest"} from a V2 checkpoint...`);
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, version);
       // Remote opens always use V2 checkpoints (SnapshotDb.openCheckpoint / openCheckpointFromRpc on the backend).
@@ -744,12 +750,15 @@ export class TestRunner {
         await this.logError(`Failed to fetch remote saved views for iModel ${iModelId}: ${(e as Error).message}`);
       }
 
+      // The backend maps extensionless names to ".sv", so append ".bim" to get the "_ESV.json" file.
+      const baseName = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
+      const localPath = /\.[^./\\]+$/.test(baseName) ? baseName : `${baseName}.bim`;
       // Saved views from the local ESV file take precedence over remote ones with the same name.
-      const localSavedViews = await this.readLocalSavedViews(`${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`);
+      const localSavedViews = await this.readLocalSavedViews(localPath);
       const localNames = new Set(localSavedViews.map((x) => x.name));
       const externalSavedViews = [...remoteSavedViews.filter((x) => !localNames.has(x.name)), ...localSavedViews];
 
-      return { iModel, externalSavedViews, iModelKey: `${iModelId}@${changesetId ?? "latest"}` };
+      return { iModel, externalSavedViews, iModelKey: this.getRemoteKey() };
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;

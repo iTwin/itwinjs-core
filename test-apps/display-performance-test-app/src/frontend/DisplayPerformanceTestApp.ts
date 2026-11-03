@@ -108,7 +108,7 @@ export class DisplayPerfTestApp {
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
     // Backend values win; fall back to the frontend build-time values for workflows that only set them there.
-    envConfiguration.urlPrefix ??= import.meta.env.IMJS_URL_PREFIX || undefined;
+    envConfiguration.urlPrefix ??= import.meta.env.IMJS_URL_PREFIX;
     envConfiguration.oidcHeadless ??= import.meta.env.IMJS_OIDC_HEADLESS ? true : undefined;
 
     await DisplayPerfRpcInterface.getClient().consoleLog(`Env configuration: ${JSON.stringify(envConfiguration)}`);
