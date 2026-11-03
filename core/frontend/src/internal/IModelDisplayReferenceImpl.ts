@@ -9,8 +9,33 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
+
+/** Computes the world-space display transform that rendering applies to a model displayed through a non-primary
+ * IModelDisplayReference, for use by picking and snapping. Only the reference's [[ModelDisplayTransformProvider]] applies -
+ * linked references do not support plan projection elevations, schedule scripts, or view attachments.
+ * @see ViewState.computeDisplayTransform for the primary reference's equivalent.
+ */
+export function computeIModelRefDisplayTransform(ref: IModelDisplayReference, modelId: Id64String): Transform | undefined {
+  const displayTf = ref.modelDisplayTransformProvider?.getModelDisplayTransform(modelId);
+  if (!displayTf)
+    return undefined;
+
+  // A premultiplied transform is applied after the reference's placement, i.e. in the view's world space.
+  if (displayTf.premultiply)
+    return displayTf.transform.clone();
+
+  // A non-premultiplied transform is applied in the linked iModel's own coordinate space, before its placement into the
+  // view's world space - conjugate it into world space for use on world-space points.
+  const toWorld = ref.linearTransformToParent;
+  const fromWorld = toWorld.inverse();
+  if (!fromWorld)
+    return displayTf.transform.clone();
+
+  return toWorld.multiplyTransformTransform(displayTf.transform).multiplyTransformTransform(fromWorld);
+}
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
   const ids = Id64.iterable(args.categories);

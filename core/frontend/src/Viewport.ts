@@ -65,6 +65,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { queryVisibleFeatures } from "./internal/render/QueryVisibleFeatures";
+import { computeIModelRefDisplayTransform } from "./internal/IModelDisplayReferenceImpl";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
@@ -3105,12 +3106,17 @@ export abstract class Viewport implements Disposable, TileUser {
         const pixel = pixels.getPixel(x, y);
         const modelId = pixel.modelId;
         if (undefined !== modelId) {
-          const transform = this.view.computeDisplayTransform({
-            modelId,
-            elementId: pixel.feature?.elementId,
-            viewAttachmentId: pixel.viewAttachmentId,
-            inSectionDrawingAttachment: pixel.inSectionDrawingAttachment,
-          });
+          const pixelRef = pixel.feature?.iModelRef;
+          // Like HitDetail.isExternalIModelHit: a pixel produced by an iModel other than the viewport's takes its display
+          // transform from its linked reference, not from the view.
+          const transform = pixelRef && pixelRef.iModel !== this.iModel
+            ? computeIModelRefDisplayTransform(pixelRef, modelId)
+            : this.view.computeDisplayTransform({
+              modelId,
+              elementId: pixel.feature?.elementId,
+              viewAttachmentId: pixel.viewAttachmentId,
+              inSectionDrawingAttachment: pixel.inSectionDrawingAttachment,
+            });
           transform?.multiplyInversePoint3d(npc, npc);
         }
       }

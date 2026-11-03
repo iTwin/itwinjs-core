@@ -13,6 +13,8 @@ import { ScreenViewport } from "../Viewport";
 import { AccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { testBlankViewportAsync } from "./openBlankViewport";
+import { createBlankConnection } from "./createBlankConnection";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { _requestSnap } from "../common/internal/Symbols";
 
 interface HitDetailProps {
@@ -23,11 +25,12 @@ interface HitDetailProps {
   subCategoryId?: Id64String;
   isClassifier?: boolean;
   geometryClass?: GeometryClass;
+  iModelRef?: IModelDisplayReference; // defaults to the viewport's primary reference
 }
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
   const feature = {
-    iModelRef: vp.view.iModelRefs.primary,
+    iModelRef: props?.iModelRef ?? vp.view.iModelRefs.primary,
     modelId: props?.modelId ?? Id64.invalid,
     elementId: props?.sourceId ?? Id64.invalid,
     subCategoryId: props?.subCategoryId ?? Id64.invalid,
@@ -177,6 +180,37 @@ describe("AccuSnap", () => {
         [],
         (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))),
       );
+    });
+
+    it("resolves the display transform from the hit's linked reference", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        await testBlankViewportAsync(async (vp) => {
+          const refs = vp.view.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial view");
+
+          const linkedRef = refs.link({ iModel: linkedIModel });
+          overrideRequestSnap(vp.iModel);
+          overrideRequestSnap(linkedIModel);
+
+          // Distinct display transforms for the same model Id on the primary view and the linked reference.
+          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1));
+          linkedRef.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(10, 0, 0));
+
+          // A hit on the linked reference uses the linked reference's transform...
+          let response = await requestSnap(vp, { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3], iModelRef: linkedRef });
+          expectSnapDetail(response, { point: [11, 2, 3], normal: [0, 1, 0], curve: [[10, 0, 0], [11, 0, 0]] });
+
+          // ...while a hit on the primary reference uses the view's transform for the same model Id.
+          response = await requestSnap(vp, { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] });
+          expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] });
+
+          refs.unlink(linkedRef);
+        });
+      } finally {
+        await linkedIModel.close();
+      }
     });
 
     function makeElementTransformScript(transform: Transform): RenderSchedule.Script {

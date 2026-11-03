@@ -10898,6 +10898,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     [Symbol.dispose](): void;
     protected constructor(rect?: ViewRect);
     // (undocumented)
+    activeVolumeClassifierIModelRef?: IModelDisplayReference;
+    // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
     // (undocumented)
     activeVolumeClassifierProps?: ActiveSpatialClassifier;

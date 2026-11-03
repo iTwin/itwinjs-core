@@ -20,6 +20,7 @@ import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { _requestSnap } from "./common/internal/Symbols";
+import { computeIModelRefDisplayTransform } from "./internal/IModelDisplayReferenceImpl";
 import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder } from "./AccuDraw";
 
 // cspell:ignore dont primitivetools
@@ -855,12 +856,17 @@ export class AccuSnap implements Decorator {
 
       let displayTransform;
       if (undefined !== thisHit.modelId) {
-        displayTransform = thisHit.viewport.view.computeDisplayTransform({
-          modelId: thisHit.modelId,
-          elementId: thisHit.sourceId,
-          viewAttachmentId: thisHit.path?.viewAttachment?.id,
-          inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
-        });
+        if (thisHit.isExternalIModelHit) {
+          // The hit originated from a linked reference; its display transform comes from that reference, not from the view.
+          displayTransform = computeIModelRefDisplayTransform(thisHit.feature.iModelRef, thisHit.modelId);
+        } else {
+          displayTransform = thisHit.viewport.view.computeDisplayTransform({
+            modelId: thisHit.modelId,
+            elementId: thisHit.sourceId,
+            viewAttachmentId: thisHit.path?.viewAttachment?.id,
+            inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
+          });
+        }
       }
 
       const snapPoint = Point3d.fromJSON(result.snapPoint);

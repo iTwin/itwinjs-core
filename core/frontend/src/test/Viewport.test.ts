@@ -576,6 +576,57 @@ describe("Viewport", () => {
     });
   });
 
+  describe("getPixelDataWorldPoint", () => {
+    it("inverts the display transform of the pixel's owning reference", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        class Transformer {
+          public constructor(private readonly _transform: Transform) { }
+          public getModelDisplayTransform() { return { transform: this._transform }; }
+        }
+
+        // Distinct display transforms for the same model Id on the primary view and the linked reference.
+        const modelId = "0x456";
+        viewport.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-5, 0, 0));
+        linkedRef.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(10, 0, 0));
+
+        const makeBuffer = (iModelRef: IModelDisplayReference) => ({
+          getPixel: () => ({
+            distanceFraction: 0.5,
+            modelId,
+            feature: { elementId: "0x123", subCategoryId: "0x1", geometryClass: 0, modelId, iModelRef },
+            viewAttachmentId: undefined,
+            inSectionDrawingAttachment: false,
+          }),
+        }) as any;
+
+        const raw = viewport.getPixelDataWorldPoint({ pixels: makeBuffer(linkedRef), x: 1, y: 1, preserveModelDisplayTransforms: true });
+        const linkedPt = viewport.getPixelDataWorldPoint({ pixels: makeBuffer(linkedRef), x: 1, y: 1 });
+        const primaryPt = viewport.getPixelDataWorldPoint({ pixels: makeBuffer(refs.primary), x: 1, y: 1 });
+        expect(raw).toBeDefined();
+        expect(linkedPt).toBeDefined();
+        expect(primaryPt).toBeDefined();
+
+        // Inverting the linked translation (10, 0, 0) subtracts 10; inverting the primary's (-5, 0, 0) adds 5.
+        expect(linkedPt!.x).toBeCloseTo(raw!.x - 10, 8);
+        expect(primaryPt!.x).toBeCloseTo(raw!.x + 5, 8);
+        expect(linkedPt!.y).toBeCloseTo(raw!.y, 8);
+        expect(linkedPt!.z).toBeCloseTo(raw!.z, 8);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
   describe("FeatureOverrideProvider", () => {
     function hasProxy(ref: IModelDisplayReference, provider: FeatureOverrideProvider): boolean {
       return [...ref.featureOverrideProviders].some((overrider) => "proxiedProvider" in overrider && overrider.proxiedProvider === provider);
