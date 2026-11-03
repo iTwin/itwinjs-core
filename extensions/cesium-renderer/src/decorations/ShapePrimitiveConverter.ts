@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "@cesium/engine";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PolygonGeometry, PolygonHierarchy } from "@cesium/core";
+import { PerInstanceColorAppearance, Primitive, PrimitiveCollection } from "@cesium/engine";
 import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import type { DecorationPrimitiveEntry, Shape2dEntry, ShapeEntry } from "./DecorationTypes.js";

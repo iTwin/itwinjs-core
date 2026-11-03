@@ -11987,6 +11987,8 @@ export class ToolAdmin {
     dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     doRedoOperation(): Promise<boolean>;
+    // @beta
+    doUndoAllOperation(): Promise<boolean>;
     doUndoOperation(): Promise<boolean>;
     // @internal (undocumented)
     endDynamics(): void;
@@ -12038,6 +12040,8 @@ export class ToolAdmin {
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): Promise<void>;
     // @internal (undocumented)
     onShutDown(): void;
+    // @beta
+    protected onTxnOperationError(_operation: "undo" | "redo" | "undoAll", _error: unknown): Promise<void>;
     // (undocumented)
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
