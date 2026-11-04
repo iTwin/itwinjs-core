@@ -199,6 +199,7 @@ import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
 import { Paragraph } from '@itwin/core-common';
 import { Path } from '@itwin/core-geometry';
+import { Persisted } from '@itwin/core-common';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -575,6 +576,7 @@ export namespace BlobContainer {
     export interface MetadataResponse extends Metadata {
         accountITwinId?: GuidString;
         containerId: string;
+        iModelId?: GuidString;
         iTwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
@@ -770,23 +772,40 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BulkDeleteElementsArgs {
+    // @deprecated (undocumented)
     skipFKConstraintValidations?: boolean;
 }
 
 // @beta
 export interface BulkDeleteElementsResult {
+    // @deprecated
     failedIds: Id64Set;
+    failures: BulkDeleteFailure[];
     sqlDeleteStatus: DbResult;
     status: BulkDeleteElementsStatus;
 }
 
 // @beta
 export enum BulkDeleteElementsStatus {
+    ConstraintViolation = 1,
     DeletionFailed = 2,
-    PartialSuccess = 1,
     Success = 0
+}
+
+// @beta
+export interface BulkDeleteFailure {
+    elementId: Id64String;
+    reason: BulkDeleteFailureReason;
+}
+
+// @beta
+export enum BulkDeleteFailureReason {
+    DefinitionInUse = 1,
+    ProtectedElement = 2,
+    ReadOnlyDomain = 3,
+    ReferencedByForeignKey = 0
 }
 
 // @beta
@@ -1384,6 +1403,9 @@ export namespace CloudSqlite {
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;
+        readonly onDemandBlocksDownloaded?: string;
+        readonly onDemandBytesDownloaded?: string;
+        readonly onDemandDownloadTimeMs?: string;
         readonly ongoingPrefetches?: string;
         readonly populatedCacheslots: string;
         readonly totalCacheslots: string;
@@ -2879,7 +2901,7 @@ export class EditTxn {
     deleteAspects(ids: Id64Array): BulkElementAspectsResult;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
-    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
+    deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -4175,10 +4197,16 @@ export abstract class IModelDb extends IModel {
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal (undocumented)
+    [_refreshGeographicCoordinateSystem](): void;
     // @internal
     [_refreshIModelProps](): void;
     // @internal (undocumented)
     [_resetIModelDb](): void;
+    // @internal (undocumented)
+    [_updateIModelProps](): void;
+    // @internal (undocumented)
+    [_verifyTxnWrite](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -4442,7 +4470,7 @@ export namespace IModelDb {
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
-        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T>;
         // (undocumented)
         getFederationGuidFromId(id: Id64String): GuidString | undefined;
         // (undocumented)
@@ -4462,7 +4490,7 @@ export namespace IModelDb {
         queryLastModifiedTime(elementId: Id64String): string;
         queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
-        tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> | undefined;
         // @deprecated
         updateAspect(aspectProps: ElementAspectProps): void;
         // @deprecated
@@ -4487,7 +4515,7 @@ export namespace IModelDb {
         // @deprecated
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
-        getModelProps<T extends ModelProps>(id: Id64String): T;
+        getModelProps<T extends ModelProps>(id: Id64String): Persisted<T>;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         // @deprecated
         insertModel(props: ModelProps): Id64String;
@@ -4495,7 +4523,7 @@ export namespace IModelDb {
         queryLastModifiedTime(modelId: Id64String): string;
         queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d>;
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
-        tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
+        tryGetModelProps<T extends ModelProps>(id: Id64String): Persisted<T> | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
         // @deprecated
         updateGeometryGuid(modelId: Id64String): void;

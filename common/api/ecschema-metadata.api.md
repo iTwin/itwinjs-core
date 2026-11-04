@@ -1695,6 +1695,7 @@ export interface PropertyRef {
     readonly ecInstanceId: number;
     // (undocumented)
     readonly labelStringIdx: number;
+    overriddenProperty: ResolvedPropertyRef | null | undefined;
     // (undocumented)
     readonly priority: number;
 }
@@ -2659,6 +2660,8 @@ export class SchemaView {
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
     findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
+    // @internal
+    findPropertyDefInOverrides(ref: PropertyRef, classIdx: number, predicate: (def: PropertyDef) => boolean): PropertyDef | undefined;
     static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView;
     getSchema(name: string): SchemaView.Schema | undefined;
     getSchemaByAlias(alias: string): SchemaView.Schema | undefined;
@@ -2818,7 +2821,6 @@ export namespace SchemaView {
         get enumeration(): Enumeration | undefined;
         // (undocumented)
         get extendedTypeName(): string | undefined;
-        // (undocumented)
         get kindOfQuantity(): KindOfQuantity | undefined;
         // (undocumented)
         get primitiveType(): SchemaViewPrimitiveType;
@@ -2828,7 +2830,6 @@ export namespace SchemaView {
         get enumeration(): Enumeration | undefined;
         // (undocumented)
         get extendedTypeName(): string | undefined;
-        // (undocumented)
         get kindOfQuantity(): KindOfQuantity | undefined;
         // (undocumented)
         get primitiveType(): SchemaViewPrimitiveType;
@@ -2855,6 +2856,7 @@ export namespace SchemaView {
         get description(): string;
         get ecInstanceId(): number;
         isArray(): this is AnyArrayProperty;
+        get isEffectivelyHidden(): boolean;
         isEnumeration(): this is AnyPrimitiveProperty;
         get isHidden(): boolean;
         isNavigation(): this is NavigationProperty;
@@ -2864,6 +2866,8 @@ export namespace SchemaView {
         isStruct(): this is AnyStructProperty;
         // (undocumented)
         get kind(): PropertyKind;
+        // @internal (undocumented)
+        protected get _kindOfQuantity(): KindOfQuantity | undefined;
         get label(): string;
         // (undocumented)
         get name(): string;

@@ -5,7 +5,7 @@
 
 import { base64StringToUint8Array } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { MapCartoRectangle } from "@itwin/core-frontend";
+import { MapCartoRectangle, MapLayerAuthenticationFailedError, MapLayerImageryProviderStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import sinon from "sinon";
 import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider.js";
@@ -51,7 +51,7 @@ describe("OgcApiFeaturesProvider", () => {
       return true;
     });
 
-    const symbInitSpy = sinon.spy(DefaultOgcSymbology.prototype, "initialize");
+    const symbInitSpy = sandbox.spy(DefaultOgcSymbology.prototype, "initialize");
     const indexDataStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
       return true;
     });
@@ -122,6 +122,60 @@ describe("OgcApiFeaturesProvider", () => {
 
     // Initialize should not throw since subLayer.Id != collection Id
     await expect(provider.initialize()).to.be.rejectedWith(Error, `Collection metadata and sub-layers id mismatch`);
+  });
+
+  it("should keep the provider in RequireAuth when a fetch handler reports an authentication failure during initialize", async () => {
+    const settings = getTestSettings(CountriesDataset.collectionUrl);
+    sandbox.stub(OgcApiFeaturesProvider.prototype, "makeRequest").callsFake(async function _(url: string) {
+      throw new MapLayerAuthenticationFailedError(url);
+    });
+    const provider = new OgcApiFeaturesProvider(settings);
+
+    // Must not throw: the tile tree is kept alive so the application can offer re-authentication.
+    await provider.initialize();
+
+    expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    // Tiled-mode loads must not fail on the missing items URL while awaiting re-authentication.
+    expect(await provider.loadTile(0, 0, 0)).to.be.undefined;
+  });
+
+  it("should discard partial initialization when authentication fails after the items URL was found", async () => {
+    const settings = getTestSettings(CountriesDataset.collectionUrl);
+    let authFailing = true;
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown) {
+      if (authFailing && url === CountriesDataset.queryablesUrl)
+        throw new MapLayerAuthenticationFailedError(url);
+      return { json: JSON.parse(CountriesDataset.urlsContent[url as string]), responseUrl: url as string };
+    });
+    const fetchItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchItems").resolves(undefined);
+    const symbInitSpy = sandbox.spy(DefaultOgcSymbology.prototype, "initialize");
+    const provider = new OgcApiFeaturesProvider(settings);
+
+    await provider.initialize();
+
+    expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    expect((provider as any)._itemsUrl).to.equal("");
+    expect(await provider.loadTile(0, 0, 0)).to.be.undefined;
+    await provider.getFeatureInfo([], { row: 0, column: 0, level: 0 } as any, {} as any, {} as any, {} as any);
+    expect(fetchItemsStub.called, "no items request before re-initialization").to.be.false;
+    expect(symbInitSpy.called).to.be.false;
+
+    // Re-initialization after re-authentication completes normally.
+    authFailing = false;
+    await provider.initialize();
+    expect((provider as any)._itemsUrl).to.equal(CountriesDataset.collection.links[1].href);
+    expect(symbInitSpy.called).to.be.true;
+  });
+
+  it("should propagate other initialize failures", async () => {
+    const settings = getTestSettings(CountriesDataset.collectionUrl);
+    sandbox.stub(OgcApiFeaturesProvider.prototype, "makeRequest").callsFake(async function _() {
+      throw new Error("network down");
+    });
+    const provider = new OgcApiFeaturesProvider(settings);
+
+    await expect(provider.initialize()).to.be.rejectedWith(Error, "network down");
+    expect(provider.status).to.equals(MapLayerImageryProviderStatus.Valid);
   });
 
   it("should initialize with layer url  set to items url", async () => {

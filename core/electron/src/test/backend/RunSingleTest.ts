@@ -40,6 +40,12 @@ async function run() {
  */
 async function exit(exitCode: number): Promise<void> {
   await app.whenReady();
+  // On Windows, Electron can die with 0xC0000005 while tearing down after app.exit(), losing the exit code
+  // (see certa's SpawnUtils.onExitElectronApp), so report the result over IPC before exiting.
+  const send = process.send?.bind(process);
+  if (send)
+    await new Promise<void>((resolve) => send({ exitCode }, () => resolve()));
+
   app.exit(exitCode);
 }
 

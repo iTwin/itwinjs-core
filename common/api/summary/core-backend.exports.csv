@@ -31,8 +31,11 @@ public;interface;BriefcaseIdArg
 internal;enum;BriefcaseLocalValue
 public;class;BriefcaseManager
 beta;interface;BulkDeleteElementsArgs
+deprecated;interface;BulkDeleteElementsArgs
 beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
+beta;interface;BulkDeleteFailure
+beta;enum;BulkDeleteFailureReason
 beta;interface;BulkElementAspectFailure
 beta;enum;BulkElementAspectFailureReason
 beta;interface;BulkElementAspectsResult

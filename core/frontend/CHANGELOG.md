@@ -1,6 +1,24 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 12 Oct 2026 17:39:12 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Nov 2026 17:36:46 GMT and should not be manually modified.
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+### Updates
+
+- Fix parser specs created through the `QuantityFormatter` spec registry, and parser specs requested for a non-active unit system, ignoring alternate unit labels.
+- Allow `QuantityFormatter.addAlternateLabels` to add labels for units without default alternates, and add default "kph", "kmh" and "mph" alternate labels for velocity units.
+
+## 5.14.5
+Tue, 27 Oct 2026 12:19:48 GMT
+
+_Version update only_
+
+## 5.14.4
+Fri, 23 Oct 2026 19:58:24 GMT
+
+_Version update only_
 
 ## 5.14.3
 Mon, 12 Oct 2026 17:37:54 GMT

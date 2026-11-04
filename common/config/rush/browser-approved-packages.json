@@ -87,10 +87,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/icons-generic",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/icons-generic-webfont",
       "allowedCategories": [ "internal" ]
     },
@@ -137,6 +133,10 @@
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@cesium/core",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@cesium/engine",
@@ -445,10 +445,6 @@
     {
       "name": "c8",
       "allowedCategories": [ "backend", "common", "frontend" ]
-    },
-    {
-      "name": "cache-require-paths",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "canonical-path",
@@ -767,10 +763,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "openid-client",
-      "allowedCategories": [ "integration-testing" ]
-    },
-    {
       "name": "os-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -785,10 +777,6 @@
     {
       "name": "prettier",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
-      "name": "raf",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react",
@@ -853,10 +841,6 @@
     {
       "name": "source-map-support",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "spdy",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sql-formatter",

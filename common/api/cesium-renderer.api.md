@@ -8,9 +8,21 @@ import { EcefLocation } from '@itwin/core-common';
 import { Point3d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { RenderSystem } from '@itwin/core-frontend';
+import { ScreenViewport } from '@itwin/core-frontend';
+import { Transform } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import { ViewDefinition3dProps } from '@itwin/core-common';
 import { ViewManager } from '@itwin/core-frontend';
+
+// @alpha
+export function attachCesiumTileset(vp: ScreenViewport, args: AttachCesiumTilesetArgs): Promise<() => void>;
+
+// @alpha
+export interface AttachCesiumTilesetArgs {
+    modelMatrix?: Transform;
+    url: string | URL;
+    zoomTo?: boolean;
+}
 
 // @alpha
 export interface CesiumCameraProps {

@@ -5081,13 +5081,13 @@ export interface HydrateViewStateRequestProps {
 // @internal
 export interface HydrateViewStateResponseProps {
     // (undocumented)
-    acsElementProps?: ElementProps;
+    acsElementProps?: Persisted<ElementProps>;
     // (undocumented)
-    baseModelProps?: ModelProps;
+    baseModelProps?: Persisted<ModelProps>;
     // (undocumented)
-    modelSelectorStateModels?: ModelProps[];
+    modelSelectorStateModels?: Persisted<ModelProps>[];
     // (undocumented)
-    sheetViewAttachmentProps?: ViewAttachmentProps[];
+    sheetViewAttachmentProps?: Persisted<ViewAttachmentProps>[];
     // (undocumented)
     sheetViewViews?: (ViewStateProps | undefined)[];
     // (undocumented)
@@ -5239,6 +5239,13 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
+    get queryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set queryParams(value: {
+        [key: string]: string;
+    } | undefined);
+    // @beta @deprecated
     savedQueryParams?: {
         [key: string]: string;
     };
@@ -5250,7 +5257,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };
@@ -5443,7 +5450,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
-    getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
+    getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<Persisted<ElementProps>[]>;
     // (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
@@ -5457,7 +5464,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     // (undocumented)
-    getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Persisted<ModelProps>[]>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -5469,19 +5476,19 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+    loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<Persisted<ElementProps> | undefined>;
     // (undocumented)
     queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
-    queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
+    queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Persisted<ElementProps>[]>;
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
     // (undocumented)
     queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]>;
     // (undocumented)
-    queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]>;
+    queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Persisted<ModelProps>[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
@@ -5839,6 +5846,9 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
+
+// @public @preview
+export function isPersisted<T extends EntityProps>(entity: T): entity is Persisted<T>;
 
 // @public @preview
 export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
@@ -7150,6 +7160,11 @@ export interface PartReference {
     // (undocumented)
     type: "partReference";
 }
+
+// @public @preview
+export type Persisted<T extends EntityProps> = T & {
+    id: Id64String;
+};
 
 // @public
 export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;

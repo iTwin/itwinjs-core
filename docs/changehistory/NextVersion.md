@@ -5,79 +5,126 @@ publish: false
 
 <!-- prettier-ignore -->
 - [NextVersion](#nextversion)
+  - [Frontend](#frontend)
+    - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
+    - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Backend](#backend)
-    - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
-    - [Vertical CRS discovery](#vertical-crs-discovery)
-    - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
-    - [Pre-push validation](#pre-push-validation)
-    - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
-    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
-    - [Native ChangeUnifier](#native-changeunifier)
-    - [Batched relationship lookups](#batched-relationship-lookups)
+    - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Bulk ElementAspect operations](#bulk-elementaspect-operations)
-  - [Common](#common)
-    - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
-    - [BeAsyncEvent](#beasyncevent)
-  - [Quantity](#quantity)
-    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
-    - [Async formats provider setter](#async-formats-provider-setter)
-  - [Breaking changes](#breaking-changes)
-    - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
-    - [Mobile RPC authentication](#mobile-rpc-authentication)
+
+## Frontend
+
+### Custom authentication for map-layer requests
+
+Map layers previously supported only HTTP Basic credentials, custom query parameters, and ArcGIS-style tokens (a token appended as a query parameter by a [MapLayerAccessClient]($frontend)). Services requiring any other scheme - most commonly an `Authorization` or API-key header, e.g. when map services are exposed through an authenticating proxy - could not be consumed.
+
+A new `@beta` extension point, [MapLayerFormatRegistry.addMapLayerFetchHandler]($frontend), lets the hosting application wrap every map-layer network request - tiles, tooltips, capabilities, service metadata, and source validation, across WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features layers. Handlers form a pipeline owned by the framework, run in registration order. Each [MapLayerFetchHandler]($frontend) receives the request ([MapLayerRequest]($frontend)) and a `fetchRequest` function ([MapLayerFetchRequest]($frontend)) that sends a request onward: through the remaining handlers, then to the network. It may:
+
+- decline a request it does not manage by returning `undefined`: the next handler sees the request exactly as the declining one received it, and if every handler declines the framework issues it with the default behavior
+- pass a copy of the request with different query parameters or headers to `fetchRequest` (the request's target cannot be changed); the remaining handlers may modify it further before it is sent
+- call `fetchRequest` one or more times - e.g. refresh an expired token and retry transparently, so the layer never enters `RequireAuth`
+- return its own `Response` without calling `fetchRequest` (short-circuit)
+- throw [MapLayerAuthenticationFailedError]($frontend) (now `@beta`) to report an unrecoverable authentication failure, transitioning the layer to [MapLayerImageryProviderStatus]($frontend).`RequireAuth`
+
+```ts
+// Approve destinations for this token explicitly; a format id alone is not a trust boundary.
+const authOrigins = new Set(["https://proxy.example.com"]);
+const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+  if (request.formatId !== "WMS")
+    return undefined;  // not ours: leave the request to the next handler, or to the default behavior
+  const target = new URL(request.url, document.baseURI);
+  if ((target.protocol !== "https:" && target.protocol !== "http:") || !authOrigins.has(target.origin))
+    return undefined;
+  const withBearer = (token: string) => {
+    const headers = new Headers(request.headers);
+    headers.set("Authorization", `Bearer ${token}`);
+    return { ...request, headers };
+  };
+  let response = await fetchRequest(withBearer(tokens.current));
+  if (response.status === 401) {
+    await tokens.refresh();
+    response = await fetchRequest(withBearer(tokens.current));  // transparent retry
+  }
+  if (response.status === 401 || response.status === 403)
+    throw new MapLayerAuthenticationFailedError(request.url); // unrecoverable: prompt the user
+  return response;
+});
+```
+
+`addMapLayerFetchHandler` returns the function that removes the handler. Several layers of an application can register their own handler without coordinating.
+
+A handler owns authentication for the requests it manages, and only it knows whether a value it injected is a secret - so every send issued through `fetchRequest` is a credentialed request: redirects are refused while [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled (so injected values cannot silently reach an unlisted origin), and an NTLM/Negotiate 401 challenge is never answered with browser credentials. A request the handler does not manage is declined rather than sent, and keeps the default behavior in full, so a handler serving one format does not affect layers of the others (e.g. Windows-Authentication-protected WMS services); because a request sent by a handler is always issued credentialed, no handler further down the pipeline can downgrade that protection. The framework keeps protecting the credentials it supplies itself - settings-derived basic auth and the browser's SSO identity - on every send.
+
+The feature is fully backward compatible: without a handler, requests and failure detection are exactly as in previous releases, and [MapLayerAccessClient]($frontend) (including `ArcGisAccessClient` from `@itwin/map-layers-auth`) keeps serving the token-based ArcGIS facility unchanged. Because handlers are registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so customized responses are not shared across differing request contexts.
+
+Additionally, WMS and WMTS `GetCapabilities` requests issued when a layer initializes now include the layer's custom query parameters ([ImageMapLayerSettings.queryParams]($common)), matching the source-validation path; previously they were omitted, which could break reloading a layer whose server requires them.
+
+See [Map-layer authentication](../learning/frontend/MapLayerAuthentication.md) for the full behavior and complete samples.
+
+### Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`
+
+With the fetch handler as the designated channel for secrets, the split between persisted and non-persisted custom query parameters no longer has a purpose, and the non-persisted one was never a safe place for a secret (a value in `unsavedQueryParams` follows redirects and is sent along with an NTLM/Negotiate retry). Both `@beta` fields are deprecated on [ImageMapLayerSettings]($common) and [MapLayerSource]($frontend); they keep working until removed in the next major version.
+
+- `savedQueryParams` is renamed [ImageMapLayerSettings.queryParams]($common) / [MapLayerSource.queryParams]($frontend), matching the JSON property it has always been persisted as ([ImageMapLayerProps.queryParams]($common)). The new name is an accessor over the existing field, so code that redeclares or deletes `savedQueryParams` is unaffected.
+- `unsavedQueryParams` has no direct replacement: a secret or per-session parameter is injected by a [MapLayerFetchHandler]($frontend), keyed on [MapLayerRequest.layerUrl]($frontend) when it differs per layer; a non-secret parameter goes in `queryParams`. Until it is removed, `collectQueryParams()` remains the merged view actually sent, and every request kind now applies the same precedence: a key present in both maps takes its value from `unsavedQueryParams` (tile requests previously favored the persisted value).
+
+```ts
+// Before
+settings.unsavedQueryParams = { apiKey: secret };
+
+// After: parameters assigned to each layer, sent only to that layer's own origin
+const secretParamsByLayer = new Map<string, { [key: string]: string }>();
+secretParamsByLayer.set(settings.url, { apiKey: secret });
+
+IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+  const params = secretParamsByLayer.get(request.layerUrl);
+  if (!params)
+    return undefined;   // not a layer this handler manages
+  const target = new URL(request.url, document.baseURI);
+  const layer = new URL(request.layerUrl, document.baseURI);
+  if ((target.protocol !== "https:" && target.protocol !== "http:") || target.origin !== layer.origin)
+    return undefined;   // a server-advertised link must not inherit this layer's secrets
+  const searchParams = new URLSearchParams(request.searchParams);
+  for (const [name, value] of Object.entries(params))
+    searchParams.set(name, value);
+  const response = await fetchRequest({ ...request, searchParams });
+  if (response.status === 401 || response.status === 403)
+    throw new MapLayerAuthenticationFailedError(request.url); // the handler classifies the responses it returns
+  return response;
+});
+```
+
+`layerUrl` is also the URL of a [MapLayerSource]($frontend) during validation, so the same entry serves the attach dialog's validation request and every later request of the layer.
+
+This per-layer example intentionally supports only same-origin requests. Cross-origin authentication requires explicit approval for that particular secret. Also enable `MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins` to block redirects of handler-injected values: it does not replace the direct-destination checks in these samples.
 
 ## Backend
 
-### Faster asynchronous ECSQL paging and result conversion
+### Bulk Element Deletion API changes
 
-Asynchronous ECSQL readers can now resume unfinished concurrent-query statements between contiguous batches, avoiding repeated scans through preceding rows and repeated sorting. A continuation briefly waits for a busy owning worker before falling back to another available worker. Reuse is temporary and bounded; expiration, cache eviction, or an observed committed data change returns paging to the existing LIMIT/OFFSET path.
-
-Concurrent queries also reduce repeated metadata lookups and temporary JSON allocations when converting supported scalar and composite results. Point-coordinate reuse and more efficient ID formatting reduce per-row work without changing the documented result formats.
-
-Reuse is automatic for eligible worker queries in WAL databases. Primary-connection queries, databases not using WAL journal mode (even when opened read-only), and connections with attached data databases continue re-executing each batch. Nondeterministic expressions may be evaluated once for a retained execution instead of once per batch, so use deterministic queries and ordering rather than depending on batch boundaries for re-evaluation. Retained statements can hold sorter resources and delay WAL checkpoints until released.
-
-See [Asynchronous paging](../learning/backend/ExecutingECSQL.md#asynchronous-paging) for behavior and resource considerations.
-
-### Vertical CRS discovery
-
-The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
-
-### Opt-in fallback for missing navigation relationship class ids
-
-Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties that contain an `Id` but no `RelECClassId`. When enabled, end-table relationship queries and `ECVLib.Relations()` report the relationship declared by the navigation property. Existing behavior is unchanged when the option is omitted, and directly selecting the navigation property's `RelECClassId` still returns its stored `NULL` value.
-
-The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
-
-The ECSQL version was bumped to `2.0.4.2`.
-
-### Pre-push validation
-
-The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
-
-### Stricter briefcase file deletion
-
-[NativeApp.deleteBriefcase]($frontend) now only deletes files that are inside the briefcase cache directory or that are valid iModels. If the supplied path refers to an existing file that is neither, it throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
-
-[BriefcaseManager.deleteBriefcaseFiles]($backend) no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only files named `<briefcase file name>-*` or `<briefcase file name>.*` (e.g. `-wal`, `-shm`, `-locks`, `.Tiles`) are deleted along with the briefcase.
-
-### IdSet accepts ids with the high bit set
-
-The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
-
-Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
-
-### Native ChangeUnifier
-
-The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
-
-### Batched relationship lookups
-
-The new `@beta` [Relationships.queryInstancesProps]($backend) and [Relationships.queryInstances]($backend) methods look up many relationships of the same class with at most two queries. Each criterion is either a relationship id or a source and target id pair, and both kinds can be mixed. The returned array has one entry per criterion, in the same order, with `undefined` where no relationship was found. The results match calling [Relationships.tryGetInstanceProps]($backend) or [Relationships.tryGetInstance]($backend) for each criterion.
+[EditTxn.deleteElements]($backend) *(beta)* is now **all-or-nothing**. Previously the call deleted whatever it could and returned `PartialSuccess` with the ids it had to skip. Now, if any element in the expanded delete set (requested elements plus their children and sub-model contents) is still referenced from *outside* the set, nothing is deleted and the status is `ConstraintViolation`. The validation runs before anything is modified, so a rejected call leaves the iModel and the current txn untouched.
 
 ```ts
-const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(ElementGroupsMembers.classFullName, [relId, { sourceId, targetId }]);
+const result = txn.deleteElements(ids);
+if (result.status === BulkDeleteElementsStatus.ConstraintViolation) {
+  for (const failure of result.failures)
+    console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]}`);
+}
 ```
 
-By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
+Changes to the beta types:
+
+- `BulkDeleteElementsStatus.PartialSuccess` has been **removed**. The enum is now `Success` (0), `ConstraintViolation` (1) and `DeletionFailed` (2). Code that handled `PartialSuccess` should handle `ConstraintViolation` instead - and note that in that case *nothing* was deleted.
+- New [BulkDeleteElementsResult.failures]($backend): a per-element report. Each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `ProtectedElement` or `ReadOnlyDomain`). Only the *direct* violators are reported. Because the whole expanded set is validated, a reported element may be a child or sub-model member that was **not** in the `ids` you passed in; its requested ancestor is not listed separately. For example, requesting `[parent]` when `parent`'s child is the CodeScope of an element outside the set reports the *child*, not `parent`.
+- `BulkDeleteElementsResult.failedIds` is deprecated in favor of `failures`. Its contents have changed:
+  - On `ConstraintViolation` it holds the unique element ids appearing in `failures`. As described above, these may include cascaded descendants that were not in the requested `ids`, so `failedIds` is no longer guaranteed to be a subset of the input. It is never empty on `ConstraintViolation`, so existing `failedIds.size > 0` checks still detect a rejected delete. However, it no longer lists everything left undeleted: for input `[blocked, independent]`, both remain undeleted while `failedIds` reports only `blocked`. Callers that filter this list to existing elements and throw still detect rejection, but their error reports omit other undeleted elements.
+  - On `DeletionFailed` it holds every requested id, matching the previous behavior for this status, so callers that only check `failedIds.size > 0` still detect the failure. The iModel may be partially modified in this case and the caller must abandon the current txn.
+  - On `Success` it is empty.
+- `BulkDeleteElementsArgs.skipFKConstraintValidations` is deprecated and **ignored**. Skipping the validation pass could leave the iModel with dangling references (e.g. a deleted GeometryPart still used by a geometry stream), so that behavior was removed. The option object is still accepted so existing calls keep compiling.
+
+If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
+
+See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 
 ### Bulk ElementAspect operations
 
@@ -96,77 +143,3 @@ if (result.status === BulkElementAspectsStatus.ValidationFailed) {
 The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`, `onBulkUpdated`, `onBulkDelete` and `onBulkDeleted` handlers are called once per aspect class. By default they call the existing per-aspect handlers, so existing overrides of `onInsert`, `onUpdate` and the other per-aspect handlers still run for every aspect. Within one bulk call, the default handlers check the lock of each owning element and the channel of each model only once. The existing single-aspect methods and handlers are unchanged.
 
 See [Bulk ElementAspect Operations]($docs/learning/backend/BulkElementAspects.md) for details.
-
-## Common
-
-### Step-interpolated render schedule keyframes no longer apply one keyframe late
-
-Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one of its keyframes returned the *preceding* keyframe's value when that preceding keyframe used [RenderSchedule.Interpolation.Step]($common). It now returns the matched keyframe's own value. This affects [RenderSchedule.Timeline.getVisibility]($common), [RenderSchedule.Timeline.getColor]($common), [RenderSchedule.Timeline.getAnimationTransform]($common), and [RenderSchedule.Timeline.getCuttingPlane]($common).
-
-For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
-
-The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
-
-### BeAsyncEvent
-
-[BeAsyncEvent]($bentley) is similar to [BeEvent]($bentley) in that it allows any number of listeners to be notified when something happens. The difference is that, in the case of [BeAsyncEvent]($bentley), the listener is expected to return a `Promise`. Only after the returned `Promise` settles is the listener considered to have finished handling the event.
-
-## Quantity
-
-### Built-in length ratio units for drawing scales
-
-The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.00.12, which adds three `LENGTH_RATIO` units: `Units.DECIMAL_LENGTH_RATIO`, `Units.M_PER_M_LENGTH_RATIO` (label `m:m`), and `Units.IN_PER_FT_LENGTH_RATIO` (label `in:ft`). These are intended for persisting drawing and sheet scales as paper length divided by model length, so a `1:100` scale is stored as `0.01` and a `1/4" = 1'` scale is stored as `1/48` in `m:m` (or `0.25` in `in:ft`).
-
-[UnitConversions]($quantity) can convert between these units, and [getDefaultPersistenceUnit]($quantity) now accepts `Phenomena.LENGTH_RATIO` and returns `Units.M_PER_M_LENGTH_RATIO`. Previously `LENGTH_RATIO` was excluded from that helper because no built-in default existed.
-
-### Async formats provider setter
-
-[IModelApp.setFormatsProvider]($frontend) replaces the formats provider, optionally sets the active unit system through [SetFormatsProviderOptions.unitSystem]($frontend), and returns a promise that resolves after the [QuantityFormatter]($frontend) has rebuilt its formatting and parsing caches. Use it instead of assigning [IModelApp.formatsProvider]($frontend) when you need to know that formatting reflects the new provider.
-
-- The provider and unit system take effect immediately: `IModelApp.formatsProvider` lookups, including `getFormatSync`, use the new provider, and `IModelApp.quantityFormatter.activeUnitSystem` reports the new unit system before the promise settles.
-- If a later `setFormatsProvider` call is made before the reload finishes, the earlier promise rejects. The latest provider wins.
-- If the reload fails, the promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
-- The promise also rejects if the application shuts down before the reload finishes.
-
-Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
-
-## Breaking changes
-
-### Extensible sub-model class validation
-
-Validation of which model classes may sub-model an element has moved from the native library to [Element.onSubModelInsert]($backend).
-
-The built-in rules remain:
-
-- [Sheet]($backend) accepts [SheetModel]($backend) and its subclasses.
-- [Drawing]($backend) accepts [DrawingModel]($backend) and its subclasses.
-- [TemplateRecipe2d]($backend) accepts [DrawingModel]($backend) and its subclasses.
-- [SectionDrawing]($backend) accepts [DrawingModel]($backend), [GraphicalModel3d]($backend), and their subclasses.
-
-Domain element classes implementing `bis:ISubModeledElement` may restrict their permitted sub-model classes by overriding the protected static [Element.allowedSubModelClasses]($backend) getter. The default value, `undefined`, permits any model class. A model class derived from an allowed class is also accepted, including a generated JavaScript class for an unregistered EC subclass.
-
-```ts
-class SheetPrototype extends DefinitionElement {
-  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> {
-    return [SheetModel];
-  }
-}
-```
-
-The following behavior changes apply:
-
-- Inserting a disallowed model now throws [IModelError]($common) with [IModelStatus.WrongModel]($bentley). The corresponding native checks previously returned `IModelStatus.BadElement`.
-- An override of [Element.onSubModelInsert]($backend) must call `super.onSubModelInsert(arg)` to retain inherited validation. An override that does not call `super` replaces that validation.
-- Missing modeled elements and elements that do not implement `bis:ISubModeledElement` continue to be rejected by the native library.
-
-This functionality requires the matching `@bentley/imodeljs-native` version distributed with `@itwin/core-backend`. Combining a native version containing the relaxed checks with an older `@itwin/core-backend` removes the built-in `Sheet` and `Drawing` restrictions.
-
-### Mobile RPC authentication
-
-Mobile RPC WebSocket connections now require a random per-launch token, preventing other applications on the device from accessing the backend through loopback. Connections without the token are rejected before RPC processing or pending-message delivery.
-
-Upgrade the mobile native runtime together with both the frontend and backend copies of `@itwin/core-mobile`. The secured transport cannot use older native runtimes that do not deliver the token, and older frontends cannot connect to the secured backend. There is no unauthenticated fallback. Updated native runtimes remain compatible with older frontend/backend pairs.
-
-No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
-
-Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.

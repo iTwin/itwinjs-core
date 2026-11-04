@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.15.0-dev.15",
+  "version": "5.16.0-dev.5",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -83,7 +83,7 @@
     "@itwin/core-geometry": "workspace:*"
   },
   "dependencies": {
-    "google-protobuf": "~3.20.1",
+    "google-protobuf": "~4.0.3",
     "flatbush": "~4.4.0"
   },
   "nyc": {
