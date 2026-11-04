@@ -2701,6 +2701,8 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     // @internal
     constructor(_executor: ECSqlRowExecutor, query: string, param?: QueryBinder, options?: SynchronousQueryOptions);
     getMetaData(): QueryPropertyMetaData[];
+    // @internal
+    protected getMetaDataInternal(): QueryPropertyMetaData[];
     // @internal (undocumented)
     protected getRowInternal(): any[];
     next(): IteratorResult<QueryRowProxy, any>;

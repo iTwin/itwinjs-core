@@ -9,6 +9,7 @@
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
 import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { BulkDeleteElementsStatus as NativeBulkDeleteElementsStatus, BulkDeleteFailureReason as NativeBulkDeleteFailureReason } from "@bentley/imodeljs-native";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
@@ -460,8 +461,60 @@ export class EditTxn {
     if (invalidIds.size > 0)
       ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
-    const bulkDeletionResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
-    const finalResult = { ...bulkDeletionResult, failedIds: Id64.toIdSet(bulkDeletionResult.failedIds) };
+    const bulkDeletionResult = this.iModel[_nativeDb].deleteElements(ids);
+    let finalResult: BulkDeleteElementsResult = {
+      failedIds: Id64.toIdSet(bulkDeletionResult.failures.map((failure) => failure.elementId)),
+      sqlDeleteStatus: deleteOptions?.skipFKConstraintValidations === true &&
+        bulkDeletionResult.failures.some((failure) => failure.reason === NativeBulkDeleteFailureReason.ReferencedByForeignKey)
+        ? DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY
+        : bulkDeletionResult.sqlDeleteStatus,
+      status: bulkDeletionResult.status === NativeBulkDeleteElementsStatus.Success
+        ? BulkDeleteElementsStatus.Success
+        : BulkDeleteElementsStatus.DeletionFailed,
+    };
+
+    if (bulkDeletionResult.status === NativeBulkDeleteElementsStatus.ConstraintViolation && deleteOptions?.skipFKConstraintValidations !== true) {
+      let remainingIds = Array.from(new Set(ids));
+      let deletedCount = 0;
+      let lastResult = bulkDeletionResult;
+
+      while (remainingIds.length > 0) {
+        const failedIds: Id64String[] = [];
+        for (let index = 0; index < remainingIds.length; index++) {
+          const id = remainingIds[index];
+          lastResult = this.iModel[_nativeDb].deleteElements([id]);
+          if (lastResult.status === NativeBulkDeleteElementsStatus.Success) {
+            deletedCount++;
+            continue;
+          }
+
+          if (lastResult.status === NativeBulkDeleteElementsStatus.DeletionFailed) {
+            return {
+              failedIds: new Set([...failedIds, id, ...remainingIds.slice(index + 1)]),
+              sqlDeleteStatus: lastResult.sqlDeleteStatus,
+              status: BulkDeleteElementsStatus.DeletionFailed,
+            };
+          }
+
+          failedIds.push(id);
+        }
+
+        if (failedIds.length === remainingIds.length) {
+          remainingIds = failedIds;
+          break;
+        }
+
+        remainingIds = failedIds;
+      }
+
+      finalResult = {
+        failedIds: new Set(remainingIds),
+        sqlDeleteStatus: lastResult.sqlDeleteStatus,
+        status: remainingIds.length === 0
+          ? BulkDeleteElementsStatus.Success
+          : deletedCount > 0 ? BulkDeleteElementsStatus.PartialSuccess : BulkDeleteElementsStatus.DeletionFailed,
+      };
+    }
 
     if (finalResult.status === BulkDeleteElementsStatus.DeletionFailed)
       return finalResult;
