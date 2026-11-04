@@ -5244,6 +5244,13 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
+    get queryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set queryParams(value: {
+        [key: string]: string;
+    } | undefined);
+    // @beta @deprecated
     savedQueryParams?: {
         [key: string]: string;
     };
@@ -5255,7 +5262,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };
