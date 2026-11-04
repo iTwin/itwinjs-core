@@ -841,7 +841,7 @@ importers:
         version: 17.0.4
       '@vitest/browser-playwright':
         specifier: ^4.1.10
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -852,8 +852,8 @@ importers:
         specifier: ^9.31.0
         version: 9.39.5
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: ~1.64.1
+        version: 1.64.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -1736,8 +1736,11 @@ importers:
         specifier: ^6.0.0
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: ^2.1.3
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1812,7 +1815,7 @@ importers:
         version: 20.17.58
       '@vitest/browser-playwright':
         specifier: ^4.1.10
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -1820,8 +1823,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: ~1.64.1
+        version: 1.64.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -2173,11 +2176,14 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
+      '@itwin/service-authorization':
+        specifier: ^2.1.3
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       azurite:
         specifier: ^3.37.0
         version: 3.37.0(@types/node@26.6.4)
@@ -2361,8 +2367,11 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: ^2.1.3
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2502,8 +2511,11 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: ^2.1.3
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
         specifier: ^4.3.10
         version: 4.5.0
@@ -2876,8 +2888,8 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../../presentation/common
@@ -2885,7 +2897,7 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/service-authorization':
-        specifier: ^2.0.0
+        specifier: ^2.1.3
         version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
         specifier: ^4.3.10
@@ -3375,11 +3387,14 @@ importers:
         specifier: ^3.0.4
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^6.2.0
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/reality-data-client':
         specifier: ^1.3.1
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
+      '@itwin/service-authorization':
+        specifier: ^2.1.3
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -3947,8 +3962,8 @@ importers:
         specifier: ^11.1.0
         version: 11.8.0
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: ~1.64.1
+        version: 1.64.1
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.21
@@ -5109,11 +5124,12 @@ packages:
       reflect-metadata:
         optional: true
 
-  '@itwin/oidc-signin-tool@5.1.3':
-    resolution: {integrity: sha512-cOl6cS/xd8hnM5T/EKK45V0voG1G5745MWJuUpy8838J+FU5TvOUMaECQlWy7uYP0BD9LBGULjgDu+i1/BhEmA==}
+  '@itwin/oidc-signin-tool@6.2.0':
+    resolution: {integrity: sha512-GatlijYLaHKK/UcHZDVdezrOCbTn4vNGwft3yJWWxc+R201Yx/xy3LXT423AZdplHpsJbeKRrfaqIfDRU98/aw==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/service-authorization': ^2.1.3
 
   '@itwin/presentation-shared@1.2.22':
     resolution: {integrity: sha512-BQprDWQbXn3Ei/gWpqIgVTn3d8no7lCYQrf1QBl4rhvgGZp1Bpn4wJUdeJ7crd/3hKGaLKWqMajX+NecoQLYgw==}
@@ -5617,9 +5633,9 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@playwright/test@1.56.1':
-    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
-    engines: {node: '>=18'}
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   '@polka/url@1.0.0-next.29':
@@ -7736,11 +7752,6 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
-  fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
-
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -9267,14 +9278,14 @@ packages:
   platform@1.3.6:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
 
-  playwright-core@1.56.1:
-    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
-    engines: {node: '>=18'}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+    engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.56.1:
-    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
-    engines: {node: '>=18'}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
+    engines: {node: '>=20'}
     hasBin: true
 
   pngjs@7.0.0:
@@ -11675,18 +11686,16 @@ snapshots:
       - encoding
       - supports-color
 
-  '@itwin/oidc-signin-tool@5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
+  '@itwin/oidc-signin-tool@6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))':
     dependencies:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/service-authorization': 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
-      '@playwright/test': 1.56.1
+      '@playwright/test': 1.64.1
       dotenv: 10.0.0
       dotenv-expand: 12.0.3
       oidc-client-ts: 3.5.0
-    transitivePeerDependencies:
-      - supports-color
 
   '@itwin/presentation-shared@1.2.22':
     dependencies:
@@ -12338,9 +12347,9 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@playwright/test@1.56.1':
+  '@playwright/test@1.64.1':
     dependencies:
-      playwright: 1.56.1
+      playwright: 1.64.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -12935,13 +12944,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/browser-playwright@4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
+  '@vitest/browser-playwright@4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
     dependencies:
       '@vitest/browser': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/mocker': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
-      playwright: 1.56.1
+      playwright: 1.64.1
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12957,7 +12966,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
@@ -12977,7 +12986,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
     optionalDependencies:
       '@vitest/browser': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
 
@@ -14852,9 +14861,6 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
-  fsevents@2.3.2:
-    optional: true
-
   fsevents@2.3.3:
     optional: true
 
@@ -16448,13 +16454,11 @@ snapshots:
 
   platform@1.3.6: {}
 
-  playwright-core@1.56.1: {}
+  playwright-core@1.64.1: {}
 
-  playwright@1.56.1:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.56.1
-    optionalDependencies:
-      fsevents: 2.3.2
+      playwright-core: 1.64.1
 
   pngjs@7.0.0: {}
 
@@ -17681,7 +17685,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.0.4
       '@types/node': 20.17.58
-      '@vitest/browser-playwright': 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+      '@vitest/browser-playwright': 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8': 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       jsdom: 26.1.0
     transitivePeerDependencies:
@@ -17722,7 +17726,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 20.17.58
-      '@vitest/browser-playwright': 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+      '@vitest/browser-playwright': 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8': 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       jsdom: 26.1.0
     transitivePeerDependencies:
