@@ -8,7 +8,7 @@
    * @internal
    */
 export function appendQueryParams(url: string, queryParams?: {[key: string]: string}) {
-  if (!queryParams)
+  if (!queryParams || Object.keys(queryParams).length === 0)
     return url;
 
   // create a lower-case array of keys

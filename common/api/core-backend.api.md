@@ -772,23 +772,40 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BulkDeleteElementsArgs {
+    // @deprecated (undocumented)
     skipFKConstraintValidations?: boolean;
 }
 
 // @beta
 export interface BulkDeleteElementsResult {
+    // @deprecated
     failedIds: Id64Set;
+    failures: BulkDeleteFailure[];
     sqlDeleteStatus: DbResult;
     status: BulkDeleteElementsStatus;
 }
 
 // @beta
 export enum BulkDeleteElementsStatus {
+    ConstraintViolation = 1,
     DeletionFailed = 2,
-    PartialSuccess = 1,
     Success = 0
+}
+
+// @beta
+export interface BulkDeleteFailure {
+    elementId: Id64String;
+    reason: BulkDeleteFailureReason;
+}
+
+// @beta
+export enum BulkDeleteFailureReason {
+    DefinitionInUse = 1,
+    ProtectedElement = 2,
+    ReadOnlyDomain = 3,
+    ReferencedByForeignKey = 0
 }
 
 // @public
@@ -2849,7 +2866,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
-    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
+    deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
