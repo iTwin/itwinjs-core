@@ -178,7 +178,7 @@ describe("SubCategoriesCache", () => {
 
       expectEqualIdSets(q.current!.categoryIds, q.request!.missingCategoryIds);
       expectEqualIdSets(q.current!.categoryIds, "0x17");
-      expectEqualIdSets(q.current!.categoryIds, q.next!.categoryIds);
+      expectEqualIdSets(q.current!.categoryIds, q.next.categoryIds);
 
       // First request will load 0x17 asynchronously. As soon as that occurs, it will process second request immediately and the queue will become empty again.
       q.expectNotLoaded("0x17");
@@ -223,7 +223,7 @@ describe("SubCategoriesCache", () => {
 
       expectEqualIdSets(q.current!.categoryIds, q.request!.missingCategoryIds);
       expectEqualIdSets(q.current!.categoryIds, "0x17");
-      expectEqualIdSets(q.next!.categoryIds, ["0x2f", "0x2d"]);
+      expectEqualIdSets(q.next.categoryIds, ["0x2f", "0x2d"]);
 
       // First request will load 0x17 asynchronously. Second will load 0x2f and 0x2d asynchronously.
       q.expectNotLoaded(["0x17", "0x2f", "0x2d"]);
