@@ -8304,6 +8304,8 @@ export namespace Pixel {
         // @beta
         readonly feature?: IModelDisplayFeature;
         get geometryClass(): GeometryClass | undefined;
+        // @deprecated
+        get iModel(): IModelConnection | undefined;
         // @beta
         readonly inSectionDrawingAttachment: boolean;
         // @internal (undocumented)
@@ -8330,11 +8332,19 @@ export namespace Pixel {
         distFraction: number;
         // @beta
         feature: IModelDisplayFeature;
+        // @deprecated
+        geometryClass?: GeometryClass;
         // @alpha
         isClassifier?: boolean;
+        // @deprecated
+        modelId?: Id64String;
         // @beta
         path?: HitPath;
         priority: HitPriority;
+        // @deprecated
+        sourceId: Id64String;
+        // @deprecated
+        subCategoryId?: Id64String;
         // @internal
         tileId?: string;
     }
