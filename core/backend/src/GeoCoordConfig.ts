@@ -30,6 +30,7 @@ const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;
  * at [SettingsPriority.application]($backend)), which is useful for unit tests and other offline
  * scenarios that don't require GCS data. GCS workspaces load lazily on first iModel open, so applying
  * the override any time after `IModelHost.startup` is sufficient.
+ * Failed default workspace loads are retried on the next request that loads GCS workspaces.
  */
 export class GeoCoordConfig {
   /** array of cloud prefetch tasks that may be awaited to permit offline usage */
@@ -40,10 +41,10 @@ export class GeoCoordConfig {
     disableWorkspaces: makeSettingName("disableWorkspaces"),
   };
 
-  private static addGcsWorkspace(dbProps: GcsDbProps) {
+  private static addGcsWorkspace(dbProps: GcsDbProps): boolean {
     // override to disable loading GCS data from workspaces
     if (IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false))
-      return;
+      return false;
 
     try {
       const ws = IModelHost.appWorkspace;
@@ -51,7 +52,7 @@ export class GeoCoordConfig {
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
         Logger.logError("GeoCoord", `could not load gcs database "${dbProps.dbName}"`);
-        return;
+        return false;
       }
 
       const gcsDbName = container.resolveDbFileName(dbProps);
@@ -60,27 +61,32 @@ export class GeoCoordConfig {
         throw new Error(`database "${gcsDbName}" not found in container "${dbProps.containerId}"`);
 
       if (!IModelNative.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
-        return; // already had this db
+        return true; // already had this db
 
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${dbProps.baseUri}/${dbProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
         this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
+      return true;
     } catch (e: any) {
       let msg = `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`;
       msg += `,container=${dbProps.baseUri}/${dbProps.containerId}, storage=${dbProps.storageType}, public=${dbProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
       Logger.logError(loggerCat, msg);
+      return false;
     }
   }
 
-  private static loadAll(settings: Settings, settingName: string) {
+  private static loadAll(settings: Settings, settingName: string): boolean {
+    let loaded = true;
     const dbProps = settings.getArray<GcsDbProps>(settingName);
     if (dbProps) {
       for (const entry of dbProps) {
-        this.addGcsWorkspace(entry);
+        if (!this.addGcsWorkspace(entry))
+          loaded = false;
       }
     }
+    return loaded;
   }
 
   private static _defaultDbsLoaded = false;
@@ -90,10 +96,8 @@ export class GeoCoordConfig {
   }
 
   public static loadDefaultDatabases(): void {
-    if (!this._defaultDbsLoaded) {
-      this._defaultDbsLoaded = true;
-      this.loadAll(IModelHost.appWorkspace.settings, this.settingName.defaultDatabases);
-    }
+    if (!this._defaultDbsLoaded)
+      this._defaultDbsLoaded = this.loadAll(IModelHost.appWorkspace.settings, this.settingName.defaultDatabases);
   }
 
   public static loadForImodel(settings: Settings) {

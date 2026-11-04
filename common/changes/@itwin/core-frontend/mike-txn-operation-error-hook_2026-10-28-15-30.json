@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add protected `ToolAdmin.onTxnOperationError`, called when `doUndoOperation` or `doRedoOperation` fails to reverse or reinstate a Txn, so applications can tell the user why the operation failed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

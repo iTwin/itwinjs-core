@@ -9,7 +9,7 @@ import { DbOpcode, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _appendToNativeUnifier, _nativeDb, _readerOptions } from "./internal/Symbols";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangeInstance, ChangesetReaderArgs, ChangeSource, PropertyFilter, RowFormatOptions } from "./ChangesetReaderTypes";
 import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
@@ -31,7 +31,9 @@ import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
  * and both [[inserted]] and [[deleted]] remain `undefined`.
  *
  * @note The native reader operates one SQLite table-row at a time. Multi-table EC
- * instances must be merged using [PartialChangeUnifier]($backend).
+ * instances must be merged using [PartialChangeUnifier]($backend), or natively using
+ * [ChangeUnifier]($backend). A reader passed to [ChangeUnifier]($backend) is consumed by it:
+ * afterwards [[step]] returns `false` and the reader can no longer be configured, so do not step it.
  * @beta
  */
 export class ChangesetReader implements Disposable, ChangeSource {
@@ -54,6 +56,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   private _cachedInserted: ChangeInstance | undefined = undefined;
   /** Cached result of the `deleted` getter for the current row. `undefined` when not yet computed or not applicable. */
   private _cachedDeleted: ChangeInstance | undefined = undefined;
+  /** `true` once the native reader has been drained by a [ChangeUnifier]($backend). */
+  private _consumedByUnifier = false;
 
   /** The db used for EC schema resolution. */
   public readonly db: AnyDb;
@@ -329,8 +333,38 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /** Throws if [[step]] has already been called, preventing filter/mode changes mid-iteration.
    * @internal */
   private throwIfAlreadyStepped(): void {
+    if (this._consumedByUnifier)
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: the reader has been consumed by a ChangeUnifier and can no longer be configured.");
     if (this._changeIndex > 0)
       throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: filters and strict mode and batch size must be configured before the first call to step().");
+  }
+
+  /** The property filter and row options this reader was opened with, used by [ChangeUnifier]($backend) to fill `$meta`.
+   * @internal */
+  public get [_readerOptions](): { readonly propFilter: PropertyFilter, readonly rowOptions: RowFormatOptions | undefined } {
+    return { propFilter: this._propFilter, rowOptions: this._rowOptions };
+  }
+
+  /** Drain all remaining rows of this reader into `nativeUnifier`, natively, honoring the filters and strict mode configured on this reader.
+   * Afterwards the reader is consumed: [[step]] returns `false` and configuration methods throw. The reader is marked consumed even if draining fails.
+   * @throws [[IModelError]] if the reader has already been stepped successfully or has already been consumed, or if the native layer fails.
+   * @internal */
+  public [_appendToNativeUnifier](nativeUnifier: IModelJsNative.ChangeUnifier): void {
+    if (this._consumedByUnifier)
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: the reader has already been consumed by a ChangeUnifier.");
+    if (this._changeIndex > 0)
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: a reader that has already been stepped cannot be passed to a ChangeUnifier.");
+
+    const nativeRowOpts = this._rowOptions ? this.toNativeRowOptions(this._rowOptions) : {};
+    try {
+      nativeUnifier.appendFrom(this._nativeReader, nativeRowOpts);
+    } finally {
+      this._consumedByUnifier = true;
+      this._cache = [];
+      this._cacheIndex = 0;
+      this._cachedInserted = undefined;
+      this._cachedDeleted = undefined;
+    }
   }
 
   /** Handle errors that occur while auto closing the reader if there is also an error while opening the reader */
@@ -492,6 +526,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Advance to the next change.
    * @returns `true` while positioned on a valid change; `false` when the stream is exhausted.
+   * Always returns `false` once the reader has been consumed by a [ChangeUnifier]($backend), whose instances
+   * already include every row of this reader - do not step a reader after passing it to a [ChangeUnifier]($backend).
    * @throws if the native layer encounters an error while reading or decoding
    * the next change.
    * @beta
@@ -499,6 +535,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public step(): boolean {
     this._cachedInserted = undefined;
     this._cachedDeleted = undefined;
+    if (this._consumedByUnifier)
+      return false;
     if (this._cacheIndex + 1 < this._cache.length) {
       // Still have rows in cache — advance the pointer
       this._cacheIndex++;

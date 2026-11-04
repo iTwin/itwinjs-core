@@ -172,9 +172,44 @@ export namespace ViewStore {
     from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
   };
+
   const validateName = (name: string, msg: string) => {
     if (name.trim().length === 0 || (/[@^#<>:"/\\"`'|?*\u0000-\u001F]/g.test(name)))
       ViewStoreError.throwError("invalid-value", { message: `illegal ${msg} name "${name}"` });
+  };
+
+  /** The comparison operators allowed for [[ViewStoreRpc.QueryParams.nameCompare]]. These are inserted into SQL, so they must be validated at runtime. */
+  const nameCompareOperators: ReadonlySet<string> = new Set<NonNullable<ViewStoreRpc.QueryParams["nameCompare"]>>(["GLOB", "LIKE", "NOT GLOB", "NOT LIKE", "=", "<", ">"]);
+
+  const validateNameCompare = (value: unknown = "="): string => {
+    if (typeof value !== "string" || !nameCompareOperators.has(value))
+      ViewStoreError.throwError("invalid-value", { message: `invalid nameCompare: ${String(value)}` });
+    return value;
+  };
+
+  const validateStringArray = (value: unknown, memberName: string): string[] | undefined => {
+    if (value === undefined || value === null)
+      return undefined;
+    if (!Array.isArray(value) || !value.every((entry) => typeof entry === "string"))
+      ViewStoreError.throwError("invalid-value", { message: `${memberName} must be an array of strings` });
+    return value;
+  };
+
+  const validateNonNegativeInteger = (value: unknown, memberName: string): number | undefined => {
+    if (value === undefined || value === null)
+      return undefined;
+    if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0)
+      ViewStoreError.throwError("invalid-value", { message: `${memberName} must be a non-negative integer` });
+    return value;
+  };
+
+  /** Returns undefined for undefined, null, or empty strings, matching the previous truthiness checks. */
+  const validateOptionalString = (value: unknown, memberName: string): string | undefined => {
+    if (value === undefined || value === null || value === "")
+      return undefined;
+    if (typeof value !== "string")
+      ViewStoreError.throwError("invalid-value", { message: `${memberName} must be a string` });
+    return value;
   };
 
   export const defaultViewGroupId = 1;
@@ -1277,26 +1312,41 @@ export namespace ViewStore {
     }
 
     private iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
-      const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=? ${queryParams.owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
-      if (queryParams.classNames)
-        sql += ` AND className IN(${queryParams.classNames.map((className) => `'${className}'`).join(",")})`;
-      if (queryParams.nameSearch)
-        sql += ` AND name ${queryParams.nameCompare ?? "="} @name`;
-      if (queryParams.tags)
-        sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
-      sql += " ORDER BY name";
-      if (queryParams.limit)
-        sql += ` LIMIT ${queryParams.limit} `;
-      if (queryParams.offset)
-        sql += ` OFFSET ${queryParams.offset} `;
+      // queryParams may come directly from an RPC request, so every value must be validated at runtime and
+      // bound as a parameter. Never concatenate caller-supplied values into the SQL string.
+      if (typeof queryParams !== "object" || (queryParams as unknown) === null)
+        ViewStoreError.throwError("invalid-value", { message: "queryParams must be an object" });
+      const group = validateOptionalString(queryParams.group, "group");
+      const owner = validateOptionalString(queryParams.owner, "owner");
+      const nameSearch = validateOptionalString(queryParams.nameSearch, "nameSearch");
+      const classNames = validateStringArray(queryParams.classNames, "classNames");
+      const tags = validateStringArray(queryParams.tags, "tags");
+      const nameCompare = validateNameCompare(queryParams.nameCompare);
+      const limit = validateNonNegativeInteger(queryParams.limit, "limit");
+      const offset = validateNonNegativeInteger(queryParams.offset, "offset");
 
-      this.withSqliteStatement(sql, (stmt) => {
-        stmt.bindInteger(1, groupId);
-        if (queryParams.nameSearch)
-          stmt.bindString("@name", queryParams.nameSearch);
-        if (queryParams.owner)
-          stmt.bindString("@owner", queryParams.owner);
+      const groupId = group ? this.findViewGroup(group) : defaultViewGroupId;
+      // Public views are always returned; private views only when @owner is supplied and matches.
+      // Each other filter is skipped when its parameter is left unbound (NULL), via its "@param IS NULL OR" check.
+      // The SQL text varies only by the validated nameCompare operator, so the statement can be cached.
+      const sql = `SELECT Id FROM ${tableName.views} WHERE groupId=@groupId AND (private!=1 OR (@owner IS NOT NULL AND owner=@owner))` +
+        " AND (@classNames IS NULL OR className IN(SELECT value FROM json_each(@classNames)))" +
+        ` AND (@name IS NULL OR name ${nameCompare} @name)` +
+        ` AND (@tags IS NULL OR Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(SELECT value FROM json_each(@tags)))))` +
+        " ORDER BY name LIMIT @limit OFFSET @offset";
+
+      this.withPreparedSqliteStatement(sql, (stmt) => {
+        stmt.bindInteger("@groupId", groupId);
+        if (owner)
+          stmt.bindString("@owner", owner);
+        if (classNames)
+          stmt.bindString("@classNames", JSON.stringify(classNames));
+        if (nameSearch)
+          stmt.bindString("@name", nameSearch);
+        if (tags)
+          stmt.bindString("@tags", JSON.stringify(tags));
+        stmt.bindInteger("@limit", limit || -1); // absent or 0 means no limit
+        stmt.bindInteger("@offset", offset ?? 0);
 
         while (stmt.nextRow())
           callback(stmt.getValueInteger(0));

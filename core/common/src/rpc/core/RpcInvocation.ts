@@ -189,8 +189,7 @@ export class RpcInvocation {
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];
-      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("iTwinId");
-      if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
+      if (this.protocol.checkToken && !this.operation.policy.allowTokenMismatch && RpcInvocation.isTokenParameter(parameter, i)) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
 
@@ -205,9 +204,23 @@ export class RpcInvocation {
     }
   }
 
+  /** Determine whether an operation parameter is an [[IModelRpcProps]]. Every property of the token other than `key` is optional
+   * and all of them are supplied by the caller, so the first parameter is treated as a token if it has *any* of the identifying properties.
+   */
+  private static isTokenParameter(parameter: unknown, index: number): boolean {
+    if (typeof parameter !== "object" || parameter === null || Array.isArray(parameter))
+      return false;
+
+    const has = (prop: keyof IModelRpcProps) => Object.prototype.hasOwnProperty.call(parameter, prop);
+    if (has("iModelId") && has("iTwinId"))
+      return true;
+
+    return 0 === index && (has("key") || has("iModelId") || has("iTwinId"));
+  }
+
   private static compareTokens(a: IModelRpcProps, b: IModelRpcProps): boolean {
     return a.key === b.key &&
-      a.iTwinId === b.iTwinId &&
+      (undefined === a.iTwinId || a.iTwinId === b.iTwinId) &&
       a.iModelId === b.iModelId &&
       (undefined === a.changeset || (a.changeset.id === b.changeset?.id));
   }

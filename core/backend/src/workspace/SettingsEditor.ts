@@ -68,12 +68,13 @@ export namespace SettingsContainers {
   }
 
   /**
-   * Query the [[BlobContainer]] service for the single settings container associated with a given iTwin.
-   * @returns The containerId, or `undefined` if no container exists.
-   * @throws if more than one settings container is found.
+   * Query the [[BlobContainer]] service for the iTwin-root settings container associated with a given iTwin.
+   * Only containers without an iModelId in their query metadata are considered.
+   * @returns The containerId, or `undefined` if no matching container is found.
+   * @throws if more than one matching container is found.
    */
   export async function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined> {
-    const containers = await queryContainers({ iTwinId });
+    const containers = (await queryContainers({ iTwinId })).filter((container) => undefined === container.iModelId);
     if (containers.length > 1) {
       ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
         message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
@@ -96,7 +97,8 @@ export namespace SettingsContainers {
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
     const userToken = await IModelHost.getAccessToken();
-    const containers = await queryContainers({ iTwinId, includeParentITwins: { filter: "accountOnly" } });
+    const containers = (await queryContainers({ iTwinId, includeParentITwins: { filter: "accountOnly" } }))
+      .filter((container) => undefined === container.iModelId);
     if (containers.length === 0) return undefined;
 
     const seenITwins = new Set<string>();

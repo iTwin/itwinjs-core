@@ -14,6 +14,7 @@ import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BaselineShift } from '@itwin/core-common';
+import { BeAsyncEvent } from '@itwin/core-bentley';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
@@ -198,6 +199,7 @@ import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
 import { Paragraph } from '@itwin/core-common';
 import { Path } from '@itwin/core-geometry';
+import { Persisted } from '@itwin/core-common';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -576,6 +578,7 @@ export namespace BlobContainer {
     export interface MetadataResponse extends Metadata {
         accountITwinId?: GuidString;
         containerId: string;
+        iModelId?: GuidString;
         iTwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
@@ -1058,6 +1061,13 @@ export interface ChangesetRangeArg extends IModelIdArg {
 
 // @beta
 export class ChangesetReader implements Disposable, ChangeSource {
+    // @internal
+    [_appendToNativeUnifier](nativeUnifier: IModelJsNative.ChangeUnifier): void;
+    // @internal
+    get [_readerOptions](): {
+        readonly propFilter: PropertyFilter;
+        readonly rowOptions: RowFormatOptions | undefined;
+    };
     [Symbol.dispose](): void;
     clearClassNameFilters(): void;
     clearOpCodeFilters(): void;
@@ -1147,6 +1157,21 @@ export class ChangeSummaryManager {
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
+}
+
+// @beta
+export class ChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    static fromReader(reader: ChangesetReader, args?: ChangeUnifierArgs): ChangeUnifier;
+    static fromReaders(readers: Iterable<ChangesetReader>, args?: ChangeUnifierArgs): ChangeUnifier;
+    instances(): IterableIterator<ChangeInstance>;
+}
+
+// @beta
+export interface ChangeUnifierArgs {
+    batchSize?: number;
+    memoryBudgetBytes?: number;
+    propNames?: string[];
 }
 
 // @beta (undocumented)
@@ -1329,6 +1354,9 @@ export namespace CloudSqlite {
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;
+        readonly onDemandBlocksDownloaded?: string;
+        readonly onDemandBytesDownloaded?: string;
+        readonly onDemandDownloadTimeMs?: string;
         readonly ongoingPrefetches?: string;
         readonly populatedCacheslots: string;
         readonly totalCacheslots: string;
@@ -4106,7 +4134,15 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal (undocumented)
+    [_refreshGeographicCoordinateSystem](): void;
+    // @internal
+    [_refreshIModelProps](): void;
+    // @internal (undocumented)
     [_resetIModelDb](): void;
+    // @internal (undocumented)
+    [_updateIModelProps](): void;
+    // @internal (undocumented)
+    [_verifyTxnWrite](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -4370,7 +4406,7 @@ export namespace IModelDb {
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
-        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T>;
         // (undocumented)
         getFederationGuidFromId(id: Id64String): GuidString | undefined;
         // (undocumented)
@@ -4390,7 +4426,7 @@ export namespace IModelDb {
         queryLastModifiedTime(elementId: Id64String): string;
         queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
-        tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): Persisted<T> | undefined;
         // @deprecated
         updateAspect(aspectProps: ElementAspectProps): void;
         // @deprecated
@@ -4415,7 +4451,7 @@ export namespace IModelDb {
         // @deprecated
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
-        getModelProps<T extends ModelProps>(id: Id64String): T;
+        getModelProps<T extends ModelProps>(id: Id64String): Persisted<T>;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         // @deprecated
         insertModel(props: ModelProps): Id64String;
@@ -4423,7 +4459,7 @@ export namespace IModelDb {
         queryLastModifiedTime(modelId: Id64String): string;
         queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d>;
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
-        tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
+        tryGetModelProps<T extends ModelProps>(id: Id64String): Persisted<T> | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
         // @deprecated
         updateGeometryGuid(modelId: Id64String): void;
@@ -6068,17 +6104,19 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     db: WorkspaceDb;
 }>) => void;
 
-// @alpha
+// @beta
 export interface RebaseHandler {
     dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
 
-// @alpha
+// @beta
 export class RebaseManager {
+    // @alpha
     constructor(_iModel: BriefcaseDb);
     abort(): Promise<void>;
+    // @internal
     addConflictHandler(args: {
         id: string;
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
@@ -6115,6 +6153,7 @@ export class RebaseManager {
     notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
     readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
     readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
+    // @internal
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
     readonly onDownloadChangesetsBegin: BeEvent<() => void>;
     readonly onDownloadChangesetsEnd: BeEvent<() => void>;
@@ -6126,8 +6165,10 @@ export class RebaseManager {
     readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReverseLocalChangesBegin: BeEvent<() => void>;
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @internal
     removeConflictHandler(id: string): void;
     resume(): Promise<void>;
+    // @internal
     resumeSemantic(): Promise<void>;
     setCustomHandler(handler: RebaseHandler): void;
 }
@@ -6191,6 +6232,14 @@ export class Relationships {
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     // @deprecated
     insertInstance(props: RelationshipProps): Id64String;
+    // @beta
+    queryInstances<T extends Relationship>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
+    // @beta
+    queryInstancesProps<T extends RelationshipProps>(relClassFullName: string, criteria: ReadonlyArray<Id64String | SourceAndTarget>, options?: {
+        usePrimaryConn?: boolean;
+    }): Promise<Array<T | undefined>>;
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     // @deprecated
@@ -7950,14 +7999,14 @@ export class TxnManager {
     // @alpha
     getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
-    // @alpha
+    // @beta
     getLastSavedTxnProps(): TxnProps | undefined;
-    // @alpha
+    // @beta
     getMode(): TxnMode;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    // @alpha
+    // @beta
     getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
@@ -8014,6 +8063,8 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
+    // @beta
+    readonly onPrePushValidation: BeAsyncEvent<() => Promise<void>>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -8027,9 +8078,9 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
-    // @alpha
+    // @beta
     queryTxns(): Generator<TxnProps>;
-    // @internal (undocumented)
+    // @beta
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     // @beta
@@ -8051,13 +8102,13 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
-    // @alpha
+    // @beta
     withIndirectTxnMode(callback: () => void): void;
-    // @alpha
+    // @beta
     withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void>;
 }
 
-// @alpha
+// @beta
 export type TxnMode = "direct" | "indirect";
 
 // @public @preview

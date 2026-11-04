@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelReadRpcInterface, PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
@@ -264,18 +264,25 @@ export interface CachedIModelCoordinatesResponseProps {
 export interface GeoConverterOptions {
   readonly datum: string;
   isIModelClosed: () => boolean;
+  getGcs?: () => GeographicCRS | undefined;
   toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
   fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
 }
 
 /** An object capable of communicating with the backend to convert between coordinates in a geographic coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
+ * Conversion results retain the backend's per-point status, including failed vertical conversions. Check each status
+ * before using elevations; [[GeoCoordStatus.VerticalDatumConvertError]] does not provide a reliable converted Z.
+ * Results, including failures, are cached in this converter. Loading grids does not invalidate those cached results.
+ * To retry after resources become available, finish outstanding requests and acquire a fresh converter from
+ * [[GeoServices.getConverter]] instead of reusing the retained instance.
  * @see [[GeoServices.getConverter]] to obtain a converter.
  * @see [GeographicCRS]($common) for more information about geographic coordinate reference systems.
  * @public
  */
 export class GeoConverter {
-  private readonly _geoToIModel: CoordinateConverter;
-  private readonly _iModelToGeo: CoordinateConverter;
+  private _converters: { geoToIModel: CoordinateConverter, iModelToGeo: CoordinateConverter };
+  private _gcs: GeographicCRS | undefined;
+  private readonly _options: GeoConverterOptions;
   /** Used for removing this converter from GeoServices' cache after all requests are completed.
    * @internal
    */
@@ -283,18 +290,48 @@ export class GeoConverter {
 
   /** @internal */
   constructor(opts: GeoConverterOptions) {
-    const isIModelClosed = opts.isIModelClosed;
-    this._geoToIModel = new CoordinateConverter({
-      direction: "geoToIModel",
-      isIModelClosed,
-      requestPoints: async (geoCoords: XYAndZ[]) => opts.toIModelCoords({ source: opts.datum, geoCoords }),
-    });
+    this._options = opts;
+    this._gcs = opts.getGcs?.();
+    this._converters = this.createConverters();
+  }
 
-    this._iModelToGeo = new CoordinateConverter({
-      direction: "iModelToGeo",
-      isIModelClosed,
-      requestPoints: async (iModelCoords: XYAndZ[]) => opts.fromIModelCoords({ target: opts.datum, iModelCoords }),
-    });
+  private createConverters(): typeof this._converters {
+    const opts = this._options;
+    const isIModelClosed = opts.isIModelClosed;
+    return {
+      geoToIModel: new CoordinateConverter({
+        direction: "geoToIModel",
+        isIModelClosed,
+        requestPoints: async (geoCoords: XYAndZ[]) => opts.toIModelCoords({ source: opts.datum, geoCoords }),
+      }),
+      iModelToGeo: new CoordinateConverter({
+        direction: "iModelToGeo",
+        isIModelClosed,
+        requestPoints: async (iModelCoords: XYAndZ[]) => opts.fromIModelCoords({ target: opts.datum, iModelCoords }),
+      }),
+    };
+  }
+
+  private refreshGcs(): void {
+    const gcs = this._options.getGcs?.();
+    if (gcs !== this._gcs) {
+      this._gcs = gcs;
+      this._converters = this.createConverters();
+    }
+  }
+
+  private async convert(points: XYZProps[], direction: keyof typeof this._converters): Promise<{ points: PointWithStatus[], fromCache: number }> {
+    for (;;) {
+      this.refreshGcs();
+      const converter = this._converters[direction];
+      const result = await converter.convert(points);
+      this.refreshGcs();
+      if (converter !== this._converters[direction])
+        continue;
+
+      this.checkCompletion();
+      return result;
+    }
   }
 
   /** Convert the specified geographic coordinates into iModel coordinates. */
@@ -311,8 +348,7 @@ export class GeoConverter {
 
   /** @internal */
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
-    const result = await this._geoToIModel.convert(geoPoints);
-    this.checkCompletion();
+    const result = await this.convert(geoPoints, "geoToIModel");
     return {
       iModelCoords: result.points,
       fromCache: result.fromCache,
@@ -321,8 +357,7 @@ export class GeoConverter {
 
   /** @internal */
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
-    const result = await this._iModelToGeo.convert(iModelPoints);
-    this.checkCompletion();
+    const result = await this.convert(iModelPoints, "iModelToGeo");
     return {
       geoCoords: result.points,
       fromCache: result.fromCache,
@@ -330,13 +365,14 @@ export class GeoConverter {
   }
 
   private checkCompletion(): void {
-    if (this._geoToIModel.isIdle && this._iModelToGeo.isIdle)
+    if (this._converters.geoToIModel.isIdle && this._converters.iModelToGeo.isIdle)
       this.onAllRequestsCompleted.raiseEvent();
   }
 
   /** @internal */
   public getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps {
-    return this._geoToIModel.findCached(geoPoints);
+    this.refreshGcs();
+    return this._converters.geoToIModel.findCached(geoPoints);
   }
 }
 
@@ -370,6 +406,7 @@ export class GeoServices {
   public static createForIModel(iModel: IModelConnection): GeoServices {
     return new GeoServices({
       isIModelClosed: () => iModel.isClosed,
+      getGcs: () => iModel.geographicCoordinateSystem,
       toIModelCoords: async (request) => {
         const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
         const response = await rpc.getIModelCoordinatesFromGeoCoordinates(iModel.getRpcProps(), request);
