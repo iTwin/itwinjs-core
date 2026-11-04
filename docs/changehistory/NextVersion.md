@@ -144,6 +144,8 @@ See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for f
 
 The [HitDetailProps]($frontend) interface is deprecated in favor of [HitDetailFeatureProps]($frontend).
 
+Similarly, the `sourceId`, `subCategoryId`, `geometryClass`, and `modelId` members of [Pixel.HitProps]($frontend) are deprecated in favor of its `feature` member, and `Pixel.Data.iModel` is deprecated in favor of the `iModelRef` of [Pixel.Data.feature]($frontend). Note that `Pixel.Data.iModel` was previously defined only for geometry originating from an iModel other than the viewport's own; it is now defined for every pixel produced by a feature.
+
 ### Viewport display APIs
 
 Viewport-level APIs for model and category display overrides, viewed models, and always/never-drawn elements are deprecated in favor of APIs on [IModelDisplayReference]($frontend) and [SpatialIModelDisplayReference]($frontend).

@@ -10,6 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, GeometryClass } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
 import { IModelDisplayFeature } from "../IModelDisplayReference";
+import type { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -26,6 +27,12 @@ export namespace Pixel {
     public readonly feature?: IModelDisplayFeature;
     /** The Id of the model containing this pixel's [[feature]]. */
     public get modelId(): Id64String | undefined { return this.feature?.modelId; }
+    /** The iModel from which the geometry producing the pixel originated.
+     * @deprecated in 5.16. Use [[feature]]'s [[IModelDisplayFeature.iModelRef]] instead.
+     * @note Previously, this was defined only for geometry originating from an iModel other than the [[Viewport]]'s own.
+     * It is now defined for every pixel produced by a feature, including those originating from the viewport's primary iModel.
+     */
+    public get iModel(): IModelConnection | undefined { return this.feature?.iModelRef.iModel; }
     /** The pixel's depth in [[CoordSystem.Npc]] coordinates (0 to 1), or -1 if depth was not written or not requested. */
     public readonly distanceFraction: number;
     /** The type of geometry that produced the pixel. */
@@ -143,6 +150,10 @@ export namespace Pixel {
 
       return {
         feature,
+        sourceId: this.elementId ?? Id64.invalid,
+        subCategoryId: this.subCategoryId,
+        geometryClass: this.geometryClass,
+        modelId: this.modelId,
         priority: this.computeHitPriority(),
         distFraction: this.distanceFraction,
         tileId: this.tileId,
@@ -170,6 +181,22 @@ export namespace Pixel {
      * @beta
      */
     feature: IModelDisplayFeature;
+    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations.
+     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.elementId]] instead.
+     */
+    sourceId: Id64String;
+    /** The [SubCategory]($backend) to which the hit geometry belongs.
+     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.subCategoryId]] instead.
+     */
+    subCategoryId?: Id64String;
+    /** The class of the hit geometry.
+     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.geometryClass]] instead.
+     */
+    geometryClass?: GeometryClass;
+    /** The Id of the [[ModelState]] from which the hit originated.
+     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.modelId]] instead.
+     */
+    modelId?: Id64String;
     /** The hit geometry priority/classification. */
     priority: HitPriority;
     /** The distance in view coordinates between the hit and the near plane. */
