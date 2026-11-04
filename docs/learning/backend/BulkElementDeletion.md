@@ -19,7 +19,7 @@ switch (result.status) {
     // At least one element in the delete set is still referenced from outside it, so nothing was deleted.
     // Inspect result.failures, fix (or include) the referencing elements, and retry.
     for (const failure of result.failures)
-      console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+      console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]}`);
     break;
   case BulkDeleteElementsStatus.DeletionFailed:
     // An unexpected SQLite error occurred (see result.sqlDeleteStatus). The iModel may be partially modified:
@@ -33,7 +33,7 @@ The `result` object has these fields:
 | Field | Description |
 |---|---|
 | `status` | [BulkDeleteElementsStatus]($backend): `Success`, `ConstraintViolation` or `DeletionFailed` |
-| `failures` | [BulkDeleteFailure]($backend) entries, only populated on `ConstraintViolation`: the element, a [BulkDeleteFailureReason]($backend) and an optional `detail` (see [Constraint violations](#constraint-violations)) |
+| `failures` | [BulkDeleteFailure]($backend) entries, only populated on `ConstraintViolation`: the element and a [BulkDeleteFailureReason]($backend) (see [Constraint violations](#constraint-violations)) |
 | `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement; only meaningful for `DeletionFailed` |
 | `failedIds` | _Deprecated._ On `ConstraintViolation`: the unique element ids appearing in `failures` (may include cascaded descendants not in `ids`; nothing was deleted, including ids not listed). On `DeletionFailed`: every requested id. On `Success`: empty |
 
@@ -77,14 +77,12 @@ txn.deleteElements([viewId, categorySelectorId, modelSelectorId, displayStyleId]
 
 The delete set is first expanded (children and sub-model contents are added) and then validated as a whole. An element in the expanded set is a _constraint violator_ if, after discounting references from other members of the set, any of the following is true for elements **outside** the set:
 
-| Constraint | Reported reason | `detail` |
-|---|---|---|
-| A row outside the set references the element through a `NO ACTION` / `RESTRICT` / `SET DEFAULT` foreign key - e.g. another element uses it as its **CodeScope**, or a `GeometricElement2d`/`GeometricElement3d` uses it as its **Category** | `ReferencedByForeignKey` | the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId` |
-| A `DefinitionElement` that has a tracked **usage** outside the set that is not a foreign key (e.g. a GeometryPart, SubCategory or RenderMaterial used from a geometry stream) | `DefinitionInUse` | - |
-| One of the elements every iModel must keep: the root Subject, the DictionaryModel partition or the RealityDataSources partition | `ProtectedElement` | - |
-| An element whose handler belongs to a read-only `DgnDomain` | `ReadOnlyDomain` | the domain name |
-
-`detail` is intended for diagnostics and logging only. Its format may change, so do not parse it or base program logic on it; use `reason` instead.
+| Constraint | Reported reason |
+|---|---|
+| A row outside the set references the element through a `NO ACTION` / `RESTRICT` / `SET DEFAULT` foreign key - e.g. another element uses it as its **CodeScope**, or a `GeometricElement2d`/`GeometricElement3d` uses it as its **Category** | `ReferencedByForeignKey` |
+| A `DefinitionElement` that has a tracked **usage** outside the set that is not a foreign key (e.g. a GeometryPart, SubCategory or RenderMaterial used from a geometry stream) | `DefinitionInUse` |
+| One of the elements every iModel must keep: the root Subject, the DictionaryModel partition or the RealityDataSources partition | `ProtectedElement` |
+| An element whose handler belongs to a read-only `DgnDomain` | `ReadOnlyDomain` |
 
 If there is at least one violator, the status is `ConstraintViolation`, **nothing** is deleted and `failures` lists every violator. Each element appears at most once; if it violates several constraints the first one found is reported.
 

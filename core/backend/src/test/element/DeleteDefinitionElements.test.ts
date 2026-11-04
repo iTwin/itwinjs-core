@@ -33,13 +33,13 @@ const constraintViolation = (...failures: BulkDeleteFailure[]): ExpectedResult =
 /** The element is a DefinitionElement still used (e.g. via a GeometryStream) by elements outside the delete set. */
 const definitionInUse = (elementId: Id64String): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.DefinitionInUse });
 /** The element itself is referenced from outside the delete set via its Code scope. */
-const codeScopeViolator = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_Element.CodeScopeId");
-/** A row outside the delete set references the element via a hard NO ACTION foreign key; `detail` is the referencing `table.column`. */
-const referencedByForeignKey = (elementId: Id64String, detail: string): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail });
+const codeScopeViolator = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId);
+/** A row outside the delete set references the element via a hard NO ACTION foreign key. */
+const referencedByForeignKey = (elementId: Id64String): BulkDeleteFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey });
 /** A Category still assigned to a GeometricElement3d outside the delete set (hard FK, so not `DefinitionInUse`). */
-const categoryInUse3d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_GeometricElement3d.CategoryId");
+const categoryInUse3d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId);
 /** A Category still assigned to a GeometricElement2d outside the delete set (hard FK, so not `DefinitionInUse`). */
-const categoryInUse2d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId, "bis_GeometricElement2d.CategoryId");
+const categoryInUse2d = (elementId: Id64String): BulkDeleteFailure => referencedByForeignKey(elementId);
 
 /** Assert the result matches `expected` exactly, then check that each id in `deletedIds` is gone and each id in `retainedIds` is still present. */
 const assertResult = (result: BulkDeleteElementsResult, expected: ExpectedResult, deletedIds: Id64Array, retainedIds: Id64Array, iModelDb: SnapshotDb) => {
@@ -47,7 +47,7 @@ const assertResult = (result: BulkDeleteElementsResult, expected: ExpectedResult
   assert.equal(result.sqlDeleteStatus, expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK, `Bulk element deletion internal sql status is ${result.sqlDeleteStatus}; Expected: ${expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK}`);
 
   assert.equal(result.failures.length, expected.failures.length, `Actual failures don't match the expected. Actual: ${JSON.stringify(result.failures)}; Expected: ${JSON.stringify(expected.failures)}`);
-  assert.deepEqualInAnyOrder(result.failures, expected.failures);
+  assert.deepEqualInAnyOrder(result.failures.map(({ elementId, reason }) => ({ elementId, reason })), expected.failures);
 
   for (const retainedId of retainedIds)
     assert.isDefined(iModelDb.elements.tryGetElement(retainedId), `${retainedId} should have been retained`);
@@ -1293,7 +1293,6 @@ describe("DeleteDefinitionElements", () => {
         assert.equal(result.failures.length, 1, `expected a single failure, got ${JSON.stringify(result.failures)}`);
         assert.equal(result.failures[0].elementId, category);
         assert.equal(result.failures[0].reason, BulkDeleteFailureReason.ReferencedByForeignKey);
-        assert.include(["bis_GeometricElement3d.CategoryId", "bis_Element.CodeScopeId"], result.failures[0].detail);
         for (const id of [category, user, scopedPart])
           assert.isDefined(iModelDb.elements.tryGetElement(id));
       });

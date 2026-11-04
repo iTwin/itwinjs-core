@@ -12,12 +12,10 @@ import { withEditTxn } from "../TestEditTxn";
 
 /**
  * Expected failure entry. Omit `reason` to only require that the element is reported (regardless of why).
- * `detail` may be a literal string or a RegExp matched against the reported `table.column`.
  */
 interface ExpectedFailure {
   elementId: Id64String;
   reason?: BulkDeleteFailureReason;
-  detail?: string | RegExp;
 }
 
 /** Expected shape of a [[BulkDeleteElementsResult]]. `sqlDeleteStatus` defaults to `BE_SQLITE_OK`. */
@@ -36,9 +34,9 @@ const success: ExpectedResult = { status: BulkDeleteElementsStatus.Success, sqlD
 const constraintViolation = (failedIds: Id64Set, ...failures: ExpectedFailure[]): ExpectedResult => ({ status: BulkDeleteElementsStatus.ConstraintViolation, sqlDeleteStatus: DbResult.BE_SQLITE_OK, failures, failedIds });
 
 /** The element itself is referenced from outside the delete set via its Code scope. */
-const codeScopeViolator = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_Element.CodeScopeId` });
+const codeScopeViolator = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey });
 /** A Category still assigned to a GeometricElement3d outside the delete set (hard FK, so not `DefinitionInUse`). */
-const categoryInUse3d = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey, detail: `bis_GeometricElement3d.CategoryId` });
+const categoryInUse3d = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.ReferencedByForeignKey });
 /** A DefinitionElement still used (e.g. via a GeometryStream) by elements outside the delete set. No SQLite foreign key is involved. */
 const definitionInUse = (elementId: Id64String): ExpectedFailure => ({ elementId, reason: BulkDeleteFailureReason.DefinitionInUse });
 
@@ -74,7 +72,7 @@ const navTestSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
   </ECRelationshipClass>
 </ECSchema>`;
 
-describe.only("deleteElements (native bulk delete API)", () => {
+describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
   let modelId: Id64String;
@@ -144,7 +142,7 @@ describe.only("deleteElements (native bulk delete API)", () => {
     assert.equal(result.sqlDeleteStatus, expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK, `Bulk element deletion internal sql status is ${result.sqlDeleteStatus}; Expected: ${expected.sqlDeleteStatus ?? DbResult.BE_SQLITE_OK}`);
 
     assert.equal(result.failures.length, expected.failures.length, `Actual failures don't match the expected. Actual: ${JSON.stringify(result.failures)}; Expected: ${JSON.stringify(expected.failures)}`);
-    assert.deepEqualInAnyOrder(result.failures, expected.failures);
+    assert.deepEqualInAnyOrder(result.failures.map(({ elementId, reason }) => ({ elementId, reason })), expected.failures);
 
     for (const retainedId of retainedIds)
       assertExists(retainedId);
@@ -1267,14 +1265,12 @@ describe.only("deleteElements (native bulk delete API)", () => {
       const usesAsCodeScope = insertElement({ codeScope: multiRefCategory, codeValue: "scoped-by-category" });
       txn.saveChanges();
 
-      const fkDetails = ["bis_GeometricElement3d.CategoryId", "bis_Element.CodeScopeId"];
       const result = txn.deleteElements([multiRefCategory]);
       assert.equal(result.status, BulkDeleteElementsStatus.ConstraintViolation);
       assert.equal(result.failures.length, 1, `expected a single failure, got ${JSON.stringify(result.failures)}`);
       const [failure] = result.failures;
       assert.equal(failure.elementId, multiRefCategory);
       assert.equal(failure.reason, BulkDeleteFailureReason.ReferencedByForeignKey);
-      assert.include(fkDetails, failure.detail, "detail must name one of the referencing foreign keys");
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.deepEqual(result.failedIds, new Set([multiRefCategory]));
       for (const id of [multiRefCategory, usesAsCategory, usesAsCodeScope])

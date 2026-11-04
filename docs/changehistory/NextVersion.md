@@ -107,14 +107,14 @@ This per-layer example intentionally supports only same-origin requests. Cross-o
 const result = txn.deleteElements(ids);
 if (result.status === BulkDeleteElementsStatus.ConstraintViolation) {
   for (const failure of result.failures)
-    console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+    console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]}`);
 }
 ```
 
 Changes to the beta types:
 
 - `BulkDeleteElementsStatus.PartialSuccess` has been **removed**. The enum is now `Success` (0), `ConstraintViolation` (1) and `DeletionFailed` (2). Code that handled `PartialSuccess` should handle `ConstraintViolation` instead - and note that in that case *nothing* was deleted.
-- New [BulkDeleteElementsResult.failures]($backend): a per-element report. Each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `ProtectedElement` or `ReadOnlyDomain`) and an optional diagnostic `detail` (currently the referencing `table.column` for `ReferencedByForeignKey`, the domain name for `ReadOnlyDomain`). `detail` is for logging only; its format may change, so do not parse it. Only the *direct* violators are reported. Because the whole expanded set is validated, a reported element may be a child or sub-model member that was **not** in the `ids` you passed in; its requested ancestor is not listed separately. For example, requesting `[parent]` when `parent`'s child is the CodeScope of an element outside the set reports the *child*, not `parent`.
+- New [BulkDeleteElementsResult.failures]($backend): a per-element report. Each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `ProtectedElement` or `ReadOnlyDomain`). Only the *direct* violators are reported. Because the whole expanded set is validated, a reported element may be a child or sub-model member that was **not** in the `ids` you passed in; its requested ancestor is not listed separately. For example, requesting `[parent]` when `parent`'s child is the CodeScope of an element outside the set reports the *child*, not `parent`.
 - `BulkDeleteElementsResult.failedIds` is deprecated in favor of `failures`. Its contents have changed:
   - On `ConstraintViolation` it holds the unique element ids appearing in `failures`. As described above, these may include cascaded descendants that were not in the requested `ids`, so `failedIds` is no longer guaranteed to be a subset of the input. It is never empty on `ConstraintViolation`, so existing `failedIds.size > 0` checks still detect a rejected delete. However, it no longer lists everything left undeleted: for input `[blocked, independent]`, both remain undeleted while `failedIds` reports only `blocked`. Callers that filter this list to existing elements and throw still detect rejection, but their error reports omit other undeleted elements.
   - On `DeletionFailed` it holds every requested id, matching the previous behavior for this status, so callers that only check `failedIds.size > 0` still detect the failure. The iModel may be partially modified in this case and the caller must abandon the current txn.

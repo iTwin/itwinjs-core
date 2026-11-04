@@ -52,12 +52,6 @@ export interface BulkDeleteFailure {
   elementId: Id64String;
   /** Why the element could not be deleted. */
   reason: BulkDeleteFailureReason;
-  /**
-   * Human-readable context for diagnostics and logging only. The format may change; do not parse it.
-   * Currently, for `ReferencedByForeignKey`: the referencing `table.column`, e.g. `bis_GeometricElement3d.CategoryId`;
-   * for `ReadOnlyDomain`: the read-only domain name. Absent for `DefinitionInUse` and `ProtectedElement`.
-   */
-  detail?: string;
 }
 
 /**
