@@ -74,7 +74,7 @@ const navTestSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
   </ECRelationshipClass>
 </ECSchema>`;
 
-describe("deleteElements (native bulk delete API)", () => {
+describe.only("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
   let modelId: Id64String;
@@ -1490,6 +1490,24 @@ describe("deleteElements (native bulk delete API)", () => {
 
         const reloaded = iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
         assert.isUndefined(reloaded.target?.id, "referrer must be reloaded, not served stale from the cache");
+      });
+
+      it("updating a surviving referrer from props read before the delete cannot resurrect the dangling reference", async () => {
+        const target = insertElement();
+        const referrer = insertNavObject(target);
+
+        iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
+
+        const result = txn.deleteElements([target]);
+        assertResult(result, success, [target], [referrer]);
+
+        const reloaded = iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer);
+        reloaded.userLabel = "edited-after-delete";
+        txn.updateElement(reloaded);
+        txn.saveChanges();
+
+        assert.isUndefined(await queryTargetId(referrer), "an update from freshly loaded props must not write the deleted target id back");
+        assert.equal(iModelDb.elements.getElementProps<PhysicalElementProps & { target?: { id: Id64String } }>(referrer).userLabel, "edited-after-delete");
       });
 
       it("nav property pointing at a cascaded descendant is NULLed too", async () => {
