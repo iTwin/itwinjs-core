@@ -55,7 +55,8 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
         return undefined;
 
       const tileResponse = await this.makeTileRequest(tileUrl);
-      if (tileResponse.status === 401 || tileResponse.status === 403) {
+      // A status in a response managed by the fetch handler is not classified here.
+      if (!this.isManagedByHandler(tileResponse) && (tileResponse.status === 401 || tileResponse.status === 403)) {
         this.reportAzureAuthFailure();
         return undefined;
       }
