@@ -131,4 +131,52 @@ describe("ImageMapLayerSettings", () => {
     settings1.setCredentials("TestUser", "TestPassword");
     cloneSettings(settings1);
   });
+
+  /* eslint-disable @typescript-eslint/no-deprecated -- savedQueryParams must keep working until it is removed. */
+  describe("queryParams", () => {
+    const withParams = { ...testMapLayer0, queryParams: { a: "1" } };
+
+    it("is an alias of the deprecated savedQueryParams field", () => {
+      const settings = ImageMapLayerSettings.fromJSON(withParams);
+      expect(settings.savedQueryParams).to.deep.equal({ a: "1" });
+      settings.savedQueryParams = { b: "2" };
+      expect(settings.queryParams).to.deep.equal({ b: "2" });
+      settings.queryParams = { c: "3" };
+      expect(settings.savedQueryParams).to.deep.equal({ c: "3" });
+      expect(settings.toJSON().queryParams).to.deep.equal({ c: "3" });
+    });
+
+    it("keeps supporting deletion of the deprecated field", () => {
+      const settings = ImageMapLayerSettings.fromJSON(withParams);
+      delete settings.savedQueryParams;
+      expect(settings.queryParams).to.be.undefined;
+      expect(settings.toJSON().queryParams).to.be.undefined;
+      expect(settings.collectQueryParams()).to.deep.equal({});
+    });
+
+    it("keeps supporting subclasses redeclaring the deprecated field", () => {
+      class Subclass extends ImageMapLayerSettings {
+        public override savedQueryParams?: { [key: string]: string } = { fromSubclass: "1" };
+        public static override fromJSON(props: ImageMapLayerProps): Subclass { return new this(props); }
+      }
+      const settings = Subclass.fromJSON(testMapLayer0);
+      expect(settings.queryParams).to.deep.equal({ fromSubclass: "1" });
+      expect(settings.toJSON().queryParams).to.deep.equal({ fromSubclass: "1" });
+    });
+
+    it("is replaced by clone()", () => {
+      const settings = ImageMapLayerSettings.fromJSON(withParams);
+      expect(settings.clone({ queryParams: { b: "2" } }).queryParams).to.deep.equal({ b: "2" });
+      expect(settings.clone({}).queryParams).to.deep.equal({ a: "1" });
+      expect(settings.clone({}).queryParams).not.to.equal(settings.queryParams);
+    });
+
+    it("is overlaid by unsavedQueryParams in collectQueryParams()", () => {
+      const settings = ImageMapLayerSettings.fromJSON(withParams);
+      settings.unsavedQueryParams = { a: "unsaved", b: "2" };
+      expect(settings.collectQueryParams()).to.deep.equal({ a: "unsaved", b: "2" });
+      expect(settings.clone({}).unsavedQueryParams).to.deep.equal({ a: "unsaved", b: "2" });
+    });
+  });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 });

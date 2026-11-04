@@ -79,6 +79,7 @@
     "@itwin/itwins-client": "catalog:itwins-client",
     "@itwin/object-storage-core": "catalog:imodels-clients",
     "@itwin/oidc-signin-tool": "catalog:auth-clients",
+    "@itwin/service-authorization": "catalog:auth-clients",
     "@types/chai": "catalog:testing",
     "@types/chai-as-promised": "catalog:testing",
     "@types/fs-extra": "catalog:utilities",

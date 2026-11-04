@@ -50,7 +50,8 @@
     "@itwin/imodels-client-management": "catalog:imodels-clients",
     "@itwin/reality-data-client": "catalog:reality-capture",
     "@itwin/object-storage-azure": "catalog:imodels-clients",
-    "@itwin/oidc-signin-tool": "catalog:auth-clients"
+    "@itwin/oidc-signin-tool": "catalog:auth-clients",
+    "@itwin/service-authorization": "catalog:auth-clients"
   },
   "devDependencies": {
     "@itwin/perf-tools": "workspace:*",

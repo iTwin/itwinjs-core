@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "5.16.0-dev.4",
+  "version": "5.16.0-dev.5",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -43,6 +43,7 @@
     "@itwin/imodels-client-authoring": "catalog:imodels-clients",
     "@itwin/object-storage-azure": "catalog:imodels-clients",
     "@itwin/oidc-signin-tool": "catalog:auth-clients",
+    "@itwin/service-authorization": "catalog:auth-clients",
     "chai": "catalog:testing",
     "dotenv": "catalog:testing",
     "dotenv-expand": "catalog:testing",

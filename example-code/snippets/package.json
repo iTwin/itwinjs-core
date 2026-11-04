@@ -43,6 +43,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@itwin/oidc-signin-tool": "catalog:auth-clients",
+    "@itwin/service-authorization": "catalog:auth-clients",
     "@types/chai": "catalog:testing",
     "@types/fs-extra": "catalog:utilities",
     "@types/jsdom": "catalog:testing",
