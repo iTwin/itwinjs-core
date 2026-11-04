@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { Cartographic, EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IModelApp } from "../../../IModelApp";
@@ -189,7 +190,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
     const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
     const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_"] ]);
     settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
-    settings.savedQueryParams = indexedArrayFromUrlParams(saved);
+    settings.queryParams = indexedArrayFromUrlParams(saved);
     if (!settings)
       expect.fail("Could not create settings");
 

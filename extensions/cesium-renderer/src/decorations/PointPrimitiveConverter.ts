@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "@cesium/engine";
+import { Cartesian3, Color } from "@cesium/core";
+import { PointPrimitive, PointPrimitiveCollection } from "@cesium/engine";
 import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";

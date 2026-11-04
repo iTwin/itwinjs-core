@@ -27,6 +27,7 @@
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",
+    "test:map-layer-auth": "node --test ./scripts/mapLayerAuth.test.mjs",
     "cover": "",
     "copy:config": "internal-tools copy-config",
     "build:mobile": "npm run -s build:mobile-frontend && npm run -s build:mobile-backend && npm run -s build:mobile-env-json",
@@ -43,7 +44,8 @@
   "repository": {},
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.34",
-    "@cesium/engine": "20.0.1",
+    "@cesium/core": "0.1.0",
+    "@cesium/engine": "26.4.0",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",

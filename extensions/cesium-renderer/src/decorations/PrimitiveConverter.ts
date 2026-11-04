@@ -8,6 +8,8 @@ import {
   Cartesian3,
   Color,
   type DistanceDisplayCondition,
+} from "@cesium/core";
+import {
   type PointPrimitive,
   PointPrimitiveCollection,
   type Polyline,
