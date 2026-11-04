@@ -22,7 +22,11 @@ class MockAbortSignal implements GenericAbortSignal {
     this.listeners.delete(listener);
   }
 
+  public aborted = false;
+  public reason?: any;
+
   public abort() {
+    this.aborted = true;
     this.listeners.forEach((listener) => listener.bind(this)(undefined));
   }
 }
@@ -195,6 +199,16 @@ describe("BriefcaseConnection", () => {
       await pullPromise;
     });
 
+    it("rejects without pulling when the abort signal is already aborted", async () => {
+      const pullChanges = vi.fn().mockResolvedValue({ index: 3, id: "pulled-changeset-id" });
+      const connection = await openTestBriefcase({ pullChanges, cancelPullChangesRequest: vi.fn() });
+
+      const abortSignal = new MockAbortSignal();
+      abortSignal.abort();
+      await expect(connection.pullChanges(undefined, { abortSignal })).rejects.toThrow();
+      expect(pullChanges).not.toHaveBeenCalled();
+    });
+
     it("removes listeners once the pull completes", async () => {
       const removeProgressListener = vi.fn();
       addListenerSpy.mockReturnValue(removeProgressListener);
@@ -340,6 +354,17 @@ describe("BriefcaseConnection", () => {
 
       completePush({ index: 5, id: "pushed-changeset-id" });
       await pushPromise;
+    });
+
+    it("rejects without pushing when the abort signal is already aborted", async () => {
+      const pushChanges = vi.fn().mockResolvedValue({ index: 5, id: "pushed-changeset-id" });
+      const connection = await openTestBriefcase({ pushChanges, cancelPushChangesRequest: vi.fn() });
+
+      const abortSignal = new MockAbortSignal();
+      abortSignal.reason = new Error("stop");
+      abortSignal.abort();
+      await expect(connection.pushChanges("test push", { abortSignal })).rejects.toThrow("stop");
+      expect(pushChanges).not.toHaveBeenCalled();
     });
 
     it("removes listeners once the push completes", async () => {

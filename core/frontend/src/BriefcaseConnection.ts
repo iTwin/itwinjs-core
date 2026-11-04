@@ -42,6 +42,10 @@ export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
  * @beta
  */
 export interface GenericAbortSignal {
+  /** True if the signal has already been aborted. If a signal that is already aborted is supplied, the operation rejects immediately. */
+  readonly aborted?: boolean;
+  /** The reason the signal was aborted, if any. Used as the rejection value for a signal that is already aborted. */
+  readonly reason?: any;
   /** Add Listener for abort signal. */
   addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
   /** Remove Listener for abort signal. */
@@ -401,6 +405,11 @@ export class BriefcaseConnection extends IModelConnection {
   /** Subscribes to changeset download progress events on `channel` and wires `abortSignal` to `cancel`.
    * @returns a function that removes every listener that was added.
    */
+  private throwIfAborted(abortSignal?: GenericAbortSignal): void {
+    if (abortSignal?.aborted)
+      throw abortSignal.reason ?? new DOMException("The operation was aborted.", "AbortError");
+  }
+
   private listenForChangesetDownloadProgress(args: {
     channel: string,
     cancel: () => Promise<void>,
@@ -431,6 +440,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     this.requireTimeline();
+    this.throwIfAborted(options?.abortSignal);
 
     const removeListeners = this.listenForChangesetDownloadProgress({
       channel: getPullChangesIpcChannel(this.key),
@@ -473,6 +483,7 @@ export class BriefcaseConnection extends IModelConnection {
   public pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
   public async pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
+    this.throwIfAborted(options?.abortSignal);
 
     const removeListeners = this.listenForChangesetDownloadProgress({
       channel: getPushChangesIpcChannel(this.key),
