@@ -83,7 +83,7 @@
     "@itwin/core-geometry": "workspace:*"
   },
   "dependencies": {
-    "google-protobuf": "~3.20.1",
+    "google-protobuf": "~4.0.3",
     "flatbush": "~4.4.0"
   },
   "nyc": {
