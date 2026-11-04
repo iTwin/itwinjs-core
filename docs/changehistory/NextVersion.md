@@ -5,7 +5,6 @@ publish: false
 
 <!-- prettier-ignore -->
 - [NextVersion](#nextversion)
-<<<<<<< HEAD
   - [Backend](#backend)
     - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
     - [Vertical CRS discovery](#vertical-crs-discovery)
@@ -31,13 +30,7 @@ publish: false
     - [Mobile RPC authentication](#mobile-rpc-authentication)
     - [Non-finite geographic conversion results](#non-finite-geographic-conversion-results)
     - [Preserving geographic coordinate systems during property updates](#preserving-geographic-coordinate-systems-during-property-updates)
-=======
-  - [Frontend](#frontend)
-    - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
-    - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
-  - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
->>>>>>> 94562e2 (Revisit bulk element deletion (#9856))
 
 ## Backend
 
@@ -195,14 +188,11 @@ After fixing unavailable grid resources, do not reuse a retained converter's cac
 
 ### Preserving geographic coordinate systems during property updates
 
-<<<<<<< HEAD
 [EditTxn.updateIModelProps]($backend), [EditTxn.updateProjectExtents]($backend), and [EditTxn.updateEcefLocation]($backend) no longer replace an unchanged geographic coordinate system. Unrelated property writes preserve the complete stored CRS definition without re-resolving its dictionary identifiers, including when its workspace dictionary is unavailable. Intentionally changed CRS definitions continue to be persisted.
 
 Do not rely on repeated property updates to re-resolve an unchanged CRS against a changed dictionary. Explicitly set a changed CRS definition when replacing the stored CRS is intended. Abandoning edits, undo, and redo now reload the cached geographic coordinate system from the database; explicitly reapply an abandoned CRS edit if it should be saved later. See [Updating iModel properties](../learning/backend/EditTxn.md#updating-imodel-properties).
 
 CRS-restoration notifications reject transaction writes, including implicit writes, so listeners cannot write abandoned edits back to the database. Defer follow-up edits until restoration completes.
-=======
-## Backend
 
 ### Bulk Element Deletion API changes
 
@@ -229,4 +219,3 @@ Changes to the beta types:
 If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
->>>>>>> 94562e2 (Revisit bulk element deletion (#9856))
