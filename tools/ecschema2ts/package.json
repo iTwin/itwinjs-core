@@ -59,7 +59,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@xmldom/xmldom": "~0.8.15",
+    "@xmldom/xmldom": "catalog:runtime",
     "chalk": "catalog:build",
     "commander": "^2.14.1",
     "fs-extra": "catalog:utilities"

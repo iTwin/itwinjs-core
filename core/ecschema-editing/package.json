@@ -49,7 +49,7 @@
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/sinon": "catalog:testing",
-    "@xmldom/xmldom": "~0.8.15",
+    "@xmldom/xmldom": "catalog:runtime",
     "chai": "catalog:testing",
     "chai-as-promised": "catalog:testing",
     "cpx2": "catalog:build",

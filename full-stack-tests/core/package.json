@@ -39,7 +39,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@azure/storage-blob": "^12.28.0",
+    "@azure/storage-blob": "catalog:runtime",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",

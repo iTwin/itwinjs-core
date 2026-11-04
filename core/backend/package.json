@@ -92,7 +92,7 @@
     "@types/sinon": "catalog:testing",
     "@types/touch": "^3.1.2",
     "@types/ws": "catalog:types",
-    "@xmldom/xmldom": "~0.8.15",
+    "@xmldom/xmldom": "catalog:runtime",
     "chai": "catalog:testing",
     "chai-as-promised": "catalog:testing",
     "cpx2": "catalog:build",
@@ -112,7 +112,7 @@
   "dependencies": {
     "@bentley/imodeljs-native": "5.16.3",
     "@itwin/object-storage-azure": "catalog:imodels-clients",
-    "@azure/storage-blob": "^12.28.0",
+    "@azure/storage-blob": "catalog:runtime",
     "form-data": "^4.0.6",
     "fs-extra": "catalog:utilities",
     "json5": "^2.2.3",

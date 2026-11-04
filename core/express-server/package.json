@@ -43,7 +43,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/chai": "catalog:testing",
-    "@types/express": "catalog:types",
+    "@types/express": "catalog:runtime",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/sinon": "catalog:testing",
@@ -63,7 +63,7 @@
     "@itwin/core-common": "workspace:*"
   },
   "dependencies": {
-    "express": "^4.22.1",
+    "express": "catalog:runtime",
     "express-ws": "^5.0.2"
   },
   "nyc": {

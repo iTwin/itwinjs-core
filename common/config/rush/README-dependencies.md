@@ -25,12 +25,13 @@ Shared dependency ranges are defined in `globalCatalogs` in [`pnpm-config.json`]
 | `linting` | ESLint, its shared plugin/parser, and formatting tools |
 | `presentation` | External presentation packages and their shared RxJS baseline |
 | `reality-capture` | The reality-data client owned by the reality-capture project |
+| `runtime` | Shared third-party runtime libraries and their typings |
 | `schemas` | Bentley schema packages used by tests and examples |
 | `testing` | Test libraries and typings, environment setup, coverage, and services |
 | `types` | Typings for runtime libraries that are not cataloged yet |
 | `utilities` | Shared fs-extra, lodash, and semver libraries and their typings |
 
-External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them. The presentation catalog also holds the shared RxJS version policy managed by the presentation area; this does not imply ownership of the upstream RxJS projects.
+External iTwin client catalogs follow maintaining-team or release-project ownership, not the npm scope alone. The shared `imodels-clients` catalog covers both the `iTwin/imodels-clients` and `iTwin/object-storage` repositories. Third-party dependencies such as `@azure/storage-blob` do not belong in that owner catalog merely because an iTwin client uses them. The `runtime` catalog groups shared third-party libraries without implying a single upstream owner. The presentation catalog also holds the shared RxJS version policy managed by the presentation area; this does not imply ownership of the upstream RxJS projects.
 
 Keep a library's typings in the same catalog as the library. When cataloging a runtime library, move any corresponding entry out of the remaining `types` catalog too.
 

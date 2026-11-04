@@ -35,7 +35,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@types/chai": "catalog:testing",
-    "@types/express": "catalog:types",
+    "@types/express": "catalog:runtime",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/semver": "catalog:utilities",

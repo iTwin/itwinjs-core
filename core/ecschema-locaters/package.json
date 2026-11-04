@@ -74,7 +74,7 @@
   "dependencies": {
     "glob": "catalog:build",
     "fs-extra": "catalog:utilities",
-    "@xmldom/xmldom": "~0.8.15"
+    "@xmldom/xmldom": "catalog:runtime"
   },
   "peerDependencies": {
     "@itwin/ecschema-metadata": "workspace:*"

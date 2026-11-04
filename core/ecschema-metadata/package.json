@@ -52,7 +52,7 @@
     "@types/benchmark": "^2.1.0",
     "@types/node": "catalog:build",
     "@vitest/coverage-v8": "catalog:testing",
-    "@xmldom/xmldom": "~0.8.15",
+    "@xmldom/xmldom": "catalog:runtime",
     "benchmark": "^2.1.4",
     "cpx2": "catalog:build",
     "eslint": "catalog:linting",

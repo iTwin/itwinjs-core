@@ -38,7 +38,7 @@
     "perftest:specific": "npm run -s perftest:pre && mocha --timeout=999999999"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.28.0",
+    "@azure/storage-blob": "catalog:runtime",
     "@bentley/aec-units-schema": "catalog:schemas",
     "@bentley/cif-bridge-schema": "catalog:schemas",
     "@bentley/cif-common-schema": "catalog:schemas",
