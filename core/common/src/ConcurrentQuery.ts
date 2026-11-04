@@ -135,7 +135,7 @@ export interface BaseReaderOptions {
  * */
 export interface QueryOptions extends BaseReaderOptions {
   /**
-   * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
+   * default to false. When true, each blob is replaced by a string holding its size, e.g. {"bytes":123}. This helps cases where wildcard is
    * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
    * */
   abbreviateBlobs?: boolean;
@@ -210,9 +210,9 @@ export class QueryOptionsBuilder {
     return this;
   }
   /**
-   * By default blobs are returned in full. Set to true to abbreviate blob values to a single byte, which saves memory and network bandwidth when using wildcards in the SELECT clause.
+   * By default blobs are not abbreviated and all blob data is returned by query as is. If set to true, blobs are abbreviated to save memory and network bandwidth.
    * Use @type BlobReader to access blob data more efficiently.
-   * @param val A boolean value, if set to true will abbreviate blob type property data. Defaults to false (complete blob data is returned, which could cost time and network bandwidth).
+   * @param val A boolean value, if set to true will abbreviate blob type property data instead of returning it in full. Returning complete blob data could cost time and network bandwidth.
    * @returns @type QueryOptionsBuilder for fluent interface.
    */
   public setAbbreviateBlobs(val: boolean) {

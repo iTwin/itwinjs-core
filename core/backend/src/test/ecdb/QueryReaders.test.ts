@@ -108,6 +108,14 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
     assert.sameDeepMembers(syncIdSetRows, idSetRows);
   });
 
+  it("row proxy supports the `in` operator case-insensitively", async () => {
+    const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element LIMIT 1");
+    assert.isTrue(await reader.step());
+    assert.isTrue("ecinstanceid" in reader.current);
+    assert.isTrue("ECInstanceId" in reader.current);
+    assert.isFalse("noSuchColumn" in reader.current);
+  });
+
   describe("bind Id64 enumerable", async () => {
     const outDir = KnownTestLocations.outputDir;
 

@@ -239,7 +239,7 @@ class TranslationLogger {
     let message = args[0];
     for (let i = 1; i < args.length; ++i) {
       if (typeof args[i] === "string")
-        message += `\n  ${args[i]}`;
+        message += ` ${args[i]}`;
     }
     return message;
   }
