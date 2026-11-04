@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "OGC API Features validation and ArcGIS Feature requests now honor the map-layer fetch handlers registered via MapLayerFormatRegistry.addMapLayerFetchHandler (custom authentication headers/query parameters, transparent retries); ArcGIS Feature extent requests bypass their URL-keyed cache while a handler is registered.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}
