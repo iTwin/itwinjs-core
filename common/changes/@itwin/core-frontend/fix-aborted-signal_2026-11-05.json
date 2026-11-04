@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "BriefcaseConnection.pullChanges and pushChanges now reject immediately when given an already-aborted abortSignal.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -3799,7 +3799,9 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 
 // @beta
 export interface GenericAbortSignal {
+    readonly aborted?: boolean;
     addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+    readonly reason?: any;
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
 }
 
