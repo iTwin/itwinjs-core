@@ -791,7 +791,6 @@ export enum BulkDeleteElementsStatus {
 
 // @beta
 export interface BulkElementAspectFailure {
-    detail?: string;
     id?: Id64String;
     index: number;
     reason: BulkElementAspectFailureReason;

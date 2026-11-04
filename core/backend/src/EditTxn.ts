@@ -106,8 +106,6 @@ export interface BulkElementAspectFailure {
   id?: Id64String;
   /** Why the row is invalid. */
   reason: BulkElementAspectFailureReason;
-  /** More information, such as the class name or element id that was not found. */
-  detail?: string;
 }
 
 /**

@@ -112,8 +112,8 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(inserted).to.deep.equal({
         status: BulkElementAspectsStatus.ValidationFailed,
         failures: [
-          { index: 1, reason: BulkElementAspectFailureReason.ElementNotFound, detail: "0xffffff" },
-          { index: 2, reason: BulkElementAspectFailureReason.ClassNotFound, detail: "BulkAspectTest:DoesNotExist" },
+          { index: 1, reason: BulkElementAspectFailureReason.ElementNotFound },
+          { index: 2, reason: BulkElementAspectFailureReason.ClassNotFound },
         ],
         ids: [],
       });

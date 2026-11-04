@@ -27,7 +27,7 @@ switch (inserted.status) {
     // Some rows are invalid, so nothing was written and no handlers were called.
     // Inspect inserted.failures, fix those rows, and retry.
     for (const failure of inserted.failures)
-      console.log(`Row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]} ${failure.detail ?? ""}`);
+      console.log(`Row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]}`);
     break;
 }
 
@@ -50,19 +50,19 @@ Each method returns a [BulkElementAspectsResult]($backend). `insertAspects` retu
 | Field | Description |
 |---|---|
 | `status` | [BulkElementAspectsStatus]($backend): `Success` or `ValidationFailed` |
-| `failures` | [BulkElementAspectFailure]($backend) entries, only populated on `ValidationFailed`: the row `index` in the input, the aspect `id` when known, a [BulkElementAspectFailureReason]($backend) and an optional `detail` |
+| `failures` | [BulkElementAspectFailure]($backend) entries, only populated on `ValidationFailed`: the row `index` in the input, the aspect `id` when known, and a [BulkElementAspectFailureReason]($backend) |
 | `ids` | `insertAspects` only: on `Success`, the Id of the aspect inserted for each row. Empty on `ValidationFailed` |
 
 Every row is validated before anything is modified, so `ValidationFailed` always leaves the iModel - and the current txn - untouched. `failures` lists every invalid row, in ascending index order.
 
-| Reason | Cause | `detail` |
-|---|---|---|
-| `InvalidProps` | The row is not an object, has no `classFullName`, or its properties cannot be converted to the aspect class. | what is wrong |
-| `InvalidId` | The aspect id (for an update) or the owning element id is missing or not a valid [Id64String]($bentley). | what is wrong |
-| `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. | the class name |
-| `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. | the class name |
-| `ElementNotFound` | The owning element does not exist. | the element id |
-| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. | why the aspect was not found, when known |
+| Reason | Cause |
+|---|---|
+| `InvalidProps` | The row is not an object, has no `classFullName`, or its properties cannot be converted to the aspect class. |
+| `InvalidId` | The aspect id (for an update) or the owning element id is missing or not a valid [Id64String]($bentley). |
+| `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. |
+| `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. |
+| `ElementNotFound` | The owning element does not exist. |
+| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. |
 
 ## Handlers
 
