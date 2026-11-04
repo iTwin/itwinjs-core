@@ -60,7 +60,6 @@
     "@types/express": "catalog:runtime",
     "@types/node": "catalog:build",
     "@typescript-eslint/parser": "catalog:linting",
-    "child_process": "^1.0.2",
     "chrome-launcher": "^0.15.2",
     "cross-env": "catalog:build",
     "dotenv": "catalog:testing",
