@@ -110,7 +110,11 @@
     "vite": "^6.4.4"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "5.15.37",
+=======
+    "@bentley/imodeljs-native": "5.16.5",
+>>>>>>> 94562e2 (Revisit bulk element deletion (#9856))
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.6",
