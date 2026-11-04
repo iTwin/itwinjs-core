@@ -117,7 +117,7 @@ describe("SubCategoriesCache", () => {
       }
 
       public get current() { return this._current; }
-      public get next() { return this._next; }
+      public get next() { return this._next[0]; }
       public get request() { return this._request; }
       public get disposed() { return this._disposed; }
 
