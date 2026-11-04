@@ -1,6 +1,6 @@
 # Map layers, basemaps, and Azure Maps
 
-Azure Maps setup uses the generic map-layer APIs from `@itwin/core-frontend` and the Azure Maps format support from `@itwin/map-layers-formats`.
+Azure Maps setup uses the generic map-layer APIs from `@itwin/core-frontend` and the Azure Maps format support from `@itwin/map-layers-formats` .
 
 Use `@itwin/core-frontend` to start the app and attach ordinary background or overlay layers. Use `@itwin/map-layers-formats` to register Azure Maps support, provide the Azure Maps subscription key, and apply Azure basemaps like Street, Aerial, and Hybrid.
 
@@ -100,6 +100,8 @@ If your app never uses Azure Maps, it does not need to import Azure-specific hel
 ## Map-layer security
 
 A map layer is described by a URL, and that URL frequently comes from outside the application: it may be typed by the user, imported from a saved view or settings store, or advertised by a server inside its own capability document. A map-layer provider therefore routinely issues requests to origins the application never explicitly approved, which has two consequences worth designing for: credentials must not be handed to arbitrary origins, and text returned by those origins must not be trusted as markup.
+
+For supplying credentials to services that require them - including custom authentication headers via a fetch handler - see [Map-layer authentication](./MapLayerAuthentication.md).
 
 ### Restricting credentials to trusted origins
 
