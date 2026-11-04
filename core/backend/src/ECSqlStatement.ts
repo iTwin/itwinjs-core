@@ -1027,6 +1027,9 @@ export interface ECSqlColumnInfo {
    */
   getType(): ECSqlValueType;
 
+  /** Gets the extended type name, or undefined if the column has no extended type. */
+  getExtendedTypeName(): string | undefined;
+
   /** Gets the name of the property backing the column.
    * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * > the access string consists of the name of the generated property. [[ECSqlColumnInfo.getOriginPropertyName]]

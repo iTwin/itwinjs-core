@@ -525,8 +525,7 @@ select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by 
       "generated": true,
       "index": 0,
       "className": "",
-      "jsonName": "temp.x",
-      "extendedType": ""
+      "jsonName": "temp.x"
     }
   ]
 }

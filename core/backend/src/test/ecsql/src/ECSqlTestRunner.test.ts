@@ -222,7 +222,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
           assert.strictEqual(colInfo.getPropertyName(), expectedColInfo.name, `Expected property name ${expectedColInfo.name} but got ${colInfo.getPropertyName()} for column index ${i}`);
           //if (expectedColInfo.isDynamicProp !== undefined) TODO: Is this not exposed?
           //  assert.strictEqual(colInfo..isDynamicProperty, expectedColInfo.isDynamicProp, `Expected dynamic property ${expectedColInfo.isDynamicProp} but got ${colInfo.isDynamicProperty} for column index ${i}`);
-          // TODO: Extended type name not exposed??
+          assert.strictEqual(colInfo.getExtendedTypeName(), expectedColInfo.extendedType, `Unexpected extended type for column index ${i}`);
           if (expectedColInfo.generated !== undefined)
             assert.strictEqual(colInfo.isGeneratedProperty(), expectedColInfo.generated, `Expected generated property ${expectedColInfo.generated} but got ${colInfo.isGeneratedProperty()} for column index ${i}`);
           if (expectedColInfo.accessString !== undefined)
