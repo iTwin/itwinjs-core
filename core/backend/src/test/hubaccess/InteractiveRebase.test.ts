@@ -1366,6 +1366,7 @@ describe("InteractiveRebase", () => {
     // The DeletionEffect is not removed, and it can be used to replace again.
     chai.expect(conflict.deletionEffects).to.have.length(1);
     chai.expect(conflict.deletionEffects[0].affectedId).to.equal(childId);
+    chai.expect(conflict.deletionEffects[0].resolved).to.be.true;
 
     const differentId = interactive.editTxn.insertElement({
       classFullName: "irt:SomeGraphicalElement",
@@ -1498,7 +1499,7 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(referencingElementId).code.scope).to.equal(newCodeScopeId);
   });
 
-  it("preserves the previous value when an update to a non-nullable navigation property is invalid", async () => {
+  it("BrokenRelationship - preserves the previous value when an update to a non-nullable navigation property is invalid", async () => {
     const [codeSpecId, originalScopeId, deletedScopeId] = await withEditTxn(briefcase1, async (txn) => {
       const insertScope = (foo: string) => txn.insertElement({
         classFullName: "irt:SomeGraphicalElement",
@@ -1544,10 +1545,26 @@ describe("InteractiveRebase", () => {
     const brokenRelationship = conflict.brokenRelationships[0];
     chai.expect(brokenRelationship.navigationProperty).to.equal("code.scope");
     chai.expect(brokenRelationship.appliedValue).to.equal(originalScopeId);
-    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).code.scope).to.equal(originalScopeId);
+    chai.expect(briefcase2.elements.getElementProps(id).code.scope).to.equal(originalScopeId);
+
+    const newScopeId = interactive.editTxn.insertElement({
+      classFullName: "irt:SomeGraphicalElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      foo: "New Scope",
+      somePoint: new Point2d(5.0, 6.0),
+    } as SomeGraphicalElementProps);
+
+    conflict.resolveBrokenRelationship(brokenRelationship, newScopeId);
+
+    chai.expect(conflict.brokenRelationships.length).to.equal(1);
+    chai.expect(conflict.brokenRelationships[0]).to.equal(brokenRelationship);
+    chai.expect(brokenRelationship.appliedValue).to.equal(newScopeId);
+    chai.expect(interactive.iModel.elements.getElementProps(id).code.scope).to.equal(newScopeId);
   });
 
-  it("preserves their non-nullable navigation value when each side deletes the other's target", async () => {
+  it("BrokenRelationship - preserves their non-nullable navigation value when each side deletes the other's target", async () => {
     const [codeSpecId, ourScopeId, theirScopeId] = await withEditTxn(briefcase1, async (txn) => {
       const insertScope = (foo: string) => txn.insertElement({
         classFullName: "irt:SomeGraphicalElement",
@@ -1591,25 +1608,52 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    const conflict = interactive.conflicts.find((candidate) => candidate.id === id);
-    chai.expect(conflict).to.not.be.undefined;
-    if (!conflict) return;
 
-    // TODO: this working almost accidentally. The deletion of theirScopeId is failing
-    // due to the foreign key constraint. So that change is effectively ignored. There
-    // is a conflict entry about this, but it has no information about what went wrong.
-    // If the foreign key were set to CASCADE or SET NULL, the situation would be even
-    // worse. We'd end up silently deleting entities or nulling-out properties.
-    // This is tricky to solve; it basically requires preflighting all deletions for
-    // any potential impact before actually doing the deletion.
-    const brokenRelationship = conflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "code.scope");
-    chai.expect(brokenRelationship).to.not.be.undefined;
-    chai.expect(brokenRelationship?.appliedValue).to.equal(theirScopeId);
-    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).code.scope).to.equal(theirScopeId);
-    chai.expect(briefcase2.elements.tryGetElementProps(theirScopeId)).to.not.be.undefined;
+    chai.expect(interactive.conflicts.length).to.equal(2);
+    const updateConflict = interactive.conflicts.find((candidate) => candidate.id === id);
+    const deleteConflict = interactive.conflicts.find((candidate) => candidate.id === theirScopeId);
+    chai.expect(updateConflict).to.not.be.undefined;
+    chai.expect(deleteConflict).to.not.be.undefined;
+    if (!updateConflict || !deleteConflict) return;
+
+    // The updateConflict should have a broken relationship due to the deletion of theirScopeId,
+    // and continue using the previous scope.
+    chai.expect(updateConflict.conflictingProperties.length).to.equal(2);
+    chai.expect(updateConflict.conflictingProperties).to.include("code.scope");
+    chai.expect(updateConflict.conflictingProperties).to.include("lastMod");
+
+    chai.expect(updateConflict.brokenRelationships.length).to.equal(1);
+    const brokenRelationship = updateConflict.brokenRelationships[0];
+    chai.expect(brokenRelationship.navigationProperty).to.equal("code.scope");
+    chai.expect(brokenRelationship.appliedValue).to.equal(theirScopeId);
+
+    chai.expect(briefcase2.elements.getElementProps(id).code.scope).to.equal(theirScopeId);
+
+    // The deletionConflict should report it was blocked because the previous scope is still in use.
+    chai.expect(deleteConflict.deletionEffects.length).to.equal(1);
+    const deletionEffect = deleteConflict.deletionEffects[0];
+    chai.expect(deletionEffect.action).to.equal("blocks-deletion");
+    chai.expect(deletionEffect.affectedId).to.equal(id);
+    chai.expect(deletionEffect.references.length).to.equal(1);
+    chai.expect(deletionEffect.references[0].targetId).to.equal(theirScopeId);
+
+    // Resolving the broken relationship allows the scope deletion to proceed.
+    const newScopeId = interactive.editTxn.insertElement({
+      classFullName: "irt:SomeGraphicalElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      foo: "New Scope",
+      somePoint: new Point2d(5.0, 6.0),
+    } as SomeGraphicalElementProps);
+    updateConflict.resolveBrokenRelationship(brokenRelationship, newScopeId);
+
+    // TODO: this is failing. Resolving the broken relationship doesn't actually trigger
+    // the deletion to proceed. Should it?
+    chai.expect(briefcase2.elements.tryGetElementProps(theirScopeId)).to.be.undefined;
   });
 
-  it("resolves broken model relationships for a new element hierarchy in any order", async () => {
+  it("BrokenRelationship - can resolve broken model relationships for a new element hierarchy in any order", async () => {
     const deletedModelId = await withEditTxn(briefcase1, async (txn) => {
       const code = Code.createEmpty();
       code.value = "DeletedHierarchyModel";
@@ -1665,7 +1709,7 @@ describe("InteractiveRebase", () => {
       chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(elementId).model).to.equal(drawingModelId);
   });
 
-  it("requires resolving model and code.spec relationships before inserting an element", async () => {
+  it("BrokenRelationship - inserts dependent element once broken model and code.spec relationships are resolved", async () => {
     const [deletedModelId, deletedCodeSpecId] = await withEditTxn(briefcase1, async (txn) => {
       const code = Code.createEmpty();
       code.value = "DeletedModel";
@@ -1704,9 +1748,10 @@ describe("InteractiveRebase", () => {
 
     chai.expect(interactive.conflicts.length).to.equal(1);
     const conflict = interactive.conflicts[0];
+
+    // Child element has two broken relationships.
+    // These prevent the element from being inserted at all.
     chai.expect(conflict.id).to.equal(childId);
-    chai.expect(conflict.brokenRelationships.map((relationship) => relationship.navigationProperty)).to.have.members(["model", "code.spec"]);
-    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
 
     const modelRelationship = conflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "model");
     const codeSpecRelationship = conflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "code.spec");
@@ -1714,6 +1759,12 @@ describe("InteractiveRebase", () => {
     chai.expect(codeSpecRelationship).to.not.be.undefined;
     if (!modelRelationship || !codeSpecRelationship) return;
 
+    chai.expect(modelRelationship.appliedValue).to.be.undefined;
+    chai.expect(codeSpecRelationship.appliedValue).to.be.undefined;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+
+    // Resolving the first broken relationship stages a value but can't insert the element yet.
     const modelCode = Code.createEmpty();
     modelCode.value = "ReplacementModel";
     const replacementModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(interactive.editTxn, modelCode, true)[1];
@@ -1724,18 +1775,21 @@ describe("InteractiveRebase", () => {
     chai.expect(codeSpecRelationship.appliedValue).to.be.undefined;
     chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
 
+    // Resolving the second broken relationship allows the element to be inserted.
     const replacementCodeSpecId = briefcase2.codeSpecs.insert(interactive.editTxn, "ReplacementCodeSpec", CodeScopeSpec.Type.Repository);
     conflict.resolveBrokenRelationship(codeSpecRelationship, replacementCodeSpecId);
 
     chai.expect(modelRelationship.appliedValue).to.equal(replacementModelId);
+    chai.expect(modelRelationship.stagedValue).to.be.undefined;
     chai.expect(codeSpecRelationship.appliedValue).to.equal(replacementCodeSpecId);
+    chai.expect(codeSpecRelationship.stagedValue).to.be.undefined;
     const childProps = briefcase2.elements.tryGetElementProps(childId);
     chai.expect(childProps).to.not.be.undefined;
     chai.expect(childProps!.model).to.equal(replacementModelId);
     chai.expect(childProps!.code.spec).to.equal(replacementCodeSpecId);
   });
 
-  it("restores nullable parent relationships after resolving a non-nullable relationship on the parent", async () => {
+  it("BrokenRelationship - restores nullable parent relationships after resolving parent's insertion blocker", async () => {
     const [scopeId, codeSpecId] = await withEditTxn(briefcase1, async (txn) => {
       const scope = txn.insertElement({
         classFullName: "irt:SomeGraphicalElement",
@@ -1787,21 +1841,26 @@ describe("InteractiveRebase", () => {
     const parentConflict = interactive.conflicts.find((conflict) => conflict.id === parentId);
     chai.expect(parentConflict).to.not.be.undefined;
     if (!parentConflict) return;
-    chai.expect(parentConflict.dependentConflicts.some((conflict) => conflict.id === childId)).to.be.true;
 
+    // Broken relationship is reported and blocks insertion of the parent element.
     const codeScopeRelationship = parentConflict.brokenRelationships.find((relationship) => relationship.navigationProperty === "code.scope");
     chai.expect(codeScopeRelationship).to.not.be.undefined;
-    chai.expect(briefcase2.elements.tryGetElementProps(parentId)).to.be.undefined;
-    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent).to.be.undefined;
     if (!codeScopeRelationship) return;
+    chai.expect(codeScopeRelationship.stagedValue).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(parentId)).to.be.undefined;
 
+    // Because the parent is not inserted, the child's parent relationship is set to null.
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent).to.be.undefined;
+
+    // When we resolve the parent's broken relationship, the parent element is inserted.
     parentConflict.resolveBrokenRelationship(codeScopeRelationship, IModel.rootSubjectId);
-
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(parentId).code.scope).to.equal(IModel.rootSubjectId);
+
+    // And now the child's parent relationship is restored.
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childId).parent?.id).to.equal(parentId);
   });
 
-  it("recursively inserts elements linked through non-nullable broken relationships", async () => {
+  it("BrokenRelationship - recursively inserts elements linked through non-nullable navigation properties", async () => {
     const [deletedScopeId, codeSpecId] = await withEditTxn(briefcase1, async (txn) => {
       const scope = txn.insertElement({
         classFullName: "irt:SomeGraphicalElement",
@@ -1859,13 +1918,13 @@ describe("InteractiveRebase", () => {
     chai.expect(briefcase2.elements.tryGetElementProps(secondId)).to.be.undefined;
     if (!firstCodeScope) return;
 
+    // After resolving the broken relationship, both first and second are inserted.
     firstConflict.resolveBrokenRelationship(firstCodeScope, IModel.rootSubjectId);
-
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(firstId).code.scope).to.equal(IModel.rootSubjectId);
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(secondId).code.scope).to.equal(firstId);
   });
 
-  it("should report an aspect conflict when both users update the same aspect property", async () => {
+  it("Update-Update conflict reported for aspects", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
         classFullName: uniqueAspectClassFullName,
@@ -1914,17 +1973,20 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours!.aspectValue).to.equal("User2");
     chai.expect(conflict.theirs!.aspectValue).to.equal("User1");
 
-    chai.expect(conflict.ownerConflicts.length).to.equal(1);
-    const ownerConflict = conflict.ownerConflicts[0];
-    chai.expect(interactive.conflicts).to.include(ownerConflict);
-    chai.expect(ownerConflict.id).to.equal(id);
-    chai.expect(ownerConflict.brokenRelationships.length).to.equal(0);
-    chai.expect(ownerConflict.conflictingProperties.length).to.equal(0);
-    chai.expect(ownerConflict.differentProperties.length).to.equal(0);
-    chai.expect(ownerConflict.ourModifiedProperties.length).to.equal(0);
-    chai.expect(ownerConflict.theirModifiedProperties.length).to.equal(0);
-    chai.expect(ownerConflict.dependentConflicts.length).to.equal(1);
-    chai.expect(ownerConflict.dependentConflicts[0]).to.equal(conflict);
+    const elementConflict = interactive.conflicts.find(c => c !== conflict);
+    chai.expect(elementConflict).to.not.be.undefined;
+    if (!elementConflict) return;
+
+    chai.expect(elementConflict.id).to.equal(id);
+    chai.expect(elementConflict.brokenRelationships.length).to.equal(0);
+    chai.expect(elementConflict.conflictingProperties.length).to.equal(1);
+    chai.expect(elementConflict.conflictingProperties).to.include("lastMod");
+    chai.expect(elementConflict.differentProperties.length).to.equal(1);
+    chai.expect(elementConflict.differentProperties).to.include("lastMod");
+    chai.expect(elementConflict.ourModifiedProperties.length).to.equal(1);
+    chai.expect(elementConflict.ourModifiedProperties).to.include("lastMod");
+    chai.expect(elementConflict.theirModifiedProperties.length).to.equal(1);
+    chai.expect(elementConflict.theirModifiedProperties).to.include("lastMod");
 
     let aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User2");
