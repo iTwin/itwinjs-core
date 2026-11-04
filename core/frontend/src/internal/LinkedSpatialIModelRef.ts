@@ -159,13 +159,22 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     });
 
     this.parent = refs;
+
+    // Initialize the state read by tile-tree reference collections before creating them - creation can be synchronous,
+    // e.g., when a batched tileset spec for this iModel is already cached.
+    this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
+    this.#updateModelClips();
+    this.viewedModels.addAll(args.viewedModels ?? []);
+
     this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
-    this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
-
-    this.viewedModels.addAll(args.viewedModels ?? []);
     void loadViewedModels(this);
-    this.viewedModels.onChanged.addListener(() => void loadViewedModels(this));
+    this.viewedModels.onChanged.addListener(() => {
+      // Refresh the owning tile-reference collection - e.g., batched tile sets copy the viewed model Ids into the set
+      // used for visibility and fit ranges - mirroring SpatialViewState.markModelSelectorChanged for the primary reference.
+      this[_treeRefs].update();
+      void loadViewedModels(this);
+    });
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
     this.#disposalFunctions.push(this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
@@ -174,8 +183,6 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     }));
     this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
-
-    this.#updateModelClips();
   }
 
   #dispose(): void {

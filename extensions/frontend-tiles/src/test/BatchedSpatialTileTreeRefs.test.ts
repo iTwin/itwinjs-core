@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Cartographic, FeatureAppearance, SubCategoryAppearance } from "@itwin/core-common";
+import { BatchType, Cartographic, FeatureAppearance, FeatureAppearanceSource, GeometryClass, SubCategoryAppearance } from "@itwin/core-common";
 import { BlankConnection, FeatureSymbology, IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
+import { Id64 } from "@itwin/core-bentley";
 import { expect } from "chai";
 import sinon from "sinon";
 import { BatchedTileTreeReference } from "../BatchedTileTreeReference.js";
@@ -13,7 +14,14 @@ import { BatchedTilesetSpec } from "../BatchedTilesetReader.js";
 
 const createDefaultSpatialTileTreeReferences = SpatialTileTreeReferences.create;
 
-function createTileset(modelId: string): object {
+interface TilesetModelExtents {
+  low: { x: number, y: number, z: number };
+  high: { x: number, y: number, z: number };
+}
+
+const unitExtents: TilesetModelExtents = { low: { x: 0, y: 0, z: 0 }, high: { x: 1, y: 1, z: 1 } };
+
+function createTileset(models: Array<[string, TilesetModelExtents]>): object {
   return {
     asset: { version: "1.0" },
     geometricError: 0,
@@ -24,14 +32,7 @@ function createTileset(modelId: string): object {
     extensions: {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       BENTLEY_BatchedTileSet: {
-        models: {
-          [modelId]: {
-            extents: {
-              low: { x: 0, y: 0, z: 0 },
-              high: { x: 1, y: 1, z: 1 },
-            },
-          },
-        },
+        models: Object.fromEntries(models.map(([modelId, extents]) => [modelId, { extents }])),
       },
     },
   };
@@ -50,15 +51,16 @@ describe("BatchedSpatialTileTreeReferences", () => {
     const linkedIModel = BlankConnection.create({
       name: "linked",
       location: Cartographic.fromDegrees({ longitude: 1, latitude: 1, height: 0 }),
-      extents: new Range3d(0, 0, 0, 1, 1, 1),
+      extents: new Range3d(0, 0, 0, 3, 3, 3),
     });
     const primaryUrl = new URL("https://tiles.test/primary/");
     const linkedUrl = new URL("https://tiles.test/linked/");
+    const secondLinkedModelExtents: TilesetModelExtents = { low: { x: 1, y: 1, z: 1 }, high: { x: 2, y: 2, z: 2 } };
     const tilesets = new Map([
-      [`${primaryUrl}tileset.json`, createTileset("0x1")],
-      [`${linkedUrl}tileset.json`, createTileset("0x2")],
+      [`${primaryUrl}tileset.json`, createTileset([["0x1", unitExtents]])],
+      [`${linkedUrl}tileset.json`, createTileset([["0x2", unitExtents], ["0x3", secondLinkedModelExtents]])],
     ]);
-    expect(BatchedTilesetSpec.create(primaryUrl, createTileset("0x1")).models.size).to.equal(1);
+    expect(BatchedTilesetSpec.create(primaryUrl, createTileset([["0x1", unitExtents]])).models.size).to.equal(1);
     const requestedUrls: string[] = [];
 
     sinon.stub(window, "fetch").callsFake(async (input) => {
@@ -172,6 +174,47 @@ describe("BatchedSpatialTileTreeReferences", () => {
 
       expect(primarySymbology!.defaultOverrides).to.equal(FeatureAppearance.defaults);
       expect(linkedSymbology!.defaultOverrides).to.equal(linkedAppearance);
+
+      // Changing the linked reference's viewed models after the batched tileset has loaded must refresh the batched
+      // collection's model visibility and fit ranges.
+      const isModelViewed = (batchedRef: BatchedTileTreeReference, modelId: string): boolean => {
+        const source = { getAppearance: () => FeatureAppearance.defaults } as unknown as FeatureAppearanceSource;
+        const appearance = batchedRef.getFeatureAppearance(
+          source, 0, 0, 0, 0, GeometryClass.Primary, Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId), BatchType.Primary, 0,
+        );
+        return undefined !== appearance;
+      };
+
+      expect(isModelViewed(linkedBatchedRef, "0x2")).to.be.true;
+      expect(isModelViewed(linkedBatchedRef, "0x3")).to.be.false;
+
+      linkedRef.viewedModels.add("0x3");
+      expect(isModelViewed(linkedBatchedRef, "0x3")).to.be.true;
+      const secondModelRange = new Range3d(1, 1, 1, 2, 2, 2);
+      const expandedFit = Range3d.createNull();
+      linkedBatchedRef.unionFitRange(expandedFit);
+      const expectedExpandedFit = Range3d.createNull();
+      linkedRef.linearTransformToParent.multiplyRange(modelExtents.union(secondModelRange), expectedExpandedFit);
+      expect(expandedFit.isAlmostEqual(expectedExpandedFit)).to.be.true;
+
+      linkedRef.viewedModels.delete("0x2");
+      expect(isModelViewed(linkedBatchedRef, "0x2")).to.be.false;
+      expect(isModelViewed(linkedBatchedRef, "0x3")).to.be.true;
+      const shrunkFit = Range3d.createNull();
+      linkedBatchedRef.unionFitRange(shrunkFit);
+      const expectedShrunkFit = Range3d.createNull();
+      linkedRef.linearTransformToParent.multiplyRange(secondModelRange, expectedShrunkFit);
+      expect(shrunkFit.isAlmostEqual(expectedShrunkFit)).to.be.true;
+
+      // Unlink and relink the same iModel: the relinked reference reuses the cached tileset spec, views its own set of
+      // models, and subsequent mutations refresh the new batched collection.
+      view.iModelRefs.unlink(linkedRef);
+      linkedRef = view.iModelRefs.link({ iModel: linkedIModel, viewedModels: ["0x3"] });
+      const relinkedBatchedRef = await getBatchedRef(linkedRef.tileTreeRefs);
+      expect(isModelViewed(relinkedBatchedRef, "0x3")).to.be.true;
+      expect(isModelViewed(relinkedBatchedRef, "0x2")).to.be.false;
+      linkedRef.viewedModels.add("0x2");
+      expect(isModelViewed(relinkedBatchedRef, "0x2")).to.be.true;
     } finally {
       sinon.restore();
       SpatialTileTreeReferences.create = createDefaultSpatialTileTreeReferences;
