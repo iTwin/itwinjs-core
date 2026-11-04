@@ -10,6 +10,7 @@ import { expectDefined, Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
+import { IModelDisplayReference } from "./IModelDisplayReference";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ReadPixelsArgs, ScreenViewport, Viewport } from "./Viewport";
@@ -221,58 +222,66 @@ export class ElementPicker {
       testPointView.y = vp.cssPixelsToDevicePixels(testPointView.y);
       pixelRadius = vp.cssPixelsToDevicePixels(pixelRadius);
 
-      const elmHits = new Map<string, Point2d>();
+      // Qualify hits by display reference as well as element Id; distinct references may contain elements with colliding Ids.
+      const elmHits = new Map<IModelDisplayReference, Map<string, Point2d>>();
       const testPoint = Point2d.createZero();
       for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
         for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+          const feature = pixel?.feature;
+          if (undefined === feature || Id64.isInvalid(feature.elementId))
             continue; // no geometry at this location...
 
           const distXY = testPointView.distance(testPoint);
           if (distXY > pixelRadius)
             continue; // ignore corners. it's a locate circle not square...
 
-          const oldPoint = elmHits.get(pixel.elementId);
+          let refHits = elmHits.get(feature.iModelRef);
+          if (undefined === refHits)
+            elmHits.set(feature.iModelRef, refHits = new Map<string, Point2d>());
+
+          const oldPoint = refHits.get(feature.elementId);
           if (undefined !== oldPoint) {
             if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
               oldPoint.setFrom(testPoint); // new hit is better, update location...
           } else {
-            elmHits.set(pixel.elementId, testPoint.clone());
+            refHits.set(feature.elementId, testPoint.clone());
           }
         }
       }
       if (0 === elmHits.size)
         return;
 
-      for (const elmPoint of elmHits.values()) {
-        const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId)
-          continue;
+      for (const refHits of elmHits.values()) {
+        for (const elmPoint of refHits.values()) {
+          const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId)
+            continue;
 
-        const hitPointWorld = vp.getPixelDataWorldPoint({
-          pixels,
-          x: elmPoint.x,
-          y: elmPoint.y,
-          preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
-        });
+          const hitPointWorld = vp.getPixelDataWorldPoint({
+            pixels,
+            x: elmPoint.x,
+            y: elmPoint.y,
+            preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
+          });
 
-        if (!hitPointWorld)
-          continue;
+          if (!hitPointWorld)
+            continue;
 
-        const hit = new HitDetail({
-          ...pixel.toHitProps(vp),
-          testPoint: pickPointWorld,
-          viewport: vp,
-          hitSource: options.hitSource,
-          hitPoint: hitPointWorld,
-          distXY: testPointView.distance(elmPoint),
-        });
+          const hit = new HitDetail({
+            ...pixel.toHitProps(vp),
+            testPoint: pickPointWorld,
+            viewport: vp,
+            hitSource: options.hitSource,
+            hitPoint: hitPointWorld,
+            distXY: testPointView.distance(elmPoint),
+          });
 
-        const hitList = expectDefined(this.hitList);
-        hitList.addHit(hit);
-        if (hitList.hits.length > options.maxHits)
-          hitList.hits.length = options.maxHits; // truncate array...
+          const hitList = expectDefined(this.hitList);
+          hitList.addHit(hit);
+          if (hitList.hits.length > options.maxHits)
+            hitList.hits.length = options.maxHits; // truncate array...
+        }
       }
 
       result = expectDefined(this.hitList).length;
