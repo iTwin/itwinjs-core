@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Cartographic } from "@itwin/core-common";
-import { BlankConnection, IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference } from "@itwin/core-frontend";
+import { Cartographic, FeatureAppearance, SubCategoryAppearance } from "@itwin/core-common";
+import { BlankConnection, FeatureSymbology, IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -147,6 +147,31 @@ describe("BatchedSpatialTileTreeReferences", () => {
       linkedRef.linearTransformToParent.multiplyRange(modelExtents, expectedLinkedFit);
       expect(linkedFit.isAlmostEqual(expectedLinkedFit)).to.be.true;
       expect(linkedFit.isAlmostEqual(modelExtents)).to.be.false;
+
+      // Symbology: each batched reference must supply its owning display reference's visibility and appearance rules,
+      // not inherit the view's. Give the references different viewed categories (with pre-populated subcategory
+      // caches) and different default appearances.
+      primaryIModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+      linkedIModel.subcategories.add("0x20", "0x21", new SubCategoryAppearance(), true);
+      view.iModelRefs.primary.viewedCategories.add("0x10");
+      linkedRef.viewedCategories.add("0x20");
+      const linkedAppearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
+      linkedRef.overrides.defaultFeatureAppearance = linkedAppearance;
+
+      const getSymbology = (ref: BatchedTileTreeReference): FeatureSymbology.Overrides | undefined =>
+        (ref as unknown as { getSymbologyOverrides(): FeatureSymbology.Overrides | undefined }).getSymbologyOverrides();
+      const primarySymbology = getSymbology(primaryBatchedRef);
+      const linkedSymbology = getSymbology(linkedBatchedRef);
+      expect(primarySymbology).not.to.be.undefined;
+      expect(linkedSymbology).not.to.be.undefined;
+
+      expect(primarySymbology!.isSubCategoryIdVisible("0x11")).to.be.true;
+      expect(primarySymbology!.isSubCategoryIdVisible("0x21")).to.be.false;
+      expect(linkedSymbology!.isSubCategoryIdVisible("0x21")).to.be.true;
+      expect(linkedSymbology!.isSubCategoryIdVisible("0x11")).to.be.false;
+
+      expect(primarySymbology!.defaultOverrides).to.equal(FeatureAppearance.defaults);
+      expect(linkedSymbology!.defaultOverrides).to.equal(linkedAppearance);
     } finally {
       sinon.restore();
       SpatialTileTreeReferences.create = createDefaultSpatialTileTreeReferences;

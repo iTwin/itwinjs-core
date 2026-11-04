@@ -9,7 +9,7 @@ import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, type MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  DisclosedTileTreeSet, formatAnimationBranchId,
+  DisclosedTileTreeSet, FeatureSymbology, formatAnimationBranchId,
   IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, SpatialIModelDisplayReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
@@ -79,6 +79,12 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
 
   public override getAppearanceProvider(): FeatureAppearanceProvider {
     return this;
+  }
+
+  protected override getSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
+    // Supply the owning display reference's visibility and appearance rules; the view's own symbology pertains to its
+    // primary reference. The model-visibility provider supplied by [[getAppearanceProvider]] supplements these overrides.
+    return this._args.iModelRef.getSymbologyOverrides();
   }
 
   protected override getClipVolume(): RenderClipVolume | undefined {
