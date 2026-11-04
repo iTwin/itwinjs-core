@@ -10907,14 +10907,16 @@ export namespace SubCategoriesCache {
         // (undocumented)
         get isEmpty(): boolean;
         // (undocumented)
-        protected _next?: QueueEntry;
+        protected _next: QueueEntry[];
         push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void;
         // (undocumented)
         protected _request?: SubCategoriesRequest;
     }
     // (undocumented)
     export class QueueEntry {
-        constructor(categoryIds: Id64Set, func: QueueFunc);
+        constructor(cache: SubCategoriesCache, categoryIds: Id64Set, func: QueueFunc);
+        // (undocumented)
+        readonly cache: SubCategoriesCache;
         // (undocumented)
         readonly categoryIds: Id64Set;
         // (undocumented)
