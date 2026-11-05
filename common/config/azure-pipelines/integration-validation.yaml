@@ -7,12 +7,13 @@
 #
 # | Lane                  | Pool / image           | Node | Core full-stack suites        | Owns coverage for                            |
 # | --------------------- | ---------------------- | ---- | ----------------------------- | -------------------------------------------- |
-# | Renderer_Linux_x64    | imodelNative-Debian12  | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Linux x64     |
-# | Renderer_Windows_x64  | windows-latest         | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on Windows x64   |
-# | Renderer_MacOS_arm64  | iModelTechMacArm       | 24.x | full (Chrome + Electron)      | Chrome + Electron rendering on macOS arm64   |
-# | Arch_Linux_arm64      | Platform-Debian12-ARM  | 24.x | full (Chrome + Electron)      | Linux arm64 architecture (incl. rendering)   |
+# | Renderer_Linux_x64    | imodelNative-Debian12  | 26.x | full (Chrome + Electron)      | Chrome + Electron rendering on Linux x64     |
+# | Renderer_Windows_x64  | windows-latest         | 26.x | full (Chrome + Electron)      | Chrome + Electron rendering on Windows x64   |
+# | Renderer_MacOS_arm64  | iModelTechMacArm       | 26.x | full (Chrome + Electron)      | Chrome + Electron rendering on macOS arm64   |
+# | Arch_Linux_arm64      | Platform-Debian12-ARM  | 26.x | full (Chrome + Electron)      | Linux arm64 architecture (incl. rendering)   |
 # | NodeCompat_20         | imodelNative-Debian12  | 20.x | Chrome only, no #graphics     | Node 20 backend/RPC/cross-layer compat       |
 # | NodeCompat_22         | imodelNative-Debian12  | 22.x | Chrome only, no #graphics     | Node 22 backend/RPC/cross-layer compat       |
+# | NodeCompat_24         | imodelNative-Debian12  | 24.x | Chrome only, no #graphics     | Node 24 backend/RPC/cross-layer compat       |
 #
 # Linux x64 lanes use the self-hosted 16-core imodelNative-Debian12 pool: hosted
 # ubuntu-latest agents have 2 cores, which fails ConcurrentQuery config tests
@@ -70,22 +71,22 @@ jobs:
       ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS: "1"
     strategy:
       matrix:
-        Renderer_Linux_x64_node_24_x:
+        Renderer_Linux_x64_node_26_x:
           imageName:
           poolName: "imodelNative-Debian12"
-          nodeVersion: 24.x
-        Renderer_Windows_x64_node_24_x:
+          nodeVersion: 26.x
+        Renderer_Windows_x64_node_26_x:
           imageName: windows-latest
           poolName:
-          nodeVersion: 24.x
-        Renderer_MacOS_arm64_node_24_x:
+          nodeVersion: 26.x
+        Renderer_MacOS_arm64_node_26_x:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
-          nodeVersion: 24.x
-        Arch_Linux_arm64_node_24_x:
+          nodeVersion: 26.x
+        Arch_Linux_arm64_node_26_x:
           imageName:
           poolName: "Platform-Debian12-ARM"
-          nodeVersion: 24.x
+          nodeVersion: 26.x
     pool:
       name: $(poolName)
       vmImage: $(imageName)
@@ -122,6 +123,8 @@ jobs:
           nodeVersion: 20.x
         NodeCompat_Linux_x64_node_22_x:
           nodeVersion: 22.x
+        NodeCompat_Linux_x64_node_24_x:
+          nodeVersion: 24.x
     # Self-hosted 16-core pool: hosted ubuntu-latest agents have 2 cores, which fails the
     # ConcurrentQuery config tests and slows builds/tests.
     pool: "imodelNative-Debian12"
@@ -135,8 +138,8 @@ jobs:
           nodeVersion: $(nodeVersion)
           coreFullStackTests: node-compat
           # Cache entries are keyed [os]-[arch]-[hash] without the Node version, so a
-          # cache hit here would restore lib output built under Node 24 and this lane
-          # would no longer prove that the packages build under Node 20/22.
+          # cache hit here would restore lib output built under Node 26 and this lane
+          # would no longer prove that the packages build under Node 20/22/24.
           rushBuildCacheEnabled: 0
 
       - script: npm test

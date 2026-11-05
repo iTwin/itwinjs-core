@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Schema differencing now reports a `ConflictingPropertyArrayBounds` conflict when the `minOccurs`/`maxOccurs` of an existing array property are narrowed. Widening the bounds is allowed and gets merged.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}
