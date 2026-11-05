@@ -57,14 +57,16 @@ LIMIT
 |           | long         | true      | 2     | long     | long         | undefined    | long     | Int64  | undefined          |
 |           | char         | true      | 3     | char     | char         | undefined    | string   | String | undefined          |
 
-| ECInstanceId | int | long | char |
-| ------------ | --- | ---- | ---- |
-| 0x14         | 20  | 20   | "20" |
-| 0x15         | 21  | 21   | "21" |
+| ECInstanceId | int | long | char   |
+| ------------ | --- | ---- | ------ |
+| 0x14         | 20  | 20   | "0x14" |
+| 0x15         | 21  | 21   | "0x15" |
 
 # Nested CAST
 
 - dataset: AllProperties.bim
+
+An Id cast to `VARCHAR` is hexadecimal text, and text cast to `LONG` keeps SQLite's rules, so the round trip returns `0`.
 
 ```sql
 SELECT
@@ -83,8 +85,8 @@ LIMIT
 
 | ECInstanceId | result |
 | ------------ | ------ |
-| 0x14         | 20     |
-| 0x15         | 21     |
+| 0x14         | 0      |
+| 0x15         | 0      |
 
 # IIF integer value
 

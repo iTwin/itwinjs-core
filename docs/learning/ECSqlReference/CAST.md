@@ -96,7 +96,7 @@ An integer, or text holding a decimal or `0x` hexadecimal number, can be cast to
 - Integers are kept as they are, including their sign bit.
 - Floating-point and enumeration values cannot be cast to an Id.
 
-Casting an Id to `TEXT` returns hexadecimal, matching its representation in ECSQL results and JSON. Cast through `LONG` for decimal text using SQLite's signed integer representation: `ECInstanceId::LONG::TEXT`.
+Casting an Id to `TEXT` returns hexadecimal, matching its representation in ECSQL results and JSON. Cast through `LONG` for decimal text using SQLite's signed integer representation: `ECInstanceId::LONG::TEXT`. Casting that hexadecimal text to `LONG` or `INTEGER` follows SQLite's rules and returns `0`, so cast it to an Id type instead, or cast the Id to `LONG` directly.
 
 ```sql
 SELECT 21::Id a, '0x15'::ClassId b, 'abc'::Id c
