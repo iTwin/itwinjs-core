@@ -491,10 +491,12 @@ describe("IModelWriteTest", () => {
       }
     };
     const str = new Array(1024).join("x");
+    // Measure only the size contributed by the element inserts so the test doesn't depend on BisCore table layouts.
+    const baselineSize = rwIModel[_nativeDb].getChangesetSize();
     insertElements(rwTxn, "Test2dElement", 1024, () => {
       return { s: str };
     });
-    assert.equal(1357648, rwIModel[_nativeDb].getChangesetSize());
+    assert.equal(1356840, rwIModel[_nativeDb].getChangesetSize() - baselineSize);
 
     rwTxn.saveChanges("user 1: data");
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
@@ -636,11 +638,13 @@ describe("IModelWriteTest", () => {
       }
     };
 
+    // Measure only the size contributed by the element inserts so the test doesn't depend on BisCore table layouts.
+    const baselineSize = rwIModel[_nativeDb].getChangesetSize();
     insertElements(rwTxn, "Test2dElement", 10, (n: number) => {
       return { s: `s-${n}` };
     });
 
-    assert.equal(3889, rwIModel[_nativeDb].getChangesetSize());
+    assert.equal(3081, rwIModel[_nativeDb].getChangesetSize() - baselineSize);
     rwTxn.saveChanges("user 1: data changeset");
 
     if (true || "push changes") {
