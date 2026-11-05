@@ -11,6 +11,8 @@ publish: false
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
+  - [Platform support](#platform-support)
+    - [Node.js 26 support](#nodejs-26-support)
 
 ## Frontend
 
@@ -135,3 +137,9 @@ Collection requires the upstream `nqueryus` counter with shared-download and pre
 Asynchronous query timing now includes previously omitted first retry attempts, discarded metadata-cache executions, and available native timings on initial failures. Client elapsed time uses a monotonic clock and includes rejected calls. Native timing reporting preserves fractional milliseconds. Reported totals can therefore increase; consumers should accept fractional values and must not interpret `backendCpuTime` as actual CPU usage or add overlapping timing fields together. Deprecated reader resets continue retaining lifetime statistics. Query quotas and error delivery are unchanged.
 
 See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for measurement boundaries, compatibility, and examples.
+
+## Platform support
+
+### Node.js 26 support
+
+In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 26](https://nodejs.org/en/blog/release/v26.13.0). Node.js 26 is not yet supported by `@itwin/core-mobile`.

@@ -1,13 +1,13 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.16.0-dev.5",
+  "version": "5.16.0-dev.6",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/express-server.js",
   "module": "lib/esm/express-server.js",
   "typings": "lib/cjs/express-server",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
@@ -41,29 +41,29 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/express": "^4.17.20",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~20.17.0",
-    "@types/sinon": "^17.0.2",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:testing",
+    "@types/express": "catalog:runtime",
+    "@types/mocha": "catalog:testing",
+    "@types/node": "catalog:build",
+    "@types/sinon": "catalog:testing",
     "@types/supertest": "^6.0.2",
-    "@types/express-ws": "^3.0.3",
-    "chai": "^4.3.10",
-    "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
-    "sinon": "^17.0.2",
+    "@types/express-ws": "catalog:types",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
+    "mocha": "catalog:testing",
+    "nyc": "catalog:testing",
+    "rimraf": "catalog:build",
+    "sinon": "catalog:testing",
     "supertest": "^7.0.0",
-    "typescript": "~5.6.2"
+    "typescript": "catalog:build"
   },
   "peerDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*"
   },
   "dependencies": {
-    "express": "^4.22.1",
+    "express": "catalog:runtime",
     "express-ws": "^5.0.2"
   },
   "nyc": {
