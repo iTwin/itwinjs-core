@@ -20,11 +20,17 @@ describe("CSRF Protection (Enabled)", () => {
     });
 
     const client = TestRpcInterface.getClient();
-    await client.startCSRFTest();
-    await client.csrfTestEnabled();
-    await client.stopCSRFTest();
-
-    await IModelApp.shutdown();
+    // Playwright 1.64's Chromium no longer accepts cross-origin Set-Cookie with fetch's default credentials,
+    // even with --disable-web-security. Seed the frontend cookie directly.
+    document.cookie = "XSRF-TOKEN=test; path=/";
+    try {
+      await client.startCSRFTest();
+      await client.csrfTestEnabled();
+      await client.stopCSRFTest();
+    } finally {
+      document.cookie = "XSRF-TOKEN=; path=/; max-age=0";
+      await IModelApp.shutdown();
+    }
   });
 });
 
@@ -37,10 +43,14 @@ describe("CSRF Protection (Disabled)", () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
 
     const client = TestRpcInterface.getClient();
-    await client.startCSRFTest();
-    await client.csrfTestDisabled();
-    await client.stopCSRFTest();
-
-    await IModelApp.shutdown();
+    document.cookie = "XSRF-TOKEN=test; path=/";
+    try {
+      await client.startCSRFTest();
+      await client.csrfTestDisabled();
+      await client.stopCSRFTest();
+    } finally {
+      document.cookie = "XSRF-TOKEN=; path=/; max-age=0";
+      await IModelApp.shutdown();
+    }
   });
 });

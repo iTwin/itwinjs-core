@@ -14,9 +14,7 @@ on:
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
   copilot-setup-steps:
-    # Pinned: @itwin/oidc-signin-tool postinstall uses Playwright <1.61, which fails on Ubuntu 26.04.
-    # Revert to ubuntu-latest once fixed: https://github.com/iTwin/auth-clients/issues/377
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     # Set the permissions to the lowest permissions possible needed for your steps.
     # Copilot will be given its own token for its operations.
@@ -34,7 +32,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: "24.x"
+          node-version: "26.x"
 
       - name: Configure Git identity
         run: |
