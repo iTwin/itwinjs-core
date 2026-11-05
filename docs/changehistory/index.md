@@ -1,181 +1,218 @@
+# 5.15.0 Change Notes
 
-# 4.10.0 Change Notes
-
-Table of contents:
-
-- [4.10.0 Change Notes](#4100-change-notes)
-  - [Revert timeline changes](#revert-timeline-changes)
-  - [Display](#display)
-    - [Instancing](#instancing)
-    - [Overriding line color](#overriding-line-color)
-    - [Context Reality model visibility](#context-reality-model-visibility)
-    - [Contour Display](#contour-display)
-  - [Interactive Tools](#interactive-tools)
-    - [Element Locate](#element-locate)
-    - [Snapping within section drawings](#snapping-within-section-drawings)
-  - [Presentation](#presentation)
-    - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+<!-- prettier-ignore -->
+- [5.15.0 Change Notes](#5150-change-notes)
+  - [Backend](#backend)
+    - [Faster asynchronous ECSQL paging and result conversion](#faster-asynchronous-ecsql-paging-and-result-conversion)
+    - [Vertical CRS discovery](#vertical-crs-discovery)
+    - [Opt-in fallback for missing navigation relationship class ids](#opt-in-fallback-for-missing-navigation-relationship-class-ids)
+    - [Pre-push validation](#pre-push-validation)
+    - [Stricter briefcase file deletion](#stricter-briefcase-file-deletion)
+    - [IdSet accepts ids with the high bit set](#idset-accepts-ids-with-the-high-bit-set)
+    - [Native ChangeUnifier](#native-changeunifier)
+    - [Batched relationship lookups](#batched-relationship-lookups)
+  - [Common](#common)
+    - [Step-interpolated render schedule keyframes no longer apply one keyframe late](#step-interpolated-render-schedule-keyframes-no-longer-apply-one-keyframe-late)
+    - [BeAsyncEvent](#beasyncevent)
+    - [Persisted entity properties](#persisted-entity-properties)
+  - [Schemas](#schemas)
+    - [SchemaView: property overrides use metadata of the overridden property](#schemaview-property-overrides-use-metadata-of-the-overridden-property)
   - [Quantity](#quantity)
-  - [Node 22 support](#node-22-support)
-  - [Electron 33 support](#electron-33-support)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-backend](#itwincore-backend)
-    - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/core-quantity](#itwincore-quantity)
-    - [@itwin/presentation-common](#itwinpresentation-common)
+    - [Built-in length ratio units for drawing scales](#built-in-length-ratio-units-for-drawing-scales)
+    - [Async formats provider setter](#async-formats-provider-setter)
+  - [Platform support](#platform-support)
+    - [Electron 45 support](#electron-45-support)
+  - [Breaking changes](#breaking-changes)
+    - [Extensible sub-model class validation](#extensible-sub-model-class-validation)
+    - [Mobile RPC authentication](#mobile-rpc-authentication)
+    - [Non-finite geographic conversion results](#non-finite-geographic-conversion-results)
+    - [Preserving geographic coordinate systems during property updates](#preserving-geographic-coordinate-systems-during-property-updates)
+    - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
 
-## Revert timeline changes
+## Backend
 
-At present, the sole method to reverse a defective changeset is to remove it from the iModel hub, which can lead to numerous side effects. A preferable approach would be to reverse the changeset in the timeline and introduce it as a new changeset. Although this method remains intrusive and necessitates a schema lock, it is safer because it allows for the reversal to restore previous changes, ensuring that nothing is permanently lost from the timeline.
+### Faster asynchronous ECSQL paging and result conversion
 
-[BriefcaseDb.revertAndPushChanges]($backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
+Asynchronous ECSQL readers can now resume unfinished concurrent-query statements between contiguous batches, avoiding repeated scans through preceding rows and repeated sorting. A continuation briefly waits for a busy owning worker before falling back to another available worker. Reuse is temporary and bounded; expiration, cache eviction, or an observed committed data change returns paging to the existing LIMIT/OFFSET path.
 
-Some detail and requirements are as following.
+Concurrent queries also reduce repeated metadata lookups and temporary JSON allocations when converting supported scalar and composite results. Point-coordinate reuse and more efficient ID formatting reduce per-row work without changing the documented result formats.
 
-- When invoking the iModel, it must not have any local modifications.
-- The operation is atomic; if it fails, the database will revert to its previous state.
-- The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
-- If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
-- Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
+Reuse is automatic for eligible worker queries in WAL databases. Primary-connection queries, databases not using WAL journal mode (even when opened read-only), and connections with attached data databases continue re-executing each batch. Nondeterministic expressions may be evaluated once for a retained execution instead of once per batch, so use deterministic queries and ordering rather than depending on batch boundaries for re-evaluation. Retained statements can hold sorter resources and delay WAL checkpoints until released.
 
-## Display
+See [Asynchronous paging](../learning/backend/ExecutingECSQL.md#asynchronous-paging) for behavior and resource considerations.
 
-### Instancing
+### Vertical CRS discovery
 
-Some scenarios involve displaying the same basic graphic repeatedly. For example, imagine you are writing a [Decorator]($frontend) that displays stop signs at many intersections along a road network. You might create one [RenderGraphic]($frontend) for each individual stop sign and draw them all, but doing so would waste a lot of memory by duplicating the same geometry many times, and negatively impact your frame rate by invoking many draw calls.
+The new beta [getAvailableVerticalCoordinateReferenceSystems]($backend) function returns an array of available vertical coordinate reference systems. Results can be filtered by geographic point or extent and by unit name. Unlike the similar [getAvailableCoordinateReferenceSystems]($backend) function, this function is not `async`.
 
-WebGL provides [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html) to more efficiently support this kind of use case. You can define a single representation of the stop sign graphic, and then tell the renderer to draw it many times at different locations, orientations, and scales. iTwin.js now provides APIs that make it easy for you to create instanced graphics:
+### Opt-in fallback for missing navigation relationship class ids
 
-- [GraphicTemplate]($frontend) defines what the graphic should look like. You can obtain a template from [GraphicBuilder.finishTemplate]($frontend), [RenderSystem.createTemplateFromDescription]($frontend), or [readGltfTemplate]($frontend).
-- [RenderInstances]($frontend) defines the set of instances of the template to draw. In addition to a [Transform]($geometry), each instance can also override aspects of the template's appearance like color and line width, along with a unique [Feature]($common) to permit each instance to behave as a discrete entity. You can create a `RenderInstances` using [RenderInstancesParamsBuilder]($frontend).
-- [RenderSystem.createGraphicFromTemplate]($frontend) produces a [RenderGraphic]($frontend) from a graphic template and a set of instances.
+Added `ECSQLOPTIONS NAV_REL_CLASSID_FALLBACK` for legacy navigation properties that contain an `Id` but no `RelECClassId`. When enabled, end-table relationship queries and `ECVLib.Relations()` report the relationship declared by the navigation property. Existing behavior is unchanged when the option is omitted, and directly selecting the navigation property's `RelECClassId` still returns its stored `NULL` value.
 
-`GraphicTemplate` and `RenderInstances` are both reusable - you can produce multiple sets of instances of a given template, and use the same set of instances with multiple different templates.
+The option adds compatibility predicates that can result in less efficient query plans, so applications should enable it only for queries that need to read affected legacy data. `ECVLib.Relations()` also requires `ENABLE_EXPERIMENTAL_FEATURES`.
 
-For the stop sign example described above, you might have a [glTF model](https://en.wikipedia.org/wiki/GlTF) representing a stop sign and an array containing the position of each stop sign. You could then use a function like the following to produce a graphic that draws the stop sign at each of those positions.
+The ECSQL version was bumped to `2.0.4.2`.
 
-```ts
-[[include:Gltf_Instancing]]
-```
+### Pre-push validation
 
-### Overriding line color
+The new [TxnManager.onPrePushValidation]($backend) [asynchronous event](#beasyncevent) allows listeners to be notified just before a changeset is pushed to iModel Hub. The event allows last-minute edits to the iModel as well as the possibility to forbid the push to proceed.
 
-iTwin.js allows you to [dynamically override](https://www.itwinjs.org/learning/display/symbologyoverrides/) aspects of the appearance of geometry at display time. However, unlike [SubCategoryAppearance]($common) and [GeometryParams]($common), which can distinguish between "line color" and "fill color", [FeatureAppearance]($common) only provides a single color override that applies to both types of geometry.
+### Stricter briefcase file deletion
 
-To address this discrepancy, we've [added](https://github.com/iTwin/itwinjs-core/pull/7251) a way to dynamically override the color and transparency of linear geometry independently from the rest of the geometry. Linear geometry includes open curves, line strings, point strings, and the outlines of planar regions. [FeatureAppearance.lineRgb]($common) controls the color of linear geometry, and [FeatureAppearance.lineTransparency]($common) controls the transparency. Both of these properties can be `undefined`, in which case the existing `rgb` or `transparency` property affects linear geometry - just as it always has. Or, they can be `false`, indicating that no color/transparency override is applied to linear geometry. Or, they can specify a transparency value or `RgbColor` that applies only to linear geometry.
+[NativeApp.deleteBriefcase]($frontend) now only deletes files that are inside the briefcase cache directory or that are valid iModels. If the supplied path refers to an existing file that is neither, it throws an [IModelError]($common) with [IModelStatus.BadRequest]($bentley) and deletes nothing. If the path does not exist and is outside the briefcase cache, the call does nothing.
 
-### Context Reality model visibility
+[BriefcaseManager.deleteBriefcaseFiles]($backend) no longer deletes every file in the same directory whose name starts with the briefcase's file name. Only files named `<briefcase file name>-*` or `<briefcase file name>.*` (e.g. `-wal`, `-shm`, `-locks`, `.Tiles`) are deleted along with the briefcase.
 
-Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag. Previous implementation requiered context reality models to be detached in order to hide it from the scene.
+### IdSet accepts ids with the high bit set
 
-### Contour Display
+The ECSQL `IdSet` virtual table rejected valid ids at or above `0x8000000000000000`. Element ids reserved by schema synchronization (`0xfffff6…`) are in that range, as are ids created by any briefcase whose id is `0x800000` or higher (element ids store the 24-bit briefcase id in their top bits). Queries such as `SELECT id FROM IdSet(?)` failed with `IdSet vtab: The element with index N is invalid`. When the set was given as hex strings in a JSON array and was therefore accepted, `WHERE id = ?` and `WHERE id IN (...)` filters on `IdSet` still returned no rows for those ids. `IdSet` now returns these ids whether they are bound with [QueryBinder.bindIdSet]($common), [ECSqlBinder.bindIdSet]($backend), or passed as a JSON array.
 
-A new rendering technique has been added to iTwin.js which allows a user to apply specific contour line renderings to subcategories within a scene.
+Because SQLite stores ids as signed 64-bit integers, a negative integer in an `IdSet` JSON array is now read as the id with the same bits. For example, `IdSet('[-1]')` returns `0xffffffffffffffff` instead of failing. `0`, non-integer numbers, and negative numbers written as strings are still rejected. JavaScript numbers cannot represent ids above 2^53 exactly, so pass ids as hex strings or bind them with `bindIdSet` rather than building a JSON array from JavaScript numbers.
 
-iTwin.js now provides the following API to use this feature:
+### Native ChangeUnifier
 
-- [DisplayStyle3dSettings]($common) now has a `contours` property which contains all of the subcategories-to-styling association data necessary to enable this feature. That object is of type [ContourDisplay]($common).
-- [ContourDisplay]($common) defines how contours are displayed in the iModel based on a list of [ContourGroup]($common) objects in the `groups` property. Whether or not contours will be displayed in the viewport is controlled by this object's `displayContours` property, which defaults to false.
-- [ContourGroup]($common) describes an association of subcategories to contour styling. It contains a set of subcategory IDs titled `subCategories`. Those subcategories will have the contour styling within the same group's [Contour]($common) `contourDef` object applied to them.
-- [Contour]($common) describes the rendering settings that apply to a specific set of subcategories within a [ContourGroup]($common). This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other. The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied. The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather its occurence is determined by the major interval count thusly: every nth contour will be styled as a major contour where n = the major interval count. For example, if you set this number to 1, every contour will be styled as a major contour. When it is 2, every other contour will be styled as a major contour, and so on. The properties describing how major and minor contours are styled are listed here:
-  - `majorStyle` is the style that a major contour line will use. Defaults to an instantation of [ContourStyle]($common) using `pixelWidth` of 2 and default values for the other properties.
-  - `minorStyle` is the style that a minor contour line will use. Defaults to an instantation of [ContourStyle]($common) using default values for the properties.
-  - `minorInterval` is the interval for the minor contour occurrence in meters; these can be specified as fractional. Defaults to 1. If a value <= 0 is specified, this will be treated as 1 meter.
-  - `majorIntervalCount` is the count of minor contour intervals that define a major interval (integer > 0). A value of 1 means no minor contours will be shown, only major contours. Defaults to 5. If a value < 1 is specified, this will be treated as 1. If a non-integer value is specified, it will be treated as if it were rounded to the nearest integer.
-  - `showGeometry`, if true, shows underlying geometry along with the associated contours. If false, only shows the contours, not the underlying geometry. Defaults to true.
-- [ContourStyle]($common) describes the style settings used by either a major or minor contour. It contains the following properties:
-  - `color` is a color used by the major or minor contour of type [RgbColor]($common). Defaults to black.
-  - `pixelWidth` is the width in pixels of a major or minor contour line, using range 1 to 8.5 in 0.5 increments. Defaults to 1.
-  - `pattern` is the line pattern applied to a major or minor contour line of type [LinePixels]($common). Defaults to [LinePixels.Solid]($common).
+The new `@beta` [ChangeUnifier]($backend) merges the per-table rows of [ChangesetReader]($backend)s into complete EC instances in native code. Memory stays bounded because merged data beyond a memory budget is spilled to temporary files, and `propNames` keeps only the properties you need. See [ChangeUnifier — native merging with bounded memory](../learning/backend/ChangesetReader.md#changeunifier--native-merging-with-bounded-memory) for usage and how it differs from [PartialChangeUnifier]($backend).
 
-Consult the following code for an example of enabling and configuring contour display in iTwin.js:
+### Batched relationship lookups
+
+The new `@beta` [Relationships.queryInstancesProps]($backend) and [Relationships.queryInstances]($backend) methods look up many relationships of the same class with at most two queries. Each criterion is either a relationship id or a source and target id pair, and both kinds can be mixed. The returned array has one entry per criterion, in the same order, with `undefined` where no relationship was found. The results match calling [Relationships.tryGetInstanceProps]($backend) or [Relationships.tryGetInstance]($backend) for each criterion.
 
 ```ts
-[[include:Setup_ContourDisplay]]
+const rels = await iModel.relationships.queryInstances<ElementGroupsMembers>(ElementGroupsMembers.classFullName, [relId, { sourceId, targetId }]);
 ```
 
-Here is a sample screenshot of applying some contour display settings to a terrain iModel:
+By default, the queries run on the primary connection, so unsaved changes are visible. Pass `{ usePrimaryConn: false }` to use a concurrent query connection, which only sees saved changes.
 
-![contour display example](./assets/contour-display.png "Example of applying contour line settings to an iModel of some terrain")
+## Common
 
-## Interactive Tools
+### Step-interpolated render schedule keyframes no longer apply one keyframe late
 
-### Element Locate
+Querying a [RenderSchedule.Timeline]($common) at a time that exactly matches one of its keyframes returned the *preceding* keyframe's value when that preceding keyframe used [RenderSchedule.Interpolation.Step]($common). It now returns the matched keyframe's own value. This affects [RenderSchedule.Timeline.getVisibility]($common), [RenderSchedule.Timeline.getColor]($common), [RenderSchedule.Timeline.getAnimationTransform]($common), and [RenderSchedule.Timeline.getCuttingPlane]($common).
 
-After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
+For a step visibility timeline with keyframes `100 -> 80`, `200 -> 50`, and `300 -> 0`, querying at time 200 previously returned 80 and now returns 50.
 
-![locate example](./assets/element-locate.png "Example of using reset to accept obscured element")
+The change only affects queries at a time exactly equal to a keyframe's time, only for keyframes other than the first and last, and only when the preceding keyframe uses [RenderSchedule.Interpolation.Step]($common).
 
-### Snapping within section drawings
+### BeAsyncEvent
 
-A [SectionDrawing]($backend) view renders the contents of a [SpatialViewDefinition]($backend) in the context of a [DrawingViewDefinition]($backend). Tools that operate on the drawing view may want to be able to snap to geometry within the "attached" spatial view. For example, you may wish to attach an annotation to a spatial element. [AccuSnap]($frontend) [now automatically snaps](https://github.com/iTwin/itwinjs-core/pull/7291) to the geometry based on the current snap settings when mousing over geometry within the section drawing attachment. This works when viewing the drawing directly, or indirectly through a [ViewAttachment]($backend) on a sheet.
+[BeAsyncEvent]($bentley) is similar to [BeEvent]($bentley) in that it allows any number of listeners to be notified when something happens. The difference is that, in the case of [BeAsyncEvent]($bentley), the listener is expected to return a `Promise`. Only after the returned `Promise` settles is the listener considered to have finished handling the event.
 
-You can access the [HitPath]($frontend) describing the [ViewAttachment]($backend) and/or [SectionDrawing]($backend) through which a hit was obtained via [[HitDetail.path]].
+### Persisted entity properties
 
-## Presentation
+The new [Persisted]($common) type represents entity properties with a required ID, and [isPersisted]($common) checks whether arbitrary entity properties have a valid ID. Model and element property APIs that return persisted entities now expose this stronger type, so callers can remove unnecessary ID checks and non-null assertions from those results.
 
-### Calculated properties specification enhancements
+## Schemas
 
-A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+### SchemaView: property overrides use metadata of the overridden property
+
+In [SchemaView](../learning/metadata/SchemaView.md), when a class overrides a property without specifying a category or KindOfQuantity, `category` and `kindOfQuantity` on `SchemaView.Property` now return the values of the overridden property, matching the rest of the EC APIs. The new `isEffectivelyHidden` also considers `HiddenProperty` on overridden properties. Label, description and priority still come from the overriding declaration.
+
+Classes using a mixin that overrides a property of its base mixin now get the overriding declaration.
 
 ## Quantity
 
-- Add support for 'Ratio' format type (e.g. "1:2")
-  - Example: Formatting a Ratio
-  - Assuming that a `UnitsProvider` has been registered and initialized, here's how to format a ratio:
+### Built-in length ratio units for drawing scales
+
+The built-in unit set in `@itwin/core-quantity` now follows BIS Units schema 01.00.12, which adds three `LENGTH_RATIO` units: `Units.DECIMAL_LENGTH_RATIO`, `Units.M_PER_M_LENGTH_RATIO` (label `m:m`), and `Units.IN_PER_FT_LENGTH_RATIO` (label `in:ft`). These are intended for persisting drawing and sheet scales as paper length divided by model length, so a `1:100` scale is stored as `0.01` and a `1/4" = 1'` scale is stored as `1/48` in `m:m` (or `0.25` in `in:ft`).
+
+[UnitConversions]($quantity) can convert between these units, and [getDefaultPersistenceUnit]($quantity) now accepts `Phenomena.LENGTH_RATIO` and returns `Units.M_PER_M_LENGTH_RATIO`. Previously `LENGTH_RATIO` was excluded from that helper because no built-in default existed.
+
+### Async formats provider setter
+
+[IModelApp.setFormatsProvider]($frontend) replaces the formats provider, optionally sets the active unit system through [SetFormatsProviderOptions.unitSystem]($frontend), and returns a promise that resolves after the [QuantityFormatter]($frontend) has rebuilt its formatting and parsing caches. Use it instead of assigning [IModelApp.formatsProvider]($frontend) when you need to know that formatting reflects the new provider.
+
+- The provider and unit system take effect immediately: `IModelApp.formatsProvider` lookups, including `getFormatSync`, use the new provider, and `IModelApp.quantityFormatter.activeUnitSystem` reports the new unit system before the promise settles.
+- If a later `setFormatsProvider` call is made before the reload finishes, the earlier promise rejects. The latest provider wins.
+- If the reload fails, the promise rejects and the new provider stays installed. The formatter remains usable, but some cached formats may still come from the previous provider.
+- The promise also rejects if the application shuts down before the reload finishes.
+
+Assigning `IModelApp.formatsProvider` still works and still starts the same reload, but it gives you nothing to await.
+
+## Platform support
+
+### Electron 45 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 45](https://www.electronjs.org/blog/electron-45-0).
+
+## Breaking changes
+
+### Extensible sub-model class validation
+
+Validation of which model classes may sub-model an element has moved from the native library to [Element.onSubModelInsert]($backend).
+
+The built-in rules remain:
+
+- [Sheet]($backend) accepts [SheetModel]($backend) and its subclasses.
+- [Drawing]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [TemplateRecipe2d]($backend) accepts [DrawingModel]($backend) and its subclasses.
+- [SectionDrawing]($backend) accepts [DrawingModel]($backend), [GraphicalModel3d]($backend), and their subclasses.
+
+Domain element classes implementing `bis:ISubModeledElement` may restrict their permitted sub-model classes by overriding the protected static [Element.allowedSubModelClasses]($backend) getter. The default value, `undefined`, permits any model class. A model class derived from an allowed class is also accepted, including a generated JavaScript class for an unregistered EC subclass.
 
 ```ts
-const ratioFormatProps: FormatProps = {
-    type: "Ratio",
-    ratioType: "OneToN",  // Formats the ratio in "1:N" form
-    composite: {
-        includeZero: true,
-        units: [
-            { name: "Units.HORIZONTAL_PER_VERTICAL" },
-        ],
-    },
-};
-
-const ratioFormat = new Format("Ratio");
-ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
+class SheetPrototype extends DefinitionElement {
+  protected static override get allowedSubModelClasses(): Array<EntityClassType<Model>> {
+    return [SheetModel];
+  }
+}
 ```
 
-- Add support for unit inversion during unit conversion
+The following behavior changes apply:
 
-- Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
-- The previous applies to azimuthBase as well, if provided.
+- Inserting a disallowed model now throws [IModelError]($common) with [IModelStatus.WrongModel]($bentley). The corresponding native checks previously returned `IModelStatus.BadElement`.
+- An override of [Element.onSubModelInsert]($backend) must call `super.onSubModelInsert(arg)` to retain inherited validation. An override that does not call `super` replaces that validation.
+- Missing modeled elements and elements that do not implement `bis:ISubModeledElement` continue to be rejected by the native library.
 
-## Node 22 support
+This functionality requires the matching `@bentley/imodeljs-native` version distributed with `@itwin/core-backend`. Combining a native version containing the relaxed checks with an older `@itwin/core-backend` removes the built-in `Sheet` and `Drawing` restrictions.
 
-iTwin.js now officially supports Node 22 starting with LTS version of 22.11.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
+### Mobile RPC authentication
 
-## Electron 33 support
+Mobile RPC WebSocket connections now require a random per-launch token, preventing other applications on the device from accessing the backend through loopback. Connections without the token are rejected before RPC processing or pending-message delivery.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 33](https://www.electronjs.org/blog/electron-33-0).
+Upgrade the mobile native runtime together with both the frontend and backend copies of `@itwin/core-mobile`. The secured transport cannot use older native runtimes that do not deliver the token, and older frontends cannot connect to the secured backend. There is no unauthenticated fallback. Updated native runtimes remain compatible with older frontend/backend pairs.
 
-## API deprecations
+No Mobile SDK changes are required when using the existing native host startup paths. On iOS, register the WebView with `IModelJsHost` before loading the frontend so the native host can inject the token at document start. On Android, `IModelJsHost.loadEntryPoint` supplies the token in the frontend URL fragment. Both native hosts supply the token when reconnecting after background suspension.
 
-### @itwin/appui-abstract
+Custom native hosts must deliver the backend token to the trusted frontend out of band, using `window.__iTwinJsRpcToken` or the `rpcToken` URL fragment parameter, and include it as the second argument to `window._imodeljs_rpc_reconnect`. Do not obtain the token over the unauthenticated socket or include it in logs.
 
-- `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
+### Non-finite geographic conversion results
 
-- `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
+The GCS-based single-point and batch conversion methods on [IModelConnection]($frontend) now reject non-finite returned coordinates with `GeoServiceStatus.CSMapError`, even if the conversion reports success. Previously, coordinate normalization could turn an invalid ordinate into zero or return an infinite value. Finite successful results and the existing handling of failure statuses are unchanged. OPC point-cloud placement now warns and uses zero vertical correction when its computed correction is non-finite.
 
-### @itwin/core-backend
+Handle these rejected promises instead of relying on normalized invalid elevations. Applications that deliberately use partial conversion results should use [GeoConverter]($frontend), inspect each [PointWithStatus]($common), and validate the ordinates they need. Status `26` (`GeoCoordStatus.VerticalDatumConvertError`) permits horizontal use but does not provide a reliable converted elevation, even when Z is finite. Connection convenience methods continue to reject this status; OPC's warning and zero-correction fallback is approximate display placement, not successful vertical conversion.
 
-- [IModelHost.snapshotFileNameResolver]($backend) and [FileNameResolver]($backend) have been deprecated. Make sure to provide resolved file path to [SnapshotConnection.openFile]($frontend).
+After fixing unavailable grid resources, do not reuse a retained converter's cached failure. Finish outstanding requests and obtain a fresh converter from `GeoServices.getConverter` to retry.
 
-### @itwin/core-frontend
+### Preserving geographic coordinate systems during property updates
 
-- [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
+[EditTxn.updateIModelProps]($backend), [EditTxn.updateProjectExtents]($backend), and [EditTxn.updateEcefLocation]($backend) no longer replace an unchanged geographic coordinate system. Unrelated property writes preserve the complete stored CRS definition without re-resolving its dictionary identifiers, including when its workspace dictionary is unavailable. Intentionally changed CRS definitions continue to be persisted.
 
-### @itwin/core-quantity
+Do not rely on repeated property updates to re-resolve an unchanged CRS against a changed dictionary. Explicitly set a changed CRS definition when replacing the stored CRS is intended. Abandoning edits, undo, and redo now reload the cached geographic coordinate system from the database; explicitly reapply an abandoned CRS edit if it should be saved later. See [Updating iModel properties](../learning/backend/EditTxn.md#updating-imodel-properties).
 
-- Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
+CRS-restoration notifications reject transaction writes, including implicit writes, so listeners cannot write abandoned edits back to the database. Defer follow-up edits until restoration completes.
 
-- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
+### Bulk Element Deletion API changes
 
-### @itwin/presentation-common
+[EditTxn.deleteElements]($backend) *(beta)* is now **all-or-nothing**. Previously the call deleted whatever it could and returned `PartialSuccess` with the ids it had to skip. Now, if any element in the expanded delete set (requested elements plus their children and sub-model contents) is still referenced from *outside* the set, nothing is deleted and the status is `ConstraintViolation`. The validation runs before anything is modified, so a rejected call leaves the iModel and the current txn untouched.
 
-- All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
+```ts
+const result = txn.deleteElements(ids);
+if (result.status === BulkDeleteElementsStatus.ConstraintViolation) {
+  for (const failure of result.failures)
+    console.log(`${failure.elementId}: ${BulkDeleteFailureReason[failure.reason]}`);
+}
+```
+
+Changes to the beta types:
+
+- `BulkDeleteElementsStatus.PartialSuccess` has been **removed**. The enum is now `Success` (0), `ConstraintViolation` (1) and `DeletionFailed` (2). Code that handled `PartialSuccess` should handle `ConstraintViolation` instead - and note that in that case *nothing* was deleted.
+- New [BulkDeleteElementsResult.failures]($backend): a per-element report. Each [BulkDeleteFailure]($backend) carries the element id, a [BulkDeleteFailureReason]($backend) (`ReferencedByForeignKey`, `DefinitionInUse`, `ProtectedElement` or `ReadOnlyDomain`). Only the *direct* violators are reported. Because the whole expanded set is validated, a reported element may be a child or sub-model member that was **not** in the `ids` you passed in; its requested ancestor is not listed separately. For example, requesting `[parent]` when `parent`'s child is the CodeScope of an element outside the set reports the *child*, not `parent`.
+- `BulkDeleteElementsResult.failedIds` is deprecated in favor of `failures`. Its contents have changed:
+  - On `ConstraintViolation` it holds the unique element ids appearing in `failures`. As described above, these may include cascaded descendants that were not in the requested `ids`, so `failedIds` is no longer guaranteed to be a subset of the input. It is never empty on `ConstraintViolation`, so existing `failedIds.size > 0` checks still detect a rejected delete. However, it no longer lists everything left undeleted: for input `[blocked, independent]`, both remain undeleted while `failedIds` reports only `blocked`. Callers that filter this list to existing elements and throw still detect rejection, but their error reports omit other undeleted elements.
+  - On `DeletionFailed` it holds every requested id, matching the previous behavior for this status, so callers that only check `failedIds.size > 0` still detect the failure. The iModel may be partially modified in this case and the caller must abandon the current txn.
+  - On `Success` it is empty.
+- `BulkDeleteElementsArgs.skipFKConstraintValidations` is deprecated and **ignored**. Skipping the validation pass could leave the iModel with dangling references (e.g. a deleted GeometryPart still used by a geometry stream), so that behavior was removed. The option object is still accepted so existing calls keep compiling.
+
+If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
+
+See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.

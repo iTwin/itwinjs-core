@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Wed, 04 Nov 2026 17:35:57 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:47:36 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:36 GMT
+
+### Updates
+
+- Allow Id64.iterator, Id64.iterable, Id64.getFirst, Id64.sizeOf, and Id64.has to accept read-only arrays and sets of Id64 strings.
+- Added BeAsyncEvent.
 
 ## 5.14.6
 Wed, 04 Nov 2026 17:35:14 GMT
