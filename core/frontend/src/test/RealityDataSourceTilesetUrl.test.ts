@@ -73,4 +73,28 @@ describe("RealityDataSourceTilesetUrl", () => {
     expect(rdSource?.getTileContentType("tile.glb?referer=tileset.json")).toEqual("tile");
     expect(rdSource?.getTileContentType("file:///c:/path/to/tileset.json")).toEqual("tileset");
   });
+
+  describe("getTileUrl", () => {
+    class TestTilesetUrlImpl extends RealityDataSourceTilesetUrlImpl {
+      public constructor(url: string) {
+        super({ sourceKey: { format: "", id: url, provider: RealityDataProvider.TilesetUrl } });
+        this.setBaseUrl(url);
+      }
+    }
+
+    const root = "https://acct.blob.core.windows.net/container/dir/tileset.json?sv=1&sig=secret";
+
+    it("appends root search params to relative and same-origin URLs", () => {
+      const source = new TestTilesetUrlImpl(root);
+      expect(source.getTileUrl("tile.glb")).toEqual("https://acct.blob.core.windows.net/container/dir/tile.glb?sv=1&sig=secret");
+      expect(source.getTileUrl("https://acct.blob.core.windows.net/container/other/tile.glb")).toEqual("https://acct.blob.core.windows.net/container/other/tile.glb?sv=1&sig=secret");
+    });
+
+    it("does not forward root search params to a different origin", () => {
+      const source = new TestTilesetUrlImpl(root);
+      expect(source.getTileUrl("https://evil.example.com/tile.glb")).toEqual("https://evil.example.com/tile.glb");
+      expect(source.getTileUrl("http://acct.blob.core.windows.net/container/dir/tile.glb")).toEqual("http://acct.blob.core.windows.net/container/dir/tile.glb");
+      expect(source.getTileUrl("https://acct.blob.core.windows.net:8443/container/dir/tile.glb")).toEqual("https://acct.blob.core.windows.net:8443/container/dir/tile.glb");
+    });
+  });
 });

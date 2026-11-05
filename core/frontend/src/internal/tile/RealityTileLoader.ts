@@ -111,7 +111,7 @@ export abstract class RealityTileLoader {
   /** The base URL the glTF reader should resolve relatively-referenced resources (e.g. external images) against.
    * Prefer the tile's own content URL so that images referenced relative to the content (typical of JSON `.gltf` tiles)
    * resolve correctly, rather than against the tileset root. The tileset's query/authentication parameters (e.g.
-   * `?sig=abc`) are preserved on the returned URL: the data source appends them to every tile request, and the glTF
+   * `?sig=abc`) are preserved on the returned URL when it shares the tileset's origin: the data source appends them to every tile request, and the glTF
    * reader re-applies the base URL's query string to each relatively-referenced resource (see `GltfReader.resolveUrl`),
    * so external resources must be fetched with the same parameters.
    */
@@ -123,8 +123,10 @@ export abstract class RealityTileLoader {
 
       try {
         const resolved = new URL(tile.contentUrl, treeBaseUrl);
-        if ("" === resolved.search)
-          resolved.search = new URL(treeBaseUrl).search;
+        const base = new URL(treeBaseUrl);
+        // Only inherit the tileset's query (which may contain credentials) on the tileset's own origin.
+        if ("" === resolved.search && resolved.origin === base.origin)
+          resolved.search = base.search;
         return resolved.toString();
       } catch {
         // treeBaseUrl is not a valid absolute base against which to resolve contentUrl; fall back to the tree base URL.
