@@ -1,6 +1,13 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Wed, 04 Nov 2026 17:36:46 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:37 GMT
+
+### Updates
+
+- Update Units Schema to 01.00.12.
 
 ## 5.14.6
 Wed, 04 Nov 2026 17:35:14 GMT
