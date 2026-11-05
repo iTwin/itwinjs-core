@@ -83,19 +83,16 @@ function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
   }
 }
 
-// Launch the Electron this package depends on. Every package takes Electron from the repository's
-// `electron` catalog, so this is the same version consumers install.
-const bridgeRequire = createRequire(import.meta.url);
-
-/** Resolve the Electron executable the provider launches. The `electron` package's main export is
- * the path to its executable; it downloads the binary on first use if it is missing.
+/** Resolve the Electron executable the provider launches: this package's own `electron` dependency,
+ * the repository's `electron` catalog version. The package's main export is the executable path;
+ * it downloads the binary on first use if it is missing.
  * @internal
  */
 export function resolveElectronBinary(override?: string): string {
   if (override !== undefined)
     return override;
 
-  const electronBinary: unknown = bridgeRequire("electron");
+  const electronBinary: unknown = createRequire(import.meta.url)("electron");
   if (typeof electronBinary !== "string")
     throw new Error("The Electron package did not resolve to an executable path.");
   return electronBinary;
