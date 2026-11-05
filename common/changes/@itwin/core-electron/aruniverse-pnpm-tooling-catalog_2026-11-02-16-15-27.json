@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/core-electron"
+    }
+  ],
+  "packageName": "@itwin/core-electron",
+  "email": "aruniverse@users.noreply.github.com"
+}

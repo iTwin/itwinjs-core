@@ -542,6 +542,27 @@ describe("RealityTileLoader", () => {
     expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?token=xyz");
   });
 
+  it("should not forward the tileset's query to a cross-origin content URL or its relative resources", async () => {
+    let readerBaseUrl: string | undefined;
+    let bufferUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        bufferUrl = (this as any).resolveUrl("buffer.bin");
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "https://evil.example.com/model.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(readerBaseUrl).to.equal("https://evil.example.com/model.gltf");
+    expect(bufferUrl).to.equal("https://evil.example.com/buffer.bin");
+  });
+
   it("should route JSON glTF content through the render path with the correct base URL via the real content-loading entrypoint", async () => {
     let readerBaseUrl: string | undefined;
     vi.spyOn(GltfGraphicsReader.prototype, "read")
