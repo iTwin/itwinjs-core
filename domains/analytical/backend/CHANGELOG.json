@@ -2,6 +2,12 @@
   "name": "@itwin/analytical-backend",
   "entries": [
     {
+      "version": "5.15.0",
+      "tag": "@itwin/analytical-backend_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:36 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.6",
       "tag": "@itwin/analytical-backend_v5.14.6",
       "date": "Wed, 04 Nov 2026 17:35:14 GMT",
