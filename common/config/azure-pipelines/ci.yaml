@@ -27,7 +27,7 @@ jobs:
   - job:
     strategy:
       matrix:
-        "Windows_Node_24":
+        "Windows_Node_26":
           OS: windows-latest
         "Linux_Node_24":
           OS: ubuntu-latest
@@ -46,4 +46,4 @@ jobs:
       - checkout: self
       - template: ./templates/core-build.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 26.x
