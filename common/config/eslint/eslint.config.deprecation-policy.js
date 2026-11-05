@@ -23,11 +23,7 @@ module.exports = [
         "warn",
         {
           removeOldDates: true,
-<<<<<<< HEAD
-          addVersion: "5.14.5"
-=======
           addVersion: "5.15.0"
->>>>>>> 9affcce720 (Apply deprecation date rule for v5.15.0)
         }
       ]
     }
