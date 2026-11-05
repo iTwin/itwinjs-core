@@ -2,6 +2,160 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/rushstack/main/libraries/rush-lib/src/schemas/pnpm-config.schema.json",
   "useWorkspaces": true,
   "strictPeerDependencies": false,
+  "globalCatalogs": {
+    "auth-clients": {
+      "@itwin/browser-authorization": "^1.0.1",
+      "@itwin/electron-authorization": "^0.24.0",
+      "@itwin/oidc-signin-tool": "^6.2.0",
+      "@itwin/service-authorization": "^2.1.3"
+    },
+    "build": {
+      "@types/node": "~20.17.0",
+      "@types/yargs": "17.0.19",
+      "chalk": "^3.0.0",
+      "cpx2": "^8.0.0",
+      "cross-env": "^7.0.3",
+      "glob": "^13.0.6",
+      "mkdirp": "^1.0.4",
+      "npm-run-all2": "^7.0.2",
+      "rimraf": "^6.0.1",
+      "source-map-support": "^0.5.6",
+      "typescript": "~5.6.2",
+      "yargs": "^17.4.0"
+    },
+    "bundling": {
+      "assert": "^2.0.0",
+      "babel-loader": "~8.2.5",
+      "browserify-zlib": "^0.2.0",
+      "browserslist-to-esbuild": "^1.2.0",
+      "buffer": "^6.0.3",
+      "null-loader": "^4.0.1",
+      "path-browserify": "^1.0.1",
+      "rollup-plugin-external-globals": "0.11.0",
+      "rollup-plugin-ignore": "^1.0.10",
+      "rollup-plugin-visualizer": "^5.14.0",
+      "rollup-plugin-webpack-stats": "^2.0.0",
+      "source-map-loader": "^5.0.0",
+      "stream-browserify": "^3.0.0",
+      "vite": "^6.4.4",
+      "vite-plugin-env-compatible": "^2.0.1",
+      "webpack": "^5.97.1",
+      "webpack-cli": "^5.0.1"
+    },
+    "electron": {
+      "electron": "^45.0.0"
+    },
+    // The iModels clients and object-storage repositories share a maintaining team.
+    "imodels-clients": {
+      "@itwin/imodels-access-backend": "^6.0.2",
+      "@itwin/imodels-access-frontend": "^6.0.2",
+      "@itwin/imodels-client-authoring": "^6.0.2",
+      "@itwin/imodels-client-management": "^6.0.2",
+      "@itwin/object-storage-azure": "^3.0.4",
+      "@itwin/object-storage-core": "^3.0.4"
+    },
+    "itwins-client": {
+      "@itwin/itwins-client": "^1.6.1"
+    },
+    "linting": {
+      "@itwin/eslint-plugin": "^6.0.0",
+      "@typescript-eslint/parser": "~8.71.0",
+      "eslint": "^9.31.0",
+      "eslint-config-prettier": "^9.1.2",
+      "prettier": "^3.2.5"
+    },
+    "presentation": {
+      "@itwin/presentation-shared": "^1.2.2",
+      "@itwin/unified-selection": "^1.4.0",
+      "rxjs": "^7.8.1",
+      "rxjs-for-await": "^1.0.0"
+    },
+    "reality-capture": {
+      "@itwin/reality-data-client": "^1.3.1"
+    },
+    "runtime": {
+      "@azure/storage-blob": "^12.28.0",
+      "@types/express": "^4.17.20",
+      "@xmldom/xmldom": "~0.8.15",
+      "express": "^4.22.1"
+    },
+    "schemas": {
+      "@bentley/aec-units-schema": "^1.0.3",
+      "@bentley/architectural-physical-schema": "^1.0.3",
+      "@bentley/bis-core-schema": "^1.0.15",
+      "@bentley/bis-custom-attributes-schema": "^1.0.0",
+      "@bentley/cif-bridge-schema": "^1.0.5",
+      "@bentley/cif-common-schema": "^1.0.3",
+      "@bentley/cif-geometric-rules-schema": "^1.0.1",
+      "@bentley/cif-hydraulic-analysis-schema": "^1.0.3",
+      "@bentley/cif-hydraulic-results-schema": "^1.0.3",
+      "@bentley/cif-quantity-takeoffs-schema": "^1.0.1",
+      "@bentley/cif-rail-schema": "^1.0.2",
+      "@bentley/cif-roads-schema": "^1.0.1",
+      "@bentley/cif-subsurface-conflict-analysis-schema": "^1.0.3",
+      "@bentley/cif-subsurface-schema": "^1.0.3",
+      "@bentley/cif-units-schema": "^1.0.7",
+      "@bentley/construction-schema": "^1.0.4",
+      "@bentley/core-custom-attributes-schema": "^1.0.4",
+      "@bentley/ecdb-map-schema": "^2.0.1",
+      "@bentley/ecdb-schema-policies-schema": "^1.0.1",
+      "@bentley/formats-schema": "^1.0.0",
+      "@bentley/linear-referencing-schema": "^2.0.3",
+      "@bentley/physical-material-schema": "^1.0.2",
+      "@bentley/plant-custom-attributes-schema": "^1.0.1",
+      "@bentley/process-functional-schema": "^1.0.1",
+      "@bentley/process-physical-schema": "^1.0.2",
+      "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
+      "@bentley/road-rail-units-schema": "^1.0.3",
+      "@bentley/spatial-composition-schema": "^1.0.1",
+      "@bentley/structural-physical-schema": "^1.0.1",
+      "@bentley/units-schema": "^1.0.12"
+    },
+    "testing": {
+      "@types/chai": "4.3.1",
+      "@types/chai-as-promised": "^7",
+      "@types/chai-jest-snapshot": "^1.3.8",
+      "@types/chai-subset": "1.3.1",
+      "@types/deep-equal": "^1",
+      "@types/jsdom": "^21.1.7",
+      "@types/mocha": "^10.0.6",
+      "@types/sinon": "^17.0.2",
+      "@types/sinon-chai": "^3.2.0",
+      "@vitest/browser-playwright": "^4.1.10",
+      "@vitest/coverage-v8": "^4.1.10",
+      "azurite": "^3.37.0",
+      "babel-plugin-istanbul": "^7.0.0",
+      "c8": "^10.1.3",
+      "chai": "^4.3.10",
+      "chai-as-promised": "^7.1.1",
+      "chai-jest-snapshot": "^2.0.0",
+      "chai-subset": "1.6.0",
+      "deep-equal": "^1",
+      "dotenv": "^16.4.5",
+      "dotenv-expand": "^5.1.0",
+      "fetch-mock": "~11.1.3",
+      "jsdom": "^26.0.0",
+      "mocha": "^11.1.0",
+      "node-simctl": "~7.6.1",
+      "nyc": "^17.1.0",
+      "playwright": "~1.64.1",
+      "sinon": "^17.0.2",
+      "sinon-chai": "^3.7.0",
+      "vitest": "^4.1.10"
+    },
+    "types": {
+      "@types/express-ws": "^3.0.3",
+      "@types/ws": "^7.0.0"
+    },
+    "utilities": {
+      "@types/fs-extra": "^4.0.7",
+      "@types/lodash": "^4.14.202",
+      "@types/semver": "7.3.10",
+      "fs-extra": "^8.1.0",
+      "lodash": "^4.18.0",
+      "semver": "^7.5.2"
+    }
+  },
   "globalPeerDependencyRules": {
     "ignoreMissing": [
       "@babel/core",

@@ -10,7 +10,7 @@ You are an agent that adds support for a new Electron major version in the iTwin
 
 - Review Electron's breaking changes for the new major version and apply any required code fixes.
 - Add a new Electron major version to the supported peer dependency ranges.
-- Update all dev dependency pinned Electron versions across the repo.
+- Update the shared app/test Electron baseline in the `electron` catalog; keep supported peer ranges separate.
 - Check for newer versions of `@itwin/electron-authorization` that support the new Electron version and update if available.
 - Document the change in the changelog and create Rush change files.
 - Validate that build and tests pass after the change.
@@ -101,24 +101,16 @@ For example, if the minimum is `35` and you're adding Electron `43`, the result 
 
 This is equivalent to the previous multi-range format but stays compact as new versions are added.
 
-### Step 2: Update dev dependency versions
+### Step 2: Update the Electron catalog baseline
 
-Update the pinned `electron` dev dependency version to `^<NEW_MAJOR>.0.0` in every `package.json` that has one. The current set of files is:
+Update `globalCatalogs.electron.electron` in `common/config/rush/pnpm-config.json` to `^<NEW_MAJOR>.0.0`, after the required approval in Step 3. App/test package declarations use `catalog:electron`; keep those references instead of restoring literal version ranges.
 
-| File | JSON path |
-| --- | --- |
-| `core/electron/package.json` | `devDependencies.electron` |
-| `tools/certa/package.json` | `devDependencies.electron` |
-| `example-code/app/package.json` | `dependencies.electron` |
-| `full-stack-tests/core/package.json` | `devDependencies.electron` |
-| `full-stack-tests/rpc/package.json` | `dependencies.electron` |
-| `test-apps/display-performance-test-app/package.json` | `devDependencies.electron` |
-| `test-apps/display-test-app/package.json` | `devDependencies.electron` |
+The supported peer ranges from Step 1 remain explicit. Do not replace them with the narrower app/test baseline.
 
-**Important:** This list may change over time. Before editing, run a workspace-wide search to find ALL `package.json` files containing `"electron":` to ensure none are missed:
+Before editing, find all declarations to check that no new literal app/test range is missed:
 
 ```bash
-grep -r '"electron":' --include='package.json' -l . | grep -v node_modules
+git grep -n '"electron":' -- '**/package.json' common/config/rush/pnpm-config.json
 ```
 
 ### Step 3: Review breaking changes and get approval
@@ -199,11 +191,11 @@ If a newer version exists whose `electron` peer range covers `^<NEW_MAJOR>.0.0`:
    ```
    https://raw.githubusercontent.com/iTwin/auth-clients/master/packages/electron/CHANGELOG.md
    ```
-2. **Update all references** in the repo. Find them with:
+2. **Update the owner catalog entry** at `globalCatalogs.auth-clients["@itwin/electron-authorization"]` in `common/config/rush/pnpm-config.json`.
+3. Keep the package declarations as `catalog:auth-clients`. Search for any additional literal declarations and review them separately rather than overwriting catalog references:
    ```bash
-   grep -rn '"@itwin/electron-authorization"' --include='package.json' . | grep -v node_modules
+   git grep -n '"@itwin/electron-authorization"' -- '**/package.json' common/config/rush/pnpm-config.json
    ```
-3. Update the version specifier (e.g., `^0.22.1` → `^0.22.2`) in each file found.
 
 If no newer version supporting the new Electron exists, note the unmet peer dependency warning in the report and skip this step. The warning is non-blocking but should be flagged for follow-up.
 
