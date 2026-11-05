@@ -140,8 +140,4 @@ Run `rush install` after switching branches or pulling dependency changes. If th
 
 Do not edit versions for internal monorepo dependencies. CI maintains them.
 
-For an external dependency:
-
-1. Update its version range in the owning `package.json`.
-2. Run `rush check`.
-3. Run `rush update`.
+For external dependencies, see the [dependency management guide](./common/config/rush/README-dependencies.md).

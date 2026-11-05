@@ -38,19 +38,19 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~20.17.0",
-    "chai": "^4.3.10",
-    "cpx2": "^8.0.0",
-    "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
-    "source-map-support": "^0.5.6",
-    "typescript": "~5.6.2"
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:testing",
+    "@types/fs-extra": "catalog:utilities",
+    "@types/mocha": "catalog:testing",
+    "@types/node": "catalog:build",
+    "chai": "catalog:testing",
+    "cpx2": "catalog:build",
+    "eslint": "catalog:linting",
+    "mocha": "catalog:testing",
+    "nyc": "catalog:testing",
+    "rimraf": "catalog:build",
+    "source-map-support": "catalog:build",
+    "typescript": "catalog:build"
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -59,10 +59,10 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@xmldom/xmldom": "~0.8.15",
-    "chalk": "^3.0.0",
+    "@xmldom/xmldom": "catalog:runtime",
+    "chalk": "catalog:build",
     "commander": "^2.14.1",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "catalog:utilities"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
