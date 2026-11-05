@@ -736,7 +736,7 @@ PRAGMA ecsql_ver
 
 | ecsql_ver |
 | --------- |
-| 2.0.6.0   |
+| 2.1.0.0   |
 
 # Trying PRAGMA sqlite_sql with a simple select
 

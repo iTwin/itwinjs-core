@@ -12,7 +12,7 @@ publish: false
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Extended ECSQL casting](#extended-ecsql-casting)
   - [Breaking changes](#breaking-changes)
-    - [Extended casting is the default](#extended-casting-is-the-default)
+    - [Changed CAST results](#changed-cast-results)
 
 
 ## Frontend
@@ -131,7 +131,7 @@ See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for f
 
 ### Extended ECSQL casting
 
-ECSQL supports extended casting by default, including in CTEs, compound queries, subqueries, and data-modification statements.
+ECSQL casts support more target types and conversions, including in CTEs, compound queries, subqueries, and data-modification statements.
 
 - PostgreSQL-style postfix casts: `SELECT ECInstanceId::TEXT FROM bis.Element`.
 - Parameter casts, which give the parameter its binding type: `?::INTEGER` or `CAST(:p AS INTEGER)`.
@@ -142,16 +142,12 @@ Unknown target types and unsupported conversions fail when the statement is prep
 
 See [CAST](../learning/ECSqlReference/CAST.md#extended-casting) for conversion rules and examples.
 
-The ECSQL version was bumped to `2.0.6.0`.
+The ECSQL version was bumped to `2.1.0.0`.
 
 ## Breaking changes
 
-### Extended casting is the default
+### Changed CAST results
 
-The `CAST_V2` option has been removed. Remove it from all queries, including `CAST_V2=true` and `CAST_V2=false`; statements that still specify it fail to prepare. There is no option to restore legacy casting.
+Existing `CAST(...)` expressions now use the extended rules. Boolean-to-TEXT returns `true`/`false` instead of `1`/`0`, DateTime-to-TEXT returns ISO-8601 instead of a Julian day number, Binary-to-TEXT returns Base64 instead of raw bytes, Id-to-TEXT returns hexadecimal instead of decimal, and strict enumeration casts return `NULL` for values that are not enumerators.
 
-Existing `CAST(...)` expressions now use the extended rules without opting in. Boolean-to-TEXT returns `true`/`false` instead of `1`/`0`, DateTime-to-TEXT returns ISO-8601 instead of a Julian day number, Binary-to-TEXT returns Base64 instead of raw bytes, and strict enumeration casts return `NULL` for values that are not enumerators.
-
-Update consumers that parse those text results. For numeric Boolean or Julian day results, cast to `INTEGER` or `DOUBLE` respectively instead of `TEXT`. For raw binary data, select the Binary value directly. Validate strict enumeration inputs before casting if the application requires invalid values to be reported.
-
-Compound-query columns containing a cast must agree on their extended type across typed branches. Cast all branches to the same type when combining an Id cast with a plain integer or a different Id type. These semantics require the matching native library; check `PRAGMA ecsql_ver` for ECSQL `2.0.6.0` or later.
+Update consumers that parse those text results. For numeric Boolean or Julian day results, cast to `INTEGER` or `DOUBLE` respectively instead of `TEXT`. For decimal Id text using SQLite's signed integer representation, cast through `LONG`: `ECInstanceId::LONG::TEXT`. For raw binary data, select the Binary value directly. Validate strict enumeration inputs before casting if the application requires invalid values to be reported.

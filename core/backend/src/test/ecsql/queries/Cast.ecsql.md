@@ -19,22 +19,23 @@ SELECT 21::Id [a], '0x15'::ClassId [b], CAST('21' AS SourceId) [c], 'abc'::Id [d
 | ---- | ---- | ---- |
 | 0x15 | 0x15 | 0x15 |
 
-# Extended cast Id to TEXT is unsigned decimal
+# Extended cast Id to TEXT is hexadecimal
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT '0xffffffffffffffff'::Id::TEXT [a], 21::Id::TEXT [b]
+SELECT '0xffffffffffffffff'::Id::TEXT [a], 21::Id::TEXT [b], 21::Id::LONG::TEXT [c]
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
 |           | a            | true      | 0     | a        | a    | undefined    | string   | String | undefined          |
 |           | b            | true      | 1     | b        | b    | undefined    | string   | String | undefined          |
+|           | c            | true      | 2     | c        | c    | undefined    | string   | String | undefined          |
 
-| a                      | b    |
-| ---------------------- | ---- |
-| "18446744073709551615" | "21" |
+| a                    | b      | c    |
+| -------------------- | ------ | ---- |
+| "0xffffffffffffffff" | "0x15" | "21" |
 
 # Extended cast ClassId to ClassName
 
@@ -157,9 +158,9 @@ WITH c(v) AS (SELECT 21::Id) SELECT v, v::TEXT [t] FROM c
 |           | v            | true      | 0     | v        | v    | Id           | long     | Id     | undefined          |
 |           | t            | true      | 1     | t        | t    | undefined    | string   | String | undefined          |
 
-| v    | t    |
-| ---- | ---- |
-| 0x15 | "21" |
+| v    | t      |
+| ---- | ------ |
+| 0x15 | "0x15" |
 
 # Extended cast ClassName comparison in WHERE
 
@@ -248,12 +249,12 @@ SELECT CAST(:p AS Id) [a]
 | ---- |
 | 0x15 |
 
-# Extended cast leading NULL in UNION takes the typed branch type
+# Extended cast first UNION branch determines the extended type
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT NULL [a] UNION ALL SELECT 21::Id
+SELECT 21::Id [a] UNION ALL SELECT 22::ClassId
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -261,16 +262,23 @@ SELECT NULL [a] UNION ALL SELECT 21::Id
 |           | a            | true      | 0     | a        | a    | Id           | long     | Id   | undefined          |
 
 ```json
-[{}, { "a": "0x15" }]
+[{ "a": "0x15" }, { "a": "0x16" }]
 ```
 
-# Extended cast UNION branches with different Id types fail to prepare
+# Extended cast TEXT and Json UNION preserves TEXT typing
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
-SELECT 1::Id UNION SELECT 2::ClassId
+SELECT CAST(NULL AS TEXT) [a] UNION ALL SELECT '[1]'::Json
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+|           | a            | true      | 0     | a        | a    | undefined    | string   | String | undefined          |
+
+```json
+[{}, { "a": "[1]" }]
 ```
 
 # Extended cast scalar subquery returning a point fails to prepare
@@ -282,13 +290,13 @@ SELECT 1::Id UNION SELECT 2::ClassId
 SELECT (SELECT '{"X":1,"Y":2}'::Point2d)
 ```
 
-# Internal _ecsql_cast function cannot be called from ECSQL
+# Internal cast function cannot be called from ECSQL
 
 - dataset: AllProperties.bim
 - errorDuringPrepare: true
 
 ```sql
-SELECT _ecsql_cast('id', '0x15')
+SELECT _ecsql_cast_id('0x15')
 ```
 
 # Extended cast navigation cast to ClassId fails to prepare
@@ -300,7 +308,7 @@ SELECT _ecsql_cast('id', '0x15')
 SELECT Parent::ClassId FROM bis.Element
 ```
 
-# Postfix cast is enabled by default
+# Postfix cast of an integer to Id
 
 - dataset: AllProperties.bim
 
@@ -312,7 +320,7 @@ SELECT 21::Id [a]
 [{ "a": "0x15" }]
 ```
 
-# Parameter cast is enabled by default
+# Parameter cast with CAST syntax
 
 - dataset: AllProperties.bim
 
@@ -326,25 +334,7 @@ SELECT CAST(? AS INTEGER) [a]
 [{ "a": 42 }]
 ```
 
-# Removed CAST_V2 option fails to prepare
-
-- dataset: AllProperties.bim
-- errorDuringPrepare: true
-
-```sql
-SELECT 1 OPTIONS CAST_V2
-```
-
-# Removed CAST_V2=false option fails to prepare
-
-- dataset: AllProperties.bim
-- errorDuringPrepare: true
-
-```sql
-SELECT 1 ECSQLOPTIONS CAST_V2=false
-```
-
-# CAST uses extended Boolean and DateTime text conversions by default
+# CAST uses extended Boolean and DateTime text conversions
 
 - dataset: AllProperties.bim
 
@@ -426,38 +416,71 @@ SELECT ('12' || CHAR(0) || 'junk')::Id [i], ('{}' || CHAR(0) || 'junk')::Json [j
 - dataset: AllProperties.bim
 
 ```sql
-WITH c(s,p,p_0,_ecsql_point_p_0) AS (SELECT 'a','{"X":1,"Y":2}'::Point2d,'{"X":3,"Y":4,"Z":5}'::Point3d,7), d(a,b,c,e) AS (SELECT * FROM c) SELECT t.a, t.b::TEXT [p], t.c::TEXT [q], t.e FROM d t
+WITH c(s,p,p_0,_ecsql_point_p_0) AS (SELECT 'a','{"X":1,"Y":2}'::Point2d,'{"X":3,"Y":4,"Z":5}'::Point3d,7), d(a,b,c,e) AS (SELECT * FROM c) SELECT t.a [a], t.b::TEXT [p], t.c::TEXT [q], t.e [e] FROM d t
 ```
 
 ```json
 [{ "a": "a", "p": "{\"X\":1.0,\"Y\":2.0}", "q": "{\"X\":3.0,\"Y\":4.0,\"Z\":5.0}", "e": 7 }]
 ```
 
-# Scalar subquery cast cannot bypass compound extended types
+# Scalar subquery cast retains first-branch compound typing
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
 SELECT (SELECT 21::Id) v UNION ALL SELECT 22
 ```
 
-# Derived table cast cannot bypass compound extended types
+```json
+[{ "v": "0x15" }, { "v": "0x16" }]
+```
+
+# Derived table cast retains first-branch compound typing
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
 SELECT 22 v UNION ALL SELECT v FROM (SELECT 21::Id v)
 ```
 
-# CTE cast cannot bypass compound extended types
+```json
+[{ "v": 22 }, { "v": 21 }]
+```
+
+# CTE cast retains first-branch compound typing
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
 WITH c(v) AS (SELECT 21::Id) SELECT v FROM c UNION ALL SELECT 22
+```
+
+```json
+[{ "v": "0x15" }, { "v": "0x16" }]
+```
+
+# Numeric casts through derived-table and CTE columns affect SQLite storage
+
+- dataset: AllProperties.bim
+
+```sql
+WITH c(v) AS (SELECT 2 + 3) SELECT CAST(t.v AS DOUBLE) / 2 [a], c.v::DOUBLE / 2 [b] FROM (SELECT 2 + 3 v) t CROSS JOIN c
+```
+
+```json
+[{ "a": 2.5, "b": 2.5 }]
+```
+
+# NULL content fields can be combined with Json properties
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CAST(NULL AS TEXT) [a] UNION ALL SELECT JsonProperties FROM bis.Element WHERE ECInstanceId = 0
+```
+
+```json
+[{}]
 ```
 
 # Extended cast unknown target fails to prepare

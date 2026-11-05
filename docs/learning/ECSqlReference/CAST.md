@@ -17,24 +17,15 @@ Example:
 
 ## Extended casting
 
-Extended casting is always enabled, including in CTEs, compound queries, subqueries and data-modification statements. `CAST_V2` is no longer an [ECSQL option](./ECSqlOptions.md); statements that specify it fail to prepare. Remove the option, including `CAST_V2=false`, from existing queries.
-
 - PostgreSQL-style postfix casts are supported: `<expr>::<type>`. `<expr>::<type>` and `CAST(<expr> AS <type>)` behave identically.
 - Target types can be any EC primitive type (`INTEGER`, `LONG`, `DOUBLE`, `TEXT`, `BOOLEAN`, `DATETIME`, `DATE`, `BINARY`, `POINT2D`, `POINT3D`, ...), a schema-qualified EC enumeration, or one of the special targets listed below.
 - Parameters can be cast. The cast gives the parameter its type, so it is bound accordingly: `?::INTEGER`, `CAST(:p AS INTEGER)`, `:p::Point2d`.
 - An unknown target type or an unsupported conversion fails when the statement is prepared.
 - Invalid input to the conversions described below (Id, `ClassName`, `Json`, `Guid`, points, `BOOLEAN`, `DATETIME` and strict enumerations) returns `NULL`. `INTEGER`, `LONG`, `DOUBLE` and `BINARY` targets keep SQLite's conversion rules: `'12abc'::INTEGER` returns `12` and `'abc'::INTEGER` returns `0`.
 
-> Existing `CAST(...)` expressions now follow these rules too. `CAST(TRUE AS TEXT)` returns `true` instead of `1`. A DateTime cast to `TEXT` returns an ISO-8601 string instead of a Julian day number. A Binary cast to `TEXT` returns Base64 instead of the raw bytes. A strict enumeration returns `NULL` for values that aren't enumerators. There is no legacy-casting option.
-
-```sql
-SELECT CAST(TRUE AS TEXT) b, CAST(dt AS TEXT) d FROM aps.TestElement LIMIT 1
--- true | 2017-01-01T00:00:00.000
-```
-
 ### Precedence and chaining
 
-Postfix casts bind tighter than unary and binary operators and can be chained. Use an alias for cast columns, because otherwise the column name is generated from the expression.
+Postfix casts bind tighter than unary and binary operators and can be chained.
 
 ```sql
 SELECT 1 + '2'::INTEGER a
@@ -51,40 +42,27 @@ SELECT -5::TEXT a
 
 ### Query contexts
 
-No per-query option is needed. Cast types are preserved through derived tables and CTEs. Casts can also be used in `INSERT` values, `UPDATE` assignments, and `DELETE` predicates.
+Cast types are preserved through derived tables and CTEs. Casts can also be used in `INSERT` values, `UPDATE` assignments, and `DELETE` predicates.
 
 ```sql
 SELECT v FROM (SELECT 21::Id v)
 -- 0x15
-WITH c(v) AS (SELECT 21::Id) SELECT v FROM c
--- 0x15
 WITH c(v) AS (SELECT 21::Id) SELECT v, v::TEXT t FROM c
--- 0x15 | 21
-WITH c(v) AS (SELECT 21) SELECT v::Id a FROM c
--- 0x15
-SELECT 21::Id a UNION ALL SELECT 22::Id
--- 0x15, 0x16
+-- 0x15 | 0x15
 DELETE FROM aps.TestElement WHERE ECInstanceId IN (SELECT ?::Id)
 ```
 
 ### Compound SELECT and scalar subqueries
 
-When a column of a compound `SELECT` contains an explicit cast, all branches with a type must have the same extended type. A plain number doesn't match an Id, so cast every branch to the same type. A `NULL` literal takes the type of the other branches.
+The first branch of a compound `SELECT` determines its result-column types, including extended types. Casts do not impose additional extended-type matching rules.
 
 A scalar subquery cannot return a `Point2d` or `Point3d` value; cast it to `TEXT` inside the subquery instead.
 
 ```sql
 SELECT 1::Id a UNION SELECT 2::ClassId
--- error: Id and ClassId differ
-SELECT 1::Id a UNION ALL SELECT 2
--- error: Id and plain Long differ
-SELECT 1::Id a UNION ALL SELECT ECInstanceId FROM aps.TestElement
--- ECInstanceId is already an Id, so this works
-SELECT 21::Id a UNION ALL SELECT NULL
-SELECT NULL a UNION ALL SELECT 21::Id
--- column is an Id in both cases
-SELECT (SELECT '{"X":1,"Y":2}'::Point2d) a
--- error
+-- 0x1, 0x2 (column is an Id)
+SELECT CAST(NULL AS TEXT) a UNION ALL SELECT '[1]'::Json
+-- NULL, [1] (column is TEXT, without an extended type)
 SELECT (SELECT '{"X":1,"Y":2}'::Point2d::TEXT) a
 -- {"X":1.0,"Y":2.0}
 ```
@@ -95,7 +73,6 @@ A cast parameter is bound using the input type the cast expects. For most target
 
 - Only a parameter that is the direct operand of the cast gets its type. In `(? + 1)::INTEGER` the parameter is untyped.
 - All casts of a named parameter must agree on the input type. Uncast uses of the same named parameter get the same type.
-- Binding a value of the wrong kind, such as an integer to `?::Point2d`, fails when binding.
 
 ```sql
 SELECT ?::INTEGER + 1 a
@@ -119,7 +96,7 @@ An integer, or text holding a decimal or `0x` hexadecimal number, can be cast to
 - Integers are kept as they are, including their sign bit.
 - Floating-point and enumeration values cannot be cast to an Id.
 
-Casting an Id to `TEXT` returns its unsigned decimal value. Inside JSON results (navigation properties and arrays), ids are written as hexadecimal.
+Casting an Id to `TEXT` returns hexadecimal, matching its representation in ECSQL results and JSON. Cast through `LONG` for decimal text using SQLite's signed integer representation: `ECInstanceId::LONG::TEXT`.
 
 ```sql
 SELECT 21::Id a, '0x15'::ClassId b, 'abc'::Id c
@@ -129,14 +106,12 @@ SELECT ' 21'::Id a, '-1'::Id b, ''::Id c, '0x1ffffffffffffffff'::Id d
 SELECT 1.5::Id
 -- error
 SELECT '0xffffffffffffffff'::Id::TEXT a
--- 18446744073709551615
+-- 0xffffffffffffffff
 SELECT ECInstanceId::TEXT a FROM bis.Element LIMIT 1
--- decimal text, e.g. 20
-SELECT 21::Id::ClassId a
--- 0x15 (as a ClassId)
+-- hexadecimal text, e.g. 0x14
 ```
 
-Prefer comparing ids as ids. For example, use `ECInstanceId = '0x1'::Id` rather than `ECInstanceId::TEXT = '1'`, which can't use the primary key.
+Prefer comparing ids as ids. For example, use `ECInstanceId = '0x1'::Id` rather than `ECInstanceId::TEXT = '0x1'`, which can't use the primary key.
 
 ### ClassName
 
@@ -208,6 +183,6 @@ SELECT '2020-01-02T03:04:05Z'::DATETIME::TEXT a, '2020-01-02T10:00:00'::DATE::TE
 -- 2020-01-02T03:04:05.000 | 2020-01-02 | 2023-02-25T00:00:00.000
 ```
 
-Converting between Point2d and Point3d, converting structs, arrays or navigation values to anything other than `TEXT` (or a navigation value to `Id`, `NavId` or `LONG`), and converting text to a struct, array or navigation value are not supported. Neither are element-wise array conversions such as `IntArr::LONG[]`, or `<navigation>::ClassName`.
+Converting between Point2d and Point3d, and converting text to a struct, array or navigation value are not supported.
 
 [ECSql Syntax](./index.md)
