@@ -81,7 +81,6 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   let window: BrowserWindow | undefined;
   let exitCode = 0;
   let settled = false;
-  let shutdownRequested = false;
   let ready = false;
   let startupPreloadError: Error | undefined;
   let resolveShutdown: () => void;
@@ -103,13 +102,11 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   const onSignal = () => finish(0);
   const onProviderDisconnect = () => finish(0);
   const onProviderMessage = (message: unknown) => {
-    if (isSessionShutdownMessage(message)) {
-      shutdownRequested = true;
+    if (isSessionShutdownMessage(message))
       finish(0);
-    }
   };
   const onWindowClosed = () => {
-    if (settled || shutdownRequested)
+    if (settled)
       return;
     console.error(`[vitest-browser-bridge:${environment.sessionId}] provider window closed unexpectedly.`);
     finish(1);
