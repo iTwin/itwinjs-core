@@ -9,7 +9,7 @@ The provider and browser callback exports are ESM-only. The backend callback exp
 
 ## Vitest 4 provider
 
-The consuming project must provide Vitest `^4.1.11` and an Electron version in the supported `>=35 <46` range. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
+The consuming project must provide Vitest `^4.1.11`. The provider launches the Electron that this package depends on, which comes from the repository's `electron` catalog like every other package's Electron; the consuming project does not need to supply it. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
