@@ -3471,4 +3471,206 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.nextGroup()).to.be.true;
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("Local1");
   });
+
+  describe("indirect changes caused by our deletion", () => {
+    const insertInitialAspect = async (elementId: Id64String) => {
+      await withEditTxn(briefcase1, async (txn) => {
+        txn.insertAspect({
+          classFullName: uniqueAspectClassFullName,
+          element: { id: elementId, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+          aspectValue: "Initial",
+          aspectNumber: 1,
+        } as SomeUniqueAspectProps);
+      });
+      await briefcase1.pushChanges({ description: "Insert aspect" });
+      await briefcase2.pullChanges();
+    };
+
+    it("replays our cascaded aspect delete instead of reporting a deletion effect", async () => {
+      await insertInitialAspect(id);
+      await withEditTxn(briefcase1, async (txn) => txn.updateElement({ id, userLabel: "TheirLabel" }));
+      await withEditTxn(briefcase2, async (txn) => txn.deleteElement(id));
+      await briefcase1.pushChanges({ description: "User1 updates element" });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      chai.expect(interactive.conflicts).to.have.length(1);
+      const conflict = interactive.conflicts[0];
+      chai.expect(conflict.id).to.equal(id);
+      chai.expect(conflict.theirModifiedProperties).to.include("userLabel");
+      chai.expect(conflict.deletionEffects).to.be.empty;
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+      chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.be.empty;
+    });
+
+    it("reports a data conflict on our cascaded aspect when they updated it", async () => {
+      await insertInitialAspect(id);
+      await withEditTxn(briefcase1, async (txn) => {
+        const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+        aspect.aspectValue = "User1";
+        txn.updateAspect(aspect);
+      });
+      await withEditTxn(briefcase2, async (txn) => txn.deleteElement(id));
+      await briefcase1.pushChanges({ description: "User1 updates aspect" });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      const elementConflict = interactive.conflicts.find((conflict) => conflict.id === id);
+      chai.expect(elementConflict).to.not.be.undefined;
+      chai.expect(elementConflict!.deletionEffects).to.be.empty;
+
+      const aspectConflict = interactive.conflicts.find((conflict) => conflict.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
+      chai.expect(aspectConflict).to.not.be.undefined;
+      chai.expect(aspectConflict!.original?.aspectValue).to.equal("Initial");
+      chai.expect(aspectConflict!.theirs?.aspectValue).to.equal("User1");
+      chai.expect(aspectConflict!.ours).to.be.undefined;
+      chai.expect(aspectConflict!.theirModifiedProperties).to.include("aspectValue");
+
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    });
+
+    it("reports only the upstream-inserted child when our deletion also cascaded an existing aspect", async () => {
+      await insertInitialAspect(id);
+      const childId = await withEditTxn(briefcase1, async (txn) => txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "UpstreamChild",
+        somePoint: new Point2d(5, 6),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps));
+      await withEditTxn(briefcase2, async (txn) => txn.deleteElement(id));
+      await briefcase1.pushChanges({ description: "User1 inserts child" });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      const conflict = interactive.conflicts.find((candidate) => candidate.id === id);
+      chai.expect(conflict).to.not.be.undefined;
+      chai.expect(conflict!.deletionEffects).to.have.length(1);
+      chai.expect(conflict!.deletionEffects[0].action).to.equal("cascade");
+      chai.expect(conflict!.deletionEffects[0].affectedId).to.equal(childId);
+      chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+      chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.be.empty;
+    });
+
+    it("replays our SET NULL and reports only the upstream-added reference", async () => {
+      const [typeId, otherId] = await withEditTxn(briefcase1, async (txn) => {
+        const newTypeId = txn.insertElement({
+          classFullName: GenericGraphicalType2d.classFullName,
+          model: IModel.dictionaryId,
+          code: Code.createEmpty(),
+        } as TypeDefinitionElementProps);
+        txn.updateElement<SomeGraphicalElementProps>({ id, typeDefinition: { id: newTypeId, relClassName: "BisCore:GraphicalElement2dIsOfType" } });
+        const newOtherId = txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          foo: "Original",
+          somePoint: new Point2d(9.0, 9.0),
+        } as SomeGraphicalElementProps);
+        return [newTypeId, newOtherId];
+      });
+      await briefcase1.pushChanges({ description: "Add type definition" });
+      await briefcase2.pullChanges();
+
+      const upstreamReferenceId = await withEditTxn(briefcase1, async (txn) => {
+        txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User1" });
+        return txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          foo: "UpstreamReference",
+          somePoint: new Point2d(7.0, 8.0),
+          typeDefinition: { id: typeId, relClassName: "BisCore:GraphicalElement2dIsOfType" },
+        } as SomeGraphicalElementProps);
+      });
+      await withEditTxn(briefcase2, async (txn) => txn.deleteElement(typeId));
+      await briefcase1.pushChanges({ description: "User1 adds a reference" });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      const typeConflict = interactive.conflicts.find((conflict) => conflict.id === typeId);
+      chai.expect(typeConflict).to.not.be.undefined;
+      chai.expect(typeConflict!.deletionEffects).to.have.length(1);
+      chai.expect(typeConflict!.deletionEffects[0].action).to.equal("set-null");
+      chai.expect(typeConflict!.deletionEffects[0].affectedId).to.equal(upstreamReferenceId);
+      chai.expect(interactive.conflicts.find((conflict) => conflict.id === id)).to.be.undefined;
+
+      chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition).to.be.undefined;
+      chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(upstreamReferenceId).typeDefinition).to.be.undefined;
+      chai.expect(briefcase2.elements.tryGetElementProps(typeId)).to.be.undefined;
+    });
+
+    it("defers our cascaded aspect delete until a blocked deletion is unblocked", async () => {
+      const [codeSpecId, codeScopeId] = await withEditTxn(briefcase1, async (txn) => {
+        const spec = briefcase1.codeSpecs.insert(txn, "LiftedBlockedCodeScopeDelete", CodeScopeSpec.Type.RelatedElement);
+        const scope = txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          foo: "Scope",
+          somePoint: new Point2d(5.0, 6.0),
+        } as SomeGraphicalElementProps);
+        return [spec, scope];
+      });
+      await briefcase1.pushChanges({ description: "Create code scope" });
+      await briefcase2.pullChanges();
+      await insertInitialAspect(codeScopeId);
+
+      await withEditTxn(briefcase2, async (txn) => txn.deleteElement(codeScopeId));
+      const referencingElementId = await withEditTxn(briefcase1, async (txn) => txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: new Code({ spec: codeSpecId, scope: codeScopeId, value: "LiftedBlockedReference" }),
+        foo: "Reference",
+        somePoint: new Point2d(8.0, 9.0),
+      } as SomeGraphicalElementProps));
+      await briefcase1.pushChanges({ description: "Add required code scope reference" });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      chai.expect(interactive.conflicts).to.have.length(1);
+      const conflict = interactive.conflicts[0];
+      chai.expect(conflict.deletionEffects).to.have.length(1);
+      chai.expect(conflict.deletionEffects[0].action).to.equal("blocks-deletion");
+      chai.expect(conflict.deletionEffects[0].affectedId).to.equal(referencingElementId);
+      chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.not.be.undefined;
+      chai.expect(getUniqueAspect(briefcase2, codeScopeId).aspectValue).to.equal("Initial");
+
+      const newCodeScopeId = interactive.editTxn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "New Scope",
+        somePoint: new Point2d(5.0, 6.0),
+      } as SomeGraphicalElementProps);
+      conflict.replaceDeletedInstance(newCodeScopeId);
+
+      chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.be.undefined;
+      chai.expect(briefcase2.elements.getAspects(codeScopeId, uniqueAspectClassFullName)).to.be.empty;
+      chai.expect(briefcase2.elements.getAspects(newCodeScopeId, uniqueAspectClassFullName)).to.be.empty;
+      chai.expect(conflict.deletionEffects.filter((effect) => effect.action === "cascade")).to.be.empty;
+    });
+  });
 });

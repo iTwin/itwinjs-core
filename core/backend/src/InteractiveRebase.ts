@@ -172,7 +172,11 @@ export interface RebaseConflict {
    */
   brokenRelationships: BrokenRelationship[];
 
-  /** Effects of our deletion on other instances, or proposed effects if any reference blocks the deletion. */
+  /**
+   * Effects of our deletion on other instances, or proposed effects if any reference blocks the deletion.
+   * Effects that our original deletion also caused are not listed here. Once the deletion is no longer blocked,
+   * they are replayed as our own changes to the affected instances, which can report their own conflicts.
+   */
   deletionEffects: ReadonlyArray<DeletionEffect>;
 
   /** @deprecated Owner conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
@@ -496,6 +500,8 @@ interface DeletionSet {
   /** Owned members precede their owners. Includes the primary instance. */
   instances: DeletionSetInstance[];
   effects: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl | BlockingDeletionEffectImpl)[];
+  /** Affected instances whose captured indirect change replaces an effect; SET NULLs precede cascades, which follow `instances` order. */
+  lifts: DeletionSetInstance[];
 }
 
 export class InteractiveRebase {
@@ -525,6 +531,8 @@ export class InteractiveRebase {
   private _deletionEffects: DeletionSet["effects"] = [];
   private _blockedDeletes = new Map<string, DeletionSet>();
   private _replacementIds = new Map<string, Id64String>();
+  /** Instances whose captured indirect change has already been replayed, so it is never replayed twice. */
+  private _liftedInstanceKeys = new Set<string>();
 
   /** A placeholder value [[orderNodes]] is substituting in for a node's real value of one of its own
    * properties, keyed by `instanceKey` - see the design doc's cycle-breaking section. Consulted by
@@ -894,6 +902,7 @@ export class InteractiveRebase {
     this._deletionEffects = [];
     this._blockedDeletes.clear();
     this._replacementIds.clear();
+    this._liftedInstanceKeys.clear();
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
       throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
     }
@@ -1276,9 +1285,10 @@ export class InteractiveRebase {
     // Native always applies `updateInstance` incrementally (properties omitted from the write are left
     // as-is), so restricting the write to just the touched properties avoids clobbering any upstream
     // change to a property our local change never touched.
+    // A property our change cleared is missing from `newProps` rather than null.
     const propsToWrite = changedProperties === undefined
       ? newProps
-      : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(newProps, changedProperties) };
+      : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(withMissingAsNull(newProps, oldProps), changedProperties) };
     const result = this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () =>
       nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] }, propsToWrite);
     if (result === undefined) {
@@ -1311,7 +1321,9 @@ export class InteractiveRebase {
       return;
     }
 
-    const deletionSet = this.computeDeletionSet({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName, theirs, references: [] });
+    let deletionSet = this.computeDeletionSet({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName, theirs, references: [] });
+    if (!deletionSet.effects.some((effect) => effect.action === "blocks-deletion"))
+      deletionSet = this.liftIndirectChanges(deletionSet);
     if (deletionSet.effects.length > 0 || pendingEffects.length > 0 || computeChangedProperties(oldProps, theirs).length > 0) {
       const conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs);
       this.recordDeletionSet(conflict, deletionSet);
@@ -1391,18 +1403,63 @@ export class InteractiveRebase {
     visit(target);
 
     const effects: DeletionSet["effects"] = [];
+    const lifts: DeletionSetInstance[] = [];
+    const liftedCascades = new Set<string>();
     for (const entry of affected.values()) {
       if (entry.instanceKey === target.instanceKey)
         continue;
       const action = members.has(entry.instanceKey) ? "cascade"
         : entry.references.some((reference) => !reference.property.nullable) ? "blocks-deletion" : "set-null";
+      if (action !== "blocks-deletion" && this.isLiftable(entry, action)) {
+        if (action === "cascade")
+          liftedCascades.add(entry.instanceKey);
+        else
+          lifts.push(entry);
+        continue;
+      }
       effects.push(action === "cascade" ? new CascadeDeletionEffectImpl(this, entry)
         : action === "blocks-deletion" ? new BlockingDeletionEffectImpl(this, entry) : new SetNullDeletionEffectImpl(this, entry));
     }
-    return { instances, effects };
+    lifts.push(...instances.filter((instance) => liftedCascades.has(instance.instanceKey)));
+    return { instances, effects, lifts };
+  }
+
+  /** Whether our original change made the same referential action on `entry` through an indirect change. */
+  private isLiftable(entry: DeletionSetInstance, action: "cascade" | "set-null"): boolean {
+    if (this._liftedInstanceKeys.has(entry.instanceKey))
+      return false;
+    const meta = this._store?.getMetadata(entry.instanceKey);
+    if (meta === undefined || !meta.isIndirect)
+      return false;
+    if (action === "cascade")
+      return meta.operation === "Delete";
+    return meta.operation === "Update" && entry.references.some(({ property, target }) => meta.navigationRefs?.some((ref) =>
+      ref.jsName === property.navigationPropertyJsName && ref.oldId === target.id && ref.newId === undefined) === true);
+  }
+
+  /** Replays the captured indirect changes that replace effects of an unblocked deletion, returning the set that remains. */
+  private liftIndirectChanges(deletionSet: DeletionSet): DeletionSet {
+    let lifted = false;
+    for (const entry of deletionSet.lifts) {
+      if (this._liftedInstanceKeys.has(entry.instanceKey))
+        continue;
+      this._liftedInstanceKeys.add(entry.instanceKey);
+      // An earlier lift may have already cascaded this instance away.
+      if (this.tryReadCurrentInstance(entry.id, entry.classFullName) === undefined)
+        continue;
+      const change = this._store?.get(entry.instanceKey);
+      assert(change !== undefined, "a liftable instance must have a row in the store");
+      this.applyInteractiveInstanceChange(change);
+      lifted = true;
+    }
+    if (!lifted)
+      return deletionSet;
+    const target = deletionSet.instances[deletionSet.instances.length - 1];
+    return this.computeDeletionSet({ ...target, references: [] });
   }
 
   private applyDeletionSet(deletionSet: DeletionSet): void {
+    assert(deletionSet.lifts.length === 0, "indirect changes must be lifted before applying a deletion set");
     const nativeDb = this._db[_nativeDb];
     for (const effect of deletionSet.effects) {
       if (effect.action !== "set-null")
@@ -1565,7 +1622,9 @@ export class InteractiveRebase {
           progress = true;
           continue;
         }
-        const deletionSet = this.computeDeletionSet({ ...target, theirs: current, references: [] });
+        let deletionSet = this.computeDeletionSet({ ...target, theirs: current, references: [] });
+        if (!deletionSet.effects.some((effect) => effect.action === "blocks-deletion"))
+          deletionSet = this.liftIndirectChanges(deletionSet);
         const conflict = this._conflicts.find((candidate) => candidate.instanceKey === instanceKey);
         assert(conflict instanceof RebaseConflictImpl);
         this.recordDeletionSet(conflict, deletionSet);

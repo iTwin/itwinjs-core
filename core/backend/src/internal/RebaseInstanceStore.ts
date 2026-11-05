@@ -68,6 +68,7 @@ export interface RebaseInstanceChange {
 }
 
 const tableName = "[InstanceChanges]";
+const metadataColumns = "[instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [owners], [ownerKind], [identityValues], [navigationRefs]";
 
 /** One schema-declared UNIQUE constraint applicable to a class, as discovered by
  * [[RebaseInstanceStore.getIdentityGroups]] - not exported; [[RebaseInstanceMetadata.identityValues]] is
@@ -695,21 +696,31 @@ export class RebaseInstanceStore implements Disposable {
    * its `old`/`new` snapshots, which can be quite large compared to the metadata.
    */
   public *allMetadata(): IterableIterator<RebaseInstanceMetadata> {
-    using stmt = this._db.prepareSqliteStatement(
-      `SELECT [instanceKey], [instanceId], [classFullName], [operation], [isIndirect], [owners], [ownerKind], [identityValues], [navigationRefs] FROM ${tableName} ORDER BY [instanceKey]`);
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      yield {
-        instanceKey: stmt.getValueString(0),
-        id: stmt.getValueString(1),
-        classFullName: stmt.getValueString(2),
-        operation: stmt.getValueString(3) as RebaseInstanceOperation,
-        isIndirect: stmt.getValueBoolean(4),
-        owners: stmt.isValueNull(5) ? [] : JSON.parse(stmt.getValueString(5)) as RebaseOwnerRef[],
-        ownerKind: stmt.getValueStringMaybe(6) as RebaseOwnerKind | undefined,
-        identityValues: stmt.isValueNull(7) ? undefined : JSON.parse(stmt.getValueString(7)) as RebaseIdentityValue[],
-        navigationRefs: stmt.isValueNull(8) ? undefined : JSON.parse(stmt.getValueString(8)) as RebaseNavigationRef[],
-      };
-    }
+    using stmt = this._db.prepareSqliteStatement(`SELECT ${metadataColumns} FROM ${tableName} ORDER BY [instanceKey]`);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW)
+      yield RebaseInstanceStore.readMetadata(stmt);
+  }
+
+  /** The metadata of a single captured instance, or undefined if it wasn't captured. */
+  public getMetadata(instanceKey: string): RebaseInstanceMetadata | undefined {
+    return this._db.withPreparedSqliteStatement(`SELECT ${metadataColumns} FROM ${tableName} WHERE [instanceKey]=?`, (stmt: SqliteStatement) => {
+      stmt.bindString(1, instanceKey);
+      return stmt.step() === DbResult.BE_SQLITE_ROW ? RebaseInstanceStore.readMetadata(stmt) : undefined;
+    });
+  }
+
+  private static readMetadata(stmt: SqliteStatement): RebaseInstanceMetadata {
+    return {
+      instanceKey: stmt.getValueString(0),
+      id: stmt.getValueString(1),
+      classFullName: stmt.getValueString(2),
+      operation: stmt.getValueString(3) as RebaseInstanceOperation,
+      isIndirect: stmt.getValueBoolean(4),
+      owners: stmt.isValueNull(5) ? [] : JSON.parse(stmt.getValueString(5)) as RebaseOwnerRef[],
+      ownerKind: stmt.getValueStringMaybe(6) as RebaseOwnerKind | undefined,
+      identityValues: stmt.isValueNull(7) ? undefined : JSON.parse(stmt.getValueString(7)) as RebaseIdentityValue[],
+      navigationRefs: stmt.isValueNull(8) ? undefined : JSON.parse(stmt.getValueString(8)) as RebaseNavigationRef[],
+    };
   }
 
   /**
