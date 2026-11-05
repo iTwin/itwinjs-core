@@ -1956,26 +1956,25 @@ describe("InteractiveRebase", () => {
 
     chai.expect(interactive.nextGroup()).to.be.true;
 
-    // The aspect's real conflict gives its owning element a synthetic conflict too - not because the
-    // element's own properties conflict (they don't), but because InteractiveRebase always makes an
-    // embedding owner resolvable whenever one of its dependents conflicts - see
-    // [[InteractiveRebase.createImplicitOwnerConflicts]].
+    // Updating an aspect's property also updates the lastMod of its owning element.
+    // So we will see a conflict on both the element and the aspect.
     chai.expect(interactive.conflicts.length).to.equal(2);
 
-    const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
-    chai.expect(conflict).to.not.be.undefined;
-    chai.expect(conflict.conflictingProperties).to.include("aspectValue");
-    chai.expect(conflict.original).to.not.be.undefined;
-    chai.expect(conflict.ours).to.not.be.undefined;
-    chai.expect(conflict.theirs).to.not.be.undefined;
-
-    chai.expect(conflict.original!.aspectValue).to.equal("Initial");
-    chai.expect(conflict.ours!.aspectValue).to.equal("User2");
-    chai.expect(conflict.theirs!.aspectValue).to.equal("User1");
-
-    const elementConflict = interactive.conflicts.find(c => c !== conflict);
+    const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
+    chai.expect(aspectConflict).to.not.be.undefined;
+    const elementConflict = interactive.conflicts.find(c => c !== aspectConflict);
     chai.expect(elementConflict).to.not.be.undefined;
-    if (!elementConflict) return;
+
+    if (!aspectConflict || !elementConflict) return;
+
+    chai.expect(aspectConflict.conflictingProperties).to.include("aspectValue");
+    chai.expect(aspectConflict.original).to.not.be.undefined;
+    chai.expect(aspectConflict.ours).to.not.be.undefined;
+    chai.expect(aspectConflict.theirs).to.not.be.undefined;
+
+    chai.expect(aspectConflict.original!.aspectValue).to.equal("Initial");
+    chai.expect(aspectConflict.ours!.aspectValue).to.equal("User2");
+    chai.expect(aspectConflict.theirs!.aspectValue).to.equal("User1");
 
     chai.expect(elementConflict.id).to.equal(id);
     chai.expect(elementConflict.brokenRelationships.length).to.equal(0);
@@ -1991,54 +1990,16 @@ describe("InteractiveRebase", () => {
     let aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User2");
 
-    conflict.acceptTheirs(["aspectValue"]);
+    aspectConflict.acceptTheirs(["aspectValue"]);
     aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User1");
 
-    conflict.acceptOurs(["aspectValue"]);
+    aspectConflict.acceptOurs(["aspectValue"]);
     aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User2");
   });
 
-  it("should not report an aspect conflict when users update different aspect properties", async () => {
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.insertAspect({
-        classFullName: uniqueAspectClassFullName,
-        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
-        aspectValue: "Initial",
-        aspectNumber: 1,
-      } as SomeUniqueAspectProps);
-    });
-    await briefcase1.pushChanges({ description: "Insert aspect" });
-    await briefcase2.pullChanges();
-
-    await withEditTxn(briefcase1, async (txn) => {
-      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
-      aspect.aspectValue = "User1";
-      txn.updateAspect(aspect);
-    });
-
-    await withEditTxn(briefcase2, async (txn) => {
-      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
-      aspect.aspectNumber = 2;
-      txn.updateAspect(aspect);
-    });
-
-    await briefcase1.pushChanges({ description: "User1 updates aspect value" });
-
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-
-    chai.expect(interactive.nextGroup()).to.be.true;
-    chai.expect(interactive.conflicts.length).to.equal(0);
-
-    const aspect = getUniqueAspect(briefcase2, id);
-    chai.expect(aspect.aspectValue).to.equal("User1");
-    chai.expect(aspect.aspectNumber).to.equal(2);
-  });
-
-  it("should report an aspect conflict when we update an aspect they deleted", async () => {
+  it("Our Update-Their Delete aspect conflict", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
         classFullName: uniqueAspectClassFullName,
@@ -2068,8 +2029,8 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
-    // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
+
+    // Updating or deleting an aspect also updates lastMod on the owning element.
     chai.expect(interactive.conflicts.length).to.equal(2);
 
     const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
@@ -2081,12 +2042,12 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ourModifiedProperties).to.include("aspectValue");
 
     chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.have.length(0);
-    conflict.acceptOurs();
-    const aspect = getUniqueAspect(briefcase2, id);
-    chai.expect(aspect.aspectValue).to.equal("User2");
+
+    chai.expect(() => conflict.acceptOurs()).to.throw();
+    chai.expect(() => conflict.acceptTheirs()).to.throw();
   });
 
-  it("should report an aspect conflict when they update an aspect we deleted", async () => {
+  it("Our Delete-Their Update aspect conflict", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
         classFullName: uniqueAspectClassFullName,
@@ -2116,8 +2077,8 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    // The aspect's real conflict gives its owning element a synthetic conflict too, even though the
-    // element itself applied cleanly - see [[InteractiveRebase.createImplicitOwnerConflicts]].
+
+    // Updating or deleting an aspect also updates lastMod on the owning element.
     chai.expect(interactive.conflicts.length).to.equal(2);
 
     const conflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect")!;
@@ -2129,12 +2090,12 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirModifiedProperties).to.include("aspectValue");
 
     chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.have.length(0);
-    conflict.acceptTheirs();
-    const aspect = getUniqueAspect(briefcase2, id);
-    chai.expect(aspect.aspectValue).to.equal("User1");
+
+    chai.expect(() => conflict.acceptOurs()).to.throw();
+    chai.expect(() => conflict.acceptTheirs()).to.throw();
   });
 
-  it("should report an aspect update when our element deletion cascades to the aspect", async () => {
+  it("DeletionEffect - indirect deleted aspect", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.insertAspect({
         classFullName: uniqueAspectClassFullName,
@@ -2163,140 +2124,38 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
-    chai.expect(conflict).to.not.be.undefined;
-    if (!conflict) return;
+
+    // When an element is deleted, its aspects are deleted via an _indirect_ change.
+    // This may ultimately be something we need to change. But for now, it means that
+    // the aspect deletion is not replayed during the interactive rebase. So when we
+    // replay the element deletion, the aspect is flagged as a deletion effect.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
 
     chai.expect(conflict.original).to.not.be.undefined;
     chai.expect(conflict.theirs).to.not.be.undefined;
     chai.expect(conflict.ours).to.be.undefined;
-    chai.expect(conflict.theirModifiedProperties).to.include("aspectValue");
 
-    // Our own delete of the owning element applied cleanly (theirs never touched it), so it only has
-    // an implicit owner conflict (see [[InteractiveRebase.createImplicitOwnerConflicts]]) - resolve it
-    // first, since the aspect can't be restored without its owner.
-    const ownerConflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
-    chai.expect(ownerConflict).to.not.be.undefined;
+    chai.expect(conflict.conflictingProperties.length).to.equal(0);
+    chai.expect(conflict.differentProperties.length).to.equal(0);
+    chai.expect(conflict.theirModifiedProperties.length).to.equal(1);
+    chai.expect(conflict.theirModifiedProperties).to.include("lastMod");
+    chai.expect(conflict.ourModifiedProperties.length).to.equal(0);
 
-    // If we attempt to acceptTheirs on the aspect while its owner does not exist,
-    // an exception is thrown.
-    chai.expect(() => conflict.acceptTheirs()).to.throw("Resolve the ownerConflicts first");
+    chai.expect(conflict.deletionEffects.length).to.equal(1);
+    const deletionEffect = conflict.deletionEffects[0];
 
-    // acceptTheirs on the owner also implies acceptTheirs on the dependent.
-    ownerConflict?.acceptTheirs();
-    const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(element).to.not.be.undefined;
-    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+    chai.expect(deletionEffect.affectedClassFullName).to.equal("InteractiveRebaseTest:SomeUniqueAspect");
+    chai.expect(deletionEffect.action).to.equal("cascade");
+    if (deletionEffect.action === "cascade") {
+      chai.expect(deletionEffect.deletedInstance?.aspectValue).to.equal("User1");
+    }
 
-    // We can call acceptTheirs on the aspect's conflict now, but it won't do anything new.
-    conflict.acceptTheirs();
-    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
-
-    // If we call acceptOurs on the aspect's conflict, the aspect will be deleted.
-    conflict.acceptOurs();
-    chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.be.empty;
-
-    // acceptTheirs will bring it back again.
-    conflict.acceptTheirs();
-    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+    chai.expect(() => conflict.acceptTheirs()).to.throw();
+    chai.expect(() => conflict.acceptOurs()).to.throw();
   });
 
-  it("should restore an element and its aspect when accepting our aspect update after they deleted the element", async () => {
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.insertAspect({
-        classFullName: uniqueAspectClassFullName,
-        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
-        aspectValue: "Initial",
-        aspectNumber: 1,
-      } as SomeUniqueAspectProps);
-    });
-    await briefcase1.pushChanges({ description: "Insert aspect" });
-    await briefcase2.pullChanges();
-
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.deleteElement(id);
-    });
-
-    await withEditTxn(briefcase2, async (txn) => {
-      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
-      aspect.aspectValue = "User2";
-      txn.updateAspect(aspect);
-    });
-
-    await briefcase1.pushChanges({ description: "User1 deletes element" });
-
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-
-    chai.expect(interactive.nextGroup()).to.be.true;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
-    chai.expect(conflict).to.not.be.undefined;
-    if (!conflict) return;
-
-    chai.expect(conflict.original).to.not.be.undefined;
-    chai.expect(conflict.theirs).to.be.undefined;
-    chai.expect(conflict.ours).to.not.be.undefined;
-    chai.expect(conflict.ourModifiedProperties).to.include("aspectValue");
-
-    // Our own local aspect update also touched the (later upstream-deleted) element's own captured
-    // row, and that too applied cleanly - giving it an implicit owner conflict of its own (see
-    // [[InteractiveRebase.createImplicitOwnerConflicts]]). Resolve it first, since the aspect can't be
-    // restored without its owner.
-    const ownerConflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
-    chai.expect(ownerConflict).to.not.be.undefined;
-    ownerConflict?.acceptOurs();
-
-    conflict.acceptOurs();
-    const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
-    chai.expect(element).to.not.be.undefined;
-    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User2");
-  });
-
-  it("should restore an edited aspect when accepting theirs after our element deletion", async () => {
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.insertAspect({
-        classFullName: uniqueAspectClassFullName,
-        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
-        aspectValue: "Initial",
-        aspectNumber: 1,
-      } as SomeUniqueAspectProps);
-    });
-    await briefcase1.pushChanges({ description: "Insert aspect" });
-    await briefcase2.pullChanges();
-
-    await withEditTxn(briefcase1, async (txn) => {
-      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
-      aspect.aspectValue = "User1";
-      txn.updateAspect(aspect);
-      // Use a property with an already-set baseline value ("Original", from the outer `before()`
-      // setup) rather than an unset one: an unset-to-set transition on a delete-vs-update conflict
-      // is not detected by native's `expectedOldValues` comparison - a separate, pre-existing gap
-      // unrelated to this cascade/closure design.
-      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
-    });
-
-    await withEditTxn(briefcase2, async (txn) => {
-      txn.deleteElement(id);
-    });
-
-    await briefcase1.pushChanges({ description: "User1 updates element and aspect" });
-
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-
-    chai.expect(interactive.nextGroup()).to.be.true;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
-    chai.expect(conflict).to.not.be.undefined;
-    if (!conflict) return;
-
-    conflict.acceptTheirs();
-    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User1");
-    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
-  });
-
-  it("reports an ON DELETE SET NULL as a DeletionEffect", async () => {
+  it("DeletionEffect - ON DELETE SET NULL", async () => {
     const typeCode = Code.createEmpty();
     typeCode.value = "SomeGraphicalType";
 
@@ -2360,27 +2219,34 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.true;
-    const conflictIds = interactive.conflicts.map((conflict) => conflict.id);
-    chai.expect(conflictIds.toSorted()).to.deep.equal([otherId, typeId].toSorted());
-    chai.expect(interactive.conflicts.some((conflict) => conflict.id === otherId)).to.be.true;
+
+    // When `typeId` is deleted, both `id` and `upstreamReferenceId` have their `typeDefinition` set to null.
+    // In the case of `id`, this happened when the deletion was originally done, too. So that suggests
+    // that only `upstreamReferenceId` should appear in the deletion effects.
+    // BUT `id`'s navigation property was set to null with an _indirect_ change. Which means we don't replay
+    // it in an interactive rebase. Which means it shows up as an unexpected deletion effect when we
+    // delete `typeId`.
+
+    chai.expect(interactive.conflicts.length).to.equal(2);
     const typeConflict = interactive.conflicts.find((conflict) => conflict.id === typeId)!;
     chai.expect(typeConflict).to.not.be.undefined;
-    chai.expect(typeConflict.original?.id).to.equal(typeId);
-    chai.expect(typeConflict.theirs?.id).to.equal(typeId);
+    const otherConflict = interactive.conflicts.find((conflict) => conflict.id === otherId)!;
+    chai.expect(otherConflict).to.not.be.undefined;
+
+    chai.expect(typeConflict.original).to.not.be.undefined;
+    chai.expect(typeConflict.theirs).to.not.be.undefined;
     chai.expect(typeConflict.ours).to.be.undefined;
+
     chai.expect(typeConflict.deletionEffects).to.have.length(1);
     const effect = typeConflict.deletionEffects[0];
     chai.expect(effect.affectedId).to.equal(upstreamReferenceId);
     chai.expect(effect.action).to.equal("set-null");
-    chai.expect(effect.navigationProperty).to.equal("typeDefinition");
-    chai.expect(effect.relationshipClass.fullName).to.equal("BisCore:GeometricElement2dHasTypeDefinition");
-    if (effect.action !== "set-null") throw new Error("Expected SET NULL effect");
-    chai.expect(effect.previousValue).to.equal(typeId);
-    chai.expect(effect).not.to.have.property("before");
-    chai.expect(effect).not.to.have.property("after");
     chai.expect(effect).not.to.have.property("deletedInstance");
-    chai.expect(effect.affectedConflict).to.be.undefined;
-    chai.expect(interactive.conflicts.some((conflict) => conflict.id === id)).to.be.false;
+    chai.expect(effect.references.length).to.equal(1);
+    const affectedReference = effect.references[0];
+    chai.expect(affectedReference.navigationProperty).to.equal("typeDefinition");
+    chai.expect(affectedReference.relationshipClass.fullName).to.equal("BisCore:GeometricElement2dHasTypeDefinition");
+    chai.expect(affectedReference.targetId).to.equal(typeId);
 
     const final = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(final.typeDefinition).to.be.undefined;
