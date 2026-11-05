@@ -12,6 +12,8 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
+  - [Platform support](#platform-support)
+    - [Node.js 26 support](#nodejs-26-support)
   - [API deprecations](#api-deprecations)
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
@@ -137,6 +139,12 @@ Changes to the beta types:
 If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
+
+## Platform support
+
+### Node.js 26 support
+
+In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 26](https://nodejs.org/en/blog/release/v26.13.0). Node.js 26 is not yet supported by `@itwin/core-mobile`.
 
 ## API deprecations
 
