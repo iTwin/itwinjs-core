@@ -4,6 +4,394 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  auth-clients:
+    '@itwin/browser-authorization':
+      specifier: ^1.0.1
+      version: 1.1.4
+    '@itwin/electron-authorization':
+      specifier: ^0.24.0
+      version: 0.24.0
+    '@itwin/oidc-signin-tool':
+      specifier: ^6.2.0
+      version: 6.2.0
+    '@itwin/service-authorization':
+      specifier: ^2.1.3
+      version: 2.1.3
+  build:
+    '@types/node':
+      specifier: ~20.17.0
+      version: 20.17.58
+    '@types/yargs':
+      specifier: 17.0.19
+      version: 17.0.19
+    chalk:
+      specifier: ^3.0.0
+      version: 3.0.0
+    cpx2:
+      specifier: ^8.0.0
+      version: 8.0.2
+    cross-env:
+      specifier: ^7.0.3
+      version: 7.0.3
+    glob:
+      specifier: ^13.0.6
+      version: 13.0.6
+    mkdirp:
+      specifier: ^1.0.4
+      version: 1.0.4
+    npm-run-all2:
+      specifier: ^7.0.2
+      version: 7.0.2
+    rimraf:
+      specifier: ^6.0.1
+      version: 6.1.3
+    source-map-support:
+      specifier: ^0.5.6
+      version: 0.5.21
+    typescript:
+      specifier: ~5.6.2
+      version: 5.6.3
+    yargs:
+      specifier: ^17.4.0
+      version: 17.7.3
+  bundling:
+    assert:
+      specifier: ^2.0.0
+      version: 2.1.0
+    babel-loader:
+      specifier: ~8.2.5
+      version: 8.2.5
+    browserify-zlib:
+      specifier: ^0.2.0
+      version: 0.2.0
+    browserslist-to-esbuild:
+      specifier: ^1.2.0
+      version: 1.2.0
+    buffer:
+      specifier: ^6.0.3
+      version: 6.0.3
+    null-loader:
+      specifier: ^4.0.1
+      version: 4.0.1
+    path-browserify:
+      specifier: ^1.0.1
+      version: 1.0.1
+    rollup-plugin-external-globals:
+      specifier: 0.11.0
+      version: 0.11.0
+    rollup-plugin-ignore:
+      specifier: ^1.0.10
+      version: 1.0.10
+    rollup-plugin-visualizer:
+      specifier: ^5.14.0
+      version: 5.14.0
+    rollup-plugin-webpack-stats:
+      specifier: ^2.0.0
+      version: 2.1.11
+    source-map-loader:
+      specifier: ^5.0.0
+      version: 5.0.0
+    stream-browserify:
+      specifier: ^3.0.0
+      version: 3.0.0
+    vite:
+      specifier: ^6.4.4
+      version: 6.4.4
+    vite-plugin-env-compatible:
+      specifier: ^2.0.1
+      version: 2.0.1
+    webpack:
+      specifier: ^5.97.1
+      version: 5.111.1
+    webpack-cli:
+      specifier: ^5.0.1
+      version: 5.1.4
+  electron:
+    electron:
+      specifier: ^45.0.0
+      version: 45.0.0
+  imodels-clients:
+    '@itwin/imodels-access-backend':
+      specifier: ^6.0.2
+      version: 6.1.3
+    '@itwin/imodels-access-frontend':
+      specifier: ^6.0.2
+      version: 6.1.3
+    '@itwin/imodels-client-authoring':
+      specifier: ^6.0.2
+      version: 6.2.2
+    '@itwin/imodels-client-management':
+      specifier: ^6.0.2
+      version: 6.2.2
+    '@itwin/object-storage-azure':
+      specifier: ^3.0.4
+      version: 3.1.3
+    '@itwin/object-storage-core':
+      specifier: ^3.0.4
+      version: 3.1.3
+  itwins-client:
+    '@itwin/itwins-client':
+      specifier: ^1.6.1
+      version: 1.6.1
+  linting:
+    '@itwin/eslint-plugin':
+      specifier: ^6.0.0
+      version: 6.1.1
+    '@typescript-eslint/parser':
+      specifier: ~8.71.0
+      version: 8.71.0
+    eslint:
+      specifier: ^9.31.0
+      version: 9.39.5
+    eslint-config-prettier:
+      specifier: ^9.1.2
+      version: 9.1.2
+    prettier:
+      specifier: ^3.2.5
+      version: 3.9.9
+  presentation:
+    '@itwin/presentation-shared':
+      specifier: ^1.2.2
+      version: 1.2.22
+    '@itwin/unified-selection':
+      specifier: ^1.4.0
+      version: 1.8.6
+    rxjs:
+      specifier: ^7.8.1
+      version: 7.8.2
+    rxjs-for-await:
+      specifier: ^1.0.0
+      version: 1.0.0
+  reality-capture:
+    '@itwin/reality-data-client':
+      specifier: ^1.3.1
+      version: 1.6.0
+  runtime:
+    '@azure/storage-blob':
+      specifier: ^12.28.0
+      version: 12.34.0
+    '@types/express':
+      specifier: ^4.17.20
+      version: 4.17.25
+    '@xmldom/xmldom':
+      specifier: ~0.8.15
+      version: 0.8.15
+    express:
+      specifier: ^4.22.1
+      version: 4.22.3
+  schemas:
+    '@bentley/aec-units-schema':
+      specifier: ^1.0.3
+      version: 1.0.3
+    '@bentley/architectural-physical-schema':
+      specifier: ^1.0.3
+      version: 1.0.3
+    '@bentley/bis-core-schema':
+      specifier: ^1.0.15
+      version: 1.0.25
+    '@bentley/bis-custom-attributes-schema':
+      specifier: ^1.0.0
+      version: 1.0.0
+    '@bentley/cif-bridge-schema':
+      specifier: ^1.0.5
+      version: 1.0.19
+    '@bentley/cif-common-schema':
+      specifier: ^1.0.3
+      version: 1.0.16
+    '@bentley/cif-geometric-rules-schema':
+      specifier: ^1.0.1
+      version: 1.0.6
+    '@bentley/cif-hydraulic-analysis-schema':
+      specifier: ^1.0.3
+      version: 1.0.9
+    '@bentley/cif-hydraulic-results-schema':
+      specifier: ^1.0.3
+      version: 1.0.7
+    '@bentley/cif-quantity-takeoffs-schema':
+      specifier: ^1.0.1
+      version: 1.0.2
+    '@bentley/cif-rail-schema':
+      specifier: ^1.0.2
+      version: 1.0.12
+    '@bentley/cif-roads-schema':
+      specifier: ^1.0.1
+      version: 1.0.4
+    '@bentley/cif-subsurface-conflict-analysis-schema':
+      specifier: ^1.0.3
+      version: 1.0.8
+    '@bentley/cif-subsurface-schema':
+      specifier: ^1.0.3
+      version: 1.0.10
+    '@bentley/cif-units-schema':
+      specifier: ^1.0.7
+      version: 1.0.7
+    '@bentley/construction-schema':
+      specifier: ^1.0.4
+      version: 1.0.4
+    '@bentley/core-custom-attributes-schema':
+      specifier: ^1.0.4
+      version: 1.0.4
+    '@bentley/ecdb-map-schema':
+      specifier: ^2.0.1
+      version: 2.0.4
+    '@bentley/ecdb-schema-policies-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/formats-schema':
+      specifier: ^1.0.0
+      version: 1.0.0
+    '@bentley/linear-referencing-schema':
+      specifier: ^2.0.3
+      version: 2.0.3
+    '@bentley/physical-material-schema':
+      specifier: ^1.0.2
+      version: 1.0.2
+    '@bentley/plant-custom-attributes-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/process-functional-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/process-physical-schema':
+      specifier: ^1.0.2
+      version: 1.0.2
+    '@bentley/quantity-takeoffs-aspects-schema':
+      specifier: ^1.0.1
+      version: 1.0.2
+    '@bentley/road-rail-units-schema':
+      specifier: ^1.0.3
+      version: 1.0.5
+    '@bentley/spatial-composition-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/structural-physical-schema':
+      specifier: ^1.0.1
+      version: 1.0.1
+    '@bentley/units-schema':
+      specifier: ^1.0.12
+      version: 1.0.12
+  testing:
+    '@types/chai':
+      specifier: 4.3.1
+      version: 4.3.1
+    '@types/chai-as-promised':
+      specifier: ^7
+      version: 7.1.8
+    '@types/chai-jest-snapshot':
+      specifier: ^1.3.8
+      version: 1.3.8
+    '@types/chai-subset':
+      specifier: 1.3.1
+      version: 1.3.1
+    '@types/deep-equal':
+      specifier: ^1
+      version: 1.0.4
+    '@types/jsdom':
+      specifier: ^21.1.7
+      version: 21.1.7
+    '@types/mocha':
+      specifier: ^10.0.6
+      version: 10.0.10
+    '@types/sinon':
+      specifier: ^17.0.2
+      version: 17.0.4
+    '@types/sinon-chai':
+      specifier: ^3.2.0
+      version: 3.2.12
+    '@vitest/browser':
+      specifier: ^4.1.11
+      version: 4.1.11
+    '@vitest/browser-playwright':
+      specifier: ^4.1.11
+      version: 4.1.11
+    '@vitest/coverage-v8':
+      specifier: ^4.1.11
+      version: 4.1.11
+    azurite:
+      specifier: ^3.37.0
+      version: 3.37.0
+    babel-plugin-istanbul:
+      specifier: ^7.0.0
+      version: 7.0.1
+    c8:
+      specifier: ^10.1.3
+      version: 10.1.3
+    chai:
+      specifier: ^4.3.10
+      version: 4.5.0
+    chai-as-promised:
+      specifier: ^7.1.1
+      version: 7.1.2
+    chai-jest-snapshot:
+      specifier: ^2.0.0
+      version: 2.0.0
+    chai-subset:
+      specifier: 1.6.0
+      version: 1.6.0
+    deep-equal:
+      specifier: ^1
+      version: 1.1.2
+    dotenv:
+      specifier: ^16.4.5
+      version: 16.6.1
+    dotenv-expand:
+      specifier: ^5.1.0
+      version: 5.1.0
+    fetch-mock:
+      specifier: ~11.1.3
+      version: 11.1.5
+    jsdom:
+      specifier: ^26.0.0
+      version: 26.1.0
+    mocha:
+      specifier: ^11.1.0
+      version: 11.8.0
+    node-simctl:
+      specifier: ~7.6.1
+      version: 7.6.5
+    nyc:
+      specifier: ^17.1.0
+      version: 17.1.0
+    playwright:
+      specifier: ~1.64.1
+      version: 1.64.1
+    sinon:
+      specifier: ^17.0.2
+      version: 17.0.2
+    sinon-chai:
+      specifier: ^3.7.0
+      version: 3.7.0
+    vitest:
+      specifier: ^4.1.11
+      version: 4.1.11
+  types:
+    '@types/express-ws':
+      specifier: ^3.0.3
+      version: 3.0.6
+    '@types/ws':
+      specifier: ^7.0.0
+      version: 7.4.7
+  utilities:
+    '@types/fs-extra':
+      specifier: ^4.0.7
+      version: 4.0.15
+    '@types/lodash':
+      specifier: ^4.14.202
+      version: 4.17.25
+    '@types/semver':
+      specifier: 7.3.10
+      version: 7.3.10
+    fs-extra:
+      specifier: ^8.1.0
+      version: 8.1.0
+    lodash:
+      specifier: ^4.18.0
+      version: 4.18.1
+    semver:
+      specifier: ^7.5.2
+      version: 7.8.5
+
 overrides:
   browserslist: latest
   serialize-javascript: ^7.0.5
@@ -20,19 +408,19 @@ importers:
   ../../core/backend:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.28.0
+        specifier: catalog:runtime
         version: 12.34.0
       '@bentley/imodeljs-native':
-        specifier: 5.16.3
-        version: 5.16.3
+        specifier: 5.16.12
+        version: 5.16.12
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       form-data:
         specifier: ^4.0.6
         version: 4.0.6
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       json5:
         specifier: ^2.2.3
@@ -44,7 +432,7 @@ importers:
         specifier: ^4.3.0
         version: 4.3.1
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
       touch:
         specifier: ^3.1.0
@@ -78,64 +466,64 @@ importers:
         specifier: workspace:*
         version: link:../ecsql/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@opentelemetry/api':
         specifier: 1.9.1
         version: 1.9.1
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/deep-equal-in-any-order':
         specifier: ^1.0.4
         version: 1.0.4
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/multiparty':
         specifier: ^0.0.31
         version: 0.0.31
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:utilities
         version: 7.3.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/touch':
         specifier: ^3.1.2
         version: 3.1.5
       '@types/ws':
-        specifier: ^7.0.0
+        specifier: catalog:types
         version: 7.4.7
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal-in-any-order:
         specifier: ^2.0.6
         version: 2.2.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
@@ -144,28 +532,28 @@ importers:
         specifier: ^14.1.3
         version: 14.1.4
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       node-simctl:
-        specifier: ~7.6.1
+        specifier: catalog:testing
         version: 7.6.5
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sql-formatter:
         specifier: ^15.4.6
         version: 15.9.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/bentley:
@@ -174,28 +562,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@opentelemetry/api':
         specifier: 1.9.1
         version: 1.9.1
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/common:
@@ -217,31 +605,31 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/ecschema-editing:
@@ -262,113 +650,113 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-locaters:
     dependencies:
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/architectural-physical-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/bis-core-schema':
-        specifier: ^1.0.15
+        specifier: catalog:schemas
         version: 1.0.25
       '@bentley/bis-custom-attributes-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/construction-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/core-custom-attributes-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/ecdb-map-schema':
-        specifier: ^2.0.1
+        specifier: catalog:schemas
         version: 2.0.4
       '@bentley/ecdb-schema-policies-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/linear-referencing-schema':
-        specifier: ^2.0.3
+        specifier: catalog:schemas
         version: 2.0.3
       '@bentley/physical-material-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/plant-custom-attributes-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/quantity-takeoffs-aspects-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/spatial-composition-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/structural-physical-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -377,76 +765,76 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-metadata:
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/bis-custom-attributes-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/cif-units-schema':
-        specifier: ^1.0.7
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/core-custom-attributes-schema':
-        specifier: ^1.0.4
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/road-rail-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.5
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -458,37 +846,37 @@ importers:
         specifier: workspace:*
         version: link:../quantity
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.5
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/ecschema-rpc/common:
@@ -509,37 +897,37 @@ importers:
         specifier: workspace:*
         version: link:../../ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecschema-rpc/impl:
@@ -566,16 +954,16 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/ecsql/common:
@@ -588,31 +976,31 @@ importers:
         specifier: workspace:*
         version: link:../../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/electron:
@@ -633,40 +1021,40 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/vitest-browser-bridge':
         specifier: workspace:*
         version: link:../../tools/vitest-browser-bridge
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/browser':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/express-server:
     dependencies:
       express:
-        specifier: ^4.22.1
+        specifier: catalog:runtime
         version: 4.22.3
       express-ws:
         specifier: ^5.0.2
@@ -682,52 +1070,52 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:runtime
         version: 4.17.25
       '@types/express-ws':
-        specifier: ^3.0.3
+        specifier: catalog:types
         version: 3.0.6
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       supertest:
         specifier: ^7.0.0
         version: 7.3.1
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/extension:
@@ -740,16 +1128,16 @@ importers:
         version: link:../frontend
     devDependencies:
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/frontend:
@@ -774,13 +1162,13 @@ importers:
         version: 0.6.0
     devDependencies:
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/formats-schema':
-        specifier: ^1.0.0
+        specifier: catalog:schemas
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/appui-abstract':
         specifier: workspace:*
@@ -810,46 +1198,46 @@ importers:
         specifier: workspace:*
         version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@vitest/browser-playwright':
-        specifier: ^4.1.11
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        specifier: catalog:testing
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: catalog:testing
+        version: 1.64.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/frontend-devtools:
@@ -874,22 +1262,22 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/file-saver':
         specifier: ^2.0.1
         version: 2.0.7
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/geometry:
@@ -905,28 +1293,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.3
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/hypermodeling:
@@ -954,46 +1342,46 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../core/i18n:
@@ -1021,46 +1409,46 @@ importers:
         specifier: workspace:*
         version: link:../common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../core/markup:
@@ -1088,49 +1476,49 @@ importers:
         specifier: workspace:*
         version: link:../geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../core/mobile:
     dependencies:
       lodash:
-        specifier: ^4.18.0
+        specifier: catalog:utilities
         version: 4.18.1
       superagent:
         specifier: ^9.0.1
@@ -1155,43 +1543,43 @@ importers:
         specifier: workspace:*
         version: link:../frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/lodash':
-        specifier: ^4.14.202
+        specifier: catalog:utilities
         version: 4.17.25
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/superagent':
         specifier: ^8.1.6
         version: 8.1.11
       '@types/ws':
-        specifier: ^7.0.0
+        specifier: catalog:types
         version: 7.4.7
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/orbitgt:
@@ -1200,43 +1588,43 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../core/quantity:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.12
+        specifier: catalog:schemas
         version: 1.0.12
       '@itwin/build-tools':
         specifier: workspace:*
@@ -1245,28 +1633,28 @@ importers:
         specifier: workspace:*
         version: link:../bentley
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/coverage-v8':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       tsx:
         specifier: ~4.22.0
         version: 4.22.5
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/webgl-compatibility:
@@ -1282,43 +1670,43 @@ importers:
         specifier: workspace:*
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../domains/analytical/backend:
@@ -1336,43 +1724,43 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:utilities
         version: 7.3.10
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/linear-referencing/backend:
@@ -1390,40 +1778,40 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/linear-referencing-common':
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/linear-referencing/common:
@@ -1438,16 +1826,16 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../domains/physical-material/backend:
@@ -1465,34 +1853,34 @@ importers:
         specifier: workspace:*
         version: link:../../../core/common
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/backend:
@@ -1517,16 +1905,16 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/common:
@@ -1544,16 +1932,16 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../editor/frontend:
@@ -1581,19 +1969,19 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../example-code/app:
@@ -1617,47 +2005,47 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../example-code/snippets:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.28.0
+        specifier: catalog:runtime
         version: 12.34.0
       '@itwin/core-backend':
         specifier: workspace:*
@@ -1693,19 +2081,19 @@ importers:
         specifier: ^0.4.2
         version: 0.4.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)(@itwin/core-quantity@..+core+quantity)(@itwin/ecschema-metadata@..+core+ecschema-metadata)
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/map-layers-formats':
         specifier: workspace:*
         version: link:../../extensions/map-layers-formats
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@20.17.58)
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       get-system-fonts:
         specifier: ^2.0.2
@@ -1715,52 +2103,55 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: catalog:auth-clients
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/cesium-renderer:
@@ -1787,31 +2178,31 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/browser-playwright':
-        specifier: ^4.1.11
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        specifier: catalog:testing
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: catalog:testing
+        version: 1.64.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../extensions/frontend-tiles:
@@ -1835,61 +2226,61 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../extensions/map-layers-auth:
@@ -1907,46 +2298,46 @@ importers:
         specifier: workspace:*
         version: link:../../core/frontend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       fetch-mock:
-        specifier: ~11.1.3
+        specifier: catalog:testing
         version: 11.1.5
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/map-layers-formats:
@@ -1955,8 +2346,8 @@ importers:
         specifier: ~4.4.0
         version: 4.4.1
       google-protobuf:
-        specifier: ~3.20.1
-        version: 3.20.1
+        specifier: ~4.0.3
+        version: 4.0.3
     devDependencies:
       '@itwin/appui-abstract':
         specifier: workspace:*
@@ -1977,13 +2368,13 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/geojson':
         specifier: ~7946.0.14
@@ -1992,58 +2383,58 @@ importers:
         specifier: ~3.15.6
         version: 3.15.12
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:testing
         version: 3.2.12
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       fetch-mock:
-        specifier: ~11.1.3
+        specifier: catalog:testing
         version: 11.1.5
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../extensions/test-extension:
@@ -2056,76 +2447,76 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       esbuild:
         specifier: ^0.13.8
         version: 0.13.15
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/backend:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.28.0
+        specifier: catalog:runtime
         version: 12.34.0
       '@bentley/aec-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.3
       '@bentley/cif-bridge-schema':
-        specifier: ^1.0.5
+        specifier: catalog:schemas
         version: 1.0.19
       '@bentley/cif-common-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.16
       '@bentley/cif-geometric-rules-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.6
       '@bentley/cif-hydraulic-analysis-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.9
       '@bentley/cif-hydraulic-results-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/cif-quantity-takeoffs-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/cif-rail-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.12
       '@bentley/cif-roads-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.4
       '@bentley/cif-subsurface-conflict-analysis-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.8
       '@bentley/cif-subsurface-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.10
       '@bentley/cif-units-schema':
-        specifier: ^1.0.7
+        specifier: catalog:schemas
         version: 1.0.7
       '@bentley/plant-custom-attributes-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/process-functional-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.1
       '@bentley/process-physical-schema':
-        specifier: ^1.0.2
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/quantity-takeoffs-aspects-schema':
-        specifier: ^1.0.1
+        specifier: catalog:schemas
         version: 1.0.2
       '@bentley/road-rail-units-schema':
-        specifier: ^1.0.3
+        specifier: catalog:schemas
         version: 1.0.5
       '@itwin/core-backend':
         specifier: workspace:*
@@ -2143,95 +2534,98 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
+      '@itwin/service-authorization':
+        specifier: catalog:auth-clients
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@26.6.4)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/core:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.28.0
+        specifier: catalog:runtime
         version: 12.34.0
       '@itwin/core-backend':
         specifier: workspace:*
@@ -2279,7 +2673,7 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/express-server':
         specifier: workspace:*
@@ -2288,101 +2682,104 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
       azurite:
-        specifier: ^3.37.0
+        specifier: catalog:testing
         version: 3.37.0(@types/node@20.17.58)
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/object-storage-core':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: catalog:auth-clients
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/vitest-browser-bridge':
         specifier: workspace:*
         version: link:../../tools/vitest-browser-bridge
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@vitest/browser':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/browser-playwright':
-        specifier: ^4.1.11
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        specifier: catalog:testing
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mkdirp:
-        specifier: ^1.0.4
+        specifier: catalog:build
         version: 1.0.4
       nock:
         specifier: ^12.0.3
         version: 12.0.3
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: catalog:testing
+        version: 1.64.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../full-stack-tests/ecschema-rpc-interface:
@@ -2418,98 +2815,101 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-rpc/impl
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
+      '@itwin/service-authorization':
+        specifier: catalog:auth-clients
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
     devDependencies:
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../full-stack-tests/presentation:
@@ -2548,7 +2948,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-backend':
         specifier: workspace:*
@@ -2560,76 +2960,76 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
       '@itwin/unified-selection':
-        specifier: ^1.4.0
+        specifier: catalog:presentation
         version: 1.8.6
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:testing
         version: 1.3.1
       '@types/cpx2':
         specifier: npm:@types/cpx@1.5.2
         version: '@types/cpx@1.5.2'
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.0.4
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:testing
         version: 3.2.12
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       fast-sort:
         specifier: ^3.0.2
@@ -2647,28 +3047,28 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sanitize-filename:
         specifier: ^1.6.3
         version: 1.6.4
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../full-stack-tests/rpc:
@@ -2695,65 +3095,65 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/vitest-browser-bridge':
         specifier: workspace:*
         version: link:../../tools/vitest-browser-bridge
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:runtime
         version: 4.17.25
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:utilities
         version: 7.3.10
       '@vitest/browser':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/browser-playwright':
-        specifier: ^4.1.11
-        version: 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+        specifier: catalog:testing
+        version: 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       buffer:
-        specifier: ^6.0.3
+        specifier: catalog:bundling
         version: 6.0.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: catalog:testing
+        version: 1.64.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../full-stack-tests/rpc-interface:
@@ -2780,26 +3180,26 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../../presentation/common
@@ -2807,22 +3207,22 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/service-authorization':
-        specifier: ^2.0.0
+        specifier: catalog:auth-clients
         version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
     devDependencies:
       '@itwin/core-backend':
@@ -2835,85 +3235,85 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       '@itwin/itwins-client':
-        specifier: ^1.6.1
+        specifier: catalog:itwins-client
         version: 1.6.1
       '@itwin/presentation-backend':
         specifier: workspace:*
         version: link:../../presentation/backend
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       assert:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.0
       browserify-zlib:
-        specifier: ^0.2.0
+        specifier: catalog:bundling
         version: 0.2.0
       buffer:
-        specifier: ^6.0.3
+        specifier: catalog:bundling
         version: 6.0.3
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
       null-loader:
-        specifier: ^4.0.1
+        specifier: catalog:bundling
         version: 4.0.1(webpack@5.111.1)
       path-browserify:
-        specifier: ^1.0.1
+        specifier: catalog:bundling
         version: 1.0.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       stream-browserify:
-        specifier: ^3.0.0
+        specifier: catalog:bundling
         version: 3.0.0
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
       webpack-cli:
-        specifier: ^5.0.1
+        specifier: catalog:bundling
         version: 5.1.4(webpack@5.111.1)
 
   ../../presentation/backend:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
       object-hash:
         specifier: ^1.3.1
         version: 1.3.1
       rxjs:
-        specifier: ^7.8.1
+        specifier: catalog:presentation
         version: 7.8.2
       rxjs-for-await:
-        specifier: ^1.0.0
+        specifier: catalog:presentation
         version: 1.0.0(rxjs@7.8.2)
       semver:
-        specifier: ^7.5.2
+        specifier: catalog:utilities
         version: 7.8.5
     devDependencies:
       '@itwin/build-tools':
@@ -2935,7 +3335,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
@@ -2944,94 +3344,94 @@ importers:
         specifier: ^11.2.2
         version: 11.3.1
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:testing
         version: 1.3.1
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.0.4
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/object-hash':
         specifier: ^1.3.0
         version: 1.3.4
       '@types/semver':
-        specifier: 7.3.10
+        specifier: catalog:utilities
         version: 7.3.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:testing
         version: 3.2.12
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
         version: 8.1.5
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../presentation/common:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.2
+        specifier: catalog:presentation
         version: 1.2.22
     devDependencies:
       '@itwin/build-tools':
@@ -3050,100 +3450,100 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:testing
         version: 1.3.8
       '@types/chai-subset':
-        specifier: 1.3.1
+        specifier: catalog:testing
         version: 1.3.1
       '@types/deep-equal':
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.0.4
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:testing
         version: 3.2.12
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       chai-subset:
-        specifier: 1.6.0
+        specifier: catalog:testing
         version: 1.6.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       deep-equal:
-        specifier: ^1
+        specifier: catalog:testing
         version: 1.1.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       typescript-json-schema:
         specifier: ^0.67.4
         version: 0.67.4
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
 
   ../../presentation/frontend:
     dependencies:
       '@itwin/unified-selection':
-        specifier: ^1.4.0
+        specifier: catalog:presentation
         version: 1.8.6
       rxjs:
-        specifier: ^7.8.1
+        specifier: catalog:presentation
         version: 7.8.2
       rxjs-for-await:
-        specifier: ^1.0.0
+        specifier: catalog:presentation
         version: 1.0.0(rxjs@7.8.2)
     devDependencies:
       '@itwin/build-tools':
@@ -3168,79 +3568,79 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/chai-as-promised':
-        specifier: ^7
+        specifier: catalog:testing
         version: 7.1.8
       '@types/chai-jest-snapshot':
-        specifier: ^1.3.8
+        specifier: catalog:testing
         version: 1.3.8
       '@types/jsdom':
-        specifier: ^21.1.7
+        specifier: catalog:testing
         version: 21.1.7
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       '@types/sinon-chai':
-        specifier: ^3.2.0
+        specifier: catalog:testing
         version: 3.2.12
       c8:
-        specifier: ^10.1.3
+        specifier: catalog:testing
         version: 10.1.3
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.1
+        specifier: catalog:testing
         version: 7.1.2(chai@4.5.0)
       chai-jest-snapshot:
-        specifier: ^2.0.0
+        specifier: catalog:testing
         version: 2.0.0(chai@4.5.0)
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       eslint-config-prettier:
-        specifier: ^9.1.2
+        specifier: catalog:linting
         version: 9.1.2(eslint@9.39.5)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       jsdom:
-        specifier: ^26.0.0
+        specifier: catalog:testing
         version: 26.1.0
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       prettier:
-        specifier: ^3.2.5
+        specifier: catalog:linting
         version: 3.9.9
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       sinon-chai:
-        specifier: ^3.7.0
+        specifier: catalog:testing
         version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/display-performance-test-app:
@@ -3249,7 +3649,7 @@ importers:
         specifier: workspace:*
         version: link:../../ui/appui-abstract
       '@itwin/browser-authorization':
-        specifier: ^1.0.1
+        specifier: catalog:auth-clients
         version: 1.1.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/core-backend':
         specifier: workspace:*
@@ -3273,7 +3673,7 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
@@ -3282,104 +3682,101 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/oidc-signin-tool':
-        specifier: ^5.0.2
-        version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: catalog:auth-clients
+        version: 6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
+      '@itwin/service-authorization':
+        specifier: catalog:auth-clients
+        version: 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:runtime
         version: 4.17.25
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@typescript-eslint/parser':
-        specifier: ~8.71.0
+        specifier: catalog:linting
         version: 8.71.0(eslint@9.39.5)(typescript@5.6.3)
       browserslist-to-esbuild:
-        specifier: ^1.2.0
+        specifier: catalog:bundling
         version: 1.2.0
-      child_process:
-        specifier: ^1.0.2
-        version: 1.0.2
       chrome-launcher:
         specifier: ^0.15.2
         version: 0.15.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       express:
-        specifier: ^4.22.1
+        specifier: catalog:runtime
         version: 4.22.3
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
-      react:
-        specifier: ^18.0.0
-        version: 18.3.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       rollup-plugin-external-globals:
-        specifier: 0.11.0
+        specifier: catalog:bundling
         version: 0.11.0(rollup@4.64.0)
       rollup-plugin-ignore:
-        specifier: ^1.0.10
+        specifier: catalog:bundling
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.14.0
+        specifier: catalog:bundling
         version: 5.14.0(rollup@4.64.0)
       rollup-plugin-webpack-stats:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.11(rollup@4.64.0)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vite-plugin-env-compatible:
-        specifier: ^2.0.1
+        specifier: catalog:bundling
         version: 2.0.1
 
   ../../test-apps/display-test-app:
@@ -3397,7 +3794,7 @@ importers:
         specifier: workspace:*
         version: link:../../ui/appui-abstract
       '@itwin/browser-authorization':
-        specifier: ^1.0.1
+        specifier: catalog:auth-clients
         version: 1.1.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/cesium-renderer':
         specifier: workspace:*
@@ -3451,7 +3848,7 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.24.0
+        specifier: catalog:auth-clients
         version: 0.24.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@45.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
@@ -3463,25 +3860,25 @@ importers:
         specifier: workspace:*
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/imodels-access-frontend':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/imodels-client-management':
-        specifier: ^6.0.2
+        specifier: catalog:imodels-clients
         version: 6.2.2
       '@itwin/map-layers-formats':
         specifier: workspace:*
         version: link:../../extensions/map-layers-formats
       '@itwin/object-storage-azure':
-        specifier: ^3.0.4
+        specifier: catalog:imodels-clients
         version: 3.1.3
       '@itwin/reality-data-client':
-        specifier: ^1.3.1
+        specifier: catalog:reality-capture
         version: 1.6.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
       '@itwin/webgl-compatibility':
         specifier: workspace:*
@@ -3494,43 +3891,40 @@ importers:
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:runtime
         version: 4.17.25
       '@types/express-ws':
-        specifier: ^3.0.3
+        specifier: catalog:types
         version: 3.0.6
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@typescript-eslint/parser':
-        specifier: ~8.71.0
+        specifier: catalog:linting
         version: 8.71.0(eslint@9.39.5)(typescript@5.6.3)
       browserslist-to-esbuild:
-        specifier: ^1.2.0
+        specifier: catalog:bundling
         version: 1.2.0
-      child_process:
-        specifier: ^1.0.2
-        version: 1.0.2
       cross-env:
-        specifier: ^7.0.3
+        specifier: catalog:build
         version: 7.0.3
       dotenv:
-        specifier: ^16.4.5
+        specifier: catalog:testing
         version: 16.6.1
       dotenv-expand:
-        specifier: ^5.1.0
+        specifier: catalog:testing
         version: 5.1.0
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       express:
-        specifier: ^4.22.1
+        specifier: catalog:runtime
         version: 4.22.3
       express-ws:
         specifier: ^5.0.2
@@ -3539,37 +3933,34 @@ importers:
         specifier: workspace:*
         version: link:../../tools/internal
       node-simctl:
-        specifier: ~7.6.1
+        specifier: catalog:testing
         version: 7.6.5
       npm-run-all2:
-        specifier: ^7.0.2
+        specifier: catalog:build
         version: 7.0.2
-      react:
-        specifier: ^18.0.0
-        version: 18.3.1
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       rollup-plugin-external-globals:
-        specifier: 0.11.0
+        specifier: catalog:bundling
         version: 0.11.0(rollup@4.64.0)
       rollup-plugin-ignore:
-        specifier: ^1.0.10
+        specifier: catalog:bundling
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.14.0
+        specifier: catalog:bundling
         version: 5.14.0(rollup@4.64.0)
       rollup-plugin-webpack-stats:
-        specifier: ^2.0.0
+        specifier: catalog:bundling
         version: 2.1.11(rollup@4.64.0)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vite:
-        specifier: ^6.4.4
+        specifier: catalog:bundling
         version: 6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       vite-plugin-env-compatible:
-        specifier: ^2.0.1
+        specifier: catalog:bundling
         version: 2.0.1
 
   ../../test-apps/export-gltf:
@@ -3587,29 +3978,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imjs-importer:
@@ -3627,41 +4018,41 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-geojson:
@@ -3679,35 +4070,35 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-orbitgt:
@@ -3728,29 +4119,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/orbitgt
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../test-apps/imodel-from-reality-model:
@@ -3768,29 +4159,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/build:
@@ -3799,22 +4190,22 @@ importers:
         specifier: ~7.58.7
         version: 7.58.13(@types/node@20.17.58)
       chalk:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.0.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       cross-spawn:
         specifier: ^7.0.5
         version: 7.0.6
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
       mocha-junit-reporter:
         specifier: ^2.0.2
         version: 2.2.1(mocha@11.8.0)
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       tree-kill:
         specifier: ^1.2.2
@@ -3826,26 +4217,26 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0(typedoc@0.28.20(typescript@5.6.3))
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       wtfnode:
         specifier: ^0.9.1
         version: 0.9.4
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
 
   ../../tools/certa:
@@ -3857,65 +4248,65 @@ importers:
         specifier: ~1.3.0
         version: 1.3.0
       express:
-        specifier: ^4.22.1
+        specifier: catalog:runtime
         version: 4.22.3
       jsonc-parser:
         specifier: ~2.0.3
         version: 2.0.3
       lodash:
-        specifier: ^4.18.0
+        specifier: catalog:utilities
         version: 4.18.1
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       playwright:
-        specifier: ~1.56.1
-        version: 1.56.1
+        specifier: catalog:testing
+        version: 1.64.1
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/detect-port':
         specifier: ~1.1.0
         version: 1.1.0
       '@types/express':
-        specifier: ^4.17.20
+        specifier: catalog:runtime
         version: 4.17.25
       '@types/lodash':
-        specifier: ^4.14.202
+        specifier: catalog:utilities
         version: 4.17.25
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/ecschema2ts:
@@ -3939,137 +4330,137 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@xmldom/xmldom':
-        specifier: ~0.8.15
+        specifier: catalog:runtime
         version: 0.8.15
       chalk:
-        specifier: ^3.0.0
+        specifier: catalog:build
         version: 3.0.0
       commander:
         specifier: ^2.14.1
         version: 2.20.3
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       cpx2:
-        specifier: ^8.0.0
+        specifier: catalog:build
         version: 8.0.2
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       nyc:
-        specifier: ^17.1.0
+        specifier: catalog:testing
         version: 17.1.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       source-map-support:
-        specifier: ^0.5.6
+        specifier: catalog:build
         version: 0.5.21
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/internal:
     dependencies:
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       magic-string:
         specifier: ^1.1.0
         version: 1.4.2
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
 
   ../../tools/perf-tools:
     dependencies:
       fs-extra:
-        specifier: ^8.1.0
+        specifier: catalog:utilities
         version: 8.1.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/fs-extra':
-        specifier: ^4.0.7
+        specifier: catalog:utilities
         version: 4.0.15
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
   ../../tools/vitest-browser-bridge:
     dependencies:
       '@vitest/browser':
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@opentelemetry/api':
         specifier: 1.9.1
         version: 1.9.1
       '@types/node':
-        specifier: ~20.17.0
+        specifier: catalog:build
         version: 20.17.58
       electron:
-        specifier: 45.0.0
+        specifier: catalog:electron
         version: 45.0.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       vitest:
-        specifier: ^4.1.11
+        specifier: catalog:testing
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../ui/appui-abstract:
@@ -4084,49 +4475,49 @@ importers:
         specifier: workspace:*
         version: link:../../core/bentley
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/chai':
-        specifier: 4.3.1
+        specifier: catalog:testing
         version: 4.3.1
       '@types/mocha':
-        specifier: ^10.0.6
+        specifier: catalog:testing
         version: 10.0.10
       '@types/sinon':
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.4
       babel-loader:
-        specifier: ~8.2.5
+        specifier: catalog:bundling
         version: 8.2.5(@babel/core@7.29.7)(webpack@5.111.1)
       babel-plugin-istanbul:
-        specifier: ^7.0.0
+        specifier: catalog:testing
         version: 7.0.1
       chai:
-        specifier: ^4.3.10
+        specifier: catalog:testing
         version: 4.5.0
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       mocha:
-        specifier: ^11.1.0
+        specifier: catalog:testing
         version: 11.8.0
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       sinon:
-        specifier: ^17.0.2
+        specifier: catalog:testing
         version: 17.0.2
       source-map-loader:
-        specifier: ^5.0.0
+        specifier: catalog:bundling
         version: 5.0.0(webpack@5.111.1)
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
       webpack:
-        specifier: ^5.97.1
+        specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
 
   ../../utils/workspace-editor:
@@ -4141,29 +4532,29 @@ importers:
         specifier: workspace:*
         version: link:../../core/common
       glob:
-        specifier: ^13.0.6
+        specifier: catalog:build
         version: 13.0.6
       yargs:
-        specifier: ^17.4.0
+        specifier: catalog:build
         version: 17.7.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/eslint-plugin':
-        specifier: ^6.0.0
+        specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
       '@types/yargs':
-        specifier: 17.0.19
+        specifier: catalog:build
         version: 17.0.19
       eslint:
-        specifier: ^9.31.0
+        specifier: catalog:linting
         version: 9.39.5
       rimraf:
-        specifier: ^6.0.1
+        specifier: catalog:build
         version: 6.1.3
       typescript:
-        specifier: ~5.6.2
+        specifier: catalog:build
         version: 5.6.3
 
 packages:
@@ -4436,8 +4827,8 @@ packages:
   '@bentley/icons-generic-webfont@1.0.34':
     resolution: {integrity: sha512-5zZgs+himE2vjf39CVlDXMHCFAwSfcoORqJBk3Vji8QVCF8AIX4IX2DO6HlsIAM7szxMNqhz1kd07Xfppro6MA==}
 
-  '@bentley/imodeljs-native@5.16.3':
-    resolution: {integrity: sha512-PfozXuINmXGhB+UOYneRPpo8M8yM+VLF+cI8x4vXsCPFV8ykKoLKuUcO/wpw/ptLAETG2V2Dk//E6kLU6iqtzA==}
+  '@bentley/imodeljs-native@5.16.12':
+    resolution: {integrity: sha512-HW98BTya+OSlJPB7iXUvj9uiRwkkeqx8DcRjqDm0jg4ztqyio6HvZUZv+7zvlAD1tcVRcSdpB9yuvMyig/gZXQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5065,11 +5456,12 @@ packages:
       reflect-metadata:
         optional: true
 
-  '@itwin/oidc-signin-tool@5.1.3':
-    resolution: {integrity: sha512-cOl6cS/xd8hnM5T/EKK45V0voG1G5745MWJuUpy8838J+FU5TvOUMaECQlWy7uYP0BD9LBGULjgDu+i1/BhEmA==}
+  '@itwin/oidc-signin-tool@6.2.0':
+    resolution: {integrity: sha512-GatlijYLaHKK/UcHZDVdezrOCbTn4vNGwft3yJWWxc+R201Yx/xy3LXT423AZdplHpsJbeKRrfaqIfDRU98/aw==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/service-authorization': ^2.1.3
 
   '@itwin/presentation-shared@1.2.22':
     resolution: {integrity: sha512-BQprDWQbXn3Ei/gWpqIgVTn3d8no7lCYQrf1QBl4rhvgGZp1Bpn4wJUdeJ7crd/3hKGaLKWqMajX+NecoQLYgw==}
@@ -5569,9 +5961,9 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@playwright/test@1.56.1':
-    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
-    engines: {node: '>=18'}
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   '@polka/url@1.0.0-next.29':
@@ -6749,9 +7141,6 @@ packages:
   check-error@1.0.3:
     resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
 
-  child_process@1.0.2:
-    resolution: {integrity: sha512-Wmza/JzL0SiWz7kl6MhIKT5ceIlnFPJX+lwUGj7Clhy5MMldsSoJR0+uvRzOS5Kv45Mq7t1PoE8TsOA9bzvb6g==}
-
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
@@ -7685,11 +8074,6 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
-  fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
-
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -7845,8 +8229,8 @@ packages:
     resolution: {integrity: sha512-eAmLkjDjAFCVXg7A1unxHsLf961m6y17QFqXqAXGj/gVkKFrEICfStRfwUlGNfeCEjNRa32JEWOUTlYXPyyKvA==}
     engines: {node: '>=14'}
 
-  google-protobuf@3.20.1:
-    resolution: {integrity: sha512-XMf1+O32FjYIV3CYu6Tuh5PNbfNEU5Xu22X+Xkdb/DUexFlCzhvv7d5Iirm4AOwn8lv4al1YvIhzGrg2j9Zfzw==}
+  google-protobuf@4.0.3:
+    resolution: {integrity: sha512-DI6iiRmF8fE/EzvGK5F9b8RxZeumHC2AAhi3xwOEh+GT5eRhJeW1aOtkDxn0W7cVCFQAtwK+ZDwIO1BYz+9WMA==}
 
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
@@ -9213,14 +9597,14 @@ packages:
   platform@1.3.6:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
 
-  playwright-core@1.56.1:
-    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
-    engines: {node: '>=18'}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+    engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.56.1:
-    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
-    engines: {node: '>=18'}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
+    engines: {node: '>=20'}
     hasBin: true
 
   pngjs@7.0.0:
@@ -9360,10 +9744,6 @@ packages:
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
-
-  react@18.3.1:
-    resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
-    engines: {node: '>=0.10.0'}
 
   read-package-json-fast@4.0.0:
     resolution: {integrity: sha512-qpt8EwugBWDw2cgE2W+/3oxC+KTez2uSVR8JU9Q36TXPAGCaozfQUs59v4j4GFpWTaw0i6hAZSvOmu1J0uOEUg==}
@@ -11073,7 +11453,7 @@ snapshots:
 
   '@bentley/icons-generic-webfont@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.16.3': {}
+  '@bentley/imodeljs-native@5.16.12': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11618,18 +11998,16 @@ snapshots:
       - encoding
       - supports-color
 
-  '@itwin/oidc-signin-tool@5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
+  '@itwin/oidc-signin-tool@6.2.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/service-authorization@2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common))':
     dependencies:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/service-authorization': 2.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
-      '@playwright/test': 1.56.1
+      '@playwright/test': 1.64.1
       dotenv: 10.0.0
       dotenv-expand: 12.0.3
       oidc-client-ts: 3.5.0
-    transitivePeerDependencies:
-      - supports-color
 
   '@itwin/presentation-shared@1.2.22':
     dependencies:
@@ -12279,9 +12657,9 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@playwright/test@1.56.1':
+  '@playwright/test@1.64.1':
     dependencies:
-      playwright: 1.56.1
+      playwright: 1.64.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -12876,11 +13254,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/browser-playwright@4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
+  '@vitest/browser-playwright@4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)':
     dependencies:
       '@vitest/browser': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/mocker': 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))
-      playwright: 1.56.1
+      playwright: 1.64.1
       tinyrainbow: 3.2.0
       vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
     transitivePeerDependencies:
@@ -13663,8 +14041,6 @@ snapshots:
   check-error@1.0.3:
     dependencies:
       get-func-name: 2.0.2
-
-  child_process@1.0.2: {}
 
   chokidar@4.0.3:
     dependencies:
@@ -14791,9 +15167,6 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
-  fsevents@2.3.2:
-    optional: true
-
   fsevents@2.3.3:
     optional: true
 
@@ -15016,7 +15389,7 @@ snapshots:
 
   google-logging-utils@1.1.3: {}
 
-  google-protobuf@3.20.1: {}
+  google-protobuf@4.0.3: {}
 
   gopd@1.2.0: {}
 
@@ -16385,13 +16758,11 @@ snapshots:
 
   platform@1.3.6: {}
 
-  playwright-core@1.56.1: {}
+  playwright-core@1.64.1: {}
 
-  playwright@1.56.1:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.56.1
-    optionalDependencies:
-      fsevents: 2.3.2
+      playwright-core: 1.64.1
 
   pngjs@7.0.0: {}
 
@@ -16522,10 +16893,6 @@ snapshots:
       quickselect: 3.0.0
 
   react-is@16.13.1: {}
-
-  react@18.3.1:
-    dependencies:
-      loose-envify: 1.4.0
 
   read-package-json-fast@4.0.0:
     dependencies:
@@ -17611,7 +17978,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 20.17.58
-      '@vitest/browser-playwright': 4.1.11(playwright@1.56.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
+      '@vitest/browser-playwright': 4.1.11(playwright@1.64.1)(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       '@vitest/coverage-v8': 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
       jsdom: 26.1.0
     transitivePeerDependencies:

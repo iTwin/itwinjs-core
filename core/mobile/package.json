@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "5.16.0-dev.3",
+  "version": "5.16.0-dev.6",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -39,7 +39,7 @@
     "@itwin/core-frontend": "workspace:*"
   },
   "dependencies": {
-    "lodash": "^4.18.0",
+    "lodash": "catalog:utilities",
     "superagent": "^9.0.1",
     "ws": "^7.5.11"
   },
@@ -49,19 +49,19 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/lodash": "^4.14.202",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~20.17.0",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:testing",
+    "@types/lodash": "catalog:utilities",
+    "@types/mocha": "catalog:testing",
+    "@types/node": "catalog:build",
     "@types/superagent": "^8.1.6",
-    "@types/ws": "^7.0.0",
-    "chai": "^4.3.10",
-    "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.6.2"
+    "@types/ws": "catalog:types",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
+    "mocha": "catalog:testing",
+    "nyc": "catalog:testing",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
