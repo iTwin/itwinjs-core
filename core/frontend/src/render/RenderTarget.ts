@@ -105,6 +105,11 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   public [Symbol.dispose](): void { }
   /** @internal */
   public reset(_realityMapLayerChanged?: boolean, _primaryIModelRef?: IModelDisplayReference): void { }
+  /** Invoked when the viewport's ViewState is replaced without a full [[reset]] (e.g., via Viewport.applyViewState) to
+   * update the reference identifying the view's primary iModel.
+   * @internal
+   */
+  public changePrimaryIModelRef(_primaryIModelRef: IModelDisplayReference): void { }
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */

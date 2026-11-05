@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { DisplayStyleSettings, FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
@@ -22,6 +22,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
+import type { DisplayStyleState } from "../DisplayStyleState";
 import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
@@ -37,6 +38,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   #modelClipGroups: ModelClipGroups;
   #removeSubCategoryChangesListener?: () => void;
   readonly #planarClipMaskStates = new Map<Id64String, { settings: PlanarClipMaskSettings, state: PlanarClipMaskState }>();
+
+  // The view's display style can be replaced wholesale. Listeners registered on its settings are tracked so they can be
+  // rebound to the replacement.
+  #boundStyleSettings: DisplayStyleSettings;
+  readonly #styleListenerRemovals: VoidFunction[] = [];
 
   get #spatialView() {
     return this.parent[_backingView];
@@ -120,20 +126,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
       void loadViewedCategories(this);
     });
 
-    const updateViewFlags = () => {
-      this.#resolvedViewFlags = view.viewFlags.override(this.overrides.viewFlags);
-      this.onActiveViewFlagsChanged.raiseEvent();
-    };
+    this.#boundStyleSettings = view.displayStyle.settings;
+    this.#bindStyleListeners(this.#boundStyleSettings);
+    this.#disposalFunctions.push(view.onDisplayStyleChanged.addListener((newStyle) => this.#displayStyleReplaced(newStyle)));
 
-    this.#disposalFunctions.push(view.displayStyle.settings.onAfterViewFlagsChanged.addListener(updateViewFlags));
-
-    this.#disposalFunctions.push(this.overrides.onViewFlagsChanged.addListener(updateViewFlags));
-
-    this.#disposalFunctions.push(view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
-      if (undefined === this.overrides.clipStyle) {
-        this.onActiveClipStyleChanged.raiseEvent();
-      }
-    }));
+    this.#disposalFunctions.push(this.overrides.onViewFlagsChanged.addListener(() => this.#updateViewFlags()));
 
     this.#disposalFunctions.push(this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent()));
 
@@ -143,6 +140,8 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.onIsAlwaysDrawnExclusiveChanged.addListener(() => this.invalidateSymbologyOverrides());
     this.subCategoryOverrides.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     this.modelAppearanceOverrides.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    // Cached symbology overrides bake in plan-projection transparency.
+    this.planProjectionSettings.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     this.#disposalFunctions.push(this.overrides.onDefaultFeatureAppearanceChanged.addListener(() => this.invalidateSymbologyOverrides()));
     this.#disposalFunctions.push(refs.onDefaultFeatureAppearanceChanged.addListener(() => {
       if (undefined === this.overrides.defaultFeatureAppearance)
@@ -178,17 +177,58 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
     this.#disposalFunctions.push(this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
+  }
 
-    this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
-      this.onActiveHiddenLineSettingsChanged.raiseEvent();
-    }));
-    this.#disposalFunctions.push(refs[_backingView].displayStyle.settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));
+  #updateViewFlags(): void {
+    this.#resolvedViewFlags = this.#spatialView.viewFlags.override(this.overrides.viewFlags);
+    // Cached symbology overrides bake in geometry-class visibility and line weights from the active view flags.
+    this.invalidateSymbologyOverrides();
+    this.onActiveViewFlagsChanged.raiseEvent();
+  }
+
+  /** Registers listeners on the supplied display style settings and records them as the currently-bound settings. */
+  #bindStyleListeners(settings: DisplayStyleSettings): void {
+    this.#boundStyleSettings = settings;
+    this.#styleListenerRemovals.push(
+      settings.onAfterViewFlagsChanged.addListener(() => this.#updateViewFlags()),
+      settings.onAfterClipStyleChanged.addListener(() => {
+        if (undefined === this.overrides.clipStyle)
+          this.onActiveClipStyleChanged.raiseEvent();
+      }),
+      settings.onAfterHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent()),
+      settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()),
+    );
+  }
+
+  #unbindStyleListeners(): void {
+    for (const removeListener of this.#styleListenerRemovals)
+      removeListener();
+
+    this.#styleListenerRemovals.length = 0;
+  }
+
+  /** Rebinds style listeners to the replacement style and refreshes state derived from it. */
+  #displayStyleReplaced(newStyle: DisplayStyleState): void {
+    this.#unbindStyleListeners();
+    this.#bindStyleListeners(newStyle.settings);
+
+    // Note: onDisplayStyleChanged is raised before the view's displayStyle property is reassigned - read flags from newStyle.
+    this.#resolvedViewFlags = newStyle.viewFlags.override(this.overrides.viewFlags);
+    this.invalidateSymbologyOverrides();
+    this.onActiveViewFlagsChanged.raiseEvent();
+    if (undefined === this.overrides.clipStyle)
+      this.onActiveClipStyleChanged.raiseEvent();
+
+    this.onActiveHiddenLineSettingsChanged.raiseEvent();
+    this.onActiveContoursChanged.raiseEvent();
   }
 
   #dispose(): void {
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;
     this.#planarClipMaskStates.clear();
+
+    this.#unbindStyleListeners();
 
     for (const disposalFunction of this.#disposalFunctions)
       disposalFunction();
@@ -223,7 +263,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.viewedModels.clearEventListeners();
     this.planarClipMasks.onChanged.clear();
     this.realityModelDisplaySettings.clear();
-    this.planProjectionSettings.clear();
+    this.planProjectionSettings.onChanged.clear();
 
     this.overrides.onHiddenLineSettingsChanged.clear();
   }
@@ -349,6 +389,12 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
   public [_attachToViewport](args: AttachToViewportArgs): void {
     this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
+
+    // The display style may have been replaced while the view was detached, in which case no events were raised - rebind now.
+    const style = this.#spatialView.displayStyle;
+    if (style.settings !== this.#boundStyleSettings)
+      this.#displayStyleReplaced(style);
+
     this[_treeRefs].attachToViewport(args);
   }
 

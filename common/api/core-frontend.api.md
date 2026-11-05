@@ -4599,12 +4599,16 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
+    // @deprecated
+    iModel?: IModelConnection;
     // @beta
     iModelRef?: IModelDisplayReference;
     // @internal (undocumented)
     inSectionDrawingAttachment?: boolean;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    // @deprecated
+    transformFromIModel?: Transform;
     // @internal
     viewAttachmentId?: Id64String;
 }
@@ -7083,7 +7087,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -9711,6 +9715,8 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     abstract changeDecorations(decorations: Decorations): void;
     // @internal (undocumented)
     abstract changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined): void;
+    // @internal
+    changePrimaryIModelRef(_primaryIModelRef: IModelDisplayReference): void;
     // @internal (undocumented)
     abstract changeRenderPlan(plan: RenderPlan): void;
     // @internal (undocumented)
@@ -11024,6 +11030,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void;
     // (undocumented)
     changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap): void;
+    changePrimaryIModelRef(primaryIModelRef: IModelDisplayReference): void;
     // (undocumented)
     changeRenderPlan(plan: RenderPlan): void;
     // (undocumented)
@@ -11209,6 +11216,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
+    // (undocumented)
     reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
@@ -11832,6 +11840,8 @@ export class TileDrawArgs {
     readonly animationTransformNodeId?: number;
     get appearanceProvider(): FeatureAppearanceProvider | undefined;
     boundingRange?: Range3d;
+    // @internal
+    protected get _branchIModelRef(): IModelDisplayReference;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
     clipVolume: RenderClipVolume | undefined;

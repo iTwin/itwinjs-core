@@ -17,10 +17,11 @@ import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
 import { IModelDisplayReference } from "../IModelDisplayReference";
+import { IModelConnection } from "../IModelConnection";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
@@ -143,6 +144,20 @@ export interface GraphicBranchOptions {
    * @beta
    */
   iModelRef?: IModelDisplayReference;
+  /** The iModel from which the graphics originate, if different than that associated with the view.
+   * @deprecated in 5.16. Use [[iModelRef]] instead. When this property is supplied without [[iModelRef]], the graphics are
+   * attributed to the view's [[IModelDisplayReference]] displaying this iModel if one exists, or otherwise to a reference
+   * identifying it as a foreign iModel. If both are supplied, [[iModelRef]] takes precedence.
+   */
+  iModel?: IModelConnection;
+  /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
+   * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
+   * with the [[Viewport]]).
+   * @deprecated in 5.16. Use [[iModelRef]] instead - the transform is supplied by [[IModelDisplayReference.linearTransformToParent]].
+   * When this property is supplied along with [[iModel]] and without [[iModelRef]], the graphics are attributed to a
+   * reference whose `linearTransformToParent` is this transform.
+   */
+  transformFromIModel?: Transform;
   /** @internal */
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */

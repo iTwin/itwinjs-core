@@ -15,6 +15,7 @@ import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { GraphicType } from "./common/render/GraphicType";
 import { IModelDisplayFeature } from "./IModelDisplayReference";
+import { getForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 
 /**
  * @public
@@ -315,7 +316,12 @@ export class HitDetail {
       };
 
       const refs = props.viewport.view.iModelRefs;
-      const iModelRef = sourceIModel ? [...refs].find((ref) => ref.iModel === sourceIModel) ?? refs.primary : refs.primary;
+      // A hit from an iModel other than the view's own resolves to the reference displaying it - the linked reference
+      // if the iModel is linked into the view, or otherwise the reference identifying it as a foreign iModel (e.g.,
+      // displayed via a TiledGraphicsProvider), so that snapping, tooltips, and selection use the correct iModel.
+      const iModelRef = sourceIModel && sourceIModel !== refs.primary.iModel
+        ? [...refs].find((ref) => ref.iModel === sourceIModel) ?? getForeignIModelDisplayReference(refs, sourceIModel)
+        : refs.primary;
 
       props = {
         testPoint: props.testPoint,

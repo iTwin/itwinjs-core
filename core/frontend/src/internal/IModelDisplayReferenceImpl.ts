@@ -140,8 +140,11 @@ export function listenForSubCategoryChanges(ref: IModelDisplayReference): () => 
       categoryIds.add(categoryId);
 
     ref.parent.subcategories.push(ref.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
-      if (anySubCategoriesLoaded)
+      if (anySubCategoriesLoaded) {
+        // Cached symbology overrides bake in subcategory visibility and priority - rebuild them from the reloaded cache.
+        ref.invalidateSymbologyOverrides();
         ref.onViewedCategoriesLoaded.raiseEvent();
+      }
     });
   });
 }

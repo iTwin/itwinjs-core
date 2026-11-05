@@ -1191,12 +1191,45 @@ export abstract class Viewport implements Disposable, TileUser {
     if (view === this._view)
       return;
 
+    const prevPrimaryRef = (this._view as ViewState | undefined)?.iModelRefs.primary;
+
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
     this._view = view;
     this.attachToView();
-    this.updateFeatureOverrideProviderRegistrations(view.iModelRefs.primary);
+
+    const primaryRef = view.iModelRefs.primary;
+    this.updateFeatureOverrideProviderRegistrations(primaryRef);
+
+    // The render target tracks the primary reference for decorations and pick exclusions. changeView refreshes it via
+    // Target.reset, but other paths (e.g., applyViewState) replace the view without a full reset - update it here.
+    this._target?.changePrimaryIModelRef(primaryRef);
+
+    // Never/always-drawn elements, the always-drawn-exclusive flag, and per-model category visibility were formerly
+    // viewport state that survived changes of ViewState. They now live on the view's primary reference - carry them over
+    // to the new view's reference when both views display the same iModel, mirroring the provider migration above.
+    if (undefined !== prevPrimaryRef && prevPrimaryRef !== primaryRef && prevPrimaryRef.iModel === primaryRef.iModel)
+      this.migratePrimaryRefDisplayState(prevPrimaryRef, primaryRef);
+  }
+
+  /** Replaces the display state of `next` with that of `prev`, emulating the behavior of past versions in which this
+   * state belonged to the viewport rather than to the view's primary IModelDisplayReference.
+   */
+  private migratePrimaryRefDisplayState(prev: IModelDisplayReference, next: IModelDisplayReference): void {
+    next.neverDrawnElements.clear();
+    next.neverDrawnElements.addAll(prev.neverDrawnElements);
+
+    next.alwaysDrawnElements.clear();
+    next.alwaysDrawnElements.addAll(prev.alwaysDrawnElements);
+
+    next.isAlwaysDrawnExclusive = prev.isAlwaysDrawnExclusive;
+
+    next.perModelCategoryVisibility.clearOverrides();
+    for (const { modelId, categoryId, visible } of prev.perModelCategoryVisibility) {
+      const override = visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
+      next.perModelCategoryVisibility.setOverride(modelId, categoryId, override);
+    }
   }
 
   private updateFeatureOverrideProviderRegistrations(iModelRef: IModelDisplayReference): void {
@@ -1356,8 +1389,13 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(ref.onModelClipGroupsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveHiddenLineSettingsChanged.addListener(invalidateScene));
       removals.push(ref.onActiveContoursChanged.addListener(() => this.invalidateRenderPlan()));
-      if (!isPrimary)
+      if (!isPrimary) {
         removals.push(ref.planarClipMasks.onChanged.addListener(invalidateScene));
+        // The primary reference's maps delegate to the display style, whose listeners are registered by
+        // registerDisplayStyleListeners. Linked references own their maps - bind them here.
+        removals.push(ref.planProjectionSettings.onChanged.addListener(invalidateScene));
+        removals.push(ref.realityModelDisplaySettings.onChanged.addListener(invalidateScene));
+      }
 
       const modelsChanged = () => {
         this.invalidateScene();
@@ -1512,6 +1550,9 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
       removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
       removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+      // Direct mutations of the plan projection settings map raise no onPlanProjectionSettingsChanged event -
+      // only setPlanProjectionSettings does - so also listen to the map itself.
+      removals.push(settings.planProjectionSettings.onChanged.addListener(displayStyleChanged));
       removals.push(settings.onContoursChanged.addListener(displayStyleChanged));
     }
   }
@@ -1660,8 +1701,12 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public setNeverDrawn(ids: Id64Set): void {
     const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
-    neverDrawnElements.clear();
-    neverDrawnElements.addAll(ids);
+    // `ids` may be the ref's own set (e.g., obtained from the `neverDrawn` getter), in which case its contents are
+    // already correct - clearing first would empty the input.
+    if (ids !== neverDrawnElements) {
+      neverDrawnElements.clear();
+      neverDrawnElements.addAll(ids);
+    }
 
     this._changeFlags.setNeverDrawn();
     this.invalidateScene();
@@ -1676,8 +1721,13 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     const ref = this.primaryIModelRef;
-    ref.alwaysDrawnElements.clear();
-    ref.alwaysDrawnElements.addAll(ids);
+    // `ids` may be the ref's own set (e.g., obtained from the `alwaysDrawn` getter), in which case its contents are
+    // already correct - clearing first would empty the input.
+    if (ids !== ref.alwaysDrawnElements) {
+      ref.alwaysDrawnElements.clear();
+      ref.alwaysDrawnElements.addAll(ids);
+    }
+
     ref.isAlwaysDrawnExclusive = exclusive;
 
     this._changeFlags.setAlwaysDrawn();
@@ -3240,16 +3290,29 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
     const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
-    const removeSettingsListener = addSettingsListener(this.displayStyle);
+    let removeSettingsListener = addSettingsListener(this.displayStyle);
+
+    // Raised when the view's display style is replaced wholesale. Note: the event is raised just before the view's
+    // displayStyle property is reassigned, so bind to the replacement style supplied by the event.
+    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((newStyle) => {
+      listener(newStyle.settings.analysisStyle);
+      removeSettingsListener();
+      removeSettingsListener = addSettingsListener(newStyle);
+    });
+
+    let removeStyleListener = addStyleListener(this.view);
 
     const removeViewListener = this.onChangeView.addListener((vp) => {
       listener(vp.view.displayStyle.settings.analysisStyle);
       removeSettingsListener();
-      addSettingsListener(vp.view.displayStyle);
+      removeSettingsListener = addSettingsListener(vp.view.displayStyle);
+      removeStyleListener();
+      removeStyleListener = addStyleListener(vp.view);
     });
 
     return () => {
       removeSettingsListener();
+      removeStyleListener();
       removeViewListener();
     };
   }

@@ -565,6 +565,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
+  public override changePrimaryIModelRef(primaryIModelRef: IModelDisplayReference): void {
+    if (this.currentBranch.iModelRef === primaryIModelRef && this.decorationsState.iModelRef === primaryIModelRef)
+      return;
+
+    this.currentBranch.iModelRef = this.decorationsState.iModelRef = primaryIModelRef;
+    // World decorations are cached along with the reference they were created with - recreate them with the new one.
+    this._worldDecorations = dispose(this._worldDecorations);
+  }
+
   public override reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void {
     this.currentBranch.iModelRef = this.decorationsState.iModelRef = primaryIModelRef;
     this.graphics[Symbol.dispose]();

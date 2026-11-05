@@ -112,11 +112,18 @@ describe("HitDetail", () => {
     try {
       const external = new HitDetail(props.testPoint, viewport, props.hitSource, props.hitPoint, props.sourceId, props.priority, props.distXY, props.distFraction,
         undefined, undefined, undefined, otherIModel);
+      // The iModel is not linked into the view - the hit resolves to a reference identifying it as a foreign iModel.
       for (const copy of [external, external.clone(), new SnapDetail(external)]) {
-        expect(copy.iModel).toBe(viewport.iModel);
-        expect(copy.feature.iModelRef).toBe(viewport.view.iModelRefs.primary);
-        expect(copy.isExternalIModelHit).toBe(false);
+        expect(copy.iModel).toBe(otherIModel);
+        expect(copy.feature.iModelRef.iModel).toBe(otherIModel);
+        expect(copy.feature.iModelRef).not.toBe(viewport.view.iModelRefs.primary);
+        expect(copy.isExternalIModelHit).toBe(true);
       }
+
+      // The same foreign reference is used for subsequent hits from the same iModel.
+      const external2 = new HitDetail(props.testPoint, viewport, props.hitSource, props.hitPoint, props.sourceId, props.priority, props.distXY, props.distFraction,
+        undefined, undefined, undefined, otherIModel);
+      expect(external2.feature.iModelRef).toBe(external.feature.iModelRef);
 
       const refs = viewport.view.iModelRefs;
       expect(refs.isSpatial).toBe(true);

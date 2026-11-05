@@ -347,6 +347,11 @@ export class Branch extends Graphic {
   public disableClipStyle?: true;
   public iModelRef?: IModelDisplayReference;
   public contourLine?: ContourDisplay;
+  /** Deprecated GraphicBranchOptions.iModel / transformFromIModel passthrough; resolved to an IModelDisplayReference
+   * at draw time by BranchState.fromBranch, where the view's iModel references are accessible.
+   */
+  public readonly legacyIModel?: IModelConnection;
+  public readonly legacyTransformFromIModel?: Transform;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -362,6 +367,10 @@ export class Branch extends Graphic {
     this.appearanceProvider = opts.appearanceProvider;
     this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModelRef = opts.iModelRef;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- supports legacy attribution via GraphicBranchOptions.iModel
+    this.legacyIModel = opts.iModel;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- supports legacy attribution via GraphicBranchOptions.transformFromIModel
+    this.legacyTransformFromIModel = opts.transformFromIModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
     this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;

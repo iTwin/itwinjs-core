@@ -4,22 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, SubCategoryAppearance, SubCategoryOverride,
+  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { _getModelClip } from "../common/internal/Symbols";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { EmphasizeElements } from "../EmphasizeElements";
 import { IModelDisplayReference } from "../IModelDisplayReference";
 import { CategorySelectorState } from "../CategorySelectorState";
 import { DisplayStyle2dState } from "../DisplayStyleState";
 import { DrawingViewState } from "../DrawingViewState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { openBlankViewport, readUniqueFeatures, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
@@ -31,6 +32,8 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
+import { GraphicsCollectorDrawArgs, TileGraphicType, TileTreeReference } from "../tile/internal";
+import { EntityChanges, TxnEntityChanges } from "../TxnEntityChanges";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -147,12 +150,14 @@ describe("Viewport", () => {
   describe("analysis style changed events", () => {
     it("registers and unregisters for multiple events", () => {
       testBlankViewport((viewport) => {
+        const baseStyleListeners = viewport.view.onDisplayStyleChanged.numberOfListeners;
         function expectListeners(expected: boolean): void {
           const expectedNum = expected ? 1 : 0;
           expect(viewport.onChangeView.numberOfListeners).toEqual(expectedNum);
 
           // The viewport registers its own listener for each of these.
           expect(viewport.displayStyle.settings.onAnalysisStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
+          expect(viewport.view.onDisplayStyleChanged.numberOfListeners).toEqual(baseStyleListeners + expectedNum);
         }
 
         expectListeners(false);
@@ -198,6 +203,22 @@ describe("Viewport", () => {
 
         expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
         expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
+
+        // Replacing the display style wholesale notifies with the replacement's analysis style...
+        const oldStyle = viewport.displayStyle;
+        const d = AnalysisStyle.fromJSON({ normalChannelName: "d" });
+        expectChangedEvent(d, () => {
+          const newStyle = oldStyle.clone();
+          newStyle.settings.analysisStyle = d;
+          viewport.displayStyle = newStyle;
+        });
+
+        // ...subsequent changes to the replacement style are reported...
+        const e = AnalysisStyle.fromJSON({ normalChannelName: "e" });
+        expectChangedEvent(e, () => viewport.displayStyle.settings.analysisStyle = e);
+
+        // ...and changes to the replaced (old) style are not.
+        expectChangedEvent("none", () => oldStyle.settings.analysisStyle = AnalysisStyle.fromJSON({ normalChannelName: "f" }));
       });
     });
   });
@@ -231,6 +252,119 @@ describe("Viewport", () => {
   });
 
   describe("symbology override cache invalidation", () => {
+    it("invalidates cached overrides when a txn invalidates cached subcategory information", async () => {
+      using viewport = openBlankViewport();
+      const ref = viewport.iModelRefs.primary;
+
+      const categoryId = "0x20";
+      let subCategoryIds = ["0x21"];
+      const iModel = viewport.iModel as any;
+      // BlankConnection.isClosed is always true, which would cancel the cache's load requests.
+      Object.defineProperty(iModel, "isClosed", { get: () => false });
+      iModel.querySubCategories = async (compressedCategoryIds: string) => {
+        const rows = [];
+        for (const parentId of CompressedId64Set.iterable(compressedCategoryIds))
+          if (parentId === categoryId)
+            for (const id of subCategoryIds)
+              rows.push({ parentId, id, appearance: {} });
+
+        return rows;
+      };
+
+      // Pretend to be a briefcase so that the subcategory cache processes txn changes.
+      const onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
+      iModel.isBriefcaseConnection = () => true;
+      iModel.txns = { onElementsChanged };
+      viewport.iModel.subcategories.attachToBriefcase(viewport.iModel);
+
+      const waitFor = async (condition: () => boolean) => {
+        for (let i = 0; i < 100 && !condition(); i++)
+          await new Promise((resolve) => setTimeout(resolve, 1));
+
+        expect(condition()).toBe(true);
+      };
+
+      ref.viewedCategories.add(categoryId);
+      await waitFor(() => undefined !== viewport.iModel.subcategories.getSubCategories(categoryId));
+      await waitFor(() => ref.getSymbologyOverrides().isSubCategoryIdVisible("0x21"));
+
+      const warmed = ref.getSymbologyOverrides();
+      expect(warmed.isSubCategoryIdVisible("0x22")).toBe(false);
+
+      // Simulate a txn inserting a new subcategory - the cache reloads and the ref's overrides must be rebuilt.
+      subCategoryIds = ["0x21", "0x22"];
+      const insertedIds = CompressedId64Set.compressIds(["0x22"]);
+      onElementsChanged.raiseEvent(new EntityChanges({
+        inserted: insertedIds,
+        insertedMeta: [0],
+        deletedMeta: [],
+        updatedMeta: [],
+        meta: [{ name: "BisCore:SubCategory", bases: [] }],
+      }));
+
+      await waitFor(() => ref.getSymbologyOverrides() !== warmed);
+      expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x21")).toBe(true);
+      expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x22")).toBe(true);
+    });
+
+    it("redraws when plan projection and reality model display settings maps are mutated", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primary = refs.primary;
+        const anyVp = viewport as any;
+        const render = () => {
+          viewport.renderFrame();
+          expect(anyVp._sceneValid).toBe(true);
+          expect(anyVp._renderPlanValid).toBe(true);
+        };
+
+        // Primary: the maps delegate to the display style; mutations must invalidate the render plan...
+        render();
+        primary.planProjectionSettings.set("0x11", PlanProjectionSettings.fromJSON({ elevation: 10 })!);
+        expect(anyVp._renderPlanValid).toBe(false);
+
+        // ...and rebuild the cached symbology overrides (transparency is baked in).
+        render();
+        let warmed = primary.getSymbologyOverrides();
+        primary.planProjectionSettings.set("0x11", PlanProjectionSettings.fromJSON({ transparency: 0.5 })!);
+        expect(primary.getSymbologyOverrides()).not.toBe(warmed);
+        expect(anyVp._renderPlanValid).toBe(false);
+
+        render();
+        warmed = primary.getSymbologyOverrides();
+        primary.planProjectionSettings.delete("0x11");
+        expect(primary.getSymbologyOverrides()).not.toBe(warmed);
+        expect(anyVp._renderPlanValid).toBe(false);
+
+        render();
+        primary.realityModelDisplaySettings.set("0x12", RealityModelDisplaySettings.fromJSON({ overrideColorRatio: 0.5 }));
+        expect(anyVp._renderPlanValid).toBe(false);
+
+        // Linked references own their maps; mutations must invalidate the scene.
+        render();
+        linkedRef.planProjectionSettings.set("0x13", PlanProjectionSettings.fromJSON({ elevation: 5 })!);
+        expect(anyVp._sceneValid).toBe(false);
+
+        render();
+        linkedRef.realityModelDisplaySettings.set("0x14", RealityModelDisplaySettings.fromJSON({ overrideColorRatio: 0.5 }));
+        expect(anyVp._sceneValid).toBe(false);
+
+        render();
+        linkedRef.realityModelDisplaySettings.delete("0x14");
+        expect(anyVp._sceneValid).toBe(false);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
     it("invalidates cached overrides when visibility and appearance inputs change on primary and linked references", async () => {
       const linkedIModel = createBlankConnection();
       try {
@@ -266,6 +400,87 @@ describe("Viewport", () => {
         linkedRef.subCategoryOverrides.set("0xdef", SubCategoryOverride.fromJSON({ invisible: true }));
         expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
         expect(refs.primary.getSymbologyOverrides()).toBe(primaryWarmed);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("invalidates cached overrides when active view flags change", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primary = refs.primary;
+        const style = viewport.view.displayStyle;
+
+        // A view flag change on the display style must invalidate both references' caches - both inherit the view's flags.
+        let primaryWarmed = primary.getSymbologyOverrides();
+        let linkedWarmed = linkedRef.getSymbologyOverrides();
+        const dimensions = !style.viewFlags.dimensions;
+        style.viewFlags = style.viewFlags.with("dimensions", dimensions);
+        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+        expect(primary.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(dimensions);
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
+        expect(linkedRef.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(dimensions);
+
+        // A linked reference's view flag overrides must invalidate only its own cache.
+        primaryWarmed = primary.getSymbologyOverrides();
+        linkedWarmed = linkedRef.getSymbologyOverrides();
+        linkedRef.overrides.viewFlags = { dimensions: !dimensions };
+        expect(primary.getSymbologyOverrides()).toBe(primaryWarmed);
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
+        expect(linkedRef.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(!dimensions);
+
+        // The primary reference's view flag overrides must invalidate its cache.
+        primaryWarmed = primary.getSymbologyOverrides();
+        primary.overrides.viewFlags = { dimensions: !dimensions };
+        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+        expect(primary.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(!dimensions);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("invalidates cached overrides when plan projection settings change", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const settings = viewport.view.displayStyle.settings;
+        if (!settings.is3d())
+          throw new Error("Expected a 3d display style");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primary = refs.primary;
+
+        // The primary reference's plan projection settings live on the display style.
+        let primaryWarmed = primary.getSymbologyOverrides();
+        let linkedWarmed = linkedRef.getSymbologyOverrides();
+        settings.setPlanProjectionSettings("0x1c", PlanProjectionSettings.fromJSON({ transparency: 0.5 }));
+        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+        expect(linkedRef.getSymbologyOverrides()).toBe(linkedWarmed);
+
+        primaryWarmed = primary.getSymbologyOverrides();
+        settings.setPlanProjectionSettings("0x1c", undefined);
+        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+
+        // A linked reference owns its plan projection settings and must invalidate only its own cache.
+        primaryWarmed = primary.getSymbologyOverrides();
+        linkedWarmed = linkedRef.getSymbologyOverrides();
+        linkedRef.planProjectionSettings.set("0x2a", PlanProjectionSettings.fromJSON({ transparency: 0.25 })!);
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
+        expect(primary.getSymbologyOverrides()).toBe(primaryWarmed);
 
         refs.unlink(linkedRef);
       } finally {
@@ -358,6 +573,253 @@ describe("Viewport", () => {
         newSelector.categories.add("0x999");
         expect(ref.viewedCategories.has("0x999")).toBe(true);
         expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+      });
+    });
+
+    it("rebinds a linked reference's style listeners when the display style is replaced", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        const oldStyle = viewport.view.displayStyle;
+        const newStyle = oldStyle.clone();
+        viewport.displayStyle = newStyle;
+
+        // View flag changes on the replacement style must invalidate the linked reference's cache and update its active flags.
+        let warmed = linkedRef.getSymbologyOverrides();
+        const vf = newStyle.viewFlags.with("dimensions", !newStyle.viewFlags.dimensions);
+        newStyle.viewFlags = vf;
+        expect(linkedRef.activeViewFlags.dimensions).toBe(vf.dimensions);
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(warmed);
+
+        // Mutations of the replaced (old) style must have no effect.
+        warmed = linkedRef.getSymbologyOverrides();
+        oldStyle.viewFlags = oldStyle.viewFlags.with("dimensions", !vf.dimensions);
+        expect(linkedRef.getSymbologyOverrides()).toBe(warmed);
+        expect(linkedRef.activeViewFlags.dimensions).toBe(vf.dimensions);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("rebinds a linked reference at attach after the style is replaced while detached", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const view = viewport.view;
+        const refs = view.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        // Detach the view by switching to a clone, then replace its display style - no events are raised while detached.
+        viewport.changeView(view.clone());
+        const replacement = view.displayStyle.clone();
+        view.displayStyle = replacement;
+
+        // Reattach - the linked reference must rebind to the replacement style.
+        viewport.changeView(view);
+
+        const warmed = linkedRef.getSymbologyOverrides();
+        const vf = replacement.viewFlags.with("dimensions", !replacement.viewFlags.dimensions);
+        replacement.viewFlags = vf;
+        expect(linkedRef.activeViewFlags.dimensions).toBe(vf.dimensions);
+        expect(linkedRef.getSymbologyOverrides()).not.toBe(warmed);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("changeView display state migration", () => {
+    it("carries never/always drawn, exclusivity, and per-model category visibility to the new view's primary reference", () => {
+      testBlankViewport((viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        ref.neverDrawnElements.add("0x1");
+        ref.alwaysDrawnElements.add("0x2");
+        ref.isAlwaysDrawnExclusive = true;
+        ref.perModelCategoryVisibility.setOverride("0x10", "0x20", PerModelCategoryVisibility.Override.Show);
+        ref.perModelCategoryVisibility.setOverride("0x11", "0x21", PerModelCategoryVisibility.Override.Hide);
+
+        viewport.changeView(viewport.view.clone());
+        const newRef = viewport.iModelRefs.primary;
+        expect(newRef).not.toBe(ref);
+
+        expect(newRef.neverDrawnElements.has("0x1")).toBe(true);
+        expect(newRef.alwaysDrawnElements.has("0x2")).toBe(true);
+        expect(newRef.isAlwaysDrawnExclusive).toBe(true);
+        expect(newRef.perModelCategoryVisibility.getOverride("0x10", "0x20")).toBe(PerModelCategoryVisibility.Override.Show);
+        expect(newRef.perModelCategoryVisibility.getOverride("0x11", "0x21")).toBe(PerModelCategoryVisibility.Override.Hide);
+
+        // The migrated state must be baked into the new reference's symbology overrides.
+        const ovrs = newRef.getSymbologyOverrides();
+        expect(ovrs.isAlwaysDrawnExclusive).toBe(true);
+        expect(ovrs.neverDrawn.hasId("0x1")).toBe(true);
+        expect(ovrs.alwaysDrawn.hasId("0x2")).toBe(true);
+      });
+    });
+
+    it("replaces stale display state on the incoming view's primary reference", () => {
+      testBlankViewport((viewport) => {
+        const newView = viewport.view.clone();
+        const staleRef = newView.iModelRefs.primary;
+        staleRef.neverDrawnElements.add("0xdead");
+        staleRef.isAlwaysDrawnExclusive = true;
+        staleRef.perModelCategoryVisibility.setOverride("0x10", "0x20", PerModelCategoryVisibility.Override.Hide);
+
+        viewport.changeView(newView);
+        const newRef = viewport.iModelRefs.primary;
+        expect(newRef.neverDrawnElements.size).toBe(0);
+        expect(newRef.isAlwaysDrawnExclusive).toBe(false);
+        expect(newRef.perModelCategoryVisibility.getOverride("0x10", "0x20")).toBe(PerModelCategoryVisibility.Override.None);
+      });
+    });
+
+    it("updates the render target's primary iModel reference when applying a view state", () => {
+      testBlankViewport((viewport) => {
+        const target = viewport.target as Target;
+        expect(target.currentBranch.iModelRef).toBe(viewport.iModelRefs.primary);
+        expect(target.decorationsState.iModelRef).toBe(viewport.iModelRefs.primary);
+
+        // applyViewState replaces the ViewState without a full Target.reset - the target must still track the new
+        // view's primary reference for decorations and pick exclusions.
+        const newView = viewport.view.clone();
+        viewport.applyViewState(newView);
+
+        const primary = newView.iModelRefs.primary;
+        expect(viewport.iModelRefs.primary).toBe(primary);
+        expect(target.currentBranch.iModelRef).toBe(primary);
+        expect(target.decorationsState.iModelRef).toBe(primary);
+      });
+    });
+  });
+
+  describe("deprecated always/never-drawn setters", () => {
+    it("accept the viewport's own sets without emptying them", () => {
+      testBlankViewport((viewport) => {
+        /* eslint-disable @typescript-eslint/no-deprecated -- verifies compatibility of deprecated methods */
+        viewport.setNeverDrawn(new Set(["0x1"]));
+        expect(viewport.neverDrawn.has("0x1")).toBe(true);
+
+        viewport.neverDrawn.add("0x2");
+        viewport.setNeverDrawn(viewport.neverDrawn);
+        expect(viewport.neverDrawn.size).toBe(2);
+        expect(viewport.neverDrawn.has("0x1")).toBe(true);
+        expect(viewport.neverDrawn.has("0x2")).toBe(true);
+
+        viewport.setAlwaysDrawn(new Set(["0x3"]));
+        expect(viewport.isAlwaysDrawnExclusive).toBe(false);
+
+        viewport.setAlwaysDrawn(viewport.alwaysDrawn, true);
+        expect(viewport.alwaysDrawn.size).toBe(1);
+        expect(viewport.alwaysDrawn.has("0x3")).toBe(true);
+        expect(viewport.isAlwaysDrawnExclusive).toBe(true);
+
+        // A distinct set still replaces the contents.
+        viewport.setAlwaysDrawn(new Set(["0x4"]), false);
+        expect(viewport.alwaysDrawn.size).toBe(1);
+        expect(viewport.alwaysDrawn.has("0x4")).toBe(true);
+        expect(viewport.isAlwaysDrawnExclusive).toBe(false);
+        /* eslint-enable @typescript-eslint/no-deprecated */
+      });
+    });
+  });
+
+  describe("GraphicsCollectorDrawArgs", () => {
+    it("collects branches carrying the tree's iModel reference", async () => {
+      await testBlankViewportAsync(async (vp) => {
+        const makeGraphic = () => {
+          const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, computeChordTolerance: () => 0 });
+          builder.addPointString([new Point3d(0, 0, 0)]);
+          return builder.finish();
+        };
+
+        const ref = TileTreeReference.createFromRenderGraphic({
+          iModel: vp.iModel,
+          graphic: makeGraphic(),
+          modelId: vp.iModel.transientIds.getNext(),
+        });
+        await ref.treeOwner.loadTree();
+
+        const context = new SceneContext(vp);
+        const collected: RenderGraphic[] = [];
+        const args = GraphicsCollectorDrawArgs.create(
+          context,
+          { addGraphic: (graphic: RenderGraphic) => collected.push(graphic) },
+          ref,
+          FrustumPlanes.fromFrustum(vp.getFrustum()),
+          vp.viewingSpace.worldToViewMap,
+        );
+        expect(args).toBeDefined();
+
+        const branch = new GraphicBranch(true);
+        branch.add(makeGraphic());
+        args!.drawGraphicsWithType(TileGraphicType.BackgroundMap, branch);
+
+        // The collected branch must carry an iModel reference - consumers such as BackgroundMapDrape draw it on a fresh
+        // branch stack whose root state has none, and batches require a defined reference.
+        expect(collected.length).toBe(1);
+        expect(collected[0]).toBeInstanceOf(Branch);
+        const collectedBranch = collected[0] as Branch;
+        expect(collectedBranch.iModelRef).toBeDefined();
+        expect(collectedBranch.iModelRef!.iModel).toBe(vp.iModel);
+      });
+    });
+  });
+
+  describe("EmphasizeElements change notifications", () => {
+    it("raises feature override events when provider state changes", () => {
+      testBlankViewport((viewport) => {
+        const emph = EmphasizeElements.getOrCreate(viewport);
+        viewport.renderFrame(); // flush the change flags produced by registering the provider
+
+        let overridesChanged = 0;
+        let providerChanged = 0;
+        const removals = [
+          viewport.onFeatureOverridesChanged.addListener(() => overridesChanged++),
+          viewport.onFeatureOverrideProviderChanged.addListener(() => providerChanged++),
+        ];
+
+        expect(emph.overrideElements("0x1", viewport, ColorDef.red)).toBe(true);
+        viewport.renderFrame();
+        expect(overridesChanged).toBe(1);
+        expect(providerChanged).toBe(1);
+
+        expect(emph.clearOverriddenElements(viewport)).toBe(true);
+        viewport.renderFrame();
+        expect(overridesChanged).toBe(2);
+        expect(providerChanged).toBe(2);
+
+        // A no-op mutation raises no events.
+        expect(emph.clearOverriddenElements(viewport)).toBe(false);
+        viewport.renderFrame();
+        expect(overridesChanged).toBe(2);
+        expect(providerChanged).toBe(2);
+
+        expect(emph.emphasizeElements("0x2", viewport)).toBe(true);
+        viewport.renderFrame();
+        expect(overridesChanged).toBe(3);
+        expect(providerChanged).toBe(3);
+
+        expect(emph.clearEmphasizedElements(viewport)).toBe(true);
+        viewport.renderFrame();
+        expect(overridesChanged).toBe(4);
+        expect(providerChanged).toBe(4);
+
+        for (const removal of removals)
+          removal();
+
+        EmphasizeElements.clear(viewport);
       });
     });
   });
@@ -1275,6 +1737,123 @@ describe("Viewport", () => {
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
         expect(features.length).to.equal(0);
       });
+    });
+
+    it("attributes graphics to the iModel supplied via the deprecated GraphicBranchOptions.iModel", () => {
+      const otherIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const pts = [
+            new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id: "0xa" },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          const branch = new GraphicBranch(true);
+          branch.add(builder.finish());
+          const transformFromIModel = Transform.createTranslationXYZ(1, 2, 3);
+          const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { iModel: otherIModel, transformFromIModel });
+          const owner = IModelApp.renderSystem.createGraphicOwner(graphic);
+
+          addDecorator({ decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, owner) });
+          vp.renderFrame();
+
+          const readFeature = () => {
+            let pixelFeature: Pixel.Data["feature"];
+            vp.readPixels({
+              selector: Pixel.Selector.Feature,
+              receiver: (pixels) => {
+                if (pixels) {
+                  const coordinate = vp.cssPixelsToDevicePixels(1);
+                  pixelFeature = pixels.getPixel(coordinate, coordinate).feature;
+                }
+              },
+            });
+            return pixelFeature;
+          };
+
+          const feature = readFeature();
+          expect(feature).toBeDefined();
+          expect(feature!.elementId).toBe("0xa");
+          expect(feature!.iModelRef.iModel).toBe(otherIModel);
+          expect(feature!.iModelRef).not.toBe(vp.iModelRefs.primary);
+          expect(feature!.iModelRef.linearTransformToParent).toBe(transformFromIModel);
+
+          // Attribution must be stable across frames.
+          vp.invalidateScene();
+          vp.renderFrame();
+          expect(readFeature()!.iModelRef).toBe(feature!.iModelRef);
+        });
+      } finally {
+        otherIModel.closeSync();
+      }
+    });
+
+    it("attributes tiles from a TiledGraphicsProvider's foreign iModel to that iModel", async () => {
+      const foreignIModel = createBlankConnection();
+      try {
+        await testBlankViewportAsync(async (vp) => {
+          const x = Math.floor(vp.viewRect.width / 2);
+          const y = Math.floor(vp.viewRect.height / 2);
+          const pts = [
+            new Point3d(x - 10, y - 10, 0), new Point3d(x + 10, y - 10, 0), new Point3d(x + 10, y + 10, 0), new Point3d(x - 10, y + 10, 0), new Point3d(x - 10, y - 10, 0),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const modelId = foreignIModel.transientIds.getNext();
+          const elemId = foreignIModel.transientIds.getNext();
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.Scene,
+            computeChordTolerance: () => 0,
+            pickable: { id: elemId, modelId },
+          });
+          builder.addShape(pts);
+
+          const ref = TileTreeReference.createFromRenderGraphic({
+            iModel: foreignIModel,
+            graphic: builder.finish(),
+            modelId,
+          });
+
+          vp.addTiledGraphicsProvider({
+            forEachTileTreeRef: (_vp, func) => func(ref),
+            getReferences: () => [ref],
+          });
+
+          await ref.treeOwner.loadTree();
+          await vp.waitForSceneCompletion();
+
+          const findFeature = () => {
+            for (const pixel of readUniquePixelData(vp))
+              if (pixel.feature?.elementId === elemId)
+                return pixel.feature;
+
+            return undefined;
+          };
+
+          const feature = findFeature();
+          expect(feature).toBeDefined();
+
+          // The pixel must be attributed to the provider's iModel, not the viewport's primary iModel.
+          expect(feature!.iModelRef.iModel).toBe(foreignIModel);
+          expect(feature!.iModelRef.iModel).not.toBe(vp.iModel);
+          expect(feature!.iModelRef).not.toBe(vp.iModelRefs.primary);
+
+          // Attribution must be stable across frames.
+          vp.invalidateScene();
+          vp.renderFrame();
+          const feature2 = findFeature();
+          expect(feature2!.iModelRef).toBe(feature!.iModelRef);
+        });
+      } finally {
+        await foreignIModel.close();
+      }
     });
 
     it("scopes excluded elements to their IModelDisplayReference", () => {

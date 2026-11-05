@@ -19,6 +19,8 @@ import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { IModelDisplayReference } from "../IModelDisplayReference";
+import { resolveIModelDisplayReference } from "../internal/ForeignIModelRef";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -341,6 +343,20 @@ export class TileDrawArgs {
     return this._appearanceProvider;
   }
 
+  /** The iModel reference to which the tiles' graphics - and the hits they produce - are attributed.
+   * @internal
+   */
+  protected get _branchIModelRef(): IModelDisplayReference {
+    const contextRef = this.context.iModelRef;
+    if (this.tree.iModel === contextRef.iModel)
+      return contextRef;
+
+    // The tree originates from an IModelConnection other than the one being drawn - e.g., it was supplied by a
+    // TiledGraphicsProvider. Attribute its graphics to a reference to its own iModel so that picking, snapping,
+    // tooltips, and hilite use that iModel.
+    return resolveIModelDisplayReference(this.context.viewport.view.iModelRefs, this.tree.iModel);
+  }
+
   /** @internal */
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
@@ -356,7 +372,7 @@ export class TileDrawArgs {
       return undefined;
 
     const opts: GraphicBranchOptions = {
-      iModelRef: this.context.iModelRef,
+      iModelRef: this._branchIModelRef,
       clipVolume: this.clipVolume,
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,

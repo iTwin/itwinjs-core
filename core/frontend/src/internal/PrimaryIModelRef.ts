@@ -87,6 +87,8 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     const updateViewFlags = () => {
       this.#resolvedViewFlags = this._view.viewFlags.override(this.overrides.viewFlags);
+      // Cached symbology overrides bake in geometry-class visibility and line weights from the active view flags.
+      this.invalidateSymbologyOverrides();
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
@@ -343,10 +345,20 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
     this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent());
 
-    this._addStyleListenerBinder((settings) => [
-      settings.onAfterHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent()),
-      settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()),
-    ]);
+    this._addStyleListenerBinder((settings) => {
+      const removals = [
+        settings.onAfterHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent()),
+        settings.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()),
+        // Cached symbology overrides bake in plan-projection transparency. The map's onChanged covers direct map
+        // mutations, which do not raise onPlanProjectionSettingsChanged; the latter covers setPlanProjectionSettings.
+        settings.onPlanProjectionSettingsChanged.addListener(() => this.invalidateSymbologyOverrides()),
+      ];
+
+      if (settings.is3d())
+        removals.push(settings.planProjectionSettings.onChanged.addListener(() => this.invalidateSymbologyOverrides()));
+
+      return removals;
+    });
 
     void loadViewedCategories(this);
 

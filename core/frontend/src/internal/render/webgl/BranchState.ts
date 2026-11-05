@@ -18,6 +18,7 @@ import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { IModelDisplayReference } from "../../../IModelDisplayReference";
+import { resolveIModelDisplayReference } from "../../ForeignIModelRef";
 
 /** Options used to construct a BranchState.
  * @internal
@@ -97,17 +98,23 @@ export class BranchState {
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
+    // Resolve the deprecated GraphicBranchOptions.iModel / transformFromIModel attribution now that the view's iModel
+    // references are accessible through the previous state's reference.
+    let branchIModelRef = branch.iModelRef;
+    if (!branchIModelRef && branch.legacyIModel && prev.iModelRef && (branch.legacyIModel !== prev.iModelRef.iModel || branch.legacyTransformFromIModel))
+      branchIModelRef = resolveIModelDisplayReference(prev.iModelRef.parent, branch.legacyIModel, branch.legacyTransformFromIModel);
+
     // At the boundary of an iModel display reference, apply the reference's view flag and hidden-line overrides as
     // defaults beneath the branch's own (e.g., per-model or section-cut) overrides. Like the branch's overrides, the
     // reference's overrides compose with the previous state, preserving baselines established by auxiliary passes.
-    const refViewFlags = branch.iModelRef?.overrides.viewFlags;
+    const refViewFlags = branchIModelRef?.overrides.viewFlags;
     const baseViewFlags = refViewFlags ? prev.viewFlags.override(refViewFlags) : prev.viewFlags;
-    const refHiddenLine = branch.iModelRef?.isSpatial() ? branch.iModelRef.overrides.hiddenLineSettings : undefined;
+    const refHiddenLine = branchIModelRef?.isSpatial() ? branchIModelRef.overrides.hiddenLineSettings : undefined;
     return new BranchState({
       viewFlags: branch.branch.getViewFlags(baseViewFlags),
       transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
       symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
-      iModelRef: branch.iModelRef ?? prev.iModelRef,
+      iModelRef: branchIModelRef ?? prev.iModelRef,
       planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,
@@ -123,7 +130,7 @@ export class BranchState {
       inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
       disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
-      contourLine: branch.contourLine ?? (branch.iModelRef?.isSpatial() ? branch.iModelRef.activeContours : prev.contourLine),
+      contourLine: branch.contourLine ?? (branchIModelRef?.isSpatial() ? branchIModelRef.activeContours : prev.contourLine),
     });
   }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
-import { _getModelClip, RenderClipVolume, SpatialIModelDisplayReference } from "@itwin/core-frontend";
+import { _backingView, _getModelClip, RenderClipVolume, SpatialIModelDisplayReference } from "@itwin/core-frontend";
 import { ModelMetadata } from "./BatchedTilesetReader.js";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup.js";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms.js";
@@ -56,13 +56,26 @@ export class BatchedModelGroups implements ModelGroupingContext {
   public invalidateTransforms(): void { this._transformsValid = false; }
 
   private listenForDisplayStyleEvents(): void {
-    /*const removeListener = */this._iModelRef.planProjectionSettings.onChanged.addListener(() => this._groupsValid = false);
-    // ###TODO assigning to viewState.displayStyle is such a bad idea, why do we allow it?
-    // this._iModelRef.onDisplayStyleChanged.addListener(() => {
-    //   this._groupsValid = false;
-    //   removeListener();
-    //   this.listenForDisplayStyleEvents();
-    // });
+    let removeListener = this._iModelRef.planProjectionSettings.onChanged.addListener(() => this._groupsValid = false);
+
+    // The primary reference's plan projection settings delegate to the view's current display style, which can be
+    // replaced wholesale - rebind to the replacement style's map when that happens. A linked reference owns its map,
+    // which is never replaced.
+    const refs = this._iModelRef.parent;
+    if (this._iModelRef !== refs.primary)
+      return;
+
+    refs[_backingView].onDisplayStyleChanged.addListener((newStyle) => {
+      this._groupsValid = false;
+      removeListener();
+      removeListener = () => undefined;
+
+      // The event is raised just before the view's displayStyle property is reassigned - bind to the replacement's
+      // map supplied by the event. A spatial view's display style is always 3d; the guard satisfies the type system.
+      const settings = newStyle.settings;
+      if (settings.is3d())
+        removeListener = settings.planProjectionSettings.onChanged.addListener(() => this._groupsValid = false);
+    });
   }
 
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {

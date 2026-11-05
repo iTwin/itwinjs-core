@@ -614,21 +614,21 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return false if nothing to clear.
    */
   public clearIsolatedElements(vp: Viewport): boolean {
-    return clearIsolatedElements(vp.primaryIModelRef, this.#state);
+    return this.#notifyIfChanged(vp, clearIsolatedElements(vp.primaryIModelRef, this.#state));
   }
 
   /** Clear emphasized elements.
    * @return false if nothing to clear.
    */
   public clearEmphasizedElements(vp: Viewport): boolean {
-    return clearEmphasizedElements(vp.primaryIModelRef, this.#state);
+    return this.#notifyIfChanged(vp, clearEmphasizedElements(vp.primaryIModelRef, this.#state));
   }
 
   /** Clear emphasized isolated elements.
    * @return false if nothing to clear.
    */
   public clearEmphasizedIsolatedElements(vp: Viewport, setToAlwaysDrawn: boolean): boolean {
-    return clearEmphasizedIsolatedElements(vp.primaryIModelRef, this.#state, setToAlwaysDrawn);
+    return this.#notifyIfChanged(vp, clearEmphasizedIsolatedElements(vp.primaryIModelRef, this.#state, setToAlwaysDrawn));
   }
 
   /** Clear color/transparency overrides from elements. Removes all overrides when keyOrIds isn't supplied.
@@ -638,7 +638,17 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return false if nothing to clear.
    */
   public clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean {
-    return clearOverriddenElements(vp.primaryIModelRef, this.#state, keyOrIds);
+    return this.#notifyIfChanged(vp, clearOverriddenElements(vp.primaryIModelRef, this.#state, keyOrIds));
+  }
+
+  /** Notifies the viewport that this provider's state changed, so that [[Viewport.onFeatureOverridesChanged]] and
+   * [[Viewport.onFeatureOverrideProviderChanged]] are raised for the change.
+   */
+  #notifyIfChanged(vp: Viewport, changed: boolean): boolean {
+    if (changed)
+      vp.setFeatureOverrideProviderChanged();
+
+    return changed;
   }
 
   /** @internal */
@@ -728,7 +738,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-    return emphasizeElements(ids, vp.primaryIModelRef, this.#state, defaultAppearance, replace);
+    return this.#notifyIfChanged(vp, emphasizeElements(ids, vp.primaryIModelRef, this.#state, defaultAppearance, replace));
   }
 
   /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
@@ -741,7 +751,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-    return emphasizeSelectedElements(vp.primaryIModelRef, this.#state, defaultAppearance, replace, clearSelection);
+    return this.#notifyIfChanged(vp, emphasizeSelectedElements(vp.primaryIModelRef, this.#state, defaultAppearance, replace, clearSelection));
   }
 
   /** Set the element IDs to display with a color/transparency override.
@@ -754,7 +764,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
-    return overrideElements(ids, vp.primaryIModelRef, this.#state, color, override, replace);
+    return this.#notifyIfChanged(vp, overrideElements(ids, vp.primaryIModelRef, this.#state, color, override, replace));
   }
 
   /** Set the currently selected elements to display with a color/transparency override.
@@ -767,7 +777,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideSelectedElements(vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
-    return overrideSelectedElements(vp.primaryIModelRef, this.#state, color, override, replace, clearSelection);
+    return this.#notifyIfChanged(vp, overrideSelectedElements(vp.primaryIModelRef, this.#state, color, override, replace, clearSelection));
   }
 
   /** @return true if provider is currently overriding the display of any elements. */
@@ -786,7 +796,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[EmphasizeElements.toJSON]]
    */
   public fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean {
-    return fromJSON(props, vp.primaryIModelRef, this.#state);
+    return this.#notifyIfChanged(vp, fromJSON(props, vp.primaryIModelRef, this.#state));
   }
 
   /** Return the EmphasizeElements provider currently registered with the specified Viewport, if one is already registered. */
