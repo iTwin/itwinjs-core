@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-extension
 
-This log was last generated on Wed, 04 Nov 2026 17:36:46 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:36 GMT
+
+### Updates
+
+- React to changes in typing from common package (using Persisted<T>)
 
 ## 5.14.6
 Wed, 04 Nov 2026 17:35:14 GMT
