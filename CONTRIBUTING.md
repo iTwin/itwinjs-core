@@ -4,7 +4,7 @@ This guide covers the path from a local checkout to a pull request. Read the aff
 
 ## Set up the repository
 
-The repository uses [Rush](https://rushjs.io/) to manage its TypeScript packages. Use a Node.js version supported by [`rush.json`](./rush.json). Node.js 24 LTS is recommended.
+The repository uses [Rush](https://rushjs.io/) to manage its TypeScript packages. Use a Node.js version supported by [`rush.json`](./rush.json). Node.js 26 LTS is recommended.
 
 ```sh
 rush install
