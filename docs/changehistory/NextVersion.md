@@ -11,6 +11,8 @@ publish: false
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Bulk ElementAspect operations](#bulk-elementaspect-operations)
+  - [Platform support](#platform-support)
+    - [Node.js 26 support](#nodejs-26-support)
 
 ## Frontend
 
@@ -143,3 +145,9 @@ if (result.status === BulkElementAspectsStatus.ValidationFailed) {
 The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`, `onBulkUpdated`, `onBulkDelete` and `onBulkDeleted` handlers are called once per aspect class. By default they call the existing per-aspect handlers, so existing overrides of `onInsert`, `onUpdate` and the other per-aspect handlers still run for every aspect. Within one bulk call, the default handlers check the lock of each owning element and the channel of each model only once. The existing single-aspect methods and handlers are unchanged.
 
 See [Bulk ElementAspect Operations]($docs/learning/backend/BulkElementAspects.md) for details.
+
+## Platform support
+
+### Node.js 26 support
+
+In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 26](https://nodejs.org/en/blog/release/v26.13.0). Node.js 26 is not yet supported by `@itwin/core-mobile`.
