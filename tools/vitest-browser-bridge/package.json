@@ -45,26 +45,20 @@
     "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts && vitest run --config src/test/vitest.electron-startup.config.mts"
   },
   "dependencies": {
-    "@vitest/browser": "^4.1.10"
+    "@vitest/browser": "^4.1.10",
+    "electron": "catalog:electron"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@opentelemetry/api": "1.0.4",
     "@types/node": "catalog:build",
-    "electron": "catalog:electron",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",
     "typescript": "catalog:build",
     "vitest": "catalog:testing"
   },
   "peerDependencies": {
-    "electron": ">=35.0.0 <46.0.0",
     "vitest": "^4.1.10"
-  },
-  "peerDependenciesMeta": {
-    "electron": {
-      "optional": true
-    }
   }
 }

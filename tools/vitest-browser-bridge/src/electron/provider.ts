@@ -83,12 +83,19 @@ function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
   }
 }
 
-function resolveElectronBinary(projectRoot: string, override: string | undefined): string {
+// Launch the Electron this package depends on. Every package takes Electron from the repository's
+// `electron` catalog, so this is the same version consumers install.
+const bridgeRequire = createRequire(import.meta.url);
+
+/** Resolve the Electron executable the provider launches. The `electron` package's main export is
+ * the path to its executable; it downloads the binary on first use if it is missing.
+ * @internal
+ */
+export function resolveElectronBinary(override?: string): string {
   if (override !== undefined)
     return override;
 
-  const projectRequire = createRequire(path.join(projectRoot, "package.json"));
-  const electronBinary = projectRequire("electron");
+  const electronBinary: unknown = bridgeRequire("electron");
   if (typeof electronBinary !== "string")
     throw new Error("The Electron package did not resolve to an executable path.");
   return electronBinary;
@@ -107,7 +114,7 @@ class ElectronSession {
     private readonly _processOptions: ElectronProcessOptions,
   ) {
     this._child = spawn(
-      resolveElectronBinary(projectRoot, _processOptions.electronBinary),
+      resolveElectronBinary(_processOptions.electronBinary),
       [...(_processOptions.electronArgs ?? []), sessionEntryPath],
       {
         cwd: projectRoot,

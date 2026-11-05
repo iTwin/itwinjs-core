@@ -3,9 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "node:fs";
+import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createElectronBrowserProviderOption, ElectronBrowserProvider } from "../electron/provider.js";
+import { createElectronBrowserProviderOption, ElectronBrowserProvider, resolveElectronBinary } from "../electron/provider.js";
 import { createProviderWindowOptions } from "../electron/provider-session.js";
 
 const packageRoot = process.cwd();
@@ -52,6 +54,15 @@ describe("Electron provider foundation", () => {
     const provider = option.providerFactory(fakeProject as Parameters<typeof option.providerFactory>[0]);
     expect(provider.supportsParallelism).toBe(false);
     expect(provider.getCommandsContext("session")).toEqual({});
+  });
+
+  it("launches the Electron executable from the bridge's own dependency", () => {
+    // The bridge package depends on Electron; consumers do not need to supply it.
+    const bridgeElectron: unknown = createRequire(path.join(packageRoot, "package.json"))("electron");
+    expect(typeof bridgeElectron).toBe("string");
+    expect(resolveElectronBinary()).toBe(bridgeElectron);
+    expect(fs.existsSync(resolveElectronBinary())).toBe(true);
+    expect(resolveElectronBinary("/custom/electron")).toBe("/custom/electron");
   });
 
   it("reports an Electron process that exits before the session is ready", async () => {
