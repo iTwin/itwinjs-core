@@ -2459,7 +2459,10 @@ if (meshMode === GltfMeshMode.Points && primitive.indices === undefined) {
   protected resolveUrl(uri: string): string | undefined {
     try {
       const resolved = new URL(uri, this._baseUrl);
-      resolved.search = this._baseUrl?.search ?? "";
+      // Only forward the base URL's query (which may contain credentials) to the same origin.
+      if (this._baseUrl && resolved.origin === this._baseUrl.origin)
+        resolved.search = this._baseUrl.search;
+
       return resolved.toString();
     } catch {
       return undefined;
