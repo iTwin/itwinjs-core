@@ -1,6 +1,14 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 04 Nov 2026 17:36:46 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:37 GMT
+
+### Updates
+
+- Reuse quantity formatter specs across all pages of a content iterator to avoid repeated spec construction.
+- Improved performance of content localization by localizing response data in place instead of copying it. A `Descriptor` supplied by the caller in content requests is no longer localized.
 
 ## 5.14.6
 Wed, 04 Nov 2026 17:35:14 GMT
