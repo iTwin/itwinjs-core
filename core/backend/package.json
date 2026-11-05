@@ -110,7 +110,7 @@
     "vite": "catalog:bundling"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.16.12",
+    "@bentley/imodeljs-native": "5.16.16",
     "@itwin/object-storage-azure": "catalog:imodels-clients",
     "@azure/storage-blob": "catalog:runtime",
     "form-data": "^4.0.6",

@@ -2,6 +2,18 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "5.15.0",
+      "tag": "@itwin/core-geometry_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "choices for exterior angle conversion to fraction"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.14.6",
       "tag": "@itwin/core-geometry_v5.14.6",
       "date": "Wed, 04 Nov 2026 17:35:14 GMT",
