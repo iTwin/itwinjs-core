@@ -496,7 +496,7 @@ describe("IModelWriteTest", () => {
     insertElements(rwTxn, "Test2dElement", 1024, () => {
       return { s: str };
     });
-    assert.equal(1356840,  rwIModel[_nativeDb].getChangesetSize() - baselineSize);
+    assert.equal(1356840, rwIModel[_nativeDb].getChangesetSize() - baselineSize);
 
     rwTxn.saveChanges("user 1: data");
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
@@ -644,7 +644,7 @@ describe("IModelWriteTest", () => {
       return { s: `s-${n}` };
     });
 
-    assert.equal(3081,  rwIModel[_nativeDb].getChangesetSize() - baselineSize);
+    assert.equal(3081, rwIModel[_nativeDb].getChangesetSize() - baselineSize);
     rwTxn.saveChanges("user 1: data changeset");
 
     if (true || "push changes") {
