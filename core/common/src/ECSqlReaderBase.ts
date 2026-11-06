@@ -157,7 +157,7 @@ export abstract class ECSqlReaderBase {
       return undefined;
     },
     has: (target: ECSqlReaderBase, p: string | symbol) => {
-      return !target._props.findByNoCase(p as string);
+      return !!target._props.findByNoCase(p as string);
     },
     ownKeys: (target: ECSqlReaderBase) => {
       const keys = [];

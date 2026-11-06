@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, ElementReservationError } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, ElementReservationError, SqliteError } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelJsFs, SchemaSync } from "../../core-backend";
 import { _nativeDb } from "../../internal/Symbols";
@@ -86,7 +86,7 @@ describe("SchemaSyncDb", () => {
       simulateVersion4Db();
       schemaDb.closeDb();
 
-      expect(() => schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite)).to.throw();
+      expect(() => schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite)).to.throw(SqliteError).with.property("errorId", "incompatible-version");
     });
   });
 

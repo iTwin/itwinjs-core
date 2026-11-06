@@ -197,7 +197,7 @@ export class Logger {
   }
 
   private static isLogLevel(v: string) {
-    return LogLevel.hasOwnProperty(v);
+    return typeof v === "string" && LogLevel.hasOwnProperty(v.charAt(0).toUpperCase() + v.slice(1).toLowerCase());
   }
 
   /** Check that the specified object is a valid LoggerLevelsConfig. This is useful when reading a config from a .json file. */
