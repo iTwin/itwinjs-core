@@ -2472,5 +2472,13 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
 
       expect(isValidUrl(urlToFetch)).to.be.false;
     });
+
+    it("should not forward base url query params to a different origin", async () => {
+      const reader = await createTestReader(gltf, "https://acct.blob.core.windows.net/c/tileset.json?sig=secret");
+      expect(reader).to.be.not.undefined;
+      expect(reader?.resolve("https://evil.example.com/buffer.bin")).to.equal("https://evil.example.com/buffer.bin");
+      expect(reader?.resolve("//evil.example.com/image.png?a=1")).to.equal("https://evil.example.com/image.png?a=1");
+      expect(reader?.resolve("https://acct.blob.core.windows.net/c/buffer.bin")).to.equal("https://acct.blob.core.windows.net/c/buffer.bin?sig=secret");
+    });
   });
 });

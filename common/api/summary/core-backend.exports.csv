@@ -31,8 +31,11 @@ public;interface;BriefcaseIdArg
 internal;enum;BriefcaseLocalValue
 public;class;BriefcaseManager
 beta;interface;BulkDeleteElementsArgs
+deprecated;interface;BulkDeleteElementsArgs
 beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
+beta;interface;BulkDeleteFailure
+beta;enum;BulkDeleteFailureReason
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb
@@ -632,7 +635,11 @@ beta;interface;SqliteChangesetReaderArgs
 beta;type;SqliteChangesetReaderDb
 public;class;SQLiteDb
 public;namespace;SQLiteDb
+internal;enum;ApplyChangesetFlags
 internal;interface;BlobIO
+internal;type;ChangesetConflictArgs
+internal;type;ChangesetConflictHandler
+internal;enum;ChangesetConflictPolicy
 public;class;SqliteStatement
 public;namespace;SqliteStatement
 public;class;SqliteValue

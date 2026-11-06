@@ -58,6 +58,8 @@ export default {
         {
           name: "TYPE",
           description: "Type",
+          minOccurs: 2,
+          maxOccurs: 5,
           type: "PrimitiveArrayProperty",
           typeName: "ConflictingPropertyName.WALL_TYPE",
           category: "ConflictingPropertyName.CONSTRAINTS",

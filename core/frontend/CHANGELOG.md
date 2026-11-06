@@ -1,6 +1,29 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:36 GMT
+
+### Updates
+
+- React to changes in typing from common package (getProps return Persisted<T>)
+- Cesium terrain: distinguish missing, rejected, and unreachable Cesium ion access when reporting terrain failures.
+- Update Units Schema to 01.00.12.
+- Add protected `ToolAdmin.onTxnOperationError`, called when `doUndoOperation` or `doRedoOperation` fails to reverse or reinstate a Txn, so applications can tell the user why the operation failed.
+- Add an asynchronous formats provider setter that synchronizes the active unit system, awaits the resulting formatting reload, and rejects superseded or disposed requests.
+- Fix parser specs created through the `QuantityFormatter` spec registry, and parser specs requested for a non-active unit system, ignoring alternate unit labels.
+- Allow `QuantityFormatter.addAlternateLabels` to add labels for units without default alternates, and add default "kph", "kmh" and "mph" alternate labels for velocity units.
+- Preserve named and EPSG vertical CRS identifiers when computing OrbitGT point-cloud height corrections.
+- Reject non-finite GCS conversion results before coordinate normalization and use a warning with zero correction for non-finite OPC vertical shifts. Document per-point vertical conversion status and fresh-converter retries after grid resources become available. Refresh retained converters when the iModel CRS changes so cached or in-flight results cannot retain the previous datum's elevations.
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+### Updates
+
+- Fix parser specs created through the `QuantityFormatter` spec registry, and parser specs requested for a non-active unit system, ignoring alternate unit labels.
+- Allow `QuantityFormatter.addAlternateLabels` to add labels for units without default alternates, and add default "kph", "kmh" and "mph" alternate labels for velocity units.
 
 ## 5.14.5
 Tue, 27 Oct 2026 12:19:48 GMT

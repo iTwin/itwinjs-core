@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:37 GMT
+
+### Updates
+
+- Fix parsing failures when a format's units and the parser's unit conversions come from units providers that report different labels for the same unit.
+- Update Units Schema to 01.00.12.
+- Fix parsing of compound unit labels containing a slash, such as "km/h", which were previously split into separate tokens.
+- Allow ratio separators to be a string with one non-whitespace character
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+### Updates
+
+- Fix parsing of compound unit labels containing a slash, such as "km/h", which were previously split into separate tokens.
 
 ## 5.14.5
 Tue, 27 Oct 2026 12:19:48 GMT

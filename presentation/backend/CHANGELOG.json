@@ -2,6 +2,30 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.15.0",
+      "tag": "@itwin/presentation-backend_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "React to changes in typing from common package. Remove unnecessary id! assertion"
+          },
+          {
+            "comment": "Reuse quantity formatter specs within each content-formatting operation to avoid repeated spec construction."
+          },
+          {
+            "comment": "Improved performance of content localization by localizing response data in place instead of copying it."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.14.6",
+      "tag": "@itwin/presentation-backend_v5.14.6",
+      "date": "Wed, 04 Nov 2026 17:35:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.5",
       "tag": "@itwin/presentation-backend_v5.14.5",
       "date": "Tue, 27 Oct 2026 12:19:48 GMT",

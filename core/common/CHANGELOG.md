@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Nov 2026 17:48:51 GMT and should not be manually modified.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:36 GMT
+
+### Updates
+
+- Update IModelReadRpcInterface to return element/model props with Persisted<T>.
+- Add `FieldPropertyPath.jsonAccessors` for indexing into a String property of extended type `Json`.
+- Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value.
+- Allow configuring the concurrent-query SQLite page-cache target per secondary connection in KiB.
+- Always bind the IModelRpcProps parameter of an RPC operation to the protocol token, even if some of its properties are omitted.
+- Improve asynchronous ECSQL paging with bounded native cursor reuse and configurable retention.
+- Render schedule timelines using step interpolation now apply each keyframe's value at that keyframe's own time point instead of one keyframe late.
+- Promote TxnProps and TxnType from @alpha to @beta.
+- Add optional dictionary name and EPSG identifiers to VerticalCRS. Compare all stored vertical CRS properties so fallback corrections and EPSG additions update the iModel.
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+_Version update only_
 
 ## 5.14.5
 Tue, 27 Oct 2026 12:19:48 GMT

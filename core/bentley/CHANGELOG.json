@@ -2,6 +2,27 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "5.15.0",
+      "tag": "@itwin/core-bentley_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow Id64.iterator, Id64.iterable, Id64.getFirst, Id64.sizeOf, and Id64.has to accept read-only arrays and sets of Id64 strings."
+          },
+          {
+            "comment": "Added BeAsyncEvent."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.14.6",
+      "tag": "@itwin/core-bentley_v5.14.6",
+      "date": "Wed, 04 Nov 2026 17:35:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.5",
       "tag": "@itwin/core-bentley_v5.14.5",
       "date": "Tue, 27 Oct 2026 12:19:48 GMT",

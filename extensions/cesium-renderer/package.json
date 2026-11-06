@@ -37,27 +37,29 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/core": "0.1.0",
+    "@cesium/engine": "26.4.0",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
-    "@cesium/engine": "20.0.1",
+    "@cesium/core": "0.1.0",
+    "@cesium/engine": "26.4.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/node": "~20.17.0",
-    "@vitest/browser-playwright": "^4.1.10",
-    "eslint": "^9.31.0",
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/node": "catalog:build",
+    "@vitest/browser-playwright": "catalog:testing",
+    "eslint": "catalog:linting",
     "internal-tools": "workspace:*",
-    "playwright": "~1.56.1",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.6.2",
-    "vitest": "^4.1.10"
+    "playwright": "catalog:testing",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build",
+    "vitest": "catalog:testing"
   }
 }
