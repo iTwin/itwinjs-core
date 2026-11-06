@@ -1029,8 +1029,8 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not to display the specified models in the viewport.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
-   * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
-   * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
+   * @note If `display` is `true`, any of the supplied `models` that are not yet loaded are loaded asynchronously; their graphics display once loading completes.
+   * @see [[addViewedModels]] for a similar function that returns a promise that resolves once the requested models are loaded.
    * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]].
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
