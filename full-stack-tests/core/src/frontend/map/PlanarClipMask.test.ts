@@ -21,16 +21,40 @@ describe("Planar clip mask (#integration #graphics)", () => {
   let originalModelIds: Id64String[];
 
   before(async () => {
-    await TestUtility.startFrontend({
+    const appOptions = {
       ...TestUtility.iModelAppOptions,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,
       },
-    });
+    };
 
-    const gl = TestUtility.getWebGLContext();
-    // A lost context (e.g. the Electron GPU process died under xvfb) never renders; fail now rather than per-test timeouts.
+    // A lost context (e.g. the Electron GPU process died under xvfb) never renders. getWebGLContext probes the render
+    // system's own context, so recovery requires a full frontend restart to respawn the GPU process - a bounded retry
+    // here, because mocha does not retry failing before-all hooks. Fail fast after that rather than per-test timeouts.
+    let gl: WebGL2RenderingContext | undefined;
+    const maxAttempts = 3;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await TestUtility.startFrontend(appOptions);
+        gl = TestUtility.getWebGLContext();
+      } catch (err) {
+        // Render-system creation can throw outright when no context can be obtained.
+        gl = undefined;
+        // eslint-disable-next-line no-console -- CI diagnostics for an environmental flake.
+        console.log(`PlanarClipMask: frontend startup threw on attempt ${attempt} of ${maxAttempts}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      if (gl !== undefined && !gl.isContextLost())
+        break;
+
+      // eslint-disable-next-line no-console -- CI diagnostics for an environmental flake.
+      console.log(`PlanarClipMask: WebGL context unavailable or lost on startup attempt ${attempt} of ${maxAttempts}.`);
+      await TestUtility.shutdownFrontend().catch(() => undefined);
+      if (attempt < maxAttempts)
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Allow the GPU process to come back up.
+    }
+
     assert(gl !== undefined && !gl.isContextLost(), "WebGL context is unavailable or lost");
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
     const text = (value: unknown) => typeof value === "string" ? value.slice(0, 256) : "unavailable";
