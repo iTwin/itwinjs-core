@@ -152,7 +152,7 @@ export interface HitPath {
 
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
- * @deprecated in 5.15.0 - will not be removed until after 2027-10-29. Use [[HitDetailFeatureProps]] instead.
+ * @deprecated Use [[HitDetailFeatureProps]] instead.
  */
 export interface HitDetailProps {
   /** The point in world coordinates that was used as the initial locate point. */

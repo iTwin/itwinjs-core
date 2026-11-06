@@ -17,6 +17,7 @@ publish: false
   - [API deprecations](#api-deprecations)
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
+    - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
 
 ## Frontend
 
@@ -159,3 +160,9 @@ Additionally, the type of `Pixel.Data.feature` changed from the [Feature]($commo
 ### Viewport display APIs
 
 Viewport-level APIs for model and category display overrides, viewed models, and always/never-drawn elements are deprecated in favor of APIs on [IModelDisplayReference]($frontend) and [SpatialIModelDisplayReference]($frontend).
+
+`PerModelCategoryVisibility.createOverrides` is also deprecated: the standalone object it returns is never consulted when rendering. Use the [IModelDisplayReference.perModelCategoryVisibility]($frontend) of the iModel reference whose display you want to change.
+
+### Graphic branch iModel attribution
+
+The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.

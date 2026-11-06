@@ -28,7 +28,7 @@ export namespace Pixel {
     /** The Id of the model containing this pixel's [[feature]]. */
     public get modelId(): Id64String | undefined { return this.feature?.modelId; }
     /** The iModel from which the geometry producing the pixel originated.
-     * @deprecated in 5.16. Use [[feature]]'s [[IModelDisplayFeature.iModelRef]] instead.
+     * @deprecated Use [[feature]]'s [[IModelDisplayFeature.iModelRef]] instead.
      * @note Previously, this was defined only for geometry originating from an iModel other than the [[Viewport]]'s own.
      * It is now defined for every pixel produced by a feature, including those originating from the viewport's primary iModel.
      */
@@ -182,19 +182,19 @@ export namespace Pixel {
      */
     feature: IModelDisplayFeature;
     /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations.
-     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.elementId]] instead.
+     * @deprecated Use [[feature]]'s [[ModelFeature.elementId]] instead.
      */
     sourceId: Id64String;
     /** The [SubCategory]($backend) to which the hit geometry belongs.
-     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.subCategoryId]] instead.
+     * @deprecated Use [[feature]]'s [[ModelFeature.subCategoryId]] instead.
      */
     subCategoryId?: Id64String;
     /** The class of the hit geometry.
-     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.geometryClass]] instead.
+     * @deprecated Use [[feature]]'s [[ModelFeature.geometryClass]] instead.
      */
     geometryClass?: GeometryClass;
     /** The Id of the [[ModelState]] from which the hit originated.
-     * @deprecated in 5.16. Use [[feature]]'s [[ModelFeature.modelId]] instead.
+     * @deprecated Use [[feature]]'s [[ModelFeature.modelId]] instead.
      */
     modelId?: Id64String;
     /** The hit geometry priority/classification. */

@@ -96,7 +96,7 @@ export namespace PerModelCategoryVisibility {
   }
 
   /** Create a standalone set of overrides associated with the specified viewport's iModel.
-   * @deprecated in 5.16. The returned object is not consulted when rendering - to query or change the per-model category
+   * @deprecated The returned object is not consulted when rendering - to query or change the per-model category
    * visibility actually applied to an iModel displayed in a viewport, use [[IModelDisplayReference.perModelCategoryVisibility]]
    * (e.g., via `viewport.iModelRefs.primary`).
    */
