@@ -5555,7 +5555,7 @@ export interface IModelDisplayReference {
     readonly activeViewFlags: ViewFlags;
     readonly alwaysDrawnElements: ObservableSet<Id64String>;
     changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
-    changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
+    changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean;
     readonly featureOverrideProviders: ObservableSet<IModelDisplayReferenceFeatureOverrideProvider>;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     // @internal
@@ -7089,7 +7089,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): -1 | 0;
+    get rootLevel(): 0 | -1;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;

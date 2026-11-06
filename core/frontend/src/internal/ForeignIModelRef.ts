@@ -125,7 +125,7 @@ class ForeignIModelRef implements IModelDisplayReference {
     return isSubCategoryVisible(this, id);
   }
 
-  public changeSubCategoryDisplay(_id: Id64String, _visible: boolean): void { }
+  public changeSubCategoryDisplay(_id: Id64String, _visible: boolean): boolean { return false; }
 
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     return getSubCategoryAppearance(this, id);

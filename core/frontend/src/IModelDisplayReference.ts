@@ -176,11 +176,23 @@ export interface IModelDisplayReference {
 
   /** Modify the visibility of categories displayed by this reference. */
   changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
-  /** Returns true if geometry belonging to the specified [SubCategory]($backend) is visible when displaying this reference. */
+  /** Returns true if geometry belonging to the specified [SubCategory]($backend) is visible when displaying this reference,
+   * accounting for both its base [SubCategoryAppearance]($common) and any [SubCategoryOverride]($common) in [[subCategoryOverrides]].
+   * @note Returns false if the subcategory's appearance has not yet been loaded - e.g., via [[viewedCategories]] or
+   * [IModelConnection.Categories.getCategoryInfo]($frontend).
+   */
   isSubCategoryVisible(id: Id64String): boolean;
-  /** Changes the visibility of geometry belonging to the specified [SubCategory]($backend). */
-  changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
-  /** Returns a description of how geometry belonging to the specified [SubCategory]($backend) appears when displayed through this reference. */
+  /** Changes the visibility of geometry belonging to the specified [SubCategory]($backend), preserving any other aspects
+   * of its [SubCategoryOverride]($common) in [[subCategoryOverrides]].
+   * @returns true if the visibility changed; false if it was already in the requested state, or if the subcategory's
+   * appearance has not yet been loaded (e.g., via [[viewedCategories]] or [IModelConnection.Categories.getCategoryInfo]($frontend)),
+   * in which case the call has no effect.
+   */
+  changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean;
+  /** Returns a description of how geometry belonging to the specified [SubCategory]($backend) appears when displayed through this reference.
+   * @note Returns [SubCategoryAppearance.defaults]($common) if the subcategory's appearance has not yet been loaded - e.g., via
+   * [[viewedCategories]] or [IModelConnection.Categories.getCategoryInfo]($frontend).
+   */
   getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
 }
 

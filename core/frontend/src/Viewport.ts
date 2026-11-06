@@ -747,7 +747,8 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
    * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
-   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
+   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]] to remove the whole override, or
+   * [[IModelDisplayReference.changeSubCategoryDisplay]] to change only its visibility.
    */
   public dropSubCategoryOverride(id: Id64String): void {
     this.primaryIModelRef.subCategoryOverrides.delete(id);
@@ -757,7 +758,8 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
    * @see [[dropSubCategoryOverride]]
-   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]].
+   * @deprecated Use [[IModelDisplayReference.subCategoryOverrides]] to replace the whole override, or
+   * [[IModelDisplayReference.changeSubCategoryDisplay]] to change only its visibility.
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
     this.primaryIModelRef.subCategoryOverrides.set(id, ovr);
