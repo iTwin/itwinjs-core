@@ -412,9 +412,15 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     }
 
     // Tiles requested for linked references must be enqueued with the viewport via the primary context.
-    for (const linkedContext of linkedContexts)
+    for (const linkedContext of linkedContexts) {
       for (const missingTile of linkedContext.missingTiles)
         context.insertMissingTile(missingTile);
+
+      // Also propagate the children-still-loading flag so that the scene does not report itself complete while
+      // linked shadow tiles are still loading.
+      if (linkedContext.hasMissingTiles)
+        context.markChildrenLoading();
+    }
 
     if (tileRange.isNull) {
       this.clearGraphics(true);

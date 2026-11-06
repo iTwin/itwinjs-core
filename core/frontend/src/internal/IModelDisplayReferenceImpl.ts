@@ -14,27 +14,35 @@ import { Transform } from "@itwin/core-geometry";
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
 /** Computes the world-space display transform that rendering applies to a model displayed through a non-primary
- * IModelDisplayReference, for use by picking and snapping. Only the reference's [[ModelDisplayTransformProvider]] applies -
- * linked references do not support plan projection elevations, schedule scripts, or view attachments.
+ * IModelDisplayReference, for use by picking and snapping. The reference's plan projection elevation and
+ * [[ModelDisplayTransformProvider]] apply - linked references do not support schedule scripts or view attachments.
  * @see ViewState.computeDisplayTransform for the primary reference's equivalent.
  */
 export function computeIModelRefDisplayTransform(ref: IModelDisplayReference, modelId: Id64String): Transform | undefined {
+  const elevation = ref.isSpatial() ? (ref.planProjectionSettings.get(modelId)?.elevation ?? 0) : 0;
   const displayTf = ref.modelDisplayTransformProvider?.getModelDisplayTransform(modelId);
-  if (!displayTf)
+  if (0 === elevation && !displayTf)
     return undefined;
 
+  // Transforms applied in the reference's own coordinate space, composed as ViewState.computeDisplayTransform does:
+  // the plan projection elevation first, then a non-premultiplied model display transform.
+  let local = 0 !== elevation ? Transform.createTranslationXYZ(0, 0, elevation) : undefined;
+  if (displayTf && !displayTf.premultiply)
+    local = local ? local.multiplyTransformTransform(displayTf.transform) : displayTf.transform.clone();
+
+  // Conjugate into the view's world space for use on world-space points.
+  let world: Transform | undefined;
+  if (local) {
+    const toWorld = ref.linearTransformToParent;
+    const fromWorld = toWorld.inverse();
+    world = fromWorld ? toWorld.multiplyTransformTransform(local).multiplyTransformTransform(fromWorld) : local;
+  }
+
   // A premultiplied transform is applied after the reference's placement, i.e. in the view's world space.
-  if (displayTf.premultiply)
-    return displayTf.transform.clone();
+  if (displayTf?.premultiply)
+    world = world ? displayTf.transform.multiplyTransformTransform(world) : displayTf.transform.clone();
 
-  // A non-premultiplied transform is applied in the linked iModel's own coordinate space, before its placement into the
-  // view's world space - conjugate it into world space for use on world-space points.
-  const toWorld = ref.linearTransformToParent;
-  const fromWorld = toWorld.inverse();
-  if (!fromWorld)
-    return displayTf.transform.clone();
-
-  return toWorld.multiplyTransformTransform(displayTf.transform).multiplyTransformTransform(fromWorld);
+  return world;
 }
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {

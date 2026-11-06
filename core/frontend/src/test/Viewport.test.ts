@@ -5,9 +5,9 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeEvent, CompressedId64Set, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point2d, Point3d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
+  AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { _getModelClip } from "../common/internal/Symbols";
@@ -20,6 +20,7 @@ import { DisplayStyle2dState } from "../DisplayStyleState";
 import { DrawingViewState } from "../DrawingViewState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
+import type { IModelConnection } from "../IModelConnection";
 import { openBlankViewport, readUniqueFeatures, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
@@ -32,7 +33,12 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
-import { GraphicsCollectorDrawArgs, TileGraphicType, TileTreeReference } from "../tile/internal";
+import { createClassifierTileTreeReference, createMaskTreeReference, createRealityTileTreeReference, DisclosedTileTreeSet, GraphicsCollectorDrawArgs, RealityModelSource, TileGraphicType, TileTree, TileTreeReference } from "../tile/internal";
+import { RealityDataSource } from "../RealityDataSource";
+import type { GeometricModelState } from "../ModelState";
+import type { SpatialClassifiersState } from "../SpatialClassifiersState";
+import { computeSectionCutForIModelCoords } from "../internal/tile/PrimaryTileTree";
+import { computeIModelRefDisplayTransform } from "../internal/IModelDisplayReferenceImpl";
 import { EntityChanges, TxnEntityChanges } from "../TxnEntityChanges";
 
 describe("Viewport", () => {
@@ -633,6 +639,364 @@ describe("Viewport", () => {
         replacement.viewFlags = vf;
         expect(linkedRef.activeViewFlags.dimensions).toBe(vf.dimensions);
         expect(linkedRef.getSymbologyOverrides()).not.toBe(warmed);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("keeps raising onTimePointChanged after the display style is replaced", () => {
+      testBlankViewport((viewport) => {
+        const refs = viewport.iModelRefs;
+        let raised = 0;
+        const removeListener = refs.onTimePointChanged.addListener(() => raised++);
+
+        viewport.displayStyle.settings.timePoint = 100;
+        expect(raised).toBe(1);
+
+        // Replacing the style with a different time point must raise the event...
+        const oldStyle = viewport.displayStyle;
+        const newStyle = oldStyle.clone();
+        newStyle.settings.timePoint = 200;
+        viewport.displayStyle = newStyle;
+        expect(raised).toBe(2);
+
+        // ...changes on the replacement style must keep raising it...
+        newStyle.settings.timePoint = 300;
+        expect(raised).toBe(3);
+
+        // ...and changes on the replaced (old) style must not.
+        oldStyle.settings.timePoint = 400;
+        expect(raised).toBe(3);
+
+        // Replacing with a style sharing the current time point raises no event.
+        const sameTimeStyle = newStyle.clone();
+        sameTimeStyle.settings.timePoint = 300;
+        viewport.displayStyle = sameTimeStyle;
+        expect(raised).toBe(3);
+
+        sameTimeStyle.settings.timePoint = 500;
+        expect(raised).toBe(4);
+
+        removeListener();
+      });
+    });
+
+    it("rebinds onTimePointChanged at attach after the style is replaced while detached", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        const refs = view.iModelRefs;
+        let raised = 0;
+        const removeListener = refs.onTimePointChanged.addListener(() => raised++);
+
+        // Detach the view by switching to a clone, then replace its display style - no events are raised while detached.
+        viewport.changeView(view.clone());
+        const replacement = view.displayStyle.clone();
+        replacement.settings.timePoint = 100;
+        view.displayStyle = replacement;
+
+        // Reattach - the refs collection must detect the replacement and raise for the differing time point.
+        viewport.changeView(view);
+        expect(raised).toBe(1);
+
+        replacement.settings.timePoint = 200;
+        expect(raised).toBe(2);
+
+        removeListener();
+      });
+    });
+  });
+
+  describe("linked iModel tile tree lifecycle", () => {
+    async function createLoadedTreeRef(iModel: IModelConnection): Promise<TileTreeReference> {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, computeChordTolerance: () => 0 });
+      builder.addPointString([new Point3d(0, 0, 0)]);
+      const ref = TileTreeReference.createFromRenderGraphic({
+        iModel,
+        graphic: builder.finish(),
+        modelId: iModel.transientIds.getNext(),
+      });
+      await ref.treeOwner.loadTree();
+      expect(ref.treeOwner.tileTree).toBeDefined();
+      return ref;
+    }
+
+    /** The linked ref's tile trees come from SpatialTileTreeReferences, which produces none for a blank connection -
+     * shadow the instance getter with a real loaded tree so disclosure has something observable to disclose.
+     */
+    function setTileTreeRefs(ref: object, treeRefs: TileTreeReference[]): void {
+      Object.defineProperty(ref, "tileTreeRefs", { get: () => treeRefs, configurable: true });
+    }
+
+    it("discloses linked tile trees", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const treeRef = await createLoadedTreeRef(linkedIModel);
+        setTileTreeRefs(linkedRef, [treeRef]);
+
+        const disclosed = new DisclosedTileTreeSet();
+        viewport.discloseTileTrees(disclosed);
+        expect(disclosed.has(treeRef.treeOwner.tileTree!)).toBe(true);
+
+        refs.unlink(linkedRef);
+
+        // After unlink, the tree is no longer disclosed.
+        const disclosedAfter = new DisclosedTileTreeSet();
+        viewport.discloseTileTrees(disclosedAfter);
+        expect(disclosedAfter.size).toBe(0);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("exposes the view's iModels as the viewport's TileUser.iModels", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        expect([...viewport.iModels]).toEqual([viewport.iModel]);
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        expect([...viewport.iModels]).toEqual([viewport.iModel, linkedIModel]);
+
+        refs.unlink(linkedRef);
+        expect([...viewport.iModels]).toEqual([viewport.iModel]);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("disposes a linked iModel's unused tile trees on unlink", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const treeRef = await createLoadedTreeRef(linkedIModel);
+        setTileTreeRefs(linkedRef, [treeRef]);
+
+        refs.unlink(linkedRef);
+
+        // Nothing discloses the tree any longer - unlink must have reclaimed it immediately.
+        expect(treeRef.treeOwner.tileTree).toBeUndefined();
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+
+    it("preserves trees still in use by another view linking the same iModel", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        using otherViewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        const otherRefs = otherViewport.iModelRefs;
+        if (!refs.isSpatial || !otherRefs.isSpatial)
+          throw new Error("Expected spatial viewports");
+
+        const treeRef = await createLoadedTreeRef(linkedIModel);
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        setTileTreeRefs(linkedRef, [treeRef]);
+
+        // A second view links the same iModel and uses the same tree.
+        const otherLinkedRef = otherRefs.link({ iModel: linkedIModel });
+        setTileTreeRefs(otherLinkedRef, [treeRef]);
+
+        refs.unlink(linkedRef);
+
+        // The other view still discloses the tree - it must survive.
+        expect(treeRef.treeOwner.tileTree).toBeDefined();
+
+        otherRefs.unlink(otherLinkedRef);
+        expect(treeRef.treeOwner.tileTree).toBeUndefined();
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("linked placement for reality model tree references", () => {
+    it("composes the linked placement into reality model, classifier, and mask tree reference transforms", async () => {
+      const linkedIModel = createBlankConnection("linked-reality", Cartographic.fromDegrees({ longitude: -75.6869, latitude: 40.0657, height: 100 }));
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const toParent = linkedRef.linearTransformToParent;
+        expect(toParent.isIdentity).toBe(false);
+
+        const stubTree = { iModelTransform: Transform.createTranslationXYZ(1, 2, 3) } as unknown as TileTree;
+        const expectPlacement = (ref: TileTreeReference, placed: boolean) => {
+          const actual = (ref as any).computeTransform(stubTree) as Transform;
+          const expected = placed ? toParent.multiplyTransformTransform(stubTree.iModelTransform) : stubTree.iModelTransform;
+          expect(actual.isAlmostEqual(expected)).toBe(true);
+        };
+
+        const makeRealityRef = (source: RealityModelSource) => createRealityTileTreeReference({
+          rdSourceKey: RealityDataSource.createKeyFromUrl("https://tiles.test/tileset.json"),
+          iModel: linkedIModel,
+          source,
+          modelId: "0x123",
+          getDisplaySettings: () => RealityModelDisplaySettings.defaults,
+        });
+
+        // A linked persistent reality model is placed, and uses the linked reference's symbology overrides.
+        const linkedReality = makeRealityRef(linkedRef);
+        expectPlacement(linkedReality, true);
+        expect((linkedReality as any).getSymbologyOverrides(stubTree)).toBe(linkedRef.getSymbologyOverrides());
+
+        // The primary reference's placement is the identity; it uses the primary's overrides.
+        const primaryReality = makeRealityRef(refs.primary);
+        expectPlacement(primaryReality, false);
+        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBe(refs.primary.getSymbologyOverrides());
+
+        // A context reality model (owned by the display style) is not placed and inherits the viewport's overrides.
+        const contextReality = makeRealityRef(viewport.view.displayStyle);
+        expectPlacement(contextReality, false);
+        expect((contextReality as any).getSymbologyOverrides(stubTree)).toBeUndefined();
+
+        // Classifier and mask tree references for linked models are placed too.
+        const classifiers = { active: undefined, activeClassifier: undefined } as unknown as SpatialClassifiersState;
+        expectPlacement(createClassifierTileTreeReference(classifiers, linkedReality, linkedIModel, linkedRef), true);
+        expectPlacement(createClassifierTileTreeReference(classifiers, primaryReality, viewport.iModel, refs.primary), false);
+
+        const stubModel = { id: "0x456", is3d: true, iModel: linkedIModel, asGeometricModel3d: undefined } as unknown as GeometricModelState;
+        expectPlacement(createMaskTreeReference(linkedRef, stubModel), true);
+        expectPlacement(createMaskTreeReference(refs.primary, stubModel), false);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("linked scene merge", () => {
+    it("propagates the children-still-loading flag from linked contexts", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+
+        // A tree reference whose children are still loading, without any explicit missing-tile requests -
+        // e.g., reality tiles report this state via markChildrenLoading.
+        const loadingRef = { addToScene: (sceneContext: SceneContext) => sceneContext.markChildrenLoading() } as unknown as TileTreeReference;
+        Object.defineProperty(linkedRef, "tileTreeRefs", { get: () => [loadingRef], configurable: true });
+
+        const context = new SceneContext(viewport);
+        viewport.view.createScene(context);
+
+        expect(context.missingTiles.size).toBe(0);
+        expect(context.hasMissingTiles).toBe(true);
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("linked plan projection display transform", () => {
+    it("includes the plan projection elevation in the pick/snap display transform", async () => {
+      // A linked connection geolocated elsewhere, so its transform into the view is not the identity.
+      const linkedIModel = createBlankConnection("linked-plan-projection", Cartographic.fromDegrees({ longitude: -75.6869, latitude: 40.0657, height: 100 }));
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const toParent = linkedRef.linearTransformToParent;
+        expect(toParent.isIdentity).toBe(false);
+
+        const modelId = "0x1c";
+
+        // No elevation, no model display transform - no display transform.
+        expect(computeIModelRefDisplayTransform(linkedRef, modelId)).toBeUndefined();
+
+        // The elevation applies in the linked iModel's own coordinate space, before its placement into the view.
+        linkedRef.planProjectionSettings.set(modelId, PlanProjectionSettings.fromJSON({ elevation: 10 })!);
+        const actual = computeIModelRefDisplayTransform(linkedRef, modelId);
+        expect(actual).toBeDefined();
+        const expected = toParent.multiplyTransformTransform(Transform.createTranslationXYZ(0, 0, 10)).multiplyTransformTransform(toParent.inverse()!);
+        expect(actual!.isAlmostEqual(expected)).toBe(true);
+
+        // Other models are unaffected.
+        expect(computeIModelRefDisplayTransform(linkedRef, "0x1d")).toBeUndefined();
+
+        refs.unlink(linkedRef);
+      } finally {
+        await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("section-cut clip for linked iModels", () => {
+    it("transforms the tile-request clip into the linked iModel's coordinate space", async () => {
+      // A linked connection geolocated elsewhere, so its transform into the view is not the identity.
+      const linkedIModel = createBlankConnection("linked-elsewhere", Cartographic.fromDegrees({ longitude: -75.6869, latitude: 40.0657, height: 100 }));
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const toParent = linkedRef.linearTransformToParent;
+        expect(toParent.isIdentity).toBe(false);
+
+        // A clip around the origin, with cut geometry enabled.
+        const clip = ClipVector.createEmpty();
+        expect(clip.appendShape([Point3d.create(-5, -5, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0), Point3d.create(-5, 5, 0)])).toBe(true);
+        viewport.view.setViewClip(clip);
+        viewport.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: true });
+
+        const viewCut = StringifiedClipVector.fromClipVector(clip)!;
+
+        // The primary reference's tile-request clip is the view clip, untransformed.
+        const primaryCut = computeSectionCutForIModelCoords(viewCut, refs.primary);
+        expect(primaryCut).toBe(viewCut);
+
+        // The linked reference's tile-request clip is expressed in the linked iModel's own coordinate space.
+        const linkedCut = computeSectionCutForIModelCoords(viewCut, linkedRef);
+        expect(linkedCut).toBeDefined();
+        expect(linkedCut!.clipString).not.toBe(viewCut.clipString);
+
+        // A world point inside the view clip maps to a linked-space point inside the linked cut clip, and vice versa.
+        const worldInside = Point3d.create(0, 0, 0);
+        const worldOutside = Point3d.create(100, 100, 0);
+        expect(clip.pointInside(worldInside)).toBe(true);
+        expect(clip.pointInside(worldOutside)).toBe(false);
+
+        const fromParent = toParent.inverse()!;
+        expect(linkedCut!.pointInside(fromParent.multiplyPoint3d(worldInside))).toBe(true);
+        expect(linkedCut!.pointInside(fromParent.multiplyPoint3d(worldOutside))).toBe(false);
+
+        // The view's own clip must not have been mutated - it remains correct for frontend tile culling.
+        expect(viewport.view.getViewClip()).toBe(clip);
+        expect(StringifiedClipVector.fromClipVector(clip)!.clipString).toBe(viewCut.clipString);
 
         refs.unlink(linkedRef);
       } finally {

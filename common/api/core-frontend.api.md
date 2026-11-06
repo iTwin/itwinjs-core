@@ -1515,6 +1515,8 @@ export const _backingView: unique symbol;
 
 // @beta
 export interface BaseIModelDisplayReferences {
+    // @internal
+    readonly [_attachToViewport]: () => void;
     // @internal (undocumented)
     readonly [_backingView]: ViewState;
     // @internal (undocumented)
@@ -8215,7 +8217,7 @@ export class PerformanceMetrics {
 
 // @public
 export namespace PerModelCategoryVisibility {
-    // @deprecated (undocumented)
+    // @deprecated
     export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides;
     // @internal
     export interface CreateOverridesArgs {
@@ -10033,6 +10035,7 @@ export class ScreenViewport extends Viewport {
         plane: Plane3dByOriginAndUnitNormal;
         source: DepthPointSource;
         sourceId?: string;
+        sourceIModel?: IModelConnection;
     };
     // @internal (undocumented)
     picker: ElementPicker;
@@ -10749,6 +10752,8 @@ export class SpatialViewState extends ViewState3d {
         max: number;
     };
     detachFromViewport(): void;
+    // @internal
+    discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
@@ -11643,6 +11648,8 @@ export class TileAdmin {
     process(): void;
     // @internal
     purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+    // @internal
+    purgeUnusedTreesForIModel(iModel: IModelConnection): void;
     queryVersionInfo(): Promise<Readonly<TileVersionInfo>>;
     registerUser(user: TileUser): void;
     // @internal (undocumented)
@@ -12305,6 +12312,8 @@ export class TileUsageMarker {
 export interface TileUser {
     readonly discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
     readonly iModel: IModelConnection;
+    // @beta
+    readonly iModels?: Iterable<IModelConnection>;
     readonly onRequestStateChanged?: (req: TileRequest) => void;
     readonly tileUserId: number;
 }
@@ -13716,6 +13725,7 @@ export abstract class ViewManip extends ViewTool {
         source: DepthPointSource;
         isDefaultDepth: boolean;
         sourceId?: string;
+        sourceIModel?: IModelConnection;
     };
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
@@ -13972,6 +13982,8 @@ export abstract class Viewport implements Disposable, TileUser {
     get iModel(): IModelConnection;
     // @beta
     get iModelRefs(): IModelDisplayReferences;
+    // @beta
+    get iModels(): Iterable<IModelConnection>;
     protected initialize(): void;
     invalidateController(): void;
     invalidateDecorations(): void;

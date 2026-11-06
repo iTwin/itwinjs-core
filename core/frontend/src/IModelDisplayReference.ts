@@ -188,7 +188,9 @@ export interface IModelDisplayReference {
  * @beta
  */
 export interface IModelDisplayReference2d extends IModelDisplayReference {
-  /** The collection of iModel references to which this reference belongs. */
+  /** The collection of iModel references to which this reference belongs. A 2d collection contains only the primary
+   * reference - i.e., this one - as 2d views do not currently support linked iModels.
+   */
   readonly parent: IModelDisplayReferences2d;
 
   /** The Id of the [GeometricModel2d]($backend) displayed by this reference. */

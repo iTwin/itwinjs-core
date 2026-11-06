@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
-import { _backingView, _implementationProhibited } from "./common/internal/Symbols";
+import { _attachToViewport, _backingView, _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -43,6 +43,11 @@ export interface BaseIModelDisplayReferences {
 
   /** @internal */
   readonly [_backingView]: ViewState;
+
+  /** @internal Invoked when the backing view is attached to a viewport, to refresh state derived from objects that may
+   * have been replaced while the view was detached.
+   */
+  readonly [_attachToViewport]: () => void;
 
   /** The reference to the primary iModel displayed in the view. */
   readonly primary: IModelDisplayReference;

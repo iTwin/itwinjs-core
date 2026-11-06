@@ -17,7 +17,7 @@ import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
-import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 import { createSpatialIModelDisplayReferences } from "./internal/IModelDisplayReferencesImpl";
 import { _treeRefs } from "./common/internal/Symbols";
@@ -230,6 +230,19 @@ export class SpatialViewState extends ViewState3d {
     yield* this.iModelRefs.primary.tileTreeRefs;
   }
 
+  /** Overrides [[ViewState.discloseTileTrees]] to include the tile trees of linked iModels.
+   * Linked references are deliberately absent from [[getTileTreeRefs]] - that iterates the view definition's own content,
+   * whose ids are interpreted against [[iModel]] - but their trees are in use by this view, so they must be disclosed to
+   * [[TileAdmin]] for pruning, purging, and memory statistics.
+   * @internal
+   */
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    super.discloseTileTrees(trees);
+    for (const iModelRef of this.iModelRefs.linked)
+      for (const ref of iModelRef.tileTreeRefs)
+        trees.disclose(ref);
+  }
+
   /** @internal */
   public override createScene(context: SceneContext): void {
     super.createScene(context);
@@ -246,6 +259,12 @@ export class SpatialViewState extends ViewState3d {
 
       for (const missingTile of linkedContext.missingTiles)
         context.insertMissingTile(missingTile);
+
+      // The copied missing tiles cover explicit requests; also propagate the children-still-loading flag, which
+      // e.g. reality tiles set without enqueueing a request in this context - otherwise the scene reports itself
+      // complete (see Viewport.waitForSceneCompletion) while linked tiles are still loading.
+      if (linkedContext.hasMissingTiles)
+        context.markChildrenLoading();
 
       for (const [key, classifier] of linkedContext.planarClassifiers)
         context.planarClassifiers.set(key, classifier);

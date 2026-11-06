@@ -36,6 +36,7 @@ import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
 import { IModelDisplayReference } from "../../IModelDisplayReference";
+import { FeatureSymbology } from "../../render/FeatureSymbology";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -554,6 +555,18 @@ class RealityModelTileLoader extends RealityTileLoader {
 
 export type RealityModelSource = IModelDisplayReference | DisplayStyleState;
 
+/** Compose the placement of `source`'s iModel into the view's coordinate space with a tile tree reference's base
+ * transform, mutating and returning `transform`. A placement applies only when the source is a linked
+ * [[IModelDisplayReference]] - a [[DisplayStyleState]] (context reality models) and the primary reference use the identity.
+ * @internal
+ */
+export function composeSourcePlacement(source: RealityModelSource, transform: Transform): Transform {
+  if (!(source instanceof DisplayStyleState) && !source.linearTransformToParent.isIdentity)
+    source.linearTransformToParent.multiplyTransformTransform(transform, transform);
+
+  return transform;
+}
+
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
   private readonly _isContentUnbounded: boolean;
@@ -666,6 +679,20 @@ export namespace RealityModelTileTree {
     }
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
+    /** Compose a linked reference's placement into the view's coordinate space (no-op for the primary reference and
+     * for context reality models owned by the display style).
+     */
+    protected override computeTransform(tree: TileTree): Transform {
+      return composeSourcePlacement(this._source, super.computeTransform(tree));
+    }
+
+    /** A reality model displayed through an iModel reference uses that reference's symbology overrides - a context
+     * reality model (whose source is the display style) uses the viewport's.
+     */
+    protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+      return this._source instanceof DisplayStyleState ? undefined : this._source.getSymbologyOverrides();
+    }
 
     public override unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();

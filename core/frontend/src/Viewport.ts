@@ -1077,6 +1077,12 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
+
+  /** The set of iModels from which this viewport may be consuming tiles: the view's own iModel plus any linked iModels.
+   * @see [[IModelDisplayReferences.iModels]].
+   * @beta
+   */
+  public get iModels(): Iterable<IModelConnection> { return this.view.iModelRefs.iModels; }
   /** @internal */
   public get isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
   /** @internal */
@@ -1653,7 +1659,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
-   * @deprecated Use [[IModelDisplayReference.neverDrawn]].
+   * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
   public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
 
@@ -1661,13 +1667,13 @@ export abstract class Viewport implements Disposable, TileUser {
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
    * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]].
    */
   public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]].
    */
   public clearAlwaysDrawn(): void {
     const ref = this.primaryIModelRef;
@@ -1683,7 +1689,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Clear the set of never-drawn elements.
    * @see [[neverDrawn]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
   public clearNeverDrawn(): void {
     const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
@@ -1697,7 +1703,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Specify the Ids of a set of elements which should never be rendered within this view.
    * @see [[neverDrawn]].
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
+   * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
   public setNeverDrawn(ids: Id64Set): void {
     const neverDrawnElements = this.primaryIModelRef.neverDrawnElements;
@@ -1717,7 +1723,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param exclusive If true, *only* the specified elements will be drawn.
    * @see [[alwaysDrawn]]
    * @see [[isAlwaysDrawnExclusive]]
-   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     const ref = this.primaryIModelRef;
@@ -3669,9 +3675,11 @@ export class ScreenViewport extends Viewport {
    * @param radius Radius, in pixels, of the circular area to search.
    * @param options Optional settings to control what can be selected.
    * @returns A plane with origin from closest geometry point or reference plane projection and the source of the depth point.
+   * When the source is geometry, a model, or a map, `sourceId` identifies the hit geometry and `sourceIModel` the iModel to
+   * which it belongs - which, for example when displaying linked iModels, is not necessarily the viewport's own [[iModel]].
    * @note The result plane normal is valid when the source is not geometry or a reality model.
    */
-  public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
+  public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string, sourceIModel?: IModelConnection } {
     if (!this.view.is3d())
       return { plane: Plane3dByOriginAndUnitNormal.createXYPlane(pickPoint), source: DepthPointSource.ACS };
 
@@ -3689,10 +3697,10 @@ export class ScreenViewport extends Viewport {
       const hitDetail = expectDefined(this.picker.getHit(0));
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
-        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Model, sourceId: hitDetail.sourceId, sourceIModel: hitDetail.iModel };
       else if (hitDetail.isMapHit)
-        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
-      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())), source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Map, sourceId: hitDetail.sourceId, sourceIModel: hitDetail.iModel };
+      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())), source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId, sourceIModel: hitDetail.iModel };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();

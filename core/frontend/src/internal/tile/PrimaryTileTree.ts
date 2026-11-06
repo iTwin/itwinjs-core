@@ -29,6 +29,7 @@ import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RealityModelTileTree, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
+import { composeSourcePlacement } from "./RealityModelTileTree";
 import { _backingView, _getModelClip, _scheduleScriptReference } from "../../common/internal/Symbols";
 import { IModelDisplayReference, SpatialIModelDisplayReference } from "../../IModelDisplayReference";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
@@ -140,6 +141,11 @@ class PrimaryTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   private readonly _sectionClip?: StringifiedClipVector;
+  /** [[_sectionClip]] expressed in this reference's iModel's own coordinate space, for inclusion in tile requests.
+   * Identical to [[_sectionClip]] for the primary reference.
+   * @see [[computeSectionCutForIModelCoords]].
+   */
+  private readonly _sectionClipForIModelCoords?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
   private _layerRefHandler: LayerTileTreeReferenceHandler;
@@ -171,6 +177,7 @@ class PrimaryTreeReference extends TileTreeReference {
     this._animationTransformNodeId = transformNodeId;
 
     this._sectionClip = sectionClip;
+    this._sectionClipForIModelCoords = sectionClip ? computeSectionCutForIModelCoords(sectionClip, iModelRef) : undefined;
     this._viewFlagOverrides = { ...model.jsonProperties.viewFlagOverrides };
     if (sectionClip) {
       // Clipping will be applied on backend; don't clip out cut geometry.
@@ -292,7 +299,7 @@ class PrimaryTreeReference extends TileTreeReference {
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? iModelRef.activeViewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
     const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
-    const sectionCut = this._sectionClip?.clipString;
+    const sectionCut = this._sectionClipForIModelCoords?.clipString;
     const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
     return { type: BatchType.Primary, edges, animationId, sectionCut, disablePolyfaceDecimation };
   }
@@ -493,11 +500,13 @@ export function createPrimaryTileTreeReference(
 class MaskTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
+  private readonly _iModelRef: IModelDisplayReference;
   public readonly model: GeometricModelState;
   public override get castsShadows() { return false; }
   public constructor(iModelRef: IModelDisplayReference, model: GeometricModelState) {
     super();
     this.model = model;
+    this._iModelRef = iModelRef;
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -506,6 +515,13 @@ class MaskTreeReference extends TileTreeReference {
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
+  }
+
+  /** Compose a linked reference's placement into the view's coordinate space, so the mask lines up with the (equally
+   * placed) models it is produced from (no-op for the primary reference).
+   */
+  protected override computeTransform(tree: TileTree): Transform {
+    return composeSourcePlacement(this._iModelRef, super.computeTransform(tree));
   }
 
   public get treeOwner(): TileTreeOwner {
@@ -886,4 +902,28 @@ class SpatialRefs implements SpatialTileTreeReferences {
     for (const dropped of this._swapSectionCutOnlyRefs.values())
       dropped.detachLayerListeners();
   }
+}
+
+/** Express a section-cut clip, defined in the view's (i.e., the primary iModel's) coordinate space, in the coordinate
+ * space of the iModel displayed by `iModelRef`, for inclusion in tile requests: the backend produces cut geometry in the
+ * requested iModel's own coordinates, so for a linked reference the clip is transformed by the inverse of the reference's
+ * placement into the view. Returns the input unchanged for the primary reference (identity placement).
+ * @note The untransformed clip remains the correct one for frontend tile culling ([[TileDrawArgs.intersectionClip]]),
+ * which tests tile volumes *after* [[TileDrawArgs.location]] has applied the placement.
+ * Exported strictly for tests.
+ * @internal
+ */
+export function computeSectionCutForIModelCoords(clip: StringifiedClipVector, iModelRef: IModelDisplayReference): StringifiedClipVector | undefined {
+  const toParent = iModelRef.linearTransformToParent;
+  if (toParent.isIdentity)
+    return clip;
+
+  const fromParent = toParent.inverse();
+  if (!fromParent)
+    return clip;
+
+  // Clone - the view's own clip must not be mutated.
+  const transformed = clip.clone();
+  transformed.transformInPlace(fromParent);
+  return StringifiedClipVector.fromClipVector(transformed);
 }

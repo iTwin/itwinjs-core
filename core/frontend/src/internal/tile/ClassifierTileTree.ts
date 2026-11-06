@@ -6,6 +6,7 @@
  * @module Tiles
  */
 import { compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
@@ -17,6 +18,7 @@ import { ActiveSpatialClassifier, SpatialClassifiersState } from "../../SpatialC
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, RealityModelSource, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
+import { composeSourcePlacement } from "./RealityModelTileTree";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
@@ -113,6 +115,13 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
   public override get castsShadows() {
     return false;
+  }
+
+  /** Compose a linked reference's placement into the view's coordinate space, so classifier geometry lines up with
+   * the (equally placed) reality model it classifies (no-op for the primary reference and context reality models).
+   */
+  protected override computeTransform(tree: TileTree): Transform {
+    return composeSourcePlacement(this._source, super.computeTransform(tree));
   }
 
   public get treeOwner(): TileTreeOwner {

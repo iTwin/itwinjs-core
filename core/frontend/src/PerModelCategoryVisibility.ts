@@ -95,7 +95,11 @@ export namespace PerModelCategoryVisibility {
     queue: SubCategoriesCache.Queue;
   }
 
-  /** @deprecated Nobody needs this. */
+  /** Create a standalone set of overrides associated with the specified viewport's iModel.
+   * @deprecated in 5.16. The returned object is not consulted when rendering - to query or change the per-model category
+   * visibility actually applied to an iModel displayed in a viewport, use [[IModelDisplayReference.perModelCategoryVisibility]]
+   * (e.g., via `viewport.iModelRefs.primary`).
+   */
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
     const pmcv = new PerModelCategoryVisibilityOverrides({
       iModel: viewport.iModel,

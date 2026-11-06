@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { _backingView, _implementationProhibited } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { SpatialViewState } from "../SpatialViewState";
@@ -15,8 +15,9 @@ import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
 import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
 import { createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
-import { FeatureAppearance } from "@itwin/core-common";
+import { DisplayStyleSettings, FeatureAppearance } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
 
 abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState> {
   public readonly [_implementationProhibited] = undefined;
@@ -31,13 +32,41 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public readonly onDefaultFeatureAppearanceChanged = new BeEvent<() => void>();
   #defaultFeatureAppearance = FeatureAppearance.defaults;
 
+  // The view's display style can be replaced wholesale. The time-point listener is tracked so it can be rebound to the
+  // replacement style's settings.
+  #boundStyleSettings: DisplayStyleSettings;
+  #removeTimePointListener: VoidFunction;
+
   protected constructor(view: V) {
     this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
 
-    this[_backingView].displayStyle.settings.onAfterTimePointChanged.addListener(
-      () => this.onTimePointChanged.raiseEvent()
-    );
+    this.#boundStyleSettings = view.displayStyle.settings;
+    this.#removeTimePointListener = this.#bindTimePointListener(this.#boundStyleSettings);
+
+    // Note: raised just before the view's displayStyle property is reassigned - bind to the replacement supplied by the event.
+    view.onDisplayStyleChanged.addListener((newStyle) => this.#styleSettingsReplaced(newStyle.settings));
+  }
+
+  #bindTimePointListener(settings: DisplayStyleSettings): VoidFunction {
+    return settings.onAfterTimePointChanged.addListener(() => this.onTimePointChanged.raiseEvent());
+  }
+
+  #styleSettingsReplaced(newSettings: DisplayStyleSettings): void {
+    const oldTimePoint = this.#boundStyleSettings.timePoint;
+    this.#removeTimePointListener();
+    this.#boundStyleSettings = newSettings;
+    this.#removeTimePointListener = this.#bindTimePointListener(newSettings);
+
+    if (newSettings.timePoint !== oldTimePoint)
+      this.onTimePointChanged.raiseEvent();
+  }
+
+  /** The display style may have been replaced while the view was detached, in which case no events were raised - rebind now. */
+  public [_attachToViewport](): void {
+    const settings = this[_backingView].displayStyle.settings;
+    if (settings !== this.#boundStyleSettings)
+      this.#styleSettingsReplaced(settings);
   }
 
   public abstract [Symbol.iterator](): Iterator<R>;
@@ -139,6 +168,11 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
         this.#iModels.delete(refToRemove.iModel);
 
       this.onUnlinked.raiseEvent(refToRemove);
+
+      // The periodic purge only reclaims tile trees of iModels currently associated with a TileUser - once unlinked from
+      // every view, nothing else would free this iModel's unused trees while the connection remains open.
+      if (removeIModel)
+        IModelApp.tileAdmin.purgeUnusedTreesForIModel(refToRemove.iModel);
     }
   }
 

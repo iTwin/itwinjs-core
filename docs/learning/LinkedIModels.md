@@ -30,6 +30,26 @@ IModelApp.toolAdmin.defaultToolId = MultiIModelSelectionTool.toolId;
 
 This tool opts in to linked-model hits and updates the selection set belonging to each hit's iModel.
 
+## Links are runtime state
+
+Linked-iModel support does not include persistence. Links are not part of the view definition: iTwin.js never stores which iModels a view links, nor the categories, models, or overrides displayed through each reference. They are not serialized with the view, and a view produced by `clone()` or loaded from a saved view does not carry them.
+
+Composing a scene that includes linked iModels is therefore the application's responsibility: deciding which iModels to link, opening their [IModelConnection]($frontend)s, supplying each link's display state via [LinkSpatialIModelArgs]($frontend), and re-establishing the links whenever a new [ViewState]($frontend) is created - after loading a saved view, cloning a view, or switching views. An application that wants its linked-scene composition to survive sessions must record it in its own storage and replay it through [SpatialIModelDisplayReferences.link]($frontend).
+
+This applies to viewport synchronization as well. [connectViewportViews]($frontend), [synchronizeViewportViews]($frontend), and [TwoWayViewportSync]($frontend) propagate changes by applying a *clone* of the changed viewport's view to the other viewports - via [Viewport.applyViewState]($frontend), which by design raises no change events - so each synchronization silently discards the target viewports' links. To synchronize viewports that display linked iModels, synchronize only their frusta using [connectViewportFrusta]($frontend) or [TwoWayViewportFrustumSync]($frontend), which never replace the views, or supply your own synchronization strategy to [connectViewports]($frontend) that re-establishes the links after applying the view.
+
+For the same reason, APIs that describe the view definition's own content continue to report **only** the primary iModel. [ViewState.getTileTreeRefs]($frontend) and [Viewport.getTileTreeRefs]($frontend) iterate the tile trees of the view's models and display style; callers interpret the model and element ids of those trees against the view's own [ViewState.iModel]($frontend), and linked content is deliberately excluded so that assumption remains valid. To work with linked content, iterate `iModelRefs` instead - each [IModelDisplayReference]($frontend) exposes its own `tileTreeRefs`, and its ids belong to that reference's `iModel`:
+
+```ts
+for (const ref of view.iModelRefs) {
+  for (const treeRef of ref.tileTreeRefs) {
+    // ids obtained from treeRef belong to ref.iModel, which differs from view.iModel for linked references.
+  }
+}
+```
+
+Tile resource management - pruning, discarding expired tile trees, and memory statistics - accounts for linked iModels automatically; applications need not iterate linked tile trees for those purposes.
+
 ## Geolocation
 
 An iModel's geolocation describes how its spatial coordinates relate to positions on Earth. Geolocation does not determine whether an iModel can be linked; it determines the transform iTwin.js can compute to place the linked iModel in the primary iModel's coordinate system.

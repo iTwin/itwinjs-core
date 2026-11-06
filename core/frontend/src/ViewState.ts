@@ -1450,6 +1450,7 @@ export abstract class ViewState extends ElementState {
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
     this.registerCategorySelectorListeners();
+    this.iModelRefs[_attachToViewport]();
     for (const ref of this.iModelRefs)
       ref[_attachToViewport](_args);
   }
