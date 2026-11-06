@@ -35,12 +35,15 @@ const scratchRange2d = Range2d.createNull();
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
 class LayerTextureParam implements Disposable {
+  /** @param _texture A texture owned by this param (terrain imagery); undefined for projected textures, which belong to their classifier. */
   constructor(private _texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
-  /** The classifier owns its texture and recreates it when its size changes, so resolve it at bind time rather than retaining it. */
+  /** A projected texture is owned by its classifier, which recreates it when its size changes, so look up the current
+   * texture each time rather than retaining one. This is called while binding uniforms, so it must not allocate.
+   */
   public get texture(): RenderTexture | undefined {
-    return this._projectedTextureOrMatrix instanceof ProjectedTexture ? this._projectedTextureOrMatrix.classifier.getOrCreateClassifierTexture() : this._texture;
+    return this._projectedTextureOrMatrix instanceof ProjectedTexture ? this._projectedTextureOrMatrix.classifier.classifierTexture : this._texture;
   }
 
   public [Symbol.dispose](): void {
@@ -144,6 +147,8 @@ export class LayerTextureParams implements Disposable {
         matrix.data[9] = terrainTexture.featureId;
         textureParams.push(new LayerTextureParam(terrainTexture.texture, matrix));
       } else {
+        // Ensure the classifier's texture exists now, outside of rendering, as geometry records whether it has textures at construction.
+        texture.classifier.getOrCreateClassifierTexture();
         textureParams.push(new LayerTextureParam(undefined, texture));
       }
     }
