@@ -23,15 +23,15 @@ describe("ECSQL reader examples", () => {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Cloud_Timing_Async
     const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element LIMIT 5");
     const rows = await reader.toArray();
-    const { backendDownloadTime, backendExecutionTime, backendDownloadBlocks, backendDownloadBlockSizes } = reader.stats;
-    // Statistics describe main only; sizes are logical bytes, not HTTP payload bytes.
+    const { backendDownloadTime, backendExecutionTime, backendDownloadBlocks, backendDownloadBytes } = reader.stats;
+    // Statistics describe main only; bytes include repeated and shared acquisitions, so they are not unique network traffic.
     // Values are undefined for a local-only main database or unsupported native implementation.
     // __PUBLISH_EXTRACT_END__
     assert.isNotEmpty(rows);
     assert.isUndefined(backendDownloadTime);
     assert.isUndefined(backendExecutionTime);
     assert.isUndefined(backendDownloadBlocks);
-    assert.isUndefined(backendDownloadBlockSizes);
+    assert.isUndefined(backendDownloadBytes);
   });
 
   it("iterates synchronously", () => {

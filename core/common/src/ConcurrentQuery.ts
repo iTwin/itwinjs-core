@@ -92,8 +92,8 @@ export interface DbRuntimeStats {
   executionTime?: number;
   /** Number of successful main-database block acquisitions that waited, including shared downloads but excluding cache hits. */
   downloadBlocks?: number;
-  /** Logical size in bytes of each main-database block; constant within a native request. */
-  downloadBlockSize?: number;
+  /** Bytes of the main-database blocks counted by [[downloadBlocks]]. */
+  downloadBytes?: number;
   /** Whether this attempt executed and supplied complete Cloud SQLite timings.
    * @internal
    */
@@ -858,8 +858,7 @@ export class DbQueryError extends BentleyError {
 
 /** @internal */
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-  /** Report discarded executions before replaying a request. The returned response is not reported through this callback. */
-  execute(request: TRequest, onDiscardedResponse?: (response: TResponse) => void): Promise<TResponse>;
+  execute(request: TRequest): Promise<TResponse>;
 }
 
 /** @internal */

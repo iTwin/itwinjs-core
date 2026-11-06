@@ -32,11 +32,11 @@ export interface QueryStats {
    * Reacquiring a block after eviction or a retry counts again. Absent when block statistics are unsupported or incomplete.
    */
   backendDownloadBlocks?: number;
-  /** Logical size in bytes of each waited-block acquisition, in request order; not HTTP payload sizes.
-   * Contains one entry per [[backendDownloadBlocks]], including repeated acquisitions.
-   * A measured cache hit contributes no entries. Absent under the same conditions as [[backendDownloadBlocks]].
+  /** Bytes of the blocks counted by [[backendDownloadBlocks]], including repeated acquisitions.
+   * A download shared by several requests counts for each request that waited on it, so this is not unique network traffic.
+   * Absent under the same conditions as [[backendDownloadBlocks]].
    */
-  backendDownloadBlockSizes?: number[];
+  backendDownloadBytes?: number;
   /** Elapsed backend execution time, including preparation and blocking waits but not queueing, in microseconds.
    * Despite its name, this does not measure CPU usage.
    */
@@ -164,8 +164,8 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   }
 
   /**
-   * Get accumulated statistics for this reader's lifetime, including retries, discarded executions,
-   * and failed attempts with available timings. Deprecated resets do not clear these statistics.
+   * Get accumulated statistics for this reader's lifetime, including retries and failed attempts with available timings.
+   * Deprecated resets do not clear these statistics.
    */
   public get stats(): QueryStats {
     return this._stats;
@@ -228,13 +228,11 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
         this._stats.backendDownloadTime = (this._stats.backendDownloadTime ?? 0) + rs.stats.downloadTime;
         this._stats.backendExecutionTime = (this._stats.backendExecutionTime ?? 0) + rs.stats.executionTime;
         if (!this._cloudBlocksUnavailable) {
-          const { downloadBlocks, downloadBlockSize } = rs.stats;
+          const { downloadBlocks, downloadBytes } = rs.stats;
           if (downloadBlocks !== undefined && Number.isSafeInteger(downloadBlocks) && downloadBlocks >= 0
-            && downloadBlockSize !== undefined && Number.isSafeInteger(downloadBlockSize) && downloadBlockSize > 0) {
+            && downloadBytes !== undefined && Number.isSafeInteger(downloadBytes) && downloadBytes >= 0) {
             this._stats.backendDownloadBlocks = (this._stats.backendDownloadBlocks ?? 0) + downloadBlocks;
-            const sizes = this._stats.backendDownloadBlockSizes ??= [];
-            for (let i = 0; i < downloadBlocks; ++i)
-              sizes.push(downloadBlockSize);
+            this._stats.backendDownloadBytes = (this._stats.backendDownloadBytes ?? 0) + downloadBytes;
           } else {
             this.invalidateCloudBlocks();
           }
@@ -247,7 +245,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
       const startTime = performance.now();
       let receivedResponse = false;
       try {
-        const rs = await this._executor.execute(req, updateTiming);
+        const rs = await this._executor.execute(req);
         receivedResponse = true;
         updateTiming(rs);
         return rs;
@@ -284,7 +282,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   private invalidateCloudBlocks(): void {
     this._cloudBlocksUnavailable = true;
     delete this._stats.backendDownloadBlocks;
-    delete this._stats.backendDownloadBlockSizes;
+    delete this._stats.backendDownloadBytes;
   }
 
   /**

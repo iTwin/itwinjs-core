@@ -94,7 +94,7 @@ describe("ECSqlReader timing statistics", () => {
   it("retains native timings on an initial error or cancellation", async () => {
     for (const status of [DbResponseStatus.Error, DbResponseStatus.Cancel]) {
       const rs = response(status, 80);
-      Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 50, executionTime: 30, downloadBlocks: 1, downloadBlockSize: 4096 });
+      Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 50, executionTime: 30, downloadBlocks: 1, downloadBytes: 4096 });
       const reader = new ECSqlReader({ execute: async () => rs }, "SELECT 1");
       try {
         await reader.toArray();
@@ -105,20 +105,17 @@ describe("ECSqlReader timing statistics", () => {
       assert.equal(reader.stats.backendTotalTime, 80);
       assert.equal(reader.stats.prepareTime, 40);
       assert.equal(reader.stats.backendDownloadBlocks, 1);
-      assert.deepEqual(reader.stats.backendDownloadBlockSizes, [4096]);
+      assert.equal(reader.stats.backendDownloadBytes, 4096);
     }
   });
 
-  it("measures rejected calls monotonically and preserves discarded native timing and the original error", async () => {
+  it("measures rejected calls monotonically and preserves the original error", async () => {
     let now = 10;
     vi.spyOn(performance, "now").mockImplementation(() => now);
     vi.spyOn(Date, "now").mockReturnValue(-10000);
     const error = new Error("transport failure");
     const reader = new ECSqlReader({
-      execute: async (_request, onDiscardedResponse) => {
-        const discarded = response(DbResponseStatus.Done, 5, [[99]]);
-        Object.assign(discarded.stats, { cloudSqliteTimingState: "measured", downloadTime: 2, executionTime: 3, downloadBlocks: 1, downloadBlockSize: 4096 });
-        onDiscardedResponse?.(discarded);
+      execute: async () => {
         now = 17.5;
         throw error;
       },
@@ -130,38 +127,33 @@ describe("ECSqlReader timing statistics", () => {
       assert.strictEqual(caught, error);
     }
     assert.equal(reader.stats.totalTime, 7.5);
-    assert.equal(reader.stats.backendTotalTime, 5);
+    assert.equal(reader.stats.backendTotalTime, 0);
     assert.equal(reader.stats.backendRowsReturned, 0);
     assert.notProperty(reader.stats, "backendDownloadTime");
     assert.notProperty(reader.stats, "backendDownloadBlocks");
-    assert.notProperty(reader.stats, "backendDownloadBlockSizes");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
   });
 
-  it("aggregates cloud waits across queue-only retries, discarded executions, and pages", async () => {
+  it("aggregates cloud waits across queue-only retries and pages", async () => {
     let attempt = 0;
     const reader = new ECSqlReader({
-      execute: async (_request, onDiscardedResponse) => {
+      execute: async () => {
         if (++attempt === 1) {
           const queued = response(DbResponseStatus.QueueFull, 1);
           queued.stats.cloudSqliteTimingState = "notExecuted";
           return queued;
         }
         const measured = response(attempt === 2 ? DbResponseStatus.Partial : DbResponseStatus.Done, 20, [[attempt]]);
-        Object.assign(measured.stats, { cloudSqliteTimingState: "measured", downloadTime: 3.25, executionTime: 6.75, downloadBlocks: 2, downloadBlockSize: 4096 });
-        if (attempt === 2) {
-          const discarded = response(DbResponseStatus.Done, 10, [[99]]);
-          Object.assign(discarded.stats, { cloudSqliteTimingState: "measured", downloadTime: 2, executionTime: 4, downloadBlocks: 1, downloadBlockSize: 8192 });
-          onDiscardedResponse?.(discarded);
-        }
+        Object.assign(measured.stats, { cloudSqliteTimingState: "measured", downloadTime: 3.25, executionTime: 6.75, downloadBlocks: 2, downloadBytes: 8192 });
         return measured;
       },
     }, "SELECT 1");
     assert.deepEqual(await reader.toArray(), [[2], [3]]);
-    assert.equal(reader.stats.backendTotalTime, 51);
-    assert.equal(reader.stats.backendDownloadTime, 8.5);
-    assert.equal(reader.stats.backendExecutionTime, 17.5);
-    assert.equal(reader.stats.backendDownloadBlocks, 5);
-    assert.deepEqual(reader.stats.backendDownloadBlockSizes, [8192, 4096, 4096, 4096, 4096]);
+    assert.equal(reader.stats.backendTotalTime, 41);
+    assert.equal(reader.stats.backendDownloadTime, 6.5);
+    assert.equal(reader.stats.backendExecutionTime, 13.5);
+    assert.equal(reader.stats.backendDownloadBlocks, 4);
+    assert.equal(reader.stats.backendDownloadBytes, 16384);
     assert.equal(reader.stats.backendRowsReturned, 2);
     assert.equal(reader.stats.totalTime >= 0, true);
   });
@@ -175,7 +167,7 @@ describe("ECSqlReader timing statistics", () => {
           if (attempt === 2)
             rs.stats.cloudSqliteTimingState = missingState;
           else
-            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBlockSize: 4096 });
+            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBytes: 0 });
           return rs;
         },
       }, "SELECT 1");
@@ -183,7 +175,7 @@ describe("ECSqlReader timing statistics", () => {
       assert.notProperty(reader.stats, "backendDownloadTime");
       assert.notProperty(reader.stats, "backendExecutionTime");
       assert.notProperty(reader.stats, "backendDownloadBlocks");
-      assert.notProperty(reader.stats, "backendDownloadBlockSizes");
+      assert.notProperty(reader.stats, "backendDownloadBytes");
     }
   });
 
@@ -193,7 +185,7 @@ describe("ECSqlReader timing statistics", () => {
       execute: async () => {
         const rs = response(DbResponseStatus.Done, 1, [[1]]);
         if (++attempt > 1)
-          Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBlockSize: 4096 });
+          Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBytes: 0 });
         return rs;
       },
     }, "SELECT 1");
@@ -205,7 +197,7 @@ describe("ECSqlReader timing statistics", () => {
     assert.notProperty(reader.stats, "backendDownloadTime");
     assert.notProperty(reader.stats, "backendExecutionTime");
     assert.notProperty(reader.stats, "backendDownloadBlocks");
-    assert.notProperty(reader.stats, "backendDownloadBlockSizes");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
   });
 
   it("distinguishes measured cache hits from disabled collection and preserves lifetime totals on reset", async () => {
@@ -214,7 +206,7 @@ describe("ECSqlReader timing statistics", () => {
         execute: async () => {
           const rs = response(DbResponseStatus.Done, 0.25, [[1]]);
           if (measured)
-            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 0.25, downloadBlocks: 0, downloadBlockSize: 4096 });
+            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 0.25, downloadBlocks: 0, downloadBytes: 0 });
           return rs;
         },
       }, "SELECT 1");
@@ -226,7 +218,7 @@ describe("ECSqlReader timing statistics", () => {
       assert.equal(reader.stats.backendDownloadTime, measured ? 0 : undefined);
       assert.equal(reader.stats.backendExecutionTime, measured ? 0.5 : undefined);
       assert.equal(reader.stats.backendDownloadBlocks, measured ? 0 : undefined);
-      assert.deepEqual(reader.stats.backendDownloadBlockSizes, measured ? [] : undefined);
+      assert.equal(reader.stats.backendDownloadBytes, measured ? 0 : undefined);
     }
   });
 
@@ -237,7 +229,7 @@ describe("ECSqlReader timing statistics", () => {
         const rs = response(++attempt === 3 ? DbResponseStatus.Done : DbResponseStatus.Partial, 1, [[attempt]]);
         Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0.25, executionTime: 0.75 });
         if (attempt !== 2)
-          Object.assign(rs.stats, { downloadBlocks: 1, downloadBlockSize: 4096 });
+          Object.assign(rs.stats, { downloadBlocks: 1, downloadBytes: 4096 });
         return rs;
       },
     }, "SELECT 1");
@@ -245,7 +237,7 @@ describe("ECSqlReader timing statistics", () => {
     assert.equal(reader.stats.backendDownloadTime, 0.75);
     assert.equal(reader.stats.backendExecutionTime, 2.25);
     assert.notProperty(reader.stats, "backendDownloadBlocks");
-    assert.notProperty(reader.stats, "backendDownloadBlockSizes");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
   });
 });
 

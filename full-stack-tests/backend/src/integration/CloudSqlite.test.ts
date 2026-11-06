@@ -225,10 +225,8 @@ describe("CloudSqlite", () => {
       expect(cold.stats.backendDownloadTime).to.be.a("number").and.greaterThan(0);
       expect(cold.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(cold.stats.backendDownloadBlocks).to.be.a("number").and.greaterThan(0);
-      expect(cold.stats.backendDownloadBlockSizes).to.have.lengthOf(cold.stats.backendDownloadBlocks!);
-      expect(cold.stats.backendDownloadBlockSizes).to.deep.equal(
-        Array<number>(cold.stats.backendDownloadBlocks!).fill(container.blockSize),
-      );
+      // Uploads pad every block to the container block size.
+      expect(cold.stats.backendDownloadBytes).to.equal(cold.stats.backendDownloadBlocks! * container.blockSize);
       expect(container.queryDatabase("query-stats")!.localBlocks).to.be.greaterThan(before.localBlocks);
 
       const warm = db.createQueryReader(sql);
@@ -236,7 +234,7 @@ describe("CloudSqlite", () => {
       expect(warm.stats.backendDownloadTime).to.equal(0);
       expect(warm.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(warm.stats.backendDownloadBlocks).to.equal(0);
-      expect(warm.stats.backendDownloadBlockSizes).to.deep.equal([]);
+      expect(warm.stats.backendDownloadBytes).to.equal(0);
 
       for (const collectCloudSqliteStats of [undefined, false]) {
         hostConfig.value({ ...originalConfig, collectCloudSqliteStats });
@@ -245,7 +243,7 @@ describe("CloudSqlite", () => {
         expect(unmeasured.stats).not.to.have.property("backendDownloadTime");
         expect(unmeasured.stats).not.to.have.property("backendExecutionTime");
         expect(unmeasured.stats).not.to.have.property("backendDownloadBlocks");
-        expect(unmeasured.stats).not.to.have.property("backendDownloadBlockSizes");
+        expect(unmeasured.stats).not.to.have.property("backendDownloadBytes");
       }
     } finally {
       hostConfig.restore();
@@ -306,9 +304,7 @@ describe("CloudSqlite", () => {
       expect(cold.stats.backendDownloadTime).to.be.a("number").and.greaterThan(0);
       expect(cold.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(cold.stats.backendDownloadBlocks).to.be.a("number").and.at.least(downloaded);
-      expect(cold.stats.backendDownloadBlockSizes).to.deep.equal(
-        Array<number>(cold.stats.backendDownloadBlocks!).fill(container.blockSize),
-      );
+      expect(cold.stats.backendDownloadBytes).to.equal(cold.stats.backendDownloadBlocks! * container.blockSize);
 
       const warm = db.createQueryReader(sql);
       expect(await warm.toArray()).to.deep.equal([]);
@@ -341,7 +337,7 @@ describe("CloudSqlite", () => {
       expect(asyncReader.stats.backendDownloadTime).to.equal(0);
       expect(asyncReader.stats.backendExecutionTime).to.be.a("number").and.at.least(0);
       expect(asyncReader.stats.backendDownloadBlocks).to.equal(0);
-      expect(asyncReader.stats.backendDownloadBlockSizes).to.deep.equal([]);
+      expect(asyncReader.stats.backendDownloadBytes).to.equal(0);
 
       hostConfig.value({ ...originalConfig, collectCloudSqliteStats: false });
       const disabled = db.createQueryReader(sql);
@@ -349,7 +345,7 @@ describe("CloudSqlite", () => {
       expect(disabled.stats).not.to.have.property("backendDownloadTime");
       expect(disabled.stats).not.to.have.property("backendExecutionTime");
       expect(disabled.stats).not.to.have.property("backendDownloadBlocks");
-      expect(disabled.stats).not.to.have.property("backendDownloadBlockSizes");
+      expect(disabled.stats).not.to.have.property("backendDownloadBytes");
     } finally {
       hostConfig.restore();
       db.close();

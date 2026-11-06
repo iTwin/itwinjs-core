@@ -166,7 +166,7 @@ export interface IModelHostOptions {
    */
   enableOpenTelemetry?: boolean;
 
-  /** Collect Cloud SQLite download-wait timings, execution timings, waited-block counts, and logical sizes
+  /** Collect Cloud SQLite download-wait timings, execution timings, waited-block counts, and bytes
    * for all asynchronous ECSQL readers on this host. Defaults to false; cannot be overridden per request.
    * Only the main database is measured. Local-only databases and unsupported native implementations omit these statistics.
    * Collection adds request-boundary statistics queries, including daemon round trips in daemon mode.

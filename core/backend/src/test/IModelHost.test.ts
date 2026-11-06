@@ -72,7 +72,7 @@ describe("IModelHost", () => {
               stats: {
                 cpuTime: 1000, totalTime: 1, prepareTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0,
                 ...(collectCloudSqliteStats ? {
-                  cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBlockSize: 4096,
+                  cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBytes: 0,
                 } : {}),
               },
             };
@@ -86,7 +86,7 @@ describe("IModelHost", () => {
             expect(reader.stats.backendDownloadTime).to.equal(collectCloudSqliteStats ? 0 : undefined);
             expect(reader.stats.backendExecutionTime).to.equal(collectCloudSqliteStats ? 1 : undefined);
             expect(reader.stats.backendDownloadBlocks).to.equal(collectCloudSqliteStats ? 0 : undefined);
-            expect(reader.stats.backendDownloadBlockSizes).to.deep.equal(collectCloudSqliteStats ? [] : undefined);
+            expect(reader.stats.backendDownloadBytes).to.equal(collectCloudSqliteStats ? 0 : undefined);
           }
           expect(execute.callCount).to.equal(2);
         }
