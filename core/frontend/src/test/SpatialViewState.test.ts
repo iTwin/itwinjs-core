@@ -7,11 +7,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
+import { DisplayStyle2dState } from "../DisplayStyleState";
 import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { RealityModelTileTree, TileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
 import type { ViewRealityModel } from "../ViewState";
 import { createBlankConnection } from "./createBlankConnection";
+import { openBlankViewport } from "./openBlankViewport";
 
 describe("SpatialViewState", () => {
   afterEach(() => {
@@ -27,6 +29,96 @@ describe("SpatialViewState", () => {
   });
 
   afterAll(async () => IModelApp.shutdown());
+
+  it("replaces the category selector and rebinds its listeners", () => {
+    using viewport = openBlankViewport();
+    const view = viewport.view;
+    const oldSelector = view.categorySelector;
+    const newSelector = oldSelector.clone();
+    let changes = 0;
+    view.onViewedCategoriesChanged.addListener(() => changes++);
+
+    view.categorySelector = newSelector;
+    expect(view.categorySelector).toBe(newSelector);
+    expect(changes).toBe(1);
+
+    oldSelector.addCategories("0x1");
+    expect(changes).toBe(1);
+    newSelector.addCategories("0x2");
+    expect(changes).toBe(2);
+
+    const otherIModel = createBlankConnection();
+    try {
+      expect(() => {
+        view.categorySelector = newSelector.clone(otherIModel);
+      }).toThrow("Category selector must be from the same iModel as the view");
+      expect(view.categorySelector).toBe(newSelector);
+    } finally {
+      otherIModel.closeSync();
+    }
+  });
+
+  it("replaces the model selector and rebinds listeners", () => {
+    using viewport = openBlankViewport();
+    const view = viewport.view as SpatialViewState;
+    const oldSelector = view.modelSelector;
+    const newSelector = oldSelector.clone();
+    let changes = 0;
+    view.onViewedModelsChanged.addListener(() => changes++);
+
+    view.modelSelector = newSelector;
+    expect(view.modelSelector).toBe(newSelector);
+    expect(changes).toBe(1);
+
+    oldSelector.addModels("0x1");
+    expect(changes).toBe(1);
+    newSelector.addModels("0x2");
+    expect(changes).toBe(2);
+
+    const otherIModel = createBlankConnection();
+    try {
+      expect(() => {
+        view.modelSelector = newSelector.clone(otherIModel);
+      }).toThrow("Model selector must be from the same iModel as the view");
+      expect(view.modelSelector).toBe(newSelector);
+    } finally {
+      otherIModel.closeSync();
+    }
+  });
+
+  it("replaces the display style and notifies before assignment", () => {
+    using viewport = openBlankViewport();
+    const view = viewport.view;
+    const oldStyle = view.displayStyle;
+    const newStyle = oldStyle.clone();
+    let changes = 0;
+    view.onDisplayStyleChanged.addListener((style) => {
+      changes++;
+      expect(style).toBe(newStyle);
+      expect(view.displayStyle).toBe(oldStyle);
+    });
+
+    view.displayStyle = newStyle;
+    expect(view.displayStyle).toBe(newStyle);
+    expect(changes).toBe(1);
+
+    const otherIModel = createBlankConnection();
+    try {
+      expect(() => {
+        view.displayStyle = newStyle.clone(otherIModel);
+      }).toThrow("Display style must be from the same iModel as the view");
+      expect(view.displayStyle).toBe(newStyle);
+    } finally {
+      otherIModel.closeSync();
+    }
+
+    const mismatchedStyle = new DisplayStyle2dState({ ...newStyle.toJSON(), classFullName: DisplayStyle2dState.classFullName }, view.iModel);
+    expect(() => {
+      // Exercise the base setter through its declared base type.
+      view.displayStyle = mismatchedStyle;
+    }).toThrow("Cannot assign a 2D display style to a 3D view");
+    expect(view.displayStyle).toBe(newStyle);
+  });
 
   class TreeRef extends TileTreeReference {
     public constructor(private readonly _range: Range3d) {
@@ -52,7 +144,9 @@ describe("SpatialViewState", () => {
   function createView(ranges: Range3d[]): SpatialViewState {
     const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     const refs = ranges.map((range) => new TreeRef(range));
-    view.getModelTreeRefs = () => refs;
+    (view as any).iModelRefs = [{
+      tileTreeRefs: refs,
+    }];
 
     return view;
   }
@@ -99,7 +193,7 @@ describe("SpatialViewState", () => {
     it("does not include invisible context reality models when computing range", () => {
       const view = createView([new Range3d(-1, 2, 2, 2, 5, 7)]);
 
-      const state = view.displayStyle.attachRealityModel({tilesetUrl: "https://fake.com"});
+      const state = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com" });
 
       state.invisible = true;
       const unionFitRangeSpy = vi.spyOn(RealityModelTileTree.Reference.prototype, "unionFitRange");

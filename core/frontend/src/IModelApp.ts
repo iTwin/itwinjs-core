@@ -48,6 +48,7 @@ import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
 import * as measureTool from "./tools/MeasureTool";
 import * as selectTool from "./tools/SelectTool";
+import * as multiIModelSelectTool from "./tools/MultiIModelSelectionTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
@@ -461,6 +462,7 @@ export class IModelApp {
     await this.localization.initialize(["iModelJs", toolsNs]);
     [
       selectTool,
+      multiIModelSelectTool,
       idleTool,
       viewTool,
       setupCameraTool,

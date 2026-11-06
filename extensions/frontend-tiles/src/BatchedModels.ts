@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { SpatialViewState } from "@itwin/core-frontend";
+import { SpatialIModelDisplayReference } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 import { ModelMetadata } from "./BatchedTilesetReader.js";
 
@@ -15,10 +15,10 @@ export class BatchedModels {
   private readonly _viewedModelIdPairs = new Id64.Uint32Set();
   private readonly _metadata: Map<Id64String, ModelMetadata>;
 
-  public constructor(view: SpatialViewState, metadata: Map<Id64String, ModelMetadata>) {
+  public constructor(iModelRef: SpatialIModelDisplayReference, metadata: Map<Id64String, ModelMetadata>) {
     this._metadata = metadata;
-    this._projectExtents = view.iModel.projectExtents;
-    this.setViewedModels(view.modelSelector.models);
+    this._projectExtents = iModelRef.iModel.projectExtents;
+    this.setViewedModels(iModelRef.viewedModels);
   }
 
   public setViewedModels(models: Set<Id64String>): void {

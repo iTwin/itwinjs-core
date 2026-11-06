@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { _implementationProhibited, Decorations, GraphicList, IModelApp, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
+import { _implementationProhibited, Decorations, GraphicList, IModelApp, IModelDisplayReference, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 import { CesiumScene } from "./CesiumScene.js";
 import { CesiumSystem } from "./System.js";
 import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
@@ -122,7 +122,7 @@ export class CesiumOnScreenTarget extends RenderTarget {
     return false;
   }
 
-  public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>) {
+  public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>) {
     // ###TODO Implement pixel reading logic for Cesium
     // NB: `rect` is specified in *CSS* pixels.
   }
@@ -184,7 +184,7 @@ export class CesiumOffScreenTarget extends RenderTarget {
     return false;
   }
 
-  public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>) {
+  public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>) {
     // ###TODO Implement pixel reading logic for Cesium
     // NB: `rect` is specified in *CSS* pixels.
   }

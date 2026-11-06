@@ -489,4 +489,90 @@ describe("SubCategoriesCache", () => {
 
     queue[Symbol.dispose]();
   });
+
+  it("loads overlapping delayed queue requests from two connections through their own caches", async () => {
+    const primaryResult = createDeferred<SubCategoryResultRow[]>();
+    const linkedResult = createDeferred<SubCategoryResultRow[]>();
+    const primaryQuery = vi.fn().mockReturnValue(primaryResult.promise);
+    const linkedQuery = vi.fn().mockReturnValue(linkedResult.promise);
+
+    const primaryIModel = { isClosed: false, querySubCategories: primaryQuery } as unknown as IModelConnection;
+    const linkedIModel = { isClosed: false, querySubCategories: linkedQuery } as unknown as IModelConnection;
+
+    const primaryCache = new SubCategoriesCache(primaryIModel);
+    const linkedCache = new SubCategoriesCache(linkedIModel);
+    const queue = new SubCategoriesCache.Queue();
+
+    const primaryLoaded = vi.fn();
+    const linkedLoaded = vi.fn();
+
+    // The primary request dispatches immediately and remains in flight.
+    queue.push(primaryCache, ["0x1"], primaryLoaded);
+    expect(primaryQuery).toHaveBeenCalledTimes(1);
+
+    // Overlapping requests for a linked connection arrive while the primary request is in flight.
+    // They share a category Id with the primary request and must not be satisfied by the primary cache.
+    queue.push(linkedCache, ["0x1"], linkedLoaded);
+    queue.push(linkedCache, ["0x5"], linkedLoaded);
+    expect(linkedQuery).not.toHaveBeenCalled();
+
+    primaryResult.resolve([{ parentId: "0x1", id: "0x2", appearance: {} }]);
+    await waitForPromises();
+
+    expect(primaryLoaded).toHaveBeenCalledExactlyOnceWith(true);
+    expect(primaryQuery).toHaveBeenCalledTimes(1);
+
+    // The pending linked requests were batched and dispatched through the linked cache.
+    expect(linkedQuery).toHaveBeenCalledTimes(1);
+    expect([...CompressedId64Set.iterable(linkedQuery.mock.calls[0][0])]).toEqual(["0x1", "0x5"]);
+    expect(linkedLoaded).not.toHaveBeenCalled();
+
+    linkedResult.resolve([
+      { parentId: "0x1", id: "0x3", appearance: {} },
+      { parentId: "0x5", id: "0x6", appearance: {} },
+    ]);
+    await waitForPromises();
+
+    expect(linkedLoaded).toHaveBeenCalledTimes(2);
+    expect(linkedLoaded).toHaveBeenCalledWith(true);
+
+    // Each connection's subcategories reside in its own cache.
+    expect(primaryCache.getSubCategories("0x1")?.has("0x2")).toBe(true);
+    expect(primaryCache.getSubCategories("0x1")?.has("0x3")).toBe(false);
+    expect(linkedCache.getSubCategories("0x1")?.has("0x3")).toBe(true);
+    expect(linkedCache.getSubCategories("0x5")?.has("0x6")).toBe(true);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
+
+  it("preserves ordering across pending queue requests on alternating caches", async () => {
+    const firstResult = createDeferred<SubCategoryResultRow[]>();
+    const primaryQuery = vi.fn()
+      .mockReturnValueOnce(firstResult.promise)
+      .mockImplementation(async () => [{ parentId: "0x7", id: "0x8", appearance: {} }]);
+    const linkedQuery = vi.fn(async () => [{ parentId: "0x1", id: "0x3", appearance: {} }]);
+
+    const primaryIModel = { isClosed: false, querySubCategories: primaryQuery } as unknown as IModelConnection;
+    const linkedIModel = { isClosed: false, querySubCategories: linkedQuery } as unknown as IModelConnection;
+
+    const primaryCache = new SubCategoriesCache(primaryIModel);
+    const linkedCache = new SubCategoriesCache(linkedIModel);
+    const queue = new SubCategoriesCache.Queue();
+
+    const order: string[] = [];
+    queue.push(primaryCache, ["0x1"], () => order.push("primary1"));
+    queue.push(linkedCache, ["0x1"], () => order.push("linked"));
+    queue.push(primaryCache, ["0x7"], () => order.push("primary2"));
+
+    firstResult.resolve([{ parentId: "0x1", id: "0x2", appearance: {} }]);
+    await waitForPromises();
+
+    expect(order).toEqual(["primary1", "linked", "primary2"]);
+    expect(primaryQuery).toHaveBeenCalledTimes(2);
+    expect(linkedQuery).toHaveBeenCalledTimes(1);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
 });

@@ -17,7 +17,10 @@ import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
-import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { createSpatialIModelDisplayReferences } from "./internal/IModelDisplayReferencesImpl";
+import { _treeRefs } from "./common/internal/Symbols";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -35,33 +38,43 @@ export interface ComputeSpatialViewFitRangeOptions {
 export class SpatialViewState extends ViewState3d {
   public static override get className() { return "SpatialViewDefinition"; }
 
-  private readonly _treeRefs: SpatialTileTreeReferences;
+  private get _treeRefs(): SpatialTileTreeReferences {
+    return this.iModelRefs.primary[_treeRefs];
+  }
+
   private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
+
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
+  public readonly iModelRefs: SpatialIModelDisplayReferences;
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @public
    */
   public readonly onViewedModelsChanged = new BeEvent<() => void>();
 
+  /** Selects the models that are displayed by this view.
+   * Prefer changing [[ModelSelectorState.models]] over replacing the selector.
+   */
   public get modelSelector(): ModelSelectorState {
     return this._modelSelector;
   }
 
   public set modelSelector(selector: ModelSelectorState) {
-    if (selector === this.modelSelector)
+    if (selector === this._modelSelector)
       return;
+    if (selector.iModel !== this.iModel)
+      throw new Error("Model selector must be from the same iModel as the view");
 
     const isAttached = this.isAttachedToViewport;
     this.unregisterModelSelectorListeners();
-
     this._modelSelector = selector;
-
     if (isAttached) {
       this.registerModelSelectorListeners();
       this.onViewedModelsChanged.raiseEvent();
     }
-
     this.markModelSelectorChanged();
   }
 
@@ -106,7 +119,7 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this._modelSelector = arg3.modelSelector.clone();
 
-    this._treeRefs = SpatialTileTreeReferences.create(this);
+    this.iModelRefs = createSpatialIModelDisplayReferences(this);
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }
@@ -145,7 +158,11 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d {
     // Fit to the union of the ranges of all loaded tile trees.
     const range = options?.baseExtents?.clone() ?? new Range3d();
-    for (const ref of this.getTileTreeRefs()) {
+    for (const iModelRef of this.iModelRefs)
+      for (const ref of iModelRef.tileTreeRefs)
+        ref.unionFitRange(range);
+
+    for (const ref of this.displayStyle.getTileTreeRefs()) {
       ref.unionFitRange(range);
     }
 
@@ -210,14 +227,61 @@ export class SpatialViewState extends ViewState3d {
 
   /** @internal */
   public override * getModelTreeRefs(): Iterable<TileTreeReference> {
-    for (const ref of this._treeRefs) {
-      yield ref;
-    }
+    yield* this.iModelRefs.primary.tileTreeRefs;
+  }
+
+  /** Overrides [[ViewState.discloseTileTrees]] to include the tile trees of linked iModels.
+   * Linked references are deliberately absent from [[getTileTreeRefs]] - that iterates the view definition's own content,
+   * whose ids are interpreted against [[iModel]] - but their trees are in use by this view, so they must be disclosed to
+   * [[TileAdmin]] for pruning, purging, and memory statistics.
+   * @internal
+   */
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    super.discloseTileTrees(trees);
+    for (const iModelRef of this.iModelRefs.linked)
+      for (const ref of iModelRef.tileTreeRefs)
+        trees.disclose(ref);
   }
 
   /** @internal */
   public override createScene(context: SceneContext): void {
     super.createScene(context);
+
+    for (const iModelRef of this.iModelRefs.linked) {
+      const linkedContext = new SceneContext({
+        viewport: context.viewport,
+        frustum: context.frustum,
+        iModelRef,
+      });
+
+      for (const treeRef of iModelRef.tileTreeRefs)
+        treeRef.addToScene(linkedContext);
+
+      for (const missingTile of linkedContext.missingTiles)
+        context.insertMissingTile(missingTile);
+
+      // The copied missing tiles cover explicit requests; also propagate the children-still-loading flag, which
+      // e.g. reality tiles set without enqueueing a request in this context - otherwise the scene reports itself
+      // complete (see Viewport.waitForSceneCompletion) while linked tiles are still loading.
+      if (linkedContext.hasMissingTiles)
+        context.markChildrenLoading();
+
+      for (const [key, classifier] of linkedContext.planarClassifiers)
+        context.planarClassifiers.set(key, classifier);
+
+      for (const [key, drape] of linkedContext.textureDrapes)
+        context.textureDrapes.set(key, drape);
+
+      // Preserve a linked reality model's active volume classifier. Only one volume classifier can be active in the scene -
+      // the primary iModel's (or an earlier linked reference's) takes precedence.
+      context.scene.volumeClassifier ??= linkedContext.scene.volumeClassifier;
+
+      for (const listName of ["foreground", "background", "overlay"] as const) {
+        for (const entry of linkedContext.scene[listName])
+          context.scene[listName].push(entry);
+      }
+    }
+
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
@@ -226,13 +290,11 @@ export class SpatialViewState extends ViewState3d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     this.registerModelSelectorListeners();
-    this._treeRefs.attachToViewport(args);
   }
 
   /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
-    this._treeRefs.detachFromViewport();
     this.unregisterModelSelectorListeners();
   }
 
@@ -276,6 +338,8 @@ export class SpatialViewState extends ViewState3d {
     this._unregisterModelSelectorListeners.push(models.onAdded.addListener(func));
     this._unregisterModelSelectorListeners.push(models.onDeleted.addListener(func));
     this._unregisterModelSelectorListeners.push(models.onCleared.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onBatchAdded.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onBatchDeleted.addListener(func));
   }
 
   private unregisterModelSelectorListeners(): void {

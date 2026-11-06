@@ -17,6 +17,16 @@ class Uint64Id {
 }
 
 describe("Ids", () => {
+  it("should iterate readonly collections and arbitrary iterables of Id64s", () => {
+    const ids: ReadonlyArray<Id64String> = ["0x1", "0x2"];
+    const set: ReadonlySet<Id64String> = new Set(ids);
+    expect([...Id64.iterable(ids)]).to.deep.equal(ids);
+    expect([...Id64.iterable(set)]).to.deep.equal(ids);
+    expect([...Id64.iterable(set.values())]).to.deep.equal(ids);
+    expect([...Id64.iterable("0x123")]).to.deep.equal(["0x123"]);
+    expect([...Id64.iterable([])]).to.deep.equal([]);
+  });
+
   it("Id64 should construct properly", () => {
     const id1 = Id64.fromJSON("0x123");
     assert.isTrue(Id64.isValidId64(id1), "good");

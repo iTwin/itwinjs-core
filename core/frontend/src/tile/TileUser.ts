@@ -23,6 +23,12 @@ export interface TileUser {
   readonly tileUserId: number;
   /** The iModel with which the user is associated. */
   readonly iModel: IModelConnection;
+  /** The set of iModels from which the user may be consuming tiles, when that set can include iModels other than [[iModel]] -
+   * e.g., a [[Viewport]] whose view displays linked iModels. [[TileAdmin]] periodically discards tile trees belonging to these
+   * iModels that have gone unused for a sufficiently long time. If undefined, it defaults to [[iModel]] alone.
+   * @beta
+   */
+  readonly iModels?: Iterable<IModelConnection>;
   /** Disclose all tile trees currently in use by this user. Any tile tree not disclosed by any user becomes eligible for garbage collection. */
   readonly discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   /** An optional function invoked when a [[TileRequest]] associated with a [[Tile]] in use by this user changes state - e.g., when the request completes, fails, or
