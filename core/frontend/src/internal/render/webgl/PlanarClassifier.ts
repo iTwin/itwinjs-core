@@ -199,6 +199,12 @@ class MaskFrameBuffer extends SingleTextureFrameBuffer {
 }
 abstract class CombineTexturesFrameBuffer extends SingleTextureFrameBuffer {
   constructor(textureAndFbo: TextureAndFbo, private _combineGeom: CachedGeometry, private _width: number, private _height: number, private _heightMult: number) { super(textureAndFbo); }
+  public override get isDisposed(): boolean { return super.isDisposed && this._combineGeom.isDisposed; }
+  public override [Symbol.dispose](): void {
+    // The geometry owns its own viewport-quad vertex and index buffers; the textures it samples belong to other buffers.
+    dispose(this._combineGeom);
+    super[Symbol.dispose]();
+  }
   public compose(target: Target): void {
     const system = System.instance;
     const gl = system.context;
@@ -337,15 +343,22 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get isDisposed(): boolean { return undefined === this._classifierBuffers; }
 
   public [Symbol.dispose]() {
-    this._classifierBuffers = dispose(this._classifierBuffers);
-    this._maskBuffer = dispose(this._maskBuffer);
-    this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
-    this._classifierAndMaskCombinedBuffer = dispose(this._classifierAndMaskCombinedBuffer);
+    this.disposeBuffers();
     if (this._removeMe) {
       this._removeMe();
       this._removeMe = undefined;
     }
     this._featureSymbologySource.onSourceDisposed.raiseEvent();
+  }
+
+  /** Free the GPU resources sized to the current texture dimensions. Unlike [Symbol.dispose], the classifier remains in use:
+   * its viewport listener and feature symbology source are retained, and the buffers are recreated on demand at the new size.
+   */
+  private disposeBuffers(): void {
+    this._classifierBuffers = dispose(this._classifierBuffers);
+    this._maskBuffer = dispose(this._maskBuffer);
+    this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
+    this._classifierAndMaskCombinedBuffer = dispose(this._classifierAndMaskCombinedBuffer);
   }
 
   public get texture(): Texture | undefined {
@@ -366,6 +379,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined !== this._classifierBuffers && undefined === this._classifierCombinedBuffer)
       this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature);
 
+    return this._classifierCombinedBuffer?.texture;
+  }
+
+  /** The current combined classifier texture, without allocating it. Used when binding draped model map layers, which may
+   * happen mid-render: allocating framebuffers there would disturb the bound framebuffer state, and would resurrect GPU
+   * resources on a classifier that has already been disposed. The texture is recreated whenever the classifier resizes.
+   */
+  public get classifierTexture(): Texture | undefined {
     return this._classifierCombinedBuffer?.texture;
   }
 
@@ -406,11 +427,16 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._doDebugFrustum = context.target.debugControl?.displayMaskFrustum ?? false;
 
-    const maxTextureSize = System.instance.maxTexSizeAllow;
-    const requiredHeight = maxTextureSize;
-    const requiredWidth = maxTextureSize;
+    // Size the texture to the view instead of always using the maximum: every frame rasterized 4096x4096
+    // texels regardless of how few screen pixels sampled them. Classification is a nearest-sampled categorical
+    // lookup, so keep 4 texels per screen pixel - the density the fixed 4096 texture gave a 1024px view; any
+    // view of 1024px or more therefore still gets the maximum (image tests at 1890x930 are pixel-identical).
+    // Round up to a multiple of 256 so interactive resizing does not reallocate the buffers on every frame.
+    const viewRect = context.target.viewRect;
+    const requiredWidth = Math.min(System.instance.maxTexSizeAllow, Math.ceil(4 * Math.max(viewRect.width, viewRect.height) / 256) * 256);
+    const requiredHeight = requiredWidth;
     if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this[Symbol.dispose]();
+      this.disposeBuffers();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
