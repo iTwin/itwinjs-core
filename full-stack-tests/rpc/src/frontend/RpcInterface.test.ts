@@ -17,7 +17,7 @@ import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
   TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -482,12 +482,12 @@ describe("RpcInterface", () => {
 
   it("should set cache-control headers when applicable", async function () {
     if (currentEnvironment === "websocket") {
-      return this.skip();
+      return;
     }
 
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
-      return this.skip();
+      return;
     const input = "test";
     let response: any;
     TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
