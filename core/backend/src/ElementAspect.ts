@@ -10,7 +10,8 @@ import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, Externa
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { assert, Id64String } from "@itwin/core-bentley";
-import { _implicitTxn, _verifyChannel } from "./internal/Symbols";
+import { _implicitTxn } from "./internal/Symbols";
+import { verifyAspectChannel, verifyAspectLock, withActiveBulkAspectChecks } from "./internal/BulkAspectChecks";
 import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
 import { Sheet } from "./Element";
 import { ECVersion } from "@itwin/ecschema-metadata";
@@ -38,6 +39,28 @@ export interface OnAspectPropsArg extends OnAspectArg {
 export interface OnAspectIdArg extends OnAspectArg {
   /** The Id of the aspect affected by this event */
   aspectId: Id64String;
+  /** The Id of the element that owns the aspect. Supplied by bulk operations such as [[EditTxn.deleteAspects]]. */
+  element?: Id64String;
+}
+
+/** Argument for the `ElementAspect.onBulkInsert`, `onBulkInserted`, `onBulkUpdate` and `onBulkUpdated` static methods.
+ * @beta
+ */
+export interface OnAspectsPropsArg {
+  /** The iModel for the aspects affected by this event. */
+  iModel: IModelDb;
+  /** The aspects of this class affected by this event, in input order. */
+  aspects: OnAspectPropsArg[];
+}
+
+/** Argument for the `ElementAspect.onBulkDelete` and `onBulkDeleted` static methods.
+ * @beta
+ */
+export interface OnAspectsIdArg {
+  /** The iModel for the aspects affected by this event. */
+  iModel: IModelDb;
+  /** The aspects of this class affected by this event, in input order. Each entry supplies the owning element. */
+  aspects: Array<OnAspectIdArg & { element: Id64String }>;
 }
 
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
@@ -68,8 +91,8 @@ export class ElementAspect extends Entity {
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
+    verifyAspectChannel(iModel, arg.model);
+    verifyAspectLock(iModel, props.element.id, "insert aspect");
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -85,8 +108,8 @@ export class ElementAspect extends Entity {
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
+    verifyAspectChannel(iModel, arg.model);
+    verifyAspectLock(iModel, props.element.id, "update aspect");
   }
 
   /** Called after an ElementAspect was updated.
@@ -102,9 +125,9 @@ export class ElementAspect extends Entity {
    */
   protected static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
-    iModel.channels[_verifyChannel](arg.model);
-    const { element } = iModel.elements.getAspect(aspectId);
-    iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
+    verifyAspectChannel(iModel, arg.model);
+    const elementId = arg.element ?? iModel.elements.getAspect(aspectId).element.id;
+    verifyAspectLock(iModel, elementId, "delete aspect");
   }
 
   /** Called after an ElementAspect was deleted.
@@ -112,6 +135,76 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onDeleted(_arg: OnAspectIdArg): void { }
+
+  /** Called once per aspect class before a batch of ElementAspects of that class is inserted by [[EditTxn.insertAspects]].
+   * The default implementation calls [[onInsert]] for each aspect.
+   * @note throw an exception to disallow the whole batch. Nothing is written if any pre-handler throws.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the aspects in the batch.
+   * @beta
+   */
+  protected static onBulkInsert(arg: OnAspectsPropsArg): void {
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onInsert(aspect);
+    });
+  }
+
+  /** Called once per aspect class after a batch of ElementAspects of that class was inserted by [[EditTxn.insertAspects]].
+   * Only the aspects that were inserted are supplied. The default implementation calls [[onInserted]] for each aspect.
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onBulkInserted(arg: OnAspectsPropsArg): void {
+    for (const aspect of arg.aspects)
+      this.onInserted(aspect);
+  }
+
+  /** Called once per aspect class before a batch of ElementAspects of that class is updated by [[EditTxn.updateAspects]].
+   * The default implementation calls [[onUpdate]] for each aspect.
+   * @note throw an exception to disallow the whole batch. Nothing is written if any pre-handler throws.
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onBulkUpdate(arg: OnAspectsPropsArg): void {
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onUpdate(aspect);
+    });
+  }
+
+  /** Called once per aspect class after a batch of ElementAspects of that class was updated by [[EditTxn.updateAspects]].
+   * Only the aspects that were updated are supplied. The default implementation calls [[onUpdated]] for each aspect.
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onBulkUpdated(arg: OnAspectsPropsArg): void {
+    for (const aspect of arg.aspects)
+      this.onUpdated(aspect);
+  }
+
+  /** Called once per aspect class before a batch of ElementAspects of that class is deleted by [[EditTxn.deleteAspects]].
+   * The default implementation calls [[onDelete]] for each aspect.
+   * @note throw an exception to disallow the whole batch. Nothing is written if any pre-handler throws.
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onBulkDelete(arg: OnAspectsIdArg): void {
+    withActiveBulkAspectChecks(arg.iModel, () => {
+      for (const aspect of arg.aspects)
+        this.onDelete(aspect);
+    });
+  }
+
+  /** Called once per aspect class after a batch of ElementAspects of that class was deleted by [[EditTxn.deleteAspects]].
+   * Only the aspects that were deleted are supplied. The default implementation calls [[onDeleted]] for each aspect.
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onBulkDeleted(arg: OnAspectsIdArg): void {
+    for (const aspect of arg.aspects)
+      this.onDeleted(aspect);
+  }
 }
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
  * @public @preview
