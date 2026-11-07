@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "On Linux (outside debug mode), start Electron tests on SwiftShader directly instead of relying on Chromium's GPU-process fallback, which intermittently lost the WebGL context under xvfb. Log when the Electron GPU process exits.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa",
+  "email": "108895074+MichaelSwigerAtBentley@users.noreply.github.com"
+}
