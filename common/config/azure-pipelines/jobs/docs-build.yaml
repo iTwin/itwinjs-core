@@ -70,12 +70,21 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
+      - script: node common/scripts/set-rush-write-cache-variables.js
+        displayName: Configure read-only Rush build cache
+        workingDirectory: ${{ parameters.workingDir }}
+        env:
+          RUSH_BUILD_CACHE_ENABLED: 1
+          ITWIN_RUSH_CACHE_WRITE_ENABLED: false
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+
       - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:
           RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: 1
+          RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
+          RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - script: node common/scripts/install-run-rush.js docs
