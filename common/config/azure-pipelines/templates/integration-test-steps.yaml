@@ -72,7 +72,7 @@ steps:
           RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
-      - script: npm run -s webpack:test
+      - script: npm run -s --if-present webpack:test
         workingDirectory: full-stack-tests/core
         displayName: "Rebundle integration tests with current environment"
 
