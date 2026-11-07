@@ -2,22 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, vi } from "vitest";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
-import * as sinon from "sinon";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -28,20 +27,20 @@ describe("ViewCreator3d", async () => {
     document.body.appendChild(div);
     const viewcreator3d = new ViewCreator3d(imodel);
     const viewState = await viewcreator3d.createDefaultView();
-    expect(viewState).to.exist.and.be.not.empty;
+    expect(viewState).toBeDefined();
     viewState.viewFlags = viewState.viewFlags.with("backgroundMap", false);
 
     const testVp: ScreenViewport = ScreenViewport.create(div, viewState);
     await testVp.waitForSceneCompletion();
 
-    expect(testVp.numReadyTiles).to.equal(1);
-    expect(testVp.numSelectedTiles).to.equal(1);
+    expect(testVp.numReadyTiles).toBe(1);
+    expect(testVp.numSelectedTiles).toBe(1);
   });
 
   it("should have subcategory be visible when default view is created", async () => {
     const creator = new ViewCreator3d(imodel);
     const view = await creator.createDefaultView();
-    expect(view.isSubCategoryVisible("0x18")).to.equal(true);
+    expect(view.isSubCategoryVisible("0x18")).toBe(true);
   });
 
   it("should optionally enable display of all subcategories", async () => {
@@ -55,11 +54,11 @@ describe("ViewCreator3d", async () => {
     const creator = new ViewCreator3d(imodel);
     let view = await creator.createDefaultView();
     function expectVisible(subcat18Vis: boolean, subcat20Vis: boolean): void {
-      expect(view.isSubCategoryVisible("0x18")).to.equal(subcat18Vis);
-      expect(view.isSubCategoryVisible("0x20")).to.equal(subcat20Vis);
+      expect(view.isSubCategoryVisible("0x18")).toBe(subcat18Vis);
+      expect(view.isSubCategoryVisible("0x20")).toBe(subcat20Vis);
     }
 
-    expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
+    expect(Array.from(view.categorySelector.categories)).toEqual(["0x17"]);
     expectVisible(true, true);
 
     const invisibleAppearance = new SubCategoryAppearance({ invisible: true });
@@ -86,21 +85,21 @@ describe("ViewCreator3d", async () => {
     imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance(), true);
     imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
 
-    const loadSpy = sinon.spy(imodel.subcategories, "load");
-    const queryStub = sinon.stub(imodel, "queryAllUsedSpatialSubCategories").rejects(new Error("Internal Server Error"));
+    const loadSpy = vi.spyOn(imodel.subcategories, "load");
+    const queryStub = vi.spyOn(imodel, "queryAllUsedSpatialSubCategories").mockRejectedValue(new Error("Internal Server Error"));
 
     const creator = new ViewCreator3d(imodel);
     const view = await creator.createDefaultView();
     function expectVisible(subcat18Vis: boolean, subcat20Vis: boolean): void {
-      expect(view.isSubCategoryVisible("0x18")).to.equal(subcat18Vis);
-      expect(view.isSubCategoryVisible("0x20")).to.equal(subcat20Vis);
+      expect(view.isSubCategoryVisible("0x18")).toBe(subcat18Vis);
+      expect(view.isSubCategoryVisible("0x20")).toBe(subcat20Vis);
     }
 
-    expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
+    expect(Array.from(view.categorySelector.categories)).toEqual(["0x17"]);
     expectVisible(true, true);
-    expect(loadSpy).to.be.calledOnce;
-    loadSpy.restore();
-    queryStub.restore();
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+    loadSpy.mockRestore();
+    queryStub.mockRestore();
   });
 });
 

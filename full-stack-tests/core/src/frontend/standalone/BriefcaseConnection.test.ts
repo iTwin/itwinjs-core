@@ -7,7 +7,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
 import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { TestUtility } from "../TestUtility";
 import { SchemaKey } from "@itwin/ecschema-metadata";
 
@@ -59,8 +59,8 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       let lastProgressReport = { loaded: 0, total: 0 };
       const assertProgress: OnDownloadProgress = (progress) => {
-        assert.isAbove(progress.loaded, lastProgressReport.loaded);
-        assert.isAtLeast(progress.total, lastProgressReport.total);
+        expect(progress.loaded).toBeGreaterThan(lastProgressReport.loaded);
+        expect(progress.total).toBeGreaterThanOrEqual(lastProgressReport.total);
         lastProgressReport = progress;
       };
 
@@ -71,8 +71,8 @@ if (ProcessDetector.isElectronAppFrontend) {
         await NativeApp.deleteBriefcase(fileName);
       }
 
-      assert.isAbove(lastProgressReport.loaded, 0);
-      assert.equal(lastProgressReport.loaded, lastProgressReport.total);
+      expect(lastProgressReport.loaded).toBeGreaterThan(0);
+      expect(lastProgressReport.loaded).toBe(lastProgressReport.total);
     });
 
     it("should cancel pulling changes after abort signal", async () => {
@@ -102,17 +102,17 @@ if (ProcessDetector.isElectronAppFrontend) {
       const pullPromise = connection.pullChanges(50, { downloadProgressCallback, abortSignal, progressInterval: 50 });
 
       try {
-        await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
+        await expect(pullPromise).rejects.toThrow(/cancelled|aborted/i);
         // Use following assert when BackendIModelsAccess returns IModelError with ChangeSetStatus.DownloadCancelled.
-        // await expect(pullPromise).to.eventually.be.rejected.and.have.property("errorNumber", ChangeSetStatus.DownloadCancelled);
+        // await expect(pullPromise).rejects.and.have.property("errorNumber", ChangeSetStatus.DownloadCancelled);
       } finally {
         await connection.pullChanges(51); // Finish pulling changes so that the changesets files would be deleted.
         await connection.close();
         await NativeApp.deleteBriefcase(fileName);
       }
 
-      assert.isAbove(lastProgressReport.loaded, 0);
-      assert.isBelow(lastProgressReport.loaded, lastProgressReport.total);
+      expect(lastProgressReport.loaded).toBeGreaterThan(0);
+      expect(lastProgressReport.loaded).toBeLessThan(lastProgressReport.total);
     });
 
     it("should be able to retrieve BisCore schema from SchemaContext", async () => {
@@ -129,9 +129,9 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: downloader.briefcaseId });
       const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
-      assert.isDefined(connection.schemaContext, "A BriefcaseConnection should always return a valid, defined schemaContext");
+      expect(connection.schemaContext).toBeDefined();
       const bisCoreSchema = await connection.schemaContext.getSchema(new SchemaKey("BisCore"));
-      assert.isDefined(bisCoreSchema, "BisCore schema should be defined in briefcase iModel");
+      expect(bisCoreSchema).toBeDefined();
 
       await connection.close();
       await NativeApp.deleteBriefcase(fileName);

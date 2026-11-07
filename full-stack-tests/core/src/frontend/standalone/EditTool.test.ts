@@ -2,21 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromisedModule from "chai-as-promised";
+import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { resolveChaiPlugin } from "../testAssertions";
-
-const expect = chai.expect;
-const assert: typeof chai.assert = chai.assert;
-
-const chaiAsPromised = resolveChaiPlugin(chaiAsPromisedModule);
-chai.use(chaiAsPromised);
 
 let iModel: TestSnapshotConnection;
 let testOut: TestCmdResult;
@@ -40,30 +32,30 @@ if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
     let busyCalls = 0;
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
       EditTools.busyRetry = async (attempt: number, msg: string) => {
-        expect(attempt).equals(busyCalls++);
-        expect(msg).equals("edit command is busy");
+        expect(attempt).toBe(busyCalls++);
+        expect(msg).toBe("edit command is busy");
         return 0;
       };
       iModel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
 
-    after(async () => {
+    afterAll(async () => {
       await iModel.close();
       await TestUtility.shutdownFrontend();
       EditTools.busyRetry = undefined;
     });
 
     it("should start edit commands", async () => {
-      expect(await IModelApp.tools.run("TestEditTool1")).to.be.true;
+      expect(await IModelApp.tools.run("TestEditTool1")).toBe(true);
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
-      assert.isTrue(tool instanceof TestEditTool1);
+      expect(tool instanceof TestEditTool1).toBe(true);
       const str1 = "abc";
       const str2 = "def";
       const obj1 = {
@@ -73,21 +65,21 @@ if (!ProcessDetector.isMobileAppFrontend) {
       };
 
       await tool.go(testCmdIds.cmd1, str1, str2, obj1);
-      assert.equal(cmdStr, `${cmdArg}:1`);
-      assert.equal(testOut.num, 30);
-      assert.equal(testOut.str, "abcdef");
-      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -22]);
+      expect(cmdStr).toBe(`${cmdArg}:1`);
+      expect(testOut.num).toBe(30);
+      expect(testOut.str).toBe("abcdef");
+      expect(Array.from(testOut.buf)).toEqual([1, 2, 3, 4, 6, -22]);
 
       await tool.go(testCmdIds.cmd2, str1, str2, obj1);
-      assert.equal(cmdStr, `${cmdArg}:2`);
-      assert.equal(testOut.num, -10);
-      assert.equal(testOut.str, "defabc");
-      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -32]);
-      expect(busyCalls).equal(4);
+      expect(cmdStr).toBe(`${cmdArg}:2`);
+      expect(testOut.num).toBe(-10);
+      expect(testOut.str).toBe("defabc");
+      expect(Array.from(testOut.buf)).toEqual([1, 2, 3, 4, 6, -32]);
+      expect(busyCalls).toBe(4);
 
       busyCalls = 0;
       await EditTools.startCommand({ commandId: "", iModelKey: "" });
-      expect(busyCalls).equal(4);
+      expect(busyCalls).toBe(4);
 
     });
 

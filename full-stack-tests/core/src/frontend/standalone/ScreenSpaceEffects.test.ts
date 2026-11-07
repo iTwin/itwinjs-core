@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp, Pixel, VaryingType } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -14,13 +14,13 @@ describe("Screen-space effects", () => {
   let imodel: TestSnapshotConnection;
   let disabledEffectName: string | undefined;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     registerEffects();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -49,7 +49,7 @@ describe("Screen-space effects", () => {
         fragment,
       },
     })!;
-    expect(builder).not.to.be.undefined;
+    expect(builder).not.toBeUndefined();
 
     builder.shouldApply = () => disabledEffectName !== name;
     builder.addVarying("v_texCoord", VaryingType.Vec2);
@@ -104,30 +104,30 @@ describe("Screen-space effects", () => {
 
   function expectColor(vp: TestViewport, x: number, y: number, expected: ColorDef): void {
     const color = vp.readColor(x, y);
-    expect(color.equalsColorDef(expected)).to.be.true;
+    expect(color.equalsColorDef(expected)).toBe(true);
   }
 
   function expectColors(vp: TestViewport, expected: ColorDef[]): void {
     const actual = vp.readUniqueColors();
-    expect(actual.length).to.equal(expected.length);
+    expect(actual.length).toBe(expected.length);
     for (const color of expected)
-      expect(actual.contains(Color.fromColorDef(color))).to.be.true;
+      expect(actual.contains(Color.fromColorDef(color))).toBe(true);
   }
 
   function expectElement(vp: TestViewport, x: number, y: number): void {
     const pixel = vp.readPixel(x, y);
-    expect(pixel.feature).not.to.be.undefined;
-    expect(pixel.feature!.elementId).to.equal("0x29");
-    expect(pixel.feature!.subCategoryId).to.equal("0x18");
-    expect(pixel.type).to.equal(Pixel.GeometryType.Surface);
-    expect(pixel.planarity).to.equal(Pixel.Planarity.Planar);
+    expect(pixel.feature).not.toBeUndefined();
+    expect(pixel.feature!.elementId).toBe("0x29");
+    expect(pixel.feature!.subCategoryId).toBe("0x18");
+    expect(pixel.type).toBe(Pixel.GeometryType.Surface);
+    expect(pixel.planarity).toBe(Pixel.Planarity.Planar);
   }
 
   function expectBackground(vp: TestViewport, x: number, y: number): void {
     const pixel = vp.readPixel(x, y);
-    expect(pixel.feature).to.be.undefined;
-    expect(pixel.type).to.equal(Pixel.GeometryType.None);
-    expect(pixel.planarity).to.equal(Pixel.Planarity.None);
+    expect(pixel.feature).toBeUndefined();
+    expect(pixel.type).toBe(Pixel.GeometryType.None);
+    expect(pixel.planarity).toBe(Pixel.Planarity.None);
   }
 
   it("apply to Viewport images", async () => {

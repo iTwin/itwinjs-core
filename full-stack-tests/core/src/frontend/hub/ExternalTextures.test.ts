@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/internal/webgl";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/internal/test-support";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 
 describe("external texture requests (#integration)", () => {
@@ -34,7 +34,7 @@ describe("external texture requests (#integration)", () => {
   const extTexLoader = ExternalTextureLoader.instance;
   let totalLoadTextureCalls = 0;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
@@ -43,7 +43,7 @@ describe("external texture requests (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -51,7 +51,7 @@ describe("external texture requests (#integration)", () => {
   });
 
   function onExternalTextureLoaded(req: ExternalTextureRequest) {
-    expect(extTexLoader.numActiveRequests).lessThan(extTexLoader.maxActiveRequests + 1);
+    expect(extTexLoader.numActiveRequests).toBeLessThan(extTexLoader.maxActiveRequests + 1);
     finishedTexRequests.push(req);
     totalLoadTextureCalls++;
   }
@@ -62,7 +62,7 @@ describe("external texture requests (#integration)", () => {
       if (reqToCheck.name === req.name)
         numMatches++;
     });
-    expect(numMatches).to.equal(1);
+    expect(numMatches).toBe(1);
   }
 
   async function testExternalTextures() {
@@ -70,7 +70,7 @@ describe("external texture requests (#integration)", () => {
     const loadTextures = () => {
       texNames.forEach((texName: string) => {
         const handle = Texture2DHandle.createForData(1, 1, placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
-        expect(handle).to.not.be.undefined;
+        expect(handle).not.toBeUndefined();
         if (undefined !== handle) {
           for (let i = 0; i < 2; i++) // attempt to load the same texture twice quickly in a row - only one should finish
             extTexLoader.loadTexture(handle, texName, imodel, RenderTexture.Type.Normal, ImageSourceFormat.Jpeg, onExternalTextureLoaded);
@@ -79,7 +79,7 @@ describe("external texture requests (#integration)", () => {
 
       // Load a texture with a bad texture name (not a string). ExternalTextureLoader will throw an exception and should handle it properly.
       const handleB = Texture2DHandle.createForData(1, 1, placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
-      expect(handleB).to.not.be.undefined;
+      expect(handleB).not.toBeUndefined();
       if (undefined !== handleB)
         extTexLoader.loadTexture(handleB, 0 as unknown as string, imodel, RenderTexture.Type.Normal, ImageSourceFormat.Jpeg, onExternalTextureLoaded);
     };
@@ -87,22 +87,22 @@ describe("external texture requests (#integration)", () => {
     loadTextures();
 
     await IModelApp.renderSystem.waitForAllExternalTextures();
-    expect(extTexLoader.numActiveRequests).to.equal(0);
-    expect(extTexLoader.numPendingRequests).to.equal(0);
+    expect(extTexLoader.numActiveRequests).toBe(0);
+    expect(extTexLoader.numPendingRequests).toBe(0);
     await IModelApp.renderSystem.waitForAllExternalTextures(); // check that the wait method works properly when no requests exist.
 
     const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
-    expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
-    expect(numExpectedGoodRequests).to.equal(totalLoadTextureCalls);
-    expect(extTexLoader.numActiveRequests).to.equal(0);
-    expect(extTexLoader.numPendingRequests).to.equal(0);
+    expect(finishedTexRequests.length).toBe(numExpectedGoodRequests);
+    expect(numExpectedGoodRequests).toBe(totalLoadTextureCalls);
+    expect(extTexLoader.numActiveRequests).toBe(0);
+    expect(extTexLoader.numPendingRequests).toBe(0);
 
     finishedTexRequests.forEach((texReq: ExternalTextureRequest) => {
       expectNoDuplicates(texReq);
       const texHandle = texReq.handle;
-      expect(texHandle.format).to.equal(GL.Texture.Format.Rgba);
-      expect(texHandle.width === 1024 || texHandle.width === 512 || texHandle.width === 256).to.be.true;
-      expect(texHandle.height === 1024 || texHandle.height === 512 || texHandle.height === 256).to.be.true;
+      expect(texHandle.format).toBe(GL.Texture.Format.Rgba);
+      expect(texHandle.width === 1024 || texHandle.width === 512 || texHandle.width === 256).toBe(true);
+      expect(texHandle.height === 1024 || texHandle.height === 512 || texHandle.height === 256).toBe(true);
     });
   }
 
@@ -111,24 +111,24 @@ describe("external texture requests (#integration)", () => {
     for (const name of goodTexNames) {
       // check that requested textures are downsampled to maxTexturesize when requested.
       let texData = await imodel.queryTextureData({ name, maxTextureSize });
-      expect(texData).to.not.be.undefined;
+      expect(texData).not.toBeUndefined();
       let texBytes = texData?.bytes;
-      expect(texBytes).to.not.be.undefined;
+      expect(texBytes).not.toBeUndefined();
       let imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       let image = await imageElementFromImageSource(imageSource);
-      expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
-      expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
-      expect(image.width === maxTextureSize || image.height === maxTextureSize).to.be.true;
+      expect(image.width).toBeLessThanOrEqual(maxTextureSize);
+      expect(image.height).toBeLessThanOrEqual(maxTextureSize);
+      expect(image.width === maxTextureSize || image.height === maxTextureSize).toBe(true);
 
       // check that requests textures are not downsampled when not requested.
       texData = await imodel.queryTextureData({ name });
-      expect(texData).to.not.be.undefined;
+      expect(texData).not.toBeUndefined();
       texBytes = texData?.bytes;
-      expect(texBytes).to.not.be.undefined;
+      expect(texBytes).not.toBeUndefined();
       imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       image = await imageElementFromImageSource(imageSource);
-      expect(image.width).to.be.greaterThan(maxTextureSize);
-      expect(image.height).to.be.greaterThan(maxTextureSize);
+      expect(image.width).toBeGreaterThan(maxTextureSize);
+      expect(image.height).toBeGreaterThan(maxTextureSize);
     }
   }
 

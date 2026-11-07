@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { AuthorizationClient } from "@itwin/core-common";
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 
 export class IModelHubUserMgr implements AuthorizationClient {
   private _token: AccessToken = "";
 
-  public constructor(private _userCredentials: any) {
+  public constructor(private _userCredentials: TestUserCredentials) {
   }
 
   public async signIn(): Promise<void> {
-    this._token = await getAccessTokenFromBackend(this._userCredentials);
+    const { setBackendAccessToken } = await import("./testCallbacks.mjs");
+    this._token = await setBackendAccessToken(this._userCredentials);
     this.onAccessTokenChanged.raiseEvent(this._token);
   }
 

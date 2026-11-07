@@ -48,8 +48,9 @@ The callback surfaces are deliberately separate so browser-only code does not im
 - `@itwin/vitest-browser-bridge/callbacks/backend` registers and dispatches narrow test callbacks in the backend process.
 - `@itwin/vitest-browser-bridge/callbacks/browser` invokes a callback from a browser test. In Electron it uses the preload-exposed IPC bridge without importing Electron; in other browsers it calls the backend's HTTP endpoint.
 - `@itwin/vitest-browser-bridge/callbacks/http` holds the HTTP endpoint handler, the per-run token helpers, and an explicit invoker for backends that do not follow the shared port layout.
+- `@itwin/vitest-browser-bridge/electron/frame-routing` provides an internal backend hook for routing iTwin RPC messages to Vitest's tester iframe.
 
-The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
+The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Every successful response carries a `value`, which may be `undefined`. Because JSON cannot carry `undefined`, the HTTP transport marks an `undefined` result explicitly. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
 
 ```ts
 // Backend init module
@@ -118,4 +119,4 @@ const result = await invokeBackendCallback("example:add", 2, 5);
 
 `@itwin/vitest-browser-bridge/ports` holds the shared helpers that derive a test backend's port and origin from the frontend port.
 
-The package exports `./electron-provider`, `./callbacks/backend`, `./callbacks/browser`, `./callbacks/http`, and `./ports`. Transport and Electron integration modules remain private implementation details, and there is intentionally no broad package-root export.
+The package exports `./electron-provider`, `./electron/frame-routing`, `./callbacks/backend`, `./callbacks/browser`, `./callbacks/http`, and `./ports`. The bridge owns transport primitives, not application callback names; consumers register callbacks such as `setBackendAccessToken` in their own backend initialization. The frame-routing export is an internal backend hook, and there is intentionally no broad package-root export.

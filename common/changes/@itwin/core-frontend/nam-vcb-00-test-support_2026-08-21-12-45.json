@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add an internal test-support entry point for core full-stack tests.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
@@ -14,12 +14,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Thematic display", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -40,12 +40,12 @@ describe("Thematic display", () => {
     // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
     const colors = vp.readUniqueColors();
     const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
-    expect(colors.contains(bgColor)).to.be.true; // black background
+    expect(colors.length).toBeGreaterThanOrEqual(3); // red, blue, and black - (actually way more colors!)
+    expect(colors.contains(bgColor)).toBe(true); // black background
 
     for (const c of colors.array) {
       if (0 !== c.compare(bgColor)) {
-        expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
+        expect(isReddish(c) || isBluish(c) || isPurplish(c)).toBe(true);
       }
     }
   }
@@ -62,12 +62,12 @@ describe("Thematic display", () => {
     // White rectangle is centered in view with black background surrounding. Thematic stepped display sets a blue/red gradient on the rectangle with two steps. Lighting is off.
     const colors = vp.readUniqueColors();
     const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
-    expect(colors.contains(bgColor)).to.be.true; // black background
+    expect(colors.length).toBeGreaterThanOrEqual(3); // red, blue, and black - (actually way more colors!)
+    expect(colors.contains(bgColor)).toBe(true); // black background
 
     for (const c of colors.array) {
       if (0 !== c.compare(bgColor)) {
-        expect(isRed(c) || isBlue(c)).to.be.true;
+        expect(isRed(c) || isBlue(c)).toBe(true);
       }
     }
   }
@@ -76,12 +76,12 @@ describe("Thematic display", () => {
     // White rectangle is centered in view with black background surrounding. Thematic sloped display results in red square. Lighting is off.
     const colors = vp.readUniqueColors();
     const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(2); // red and black
-    expect(colors.contains(bgColor)).to.be.true; // black background
+    expect(colors.length).toBeGreaterThanOrEqual(2); // red and black
+    expect(colors.contains(bgColor)).toBe(true); // black background
 
     for (const c of colors.array) {
       if (0 !== c.compare(bgColor)) {
-        expect(isRed(c)).to.be.true;
+        expect(isRed(c)).toBe(true);
       }
     }
   }
@@ -90,12 +90,12 @@ describe("Thematic display", () => {
     // White rectangle is centered in view with black background surrounding. Thematic hillshade display results in blue square. Lighting is off.
     const colors = vp.readUniqueColors();
     const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(2); // blue and black
-    expect(colors.contains(bgColor)).to.be.true; // black background
+    expect(colors.length).toBeGreaterThanOrEqual(2); // blue and black
+    expect(colors.contains(bgColor)).toBe(true); // black background
 
     for (const c of colors.array) {
       if (0 !== c.compare(bgColor)) {
-        expect(isBlue(c)).to.be.true;
+        expect(isBlue(c)).toBe(true);
       }
     }
   }
@@ -103,7 +103,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for smooth height mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -122,8 +122,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectCorrectColors(vp);
     });
@@ -132,7 +132,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for stepped height mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -153,8 +153,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectPreciseSteppedColors(vp);
     });
@@ -163,7 +163,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for isoline height mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -183,8 +183,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectCorrectColors(vp);
     });
@@ -193,7 +193,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for stepped-with-delimiter height mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -213,8 +213,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectCorrectColors(vp);
     });
@@ -223,7 +223,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for sensor mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -247,8 +247,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectCorrectColors(vp);
     });
@@ -257,7 +257,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for slope mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -279,8 +279,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectPreciseSlopeColors(vp);
     });
@@ -289,7 +289,7 @@ describe("Thematic display", () => {
   it("should render the model with proper thematic colors applied for hillshade mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
@@ -310,8 +310,8 @@ describe("Thematic display", () => {
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       expectPreciseHillShadeColors(vp);
     });

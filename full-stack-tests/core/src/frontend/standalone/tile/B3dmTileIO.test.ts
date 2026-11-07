@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
 import { GltfDataType, IModelApp, RealityMeshParams } from "@itwin/core-frontend";
 import { B3dmReader } from "@itwin/core-frontend/lib/cjs/tile/internal";
-import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
@@ -283,12 +283,12 @@ const b3dmBytes = new Uint8Array([
 describe("B3dmReader", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, false);
     imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -302,14 +302,14 @@ describe("B3dmReader", () => {
 
     let textureCreated = false;
     IModelApp.renderSystem.createTexture = () => {
-      expect(textureCreated).to.be.false;
+      expect(textureCreated).toBe(false);
       textureCreated = true;
       return new Texture(RenderTexture.Type.Normal);
     };
 
     let texturedMeshCreated = false;
     IModelApp.renderSystem.createRealityMeshGeometry = (params: RealityMeshParams) => {
-      expect(texturedMeshCreated).to.be.false;
+      expect(texturedMeshCreated).toBe(false);
       texturedMeshCreated = undefined !== params.texture;
       return new MockRender.Geometry("mesh");
     };
@@ -318,27 +318,27 @@ describe("B3dmReader", () => {
     const renderSystem = IModelApp.renderSystem;
     const range = Range3d.createXYZXYZ(0, 0, 0, 10, 10, 10);
     const reader = B3dmReader.create(stream, imodel, "0x123", true, range, renderSystem, false, true, range.center)!;
-    expect(reader).not.to.be.undefined;
+    expect(reader).not.toBeUndefined();
 
     // The technique specifies a uniform sampler2d named "u_diffuse".
     const extensions = (reader as any)._glTF.extensions;
-    expect(extensions).not.to.be.undefined;
+    expect(extensions).not.toBeUndefined();
     const uniformType = extensions.KHR_techniques_webgl?.techniques[0]?.uniforms?.u_diffuse?.type;
-    expect(typeof uniformType).to.equal("number");
-    expect(uniformType).to.equal(GltfDataType.Sampler2d);
+    expect(typeof uniformType).toBe("number");
+    expect(uniformType).toBe(GltfDataType.Sampler2d);
 
     // The material specifies the value for the "u_diffuse" uniform.
     const materials = (reader as any)._materials;
-    expect(materials).not.to.be.undefined;
+    expect(materials).not.toBeUndefined();
     const materialExtension = materials[0]?.extensions?.KHR_techniques_webgl;
-    expect(typeof materialExtension).to.equal("object");
-    expect(materialExtension.technique).to.equal(0);
-    expect(materialExtension.values?.u_diffuse?.index).to.equal(0);
+    expect(typeof materialExtension).toBe("object");
+    expect(materialExtension.technique).toBe(0);
+    expect(materialExtension.values?.u_diffuse?.index).toBe(0);
 
     const result = await reader.read();
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
 
-    expect(textureCreated).to.be.true;
-    expect(texturedMeshCreated).to.be.true;
+    expect(textureCreated).toBe(true);
+    expect(texturedMeshCreated).toBe(true);
   });
 });
