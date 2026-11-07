@@ -50,7 +50,7 @@ describe("SchemaViewManager RPC loading", () => {
       assert.instanceOf(data, Uint8Array);
       assert.isString(schemaToken);
       assert.isNotEmpty(schemaToken);
-      return { data: data as Uint8Array, schemaToken: schemaToken as string };
+      return { data, schemaToken: schemaToken as string };
     }
 
     async function fetchManifest(): Promise<SchemaManifest> {
@@ -109,8 +109,8 @@ describe("SchemaViewManager RPC loading", () => {
     assert.exists(genericView.getSchema("BisCore"));
     const physicalObject = genericView.findClass("Generic:PhysicalObject");
     assert.exists(physicalObject);
-    assert.isTrue(physicalObject!.is("BisCore:PhysicalElement"));
-    assert.isTrue(physicalObject!.is(bisCoreElement!));
+    assert.isTrue(physicalObject.is("BisCore:PhysicalElement"));
+    assert.isTrue(physicalObject.is(bisCoreElement));
 
     const genericQueries = queries.slice(queryCountBeforeGeneric);
     assert.lengthOf(genericQueries, 1);
