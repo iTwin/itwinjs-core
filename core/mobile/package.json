@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "5.16.0-dev.6",
+  "version": "5.16.0-dev.7",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "lodash": "catalog:utilities",
-    "superagent": "^9.0.1",
+    "superagent": "^10.4.1",
     "ws": "^7.5.11"
   },
   "devDependencies": {
