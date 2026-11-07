@@ -959,7 +959,7 @@ export class Techniques implements WebGLDisposable {
 
   public getDynamicTechniqueId(name: string): TechniqueId | undefined {
     const index = this._dynamicTechniqueIds.indexOf(name);
-    return -1 !== index ? index + TechniqueId.NumBuiltIn + index : undefined;
+    return -1 !== index ? TechniqueId.NumBuiltIn + index : undefined;
   }
 
   /** Execute each command in the list */

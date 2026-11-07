@@ -97,6 +97,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options |
   } else
     renderSystemOptions = {
       disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+      enableGaussianSplats: true === configuration.enableGaussianSplats,
       preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
       logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
       dpiAwareViewports: false !== configuration.dpiAwareViewports,
@@ -221,7 +222,6 @@ const dtaFrontendMain = async () => {
   let tileAdminProps: TileAdmin.Props;
   let renderSystemOptions: RenderSystem.Options | RenderSystem;
   let viewManager: ViewManager | undefined;
-  // eslint-disable-next-line prefer-const
   [renderSystemOptions, tileAdminProps, viewManager] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
   if (false !== configuration.enableDiagnostics)
@@ -243,7 +243,7 @@ const dtaFrontendMain = async () => {
     Object.assign(configuration, await getFrontendConfig(true));
     // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
     await IModelApp.shutdown();
-    [renderSystemOptions, tileAdminProps] = setConfigurationResults();
+    [renderSystemOptions, tileAdminProps, viewManager] = setConfigurationResults();
     await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
     if (false !== configuration.enableDiagnostics)
       IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);

@@ -105,6 +105,7 @@ export class Capabilities {
   private _maxRenderType: RenderType = RenderType.TextureUnsignedByte;
   private _maxDepthType: DepthType = DepthType.RenderBufferUnsignedShort16;
   private _maxTextureSize: number = 0;
+  private _maxArrayTextureLayers: number = 0;
   private _maxColorAttachments: number = 0;
   private _maxDrawBuffers: number = 0;
   private _maxFragTextureUnits: number = 0;
@@ -128,6 +129,8 @@ export class Capabilities {
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
   public get maxTextureSize(): number { return this._maxTextureSize; }
+  /** The most layers a 2D array texture may have; 0 without WebGL 2. */
+  public get maxArrayTextureLayers(): number { return this._maxArrayTextureLayers; }
   public get maxTexSizeAllow(): number { return this._maxTexSizeAllow; }
   public get supportsCreateImageBitmap(): boolean { return this._supportsCreateImageBitmap; }
   public get maxColorAttachments(): number { return this._maxColorAttachments; }
@@ -299,6 +302,7 @@ export class Capabilities {
     if (this._isWebGL2 && undefined !== gl2) {
       this._maxColorAttachments = gl.getParameter(gl2.MAX_COLOR_ATTACHMENTS);
       this._maxDrawBuffers = gl.getParameter(gl2.MAX_DRAW_BUFFERS);
+      this._maxArrayTextureLayers = gl.getParameter(gl2.MAX_ARRAY_TEXTURE_LAYERS);
     } else {
       const dbExt: WEBGL_draw_buffers | undefined = this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
       this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;

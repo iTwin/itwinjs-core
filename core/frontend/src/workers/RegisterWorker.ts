@@ -34,7 +34,7 @@ export function registerWorker<T>(impl: WorkerImplementation<T>): void {
       if (ret instanceof Promise) {
         ret = await ret;
       }
-      if (typeof ret === "object" && "transfer" in ret)
+      if (typeof ret === "object" && null !== ret && "transfer" in ret)
         postMessage({ result: ret.result, msgId }, { transfer: ret.transfer });
       else
         postMessage({ result: ret, msgId });

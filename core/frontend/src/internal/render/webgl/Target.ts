@@ -32,6 +32,7 @@ import { PrimitiveVisibility, RenderTargetDebugControl } from "../RenderTargetDe
 import { ScreenSpaceEffectContext } from "../../../render/ScreenSpaceEffectBuilder";
 import { Scene } from "../../../render/Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../../../render/VisibleFeature";
+import type { RealityTileCoverage, TileTree } from "../../../tile/internal";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -105,6 +106,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
+  private _realityTileCoverage: ReadonlyMap<TileTree, RealityTileCoverage> = new Map();
   private _currPickExclusions = new Id64.Uint32Set();
   private _swapPickExclusions = new Id64.Uint32Set();
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
@@ -423,7 +425,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.graphics.decorations = decs;
   }
 
+  /** How completely the reality tiles selected for the scene this target last accepted cover each tree's visible region. */
+  public get realityTileCoverage(): ReadonlyMap<TileTree, RealityTileCoverage> { return this._realityTileCoverage; }
+
   public changeScene(scene: Scene) {
+    this._realityTileCoverage = scene.realityTileCoverage;
     this.graphics.changeScene(scene);
 
     this.changeTextureDrapes(scene.textureDrapes);

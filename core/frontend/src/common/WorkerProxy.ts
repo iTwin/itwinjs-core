@@ -9,8 +9,10 @@ import { assert, MaybePromise } from "@itwin/core-bentley";
 
 /** Holds callbacks for a Promise produced for a particular call to postMessage. */
 interface Task {
-  reject: (result: any) => void;
-  resolve: (error: Error) => void;
+  resolve: (result: any) => void;
+  reject: (error: Error) => void;
+  /** Terminates the worker if the call takes longer than [[WorkerProxyOptions.callTimeout]]. */
+  timeout?: ReturnType<typeof setTimeout>;
 }
 
 /** The successful result of a worker operation, correlated with the id of the caller to resolve with the result. */
@@ -80,30 +82,63 @@ export type WorkerImplementation<T> = {
  * @beta
  */
 export type WorkerProxy<T> = WorkerInterface<T> & {
-  /** Terminate the worker. */
+  /** Terminate the worker. Calls still pending never settle, as before; every later call rejects. Terminating it again does nothing. */
   terminate(): void;
-  /** Returns true if [[terminate]] has been called. */
+  /** Returns true once the worker has been terminated: by [[terminate]], because a call exceeded [[WorkerProxyOptions.callTimeout]],
+   * or because its script failed to load.
+   */
   readonly isTerminated: boolean;
 };
+
+/** Options for [[createWorkerProxy]].
+ * @beta
+ */
+export interface WorkerProxyOptions {
+  /** The milliseconds a call may remain pending. A worker runs one task at a time, so a call that takes longer is taken to mean the
+   * worker is stuck and will answer no later call either: the proxy terminates it, and every pending call rejects.
+   * Default: no limit.
+   */
+  callTimeout?: number;
+}
+
+function createWorker(workerJsPath: string): Worker {
+  const sameOrigin = workerJsPath.substring(0, globalThis.origin.length) === globalThis.origin;
+  if (sameOrigin || !workerJsPath.startsWith("http"))
+    return new Worker(workerJsPath);
+
+  const workerBlob = new Blob([`importScripts("${workerJsPath}");`]);
+  const workerBlobUrl = URL.createObjectURL(workerBlob);
+  return new Worker(workerBlobUrl);
+}
 
 /** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.
  * See [this article]($docs/learning/frontend/WorkerProxy.md) for more details and examples.
  * @beta
  */
-export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
+export function createWorkerProxy<T>(workerJsPath: string, options?: WorkerProxyOptions): WorkerProxy<T> {
   const tasks = new Map<number, Task>();
   let curMsgId = 0;
-  let terminated = false;
+  let terminationError: Error | undefined;
 
-  let worker: Worker;
-  const sameOrigin = workerJsPath.substring(0, globalThis.origin.length) === globalThis.origin;
-  if (sameOrigin || !workerJsPath.startsWith("http")) {
-    worker = new Worker(workerJsPath);
-  } else {
-    const workerBlob = new Blob([`importScripts("${workerJsPath}");`]);
-    const workerBlobUrl = URL.createObjectURL(workerBlob);
-    worker = new Worker(workerBlobUrl);
-  }
+  const worker = createWorker(workerJsPath);
+
+  /** Terminate the worker. A failure rejects the pending calls with `reason`; the caller's own termination abandons them, because
+   * callers have long been free to terminate a proxy while calls they never awaited are pending.
+   */
+  const terminate = (reason: Error, rejectPending: boolean) => {
+    if (terminationError)
+      return;
+
+    terminationError = reason;
+    worker.terminate();
+    for (const task of tasks.values()) {
+      clearTimeout(task.timeout);
+      if (rejectPending)
+        task.reject(reason);
+    }
+
+    tasks.clear();
+  };
 
   worker.onmessage = (e: MessageEvent) => {
     const response = e.data as WorkerResponse;
@@ -113,6 +148,7 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
     const task = tasks.get(response.msgId);
     if (task) {
       tasks.delete(response.msgId);
+      clearTimeout(task.timeout);
       if (response.error)
         task.reject(response.error);
       else
@@ -120,20 +156,44 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
     }
   };
 
+  worker.onerror = (e: Event) => {
+    // An error thrown while the worker runs is an ErrorEvent. It is left to surface as an uncaught error, and the worker keeps
+    // running, as it always has: the error need not concern any pending call. Any other error event means the worker's script
+    // failed to load, so no call can ever be answered.
+    const scriptFailedToLoad = !(e instanceof ErrorEvent);
+    if (scriptFailedToLoad)
+      terminate(new Error("Worker failed: its script failed to load"), true);
+  };
+
+  const invoke = async (operation: string, payload: any, transfer: Transferable[] | undefined) => new Promise((resolve, reject) => {
+    if (terminationError) {
+      reject(terminationError);
+      return;
+    }
+
+    const msgId = ++curMsgId;
+    const callTimeout = options?.callTimeout;
+    const timeout = undefined !== callTimeout ? setTimeout(() => terminate(new Error(`Worker call "${operation}" timed out`), true), callTimeout) : undefined;
+    tasks.set(msgId, { resolve, reject, timeout });
+    try {
+      worker.postMessage({ operation, payload, msgId }, transfer ?? []);
+    } catch (error) {
+      // E.g., the payload cannot be cloned or a transferable is detached: only this call fails.
+      tasks.delete(msgId);
+      clearTimeout(timeout);
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+
   return new Proxy({} as WorkerProxy<T>, {
     get(_target, operation: string) {
-      if (operation === "terminate") {
-        assert(!terminated);
-        terminated = true;
-        return () => worker.terminate();
-      } else if (operation === "isTerminated") {
-        return terminated;
-      } else {
-        return async (...args: any[]) => new Promise((resolve, reject) => {
-          const msgId = ++curMsgId;
-          tasks.set(msgId, { resolve, reject });
-          worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);
-        });
+      switch (operation) {
+        case "terminate":
+          return () => terminate(new Error("Worker terminated"), false);
+        case "isTerminated":
+          return undefined !== terminationError;
+        default:
+          return async (payload?: any, transfer?: Transferable[]) => invoke(operation, payload, transfer);
       }
     },
   });

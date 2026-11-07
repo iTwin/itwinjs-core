@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "./test-worker";
 
@@ -67,5 +67,32 @@ describe("WorkerProxy", () => {
     expect(first).toBeLessThan(second);
     expect(second).toBeLessThan(third);
     worker.terminate();
+  });
+
+  it("keeps running a worker that throws outside an operation, with its pending calls", async () => {
+    const posts = vi.spyOn(Worker.prototype, "postMessage");
+    const worker = createWorker();
+    const pending = worker.someLongRunningAsyncOperation();
+    const rawWorker = posts.mock.contexts[0] as Worker;
+    posts.mockRestore();
+    const uncaught = new Promise<ErrorEvent>((resolve) => rawWorker.addEventListener("error", (e) => {
+      // The proxy leaves the error to surface as uncaught; that must not fail the test run.
+      e.preventDefault();
+      resolve(e);
+    }));
+
+    await worker.throwOutsideOperation();
+
+    expect((await uncaught).message).toMatch(/uncaught in worker/);
+    await expect(pending).resolves.toBeGreaterThan(0);
+    expect(worker.isTerminated).toBe(false);
+    await expect(worker.zero()).resolves.toBe("zero");
+    worker.terminate();
+  });
+
+  it("rejects calls to a worker whose script fails to load", async () => {
+    const worker = createWorkerProxy<TestWorker>("/no-such-worker.js");
+    await expect(worker.zero()).rejects.toThrow(/Worker failed/);
+    expect(worker.isTerminated).toBe(true);
   });
 });

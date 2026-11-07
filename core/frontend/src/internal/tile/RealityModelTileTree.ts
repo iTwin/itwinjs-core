@@ -35,6 +35,8 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { gaussianSplatError } from "../render/GaussianSplatError";
+import { ConcurrencyLimiter } from "./ConcurrencyLimiter";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -199,7 +201,7 @@ export class RealityTileRegion {
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion, sphere?: { center: Point3d, radius: number } } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -225,6 +227,7 @@ export class RealityModelTileUtils {
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
       const radius = sphere[3];
       range = Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
+      return { range, sphere: { center, radius } };
     } else if (Array.isArray(boundingVolume.region)) {
       const region = RealityTileRegion.create(boundingVolume.region);
       const regionRange = region.getRange();
@@ -252,6 +255,27 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
+function isGaussianSplatTileset(tileset: any): boolean {
+  const gltf = tileset.extensions?.["3DTILES_content_gltf"];
+  return !!(gltf?.extensionsRequired?.includes("KHR_gaussian_splatting") || gltf?.extensionsUsed?.includes("KHR_gaussian_splatting"));
+}
+
+function gaussianSplatsEnabled(): boolean {
+  return IModelApp.initialized && true === IModelApp.renderSystem.options.enableGaussianSplats;
+}
+
+/** Reject the tiles from `root` down if the preview cannot draw them as splats. */
+function validateGaussianSplatTileLayout(root: any): void {
+  const pending = [root];
+  for (let tile = pending.pop(); tile; tile = pending.pop()) {
+    if (tile.implicitTiling || tile.extensions?.["3DTILES_implicit_tiling"] || tile.contents)
+      gaussianSplatError("the preview requires explicit tiles with a single content URI; implicit tiling and multiple contents are unsupported");
+
+    if (Array.isArray(tile.children))
+      pending.push(...tile.children);
+  }
+}
+
 /** Exported strictly for tests. */
 export class RealityModelTileTreeProps {
   public location: Transform;
@@ -261,12 +285,20 @@ export class RealityModelTileTreeProps {
   public yAxisUp = false;
   public root: any;
   public readonly maximumScreenSpaceError?: number;
+  /** True if the tileset declares Gaussian splat content and the render system draws splats natively.
+   * @internal
+   */
+  public readonly rendersGaussianSplats: boolean;
 
   public get usesGeometricError(): boolean {
     return undefined !== this.maximumScreenSpaceError;
   }
 
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
+    this.rendersGaussianSplats = isGaussianSplatTileset(json) && gaussianSplatsEnabled();
+    if (this.rendersGaussianSplats)
+      validateGaussianSplatTileLayout(root);
+
     this.tilesetJson = root;
     this.dataSource = rdSource;
     this.location = tilesetToDbTransform;
@@ -278,7 +310,7 @@ export class RealityModelTileTreeProps {
     const maxSSE = json.asset.extras?.maximumScreenSpaceError;
     if (typeof maxSSE === "number") {
       this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
-    } else if (rdSource.usesGeometricError) {
+    } else if (rdSource.usesGeometricError || this.rendersGaussianSplats) {
       this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 16;
     }
   }
@@ -330,6 +362,8 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly region?: RealityTileRegion;
   public readonly geometricError?: number;
   public readonly contentUrl?: string;
+  public readonly sphere?: { center: Point3d, radius: number };
+  public readonly isExternalTilesetRoot?: boolean;
 
   constructor(args: {
     json: any;
@@ -338,6 +372,7 @@ class RealityModelTileProps implements RealityTileParams {
     transformToRoot?: Transform;
     additiveRefinement?: boolean;
     usesGeometricError?: boolean;
+    isExternalTilesetRoot?: boolean;
   }) {
     this.contentId = args.id;
     this.parent = args.parent;
@@ -350,11 +385,13 @@ class RealityModelTileProps implements RealityTileParams {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;
       this.region = boundingVolume?.region;
+      this.sphere = boundingVolume.sphere;
     } else {
       this.range = Range3d.createNull();
       assert(false, "Unbounded tile");
     }
 
+    this.isExternalTilesetRoot = args.isExternalTilesetRoot;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     const contentUrl = getUrl(json.content);
     const hasContents = undefined !== contentUrl;
@@ -375,7 +412,7 @@ class RealityModelTileProps implements RealityTileParams {
 }
 
 class FindChildResult {
-  constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
+  constructor(public id: string, public json: any, public transformToRoot?: Transform, public isExternalTilesetRoot = false) { }
 }
 
 function assembleUrl(prefix: string, url: string): string {
@@ -418,12 +455,29 @@ function addUrlPrefix(subTree: any, prefix: string) {
       addUrlPrefix(child, prefix);
 }
 
-async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
+/** The path within a reality data source of `uri`, relative to the content at `contentUrl` (itself a path within the source, which
+ * may be in a nested external tileset). The source resolves such paths against a base URL it does not expose, so they are resolved
+ * here against a placeholder origin that stands for it.
+ */
+function pathWithinDataSource(uri: string, contentUrl: string): string {
+  const placeholderOrigin = "https://reality-data-source.invalid";
+  const resolved = new URL(uri, new URL(contentUrl, `${placeholderOrigin}/`));
+  if (resolved.origin !== placeholderOrigin)
+    throw new Error(`${uri} is not a path within the reality data source`);
+
+  return resolved.pathname.substring(1) + resolved.search;
+}
+
+/** Replace `root` by the root of the external tileset it references, if any.
+ * @param requests If defined, bounds how many external tileset requests are in progress at once. It holds a slot only while the
+ * tileset JSON is being fetched, never while expanding nested tilesets, so nested external tilesets cannot deadlock it.
+ */
+async function expandSubTree(root: any, rdsource: RealityDataSource, requests?: ConcurrencyLimiter): Promise<any> {
   const childUrl = getUrl(root.content);
   if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
     return root;
 
-  const subTree = await rdsource.getTileJson(childUrl);
+  const subTree = await (requests ? requests.run(async () => rdsource.getTileJson(childUrl)) : rdsource.getTileJson(childUrl));
   const prefixIndex = childUrl.lastIndexOf("/");
   if (prefixIndex > 0)
     addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
@@ -436,6 +490,18 @@ class RealityModelTileLoader extends RealityTileLoader {
   private readonly _batchedIdMap?: BatchedTileIdMap;
   private _viewFlagOverrides: ViewFlagOverrides;
   private readonly _deduplicateVertices: boolean;
+
+  /** The most external tileset JSON requests one reality model has in progress at once. Sibling external tilesets are fetched
+   * concurrently up to this limit; those requests do not go through the tile request channels, so they need a bound of their own.
+   */
+  private static readonly maxConcurrentTilesetRequests = 6;
+  private readonly _tilesetRequests = new ConcurrencyLimiter(RealityModelTileLoader.maxConcurrentTilesetRequests);
+  /** Concurrent child-property reads share external expansion, including its result's object identity. */
+  private readonly _subTrees = new WeakMap<object, Promise<any>>();
+  /** The roots of the external tilesets expanded in place of their parent's content, which can hold back that parent's refinement
+   * when the tree refines only once children are ready. They are remembered because a later read finds the root already in place.
+   */
+  private readonly _externalTilesetRoots = new WeakSet<object>();
 
   public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: ProduceGeometryOption }) {
     super(opts?.produceGeometry);
@@ -457,6 +523,9 @@ class RealityModelTileLoader extends RealityTileLoader {
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
+  public override get rendersGaussianSplats(): boolean { return this.tree.rendersGaussianSplats; }
+  /** Drop external tileset requests that have not started; the child loads waiting on them reject. Called when the tree is disposed. */
+  public cancelTilesetRequests(): void { this._tilesetRequests.dispose(); }
   public override get wantDeduplicatedVertices() { return this._deduplicateVertices; }
 
   public get maxDepth(): number { return Number.MAX_SAFE_INTEGER; }
@@ -487,9 +556,9 @@ class RealityModelTileLoader extends RealityTileLoader {
     const prefix = thisId.length ? `${thisId}_` : "";
     const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
-      for (let i = 0; i < findResult.json.children.length; i++) {
-        const childId = prefix + i;
-        const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
+      // Resolve the children concurrently: each may fetch its own external tileset, at most maxConcurrentTilesetRequests at once.
+      const children = await Promise.all(findResult.json.children.map(async (_child: unknown, i: number) => this.findTileInJson(this.tree.tilesetJson, prefix + i, "", undefined)));
+      for (const foundChild of children) {
         if (undefined !== foundChild) {
           const refine = foundChild.json.refine;
           props.push(new RealityModelTileProps({
@@ -500,6 +569,7 @@ class RealityModelTileLoader extends RealityTileLoader {
             // If not specified explicitly, additiveRefinement is inherited from parent tile.
             additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
             usesGeometricError: this.tree.usesGeometricError,
+            isExternalTilesetRoot: foundChild.isExternalTilesetRoot,
           }));
         }
       }
@@ -518,6 +588,11 @@ class RealityModelTileLoader extends RealityTileLoader {
       return undefined;
 
     return this.tree.dataSource.getTileContent(getUrl(foundChild.json.content));
+  }
+
+  /** Data sources such as ion and ContextShare give tiles no absolute URL, so a glTF buffer relative to its tile is fetched through the data source. */
+  protected override gltfBufferResolver(tile: RealityTile): (uri: string) => Promise<Uint8Array> {
+    return async (uri) => new Uint8Array(await this.tree.dataSource.getTileContent(pathWithinDataSource(uri, tile.contentUrl ?? "")));
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
@@ -545,9 +620,33 @@ class RealityModelTileLoader extends RealityTileLoader {
       return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId, transformToRoot);
     }
 
-    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.dataSource);
+    const child = tilesetJson.children[childIndex] = await this.expandExternalTileset(foundChild);
+    return new FindChildResult(thisParentId, child, transformToRoot, this._externalTilesetRoots.has(child));
+  }
 
-    return new FindChildResult(thisParentId, tilesetJson.children[childIndex], transformToRoot);
+  /** `tile`, or the root of the external tileset its content references. Concurrent reads share one expansion. */
+  private async expandExternalTileset(tile: any): Promise<any> {
+    let expansion = this._subTrees.get(tile);
+    if (!expansion) {
+      expansion = expandSubTree(tile, this.tree.dataSource, this._tilesetRequests).then((root) => {
+        if (root !== tile)
+          this.addExternalTilesetRoot(root);
+
+        return root;
+      });
+      this._subTrees.set(tile, expansion);
+      // Forget a failed expansion (e.g. a transient server error), so that the next read fetches the tileset again.
+      expansion.catch(() => this._subTrees.delete(tile));
+    }
+
+    return expansion;
+  }
+
+  private addExternalTilesetRoot(root: any): void {
+    if (this.tree.rendersGaussianSplats)
+      validateGaussianSplatTileLayout(root);
+
+    this._externalTilesetRoots.add(root);
   }
 }
 
@@ -569,6 +668,15 @@ export class RealityModelTileTree extends RealityTileTree {
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
+  /** Gaussian splats cannot be clipped to a tile's region, so a tile and its children are never drawn together. */
+  public override get refinesWhenChildrenReady() { return this.loader.rendersGaussianSplats; }
+
+  public override [Symbol.dispose](): void {
+    if (this.loader instanceof RealityModelTileLoader)
+      this.loader.cancelTilesetRequests();
+
+    super[Symbol.dispose]();
+  }
 
   protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
     super.collectClassifierGraphics(args, selectedTiles);
@@ -895,7 +1003,9 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override get castsShadows() {
-    return true;
+    // Gaussian splats are not drawn into the solar shadow map, so selecting their tiles for it would only load tiles.
+    const tree = this.treeOwner.tileTree;
+    return !(tree instanceof RealityTileTree && tree.loader.rendersGaussianSplats);
   }
 
   protected override get _isLoadingComplete(): boolean {
