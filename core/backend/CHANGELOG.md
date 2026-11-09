@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 05 Nov 2026 17:47:36 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Nov 2026 16:52:11 GMT and should not be manually modified.
+
+## 5.15.1
+Mon, 09 Nov 2026 16:52:11 GMT
+
+### Updates
+
+- Expose raw SQLite changeset apply flags, a no-local-changes conflict policy, and custom conflict handlers through SQLiteDb.applyChangeset.
 
 ## 5.15.0
 Thu, 05 Nov 2026 17:47:36 GMT
