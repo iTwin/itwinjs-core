@@ -207,6 +207,7 @@ describe("HyperModeling (#integration)", () => {
     HyperModeling.replaceConfiguration();
   });
 
+  // The Electron test server does not serve the key-in JSON; Chrome covers this case.
   const itChrome = ProcessDetector.isElectronAppFrontend ? it.skip : it;
   itChrome("adjusts marker display via key-in", async () => {
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
