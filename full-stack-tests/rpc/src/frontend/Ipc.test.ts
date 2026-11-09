@@ -7,6 +7,18 @@ import { IpcWebSocketFrontend } from "@itwin/core-common";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { before } from "./testHooks";
+
+interface ElectronIpcApi {
+  invoke(channel: string, ...args: any[]): Promise<any>;
+}
+
+function getElectronIpc(): ElectronIpcApi {
+  const api = (window as Window & { itwinjs?: ElectronIpcApi }).itwinjs;
+  if (api === undefined)
+    throw new Error("The Electron preload API is not available.");
+  return api;
+}
 
 function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }) {
   async function onResponse(request: Promise<any>, responses: string[]) {
@@ -19,22 +31,23 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
     const responses: string[] = [];
 
-    const a = socket.invoke("a", "a");
-    const b = socket.invoke("b", "b");
-    const c = socket.invoke("c", "c");
+    const immediateFirst = socket.invoke("itwin.rpc-test-immediate-first", "immediateFirst");
+    const delayed = socket.invoke("itwin.rpc-test-delayed", "delayed");
+    const immediateSecond = socket.invoke("itwin.rpc-test-immediate-second", "immediateSecond");
 
-    onResponse(a, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
-    onResponse(b, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
-    onResponse(c, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(immediateFirst, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(delayed, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
+    onResponse(immediateSecond, responses); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    await Promise.all([a, b, c]);
-    assert.deepEqual(responses, ["a", "c", "b"]);
+    await Promise.all([immediateFirst, delayed, immediateSecond]);
+    // A delayed handler must not hold back responses from handlers invoked after it.
+    assert.deepEqual(responses, ["immediateFirst", "immediateSecond", "delayed"]);
   });
 }
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("ElectronIpc", () => {
-    orderTest(it, () => require("electron").ipcRenderer); // eslint-disable-line @typescript-eslint/no-require-imports
+    orderTest(it, getElectronIpc);
   });
 } else {
   describe("IpcWebSocket", () => {
