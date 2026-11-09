@@ -230,6 +230,7 @@ describe("PerModelCategoryVisibility", () => {
       } as unknown as IModelConnection;
 
       const props: PerModelCategoryVisibility.Props[] = [{ modelId: "0x1", categoryIds: ["0x10"], visOverride: PerModelCategoryVisibility.Override.Show }];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ovrs.setOverrides(props, explicitIModel);
 
       // The explicit iModel's subcategories should be passed to push, not the viewport's iModel.subcategories

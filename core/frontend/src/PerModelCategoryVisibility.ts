@@ -50,10 +50,17 @@ export namespace PerModelCategoryVisibility {
     getOverride(modelId: Id64String, categoryId: Id64String): Override;
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
-    /** Changes multiple overrides, given an array of overrides *
+    /**
+     * Changes multiple overrides, given an array of overrides
      * @beta
      */
-    setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+    setOverrides(perModelCategoryVisibility: Props[]): Promise<void>;
+    /**
+     * Changes multiple overrides, given an array of overrides
+     * @beta
+     * @deprecated The overrides are bound to a single iModel. To target another iModel, use its [[IModelDisplayReference.perModelCategoryVisibility]].
+     */
+    setOverrides(perModelCategoryVisibility: Props[], iModel: IModelConnection | undefined): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */
@@ -202,9 +209,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
    * set the overrides for multiple perModelCategoryVisibility props, loading categoryIds from the iModel if necessary.
    * @see [[PerModelCategoryVisibility]]
    * @param perModelCategoryVisibility array of model category visibility overrides @see [[PerModelCategoryVisibility.Props]]
-   * @param iModel Optional param iModel. If no iModel is provided, then the iModel associated with the viewport (used to construct this class) is used.
-   * This optional iModel param is useful for apps which may show multiple iModels at once. Passing in an iModel ensures that the subcategories cache for the provided iModel
-   * is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
+   * @param iModel Deprecated. The iModel whose subcategories are loaded; defaults to the iModel these overrides are bound to.
    * @returns a promise that resolves once the overrides have been applied.
    */
   public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], iModel?: IModelConnection): Promise<void> {

@@ -8243,7 +8243,9 @@ export namespace PerModelCategoryVisibility {
         readonly onChanged: BeEvent<() => void>;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
         // @beta
-        setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+        setOverrides(perModelCategoryVisibility: Props[]): Promise<void>;
+        // @beta @deprecated
+        setOverrides(perModelCategoryVisibility: Props[], iModel: IModelConnection | undefined): Promise<void>;
     }
     // (undocumented)
     export namespace Overrides {
