@@ -528,8 +528,7 @@ export class EditTxn {
   }
 
   /** Delete definition elements from the iModel when they are not referenced.
-   * Definitions referenced only by other definitions deleted in the same call (for example, a [[SheetBorderPrototype]]
-   * used only by a deleted [[SheetPrototype]]) are also deleted.
+   * Definitions referenced only by other definitions deleted in the same call are also deleted.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
    * @throws EditTxnError if this EditTxn is not active.
