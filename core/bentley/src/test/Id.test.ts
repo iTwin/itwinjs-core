@@ -676,6 +676,13 @@ describe("CompressedId64Set", () => {
       expect(() => CompressedId64Set.count(invalid)).to.throw("Invalid CompressedId64Set");
       expect(() => [...CompressedId64Set.iterable(invalid)]).to.throw("Invalid CompressedId64Set");
     }
+
+    // Ids may reach but not exceed the maximum 64-bit value.
+    expect(CompressedId64Set.count("+FFFFFFFFFFFFFFFF")).to.equal(1);
+    expect(CompressedId64Set.count("+FFFFFFFFFFFFFFFE+1")).to.equal(2);
+    expect(CompressedId64Set.count("+1*FFFFFFFF+FFFFFFFF00000000")).to.equal(0x100000000);
+    for (const overflow of ["+FFFFFFFFFFFFFFFF*2", "+FFFFFFFFFFFFFFFF+1", "+8000000000000000*2", "+FFFFFFFF00000000+1*FFFFFFFF+1"])
+      expect(() => CompressedId64Set.count(overflow)).to.throw("Invalid CompressedId64Set");
   });
 });
 

@@ -341,14 +341,21 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * Use this to bound the work of decompressing a set obtained from an untrusted source, such as an RPC argument.
    * @param ids The compact string representation.
    * @returns The number of Ids that [[CompressedId64Set.iterator]] would produce.
-   * @throws Error if `ids` is not a well-formed [[CompressedId64Set]].
+   * @throws Error if `ids` is not a well-formed [[CompressedId64Set]], including if any of the Ids it represents would exceed 64 bits.
    * @beta
    */
   export function count(ids: CompressedId64Set): number {
+    const maxId = 0xFFFFFFFFFFFFFFFFn;
     let total = 0;
+    let lastId = 0n;
     const parser = new RunParser(ids);
-    while (parser.next())
+    while (parser.next()) {
       total += parser.multiplier;
+      const increment = (BigInt(parser.increment.upper) << 32n) | BigInt(parser.increment.lower);
+      lastId += increment * BigInt(parser.multiplier);
+      if (lastId > maxId)
+        throw new Error("Invalid CompressedId64Set");
+    }
 
     return total;
   }

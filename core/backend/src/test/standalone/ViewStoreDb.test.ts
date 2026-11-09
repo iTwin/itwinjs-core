@@ -13,6 +13,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
+import { IModelHost } from "../../IModelHost";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -454,6 +455,35 @@ describe("ViewStore", function (this: Suite) {
       vs1.deleteCategorySelectorSync(catId);
       vs1.deleteModelSelectorSync(modelId);
       vs1.deleteTimelineSync(timelineId);
+    }
+
+    // Array-form Ids are checked against what will be stored, so a successful write can always be read back.
+    const config = IModelHost.configuration!;
+    const prevLimit = config.maxRpcCompressedIdCount;
+    const prevGuidMap = vs1.guidMap;
+    const guids = new Map<string, GuidString>();
+    vs1.guidMap = {
+      getFederationGuidFromId: (id) => {
+        let guid = guids.get(id);
+        if (undefined === guid)
+          guids.set(id, guid = Guid.createValue());
+        return guid;
+      },
+      getIdFromFederationGuid: (guid) => [...guids].find(([, value]) => value === guid)?.[0],
+    };
+    config.maxRpcCompressedIdCount = 3;
+    try {
+      const selectorId = await vs1.addCategorySelector({ selector: { ids: ["0x1", "0x2", "0x3"] } });
+      expect(vs1.getCategorySelectorSync({ id: selectorId }).categories).deep.equal(["0x1", "0x2", "0x3"]);
+      vs1.deleteCategorySelectorSync(selectorId);
+
+      await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: ["0x1", "0x2", "0x3", "0x4"] } }));
+      await expectTooManyIds(async () => vs1.addTimeline({
+        timeline: [{ modelId: "0x10", elementTimelines: [{ batchId: 1, elementIds: ["0x1", "0x2"] }, { batchId: 2, elementIds: "+3+1" }] }],
+      }));
+    } finally {
+      config.maxRpcCompressedIdCount = prevLimit;
+      vs1.guidMap = prevGuidMap;
     }
   });
 });

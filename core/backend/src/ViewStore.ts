@@ -750,15 +750,19 @@ export namespace ViewStore {
     private validateIdCount(numIds: number): void {
       const maxIds = IModelHost.maxRpcCompressedIdCount;
       if (numIds > maxIds)
-        ViewStoreError.throwError("invalid-value", { message: `compressed Id set contains ${numIds} Ids, which exceeds the maximum of ${maxIds}` });
+        ViewStoreError.throwError("invalid-value", { message: `Id set contains ${numIds} Ids, which exceeds the maximum of ${maxIds}` });
     }
-    /** Each batch is checked individually, so also limit the total so that many batches can't add up to an unbounded number of Ids. */
+    /** Each batch is checked individually, so also limit the total so that many batches can't add up to an unbounded number of Ids.
+     * Array-form batches are counted too, because they are stored in compressed form and checked against the same limit when read.
+     */
     private validateTimelineIdCount(script: RenderSchedule.ScriptProps): void {
       let numIds = 0;
       for (const model of script) {
         for (const batch of model.elementTimelines ?? []) {
           if (typeof batch.elementIds === "string")
             numIds += CompressedId64Set.count(batch.elementIds);
+          else if (Array.isArray(batch.elementIds))
+            numIds += batch.elementIds.length;
         }
       }
       this.validateIdCount(numIds);
@@ -773,6 +777,9 @@ export namespace ViewStore {
         if (undefined !== guidRow)
           result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
+
+      // Arrays aren't checked above. Check what will be stored, so that a successful write can always be read back.
+      this.validateIdCount(result.size);
       return CompressedId64Set.compressSet(result);
     }
     private fromGuidRow(guidRow: RowId): Id64String | undefined {
