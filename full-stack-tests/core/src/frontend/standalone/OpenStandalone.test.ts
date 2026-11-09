@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
@@ -11,11 +11,11 @@ import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -23,34 +23,34 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
       const connection = await BriefcaseConnection.openStandalone(filePath);
 
-      assert.isTrue(connection.isOpen);
-      assert.equal(connection.openMode, OpenMode.ReadWrite);
-      assert.isFalse(connection.isClosed);
-      assert.isDefined(connection.iModelId);
-      assert.isTrue(Guid.isV4Guid(connection.iModelId));
-      assert.isTrue(connection.isBriefcaseConnection());
-      assert.isFalse(connection.isSnapshotConnection());
-      assert.isFalse(connection.isBlankConnection());
-      assert.isFalse(connection.isCheckpointConnection());
+      expect(connection.isOpen).toBe(true);
+      expect(connection.openMode).toBe(OpenMode.ReadWrite);
+      expect(connection.isClosed).toBe(false);
+      expect(connection.iModelId).toBeDefined();
+      expect(Guid.isV4Guid(connection.iModelId)).toBe(true);
+      expect(connection.isBriefcaseConnection()).toBe(true);
+      expect(connection.isSnapshotConnection()).toBe(false);
+      expect(connection.isBlankConnection()).toBe(false);
+      expect(connection.isCheckpointConnection()).toBe(false);
 
-      assert.isTrue(connection.isBriefcase);
-      assert.isFalse(connection.isSnapshot);
-      assert.isFalse(connection.isBlank);
+      expect(connection.isBriefcase).toBe(true);
+      expect(connection.isSnapshot).toBe(false);
+      expect(connection.isBlank).toBe(false);
 
-      assert.equal(connection.iTwinId, Guid.empty, "standalone imodels have empty iTwinId");
-      await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't push changes
-      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(IModelError);// standalone imodels can't pull changes
+      expect(connection.iTwinId, "standalone imodels have empty iTwinId").toBe(Guid.empty);
+      await expect(connection.pushChanges("bad")).rejects.toThrow(IModelError); // standalone imodels can't push changes
+      await expect(connection.pullChanges()).rejects.toThrow(IModelError);// standalone imodels can't pull changes
 
       const elementProps = await connection.elements.getProps(IModel.rootSubjectId);
-      assert.equal(1, elementProps.length);
-      assert.equal(elementProps[0].id, IModel.rootSubjectId);
+      expect(1).toBe(elementProps.length);
+      expect(elementProps[0].id).toBe(IModel.rootSubjectId);
       await connection.close();
 
-      assert.isFalse(connection.isOpen);
-      assert.isTrue(connection.isClosed);
+      expect(connection.isOpen).toBe(false);
+      expect(connection.isClosed).toBe(true);
 
       const readOnlyConnection = await BriefcaseConnection.openStandalone(filePath, OpenMode.Readonly);
-      assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
+      expect(readOnlyConnection.openMode).toBe(OpenMode.Readonly);
       await readOnlyConnection.close();
     });
   });

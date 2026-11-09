@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -13,12 +13,12 @@ const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : d
 describeChrome("IModelConnection.CodeSpecs", async () => {
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     iModel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (iModel) {
       await iModel.close();
     }
@@ -32,16 +32,16 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
 
   it("should load CodeSpecs", async () => {
     const nullCodeSpec: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.nullCodeSpec);
-    assert.equal(nullCodeSpec.scopeType, CodeScopeSpec.Type.Repository);
-    assert.equal(nullCodeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    expect(nullCodeSpec.scopeType).toBe(CodeScopeSpec.Type.Repository);
+    expect(nullCodeSpec.scopeReq).toBe(CodeScopeSpec.ScopeRequirement.ElementId);
 
     const subCategoryCodeSpec: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.subCategory);
-    assert.equal(subCategoryCodeSpec.scopeType, CodeScopeSpec.Type.ParentElement);
-    assert.equal(subCategoryCodeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    expect(subCategoryCodeSpec.scopeType).toBe(CodeScopeSpec.Type.ParentElement);
+    expect(subCategoryCodeSpec.scopeReq).toBe(CodeScopeSpec.ScopeRequirement.ElementId);
 
     const viewDefinitionCodeSpec: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.viewDefinition);
-    assert.equal(viewDefinitionCodeSpec.scopeType, CodeScopeSpec.Type.Model);
-    assert.equal(viewDefinitionCodeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    expect(viewDefinitionCodeSpec.scopeType).toBe(CodeScopeSpec.Type.Model);
+    expect(viewDefinitionCodeSpec.scopeReq).toBe(CodeScopeSpec.ScopeRequirement.ElementId);
   });
 
   it("should return code spec by name", async () => {
@@ -50,11 +50,11 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
 
     const codeSpec = await iModel.codeSpecs.getByName(codeSpecName);
 
-    expect(codeSpec.id).to.equal(codeSpecId);
+    expect(codeSpec.id).toBe(codeSpecId);
 
-    expect(codeSpec.name).to.equal(codeSpecName);
+    expect(codeSpec.name).toBe(codeSpecName);
 
-    expect(codeSpec.iModel.name).to.equal(iModel.name);
+    expect(codeSpec.iModel.name).toBe(iModel.name);
   });
 
   it("should return code spec by id", async () => {
@@ -63,11 +63,11 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
 
     const codeSpec = await iModel.codeSpecs.getById(codeSpecId);
 
-    expect(codeSpec.id).to.equal(codeSpecId);
+    expect(codeSpec.id).toBe(codeSpecId);
 
-    expect(codeSpec.name).to.equal(codeSpecName);
+    expect(codeSpec.name).toBe(codeSpecName);
 
-    expect(codeSpec.iModel.name).to.equal(iModel.name);
+    expect(codeSpec.iModel.name).toBe(iModel.name);
   });
 
   it("should fail because empty id", async () => {
@@ -76,9 +76,9 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
     try {
       await iModel.codeSpecs.getById(codeSpecId);
     } catch (error: any) {
-      expect(error).to.be.instanceOf(IModelError);
-      expect(error.errorNumber).to.equal(IModelStatus.NotFound);
-      expect(error.message).to.equal("CodeSpec not found");
+      expect(error).toBeInstanceOf(IModelError);
+      expect(error.errorNumber).toBe(IModelStatus.NotFound);
+      expect(error.message).toBe("CodeSpec not found");
     }
   });
 
@@ -88,9 +88,9 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
     try {
       await iModel.codeSpecs.getByName(codeSpecName);
     } catch (error: any) {
-      expect(error).to.be.instanceOf(IModelError);
-      expect(error.errorNumber).to.equal(IModelStatus.NotFound);
-      expect(error.message).to.equal("CodeSpec not found");
+      expect(error).toBeInstanceOf(IModelError);
+      expect(error.errorNumber).toBe(IModelStatus.NotFound);
+      expect(error.message).toBe("CodeSpec not found");
     }
   });
 
@@ -100,11 +100,11 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
     try {
       await iModel.codeSpecs.getById(codeSpecId);
     } catch (error: any) {
-      expect(error).to.be.instanceOf(IModelError);
-      expect(error.errorNumber).to.equal(IModelStatus.InvalidId);
-      expect(error.message).to.equal("Invalid codeSpecId");
-      expect(error.getMetaData).to.be.a("function");
-      expect(error.getMetaData()).to.deep.equal({ codeSpecId });
+      expect(error).toBeInstanceOf(IModelError);
+      expect(error.errorNumber).toBe(IModelStatus.InvalidId);
+      expect(error.message).toBe("Invalid codeSpecId");
+      expect(error.getMetaData).toEqual(expect.any(Function));
+      expect(error.getMetaData()).toEqual({ codeSpecId });
     }
   });
 
@@ -114,9 +114,9 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
     try {
       await iModel.codeSpecs.getById(codeSpecId);
     } catch (error: any) {
-      expect(error).to.be.instanceOf(IModelError);
-      expect(error.errorNumber).to.equal(IModelStatus.NotFound);
-      expect(error.message).to.equal("CodeSpec not found");
+      expect(error).toBeInstanceOf(IModelError);
+      expect(error.errorNumber).toBe(IModelStatus.NotFound);
+      expect(error.message).toBe("CodeSpec not found");
     }
   });
 
@@ -126,9 +126,9 @@ describeChrome("IModelConnection.CodeSpecs", async () => {
     try {
       await iModel.codeSpecs.getByName(codeSpecName);
     } catch (error: any) {
-      expect(error).to.be.instanceOf(IModelError);
-      expect(error.errorNumber).to.equal(IModelStatus.NotFound);
-      expect(error.message).to.equal("CodeSpec not found");
+      expect(error).toBeInstanceOf(IModelError);
+      expect(error.errorNumber).toBe(IModelStatus.NotFound);
+      expect(error.message).toBe("CodeSpec not found");
     }
   });
 });

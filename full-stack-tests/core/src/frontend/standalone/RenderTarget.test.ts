@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
@@ -20,7 +20,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Vertex buffer objects", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
@@ -28,7 +28,7 @@ describe("Vertex buffer objects", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -39,20 +39,20 @@ describe("Vertex buffer objects", () => {
       vp.view.viewFlags = vp.view.viewFlags.with("visibleEdges", true);
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       // White rectangle is centered in view with black background surrounding. Lighting is on so rectangle will not be pure white.
       const colors = vp.readUniqueColors();
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-      expect(colors.length).least(2);
-      expect(colors.contains(bgColor)).to.be.true; // black background
+      expect(colors.length).toBeGreaterThanOrEqual(2);
+      expect(colors.contains(bgColor)).toBe(true); // black background
 
       const expectWhitish = (c: Color) => {
-        expect(c.r).least(0x7f);
-        expect(c.g).least(0x7f);
-        expect(c.b).least(0x7f);
-        expect(c.a).to.equal(0xff);
+        expect(c.r).toBeGreaterThanOrEqual(0x7f);
+        expect(c.g).toBeGreaterThanOrEqual(0x7f);
+        expect(c.b).toBeGreaterThanOrEqual(0x7f);
+        expect(c.a).toBe(0xff);
       };
 
       for (const c of colors.array) {
@@ -61,13 +61,13 @@ describe("Vertex buffer objects", () => {
       }
 
       let color = vp.readColor(rect.left, rect.top);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.right - 1, rect.top);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.right - 1, rect.bottom - 1);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.left, rect.bottom - 1);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
 
       color = vp.readColor(rect.width / 2, rect.height / 2);
       expectWhitish(color);
@@ -76,10 +76,10 @@ describe("Vertex buffer objects", () => {
       const elemId = "0x29";
       const subcatId = "0x18";
       const pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(3);
-      expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(pixels.length).toBe(3);
+      expect(pixels.containsFeature(elemId, subcatId)).toBe(true);
+      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar)).toBe(true);
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)).toBe(true);
     });
   });
 });
@@ -91,19 +91,19 @@ describe("Vertex buffer objects", () => {
 describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
   it("should have expected view definition", async () => {
     const viewState = await imodel.views.load("0x24");
-    expect(viewState).instanceof(SpatialViewState);
+    expect(viewState).toBeInstanceOf(SpatialViewState);
   });
 
   it("should render empty view", async () => {
@@ -115,20 +115,20 @@ describe("RenderTarget", () => {
 
       // Should have all black background pixels
       let colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
+      expect(colors.length).toBe(1);
+      expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).toBe(true);
 
       // Change background color - expect pixel colors to match
       vp.view.displayStyle.backgroundColor = ColorDef.green;
       vp.invalidateRenderPlan();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(Color.fromRgba(0, 0x80, 0, 0xff))).to.be.true;
+      expect(colors.length).toBe(1);
+      expect(colors.contains(Color.fromRgba(0, 0x80, 0, 0xff))).toBe(true);
 
       // Should have no features, depth, or geometry - only background pixels
       const pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(1);
+      expect(pixels.length).toBe(1);
 
       // Background pixels have distanceFraction = 0 indicating far plane.
       const backgroundPixel = new Pixel.Data({
@@ -137,15 +137,15 @@ describe("RenderTarget", () => {
         planarity: Pixel.Planarity.None,
       });
 
-      expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
+      expect(comparePixelData(backgroundPixel, pixels.array[0])).toBe(0);
 
       // Ensure reading out-of-bounds rects returns empty pixel array
       const coords = [[-1, -1, -2, -2], [rect.width + 1, rect.height + 1, rect.width + 2, rect.height + 2]];
       for (const coord of coords) {
         const readRect = new ViewRect(coord[0], coord[1], coord[2], coord[3]);
         const oob = vp.readUniquePixelData(readRect);
-        expect(oob).to.not.be.undefined;
-        expect(oob.array.length).to.equal(0);
+        expect(oob).not.toBeUndefined();
+        expect(oob.array.length).toBe(0);
       }
     }, 1.0);
   });
@@ -154,20 +154,20 @@ describe("RenderTarget", () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       // White rectangle is centered in view with black background surrounding. Lighting is on so rectangle will not be pure white.
       let colors = vp.readUniqueColors();
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-      expect(colors.length).least(2);
-      expect(colors.contains(bgColor)).to.be.true; // black background
+      expect(colors.length).toBeGreaterThanOrEqual(2);
+      expect(colors.contains(bgColor)).toBe(true); // black background
 
       const expectWhitish = (c: Color) => {
-        expect(c.r).least(0x7f);
-        expect(c.g).least(0x7f);
-        expect(c.b).least(0x7f);
-        expect(c.a).to.equal(0xff);
+        expect(c.r).toBeGreaterThanOrEqual(0x7f);
+        expect(c.g).toBeGreaterThanOrEqual(0x7f);
+        expect(c.b).toBeGreaterThanOrEqual(0x7f);
+        expect(c.a).toBe(0xff);
       };
 
       for (const c of colors.array) {
@@ -176,13 +176,13 @@ describe("RenderTarget", () => {
       }
 
       let color = vp.readColor(rect.left, rect.top);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.right - 1, rect.top);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.right - 1, rect.bottom - 1);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
       color = vp.readColor(rect.left, rect.bottom - 1);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
 
       color = vp.readColor(rect.width / 2, rect.height / 2);
       expectWhitish(color);
@@ -191,10 +191,10 @@ describe("RenderTarget", () => {
       const elemId = "0x29";
       const subcatId = "0x18";
       let pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(3);
-      expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(pixels.length).toBe(3);
+      expect(pixels.containsFeature(elemId, subcatId)).toBe(true);
+      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar)).toBe(true);
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)).toBe(true);
 
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
@@ -203,26 +203,26 @@ describe("RenderTarget", () => {
 
       const white = Color.from(0xffffffff);
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(bgColor)).to.be.true;
-      expect(colors.contains(white)).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(bgColor)).toBe(true);
+      expect(colors.contains(white)).toBe(true);
 
       // In wireframe, same colors, but center pixel will be background color - only edges draw.
       vp.viewFlags = vp.viewFlags.withRenderMode(RenderMode.Wireframe);
       await vp.drawFrame();
 
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(bgColor)).to.be.true;
-      expect(colors.contains(white)).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(bgColor)).toBe(true);
+      expect(colors.contains(white)).toBe(true);
 
       color = vp.readColor(rect.width / 2, rect.height / 2);
-      expect(color.compare(bgColor)).to.equal(0);
+      expect(color.compare(bgColor)).toBe(0);
 
       pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(2);
-      expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(pixels.length).toBe(2);
+      expect(pixels.containsFeature(elemId, subcatId)).toBe(true);
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)).toBe(true);
     });
   });
 
@@ -234,9 +234,9 @@ describe("RenderTarget", () => {
 
       const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
         const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
-        expect(img).not.to.be.undefined;
-        expect(img.width).to.equal(Math.floor(expectedWidth));
-        expect(img.height).to.equal(Math.floor(expectedHeight));
+        expect(img).not.toBeUndefined();
+        expect(img.width).toBe(Math.floor(expectedWidth));
+        expect(img.height).toBe(Math.floor(expectedHeight));
       };
 
       const devRect = vp.target.viewRect;
@@ -290,38 +290,38 @@ describe("RenderTarget", () => {
 
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);
       let colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(bgColor)).to.be.true;
+      expect(colors.length).toBe(1);
+      expect(colors.contains(bgColor)).toBe(true);
 
       let pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(1);
+      expect(pixels.length).toBe(1);
 
       // Specify element is nonLocatable
       ovrProvider.ovrFunc = (ovrs) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ nonLocatable: true }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
-      expect(pixels.length).to.equal(1);
-      expect(pixels.containsElement(elemId)).to.be.false;
+      expect(pixels.length).toBe(1);
+      expect(pixels.containsElement(elemId)).toBe(false);
       pixels = vp.readUniquePixelData(); // Include non-locatable elements
-      expect(pixels.length).to.equal(2);
-      expect(pixels.containsElement(elemId)).to.be.true;
+      expect(pixels.length).toBe(2);
+      expect(pixels.containsElement(elemId)).toBe(true);
 
       // Specify element is drawn blue
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromRgba(0, 0, 0xff, 0xff))).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(Color.fromRgba(0, 0, 0xff, 0xff))).toBe(true);
 
       // Specify default overrides
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).toBe(true);
 
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
@@ -331,16 +331,16 @@ describe("RenderTarget", () => {
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromRgba(0, 0, 0x7f, 0xff))).to.be.true;
-      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(Color.fromRgba(0, 0, 0x7f, 0xff))).toBe(true);
+      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).toBe(false);
 
       // Override by subcategory
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
+      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).toBe(true);
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
@@ -350,19 +350,19 @@ describe("RenderTarget", () => {
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
+      expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).toBe(true);
 
       // Override to be fully transparent - element should not draw at all
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromTransparency(1.0) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(bgColor)).to.be.true;
+      expect(colors.length).toBe(1);
+      expect(colors.contains(bgColor)).toBe(true);
 
       pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(1);
-      expect(pixels.containsElement(elemId)).to.be.false;
+      expect(pixels.length).toBe(1);
+      expect(pixels.containsElement(elemId)).toBe(false);
 
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
@@ -371,17 +371,17 @@ describe("RenderTarget", () => {
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
+      expect(colors.length).toBe(2);
       const red = Color.fromRgba(0xff, 0, 0, 0xff);
-      expect(colors.contains(red)).to.be.true;
+      expect(colors.contains(red)).toBe(true);
       for (const c of colors.array) {
         if (0 !== c.compare(red)) {
-          expect(c.r).least(0x70);
+          expect(c.r).toBeGreaterThanOrEqual(0x70);
           expect(c.r).most(0x90);
-          expect(c.g).to.equal(0);
-          expect(c.b).least(0x70);
+          expect(c.g).toBe(0);
+          expect(c.b).toBeGreaterThanOrEqual(0x70);
           expect(c.b).most(0x90);
-          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
+          expect(c.a).toBe(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
         }
       }
     });
@@ -396,11 +396,11 @@ describe("RenderTarget", () => {
         await vp.waitForAllTilesToRender();
 
         const colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(2);
-        expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
+        expect(colors.length).toBe(2);
+        expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).toBe(true);
 
         const expected = Color.fromRgba(color.colors.r, color.colors.g, color.colors.b, 0xff);
-        expect(colors.contains(expected)).to.be.true;
+        expect(colors.contains(expected)).toBe(true);
       };
 
       // No overrides yet.
@@ -511,7 +511,7 @@ describe("RenderTarget", () => {
 
       class TestPolylineDecorator implements Decorator {
         public decorate(context: DecorateContext) {
-          expect(context.viewport === vp);
+          expect(context.viewport === vp).toBe(true);
           // draw semi-transparent polyline from top left to bottom right of vp
           const overlayBuilder = context.createGraphicBuilder(GraphicType.ViewOverlay);
           const polylineColor = ColorDef.from(0, 255, 0, 128);
@@ -531,9 +531,9 @@ describe("RenderTarget", () => {
 
       // expect green blended with black background
       const testColor = vp.readColor(0, 0); // top left pixel
-      expect(testColor.r).equals(0);
+      expect(testColor.r).toBe(0);
       expect(testColor.g).approximately(128, 3);
-      expect(testColor.b).equals(0);
+      expect(testColor.b).toBe(0);
     });
   });
 
@@ -564,27 +564,27 @@ describe("RenderTarget", () => {
         update();
         await vp.drawFrame();
         let colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(2);
-        expect(colors.contains(white)).to.be.true;
-        expect(colors.contains(black)).to.be.true;
+        expect(colors.length).toBe(2);
+        expect(colors.contains(white)).toBe(true);
+        expect(colors.contains(black)).toBe(true);
 
         // Also hilite this entity
         test.set.addId(test.id);
         update();
         await vp.drawFrame();
         colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(2);
-        expect(colors.contains(hilite)).to.be.true;
-        expect(colors.contains(black)).to.be.true;
+        expect(colors.length).toBe(2);
+        expect(colors.contains(hilite)).toBe(true);
+        expect(colors.contains(black)).toBe(true);
 
         // hilite nothing
         hilites.clear();
         update();
         await vp.drawFrame();
         colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(2);
-        expect(colors.contains(white)).to.be.true;
-        expect(colors.contains(black)).to.be.true;
+        expect(colors.length).toBe(2);
+        expect(colors.contains(white)).toBe(true);
+        expect(colors.contains(black)).toBe(true);
       }
     });
   });
@@ -597,34 +597,34 @@ describe("RenderTarget", () => {
       // Depth range for entire view should correspond to the face of the slab in the center of the view which is parallel to the camera's near+far planes.
       // i.e., min and max should be equal, and roughly half-way between the near and far planes.
       const fullRange = vp.determineVisibleDepthRange(fullRect);
-      expect(fullRange).not.to.be.undefined;
-      expect(fullRange!.minimum).least(0.45);
+      expect(fullRange).not.toBeUndefined();
+      expect(fullRange!.minimum).toBeGreaterThanOrEqual(0.45);
       expect(fullRange!.minimum).most(0.55);
-      expect(fullRange!.minimum).to.equal(fullRange!.maximum);
+      expect(fullRange!.minimum).toBe(fullRange!.maximum);
 
       // If we pass in a DepthRangeNpc, the same object should be returned to us.
       const myRange = { minimum: 0, maximum: 1 };
       let range = vp.determineVisibleDepthRange(fullRect, myRange);
-      expect(range).to.equal(myRange);
-      expect(range!.maximum).to.equal(fullRange!.maximum);
-      expect(range!.minimum).to.equal(fullRange!.minimum);
+      expect(range).toBe(myRange);
+      expect(range!.maximum).toBe(fullRange!.maximum);
+      expect(range!.minimum).toBe(fullRange!.minimum);
 
       // Depth range in center of view should be same as above.
       const centerRect = new ViewRect(40, 40, 60, 60);
       range = vp.determineVisibleDepthRange(centerRect);
-      expect(range!.maximum).to.equal(fullRange!.maximum);
-      expect(range!.minimum).to.equal(fullRange!.minimum);
+      expect(range!.maximum).toBe(fullRange!.maximum);
+      expect(range!.minimum).toBe(fullRange!.minimum);
 
       // Depth range in empty portion of view should be null.
       const topLeftRect = new ViewRect(0, 0, 5, 5);
       range = vp.determineVisibleDepthRange(topLeftRect);
-      expect(range).to.be.undefined;
+      expect(range).toBeUndefined();
 
       // If we pass in an output DepthRangeNpc, and read an empty portion of view, the output should be set to a null range but the reutnr value should still be undefined.
       range = vp.determineVisibleDepthRange(topLeftRect, myRange);
-      expect(range).to.be.undefined;
-      expect(myRange.minimum).to.equal(1);
-      expect(myRange.maximum).to.equal(0);
+      expect(range).toBeUndefined();
+      expect(myRange.minimum).toBe(1);
+      expect(myRange.maximum).toBe(0);
     });
   });
 
@@ -637,7 +637,7 @@ describe("RenderTarget", () => {
       imodel.projectExtents = extents;
     }
 
-    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(1000 * 1000);
+    expect(imodel.projectExtents.diagonal().magnitudeSquared()).toBeGreaterThanOrEqual(1000 * 1000);
 
     const fullRect = new ViewRect(0, 0, 100, 100);
     await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
@@ -646,24 +646,24 @@ describe("RenderTarget", () => {
       await vp.waitForAllTilesToRender();
       const mapTreeRef = vp.backgroundMap!;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
-      expect(mapTree).not.to.be.undefined;
+      expect(mapTree).not.toBeUndefined();
     });
   });
 
   it("should render to screen if only a single viewport exists", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-      expect(vp.rendersToScreen).to.be.true;
+      expect(vp.rendersToScreen).toBe(true);
     });
   });
 
   it("should render off-screen if multiple viewports exist", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     using vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
+    expect(vp0.rendersToScreen).toBe(true); // when only one viewport is on the view manager, it should render using system canvas.
     using vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.false;
-    expect(vp1.rendersToScreen).to.be.false;
+    expect(vp0.rendersToScreen).toBe(false);
+    expect(vp1.rendersToScreen).toBe(false);
   });
 
   it("should clip using a single plane", async () => {
@@ -677,7 +677,7 @@ describe("RenderTarget", () => {
           trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
         },
       }]);
-      expect(clip).to.not.be.undefined;
+      expect(clip).not.toBeUndefined();
       vp.view.setViewClip(clip);
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON({
         ...vp.displayStyle.settings.clipStyle.toJSON(),
@@ -686,14 +686,14 @@ describe("RenderTarget", () => {
       });
 
       await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
       const colors = vp.readUniqueColors();
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-      expect(colors.length).least(3);
-      expect(colors.contains(bgColor)).to.be.true; // black background
+      expect(colors.length).toBeGreaterThanOrEqual(3);
+      expect(colors.contains(bgColor)).toBe(true); // black background
 
       const isReddish = (c: Color): boolean => {
         return c.r >= 0x50 && c.g < 0xa && c.b < 0xa && c.a === 0xff;
@@ -705,7 +705,7 @@ describe("RenderTarget", () => {
 
       for (const c of colors.array) {
         if (0 !== c.compare(bgColor)) {
-          expect(isReddish(c) || isGreenish(c)).to.be.true;
+          expect(isReddish(c) || isGreenish(c)).toBe(true);
         }
       }
     });
@@ -719,28 +719,28 @@ describe("RenderTarget", () => {
     const bgColor = Color.fromRgba(0, 0, 0, 0xff);
     function expectCorrectColors(vp: TestViewport) {
       const colors = vp.readUniqueColors();
-      expect(colors.length === 2);
-      expect(colors.contains(bgColor)).to.be.true; // black background
-      colors.forEach((color) => expect(color === bgColor || isReddish(color)));
+      expect(colors.length === 2).toBe(true);
+      expect(colors.contains(bgColor)).toBe(true); // black background
+      colors.forEach((color) => expect(color.compare(bgColor) === 0 || isReddish(color)).toBe(true));
     }
     function expectAlmostTransparent(vp: TestViewport) {
       const colors = vp.readUniqueColors();
-      expect(colors.length === 2);
-      expect(colors.contains(bgColor)).to.be.true; // black background
-      colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
+      expect(colors.length === 2).toBe(true);
+      expect(colors.contains(bgColor)).toBe(true); // black background
+      colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20).toBe(true));
     }
 
     it("should override color", async () => {
       const rect = new ViewRect(0, 0, 100, 100);
       await testViewportsWithDpr(imodel, rect, async (vp) => {
-        expect(vp.view.is3d());
+        expect(vp.view.is3d()).toBe(true);
         const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
 
         vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
-        expect(vp.numRequestedTiles).to.equal(0);
-        expect(vp.numSelectedTiles).to.equal(1);
+        expect(vp.numRequestedTiles).toBe(0);
+        expect(vp.numSelectedTiles).toBe(1);
 
         expectCorrectColors(vp);
       });
@@ -749,14 +749,14 @@ describe("RenderTarget", () => {
     it("should override tranparency", async () => {
       const rect = new ViewRect(0, 0, 100, 100);
       await testViewportsWithDpr(imodel, rect, async (vp) => {
-        expect(vp.view.is3d());
+        expect(vp.view.is3d()).toBe(true);
         const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
 
         vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
-        expect(vp.numRequestedTiles).to.equal(0);
-        expect(vp.numSelectedTiles).to.equal(1);
+        expect(vp.numRequestedTiles).toBe(0);
+        expect(vp.numSelectedTiles).toBe(1);
 
         expectAlmostTransparent(vp);
       });

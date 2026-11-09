@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "vitest";
 import { IModelApp, IModelConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
@@ -14,7 +14,7 @@ describe("Markup tests", async () => {
   let imodel: IModelConnection;
   let vp: ScreenTestViewport;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
@@ -22,7 +22,7 @@ describe("Markup tests", async () => {
     await MarkupApp.start(vp);
   });
 
-  after(async () => {
+  afterAll(async () => {
     vp[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();
@@ -35,26 +35,26 @@ describe("Markup tests", async () => {
     const markup = MarkupApp.markup!;
     const toolAdmin = IModelApp.toolAdmin;
 
-    assert.isDefined(tools.find(SelectTool.toolId), "select tool registered");
-    assert.isDefined(tools.find(LineTool.toolId), "line tool registered");
-    assert.isDefined(tools.find(EditTextTool.toolId), "edit text tool registered");
-    assert.isDefined(markup, "markup created");
-    assert.equal(toolAdmin.markupView, vp, "set markup view");
-    assert.equal(markup.vp, vp, "markup vp");
-    assert.equal(markup.markupDiv.parentElement, vp.vpDiv, "markup div child of vpDiv");
-    assert.isDefined(markup.svgContainer, "svgContainer defined");
-    assert.isDefined(markup.svgMarkup, "svgMarkup defined");
-    assert.isDefined(markup.svgDecorations, "svgDecorations defined");
-    assert.isDefined(markup.svgDynamics, "svgDynamics defined");
-    assert.isTrue(markup.selected.isEmpty, "markup selected should be empty");
-    assert.equal(toolAdmin.defaultToolId, SelectTool.toolId, "Select tool is default tool");
-    assert.equal(toolAdmin.activeTool!.toolId, SelectTool.toolId, "Select tool is active");
+    expect(tools.find(SelectTool.toolId)).toBeDefined();
+    expect(tools.find(LineTool.toolId)).toBeDefined();
+    expect(tools.find(EditTextTool.toolId)).toBeDefined();
+    expect(markup).toBeDefined();
+    expect(toolAdmin.markupView, "set markup view").toBe(vp);
+    expect(markup.vp, "markup vp").toBe(vp);
+    expect(markup.markupDiv.parentElement, "markup div child of vpDiv").toBe(vp.vpDiv);
+    expect(markup.svgContainer).toBeDefined();
+    expect(markup.svgMarkup).toBeDefined();
+    expect(markup.svgDecorations).toBeDefined();
+    expect(markup.svgDynamics).toBeDefined();
+    expect(markup.selected.isEmpty).toBe(true);
+    expect(toolAdmin.defaultToolId, "Select tool is default tool").toBe(SelectTool.toolId);
+    expect(toolAdmin.activeTool!.toolId, "Select tool is active").toBe(SelectTool.toolId);
   });
 
   it("viewing tools should fail when Markup active", async () => {
     const tools = IModelApp.tools;
-    assert.isFalse(await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
-    assert.isFalse(await tools.run(WindowAreaTool.toolId, vp), "standard view");
+    expect(await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back)).toBe(false);
+    expect(await tools.run(WindowAreaTool.toolId, vp)).toBe(false);
   });
 
   it("Markup Undo/Redo", () => {
@@ -64,52 +64,52 @@ describe("Markup tests", async () => {
     const children = svgMarkup.node.children;
 
     svgMarkup.clear();
-    assert.equal(undo.size, 0, "undo starts out empty");
-    assert.equal(children.length, 0, "svgMarkup starts empty");
+    expect(undo.size, "undo starts out empty").toBe(0);
+    expect(children.length, "svgMarkup starts empty").toBe(0);
 
     const rect = makeRect(svgMarkup);
-    assert.equal(children.length, 1, "one child");
+    expect(children.length, "one child").toBe(1);
     undo.performOperation("one", () => undo.onAdded(rect));
-    assert.isTrue(undo.undoPossible);
-    assert.equal(undo.undoString, "one");
+    expect(undo.undoPossible).toBe(true);
+    expect(undo.undoString).toBe("one");
     undo.doUndo();
-    assert.equal(undo.redoString, "one");
-    assert.isFalse(undo.undoPossible);
-    assert.isTrue(undo.redoPossible);
-    assert.equal(children.length, 0, "add undone");
+    expect(undo.redoString).toBe("one");
+    expect(undo.undoPossible).toBe(false);
+    expect(undo.redoPossible).toBe(true);
+    expect(children.length, "add undone").toBe(0);
     undo.doRedo();
-    assert.isFalse(undo.redoPossible);
-    assert.isTrue(undo.undoPossible);
-    assert.isUndefined(undo.redoString);
-    assert.equal(undo.undoString, "one");
-    assert.equal(children.length, 1, "add redone");
+    expect(undo.redoPossible).toBe(false);
+    expect(undo.undoPossible).toBe(true);
+    expect(undo.redoString).toBeUndefined();
+    expect(undo.undoString).toBe("one");
+    expect(children.length, "add redone").toBe(1);
 
     undo.performOperation("two", () => {
       undo.onDelete(rect);
       rect.remove();
     });
-    assert.equal(children.length, 0, "deleted rect");
-    assert.isTrue(undo.undoPossible);
-    assert.equal(undo.undoString, "two");
+    expect(children.length, "deleted rect").toBe(0);
+    expect(undo.undoPossible).toBe(true);
+    expect(undo.undoString).toBe("two");
     undo.doUndo();
-    assert.equal(undo.undoString, "one");
-    assert.equal(undo.redoString, "two");
-    assert.isTrue(undo.undoPossible);
-    assert.isTrue(undo.redoPossible);
-    assert.equal(children.length, 1, "delete undone");
+    expect(undo.undoString).toBe("one");
+    expect(undo.redoString).toBe("two");
+    expect(undo.undoPossible).toBe(true);
+    expect(undo.redoPossible).toBe(true);
+    expect(children.length, "delete undone").toBe(1);
     undo.doRedo();
-    assert.equal(children.length, 0, "redo delete");
+    expect(children.length, "redo delete").toBe(0);
     undo.doUndo();
-    assert.equal(children.length, 1, "delete undone again");
+    expect(children.length, "delete undone again").toBe(1);
 
     const clone = rect.cloneMarkup();
     clone.css({ stroke: "white" });
     rect.replace(clone);
 
     undo.performOperation("three", () => undo.onModified(clone, rect));
-    assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "white", "element is now white");
+    expect((children[0] as LinkedHTMLElement).instance.css("stroke"), "element is now white").toBe("white");
     undo.doUndo();
-    assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "red", "element is now red");
+    expect((children[0] as LinkedHTMLElement).instance.css("stroke"), "element is now red").toBe("red");
 
     const group = svgMarkup.group();
     undo.performOperation("four", () => {
@@ -119,15 +119,15 @@ describe("Markup tests", async () => {
       undo.onAdded(group);
     });
 
-    assert.equal(children.length, 1, "grouped");
-    assert.equal((children[0] as LinkedHTMLElement).instance, group, "grouped");
-    assert.equal(rect.parent(), group, "rect in group");
+    expect(children.length, "grouped").toBe(1);
+    expect((children[0] as LinkedHTMLElement).instance, "grouped").toBe(group);
+    expect(rect.parent(), "rect in group").toBe(group);
     undo.doUndo();
-    assert.equal(children.length, 1, "grouped undone");
-    assert.equal((children[0] as LinkedHTMLElement).instance, rect, "undo group");
-    assert.equal(rect.parent(), svgMarkup, "rect in root");
+    expect(children.length, "grouped undone").toBe(1);
+    expect((children[0] as LinkedHTMLElement).instance, "undo group").toBe(rect);
+    expect(rect.parent(), "rect in root").toBe(svgMarkup);
     undo.doRedo();
-    assert.equal((children[0] as LinkedHTMLElement).instance, group, "group redone");
-    assert.equal(rect.parent(), group, "redo rect in group");
+    expect((children[0] as LinkedHTMLElement).instance, "group redone").toBe(group);
+    expect(rect.parent(), "redo rect in group").toBe(group);
   });
 });

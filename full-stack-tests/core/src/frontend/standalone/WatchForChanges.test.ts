@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
@@ -10,7 +10,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BriefcaseConnection, GeometricModelState, IModelApp, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
-import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -18,7 +18,7 @@ class System extends MockRender.System {
   public readonly batchElementIds = new Set<string>();
 
   public static get() {
-    expect(IModelApp.renderSystem).instanceof(System);
+    expect(IModelApp.renderSystem).toBeInstanceOf(System);
     return IModelApp.renderSystem as System;
   }
 
@@ -45,7 +45,7 @@ for (const watchForChanges of [false, true]) {
     let elemId: string;
     let projCenter: Point3d;
 
-    before(async () => {
+    beforeAll(async () => {
       const mockRender = true;
       const enableWebEdit = true;
       TestUtility.systemFactory = () => new System();
@@ -53,7 +53,7 @@ for (const watchForChanges of [false, true]) {
       await initializeEditTools();
     });
 
-    after(async () => TestUtility.shutdownFrontend());
+    afterAll(async () => TestUtility.shutdownFrontend());
 
     beforeEach(async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
@@ -72,7 +72,7 @@ for (const watchForChanges of [false, true]) {
 
       const point = projCenter.clone();
       elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [point, new Point3d(point.x, point.y + 2, point.z)] });
-      expect(Id64.isValid(elemId)).to.be.true;
+      expect(Id64.isValid(elemId)).toBe(true);
       await saveBriefcaseChanges(rwConn);
 
       // Open a second, read-only connection that will monitor for changes made via the read-write connection.
@@ -95,8 +95,8 @@ for (const watchForChanges of [false, true]) {
         new Promise<void>((resolve, reject) => {
           roConn.onBufferedModelChanges.addOnce((modelIds) => {
             try {
-              expect(modelIds.size).to.equal(1);
-              expect(modelIds.has(modelId)).to.be.true;
+              expect(modelIds.size).toBe(1);
+              expect(modelIds.has(modelId)).toBe(true);
               resolve();
             } catch (error: any) {
               reject(new Error(error));
@@ -123,21 +123,21 @@ for (const watchForChanges of [false, true]) {
     async function getModel(iModel: BriefcaseConnection): Promise<GeometricModelState> {
       await iModel.models.load(modelId);
       const model = iModel.models.getLoaded(modelId) as GeometricModelState;
-      expect(model).instanceof(GeometricModelState);
+      expect(model).toBeInstanceOf(GeometricModelState);
       return model;
     }
 
     async function expectElementsInTile(tree: TileTree, expectedElementIds: string[]): Promise<void> {
       // IModelTileTree.rootTile is-a RootTile that has no content of its own.
-      expect(tree.rootTile.children!.length).to.equal(1);
+      expect(tree.rootTile.children!.length).toBe(1);
       const tile = (tree.rootTile.children!)[0];
 
       const data = await tile.requestContent(() => false) as Uint8Array;
-      expect(data).instanceof(Uint8Array);
+      expect(data).toBeInstanceOf(Uint8Array);
       const content = await tile.readContent(data, IModelApp.renderSystem, () => false);
-      expect(content.graphic).not.to.be.undefined;
+      expect(content.graphic).not.toBeUndefined();
 
-      expect(Array.from(System.get().batchElementIds).sort()).to.deep.equal(expectedElementIds.sort());
+      expect(Array.from(System.get().batchElementIds).sort()).toEqual(expectedElementIds.sort());
     }
 
     it("purges and recreates tile trees when model geometry changes", async () => {
@@ -148,23 +148,23 @@ for (const watchForChanges of [false, true]) {
       let prevGuid = model.geometryGuid;
       const ref = model.createTileTreeReference(view);
       let prevTree = (await ref.treeOwner.loadTree())!;
-      expect(prevTree).not.to.be.undefined;
+      expect(prevTree).not.toBeUndefined();
 
       await expectModelChanges(async () => moveElement());
-      expect(model.geometryGuid).not.to.equal(prevGuid);
+      expect(model.geometryGuid).not.toBe(prevGuid);
 
       let newTree = (await ref.treeOwner.loadTree())!;
-      expect(newTree).not.to.be.undefined;
-      expect(newTree).not.to.equal(prevTree);
-      expect(newTree.isDisposed).to.be.false;
-      expect(prevTree.isDisposed).to.be.true;
+      expect(newTree).not.toBeUndefined();
+      expect(newTree).not.toBe(prevTree);
+      expect(newTree.isDisposed).toBe(false);
+      expect(prevTree.isDisposed).toBe(true);
 
-      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.true;
-      expect(newTree.iModelTransform.isAlmostEqual(prevTree.iModelTransform)).to.be.false;
-      expect(newTree.iModelTransform.origin.x).to.equal(prevTree.iModelTransform.origin.x + 1);
-      expect(newTree.iModelTransform.origin.x).to.equal(prevTree.iModelTransform.origin.x + 1);
-      expect(newTree.iModelTransform.origin.y).to.equal(prevTree.iModelTransform.origin.y);
-      expect(newTree.iModelTransform.origin.z).to.equal(prevTree.iModelTransform.origin.z);
+      expect(newTree.range.isAlmostEqual(prevTree.range)).toBe(true);
+      expect(newTree.iModelTransform.isAlmostEqual(prevTree.iModelTransform)).toBe(false);
+      expect(newTree.iModelTransform.origin.x).toBe(prevTree.iModelTransform.origin.x + 1);
+      expect(newTree.iModelTransform.origin.x).toBe(prevTree.iModelTransform.origin.x + 1);
+      expect(newTree.iModelTransform.origin.y).toBe(prevTree.iModelTransform.origin.y);
+      expect(newTree.iModelTransform.origin.z).toBe(prevTree.iModelTransform.origin.z);
 
       await expectElementsInTile(newTree, [elemId]);
 
@@ -173,10 +173,10 @@ for (const watchForChanges of [false, true]) {
       const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })] });
       await expectModelChanges(async () => saveBriefcaseChanges(rwConn));
 
-      expect(model.geometryGuid).not.to.equal(prevGuid);
+      expect(model.geometryGuid).not.toBe(prevGuid);
       newTree = (await ref.treeOwner.loadTree())!;
-      expect(newTree).not.to.equal(prevTree);
-      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
+      expect(newTree).not.toBe(prevTree);
+      expect(newTree.range.isAlmostEqual(prevTree.range)).toBe(false);
 
       await expectElementsInTile(newTree, [elemId, elemId2]);
 
@@ -187,10 +187,10 @@ for (const watchForChanges of [false, true]) {
         await saveBriefcaseChanges(rwConn);
       });
 
-      expect(model.geometryGuid).not.to.equal(prevGuid);
+      expect(model.geometryGuid).not.toBe(prevGuid);
       newTree = (await ref.treeOwner.loadTree())!;
-      expect(newTree).not.to.equal(prevTree);
-      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
+      expect(newTree).not.toBe(prevTree);
+      expect(newTree.range.isAlmostEqual(prevTree.range)).toBe(false);
 
       await expectElementsInTile(newTree, [elemId2]);
     });

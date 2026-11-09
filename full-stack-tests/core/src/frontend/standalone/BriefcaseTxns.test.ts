@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import * as path from "path";
 import { Guid, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
@@ -14,12 +14,12 @@ describe("BriefcaseTxns", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
     let rwConn: BriefcaseConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -84,7 +84,7 @@ describe("BriefcaseTxns", () => {
           // Wait for the expected events to be received.
         }
         try {
-          expect(received).to.deep.equal(expected);
+          expect(received).toEqual(expected);
         } catch (e) {
           // expect doesn't give you any way to show the label.
           Logger.logError("TestCategory", `Error in test <${label}>.`);
@@ -99,14 +99,14 @@ describe("BriefcaseTxns", () => {
     describe("writable connection", () => {
       it("uses default EditCommand save args and overrides only the description", async () => {
         const defaultProps = await coreFullStackTestCommandIpc.saveChangesAndReturnProps(rwConn.key, `default-${Guid.createValue()}`);
-        expect(defaultProps).to.deep.equal({
+        expect(defaultProps).toEqual({
           description: "FullStackTestEditCommand",
           source: "full-stack-tests.fullStackTestCommand",
           appData: { suite: "full-stack-tests" },
         });
 
         const overrideProps = await coreFullStackTestCommandIpc.endEditsAndReturnProps(rwConn.key, `override-${Guid.createValue()}`, "override description");
-        expect(overrideProps).to.deep.equal({
+        expect(overrideProps).toEqual({
           description: "override description",
           source: "full-stack-tests.fullStackTestCommand",
           appData: { suite: "full-stack-tests" },
@@ -218,7 +218,7 @@ describe("BriefcaseTxns", () => {
           await func();
           await wait();
 
-          expect(received).to.deep.equal(expectedChanges);
+          expect(received).toEqual(expectedChanges);
         }
 
         const dictModelId = await rwConn.models.getDictionaryModel();
