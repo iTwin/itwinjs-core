@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
+import * as sinon from "sinon";
 import { TestUtility } from "../TestUtility";
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewCreator3d", async () => {

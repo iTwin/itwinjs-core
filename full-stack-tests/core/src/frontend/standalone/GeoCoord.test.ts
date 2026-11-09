@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { BriefcaseConnection, GeoConverter, IModelConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { verticalCrsChangesCallbackName } from "../../certa/certaCommon";
+import { executeBackendCallback, verticalCrsChangesCallbackName } from "../../certa/certaCommon";
 
 // spell-checker: disable
 

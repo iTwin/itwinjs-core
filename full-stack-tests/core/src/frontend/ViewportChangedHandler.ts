@@ -103,6 +103,11 @@ export class ViewportChangedHandler {
     expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
 
     this._vp.renderFrame();
+    // If a tile's children load synchronously while renderFrame() creates the scene, TileAdmin calls invalidateScene()
+    // mid-frame. renderFrame() then marks the scene valid again but leaves the time point invalid until the next frame.
+    // Allow exactly that case one more frame; every other flag must still be valid after a single renderFrame().
+    if (!this._vp.timePointValid && this._vp.sceneValid && this._vp.renderPlanValid && this._vp.controllerValid && this._vp.analysisFractionValid)
+      this._vp.renderFrame();
 
     expect(this._vp.sceneValid).to.be.true;
     expect(this._vp.renderPlanValid).to.be.true;

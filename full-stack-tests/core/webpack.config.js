@@ -28,7 +28,7 @@ loadEnv(path.join(__dirname, ".env"));
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
-    entry: globSync(path.resolve(__dirname, "lib/**/*.test.js"), {
+    entry: globSync(path.resolve(__dirname, "lib/frontend/**/*.test.js"), {
       windowsPathsNoEscape: true,
     }),
     output: {
