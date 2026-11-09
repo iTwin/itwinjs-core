@@ -35,8 +35,9 @@ export function createProviderWindowOptions(preload: string | undefined, headles
       // Vitest runs the tester in a same-origin iframe. The consumer preload is needed in that
       // iframe, while node integration remains disabled in both page worlds.
       nodeIntegrationInSubFrames: true,
-      // Unbundled CommonJS preloads need Node's module loader. Only trusted test content is supported.
-      sandbox: false,
+      // Match production ElectronHost: preloads may only require Electron, so a test fails if a preload
+      // starts depending on Node.
+      sandbox: true,
     },
   };
 }
