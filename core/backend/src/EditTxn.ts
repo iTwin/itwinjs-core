@@ -528,6 +528,8 @@ export class EditTxn {
   }
 
   /** Delete definition elements from the iModel when they are not referenced.
+   * Definitions referenced only by other definitions deleted in the same call (for example, a [[SheetBorderPrototype]]
+   * used only by a deleted [[SheetPrototype]]) are also deleted.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
    * @throws EditTxnError if this EditTxn is not active.
@@ -560,42 +562,31 @@ export class EditTxn {
       deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
       deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
       deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
-      if (usageInfo.otherDefinitionElementIds)
-        this.deleteElement(usageInfo.otherDefinitionElementIds);
+      deleteIfUnused(usageInfo.otherDefinitionElementIds, usedIdSet);
     } finally {
       this.iModel[_nativeDb].endPurgeOperation();
     }
+    // Recheck definitions that might have become unused due to deletions above.
+    const recheckCandidateIds: Id64Array = [...(usageInfo.otherDefinitionElementIds ?? [])];
+    if (usageInfo.viewDefinitionIds)
+      recheckCandidateIds.push(...(usageInfo.displayStyleIds ?? []), ...(usageInfo.categorySelectorIds ?? []), ...(usageInfo.modelSelectorIds ?? []));
 
-    if (usageInfo.viewDefinitionIds) {
-      // Recheck view-related definitions after deleting view definitions that may have been their last reference.
-      let viewRelatedIds: Id64Array = [];
-      if (usageInfo.displayStyleIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
-
-      if (usageInfo.categorySelectorIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
-
-      if (usageInfo.modelSelectorIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
-
-      if (viewRelatedIds.length > 0) {
-        const viewRelatedUsageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(viewRelatedIds);
-        if (viewRelatedUsageInfo) {
-          const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
-          try {
-            this.iModel[_nativeDb].beginPurgeOperation();
-            deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
-            deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
-            deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
-          } finally {
-            this.iModel[_nativeDb].endPurgeOperation();
-          }
-
-          viewRelatedIds.forEach((id) => {
-            if (!usedViewRelatedIdSet.has(id))
-              usedIdSet.delete(id);
-          });
+    const recheckIds = recheckCandidateIds.filter((id) => usedIdSet.has(id));
+    if (recheckIds.length > 0) {
+      const recheckUsageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(recheckIds);
+      if (recheckUsageInfo) {
+        const usedRecheckIdSet: Id64Set = recheckUsageInfo.usedIds ? Id64.toIdSet(recheckUsageInfo.usedIds) : new Set<Id64String>();
+        try {
+          this.iModel[_nativeDb].beginPurgeOperation();
+          deleteIfUnused(recheckIds, usedRecheckIdSet);
+        } finally {
+          this.iModel[_nativeDb].endPurgeOperation();
         }
+
+        recheckIds.forEach((id) => {
+          if (!usedRecheckIdSet.has(id))
+            usedIdSet.delete(id);
+        });
       }
     }
 

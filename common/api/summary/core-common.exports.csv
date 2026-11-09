@@ -890,6 +890,7 @@ public;class;ServerTimeoutError
 public;interface;SessionProps
 beta;interface;SheetBorderPrototypeProps
 beta;interface;SheetBorderTemplateProps
+deprecated;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
 beta;type;SheetIndexFolderProps
 beta;interface;SheetIndexReferenceProps
@@ -901,6 +902,7 @@ preview;interface;SheetProps
 beta;interface;SheetPrototypeProps
 beta;interface;SheetReferenceProps
 beta;interface;SheetTemplateProps
+deprecated;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
 public;class;SkyBox
 public;type;SkyBoxImageProps

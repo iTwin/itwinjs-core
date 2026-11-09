@@ -286,6 +286,26 @@ export class SheetPrototypeHasSheetBorderPrototype extends RelatedElement {
   }
 }
 
+/** Relates a [[SheetModel]] to the [[SheetPrototype]] that it sub-models.
+ * @beta
+ */
+export class SheetModelBreaksDownSheetPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetModelBreaksDownSheetPrototype";
+  public constructor(sheetPrototypeId: Id64String, relClassName: string = SheetModelBreaksDownSheetPrototype.classFullName) {
+    super({ id: sheetPrototypeId, relClassName });
+  }
+}
+
+/** Relates a [[DrawingModel]] to the [[SheetBorderPrototype]] that it sub-models.
+ * @beta
+ */
+export class DrawingModelBreaksDownSheetBorderPrototype extends RelatedElement {
+  public static classFullName = "BisCore:DrawingModelBreaksDownSheetBorderPrototype";
+  public constructor(sheetBorderPrototypeId: Id64String, relClassName: string = DrawingModelBreaksDownSheetBorderPrototype.classFullName) {
+    super({ id: sheetBorderPrototypeId, relClassName });
+  }
+}
+
 /** Relates a [[Subject]] to the [[ProjectInformationRecord]] that describes its project-level properties.
  * @beta
  */

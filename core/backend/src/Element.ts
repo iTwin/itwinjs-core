@@ -20,7 +20,7 @@ import { EditTxn } from "./EditTxn";
 import { IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, GraphicalModel3d, Model, PhysicalModel, SectionDrawingModel, SheetModel } from "./Model";
-import { SheetPrototypeHasSheetBorderPrototype, SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
+import { DrawingModelBreaksDownSheetBorderPrototype, SheetModelBreaksDownSheetPrototype, SheetPrototypeHasSheetBorderPrototype, SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onReservedElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
@@ -1571,6 +1571,7 @@ export class SheetBorderTemplate extends Document {
   public static override get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
   public width?: number;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb) {
     super(props, iModel);
     this.height = props.height;
@@ -1588,6 +1589,7 @@ export class SheetTemplate extends Document {
   public width?: number;
   public border?: Id64String;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   protected constructor(props: SheetTemplateProps, iModel: IModelDb) {
     super(props, iModel);
     this.height = props.height;
@@ -2136,7 +2138,7 @@ export class SheetBorderPrototype extends DefinitionElement {
     const modeledElementId = element.insert(txn);
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
-      modeledElement: { id: modeledElementId },
+      modeledElement: new DrawingModelBreaksDownSheetBorderPrototype(modeledElementId),
       isTemplate: true,
     };
     return txn.insertModel(modelProps);
@@ -2233,7 +2235,7 @@ export class SheetPrototype extends DefinitionElement {
     const modeledElementId = element.insert(txn);
     const modelProps: GeometricModel2dProps = {
       classFullName: SheetModel.classFullName,
-      modeledElement: { id: modeledElementId },
+      modeledElement: new SheetModelBreaksDownSheetPrototype(modeledElementId),
       isTemplate: true,
     };
     return txn.insertModel(modelProps);

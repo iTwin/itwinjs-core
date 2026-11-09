@@ -66,6 +66,7 @@ describe("SheetPrototype", () => {
       const model = db.models.getModel(borderId);
       expect(model).instanceof(DrawingModel);
       expect(model.modeledElement.id).to.equal(borderId);
+      expect(model.modeledElement.relClassName).to.equal("BisCore.DrawingModelBreaksDownSheetBorderPrototype");
     });
 
     it("inserts a SheetPrototype sub-modeled by a SheetModel and references its border", () => {
@@ -91,6 +92,7 @@ describe("SheetPrototype", () => {
       const model = db.models.getModel(prototypeId);
       expect(model).instanceof(SheetModel);
       expect(model.modeledElement.id).to.equal(prototypeId);
+      expect(model.modeledElement.relClassName).to.equal("BisCore.SheetModelBreaksDownSheetPrototype");
     });
 
     it("records the prototype a Sheet was created from", () => {
@@ -156,6 +158,45 @@ describe("SheetPrototype", () => {
         .to.throw("is not a SheetBorderPrototype");
       expect(() => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId, borderId: "0x123456789" }))
         .to.throw("is not a SheetBorderPrototype");
+    });
+
+    it("deleteDefinitionElements keeps referenced prototypes and deletes unused ones", () => {
+      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
+      const usedProtoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
+      const unusedProtoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
+      const sheetProps: SheetProps = {
+        classFullName: Sheet.classFullName,
+        model: documentListModelId,
+        code: Sheet.createCode(db, documentListModelId, "Sheet using prototype"),
+        sheetPrototype: new SheetHasSheetPrototype(usedProtoId),
+      };
+      withEditTxn(db, (txn) => txn.insertElement(sheetProps));
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([usedProtoId, unusedProtoId]));
+      expect(used.has(usedProtoId)).to.be.true;
+      expect(used.has(unusedProtoId)).to.be.false;
+      expect(db.elements.tryGetElementProps(usedProtoId)).not.to.be.undefined;
+      expect(db.elements.tryGetElementProps(unusedProtoId)).to.be.undefined;
+      expect(db.models.tryGetModel(unusedProtoId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(borderId)).not.to.be.undefined;
+    });
+
+    it("deleteDefinitionElements deletes a prototype together with its only border", () => {
+      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
+      const protoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([protoId, borderId]));
+      expect(used.size).to.equal(0);
+      expect(db.elements.tryGetElementProps(protoId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(borderId)).to.be.undefined;
+    });
+
+    it("deleteDefinitionElements keeps a border referenced by a surviving prototype", () => {
+      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
+      const protoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([borderId]));
+      expect(used.has(borderId)).to.be.true;
+      expect(db.elements.tryGetElementProps(borderId)).not.to.be.undefined;
+      expect(db.elements.tryGetElementProps(protoId)).not.to.be.undefined;
     });
   });
 });

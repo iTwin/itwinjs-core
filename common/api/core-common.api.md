@@ -9739,6 +9739,7 @@ export interface SheetProps extends ElementProps {
     height?: number;
     // (undocumented)
     scale?: number;
+    // @beta
     sheetPrototype?: RelatedElementProps;
     // @deprecated
     sheetTemplate?: Id64String;

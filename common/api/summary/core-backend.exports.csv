@@ -188,6 +188,7 @@ public;class;DrawingGraphicRepresentsElement
 public;class;DrawingGraphicRepresentsFunctionalElement
 public;class;DrawingModel
 preview;class;DrawingModel
+beta;class;DrawingModelBreaksDownSheetBorderPrototype
 public;class;DrawingViewDefinition
 preview;class;DrawingViewDefinition
 beta;class;DriverBundleElement
@@ -583,7 +584,7 @@ preview;class;Sheet
 beta;class;SheetBorderPrototype
 beta;interface;SheetBorderPrototypeCreateArgs
 public;class;SheetBorderTemplate
-preview;class;SheetBorderTemplate
+deprecated;class;SheetBorderTemplate
 beta;class;SheetHasSheetPrototype
 beta;class;SheetIndex
 beta;class;SheetIndexEntry
@@ -599,6 +600,7 @@ beta;class;SheetIndexReferenceRefersToSheetIndex
 beta;class;SheetInformationAspect
 public;class;SheetModel
 preview;class;SheetModel
+beta;class;SheetModelBreaksDownSheetPrototype
 beta;class;SheetOwnsSheetInformationAspect
 beta;class;SheetPrototype
 beta;interface;SheetPrototypeCreateArgs
@@ -607,7 +609,7 @@ beta;class;SheetReference
 beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet
 public;class;SheetTemplate
-preview;class;SheetTemplate
+deprecated;class;SheetTemplate
 public;class;SheetViewDefinition
 preview;class;SheetViewDefinition
 beta;interface;SimplifyElementGeometryArgs

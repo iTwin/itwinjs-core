@@ -2459,6 +2459,13 @@ export class DrawingModel extends GraphicalModel2d {
     static get className(): string;
 }
 
+// @beta
+export class DrawingModelBreaksDownSheetBorderPrototype extends RelatedElement {
+    constructor(sheetBorderPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public @preview
 export class DrawingViewDefinition extends ViewDefinition2d {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
@@ -6846,7 +6853,7 @@ export interface SheetBorderPrototypeCreateArgs {
     width?: number;
 }
 
-// @public @preview @deprecated
+// @public @deprecated @preview
 export class SheetBorderTemplate extends Document_2 {
     protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -6990,6 +6997,13 @@ export class SheetModel extends GraphicalModel2d {
 }
 
 // @beta
+export class SheetModelBreaksDownSheetPrototype extends RelatedElement {
+    constructor(sheetPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
 export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
     constructor(sheetId: Id64String, relClassName?: string);
     // (undocumented)
@@ -7061,7 +7075,7 @@ export class SheetReferenceRefersToSheet extends RelatedElement {
     static classFullName: string;
 }
 
-// @public @preview @deprecated
+// @public @deprecated @preview
 export class SheetTemplate extends Document_2 {
     protected constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)

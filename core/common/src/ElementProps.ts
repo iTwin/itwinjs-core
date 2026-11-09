@@ -347,7 +347,9 @@ export interface SheetProps extends ElementProps {
    * @deprecated in 5.15 - might be removed in next major version. Use [[SheetProps.sheetPrototype]] instead.
    */
   sheetTemplate?: Id64String;
-  /** The [SheetPrototype]($backend) this sheet was created from, if any. */
+  /** The [SheetPrototype]($backend) this sheet was created from, if any.
+   * @beta
+   */
   sheetPrototype?: RelatedElementProps;
   attachments?: Id64String[];
 }
