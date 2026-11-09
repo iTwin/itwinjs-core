@@ -33,7 +33,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s webpack:test && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "rimraf -g lib/esm && tsc 1>&2 -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
@@ -44,9 +44,8 @@
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
-    "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
-    "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
-    "webpack:test": "webpack --config ./src/test/frontend/utils/webpack.config.js 1>&2",
+    "test:integration:backend": "vitest run --config vitest.backend.config.mts",
+    "test:integration:frontend": "vitest run --config vitest.frontend.config.mts",
     "cover": ""
   },
   "repository": {
@@ -72,25 +71,19 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@types/chai": "catalog:testing",
-    "@types/mocha": "catalog:testing",
+    "@itwin/vitest-browser-bridge": "workspace:*",
     "@types/node": "catalog:build",
-    "chai": "catalog:testing",
+    "@vitest/browser": "catalog:testing",
     "cpx2": "catalog:build",
     "electron": "catalog:electron",
     "eslint": "catalog:linting",
-    "glob": "catalog:build",
-    "mocha": "catalog:testing",
     "rimraf": "catalog:build",
-    "source-map-loader": "catalog:bundling",
     "typescript": "catalog:build",
-    "webpack": "catalog:bundling",
-    "webpack-cli": "catalog:bundling"
+    "vitest": "catalog:testing"
   }
 }

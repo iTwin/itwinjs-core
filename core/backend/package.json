@@ -80,7 +80,7 @@
     "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@itwin/object-storage-core": "catalog:imodels-clients",
-    "@opentelemetry/api": "1.0.4",
+    "@opentelemetry/api": "1.9.1",
     "@types/chai": "catalog:testing",
     "@types/chai-as-promised": "catalog:testing",
     "@types/deep-equal-in-any-order": "^1.0.4",
