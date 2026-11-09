@@ -2,20 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { readBackendCallbackToken } from "@itwin/vitest-browser-bridge/callbacks/http";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { backendPortFor, frontendPortEnvVar, parseFrontendPort } from "@itwin/vitest-browser-bridge/ports";
+import { mobileBackendPortFor } from "../common/BrowserTestPorts";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { initializeMockMobileTest, setupMockMobileTest } from "./mockmobile";
+import { notifyReady } from "./notifyReady";
 import { initializeWebRoutingTest } from "./routing";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
 
 async function init() {
-  const port = Number(process.env.CERTA_PORT || 3021) + 2000;
-  const mobilePort = port + 2000;
+  const frontendPort = parseFrontendPort(process.env[frontendPortEnvVar], frontendPortEnvVar);
+  const port = backendPortFor(frontendPort);
+  const mobilePort = mobileBackendPortFor(frontendPort);
   await setupMockMobileTest(mobilePort);
 
   await commonSetup();
@@ -24,7 +29,7 @@ async function init() {
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
-  const testServer = new TestServer(rpcConfig.protocol);
+  const testServer = new TestServer(rpcConfig.protocol, readBackendCallbackToken(process.env));
   const httpServer = await testServer.initialize(port);
 
   // eslint-disable-next-line no-console
@@ -37,6 +42,7 @@ async function init() {
 
   // eslint-disable-next-line no-console
   console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
+  notifyReady("http");
   return () => {
     httpServer.close();
     MobileHost.onWillTerminate.raiseEvent();
