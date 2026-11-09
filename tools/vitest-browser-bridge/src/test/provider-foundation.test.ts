@@ -38,7 +38,7 @@ function createProvider(electronArgs: string[], startupTimeout = 2_000, closeTim
 }
 
 describe("Electron provider foundation", () => {
-  it("keeps context isolation enabled and the sandbox disabled for iframe preloads", () => {
+  it("keeps context isolation and the sandbox enabled for iframe preloads", () => {
     const options = createProviderWindowOptions("/tmp/consumer-preload.cjs", true);
     expect(options.show).toBe(false);
     expect(options.webPreferences).toMatchObject({
@@ -46,7 +46,7 @@ describe("Electron provider foundation", () => {
       contextIsolation: true,
       nodeIntegration: false,
       nodeIntegrationInSubFrames: true,
-      sandbox: false,
+      sandbox: true,
     });
   });
 
