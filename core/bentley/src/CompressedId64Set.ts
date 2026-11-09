@@ -242,7 +242,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
         return false;
 
       this.multiplier = 1;
-      this.parseUint64(this.increment);
+      this.parseIncrement();
       if (this.increment.isZero)
         throw new Error("Invalid CompressedId64Set");
 
@@ -286,7 +286,8 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
       return value;
     }
 
-    private parseUint64(uint64: Uint64): void {
+    /** Parse a 64-bit hexadecimal value of up to 16 digits into [[increment]]. */
+    private parseIncrement(): void {
       const ids = this._ids;
       let lower = 0;
       let upper = 0;
@@ -315,8 +316,8 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
         lower = first;
       }
 
-      uint64.lower = lower;
-      uint64.upper = upper;
+      this.increment.lower = lower;
+      this.increment.upper = upper;
     }
   }
 
