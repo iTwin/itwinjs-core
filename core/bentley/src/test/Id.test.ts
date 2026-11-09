@@ -567,6 +567,7 @@ describe("CompressedId64Set", () => {
 
       const decompressedArray = CompressedId64Set.decompressArray(compressedArray);
       expect(decompressedArray).to.deep.equal(ids);
+      expect(CompressedId64Set.count(compressedArray)).to.equal(ids.length);
 
       // Round-trip the Ids as a Set.
       const set = new Set<string>(ids);
@@ -655,6 +656,26 @@ describe("CompressedId64Set", () => {
     expect(CompressedId64Set.isValid("+garbage")).to.be.true;
     expect(() => [...CompressedId64Set.iterable("+0")]).to.throw();
     expect(() => [...CompressedId64Set.iterable("+garbage")]).to.throw();
+  });
+
+  it("count", () => {
+    expect(CompressedId64Set.count("")).to.equal(0);
+    expect(CompressedId64Set.count("+")).to.equal(0);
+    expect(CompressedId64Set.count("+2")).to.equal(1);
+    expect(CompressedId64Set.count("+1*4+4*3+1")).to.equal(8);
+    expect(CompressedId64Set.count("+ABCDEF0123456789+1000000000")).to.equal(2);
+
+    // Counts large sets without materializing them.
+    expect(CompressedId64Set.count("+1*FFFFFFFF")).to.equal(0xffffffff);
+    expect(CompressedId64Set.count("+1*FFFFFFFF+1*FFFFFFFF+1")).to.equal(2 * 0xffffffff + 1);
+
+    // A repeat count followed by an unexpected character terminates the set; matches iterator behavior.
+    expect(CompressedId64Set.count("+1*3x+5")).to.equal([...CompressedId64Set.iterable("+1*3x+5")].length);
+
+    for (const invalid of ["0x1", "+0", "+garbage", "+1*0", "+1-2"]) {
+      expect(() => CompressedId64Set.count(invalid)).to.throw("Invalid CompressedId64Set");
+      expect(() => [...CompressedId64Set.iterable(invalid)]).to.throw("Invalid CompressedId64Set");
+    }
   });
 });
 

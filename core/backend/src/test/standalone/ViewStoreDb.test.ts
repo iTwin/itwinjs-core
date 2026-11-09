@@ -421,4 +421,39 @@ describe("ViewStore", function (this: Suite) {
         snapshot.close();
     }
   });
+
+  it("rejects compressed Id sets that exceed the limit", async () => {
+    // 11 characters representing 4,294,967,295 Ids.
+    const hugeIds = "+1*FFFFFFFF";
+    const expectTooManyIds = async (func: () => unknown) => {
+      let error: unknown;
+      try {
+        await func();
+      } catch (err) {
+        error = err;
+      }
+      expect(ViewStoreError.isError(error, "invalid-value")).true;
+      expect((error as Error).message).include("exceeds the maximum");
+    };
+
+    // Writes are rejected before any Id is looked up.
+    await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: hugeIds } }));
+
+    // Values written directly to the database are rejected when read.
+    const catId = vs1.addCategorySelectorRow({ name: "huge cat", json: JSON.stringify({ ids: hugeIds }) });
+    const modelId = vs1.addModelSelectorRow({ name: "huge model", json: JSON.stringify({ ids: "+1*80000+1*80000" }) });
+    // Each batch is under the limit, but together they exceed it.
+    const timeline = [{ modelId: "^1", elementTimelines: [{ batchId: 1, elementIds: "+1*80000" }, { batchId: 2, elementIds: "+1*80000" }] }];
+    const timelineId = vs1.addTimelineRow({ name: "huge timeline", json: JSON.stringify(timeline) });
+    try {
+      await expectTooManyIds(() => vs1.getCategorySelectorSync({ id: ViewStore.fromRowId(catId) }));
+      await expectTooManyIds(() => vs1.getModelSelectorSync({ id: ViewStore.fromRowId(modelId) }));
+      await expectTooManyIds(() => vs1.getTimelineSync({ id: ViewStore.fromRowId(timelineId) }));
+      await expectTooManyIds(async () => vs1.addTimeline({ timeline }));
+    } finally {
+      vs1.deleteCategorySelectorSync(catId);
+      vs1.deleteModelSelectorSync(modelId);
+      vs1.deleteTimelineSync(timelineId);
+    }
+  });
 });

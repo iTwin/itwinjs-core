@@ -239,6 +239,15 @@ export interface IModelHostOptions {
    * @beta
    */
   implicitWriteEnforcement?: ImplicitWriteEnforcement;
+
+  /** The maximum number of Ids that an RPC request may supply in a [CompressedId64Set]($bentley) argument.
+   * A short compressed string can represent billions of Ids, so RPC implementations check the number of Ids before
+   * decompressing such arguments and reject requests that exceed this limit.
+   * [[ViewStore]] applies the same limit to compressed Id sets that it stores or reads, such as selectors, excluded elements, and timelines.
+   * Defaults to [[IModelHostConfiguration.defaultMaxRpcCompressedIdCount]]. Must be a positive integer.
+   * @beta
+   */
+  maxRpcCompressedIdCount?: number;
 }
 
 /** Configuration of core-backend.
@@ -250,6 +259,10 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  /** The default value of [[IModelHostOptions.maxRpcCompressedIdCount]].
+   * @beta
+   */
+  public static defaultMaxRpcCompressedIdCount = 1000000;
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -302,6 +315,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public implicitWriteEnforcement: ImplicitWriteEnforcement = "allow";
+  /** @beta */
+  public maxRpcCompressedIdCount?: number;
 }
 
 /**
@@ -772,6 +787,14 @@ export class IModelHost {
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
   public static get logTileSizeThreshold(): number {
     return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
+  }
+
+  /** The maximum number of Ids that an RPC request may supply in a CompressedId64Set argument.
+   * @see [[IModelHostOptions.maxRpcCompressedIdCount]]
+   * @internal
+   */
+  public static get maxRpcCompressedIdCount(): number {
+    return IModelHost.configuration?.maxRpcCompressedIdCount ?? IModelHostConfiguration.defaultMaxRpcCompressedIdCount;
   }
 
   /** Whether external tile caching is active.

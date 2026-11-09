@@ -20,6 +20,7 @@ import { Category } from "./Category";
 import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
+import { IModelHost } from "./IModelHost";
 import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -740,7 +741,32 @@ export namespace ViewStore {
       const fedGuid = this.guidMap.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
+    /** Throws if `ids` represents more Ids than [[IModelHost.maxRpcCompressedIdCount]], before anything iterates them.
+     * A short compressed string can represent billions of Ids, and each one costs a lookup.
+     */
+    private validateCompressedIdCount(ids: CompressedId64Set): void {
+      this.validateIdCount(CompressedId64Set.count(ids));
+    }
+    private validateIdCount(numIds: number): void {
+      const maxIds = IModelHost.maxRpcCompressedIdCount;
+      if (numIds > maxIds)
+        ViewStoreError.throwError("invalid-value", { message: `compressed Id set contains ${numIds} Ids, which exceeds the maximum of ${maxIds}` });
+    }
+    /** Each batch is checked individually, so also limit the total so that many batches can't add up to an unbounded number of Ids. */
+    private validateTimelineIdCount(script: RenderSchedule.ScriptProps): void {
+      let numIds = 0;
+      for (const model of script) {
+        for (const batch of model.elementTimelines ?? []) {
+          if (typeof batch.elementIds === "string")
+            numIds += CompressedId64Set.count(batch.elementIds);
+        }
+      }
+      this.validateIdCount(numIds);
+    }
     private toCompressedGuidRows(ids: Id64String[] | CompressedId64Set): CompressedId64Set {
+      if (typeof ids === "string")
+        this.validateCompressedIdCount(ids);
+
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(id);
@@ -759,6 +785,7 @@ export namespace ViewStore {
     private iterateCompressedGuidRows(guidRows: unknown, callback: (id: Id64String) => void) {
       if (typeof guidRows !== "string")
         return;
+      this.validateCompressedIdCount(guidRows);
       for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
         const elId = this.fromGuidRow(Id64.getLocalId(rowId64String));
         if (undefined !== elId)
@@ -819,6 +846,7 @@ export namespace ViewStore {
       }
     }
     private scriptToGuids(script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      this.validateTimelineIdCount(script);
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
         const modelGuidRow = this.toGuidRow(model.modelId);
@@ -832,6 +860,8 @@ export namespace ViewStore {
       return scriptProps;
     }
     private scriptFromGuids(script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
+      if (!omitElementIds)
+        this.validateTimelineIdCount(script);
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
         const modelId = this.fromGuidRow(toRowId(model.modelId));

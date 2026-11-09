@@ -222,55 +222,89 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     }
   }
 
-  /** Supplies an iterator over the [[Id64String]]s in a [[CompressedId64Set]].
-   * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
+  /** Parses the runs (an increment, optionally repeated `multiplier` times) encoded in a [[CompressedId64Set]],
+   * without materializing the individual Ids.
    */
-  export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
-    if (0 === ids.length)
-      return; // empty set.
+  class RunParser {
+    private _curIndex = 1; // skip the leading '+'
+    public readonly increment = new Uint64();
+    public multiplier = 1;
 
-    if ("+" !== ids[0])
-      throw new Error("Invalid CompressedId64Set");
+    constructor(private readonly _ids: CompressedId64Set) {
+      if (0 !== _ids.length && "+" !== _ids[0])
+        throw new Error("Invalid CompressedId64Set");
+    }
 
-    let curIndex = 1; // skip the leading '+'
-    const curId = new Uint64();
+    /** Parse the next run into [[increment]] and [[multiplier]]. Returns false when there are no more runs. */
+    public next(): boolean {
+      const ids = this._ids;
+      if (this._curIndex >= ids.length)
+        return false;
 
-    function parseUint32(): number {
+      this.multiplier = 1;
+      this.parseUint64(this.increment);
+      if (this.increment.isZero)
+        throw new Error("Invalid CompressedId64Set");
+
+      if (this._curIndex < ids.length) {
+        switch (ids[this._curIndex++]) {
+          case "*":
+            this.multiplier = this.parseUint32();
+            if (0 === this.multiplier)
+              throw new Error("Invalid CompressedId64Set");
+
+            if (this._curIndex !== ids.length && ids[this._curIndex++] !== "+")
+              return false;
+
+            break;
+          case "+":
+            break;
+          default:
+            throw new Error("Invalid CompressedId64Set");
+        }
+      }
+
+      return true;
+    }
+
+    private parseUint32(): number {
+      const ids = this._ids;
       let value = 0;
       let nChars = 0;
-      while (curIndex < ids.length && nChars < 8) {
+      while (this._curIndex < ids.length && nChars < 8) {
         ++nChars;
-        const ch = ids.charCodeAt(curIndex);
+        const ch = ids.charCodeAt(this._curIndex);
         if (!isHexDigit(ch))
           break; // not a hex digit in [0..9] or [A..F]
 
         value <<= 4;
         value |= (ch >= 65 ? ch - 65 + 10 : ch - 48); // ch - 'A' + 10 or ch - '0'
         value = value >>> 0; // restore unsignedness because silly javascript.
-        ++curIndex;
+        ++this._curIndex;
       }
 
       return value;
     }
 
-    function parseUint64(uint64: Uint64): void {
+    private parseUint64(uint64: Uint64): void {
+      const ids = this._ids;
       let lower = 0;
       let upper = 0;
 
       // Read up to the first 8 digits.
-      const startIndex = curIndex;
-      const first = parseUint32();
+      const startIndex = this._curIndex;
+      const first = this.parseUint32();
 
-      const nFirstDigits = curIndex - startIndex;
+      const nFirstDigits = this._curIndex - startIndex;
       assert(nFirstDigits <= 8);
 
-      if (8 === nFirstDigits && curIndex + 1 < ids.length && isHexDigit(ids.charCodeAt(curIndex + 1))) {
+      if (8 === nFirstDigits && this._curIndex + 1 < ids.length && isHexDigit(ids.charCodeAt(this._curIndex + 1))) {
         // We've got up to 8 more digits remaining
-        const secondIndex = curIndex;
-        const second = parseUint32();
+        const secondIndex = this._curIndex;
+        const second = this.parseUint32();
 
         // Transfer excess digits from upper to lower.
-        const nSecondDigits = curIndex - secondIndex;
+        const nSecondDigits = this._curIndex - secondIndex;
         assert(nSecondDigits > 0 && nSecondDigits <= 8);
 
         const nDigitsToTransfer = 8 - nSecondDigits;
@@ -284,37 +318,39 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
       uint64.lower = lower;
       uint64.upper = upper;
     }
+  }
 
-    const increment = new Uint64();
-    while (curIndex < ids.length) {
-      let multiplier = 1;
-      parseUint64(increment);
-      if (increment.isZero)
-        throw new Error("Invalid CompressedId64Set");
-
-      if (curIndex < ids.length) {
-        switch (ids[curIndex++]) {
-          case "*":
-            multiplier = parseUint32();
-            if (0 === multiplier)
-              throw new Error("Invalid CompressedId64Set");
-
-            if (curIndex !== ids.length && ids[curIndex++] !== "+")
-              return;
-
-            break;
-          case "+":
-            break;
-          default:
-            throw new Error("Invalid CompressedId64Set");
-        }
-      }
-
-      for (let i = 0; i < multiplier; i++) {
-        curId.add(increment);
+  /** Supplies an iterator over the [[Id64String]]s in a [[CompressedId64Set]].
+   * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
+   * @note A short compressed string can represent a very large number of Ids. When `ids` comes from an untrusted source,
+   * use [[CompressedId64Set.count]] to check the number of Ids before iterating them.
+   */
+  export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
+    const parser = new RunParser(ids);
+    const curId = new Uint64();
+    while (parser.next()) {
+      for (let i = 0; i < parser.multiplier; i++) {
+        curId.add(parser.increment);
         yield curId.toId64String();
       }
     }
+  }
+
+  /** Compute the number of Ids represented by a [[CompressedId64Set]] without materializing them.
+   * The cost is proportional to the length of the string, not to the number of Ids it represents.
+   * Use this to bound the work of decompressing a set obtained from an untrusted source, such as an RPC argument.
+   * @param ids The compact string representation.
+   * @returns The number of Ids that [[CompressedId64Set.iterator]] would produce.
+   * @throws Error if `ids` is not a well-formed [[CompressedId64Set]].
+   * @beta
+   */
+  export function count(ids: CompressedId64Set): number {
+    let total = 0;
+    const parser = new RunParser(ids);
+    while (parser.next())
+      total += parser.multiplier;
+
+    return total;
   }
 
   /** Supplies an iterable over the [[Id64String]]s in a [[CompressedId64Set]].

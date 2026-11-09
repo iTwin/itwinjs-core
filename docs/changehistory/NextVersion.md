@@ -10,6 +10,7 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
+    - [Limit on Ids in compressed RPC arguments](#limit-on-ids-in-compressed-rpc-arguments)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
 
@@ -126,6 +127,20 @@ Changes to the beta types:
 If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
+
+### Limit on Ids in compressed RPC arguments
+
+A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. [IModelReadRpcInterface]($common) methods that accept `CompressedId64Set` arguments now check how many Ids each argument represents before decompressing it, and reject the request with [IModelStatus.BadArg]($bentley) if the count exceeds a limit. The affected methods are `querySubCategories`, `getMassPropertiesPerCandidate`, `getCustomViewState3dData` (`modelIds`), and `hydrateViewState` (`notLoadedModelSelectorStateModels` and `sheetViewAttachmentIds`).
+
+[ViewStore]($backend) applies the same limit to compressed Id sets in category and model selectors, display style excluded elements, and render timelines (where the limit applies to the total across all of a timeline's batches). Writing a value over the limit throws a [ViewStoreError]($common) with the `"invalid-value"` key. Reading a stored selector, display style, or timeline over the limit also throws, except for query selector `adds` and `removes`, where the error is logged as other query errors already are.
+
+The limit defaults to 1,000,000 Ids per argument. Backends that legitimately need larger requests can raise it with [IModelHostOptions.maxRpcCompressedIdCount]($backend):
+
+```ts
+await IModelHost.startup({ maxRpcCompressedIdCount: 5_000_000 });
+```
+
+The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them. Use it to validate compressed Id sets received from untrusted sources before decompressing them.
 
 ## Platform support
 

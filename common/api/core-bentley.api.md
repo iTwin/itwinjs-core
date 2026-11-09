@@ -287,6 +287,8 @@ export namespace CompressedId64Set {
     export function compressArray(ids: Id64Array): CompressedId64Set;
     export function compressIds(ids: OrderedId64Iterable): CompressedId64Set;
     export function compressSet(ids: Id64Set): CompressedId64Set;
+    // @beta
+    export function count(ids: CompressedId64Set): number;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function isValid(ids: unknown): ids is CompressedId64Set;
