@@ -530,7 +530,8 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 46);
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 1000);
-    assert.isTrue(reader.stats.totalTime > 0);
+    // Primary-connection requests complete synchronously and can finish within the same millisecond.
+    assert.isAtLeast(reader.stats.totalTime, 0);
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
