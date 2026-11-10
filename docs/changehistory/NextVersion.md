@@ -164,7 +164,7 @@ The [HitDetailProps]($frontend) interface is deprecated in favor of [HitDetailFe
 
 Similarly, the `sourceId`, `subCategoryId`, `geometryClass`, and `modelId` members of [Pixel.HitProps]($frontend) are deprecated in favor of its `feature` member, and `Pixel.Data.iModel` is deprecated in favor of the `iModelRef` of [Pixel.Data.feature]($frontend). Note that `Pixel.Data.iModel` was previously defined only for geometry originating from an iModel other than the viewport's own; it is now defined for every pixel produced by a feature.
 
-Additionally, the type of `Pixel.Data.feature` widened from the [Feature]($common) class to `Feature & IModelDisplayFeature`. The value remains an instance of the `Feature` class - `equals`, `compare`, `instanceof` checks, and assignment to `Feature`-typed variables all behave as before - and it now also exposes the `modelId` and `iModelRef` of [IModelDisplayFeature]($frontend).
+Additionally, the type of `Pixel.Data.feature` widened from the [Feature]($common) class to `Feature & IModelDisplayFeature`. The value remains an instance of the `Feature` class - `equals`, `compare`, `instanceof` checks, and assignment to `Feature`-typed variables all behave as before - and it now also exposes the `modelId` and `iModelRef` of [IModelDisplayFeature]($frontend). Because its type now names that beta interface, the member is tagged `@beta` while the iModel display reference API stabilizes; its `Feature` contract is unchanged.
 
 ### Viewport display APIs
 
