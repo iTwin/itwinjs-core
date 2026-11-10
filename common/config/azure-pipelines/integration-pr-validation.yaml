@@ -4,7 +4,7 @@
 # All other versions are run on `master` and `release/*` branches.
 #
 # Core graphics tests run in a separate blocking job, parallel to the remaining suites.
-# Hosted Ubuntu renders with SwiftShader, which PlanarClipMask logs on every run. A GPU or
+# Hosted Ubuntu renders with SwiftShader, which PlanarClipMask logs on every run.
 #
 # Note: Currently a subset of all integration tests
 
