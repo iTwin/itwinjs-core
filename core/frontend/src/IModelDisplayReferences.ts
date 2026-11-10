@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
-import { _attachToViewport, _backingView, _implementationProhibited } from "./common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -48,6 +48,11 @@ export interface BaseIModelDisplayReferences {
    * have been replaced while the view was detached.
    */
   readonly [_attachToViewport]: () => void;
+
+  /** @internal Invoked when the backing view is detached from a viewport, to remove subscriptions on objects - such as
+   * the display style's settings - that may outlive the view.
+   */
+  readonly [_detachFromViewport]: () => void;
 
   /** The reference to the primary iModel displayed in the view. */
   readonly primary: IModelDisplayReference;

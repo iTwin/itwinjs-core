@@ -784,6 +784,41 @@ describe("Viewport", () => {
         expect(fresh.getModelOverridesById("0x123")).toEqual(appearance);
       });
     });
+
+    it("unsubscribes from the display style's settings while detached and catches up at attach", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        const ref = view.iModelRefs.primary;
+        const settings = view.displayStyle.settings;
+
+        // The settings can outlive the view (e.g., a style shared by several views) - while attached, the view's
+        // reference graph subscribes to them.
+        const attachedViewFlagsListeners = settings.onAfterViewFlagsChanged.numberOfListeners;
+        const attachedTimePointListeners = settings.onAfterTimePointChanged.numberOfListeners;
+        expect(attachedViewFlagsListeners).toBeGreaterThan(0);
+        expect(attachedTimePointListeners).toBeGreaterThan(0);
+
+        // Detaching must remove every subscription, so a long-lived style cannot retain discarded views.
+        viewport.changeView(view.clone());
+        expect(settings.onAfterViewFlagsChanged.numberOfListeners).toBe(0);
+        expect(settings.onAfterTimePointChanged.numberOfListeners).toBe(0);
+
+        // Changes made while detached - with no listeners bound - must be caught up at attach.
+        let timePointRaised = 0;
+        const removeListener = view.iModelRefs.onTimePointChanged.addListener(() => timePointRaised++);
+        settings.viewFlags = settings.viewFlags.with("constructions", !settings.viewFlags.constructions);
+        settings.timePoint = 42;
+        expect(timePointRaised).toBe(0);
+
+        viewport.changeView(view);
+        expect(settings.onAfterViewFlagsChanged.numberOfListeners).toBe(attachedViewFlagsListeners);
+        expect(settings.onAfterTimePointChanged.numberOfListeners).toBe(attachedTimePointListeners);
+        expect(ref.activeViewFlags.constructions).toBe(settings.viewFlags.constructions);
+        expect(timePointRaised).toBe(1);
+
+        removeListener();
+      });
+    });
   });
 
   describe("linked iModel tile tree lifecycle", () => {

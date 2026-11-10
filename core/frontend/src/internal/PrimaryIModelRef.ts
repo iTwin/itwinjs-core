@@ -32,7 +32,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   #removeSubCategoryChangesListener?: () => void;
 
   // The view's display style and category selector can be replaced wholesale. Listeners registered on those objects (or
-  // objects they own) are tracked so they can be rebound to the replacement.
+  // objects they own) are tracked so they can be rebound to the replacement. Because the style's settings can outlive
+  // this view, its listeners are registered only while the view is attached to a viewport.
+  #attached = false;
   #boundStyleSettings: DisplayStyleSettings;
   readonly #styleListenerRemovals: VoidFunction[] = [];
   readonly #styleListenerBinders: Array<(settings: DisplayStyleSettings) => VoidFunction[]> = [];
@@ -92,6 +94,8 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
+    // Note: the style's settings can outlive this view (e.g., a style shared by several views) - the binder's listeners
+    // are registered on them only while the view is attached to a viewport (see _addStyleListenerBinder).
     this.#boundStyleSettings = view.displayStyle.settings;
     this._addStyleListenerBinder((settings) => [
       settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags()),
@@ -125,10 +129,13 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     });
   }
 
-  /** Registers listeners on the view's current display style settings, re-registering them whenever the style is replaced. */
+  /** Registers listeners on the view's current display style settings, re-registering them whenever the style is replaced.
+   * Because the settings can outlive this view, the listeners are registered only while the view is attached to a viewport.
+   */
   protected _addStyleListenerBinder(binder: (settings: DisplayStyleSettings) => VoidFunction[]): void {
     this.#styleListenerBinders.push(binder);
-    this.#styleListenerRemovals.push(...binder(this.#boundStyleSettings));
+    if (this.#attached)
+      this.#styleListenerRemovals.push(...binder(this.#boundStyleSettings));
   }
 
   /** The display style settings to which this reference's listeners are currently bound. Active-settings getters read
@@ -141,14 +148,23 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   #displayStyleReplaced(newStyle: DisplayStyleState): void {
     this.#boundStyleSettings = newStyle.settings;
+    this.#unbindStyleListeners();
+    if (this.#attached)
+      this.#bindStyleListeners();
+
+    this._onDisplayStyleReplaced(newStyle);
+  }
+
+  #bindStyleListeners(): void {
+    for (const binder of this.#styleListenerBinders)
+      this.#styleListenerRemovals.push(...binder(this.#boundStyleSettings));
+  }
+
+  #unbindStyleListeners(): void {
     for (const removeListener of this.#styleListenerRemovals)
       removeListener();
 
     this.#styleListenerRemovals.length = 0;
-    for (const binder of this.#styleListenerBinders)
-      this.#styleListenerRemovals.push(...binder(newStyle.settings));
-
-    this._onDisplayStyleReplaced(newStyle);
   }
 
   /** Refreshes state derived from the display style after the style is replaced. Subclasses must call super. */
@@ -224,13 +240,24 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public [_attachToViewport](_args: AttachToViewportArgs): void {
+    this.#attached = true;
     this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
 
     // The display style or category selector may have been replaced while the view was detached, in which case no events
     // were raised - rebind now.
     const style = this._view.displayStyle;
-    if (style.settings !== this.#boundStyleSettings)
-      this.#displayStyleReplaced(style);
+    if (style.settings !== this.#boundStyleSettings) {
+      this.#displayStyleReplaced(style); // binds the style listeners and refreshes derived state
+    } else {
+      this.#bindStyleListeners();
+
+      // The style's view flags may have changed while the view was detached, with the listeners unbound.
+      const viewFlags = this._view.viewFlags.override(this.overrides.viewFlags);
+      if (!viewFlags.equals(this.#resolvedViewFlags)) {
+        this.#resolvedViewFlags = viewFlags;
+        this.onActiveViewFlagsChanged.raiseEvent();
+      }
+    }
 
     this.#syncViewedCategoriesBinding();
 
@@ -241,6 +268,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     void loadViewedCategories(this);
   }
   public [_detachFromViewport](): void {
+    this.#attached = false;
+    // The style's settings may outlive this view, and must not retain it through these listeners.
+    this.#unbindStyleListeners();
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;
   }

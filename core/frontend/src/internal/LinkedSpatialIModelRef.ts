@@ -41,6 +41,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
   // The view's display style can be replaced wholesale. Listeners registered on its settings are tracked so they can be
   // rebound to the replacement.
+  #attached = false;
   #boundStyleSettings: DisplayStyleSettings;
   readonly #styleListenerRemovals: VoidFunction[] = [];
 
@@ -186,9 +187,15 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.onActiveViewFlagsChanged.raiseEvent();
   }
 
-  /** Registers listeners on the supplied display style settings and records them as the currently-bound settings. */
+  /** Registers listeners on the supplied display style settings and records them as the currently-bound settings.
+   * Because the settings can outlive this reference's view, the listeners are registered only while the view is attached
+   * to a viewport.
+   */
   #bindStyleListeners(settings: DisplayStyleSettings): void {
     this.#boundStyleSettings = settings;
+    if (!this.#attached)
+      return;
+
     this.#styleListenerRemovals.push(
       settings.onAfterViewFlagsChanged.addListener(() => this.#updateViewFlags()),
       settings.onAfterClipStyleChanged.addListener(() => {
@@ -405,12 +412,23 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public [_attachToViewport](args: AttachToViewportArgs): void {
+    this.#attached = true;
     this.#removeSubCategoryChangesListener ??= listenForSubCategoryChanges(this);
 
     // The display style may have been replaced while the view was detached, in which case no events were raised - rebind now.
     const style = this.#spatialView.displayStyle;
-    if (style.settings !== this.#boundStyleSettings)
-      this.#displayStyleReplaced(style);
+    if (style.settings !== this.#boundStyleSettings) {
+      this.#displayStyleReplaced(style); // binds the style listeners and refreshes derived state
+    } else {
+      this.#bindStyleListeners(this.#boundStyleSettings);
+
+      // The style's view flags may have changed while the view was detached, with the listeners unbound.
+      const viewFlags = this.#spatialView.viewFlags.override(this.overrides.viewFlags);
+      if (!viewFlags.equals(this.#resolvedViewFlags)) {
+        this.#resolvedViewFlags = viewFlags;
+        this.onActiveViewFlagsChanged.raiseEvent();
+      }
+    }
 
     // This iModel's subcategory cache may have been invalidated while the view was detached, with the listener that
     // would reload it removed - refresh the viewed categories and the symbology overrides baking in their appearances.
@@ -421,6 +439,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public [_detachFromViewport](): void {
+    this.#attached = false;
+    // The style's settings may outlive this reference's view, and must not retain it through these listeners.
+    this.#unbindStyleListeners();
     this[_treeRefs].detachFromViewport();
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;

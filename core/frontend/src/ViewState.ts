@@ -1484,6 +1484,8 @@ export abstract class ViewState extends ElementState {
     for (const ref of this.iModelRefs)
       ref[_detachFromViewport]();
 
+    this.iModelRefs[_detachFromViewport]();
+
     this.unregisterCategorySelectorListeners();
   }
 

@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { _attachToViewport, _backingView, _implementationProhibited } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { GenericIModelDisplayReferences, IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { SpatialViewState } from "../SpatialViewState";
@@ -32,41 +32,62 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public readonly onDefaultFeatureAppearanceChanged = new BeEvent<() => void>();
   #defaultFeatureAppearance = FeatureAppearance.defaults;
 
-  // The view's display style can be replaced wholesale. The time-point listener is tracked so it can be rebound to the
-  // replacement style's settings.
+  // The view's display style can be replaced wholesale, and - because a style's settings can outlive this view (e.g.,
+  // a style shared by several views) - the time-point listener is registered on the settings only while the view is
+  // attached to a viewport. Time-point notifications are keyed on the last-notified value so that changes occurring
+  // while detached (or carried by a replacement style) are raised on reattachment.
   #boundStyleSettings: DisplayStyleSettings;
-  #removeTimePointListener: VoidFunction;
+  #removeTimePointListener?: VoidFunction;
+  #lastTimePoint: number | undefined;
 
   protected constructor(view: V) {
     this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
 
     this.#boundStyleSettings = view.displayStyle.settings;
-    this.#removeTimePointListener = this.#bindTimePointListener(this.#boundStyleSettings);
+    this.#lastTimePoint = this.#boundStyleSettings.timePoint;
 
-    // Note: raised just before the view's displayStyle property is reassigned - bind to the replacement supplied by the event.
+    // Note: raised just before the view's displayStyle property is reassigned - bind to the replacement supplied by the
+    // event. This event is owned by the view itself (not the style), so subscribing for the lifetime of this collection
+    // cannot cause the view to be retained by another object.
     view.onDisplayStyleChanged.addListener((newStyle) => this.#styleSettingsReplaced(newStyle.settings));
   }
 
   #bindTimePointListener(settings: DisplayStyleSettings): VoidFunction {
-    return settings.onAfterTimePointChanged.addListener(() => this.onTimePointChanged.raiseEvent());
+    return settings.onAfterTimePointChanged.addListener(() => this.#notifyTimePoint(settings.timePoint));
+  }
+
+  #notifyTimePoint(timePoint: number | undefined): void {
+    if (timePoint !== this.#lastTimePoint) {
+      this.#lastTimePoint = timePoint;
+      this.onTimePointChanged.raiseEvent();
+    }
   }
 
   #styleSettingsReplaced(newSettings: DisplayStyleSettings): void {
-    const oldTimePoint = this.#boundStyleSettings.timePoint;
-    this.#removeTimePointListener();
-    this.#boundStyleSettings = newSettings;
-    this.#removeTimePointListener = this.#bindTimePointListener(newSettings);
+    if (this.#removeTimePointListener) {
+      this.#removeTimePointListener();
+      this.#removeTimePointListener = this.#bindTimePointListener(newSettings);
+    }
 
-    if (newSettings.timePoint !== oldTimePoint)
-      this.onTimePointChanged.raiseEvent();
+    this.#boundStyleSettings = newSettings;
+    this.#notifyTimePoint(newSettings.timePoint);
   }
 
-  /** The display style may have been replaced while the view was detached, in which case no events were raised - rebind now. */
+  /** The display style may have been replaced - or its time point changed - while the view was detached, in which case
+   * no events were raised; bind to the current settings and catch up now.
+   */
   public [_attachToViewport](): void {
     const settings = this[_backingView].displayStyle.settings;
-    if (settings !== this.#boundStyleSettings)
-      this.#styleSettingsReplaced(settings);
+    this.#boundStyleSettings = settings;
+    this.#removeTimePointListener ??= this.#bindTimePointListener(settings);
+    this.#notifyTimePoint(settings.timePoint);
+  }
+
+  /** Remove the subscriptions on the display style's settings - the settings may outlive this view, and must not retain it. */
+  public [_detachFromViewport](): void {
+    this.#removeTimePointListener?.();
+    this.#removeTimePointListener = undefined;
   }
 
   public abstract [Symbol.iterator](): Iterator<R>;
