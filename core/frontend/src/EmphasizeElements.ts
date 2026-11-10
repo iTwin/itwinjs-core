@@ -1035,7 +1035,13 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Initialize from JSON representation. */
   public fromJSON(props: EmphasizeElementsProps): boolean {
-    return fromJSON(props, this.#iModelRef, this.#state);
+    const changed = fromJSON(props, this.#iModelRef, this.#state);
+    // Some properties (e.g., defaultAppearance, wantEmphasis) live purely in this provider's state - mutating them
+    // raises no event on the reference, so invalidate its cached overrides for the change to take effect.
+    if (changed)
+      this.#iModelRef.invalidateSymbologyOverrides();
+
+    return changed;
   }
 
   /** Return the EmphasizeIModelElements provider currently registered with the specified IModelDisplayReference, if one is already registered. */

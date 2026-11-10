@@ -13,7 +13,7 @@ import { ViewRect } from "../common/ViewRect";
 import { _getModelClip } from "../common/internal/Symbols";
 import { OffScreenViewport, ReadImageToCanvasOptions, ReadPixelsArgs, ScreenViewport, Viewport } from "../Viewport";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
-import { EmphasizeElements } from "../EmphasizeElements";
+import { EmphasizeElements, EmphasizeIModelElements } from "../EmphasizeElements";
 import { IModelDisplayReference } from "../IModelDisplayReference";
 import { CategorySelectorState } from "../CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState } from "../DisplayStyleState";
@@ -1285,6 +1285,31 @@ describe("Viewport", () => {
           expect(emph.defaultAppearance).toBe(explicit);
         } finally {
           EmphasizeElements.clear(viewport);
+        }
+      });
+    });
+
+    it("invalidates the reference's overrides when fromJSON changes provider-only state", () => {
+      testBlankViewport((viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        const emph = EmphasizeIModelElements.getOrCreate(ref);
+        try {
+          let invalidated = 0;
+          const removeListener = ref.onSymbologyOverridesInvalidated.addListener(() => invalidated++);
+
+          // defaultAppearance lives purely in the provider's state - no reference event is raised by mutating it,
+          // so fromJSON itself must invalidate the cached overrides.
+          const props = { defaultAppearance: { transparency: 0.5 } };
+          expect(emph.fromJSON(props)).toBe(true);
+          expect(invalidated).toBe(1);
+
+          // Re-applying identical state changes nothing and must not invalidate.
+          expect(emph.fromJSON(props)).toBe(false);
+          expect(invalidated).toBe(1);
+
+          removeListener();
+        } finally {
+          EmphasizeIModelElements.clear(ref);
         }
       });
     });
