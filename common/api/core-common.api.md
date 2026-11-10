@@ -2269,8 +2269,7 @@ export interface DbRequest extends BaseReaderOptions {
 
 // @internal (undocumented)
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-    // (undocumented)
-    execute(request: TRequest): Promise<TResponse>;
+    execute(request: TRequest): TResponse | Promise<TResponse>;
 }
 
 // @internal (undocumented)
@@ -2903,6 +2902,8 @@ export abstract class ECSqlReaderBase {
     protected _done: boolean;
     // @internal
     protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal (undocumented)
+    protected getMetaDataInternal(): QueryPropertyMetaData[];
     // @internal
     protected abstract getRowInternal(): any[];
     // @internal (undocumented)

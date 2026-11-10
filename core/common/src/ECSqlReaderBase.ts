@@ -145,7 +145,7 @@ export abstract class ECSqlReaderBase {
           return target.getRowInternal()[prop.index];
         }
         if (key === "getMetaData") {
-          return () => target._props.properties;
+          return () => target.getMetaDataInternal();
         }
         if (key === "toRow") {
           return () => target.formatCurrentRow(true);
@@ -210,6 +210,11 @@ export abstract class ECSqlReaderBase {
    * @internal
    */
   protected abstract getRowInternal(): any[];
+
+  /** @internal */
+  protected getMetaDataInternal(): QueryPropertyMetaData[] {
+    return this._props.properties;
+  }
 
   /**
    * Converts Base64-encoded strings in a row object into Uint8Arrays in-place.
