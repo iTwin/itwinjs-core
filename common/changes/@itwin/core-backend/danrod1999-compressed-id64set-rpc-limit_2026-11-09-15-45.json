@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Limit the number of Ids the backend expands from compressed Id sets; configurable via IModelHostOptions.maxCompressedIdCount.",
+      "comment": "Limit the number of Ids the backend expands from compressed Id sets in ViewStore render timelines and array-form Ids.",
       "type": "none"
     }
   ],

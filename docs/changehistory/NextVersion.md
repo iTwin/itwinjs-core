@@ -130,15 +130,9 @@ See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for f
 
 ### Limit on Ids decompressed from compressed Id sets
 
-A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. For example, the 11-character string `+1*FFFFFFFF` represents over four billion Ids. To keep untrusted input from forcing the backend to materialize that many Ids, the new `@beta` [CompressedId64Set.maxIdCount]($bentley) limits how many Ids a single compressed set can represent. Every function that decompresses a set, including [CompressedId64Set.iterator]($bentley), [CompressedId64Set.decompressSet]($bentley), [CompressedId64Set.decompressArray]($bentley), and [MutableCompressedId64Set]($bentley), counts the Ids before producing any of them. If the count exceeds the limit, the function throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley).
+A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. For example, the 11-character string `+1*FFFFFFFF` represents over four billion Ids. To keep untrusted input from forcing a backend to materialize that many Ids, a single compressed set can now represent at most [CompressedId64Set.maxIdCount]($bentley) (1,000,000) Ids. Every function that decompresses a set, including [CompressedId64Set.iterator]($bentley), [CompressedId64Set.decompressSet]($bentley), [CompressedId64Set.decompressArray]($bentley), and [MutableCompressedId64Set]($bentley), counts the Ids before producing any of them. If the count exceeds the limit, the function throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley). This applies in both the frontend and the backend, including to arguments of RPC methods such as [IModelReadRpcInterface]($common) `querySubCategories`. Code that needs more Ids should split them across multiple sets.
 
-`maxIdCount` is unlimited by default. [IModelHost.startup]($backend) sets it to [IModelHostOptions.maxCompressedIdCount]($backend), which defaults to 1,000,000 Ids, so the limit applies to every compressed set the backend decompresses, whether from RPC requests (such as [IModelReadRpcInterface]($common) `querySubCategories`), IPC, or app code. Backends that legitimately need larger sets can raise the limit:
-
-```ts
-await IModelHost.startup({ maxCompressedIdCount: 5_000_000 });
-```
-
-[ViewStore]($backend) applies the same limit to category and model selectors, display style excluded elements, and render timelines. For timelines, the limit applies to the total across all of a timeline's batches. Ids supplied as arrays, and timeline totals, that exceed the limit throw a [ViewStoreError]($common) with the `"invalid-value"` key. Reading a stored selector, display style, or timeline over the limit also throws, except for query selector `adds` and `removes`, where the error is logged as other query errors already are.
+[ViewStore]($backend) applies the same limit to Ids supplied as arrays, and to the total number of Ids across all of a render timeline's batches. These throw a [ViewStoreError]($common) with the `"invalid-value"` key.
 
 The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them.
 ## Platform support

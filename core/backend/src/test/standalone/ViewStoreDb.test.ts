@@ -457,32 +457,12 @@ describe("ViewStore", function (this: Suite) {
       vs1.deleteTimelineSync(timelineId);
     }
 
-    // Array-form Ids are checked against what will be stored, so a successful write can always be read back.
-    const prevLimit = CompressedId64Set.maxIdCount;
-    const prevGuidMap = vs1.guidMap;
-    const guids = new Map<string, GuidString>();
-    vs1.guidMap = {
-      getFederationGuidFromId: (id) => {
-        let guid = guids.get(id);
-        if (undefined === guid)
-          guids.set(id, guid = Guid.createValue());
-        return guid;
-      },
-      getIdFromFederationGuid: (guid) => [...guids].find(([, value]) => value === guid)?.[0],
-    };
-    CompressedId64Set.maxIdCount = 3;
-    try {
-      const selectorId = await vs1.addCategorySelector({ selector: { ids: ["0x1", "0x2", "0x3"] } });
-      expect(vs1.getCategorySelectorSync({ id: selectorId }).categories).deep.equal(["0x1", "0x2", "0x3"]);
-      vs1.deleteCategorySelectorSync(selectorId);
-
-      await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: ["0x1", "0x2", "0x3", "0x4"] } }));
-      await expectTooManyIds(async () => vs1.addTimeline({
-        timeline: [{ modelId: "0x10", elementTimelines: [{ batchId: 1, elementIds: ["0x1", "0x2"] }, { batchId: 2, elementIds: "+3+1" }] }],
-      }));
-    } finally {
-      CompressedId64Set.maxIdCount = prevLimit;
-      vs1.guidMap = prevGuidMap;
-    }
+    // Array-form Ids are rejected before any Id is looked up.
+    const tooManyArrayIds = new Array<string>(CompressedId64Set.maxIdCount + 1).fill("0x1");
+    await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: tooManyArrayIds } }));
+    // An array batch plus a compressed batch can't exceed the limit for a timeline.
+    await expectTooManyIds(async () => vs1.addTimeline({
+      timeline: [{ modelId: "0x10", elementTimelines: [{ batchId: 1, elementIds: tooManyArrayIds.slice(0, 600000) }, { batchId: 2, elementIds: "+1*80000" }] }],
+    }));
   });
 });

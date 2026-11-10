@@ -687,45 +687,40 @@ describe("CompressedId64Set", () => {
   });
 
   it("maxIdCount", () => {
-    expect(CompressedId64Set.maxIdCount).to.equal(Number.POSITIVE_INFINITY);
-    const prevMax = CompressedId64Set.maxIdCount;
-    CompressedId64Set.maxIdCount = 3;
-    try {
-      const expectTooManyIds = (func: () => unknown) => {
-        let error: unknown;
-        try {
-          func();
-        } catch (err) {
-          error = err;
-        }
+    expect(CompressedId64Set.maxIdCount).to.equal(1000000);
+    const expectTooManyIds = (func: () => unknown) => {
+      let error: unknown;
+      try {
+        func();
+      } catch (err) {
+        error = err;
+      }
 
-        expect(error).instanceOf(BentleyError);
-        expect((error as BentleyError).errorNumber).to.equal(IModelStatus.BadArg);
-        expect((error as BentleyError).message).to.include("exceeds the maximum of 3");
-      };
+      expect(error).instanceOf(BentleyError);
+      expect((error as BentleyError).errorNumber).to.equal(IModelStatus.BadArg);
+      expect((error as BentleyError).message).to.include("exceeds the maximum of 1000000");
+    };
 
-      expect(CompressedId64Set.decompressArray("+1*3")).to.deep.equal(["0x1", "0x2", "0x3"]);
-      expect(CompressedId64Set.decompressSet("+1+1+1").size).to.equal(3);
+    // 0xF4240 = 1,000,000 and 0xF4241 = 1,000,001.
+    expect(CompressedId64Set.count("+1*F4240")).to.equal(CompressedId64Set.maxIdCount);
+    expect(CompressedId64Set.decompressArray("+1*3")).to.deep.equal(["0x1", "0x2", "0x3"]);
+    expect(CompressedId64Set.decompressSet("+1+1+1").size).to.equal(3);
 
-      // Rejected before any Id is produced.
-      let numProduced = 0;
-      expectTooManyIds(() => {
-        for (const _id of CompressedId64Set.iterable("+1*4"))
-          ++numProduced;
-      });
-      expect(numProduced).to.equal(0);
+    // Rejected before any Id is produced.
+    let numProduced = 0;
+    expectTooManyIds(() => {
+      for (const _id of CompressedId64Set.iterable("+1*F4241"))
+        ++numProduced;
+    });
+    expect(numProduced).to.equal(0);
 
-      expectTooManyIds(() => CompressedId64Set.decompressArray("+1*FFFFFFFF"));
-      expectTooManyIds(() => CompressedId64Set.decompressSet("+1*2+1*2"));
-      expectTooManyIds(() => [...new MutableCompressedId64Set("+1*4")]);
+    expectTooManyIds(() => CompressedId64Set.decompressArray("+1*FFFFFFFF"));
+    // Splitting the Ids across multiple runs does not bypass the limit.
+    expectTooManyIds(() => CompressedId64Set.decompressSet("+1*80000+1*80000"));
+    expectTooManyIds(() => [...new MutableCompressedId64Set("+1*F4241")]);
 
-      // Overflow is also detected up front when a limit is set.
-      expect(() => [...CompressedId64Set.iterable("+FFFFFFFFFFFFFFFF+1")]).to.throw("exceeds the maximum 64-bit value");
-    } finally {
-      CompressedId64Set.maxIdCount = prevMax;
-    }
-
-    expect(CompressedId64Set.decompressArray("+1*4").length).to.equal(4);
+    // Overflow is also detected before any Id is produced.
+    expect(() => [...CompressedId64Set.iterable("+FFFFFFFFFFFFFFFF+1")]).to.throw("exceeds the maximum 64-bit value");
   });
 });
 

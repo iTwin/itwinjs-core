@@ -323,25 +323,22 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
   }
 
   /** The maximum number of Ids that [[CompressedId64Set.iterator]] will produce from a single [[CompressedId64Set]].
-   * A short compressed string can represent billions of Ids. When this limit is finite, [[CompressedId64Set.iterator]] counts the Ids
-   * before producing any of them, and throws a [[BentleyError]] with [[IModelStatus.BadArg]] if the count exceeds the limit.
+   * A short compressed string can represent billions of Ids, so [[CompressedId64Set.iterator]] counts the Ids before producing any of them,
+   * and throws a [[BentleyError]] with [[IModelStatus.BadArg]] if the count exceeds this limit.
    * The limit applies equally to [[CompressedId64Set.iterable]], [[CompressedId64Set.decompressSet]], [[CompressedId64Set.decompressArray]],
    * and [[MutableCompressedId64Set]].
-   * Defaults to `Number.POSITIVE_INFINITY` (no limit). The backend sets it from [IModelHostOptions.maxCompressedIdCount]($backend).
    * @beta
    */
-  export let maxIdCount = Number.POSITIVE_INFINITY; // eslint-disable-line prefer-const
+  export const maxIdCount = 1000000;
 
   /** Supplies an iterator over the [[Id64String]]s in a [[CompressedId64Set]].
    * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
    * @throws [[BentleyError]] with [[IModelStatus.BadArg]] if `ids` represents more than [[CompressedId64Set.maxIdCount]] Ids.
    */
   export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
-    if (Number.isFinite(maxIdCount)) {
-      const numIds = count(ids);
-      if (numIds > maxIdCount)
-        throw new BentleyError(IModelStatus.BadArg, `CompressedId64Set contains ${numIds} Ids, which exceeds the maximum of ${maxIdCount}`);
-    }
+    const numIds = count(ids);
+    if (numIds > maxIdCount)
+      throw new BentleyError(IModelStatus.BadArg, `CompressedId64Set contains ${numIds} Ids, which exceeds the maximum of ${maxIdCount}`);
 
     const parser = new RunParser(ids);
     const curId = new Uint64();

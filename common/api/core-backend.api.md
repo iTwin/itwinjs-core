@@ -4670,8 +4670,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultLogTileLoadTimeThreshold: number;
     // (undocumented)
     static defaultLogTileSizeThreshold: number;
-    // @beta
-    static defaultMaxCompressedIdCount: number;
     // @internal (undocumented)
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
@@ -4690,8 +4688,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
     logTileSizeThreshold: number;
-    // @beta (undocumented)
-    maxCompressedIdCount?: number;
     // @beta (undocumented)
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
@@ -4728,8 +4724,6 @@ export interface IModelHostOptions {
     logTileLoadTimeThreshold?: number;
     // @internal
     logTileSizeThreshold?: number;
-    // @beta
-    maxCompressedIdCount?: number;
     // @beta
     maxTileCacheDbSize?: number;
     // @beta

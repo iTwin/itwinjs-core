@@ -764,6 +764,10 @@ export namespace ViewStore {
       this.validateIdCount(numIds);
     }
     private toCompressedGuidRows(ids: Id64String[] | CompressedId64Set): CompressedId64Set {
+      // Arrays aren't checked by the iterator. The stored set can't be larger than the array, so a successful write can always be read back.
+      if (Array.isArray(ids))
+        this.validateIdCount(ids.length);
+
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(id);
@@ -771,8 +775,6 @@ export namespace ViewStore {
           result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
 
-      // Arrays aren't checked by the iterator. Check what will be stored, so that a successful write can always be read back.
-      this.validateIdCount(result.size);
       return CompressedId64Set.compressSet(result);
     }
     private fromGuidRow(guidRow: RowId): Id64String | undefined {

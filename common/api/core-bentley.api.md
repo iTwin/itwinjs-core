@@ -290,8 +290,8 @@ export namespace CompressedId64Set {
     // @beta
     export function count(ids: CompressedId64Set): number;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
-    let // @beta
-    maxIdCount: number;
+    const // @beta
+    maxIdCount = 1000000;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function isValid(ids: unknown): ids is CompressedId64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
