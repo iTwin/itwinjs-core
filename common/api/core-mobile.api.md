@@ -286,6 +286,8 @@ export class MobileRpcProtocol extends RpcProtocol {
 export class MobileRpcRequest extends RpcRequest {
     protected load(): Promise<RpcSerializedValue>;
     // (undocumented)
+    notifyConnectionError(error: Error): void;
+    // (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
     readonly protocol: MobileRpcProtocol;
     protected send(): Promise<number>;
