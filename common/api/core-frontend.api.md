@@ -1517,6 +1517,8 @@ export interface BaseIModelDisplayReferences {
     readonly [_attachToViewport]: () => void;
     // @internal (undocumented)
     readonly [_backingView]: ViewState;
+    // @internal
+    readonly [_detachFromViewport]: () => void;
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
     defaultFeatureAppearance: FeatureAppearance;
