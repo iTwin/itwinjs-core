@@ -1668,6 +1668,38 @@ describe("Viewport", () => {
       }
     });
 
+    it("allows unlinking every reference while iterating linked", async () => {
+      const iModelA = createBlankConnection();
+      const iModelB = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        refs.link({ iModel: iModelA });
+        refs.link({ iModel: iModelB });
+        expect([...refs.linked].length).toBe(2);
+
+        const unlinked: IModelDisplayReference[] = [];
+        const removeListener = refs.onUnlinked.addListener((ref) => unlinked.push(ref));
+
+        // The naive "unlink all" loop - iterating the live collection while removing from it - must visit every link.
+        for (const ref of refs.linked)
+          refs.unlink(ref);
+
+        expect([...refs.linked].length).toBe(0);
+        expect([...refs].length).toBe(1);
+        expect(unlinked.length).toBe(2);
+        expect([...refs.iModels]).toEqual([viewport.iModel]);
+
+        removeListener();
+      } finally {
+        await iModelA.close();
+        await iModelB.close();
+      }
+    });
+
     it("allows feature override providers to replace the default appearance", () => {
       testBlankViewport((viewport) => {
         const ref = viewport.iModelRefs.primary;

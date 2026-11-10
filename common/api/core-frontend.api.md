@@ -10923,6 +10923,7 @@ export namespace SubCategoriesCache {
         protected _current?: QueueEntry;
         // (undocumented)
         protected _disposed: boolean;
+        protected _draining: boolean;
         // (undocumented)
         get isEmpty(): boolean;
         // (undocumented)

@@ -114,7 +114,13 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
 class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReference, SpatialViewState> implements SpatialIModelDisplayReferences {
   readonly #iModels = new Set<IModelConnection>();
 
-  public readonly linked: SpatialIModelDisplayReference[] = [];
+  // A Set (rather than an array) so that iteration remains well-defined while entries are removed - e.g., an app
+  // unlinking every reference while iterating [[linked]].
+  readonly #linked = new Set<SpatialIModelDisplayReference>();
+
+  public get linked(): Iterable<SpatialIModelDisplayReference> {
+    return this.#linked;
+  }
 
   protected override createPrimaryRef(): SpatialIModelDisplayReference {
     return createPrimarySpatialIModelDisplayReference(this);
@@ -132,7 +138,7 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
 
   public *[Symbol.iterator](): Iterator<SpatialIModelDisplayReference> {
     yield this.primary;
-    for (const linked of this.linked)
+    for (const linked of this.#linked)
       yield linked;
   }
 
@@ -146,16 +152,14 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
         throw new Error("IModelDisplayReference.link does not support linking the same iModel multiple times");
 
     const ref = createLinkedSpatialIModelDisplayReference(this, args);
-    this.linked.push(ref);
+    this.#linked.add(ref);
     this.#iModels.add(ref.iModel);
     this.onLinked.raiseEvent(ref);
     return ref;
   }
 
   public unlink(refToRemove: SpatialIModelDisplayReference): void {
-    const index = this.linked.indexOf(refToRemove);
-    if (index !== -1) {
-      this.linked.splice(index, 1);
+    if (this.#linked.delete(refToRemove)) {
       let removeIModel = true;
       for (const remainingRef of this) {
         if (remainingRef.iModel === refToRemove.iModel) {
