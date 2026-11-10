@@ -9,7 +9,7 @@
 import { DisplayStyleSettings, FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
+import { assert, BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { IModelDisplayReferenceFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
@@ -309,7 +309,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public get activeClipStyle() {
-    return this.overrides.clipStyle ?? this.parent[_backingView].displayStyle.settings.clipStyle;
+    // Read through the bound settings rather than the view's displayStyle property: style-replacement notifications are
+    // raised before that property is reassigned, and the getters must expose the replacement style's state to listeners.
+    return this.overrides.clipStyle ?? this.#boundStyleSettings.clipStyle;
   }
 
   public get activeViewFlags() {
@@ -391,11 +393,15 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public get activeHiddenLineSettings() {
-    return this.overrides.hiddenLineSettings ?? this.#spatialView.displayStyle.settings.hiddenLineSettings;
+    const settings = this.#boundStyleSettings;
+    assert(settings.is3d()); // the backing view is spatial
+    return this.overrides.hiddenLineSettings ?? settings.hiddenLineSettings;
   }
 
   public get activeContours() {
-    return this.overrides.contours ?? this.#spatialView.displayStyle.settings.contours;
+    const settings = this.#boundStyleSettings;
+    assert(settings.is3d()); // the backing view is spatial
+    return this.overrides.contours ?? settings.contours;
   }
 
   public [_attachToViewport](args: AttachToViewportArgs): void {

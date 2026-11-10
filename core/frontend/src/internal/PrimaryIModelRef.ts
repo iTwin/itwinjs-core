@@ -10,7 +10,7 @@ import { DisplayStyleSettings, ModelClipGroups, SubCategoryAppearance, ViewFlags
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _getPlanarClipMaskState, _implementationProhibited, _invalidateTileTreeRef, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
-import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { assert, BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelDisplayReferenceFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
@@ -131,6 +131,14 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     this.#styleListenerRemovals.push(...binder(this.#boundStyleSettings));
   }
 
+  /** The display style settings to which this reference's listeners are currently bound. Active-settings getters read
+   * through this rather than the view's displayStyle property: style-replacement notifications are raised before that
+   * property is reassigned, and the getters must expose the replacement style's state to listeners.
+   */
+  protected get _boundStyleSettings(): DisplayStyleSettings {
+    return this.#boundStyleSettings;
+  }
+
   #displayStyleReplaced(newStyle: DisplayStyleState): void {
     this.#boundStyleSettings = newStyle.settings;
     for (const removeListener of this.#styleListenerRemovals)
@@ -208,7 +216,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public get activeClipStyle() {
-    return this.overrides.clipStyle ?? this._view.displayStyle.settings.clipStyle;
+    return this.overrides.clipStyle ?? this._boundStyleSettings.clipStyle;
   }
 
   public get activeViewFlags() {
@@ -433,11 +441,15 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   }
 
   public get activeHiddenLineSettings() {
-    return this.overrides.hiddenLineSettings ?? this._view.displayStyle.settings.hiddenLineSettings;
+    const settings = this._boundStyleSettings;
+    assert(settings.is3d()); // the backing view is spatial
+    return this.overrides.hiddenLineSettings ?? settings.hiddenLineSettings;
   }
 
   public get activeContours() {
-    return this.overrides.contours ?? this._view.displayStyle.settings.contours;
+    const settings = this._boundStyleSettings;
+    assert(settings.is3d()); // the backing view is spatial
+    return this.overrides.contours ?? settings.contours;
   }
 
   public override[_detachFromViewport](): void {

@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { BeEvent, CompressedId64Set, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
+  AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, HiddenLine, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { _getModelClip } from "../common/internal/Symbols";
@@ -681,6 +681,59 @@ describe("Viewport", () => {
 
         removeListener();
       });
+    });
+
+    it("exposes the replacement style's settings from active getters while replacement notifications are raised", () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        testBlankViewport((viewport) => {
+          const refs = viewport.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected a spatial viewport");
+
+          const linked = refs.link({ iModel: linkedIModel });
+          const primary = refs.primary;
+          if (!primary.isSpatial())
+            throw new Error("Expected a spatial primary reference");
+
+          const newStyle = viewport.displayStyle.clone();
+          const newSettings = newStyle.settings;
+          if (!newSettings.is3d())
+            throw new Error("Expected 3d display style settings");
+
+          newSettings.hiddenLineSettings = HiddenLine.Settings.fromJSON({ transThreshold: 0.5 });
+          newSettings.contours = ContourDisplay.fromJSON({ displayContours: true });
+          newSettings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: true });
+
+          // The replacement notifications are raised before the view's displayStyle property is reassigned - the active
+          // getters must nonetheless expose the replacement style's state to listeners.
+          const seen = new Map<string, unknown>();
+          const removals = [
+            primary.onActiveHiddenLineSettingsChanged.addListener(() => seen.set("primary.hline", primary.activeHiddenLineSettings)),
+            primary.onActiveContoursChanged.addListener(() => seen.set("primary.contours", primary.activeContours)),
+            primary.onActiveClipStyleChanged.addListener(() => seen.set("primary.clip", primary.activeClipStyle)),
+            linked.onActiveHiddenLineSettingsChanged.addListener(() => seen.set("linked.hline", linked.activeHiddenLineSettings)),
+            linked.onActiveContoursChanged.addListener(() => seen.set("linked.contours", linked.activeContours)),
+            linked.onActiveClipStyleChanged.addListener(() => seen.set("linked.clip", linked.activeClipStyle)),
+          ];
+
+          viewport.displayStyle = newStyle;
+
+          expect(seen.get("primary.hline")).toBe(newSettings.hiddenLineSettings);
+          expect(seen.get("primary.contours")).toBe(newSettings.contours);
+          expect(seen.get("primary.clip")).toBe(newSettings.clipStyle);
+          expect(seen.get("linked.hline")).toBe(newSettings.hiddenLineSettings);
+          expect(seen.get("linked.contours")).toBe(newSettings.contours);
+          expect(seen.get("linked.clip")).toBe(newSettings.clipStyle);
+
+          for (const removeListener of removals)
+            removeListener();
+
+          refs.unlink(linked);
+        });
+      } finally {
+        linkedIModel.closeSync();
+      }
     });
 
     it("rebinds onTimePointChanged at attach after the style is replaced while detached", () => {
