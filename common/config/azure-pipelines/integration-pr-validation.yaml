@@ -5,7 +5,6 @@
 #
 # Core graphics tests run in a separate blocking job, parallel to the remaining suites.
 # Hosted Ubuntu renders with SwiftShader, which PlanarClipMask logs on every run. A GPU or
-# Mac pool for this job was evaluated and is not needed (itwinjs-backlog#2355).
 #
 # Note: Currently a subset of all integration tests
 
