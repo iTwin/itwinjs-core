@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, IModelStatus } from "@itwin/core-bentley";
-import { IModelError, IModelReadRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
+import { BentleyError, CompressedId64Set, IModelStatus } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
-import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
+import { IModelHostConfiguration } from "../../IModelHost";
 import { RpcTrace } from "../../rpc/tracing";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -33,7 +33,7 @@ describe("IModelReadRpcImpl compressed Id limits", () => {
 
   after(() => imodel.close());
 
-  async function expectTooManyIds(func: () => Promise<unknown>, argName: string): Promise<void> {
+  async function expectTooManyIds(func: () => Promise<unknown>): Promise<void> {
     let error: unknown;
     try {
       await RpcTrace.run(fakeRpc, func);
@@ -41,32 +41,31 @@ describe("IModelReadRpcImpl compressed Id limits", () => {
       error = err;
     }
 
-    expect(error).instanceOf(IModelError);
-    expect((error as IModelError).errorNumber).to.equal(IModelStatus.BadArg);
-    expect((error as IModelError).message).to.include(argName).and.include("exceeds the maximum");
+    expect(error).instanceOf(BentleyError);
+    expect((error as BentleyError).errorNumber).to.equal(IModelStatus.BadArg);
+    expect((error as BentleyError).message).to.include("exceeds the maximum");
   }
 
-  it("defaults the limit to one million Ids", () => {
-    expect(IModelHostConfiguration.defaultMaxRpcCompressedIdCount).to.equal(1000000);
-    expect(IModelHost.maxRpcCompressedIdCount).to.equal(IModelHostConfiguration.defaultMaxRpcCompressedIdCount);
+  it("applies the default limit of one million Ids at startup", () => {
+    expect(IModelHostConfiguration.defaultMaxCompressedIdCount).to.equal(1000000);
+    expect(CompressedId64Set.maxIdCount).to.equal(IModelHostConfiguration.defaultMaxCompressedIdCount);
   });
 
   it("rejects oversized CompressedId64Set arguments before decompressing them", async () => {
     const tokenProps = imodel.getRpcProps();
-    await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, hugeIds), "categoryIds");
-    await expectTooManyIds(async () => rpc.getMassPropertiesPerCandidate(tokenProps, { candidates: hugeIds, operations: [] }), "candidates");
-    await expectTooManyIds(async () => rpc.getCustomViewState3dData(tokenProps, { modelIds: hugeIds }), "modelIds");
-    await expectTooManyIds(async () => rpc.hydrateViewState(tokenProps, { notLoadedModelSelectorStateModels: hugeIds }), "notLoadedModelSelectorStateModels");
-    await expectTooManyIds(async () => rpc.hydrateViewState(tokenProps, { sheetViewAttachmentIds: hugeIds }), "sheetViewAttachmentIds");
+    await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, hugeIds));
+    await expectTooManyIds(async () => rpc.getMassPropertiesPerCandidate(tokenProps, { candidates: hugeIds, operations: [] }));
+    await expectTooManyIds(async () => rpc.getCustomViewState3dData(tokenProps, { modelIds: hugeIds }));
+    await expectTooManyIds(async () => rpc.hydrateViewState(tokenProps, { notLoadedModelSelectorStateModels: hugeIds }));
+    await expectTooManyIds(async () => rpc.hydrateViewState(tokenProps, { sheetViewAttachmentIds: hugeIds }));
 
     // Splitting the Ids across multiple runs does not bypass the limit.
-    await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, "+1*80000+1*80000"), "categoryIds");
+    await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, "+1*80000+1*80000"));
   });
 
-  it("honors a configured limit", async () => {
-    const config = IModelHost.configuration!;
-    const prevLimit = config.maxRpcCompressedIdCount;
-    config.maxRpcCompressedIdCount = 3;
+  it("honors a changed limit", async () => {
+    const prevLimit = CompressedId64Set.maxIdCount;
+    CompressedId64Set.maxIdCount = 3;
     try {
       const tokenProps = imodel.getRpcProps();
       const categoryIds = imodel.queryEntityIds({ from: "BisCore.Category", limit: 3 });
@@ -75,9 +74,9 @@ describe("IModelReadRpcImpl compressed Id limits", () => {
       const result = await RpcTrace.run(fakeRpc, async () => rpc.querySubCategories(tokenProps, CompressedId64Set.sortAndCompress(categoryIds)));
       expect(result.length).to.be.greaterThan(0);
 
-      await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, "+1*4"), "categoryIds");
+      await expectTooManyIds(async () => rpc.querySubCategories(tokenProps, "+1*4"));
     } finally {
-      config.maxRpcCompressedIdCount = prevLimit;
+      CompressedId64Set.maxIdCount = prevLimit;
     }
   });
 });

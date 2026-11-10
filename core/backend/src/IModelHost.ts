@@ -12,7 +12,7 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, BentleyStatus, CompressedId64Set, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, ITwinSettingsError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
@@ -240,14 +240,16 @@ export interface IModelHostOptions {
    */
   implicitWriteEnforcement?: ImplicitWriteEnforcement;
 
-  /** The maximum number of Ids that an RPC request may supply in a [CompressedId64Set]($bentley) argument.
-   * A short compressed string can represent billions of Ids, so RPC implementations check the number of Ids before
-   * decompressing such arguments and reject requests that exceed this limit.
-   * [[ViewStore]] applies the same limit to compressed Id sets that it stores or reads, such as selectors, excluded elements, and timelines.
-   * Defaults to [[IModelHostConfiguration.defaultMaxRpcCompressedIdCount]]. Must be a positive integer.
+  /** The maximum number of Ids that the backend will decompress from a single [CompressedId64Set]($bentley).
+   * A short compressed string can represent billions of Ids, so a client could otherwise force the backend to do an unbounded amount of work and allocate an
+   * unbounded amount of memory. [[startup]] sets [CompressedId64Set.maxIdCount]($bentley) to this value, so the limit applies to every
+   * [CompressedId64Set]($bentley) that the backend decompresses, including arguments to any RPC or IPC interface, and those stored in a [[ViewStore]].
+   * Decompressing a set that exceeds the limit throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley).
+   * [[ViewStore]] also applies the limit to the total number of Ids across all of a render timeline's batches.
+   * Defaults to [[IModelHostConfiguration.defaultMaxCompressedIdCount]]. Must be a positive integer.
    * @beta
    */
-  maxRpcCompressedIdCount?: number;
+  maxCompressedIdCount?: number;
 }
 
 /** Configuration of core-backend.
@@ -259,10 +261,10 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-  /** The default value of [[IModelHostOptions.maxRpcCompressedIdCount]].
+  /** The default value of [[IModelHostOptions.maxCompressedIdCount]].
    * @beta
    */
-  public static defaultMaxRpcCompressedIdCount = 1000000;
+  public static defaultMaxCompressedIdCount = 1000000;
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -316,7 +318,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
    */
   public implicitWriteEnforcement: ImplicitWriteEnforcement = "allow";
   /** @beta */
-  public maxRpcCompressedIdCount?: number;
+  public maxCompressedIdCount?: number;
 }
 
 /**
@@ -666,6 +668,7 @@ export class IModelHost {
     this.setupCacheDir(options);
     this.initializeWorkspace(options);
     EditTxn.implicitWriteEnforcement = options.implicitWriteEnforcement ?? "allow";
+    CompressedId64Set.maxIdCount = options.maxCompressedIdCount ?? IModelHostConfiguration.defaultMaxCompressedIdCount;
     BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
@@ -726,6 +729,7 @@ export class IModelHost {
 
     this.configuration = undefined;
     EditTxn.implicitWriteEnforcement = "allow";
+    CompressedId64Set.maxIdCount = Number.POSITIVE_INFINITY;
     this.tileStorage = undefined;
 
     this._appWorkspace?.close();
@@ -787,14 +791,6 @@ export class IModelHost {
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
   public static get logTileSizeThreshold(): number {
     return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
-  }
-
-  /** The maximum number of Ids that an RPC request may supply in a CompressedId64Set argument.
-   * @see [[IModelHostOptions.maxRpcCompressedIdCount]]
-   * @internal
-   */
-  public static get maxRpcCompressedIdCount(): number {
-    return IModelHost.configuration?.maxRpcCompressedIdCount ?? IModelHostConfiguration.defaultMaxRpcCompressedIdCount;
   }
 
   /** Whether external tile caching is active.

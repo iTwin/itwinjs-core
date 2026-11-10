@@ -4617,8 +4617,6 @@ export class IModelHost {
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
-    // @internal
-    static get maxRpcCompressedIdCount(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     static readonly onWorkspaceStartup: BeEvent<() => void>;
@@ -4673,7 +4671,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultLogTileSizeThreshold: number;
     // @beta
-    static defaultMaxRpcCompressedIdCount: number;
+    static defaultMaxCompressedIdCount: number;
     // @internal (undocumented)
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
@@ -4693,7 +4691,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // @internal (undocumented)
     logTileSizeThreshold: number;
     // @beta (undocumented)
-    maxRpcCompressedIdCount?: number;
+    maxCompressedIdCount?: number;
     // @beta (undocumented)
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
@@ -4731,7 +4729,7 @@ export interface IModelHostOptions {
     // @internal
     logTileSizeThreshold?: number;
     // @beta
-    maxRpcCompressedIdCount?: number;
+    maxCompressedIdCount?: number;
     // @beta
     maxTileCacheDbSize?: number;
     // @beta

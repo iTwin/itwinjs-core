@@ -10,7 +10,7 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
-    - [Limit on Ids in compressed RPC arguments](#limit-on-ids-in-compressed-rpc-arguments)
+    - [Limit on Ids decompressed from compressed Id sets](#limit-on-ids-decompressed-from-compressed-id-sets)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
 
@@ -128,20 +128,19 @@ If you relied on the previous best-effort behavior, inspect `failures` and, for 
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 
-### Limit on Ids in compressed RPC arguments
+### Limit on Ids decompressed from compressed Id sets
 
-A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. [IModelReadRpcInterface]($common) methods that accept `CompressedId64Set` arguments now check how many Ids each argument represents before decompressing it, and reject the request with [IModelStatus.BadArg]($bentley) if the count exceeds a limit. The affected methods are `querySubCategories`, `getMassPropertiesPerCandidate`, `getCustomViewState3dData` (`modelIds`), and `hydrateViewState` (`notLoadedModelSelectorStateModels` and `sheetViewAttachmentIds`).
+A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. For example, the 11-character string `+1*FFFFFFFF` represents over four billion Ids. To keep untrusted input from forcing the backend to materialize that many Ids, the new `@beta` [CompressedId64Set.maxIdCount]($bentley) limits how many Ids a single compressed set can represent. Every function that decompresses a set, including [CompressedId64Set.iterator]($bentley), [CompressedId64Set.decompressSet]($bentley), [CompressedId64Set.decompressArray]($bentley), and [MutableCompressedId64Set]($bentley), counts the Ids before producing any of them. If the count exceeds the limit, the function throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley).
 
-[ViewStore]($backend) applies the same limit to compressed Id sets in category and model selectors, display style excluded elements, and render timelines (where the limit applies to the total across all of a timeline's batches). Writing a value over the limit throws a [ViewStoreError]($common) with the `"invalid-value"` key. Reading a stored selector, display style, or timeline over the limit also throws, except for query selector `adds` and `removes`, where the error is logged as other query errors already are.
-
-The limit defaults to 1,000,000 Ids per argument. Backends that legitimately need larger requests can raise it with [IModelHostOptions.maxRpcCompressedIdCount]($backend):
+`maxIdCount` is unlimited by default. [IModelHost.startup]($backend) sets it to [IModelHostOptions.maxCompressedIdCount]($backend), which defaults to 1,000,000 Ids, so the limit applies to every compressed set the backend decompresses, whether from RPC requests (such as [IModelReadRpcInterface]($common) `querySubCategories`), IPC, or app code. Backends that legitimately need larger sets can raise the limit:
 
 ```ts
-await IModelHost.startup({ maxRpcCompressedIdCount: 5_000_000 });
+await IModelHost.startup({ maxCompressedIdCount: 5_000_000 });
 ```
 
-The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them. Use it to validate compressed Id sets received from untrusted sources before decompressing them.
+[ViewStore]($backend) applies the same limit to category and model selectors, display style excluded elements, and render timelines. For timelines, the limit applies to the total across all of a timeline's batches. Ids supplied as arrays, and timeline totals, that exceed the limit throw a [ViewStoreError]($common) with the `"invalid-value"` key. Reading a stored selector, display style, or timeline over the limit also throws, except for query selector `adds` and `removes`, where the error is logged as other query errors already are.
 
+The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them.
 ## Platform support
 
 ### Node.js 26 support

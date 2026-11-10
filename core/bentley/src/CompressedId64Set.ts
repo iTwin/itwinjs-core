@@ -7,6 +7,7 @@
  */
 
 import { assert } from "./Assert";
+import { BentleyError, IModelStatus } from "./BentleyError";
 import { Id64, Id64Array, Id64Set, Id64String } from "./Id";
 import { OrderedId64Iterable } from "./OrderedId64Iterable";
 import { SortedArray } from "./SortedArray";
@@ -321,12 +322,27 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
     }
   }
 
+  /** The maximum number of Ids that [[CompressedId64Set.iterator]] will produce from a single [[CompressedId64Set]].
+   * A short compressed string can represent billions of Ids. When this limit is finite, [[CompressedId64Set.iterator]] counts the Ids
+   * before producing any of them, and throws a [[BentleyError]] with [[IModelStatus.BadArg]] if the count exceeds the limit.
+   * The limit applies equally to [[CompressedId64Set.iterable]], [[CompressedId64Set.decompressSet]], [[CompressedId64Set.decompressArray]],
+   * and [[MutableCompressedId64Set]].
+   * Defaults to `Number.POSITIVE_INFINITY` (no limit). The backend sets it from [IModelHostOptions.maxCompressedIdCount]($backend).
+   * @beta
+   */
+  export let maxIdCount = Number.POSITIVE_INFINITY; // eslint-disable-line prefer-const
+
   /** Supplies an iterator over the [[Id64String]]s in a [[CompressedId64Set]].
    * The Ids are iterated in ascending order based on their unsigned 64-bit integer values.
-   * @note A short compressed string can represent a very large number of Ids. When `ids` comes from an untrusted source,
-   * use [[CompressedId64Set.count]] to check the number of Ids before iterating them.
+   * @throws [[BentleyError]] with [[IModelStatus.BadArg]] if `ids` represents more than [[CompressedId64Set.maxIdCount]] Ids.
    */
   export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
+    if (Number.isFinite(maxIdCount)) {
+      const numIds = count(ids);
+      if (numIds > maxIdCount)
+        throw new BentleyError(IModelStatus.BadArg, `CompressedId64Set contains ${numIds} Ids, which exceeds the maximum of ${maxIdCount}`);
+    }
+
     const parser = new RunParser(ids);
     const curId = new Uint64();
     while (parser.next()) {
@@ -355,7 +371,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
       const increment = (BigInt(parser.increment.upper) << 32n) | BigInt(parser.increment.lower);
       lastId += increment * BigInt(parser.multiplier);
       if (lastId > maxId)
-        throw new Error("Invalid CompressedId64Set");
+        throw new Error("CompressedId64Set contains an Id that exceeds the maximum 64-bit value");
     }
 
     return total;
@@ -375,6 +391,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @param out If supplied, the Ids will be inserted into this set rather than allocating and returning a new set.
    * @returns The set containing the decompressed Ids.
    * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @throws [[BentleyError]] with [[IModelStatus.BadArg]] if `compressedIds` represents more than [[CompressedId64Set.maxIdCount]] Ids.
    * @see [[CompressedId64Set.compressSet]] to perform the inverse operation.
    * @see [[CompressedId64Set.decompressArray]] to decompress as an [[Id64Array]] instead.
    * @see [[CompressedId64Set.iterable]] to efficiently iterate the Ids.
@@ -392,6 +409,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @param out If supplied, the Ids will be appended to this array rather than allocating and returning a new array.
    * @returns The array containing the decompressed Ids.
    * @throws Error if `compressedIds` is not a well-formed [[CompressedId64Set]].
+   * @throws [[BentleyError]] with [[IModelStatus.BadArg]] if `compressedIds` represents more than [[CompressedId64Set.maxIdCount]] Ids.
    * @note The Ids are decompressed and appended to the array in ascending order based on their 64-bit numerical values.
    * @see [[CompressedId64Set.compressArray]] to perform the inverse operation.
    * @see [[CompressedId64Set.decompressSet]] to decompress as an [[Id64Set]] instead.

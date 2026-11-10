@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Limit the number of Ids that RPC and ViewStore calls expand from compressed Id sets; configurable via IModelHostOptions.maxRpcCompressedIdCount.",
+      "comment": "Limit the number of Ids the backend expands from compressed Id sets; configurable via IModelHostOptions.maxCompressedIdCount.",
       "type": "none"
     }
   ],

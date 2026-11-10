@@ -27,7 +27,6 @@ import { ConcurrentQuery } from "../ConcurrentQuery";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { generateGeometrySummaries } from "../GeometrySummary";
 import { IModelDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
 import { DictionaryModel } from "../Model";
 import { PromiseMemoizer } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
@@ -39,19 +38,6 @@ interface ViewStateRequestProps {
   accessToken: AccessToken;
   tokenProps: IModelRpcProps;
   options: CustomViewState3dCreatorOptions;
-}
-
-/** Throws if a CompressedId64Set supplied by an RPC request represents more Ids than [[IModelHost.maxRpcCompressedIdCount]].
- * This prevents a short compressed string from forcing the backend to materialize an unbounded number of Ids.
- */
-function validateRpcCompressedIds(ids: CompressedId64Set | undefined, argName: string): void {
-  if (undefined === ids)
-    return;
-
-  const maxIds = IModelHost.maxRpcCompressedIdCount;
-  const numIds = CompressedId64Set.count(ids);
-  if (numIds > maxIds)
-    throw new IModelError(IModelStatus.BadArg, `${argName} contains ${numIds} Ids, which exceeds the maximum of ${maxIds}`);
 }
 
 class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
@@ -123,15 +109,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getCustomViewState3dData(tokenProps: IModelRpcProps, options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
-    validateRpcCompressedIds(options?.modelIds, "modelIds");
     const accessToken = currentActivity().accessToken;
     return ViewStateRequestMemoizer.perform({ accessToken, tokenProps, options });
   }
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    validateRpcCompressedIds(options.notLoadedModelSelectorStateModels, "notLoadedModelSelectorStateModels");
-    validateRpcCompressedIds(options.sheetViewAttachmentIds, "sheetViewAttachmentIds");
     const viewHydrater = new ViewStateHydrator(iModelDb);
     return viewHydrater.getHydrateResponseProps(options);
   }
@@ -143,7 +126,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    validateRpcCompressedIds(compressedCategoryIds, "categoryIds");
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
     return iModelDb.querySubCategories(decompressedIds);
   }
@@ -304,7 +286,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
-    validateRpcCompressedIds(props.candidates, "candidates");
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
       try {

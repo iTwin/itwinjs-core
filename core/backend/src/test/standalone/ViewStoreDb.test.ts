@@ -6,14 +6,13 @@
 import { expect } from "chai";
 import { Suite } from "mocha";
 import { join } from "path";
-import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, Guid, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps, ViewStoreError } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
-import { IModelHost } from "../../IModelHost";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -433,7 +432,8 @@ describe("ViewStore", function (this: Suite) {
       } catch (err) {
         error = err;
       }
-      expect(ViewStoreError.isError(error, "invalid-value")).true;
+      // Compressed sets are rejected by CompressedId64Set's iterator; array-form Ids and timeline totals are rejected by ViewStore.
+      expect(error instanceof BentleyError ? error.errorNumber === IModelStatus.BadArg : ViewStoreError.isError(error, "invalid-value")).true;
       expect((error as Error).message).include("exceeds the maximum");
     };
 
@@ -458,8 +458,7 @@ describe("ViewStore", function (this: Suite) {
     }
 
     // Array-form Ids are checked against what will be stored, so a successful write can always be read back.
-    const config = IModelHost.configuration!;
-    const prevLimit = config.maxRpcCompressedIdCount;
+    const prevLimit = CompressedId64Set.maxIdCount;
     const prevGuidMap = vs1.guidMap;
     const guids = new Map<string, GuidString>();
     vs1.guidMap = {
@@ -471,7 +470,7 @@ describe("ViewStore", function (this: Suite) {
       },
       getIdFromFederationGuid: (guid) => [...guids].find(([, value]) => value === guid)?.[0],
     };
-    config.maxRpcCompressedIdCount = 3;
+    CompressedId64Set.maxIdCount = 3;
     try {
       const selectorId = await vs1.addCategorySelector({ selector: { ids: ["0x1", "0x2", "0x3"] } });
       expect(vs1.getCategorySelectorSync({ id: selectorId }).categories).deep.equal(["0x1", "0x2", "0x3"]);
@@ -482,7 +481,7 @@ describe("ViewStore", function (this: Suite) {
         timeline: [{ modelId: "0x10", elementTimelines: [{ batchId: 1, elementIds: ["0x1", "0x2"] }, { batchId: 2, elementIds: "+3+1" }] }],
       }));
     } finally {
-      config.maxRpcCompressedIdCount = prevLimit;
+      CompressedId64Set.maxIdCount = prevLimit;
       vs1.guidMap = prevGuidMap;
     }
   });

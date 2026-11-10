@@ -20,7 +20,6 @@ import { Category } from "./Category";
 import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
-import { IModelHost } from "./IModelHost";
 import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -741,14 +740,11 @@ export namespace ViewStore {
       const fedGuid = this.guidMap.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
-    /** Throws if `ids` represents more Ids than [[IModelHost.maxRpcCompressedIdCount]], before anything iterates them.
-     * A short compressed string can represent billions of Ids, and each one costs a lookup.
+    /** [CompressedId64Set.iterator]($bentley) enforces [CompressedId64Set.maxIdCount]($bentley) for each compressed set.
+     * This applies the same limit to Ids that aren't checked by the iterator, such as array-form Ids and totals across multiple sets.
      */
-    private validateCompressedIdCount(ids: CompressedId64Set): void {
-      this.validateIdCount(CompressedId64Set.count(ids));
-    }
     private validateIdCount(numIds: number): void {
-      const maxIds = IModelHost.maxRpcCompressedIdCount;
+      const maxIds = CompressedId64Set.maxIdCount;
       if (numIds > maxIds)
         ViewStoreError.throwError("invalid-value", { message: `Id set contains ${numIds} Ids, which exceeds the maximum of ${maxIds}` });
     }
@@ -768,9 +764,6 @@ export namespace ViewStore {
       this.validateIdCount(numIds);
     }
     private toCompressedGuidRows(ids: Id64String[] | CompressedId64Set): CompressedId64Set {
-      if (typeof ids === "string")
-        this.validateCompressedIdCount(ids);
-
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(id);
@@ -778,7 +771,7 @@ export namespace ViewStore {
           result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
 
-      // Arrays aren't checked above. Check what will be stored, so that a successful write can always be read back.
+      // Arrays aren't checked by the iterator. Check what will be stored, so that a successful write can always be read back.
       this.validateIdCount(result.size);
       return CompressedId64Set.compressSet(result);
     }
@@ -792,7 +785,6 @@ export namespace ViewStore {
     private iterateCompressedGuidRows(guidRows: unknown, callback: (id: Id64String) => void) {
       if (typeof guidRows !== "string")
         return;
-      this.validateCompressedIdCount(guidRows);
       for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
         const elId = this.fromGuidRow(Id64.getLocalId(rowId64String));
         if (undefined !== elId)
