@@ -613,4 +613,47 @@ describe("SubCategoriesCache", () => {
 
     queue[Symbol.dispose]();
   });
+
+  it("queues uncached requests pushed from the final already-loaded entry's callbacks", async () => {
+    const currentResult = createDeferred<SubCategoryResultRow[]>();
+    const currentQuery = vi.fn().mockReturnValue(currentResult.promise);
+    const currentCache = new SubCategoriesCache({ isClosed: false, querySubCategories: currentQuery } as unknown as IModelConnection);
+
+    // The final pending entry's categories are already loaded, so its callbacks run synchronously while draining.
+    const loadedCache = new SubCategoriesCache({ isClosed: false } as unknown as IModelConnection);
+    loadedCache.add("0x2", "0x20", new SubCategoryAppearance(), true);
+
+    // The nested requests are NOT already loaded - each requires its own asynchronous query.
+    const nestedQueryA = vi.fn(async () => [{ parentId: "0x3", id: "0x30", appearance: {} }]);
+    const nestedCacheA = new SubCategoriesCache({ isClosed: false, querySubCategories: nestedQueryA } as unknown as IModelConnection);
+    const nestedQueryB = vi.fn(async () => [{ parentId: "0x4", id: "0x40", appearance: {} }]);
+    const nestedCacheB = new SubCategoriesCache({ isClosed: false, querySubCategories: nestedQueryB } as unknown as IModelConnection);
+
+    const queue = new SubCategoriesCache.Queue();
+    const order: string[] = [];
+
+    queue.push(currentCache, ["0x1"], () => order.push("current"));
+
+    // Two callbacks batched into the same (final) pending entry, each pushing an uncached request while draining.
+    queue.push(loadedCache, ["0x2"], () => {
+      order.push("first");
+      queue.push(nestedCacheA, ["0x3"], (loaded) => order.push(`nestedA:${loaded}`));
+    });
+    queue.push(loadedCache, ["0x2"], () => {
+      order.push("second");
+      queue.push(nestedCacheB, ["0x4"], (loaded) => order.push(`nestedB:${loaded}`));
+    });
+
+    currentResult.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+    await waitForPromises();
+
+    // Neither nested request's callbacks may be lost, and they execute in FIFO order after the drain.
+    expect(order).toEqual(["current", "first", "second", "nestedA:true", "nestedB:true"]);
+    expect(nestedQueryA).toHaveBeenCalledTimes(1);
+    expect(nestedQueryB).toHaveBeenCalledTimes(1);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
 });
