@@ -206,9 +206,9 @@ describe("RealityDataSourceGoogle3dTilesImpl", async () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
 
       const returnedUrl3 = source.getTileUrl("tile.glb");
-      // Because all tileset search params are stored in RealityDataSourceGoogle3dTilesImpl._searchParams, not just root, the tile will recieve both session ids.
-      // In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
-      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
+      // Nested tileset search params are merged into _searchParams with set(), so duplicate keys
+      // (e.g. sessionId) keep only the latest value when passed down to child tiles.
+      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=456");
     });
 
     it("does not forward search params to a different origin", async () => {
