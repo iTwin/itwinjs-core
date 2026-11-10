@@ -38,6 +38,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
   private _pending: MobileRpcChunks[] = [];
+  private _sendIndex = 0;
   private _capacity: number = Number.MAX_SAFE_INTEGER;
   private _sendInterval: number | undefined = undefined;
   private _sendIntervalHandler = () => this.trySend();
@@ -71,6 +72,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
+    this.transferChunkThreshold = 4 * 1024 * 1024;
 
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
@@ -192,6 +194,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private reset() {
     this.requests.clear();
     this._pending.length = 0;
+    this._sendIndex = 0;
     this._capacity = Number.MAX_SAFE_INTEGER;
 
     if (typeof (this._sendInterval) !== "undefined") {
@@ -221,15 +224,22 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
-    while (this._capacity !== 0 && this._pending.length) {
-      --this._capacity;
-      const next = expectDefined(this._pending.shift(), "Expected pending RPC chunk after queue length check.");
+    while (this._pending.length && (this._capacity !== 0 || this._sendIndex !== 0)) {
+      if (this.socket.bufferedAmount >= this.transferChunkThreshold)
+        break;
+
+      const next = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.");
+      if (this._sendIndex === 0)
+        --this._capacity;
       try {
-        for (const chunk of next)
-          this.socket.send(chunk);
+        this.socket.send(next[this._sendIndex++]);
       } catch (error) {
         this.failConnection(error instanceof Error ? error : new IModelError(BentleyStatus.ERROR, "Mobile RPC send failed."));
         return;
+      }
+      if (this._sendIndex === next.length) {
+        this._pending.shift();
+        this._sendIndex = 0;
       }
     }
 

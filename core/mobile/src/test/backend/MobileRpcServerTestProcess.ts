@@ -6,7 +6,7 @@ import { Logger } from "@itwin/core-bentley";
 import { MobileHost } from "../../backend/MobileHost";
 import { MobileRpcServer } from "../../backend/MobileRpcServer";
 
-export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection"): Promise<void> {
+export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue"): Promise<void> {
   MobileHost.reconnect = () => undefined;
   const pending = mode === "pending" ? ["pending response", new Uint8Array([9])] : undefined;
   const server = new MobileRpcServer(pending);
@@ -44,6 +44,39 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
 
     if (mode === "connected" || mode === "pending")
       return;
+
+    if (mode === "send-queue") {
+      const connection = Reflect.get(server, "_connection") as WebSocket;
+      const originalSend = connection.send.bind(connection);
+      const sent: WebSocket.Data[] = [];
+      const callbacks: Array<(error?: Error) => void> = [];
+      try {
+        connection.send = ((data: WebSocket.Data, callback: (error?: Error) => void) => {
+          sent.push(data);
+          callbacks.push(callback);
+        }) as WebSocket["send"];
+        interop.sendString("first", interop.connectionId);
+        interop.sendBinary(new Uint8Array([2]), interop.connectionId);
+        interop.sendString("third", interop.connectionId);
+        deepStrictEqual(sent, ["first"]);
+        callbacks.shift()?.();
+        deepStrictEqual(sent, ["first", new Uint8Array([2])]);
+        callbacks.shift()?.();
+        deepStrictEqual(sent, ["first", new Uint8Array([2]), "third"]);
+        callbacks.shift()?.();
+        interop.sendString("fourth", interop.connectionId);
+        interop.sendString("discarded", interop.connectionId);
+        const backendClosed = once(connection, "close");
+        client.close();
+        await backendClosed;
+        callbacks.shift()?.();
+        strictEqual(sent.length, 4);
+        strictEqual((Reflect.get(server, "_sendQueue") as unknown[]).length, 0);
+      } finally {
+        connection.send = originalSend;
+      }
+      return;
+    }
 
     if (mode === "missing-connection") {
       const connection = Reflect.get(server, "_connection") as WebSocket;

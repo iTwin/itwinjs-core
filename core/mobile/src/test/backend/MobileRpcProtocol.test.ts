@@ -1,4 +1,5 @@
 import { setImmediate } from "node:timers/promises";
+import { spawnSync } from "node:child_process";
 import { expect } from "chai";
 import { IpcInvokeReturn, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessageType, RpcInterface, RpcManager, RpcMarshaling, RpcRequest, RpcRequestStatus, unwrapIpcInvokeReturn } from "@itwin/core-common";
 import { MobileRpcManager } from "../../common/MobileRpcManager";
@@ -13,6 +14,7 @@ class TestSocket extends EventTarget {
   public static readonly CLOSING = 2;
   public static readonly CLOSED = 3;
   public readyState = TestSocket.CONNECTING;
+  public bufferedAmount = 0;
   public sent: unknown[] = [];
 
   public send(data: unknown) { this.sent.push(data); }
@@ -83,6 +85,61 @@ describe("MobileRpcProtocol disconnects", () => {
     await setImmediate();
     expect(protocol.requests.size).to.equal(1);
   }
+
+  it("roundtrips binary values in messages no larger than 4 MiB", () => {
+    const chunkSize = 4 * 1024 * 1024;
+    const source = new Uint8Array(2 * chunkSize + 19);
+    for (let index = 0; index < source.length; ++index)
+      source[index] = index % 251;
+    const value = [source.subarray(7), source.subarray(3, chunkSize + 3), new Uint8Array()];
+    const serialized = RpcMarshaling.serialize(protocol, value);
+    expect(serialized.data.map((part) => part.byteLength)).to.deep.equal([chunkSize, chunkSize, 12, chunkSize, 0]);
+    expect(RpcMarshaling.deserialize(protocol, serialized)).to.deep.equal(value);
+  });
+
+  it("roundtrips overlapping chunked RPC calls over real sockets in both directions", function () {
+    this.timeout(15000);
+    const fixture = require.resolve("./MobileRpcMemoryTestProcess");
+    const result = spawnSync(process.execPath, ["--expose-gc", fixture, "roundtrip"], { encoding: "utf8", timeout: 10000 });
+    const diagnostics = `${result.stdout}\n${result.stderr}`;
+    expect(result.error, diagnostics).to.equal(undefined);
+    expect(result.signal, diagnostics).to.equal(null);
+    expect(result.status, diagnostics).to.equal(0);
+  });
+
+  it("pauses a partially sent request until the socket buffer drains", async () => {
+    socket.open();
+    const first = new Uint8Array(4 * 1024 * 1024);
+    const last = new Uint8Array([9]);
+    let completed = () => {};
+    const sent = new Promise<void>((resolve) => { completed = resolve; });
+    socket.send = (data) => {
+      socket.sent.push(data);
+      if (data instanceof Uint8Array)
+        socket.bufferedAmount += data.byteLength;
+      if (socket.sent.length === 3)
+        completed();
+    };
+    protocol.sendToBackend(["header", first, last]);
+    expect(socket.sent).to.deep.equal(["header", first]);
+    socket.bufferedAmount = 0;
+    await sent;
+    expect(socket.sent).to.deep.equal(["header", first, last]);
+  });
+
+  it("discards unsent chunks when the socket closes under backpressure", async () => {
+    socket.open();
+    socket.bufferedAmount = 4 * 1024 * 1024;
+    protocol.sendToBackend(["header", new Uint8Array([1])]);
+    expect(socket.sent).to.have.lengthOf(0);
+    socket.close();
+    socket.dispatchEvent(new Event("close"));
+    (window as any)._imodeljs_rpc_reconnect(12346, token);
+    socket = protocol.socket as unknown as TestSocket;
+    socket.open();
+    await setImmediate();
+    expect(socket.sent).to.have.lengthOf(0);
+  });
 
   for (const open of [true, false]) {
     it(`rejects ${open ? "in-flight" : "queued"} requests when the socket closes`, async function () {

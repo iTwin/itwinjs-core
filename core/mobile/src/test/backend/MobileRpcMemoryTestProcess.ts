@@ -1,4 +1,4 @@
-import { strictEqual } from "node:assert";
+import { deepStrictEqual, strictEqual } from "node:assert";
 import { fork } from "node:child_process";
 import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
@@ -62,11 +62,14 @@ class MemoryRpc extends RpcInterface {
   public static readonly interfaceName = "MobileMemoryTestRpc";
   public static readonly interfaceVersion = "1.0.0";
   public async download(_bytes: number): Promise<Uint8Array> { return this.forward(arguments); }
+  public async echo(_data: Uint8Array[]): Promise<Uint8Array[]> { return this.forward(arguments); }
 }
 
 let backendSampler: MemorySampler | undefined;
 
 class MemoryRpcImpl extends MemoryRpc {
+  public override async echo(data: Uint8Array[]): Promise<Uint8Array[]> { return data; }
+
   public override async download(bytes: number): Promise<Uint8Array> {
     const data = new Uint8Array(bytes).fill(0x5a);
     backendSampler?.sample();
@@ -86,6 +89,14 @@ async function serve() {
   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
   MobileRpcManager.initializeImpl([MemoryRpc]);
   RpcManager.registerImpl(MemoryRpc, MemoryRpcImpl);
+  if (process.argv[3] === "roundtrip") {
+    const handler = MobileRpcServer.interop.handler;
+    MobileRpcServer.interop.handler = (payload, connectionId) => {
+      if (typeof payload !== "string")
+        strictEqual(payload.byteLength <= 4 * 1024 * 1024, true);
+      handler(payload, connectionId);
+    };
+  }
   process.on("message", (command) => {
     if (command === "start") {
       global.gc?.();
@@ -114,8 +125,24 @@ async function receive(client: MemoryRpc, bytes: number, sampler?: MemorySampler
   strictEqual(data[bytes - 1], 0x5a);
 }
 
-async function measure(payloadBytes: number): Promise<MemoryReport> {
-  const backend = fork(__filename, ["backend"], { execArgv: ["--expose-gc"], silent: true });
+async function verifyChunkedRoundtrip(client: MemoryRpc, socket: globalThis.WebSocket): Promise<void> {
+  const chunkSize = 4 * 1024 * 1024;
+  socket.addEventListener("message", (event) => {
+    if (typeof event.data !== "string")
+      strictEqual((event.data as ArrayBuffer).byteLength <= chunkSize, true);
+  });
+  const source = new Uint8Array(2 * chunkSize + 19);
+  for (let index = 0; index < source.length; ++index)
+    source[index] = index % 251;
+  const values = [source.subarray(7), source.subarray(3, chunkSize + 3), new Uint8Array()];
+  const otherValues = [source.subarray(11, chunkSize + 12)];
+  const [first, second] = await Promise.all([client.echo(values), client.echo(otherValues)]);
+  deepStrictEqual(first, values);
+  deepStrictEqual(second, otherValues);
+}
+
+async function measure(payloadBytes: number, roundtrip = false): Promise<MemoryReport> {
+  const backend = fork(__filename, ["backend", ...(roundtrip ? ["roundtrip"] : [])], { execArgv: ["--expose-gc"], silent: true });
   const exited = once(backend, "exit");
   let diagnostics = "";
   backend.stderr?.on("data", (data: Buffer) => { diagnostics += data.toString(); });
@@ -140,6 +167,8 @@ async function measure(payloadBytes: number): Promise<MemoryReport> {
       frontendSocket.addEventListener("error", () => reject(new Error("Mobile RPC connection failed.")), { once: true });
     });
     const client = RpcManager.getClientForInterface(MemoryRpc);
+    if (roundtrip)
+      await verifyChunkedRoundtrip(client, frontendSocket);
     await receive(client, 1024);
     let response = nextMessage();
     backend.send("start");
@@ -164,7 +193,8 @@ async function measure(payloadBytes: number): Promise<MemoryReport> {
 }
 
 if (require.main === module) {
-  const task = process.argv[2] === "backend" ? serve() : measure(Number(process.argv[2])).then((report) => {
+  const roundtrip = process.argv[2] === "roundtrip";
+  const task = process.argv[2] === "backend" ? serve() : measure(roundtrip ? 1024 : Number(process.argv[2]), roundtrip).then((report) => {
     process.stdout.write(`${JSON.stringify(report)}\n`);
   });
   task.catch((error: unknown) => {

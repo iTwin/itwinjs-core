@@ -11,8 +11,9 @@ describe("MobileRpcServer", () => {
     "throw-error": "survives synchronous send errors and closes the failed connection",
     "socket-error": "survives socket errors and closes the failed connection",
     "missing-connection": "throws when an installed sender has no connection",
+    "send-queue": "paces writes by completion callbacks and discards queued sends on close",
   };
-  for (const mode of ["connected", "pending", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection"] as const) {
+  for (const mode of ["connected", "pending", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection", "send-queue"] as const) {
     it(titles[mode], function () {
       this.timeout(15000);
       const fixture = require.resolve("./MobileRpcServerTestProcess");

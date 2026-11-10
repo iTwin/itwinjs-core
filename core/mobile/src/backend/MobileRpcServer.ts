@@ -35,6 +35,8 @@ export class MobileRpcServer {
 
   private _server: ws.Server;
   private _connection: ws | undefined;
+  private _sendQueue: Array<string | Uint8Array> = [];
+  private _sending = false;
   private _port: number;
   private _connectionId: number;
   private _pingTimer: NodeJS.Timeout;
@@ -92,8 +94,16 @@ export class MobileRpcServer {
   private _onConnection() {
     this._server.on("connection", (connection) => {
       this._connection = connection;
+      this._sendQueue.length = 0;
+      this._sending = false;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
       connection.on("error", (error) => this._onSendError(connection, error));
+      connection.on("close", () => {
+        if (connection === this._connection) {
+          this._sendQueue.length = 0;
+          this._sending = false;
+        }
+      });
       this._createSender();
       this._sendPending();
       (global as any).__iTwinJsRpcReady = true;
@@ -116,6 +126,10 @@ export class MobileRpcServer {
 
   private _onSendError(connection: ws, error: unknown) {
     Logger.logError("core-mobile-backend.MobileRpcServer", "Mobile RPC socket failed.", { connectionId: this._connectionId, error });
+    if (connection === this._connection) {
+      this._sendQueue.length = 0;
+      this._sending = false;
+    }
     connection.terminate();
   }
 
@@ -128,10 +142,25 @@ export class MobileRpcServer {
       return;
     }
 
+    this._sendQueue.push(message);
+    this._flushSendQueue();
+  }
+
+  private _flushSendQueue() {
+    const connection = this._connection;
+    if (this._sending || !this._sendQueue.length || !connection || connection.readyState !== ws.OPEN)
+      return;
+
+    const message = expectDefined(this._sendQueue.shift(), "Expected queued mobile RPC message.");
+    this._sending = true;
     try {
       connection.send(message, (error) => {
-        if (error)
+        if (error) {
           this._onSendError(connection, error);
+        } else if (connection === this._connection) {
+          this._sending = false;
+          this._flushSendQueue();
+        }
       });
     } catch (error) {
       this._onSendError(connection, error);
@@ -167,6 +196,8 @@ export class MobileRpcServer {
 
   public [Symbol.dispose]() {
     clearInterval(this._pingTimer);
+    this._sendQueue.length = 0;
+    this._sending = false;
     if (this._connection) {
       MobileRpcServer.interop.sendString = () => { };
       MobileRpcServer.interop.sendBinary = () => { };
