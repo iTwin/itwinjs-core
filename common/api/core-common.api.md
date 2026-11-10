@@ -2579,9 +2579,13 @@ export class DisplayStyleSettings {
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    // @beta
     readonly onAfterClipStyleChanged: BeEvent<() => void>;
+    // @beta
     readonly onAfterHiddenLineSettingsChanged: BeEvent<() => void>;
+    // @beta
     readonly onAfterTimePointChanged: BeEvent<() => void>;
+    // @beta
     readonly onAfterViewFlagsChanged: BeEvent<() => void>;
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
@@ -11696,6 +11700,7 @@ export class ViewDetails3d extends ViewDetails {
     getJSON(): Readonly<ViewDetails3dProps>;
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
+    // @beta
     readonly onAfterModelClipGroupsChanged: BeEvent<() => void>;
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }

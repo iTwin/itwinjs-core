@@ -549,7 +549,9 @@ export class DisplayStyleSettings {
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
-  /** Event raised just after assignment to the [[viewFlags]] property. */
+  /** Event raised just after assignment to the [[viewFlags]] property.
+   * @beta
+   */
   public readonly onAfterViewFlagsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
   public readonly onBackgroundColorChanged = new BeEvent<(newColor: ColorDef) => void>();
@@ -572,7 +574,9 @@ export class DisplayStyleSettings {
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
-  /** Event raised just after assignment to the [[timePoint]] property. */
+  /** Event raised just after assignment to the [[timePoint]] property.
+   * @beta
+   */
   public readonly onAfterTimePointChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[analysisStyle]] property. */
   public readonly onAnalysisStyleChanged = new BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>();
@@ -582,7 +586,9 @@ export class DisplayStyleSettings {
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
-  /** Event raised just after assignment to the [[clipStyle]] property. */
+  /** Event raised just after assignment to the [[clipStyle]] property.
+   * @beta
+   */
   public readonly onAfterClipStyleChanged = new BeEvent<() => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
@@ -598,7 +604,9 @@ export class DisplayStyleSettings {
   public readonly onContoursChanged = new BeEvent<(newContours: ContourDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
-  /** Event raised just after assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
+  /** Event raised just after assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property.
+   * @beta
+   */
   public readonly onAfterHiddenLineSettingsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();

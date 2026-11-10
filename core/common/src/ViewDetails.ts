@@ -187,7 +187,9 @@ export class ViewDetails3d extends ViewDetails {
 
   /** Event raised just before assignment to the [[modelClipGroups]] property. */
   public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
-  /** Event raised just after assignment to the [[modelClipGroups]] property. */
+  /** Event raised just after assignment to the [[modelClipGroups]] property.
+   * @beta
+   */
   public readonly onAfterModelClipGroupsChanged = new BeEvent<() => void>();
 
   /** @internal */
