@@ -395,15 +395,19 @@ class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Ov
     if (!ovrs)
       return;
 
+    const entries: Array<[Id64String, Override]> = [];
     for (let i = 0; i < ovrs.length; i++) {
       const id = this._idFromProps(ovrs[i]);
       if (undefined !== id && Id64.isValidId64(id)) {
         this.#indexById.set(id, i);
         const ovr = this._overrideFromProps(ovrs[i]);
         if (ovr)
-          super.set(id, ovr);
+          entries.push([id, ovr]);
       }
     }
+
+    // setAll dispatches each entry through _set (raising the per-id event) but coalesces onChanged into a single raise.
+    super.setAll(entries);
   }
 
   private get _array(): OverrideProps[] | undefined {
