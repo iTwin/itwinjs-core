@@ -11,6 +11,7 @@ publish: false
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Limit on Ids decompressed from compressed Id sets](#limit-on-ids-decompressed-from-compressed-id-sets)
+    - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
 
@@ -135,6 +136,15 @@ A [CompressedId64Set]($bentley) can represent a very large number of Ids in a sh
 [ViewStore]($backend) applies the same limit to Ids supplied as arrays, and to the total number of Ids across all of a render timeline's batches. These throw a [ViewStoreError]($common) with the `"invalid-value"` key.
 
 The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them.
+
+### Cloud SQLite query timings
+
+Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asynchronous ECSQL readers report Cloud SQLite downloads for the main database. `reader.stats` then includes `backendDownloadTime` (time spent waiting for block downloads) and `backendExecutionTime` (the rest of the backend execution time), both in fractional milliseconds, plus `backendDownloadBlocks` and `backendDownloadBytes` (the number and bytes of block acquisitions that waited for a download). Collection is off by default. The fields are absent for local databases, unsupported Cloud SQLite versions, and incomplete measurements. `withQueryReader` does not report them.
+
+Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
+
+See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
+
 ## Platform support
 
 ### Node.js 26 support

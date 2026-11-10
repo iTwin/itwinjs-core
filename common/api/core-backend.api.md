@@ -4663,6 +4663,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     cacheDir?: LocalDirName;
     // (undocumented)
+    collectCloudSqliteStats?: boolean;
+    // (undocumented)
     compressCachedTiles?: boolean;
     // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
@@ -4708,6 +4710,7 @@ export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
+    collectCloudSqliteStats?: boolean;
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Expose host-enabled main-database Cloud SQLite wait/execution timings, waited-block counts and bytes, and correct timing accounting across retries and failures.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
