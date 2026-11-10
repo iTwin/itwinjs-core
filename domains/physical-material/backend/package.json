@@ -1,12 +1,12 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.16.0-dev.3",
+  "version": "5.16.0-dev.9",
   "main": "lib/cjs/physical-material-backend.js",
   "module": "lib/esm/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
@@ -48,16 +48,16 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~20.17.0",
-    "chai": "^4.3.10",
-    "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.6.2"
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:testing",
+    "@types/mocha": "catalog:testing",
+    "@types/node": "catalog:build",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
+    "mocha": "catalog:testing",
+    "nyc": "catalog:testing",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

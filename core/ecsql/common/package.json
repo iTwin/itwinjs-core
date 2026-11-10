@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecsql-common",
-  "version": "5.16.0-dev.3",
+  "version": "5.16.0-dev.9",
   "description": "ECSql component that can be reference on backend and frontend",
   "main": "lib/cjs/ecsql-common.js",
   "module": "lib/esm/ecsql-common.js",
@@ -40,15 +40,15 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
-    "chai": "^4.3.10",
-    "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.6.2"
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/chai": "catalog:testing",
+    "@types/mocha": "catalog:testing",
+    "chai": "catalog:testing",
+    "eslint": "catalog:linting",
+    "mocha": "catalog:testing",
+    "nyc": "catalog:testing",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
