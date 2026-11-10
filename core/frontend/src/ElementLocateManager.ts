@@ -11,6 +11,7 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelDisplayReference } from "./IModelDisplayReference";
+import { isForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ReadPixelsArgs, ScreenViewport, Viewport } from "./Viewport";
@@ -379,7 +380,10 @@ export class ElementLocateManager {
       return LocateFilterStatus.Reject;
     }
 
-    if (undefined !== hit.subCategoryId && !hit.isExternalIModelHit) {
+    if (undefined !== hit.subCategoryId && !isForeignIModelDisplayReference(hit.feature.iModelRef)) {
+      // Linked references carry their own subcategory data, so the "don't locate" check applies to them just as to the
+      // primary. Exempt only foreign references (graphics displayed without being part of the view, e.g. via
+      // TiledGraphicsProvider) - nothing loads their subcategory appearances, so the check would be meaningless.
       const appearance = hit.feature.iModelRef.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatableSubCategory");

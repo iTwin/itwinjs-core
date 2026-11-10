@@ -143,6 +143,14 @@ interface ForeignRefEntry {
 
 const foreignRefs = new WeakMap<IModelDisplayReferences, Map<IModelConnection, ForeignRefEntry>>();
 
+/** Returns true if `ref` identifies graphics displayed in a viewport without being part of the view - i.e., it was
+ * produced by [[getForeignIModelDisplayReference]] rather than belonging to the view's [[IModelDisplayReferences]].
+ * @internal
+ */
+export function isForeignIModelDisplayReference(ref: IModelDisplayReference): boolean {
+  return ref instanceof ForeignIModelRef;
+}
+
 /** Obtain the [[IModelDisplayReference]] identifying graphics originating from `iModel` when displayed in the view
  * owning `refs` without being part of the view - e.g., by a [[TiledGraphicsProvider]] whose tile trees come from a
  * different, non-linked IModelConnection. The same reference is returned for the same view, iModel, and transform so

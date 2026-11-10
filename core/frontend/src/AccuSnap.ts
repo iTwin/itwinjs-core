@@ -21,6 +21,7 @@ import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { _requestSnap } from "./common/internal/Symbols";
 import { computeIModelRefDisplayTransform } from "./internal/IModelDisplayReferenceImpl";
+import { isForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder } from "./AccuDraw";
 
 // cspell:ignore dont primitivetools
@@ -757,7 +758,10 @@ export class AccuSnap implements Decorator {
     }
 
     hitVp = hitVp ?? thisHit.viewport;
-    if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
+    // Linked references carry their own subcategory data, so the "don't snap" check applies to them just as to the
+    // primary. Exempt only foreign references (graphics displayed without being part of the view) - nothing loads
+    // their subcategory appearances, so the check would be meaningless.
+    if (undefined !== thisHit.subCategoryId && !isForeignIModelDisplayReference(thisHit.feature.iModelRef)) {
       const appearance = thisHit.feature.iModelRef.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
@@ -780,7 +784,11 @@ export class AccuSnap implements Decorator {
         snapModes.push(SnapMode.Nearest);
     }
 
-    const modelToWorld = thisHit.isExternalIModelHit ? thisHit.feature.iModelRef.linearTransformToParent : undefined;
+    // Supply the transform into the view's world space whenever the hit's reference has one - like the old
+    // transformFromSourceIModel, this is keyed on the transform itself, not on whether the iModel differs from the
+    // viewport's: a branch displaying the viewport's own iModel through a transform needs it too.
+    const refToParent = thisHit.feature.iModelRef.linearTransformToParent;
+    const modelToWorld = refToParent.isIdentity ? undefined : refToParent;
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,

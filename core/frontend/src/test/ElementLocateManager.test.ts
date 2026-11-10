@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { EmptyLocalization, GeometryClass } from "@itwin/core-common";
+import { EmptyLocalization, GeometryClass, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 import { ElementPicker, LocateOptions, LocateResponse } from "../ElementLocateManager";
 import { IModelApp } from "../IModelApp";
@@ -100,6 +100,42 @@ describe("ElementPicker", () => {
       expect(hit).toBeDefined();
       expect(hit?.feature.iModelRef).toBe(vp.primaryIModelRef);
       expect(hit?.sourceId).toBe("0x1");
+
+      refs.unlink(linked);
+    } finally {
+      linkedIModel.closeSync();
+    }
+  });
+
+  it("rejects linked hits on a subcategory marked do-not-locate", async () => {
+    const linkedIModel = createBlankConnection();
+    try {
+      const refs = vp.iModelRefs;
+      expect(refs.isSpatial).toBe(true);
+      if (!refs.isSpatial)
+        return;
+
+      const linked = refs.link({ iModel: linkedIModel });
+
+      // The linked iModel's subcategory is marked "don't locate" in its own subcategory cache.
+      const subCategoryId = "0x21";
+      linkedIModel.subcategories.add("0x20", subCategoryId, new SubCategoryAppearance({ dontLocate: true }), true);
+
+      pixels((x, y) => x === 5 && y === 5 ? new Pixel.Data({
+        feature: { iModelRef: linked, elementId: "0x1", modelId: "0x2", subCategoryId, geometryClass: GeometryClass.Primary },
+        type: Pixel.GeometryType.Surface,
+        planarity: Pixel.Planarity.Planar,
+        distanceFraction: 0.5,
+      }) : new Pixel.Data());
+      vi.spyOn(vp, "pixelsFromInches").mockReturnValue(6);
+
+      // Even for a tool that opts in to external iModels, the linked reference's subcategory data must be honored.
+      IModelApp.locateManager.options.init();
+      IModelApp.locateManager.options.allowExternalIModels = true;
+      const response = new LocateResponse();
+      const hit = await IModelApp.locateManager.doLocate(response, true, new Point3d(), vp, InputSource.Mouse);
+      expect(hit).toBeUndefined();
+      expect(response.reason).toBe("LocateFailure.NotLocatableSubCategory");
 
       refs.unlink(linked);
     } finally {
