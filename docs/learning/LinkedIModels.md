@@ -4,7 +4,7 @@ Linked iModels let a spatial view display multiple iModels together. This is use
 
 Each iModel is represented by an [IModelDisplayReference]($frontend), which specifies the subset of its content to display, such as models, categories, and elements. References can be styled independently, with their own symbology overrides, view flags, and other display settings.
 
-> Showing the measure distance tool being used to report the distance between a point in the primary reference and points in each linked imodel.
+> Image showcases the measure distance tool being used to report the distance between a point in the primary reference and points in each linked imodel.
 >
 ![linked iModels](./linked-imodels.png "A site iModel with a plant and office building displayed as linked iModels.")
 
