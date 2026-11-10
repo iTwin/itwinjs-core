@@ -211,6 +211,25 @@ describe("RealityDataSourceGoogle3dTilesImpl", async () => {
       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=456");
     });
 
+    it("does not duplicate the same session across nested tilesets", async () => {
+      const url = "https://tile.googleapis.com/v1/root.json?key=key";
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
+      if (!source)
+        return;
+
+      // Simulate nested tileset resolution where Google repeats the same session on each tileset URL.
+      source.getTileUrl("tileset.json?session=abc");
+      source.getTileUrl("child/tileset.json?session=abc");
+      source.getTileUrl("child/nested/tileset.json?session=abc");
+
+      const tileUrl = source.getTileUrl("tile.glb");
+      const parsedUrl = new URL(tileUrl);
+      expect(parsedUrl.origin + parsedUrl.pathname).toEqual("https://tile.googleapis.com/tile.glb");
+      expect(parsedUrl.searchParams.get("key")).toEqual("key");
+      expect(parsedUrl.searchParams.getAll("session")).toEqual(["abc"]);
+    });
+
     it("does not forward search params to a different origin", async () => {
       const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: "https://tile.googleapis.com/v1/root.json?key=key&session=s" });
       expect(source?.getTileUrl("https://evil.example.com/tile.glb")).toEqual("https://evil.example.com/tile.glb");
