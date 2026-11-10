@@ -738,7 +738,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-    return this.#notifyIfChanged(vp, emphasizeElements(ids, vp.primaryIModelRef, this.#state, defaultAppearance, replace));
+    return this.#notifyIfChanged(vp, emphasizeElements(ids, vp.primaryIModelRef, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace));
   }
 
   /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
@@ -751,7 +751,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-    return this.#notifyIfChanged(vp, emphasizeSelectedElements(vp.primaryIModelRef, this.#state, defaultAppearance, replace, clearSelection));
+    return this.#notifyIfChanged(vp, emphasizeSelectedElements(vp.primaryIModelRef, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace, clearSelection));
   }
 
   /** Set the element IDs to display with a color/transparency override.
@@ -1000,7 +1000,7 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance. */
   public emphasizeElements(ids: Id64Arg, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-    return emphasizeElements(ids, this.#iModelRef, this.#state, defaultAppearance, replace);
+    return emphasizeElements(ids, this.#iModelRef, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace);
   }
 
   /** Set the element IDs to display with a color/transparency override. */
@@ -1015,7 +1015,7 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance. */
   public emphasizeSelectedElements(ref: IModelDisplayReference, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-    return emphasizeSelectedElements(ref, this.#state, defaultAppearance, replace, clearSelection);
+    return emphasizeSelectedElements(ref, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace, clearSelection);
   }
 
   /** Set the currently selected elements to display with a color/transparency override. */

@@ -1240,6 +1240,30 @@ describe("Viewport", () => {
         EmphasizeElements.clear(viewport);
       });
     });
+
+    it("applies an overridden createDefaultAppearance when no appearance is supplied", () => {
+      testBlankViewport((viewport) => {
+        const customAppearance = FeatureAppearance.fromJSON({ transparency: 0.25, nonLocatable: true });
+        class CustomEmphasize extends EmphasizeElements {
+          public override createDefaultAppearance(): FeatureAppearance {
+            return customAppearance;
+          }
+        }
+
+        const emph = new CustomEmphasize();
+        try {
+          expect(emph.emphasizeElements("0x2", viewport)).toBe(true);
+          expect(emph.defaultAppearance).toBe(customAppearance);
+
+          // An explicitly supplied appearance still wins.
+          const explicit = FeatureAppearance.fromJSON({ transparency: 0.5 });
+          expect(emph.emphasizeElements("0x3", viewport, explicit)).toBe(true);
+          expect(emph.defaultAppearance).toBe(explicit);
+        } finally {
+          EmphasizeElements.clear(viewport);
+        }
+      });
+    });
   });
 
   describe("linked reference model clip groups", () => {
