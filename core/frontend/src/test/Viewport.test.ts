@@ -1923,6 +1923,37 @@ describe("Viewport", () => {
         await linkedIModel.close();
       }
     });
+
+    it("reports loading incomplete while linked subcategories are being loaded", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        // Hold the linked iModel's subcategory loading unresolved.
+        let resolveLoad!: (anyLoaded: boolean) => void;
+        const promise = new Promise<boolean>((resolve) => resolveLoad = resolve);
+        const loadSubCategories = vi.spyOn(linkedIModel.subcategories, "load").mockReturnValue({ promise } as ReturnType<typeof linkedIModel.subcategories.load>);
+
+        const linkedRef = refs.link({ iModel: linkedIModel, viewedCategories: ["0xc"] });
+        expect(loadSubCategories).toHaveBeenCalled();
+
+        // The reference's symbology is not final until its subcategories load - it must not report completion.
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        expect(viewport.view.areAllTileTreesLoaded).toBe(false);
+
+        resolveLoad(true);
+        await vi.waitFor(() => expect(linkedRef.isLoadingComplete).toBe(true));
+        expect(viewport.view.areAllTileTreesLoaded).toBe(true);
+
+        refs.unlink(linkedRef);
+        loadSubCategories.mockRestore();
+      } finally {
+        await linkedIModel.close();
+      }
+    });
   });
 
   describe("generic iModelRefs default", () => {

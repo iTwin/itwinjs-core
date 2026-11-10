@@ -121,10 +121,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     });
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
-    void loadViewedCategories(this);
+    this.#loadViewedCategories();
     this.viewedCategories.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      void loadViewedCategories(this);
+      this.#loadViewedCategories();
     });
 
     this.#boundStyleSettings = view.displayStyle.settings;
@@ -278,19 +278,27 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public isSpatial(): this is SpatialIModelDisplayReference { return true; }
   public is2d(): this is IModelDisplayReference2d { return false; }
 
-  #pendingViewedModelLoads = 0;
+  #pendingLoads = 0;
 
-  /** Load the viewed models' metadata, tracking the outstanding load so that [[isLoadingComplete]] reports false while
-   * it is pending - before the ModelStates exist, the tile-tree reference collection is empty and would vacuously report
-   * completion, e.g., to [[Viewport.waitForSceneCompletion]].
+  /** Track an asynchronous load so that [[isLoadingComplete]] reports false while it is pending - e.g., before the
+   * ModelStates exist the tile-tree reference collection is empty and would vacuously report completion, and before
+   * the subcategories load the symbology is not final (e.g., for [[Viewport.waitForSceneCompletion]]).
    */
+  #trackLoad(promise: Promise<unknown>): void {
+    ++this.#pendingLoads;
+    void promise.finally(() => --this.#pendingLoads);
+  }
+
   #loadViewedModels(): void {
-    ++this.#pendingViewedModelLoads;
-    void loadViewedModels(this).finally(() => --this.#pendingViewedModelLoads);
+    this.#trackLoad(loadViewedModels(this));
+  }
+
+  #loadViewedCategories(): void {
+    this.#trackLoad(loadViewedCategories(this));
   }
 
   public get isLoadingComplete(): boolean {
-    return 0 === this.#pendingViewedModelLoads && isLoadingComplete(this);
+    return 0 === this.#pendingLoads && isLoadingComplete(this);
   }
 
   public get isAlwaysDrawnExclusive() {
@@ -433,7 +441,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     // This iModel's subcategory cache may have been invalidated while the view was detached, with the listener that
     // would reload it removed - refresh the viewed categories and the symbology overrides baking in their appearances.
     this.invalidateSymbologyOverrides();
-    void loadViewedCategories(this);
+    this.#loadViewedCategories();
 
     this[_treeRefs].attachToViewport(args);
   }
