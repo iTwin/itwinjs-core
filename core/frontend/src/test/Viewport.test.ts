@@ -2276,6 +2276,10 @@ describe("Viewport", () => {
           expect(feature!.iModelRef).not.toBe(vp.iModelRefs.primary);
           expect(feature!.iModelRef.linearTransformToParent).toBe(transformFromIModel);
 
+          // The feature remains an instance of the Feature class, preserving its methods for pre-existing consumers.
+          expect(feature).toBeInstanceOf(Feature);
+          expect(feature!.equals(new Feature(feature!.elementId, feature!.subCategoryId, feature!.geometryClass))).toBe(true);
+
           // Attribution must be stable across frames.
           vp.invalidateScene();
           vp.renderFrame();

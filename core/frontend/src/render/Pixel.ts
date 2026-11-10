@@ -7,11 +7,26 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, GeometryClass } from "@itwin/core-common";
+import { BatchType, Feature, GeometryClass } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
-import { IModelDisplayFeature } from "../IModelDisplayReference";
+import { IModelDisplayFeature, IModelDisplayReference } from "../IModelDisplayReference";
 import type { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
+
+/** The feature stored on a [[Pixel.Data]]: a genuine [Feature]($common) - preserving `instanceof`, `equals`, `compare`,
+ * and `isDefined`/`isUndefined` for pre-existing consumers - augmented with the [[ModelFeature.modelId]] and the
+ * [[IModelDisplayReference]] through which the geometry was displayed.
+ */
+class PixelFeature extends Feature implements IModelDisplayFeature {
+  public readonly modelId: Id64String;
+  public readonly iModelRef: IModelDisplayReference;
+
+  public constructor(feature: IModelDisplayFeature) {
+    super(feature.elementId, feature.subCategoryId, feature.geometryClass);
+    this.modelId = feature.modelId;
+    this.iModelRef = feature.iModelRef;
+  }
+}
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -22,9 +37,12 @@ export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     /** The feature that produced the pixel.
+     * The value is an instance of the [Feature]($common) class - as it was before iModel display references were
+     * introduced - augmented with the [[ModelFeature.modelId]] and [[IModelDisplayFeature.iModelRef]] identifying
+     * the model and display reference from which the geometry originated.
      * @beta
      */
-    public readonly feature?: IModelDisplayFeature;
+    public readonly feature?: Feature & IModelDisplayFeature;
     /** The Id of the model containing this pixel's [[feature]]. */
     public get modelId(): Id64String | undefined { return this.feature?.modelId; }
     /** The iModel from which the geometry producing the pixel originated.
@@ -77,7 +95,7 @@ export namespace Pixel {
       }
 
       if (args.feature)
-        this.feature = { ...args.feature };
+        this.feature = new PixelFeature(args.feature);
 
       this.tileId = args.tileId;
       this.viewAttachmentId = args.viewAttachmentId;
@@ -248,6 +266,7 @@ export namespace Pixel {
   export enum Selector {
     None = 0,
     /** Select the [[Feature]] which produced each pixel. */
+    // eslint-disable-next-line @typescript-eslint/no-shadow -- pre-existing public enum member; renaming would break the API.
     Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,

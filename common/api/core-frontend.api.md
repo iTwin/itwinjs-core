@@ -8310,7 +8310,7 @@ export namespace Pixel {
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         // @beta
-        readonly feature?: IModelDisplayFeature;
+        readonly feature?: Feature & IModelDisplayFeature;
         get geometryClass(): GeometryClass | undefined;
         // @deprecated
         get iModel(): IModelConnection | undefined;
