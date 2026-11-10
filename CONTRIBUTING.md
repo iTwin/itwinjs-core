@@ -84,11 +84,14 @@ Some tests are too slow or too repetitive to run on every build, so they are ski
 | `ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS` | the extended tier of the schema sync suites - further permutations of behaviour the core tier already covers | `full-stack-tests/backend/src/integration/SchemaSync*.test.ts` |
 | `ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS` | semantic rebase permutations, stress cases, and the rebase suite repeated with semantic rebase enabled | `core/backend/src/test/hubaccess/{Rebase,SemanticRebase}.test.ts` |
 | `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
+| `ITWIN_INCLUDE_MOBILE_RPC_MEMORY_TESTS` | host-side mobile RPC response transfers with separate frontend/backend process memory measurements | `core/mobile/src/test/backend/MobileRpcMemory.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_DEV_TESTS` | vertical CRS enumeration, filtering, and conversion using DEV workspace resources | `full-stack-tests/backend/src/integration/VerticalCrsDev.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_RESOURCE_TESTS` | native prefetch and fresh-process cache regression with a test-owned local resource endpoint | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 | `ITWIN_INCLUDE_VERTICAL_CRS_OFFLINE_TESTS` | one manual production acceptance operation selected by `ITWIN_VERTICAL_CRS_OFFLINE_PHASE`, using the dedicated cache in `ITWIN_VERTICAL_CRS_OFFLINE_CACHE`; follow the [manual procedure](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md#manual-vertical-crs-offline-acceptance) | `full-stack-tests/backend/src/integration/VerticalCrsOffline.test.ts` |
 
 Set one to `1`, `true` or `yes` and run the package's usual test script. CI enables selected suites through pipeline or job variables. The vertical tests are described in the [Vertical CRS testing guide](./full-stack-tests/backend/src/integration/VerticalCrsOffline.md).
+
+Mobile RPC memory tests default to 16, 64, and 128 MiB responses. Set `ITWIN_MOBILE_RPC_MEMORY_MIB` to a comma-separated list of integer sizes from 1 to 512 MiB to override them. Reports include baseline, sampled peak, and post-GC Node.js memory plus the process-lifetime RSS high-water mark; sampled peaks can miss short spikes. These host tests do not measure WebKit Networking or WebContent processes, and RSS is not required to return to baseline after GC.
 
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 
