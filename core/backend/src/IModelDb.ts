@@ -68,6 +68,7 @@ import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { createWriteOnDemandLocks } from "./internal/WriteOnDemandLocks";
 import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
@@ -972,7 +973,13 @@ export abstract class IModelDb extends IModel {
   public [_verifyTxnWrite](): void {
     if (this._isRefreshingGeographicCoordinateSystem)
       throw new IModelError(IModelStatus.BadRequest, "Cannot write while restoring the geographic coordinate system");
+    this.prepareForWrite();
   }
+
+  /** SPIKE: called before every write. A write-on-demand BriefcaseDb switches to read-write here.
+   * @internal
+   */
+  protected prepareForWrite(): void { }
 
   /** @internal */
   public [_updateIModelProps](): void {
@@ -3951,6 +3958,123 @@ export class BriefcaseDb extends IModelDb {
   protected makeLockControl() {
     if (this.useLockServer)
       this._locks = createServerBasedLocks(this);
+    else if (this._writeOnDemand && this.isReadonly)
+      this._locks = createWriteOnDemandLocks(this);
+  }
+
+  // SPIKE: write-on-demand state. See OpenBriefcaseProps.writeOnDemand.
+  private _writeOnDemand = false;
+  private _editingScopeActive = false;
+  private _switchBackTimer?: NodeJS.Timeout;
+
+  /** SPIKE: how long a write-on-demand briefcase waits after the last save before it switches back to read-only.
+   * A short wait keeps a command that saves several times from switching back and forth.
+   * @internal
+   */
+  public static writeOnDemandSwitchBackDelay = 500;
+
+  /** SPIKE: how long the switch to read-write waits for another process to release the briefcase.
+   * @internal
+   */
+  public static writeOnDemandBusyTimeout = 500;
+
+  /** SPIKE: true if this briefcase was opened with `writeOnDemand`.
+   * @alpha
+   */
+  public get isWriteOnDemand(): boolean { return this._writeOnDemand; }
+
+  /** SPIKE: true if this briefcase is read-only now but switches to read-write on the first write.
+   * @alpha
+   */
+  public get canBecomeWritable(): boolean { return this._writeOnDemand && this.isReadonly; }
+
+  /** SPIKE: switch a read-only write-on-demand briefcase to read-write in place.
+   * Does nothing if the briefcase is already read-write, or was not opened with `writeOnDemand`.
+   * @throws IModelError if another process holds the briefcase read-write. The briefcase stays read-only.
+   * @alpha
+   */
+  public makeWritable(): void {
+    // Check the native file, not the open mode: executeWritable (pull, push) reopens the file for writing without changing the open mode.
+    if (!this._writeOnDemand || !this[_nativeDb].isReadonly())
+      return;
+
+    const start = Date.now();
+    const fileName = this.pathName;
+    try {
+      this.closeAndReopen(OpenMode.ReadWrite, fileName, BriefcaseDb.writeOnDemandBusyTimeout);
+    } catch (err: any) {
+      this.closeAndReopen(OpenMode.Readonly, fileName);
+      Logger.logWarning(loggerCategory, "Write-on-demand: could not switch to read-write", { fileName, error: err?.message });
+      throw new IModelError(err?.errorNumber ?? IModelStatus.ReadOnly, "This briefcase is open for writing in another process");
+    }
+
+    this._openMode = OpenMode.ReadWrite;
+    this._locks?.[_close]();
+    this._locks = createNoOpLockControl();
+    this.makeLockControl();
+    Logger.logInfo(loggerCategory, "Write-on-demand: switched to read-write", { fileName, ms: Date.now() - start });
+    IpcHost.notifyTxns(this, "notifyOpenModeChanged", false);
+  }
+
+  /** SPIKE: switch a write-on-demand briefcase back to read-only, if nothing is in progress.
+   * Saved txns and held locks stay in the briefcase. The next process to write gets them.
+   * @returns true if the briefcase is read-only after the call.
+   * @alpha
+   */
+  public trySwitchToReadonly(): boolean {
+    if (!this._writeOnDemand || !this.isOpen)
+      return false;
+    if (this.isReadonly)
+      return true;
+
+    const busy = undefined !== this[_activeTxn]
+      || this._editingScopeActive
+      || this[_nativeDb].hasUnsavedChanges()
+      || this.txns.isIndirectChanges
+      || this.txns.getMultiTxnOperationDepth() > 0;
+    if (busy)
+      return false;
+
+    const start = Date.now();
+    this._locks?.[_close]();
+    this._locks = createNoOpLockControl();
+    this.closeAndReopen(OpenMode.Readonly, this.pathName);
+    this._openMode = OpenMode.Readonly;
+    this.makeLockControl();
+    Logger.logInfo(loggerCategory, "Write-on-demand: switched back to read-only", { fileName: this.pathName, ms: Date.now() - start });
+    IpcHost.notifyTxns(this, "notifyOpenModeChanged", true);
+    return true;
+  }
+
+  /** SPIKE: called when a graphical editing scope starts or ends.
+   * @internal
+   */
+  public onEditingScopeToggled(active: boolean): void {
+    this._editingScopeActive = active;
+    if (!active)
+      this.scheduleSwitchToReadonly();
+  }
+
+  private scheduleSwitchToReadonly(): void {
+    if (!this._writeOnDemand)
+      return;
+
+    if (this._switchBackTimer)
+      clearTimeout(this._switchBackTimer);
+
+    this._switchBackTimer = setTimeout(() => {
+      this._switchBackTimer = undefined;
+      try {
+        this.trySwitchToReadonly();
+      } catch (err: any) {
+        Logger.logError(loggerCategory, "Write-on-demand: could not switch back to read-only", { error: err?.message });
+      }
+    }, BriefcaseDb.writeOnDemandSwitchBackDelay);
+    this._switchBackTimer.unref?.();
+  }
+
+  protected override prepareForWrite(): void {
+    this.makeWritable();
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
@@ -4077,19 +4201,35 @@ export class BriefcaseDb extends IModelDb {
     this.onOpen.raiseEvent(args);
 
     const file = { path: args.fileName, key: args.key };
-    const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const watchForChanges = args.watchForChanges || args.writeOnDemand;
+    const openMode = (args.readonly || watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new this({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    if (args.writeOnDemand) {
+      briefcaseDb._writeOnDemand = true;
+      briefcaseDb.makeLockControl();
+      briefcaseDb.txns.onCommitted.addListener(() => briefcaseDb.scheduleSwitchToReadonly());
+      briefcaseDb.txns.onChangesPushed.addListener(() => briefcaseDb.scheduleSwitchToReadonly());
+      briefcaseDb.txns.onAfterUndoRedo.addListener(() => briefcaseDb.scheduleSwitchToReadonly());
+      briefcaseDb.onBeforeClose.addOnce(() => {
+        if (briefcaseDb._switchBackTimer)
+          clearTimeout(briefcaseDb._switchBackTimer);
+      });
+    }
 
     // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
-    if (args.watchForChanges && undefined === args.container) {
+    if (watchForChanges && undefined === args.container) {
       // Must touch the file synchronously - cannot watch a file until it exists.
       touch.sync(briefcaseDb.watchFilePathName);
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
+        // SPIKE: a write-on-demand briefcase that is read-write now made the change itself.
+        if (!briefcaseDb.isReadonly)
+          return;
         // The other connection may have changed the schema, so drop everything prepared against the old one.
         briefcaseDb.clearCaches();
         nativeDb.restartDefaultTxn();
@@ -4338,13 +4478,16 @@ export class BriefcaseDb extends IModelDb {
     }
   }
 
-  private closeAndReopen(openMode: OpenMode, fileName: string) {
-    // Unclosed statements will produce BUSY error when attempting to close.
-    this.clearCaches();
+  private closeAndReopen(openMode: OpenMode, fileName: string, busyTimeout?: number) {
+    // SPIKE: a failed reopen leaves the file closed. Reopen it without closing it again.
+    if (this[_nativeDb].isOpen()) {
+      // Unclosed statements will produce BUSY error when attempting to close.
+      this.clearCaches();
 
-    // The following resets the native db's pointer to this JavaScript object.
-    this[_nativeDb].closeFile();
-    this[_nativeDb].openIModel(fileName, openMode);
+      // The following resets the native db's pointer to this JavaScript object.
+      this[_nativeDb].closeFile();
+    }
+    this[_nativeDb].openIModel(fileName, openMode, undefined, undefined, undefined, undefined === busyTimeout ? undefined : { busyTimeout });
 
     // Restore the native db's pointer to this JavaScript object.
     this[_nativeDb].setIModelDb(this);

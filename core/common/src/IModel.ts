@@ -121,6 +121,10 @@ export interface BriefcaseConnectionProps extends IModelConnectionProps {
    * @beta
    */
   readonly briefcaseId?: number;
+  /** SPIKE: true if the briefcase was opened with `writeOnDemand`.
+   * @alpha
+   */
+  readonly writeOnDemand?: boolean;
 }
 
 /** The properties that can be supplied when creating a *new* iModel.

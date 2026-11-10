@@ -404,14 +404,25 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key)[_nativeDb].setGeometricModelTrackingEnabled(startSession);
+    const iModel = IModelDb.findByKey(key);
+    // SPIKE: a write-on-demand briefcase switches to read-write when an editing scope starts.
+    if (startSession && iModel instanceof BriefcaseDb)
+      iModel.makeWritable();
+
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = iModel[_nativeDb].setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
     assert(undefined !== val.result);
+    if (iModel instanceof BriefcaseDb)
+      iModel.onEditingScopeToggled(val.result);
     return val.result;
   }
   public async isGraphicalEditingSupported(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key)[_nativeDb].isGeometricModelTrackingSupported();
+    const iModel = IModelDb.findByKey(key);
+    // SPIKE: a read-only write-on-demand briefcase can start an editing scope, because the scope switches it to read-write.
+    if (iModel instanceof BriefcaseDb && iModel.canBecomeWritable)
+      return true;
+    return iModel[_nativeDb].isGeometricModelTrackingSupported();
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {

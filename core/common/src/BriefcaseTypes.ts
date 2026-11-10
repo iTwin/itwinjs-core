@@ -111,6 +111,12 @@ export interface OpenBriefcaseProps extends OpenDbKey {
    * @note This cannot be used with cloud-based briefcases.
    */
   readonly watchForChanges?: boolean;
+  /** SPIKE: If true, open the briefcase read-only and switch it to read-write in place on the first write.
+   * The briefcase switches back to read-only after the write is saved, so another process can take read-write.
+   * Implies `watchForChanges`.
+   * @alpha
+   */
+  readonly writeOnDemand?: boolean;
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)

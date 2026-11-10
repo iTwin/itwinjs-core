@@ -1689,7 +1689,7 @@ export class ToolAdmin {
     }
 
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
+    if (undefined === imodel || !imodel.isBriefcaseConnection() || (imodel.isReadonly && !imodel.canBecomeWritable))
       return false;
 
     if (!await this.finishEditCommandForTxnOperation())
@@ -1714,7 +1714,7 @@ export class ToolAdmin {
     }
 
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
+    if (undefined === imodel || !imodel.isBriefcaseConnection() || (imodel.isReadonly && !imodel.canBecomeWritable))
       return false;
 
     if (!await this.finishEditCommandForTxnOperation())

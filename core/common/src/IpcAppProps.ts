@@ -134,6 +134,8 @@ export interface TxnNotifications {
   notifyAfterUndoRedo: (isUndo: boolean) => void;
   notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
   notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+  /** SPIKE: a write-on-demand briefcase switched between read-only and read-write. */
+  notifyOpenModeChanged: (readonly: boolean) => void;
 
   notifyIModelNameChanged: (name: string) => void;
   notifyRootSubjectChanged: (subject: RootSubjectProps) => void;

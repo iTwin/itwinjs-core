@@ -77,7 +77,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     const view = vp.view;
     const iModel = view.iModel;
 
-    if (this.requireWriteableTarget() && iModel.isReadonly)
+    // SPIKE: a write-on-demand briefcase switches to read-write when the tool writes.
+    const canBecomeWritable = iModel.isBriefcaseConnection() && iModel.canBecomeWritable;
+    if (this.requireWriteableTarget() && iModel.isReadonly && !canBecomeWritable)
       return false; // this Tool can't be used when iModel is read only.
 
     if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange))

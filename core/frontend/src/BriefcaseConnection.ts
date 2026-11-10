@@ -319,10 +319,31 @@ export class BriefcaseConnection extends IModelConnection {
     this.briefcaseId = props.briefcaseId;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
-    if (OpenMode.ReadWrite === this._openMode)
+    if (OpenMode.ReadWrite === this._openMode || props.writeOnDemand)
       this.txns.onAfterUndoRedo.addListener(async () => { await IModelApp.toolAdmin.restartPrimitiveTool(); });
+    this._writeOnDemand = !!props.writeOnDemand;
 
     this.categories.cache.attachToBriefcase(this);
+  }
+
+  private readonly _writeOnDemand: boolean;
+
+  /** SPIKE: true if this briefcase was opened with `writeOnDemand`.
+   * @alpha
+   */
+  public get isWriteOnDemand(): boolean { return this._writeOnDemand; }
+
+  /** SPIKE: true if this briefcase is read-only now, but the backend switches it to read-write on the first write.
+   * Tools that need a writable briefcase can run on it.
+   * @alpha
+   */
+  public get canBecomeWritable(): boolean { return this._writeOnDemand && this.isReadonly; }
+
+  /** SPIKE: called when the backend switches a write-on-demand briefcase between read-only and read-write.
+   * @internal
+   */
+  public onBackendOpenModeChanged(readonly: boolean): void {
+    this._openMode = readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
@@ -335,7 +356,8 @@ export class BriefcaseConnection extends IModelConnection {
 
   public static async openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
-    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
+    const readonly = briefcaseProps.readonly || briefcaseProps.writeOnDemand;
+    const connection = new this({ ...briefcaseProps, ...iModelProps, writeOnDemand: briefcaseProps.writeOnDemand }, readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
     if (lockServiceFactory)
       connection._locks = await lockServiceFactory(connection);
 
@@ -502,6 +524,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Return whether graphical editing is supported for this briefcase. It is not supported if the briefcase is read-only, or the briefcase contains a version of
    * the BisCore ECSchema older than v0.1.11.
+   * SPIKE: a read-only briefcase that [[canBecomeWritable]] supports graphical editing. Entering a scope switches it to read-write.
    * @see [[enterEditingScope]] to enable graphical editing.
    */
   public async supportsGraphicalEditing(): Promise<boolean> {

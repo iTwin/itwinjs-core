@@ -17,7 +17,7 @@ import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb, _refreshGeographicCoordinateSystem } from "./internal/Symbols";
+import { _nativeDb, _refreshGeographicCoordinateSystem, _verifyTxnWrite } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1429,6 +1429,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     if (this._nativeDb.hasUnsavedChanges()) {
       this._nativeDb.abandonChanges();
       this._iModel[_refreshGeographicCoordinateSystem]();
@@ -1447,6 +1448,7 @@ export class TxnManager {
    * @note Consider using [[reverseAllTxnsAsync]] instead.
    */
   public reverseAll(): IModelStatus {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     return this._nativeDb.reverseAll();
   }
 
@@ -1457,6 +1459,7 @@ export class TxnManager {
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
   public reverseTo(txnId: TxnIdString): IModelStatus {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     return this._nativeDb.reverseTo(txnId);
   }
 
@@ -1466,6 +1469,7 @@ export class TxnManager {
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
   public cancelTo(txnId: TxnIdString): IModelStatus {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     return this._nativeDb.cancelTo(txnId);
   }
 
@@ -1566,6 +1570,7 @@ export class TxnManager {
   }
 
   private async withLockAbandonment(args: ReverseTxnArgs | undefined, doReverseCallback: () => IModelStatus): Promise<void> {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     const result = doReverseCallback();
     if (result === IModelStatus.Success) {
       if (!args?.retainLocks) {
@@ -1586,6 +1591,7 @@ export class TxnManager {
    * and reinstate the Txn in a single operation.
    */
   public reinstateTxn(): IModelStatus {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     // Verify that the locks required by this txn have not been abandoned.
     // If so, this method has no way to re-acquire them because it is synchronous. This
     // is basically a developer error, mixing reverseTxnAsync with reinstateTxn (non-Async).
@@ -1612,6 +1618,7 @@ export class TxnManager {
    * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.
    */
   public async reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void> {
+    this._iModel[_verifyTxnWrite](); // SPIKE: a write-on-demand briefcase switches to read-write.
     // We must abandon any unsaved changes here because it will be too late
     // when reinstateTxn does it.
     if (this.hasUnsavedChanges) {

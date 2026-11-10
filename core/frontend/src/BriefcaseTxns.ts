@@ -397,6 +397,17 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     this.onCommitted.raiseEvent(hasPendingTxns, time);
   }
 
+  /** SPIKE: event raised after a write-on-demand briefcase switches between read-only and read-write.
+   * @alpha
+   */
+  public readonly onOpenModeChanged = new BeEvent<(readonly: boolean) => void>();
+
+  /** @internal */
+  public notifyOpenModeChanged(readonly: boolean) {
+    this._iModel.onBackendOpenModeChanged(readonly);
+    this.onOpenModeChanged.raiseEvent(readonly);
+  }
+
   /** @internal */
   public notifyReplayExternalTxns() {
     this.onReplayExternalTxns.raiseEvent();
