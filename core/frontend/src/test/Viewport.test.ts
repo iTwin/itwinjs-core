@@ -2233,6 +2233,58 @@ describe("Viewport", () => {
       }
     });
 
+    it("inherits the deprecated iModel when a child branch supplies only transformFromIModel", () => {
+      const otherIModel = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const pts = [
+            new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id: "0xa" },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          // The deprecated options were inherited independently: the parent branch supplies the iModel, and the
+          // child branch supplies only the transform used to adjust snap points.
+          const inner = new GraphicBranch(true);
+          inner.add(builder.finish());
+          const transformFromIModel = Transform.createTranslationXYZ(1, 2, 3);
+          const innerGraphic = IModelApp.renderSystem.createGraphicBranch(inner, Transform.identity, { transformFromIModel });
+
+          const outer = new GraphicBranch(true);
+          outer.add(innerGraphic);
+          const outerGraphic = IModelApp.renderSystem.createGraphicBranch(outer, Transform.identity, { iModel: otherIModel });
+          const owner = IModelApp.renderSystem.createGraphicOwner(outerGraphic);
+
+          addDecorator({ decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, owner) });
+          vp.renderFrame();
+
+          let feature: Pixel.Data["feature"];
+          vp.readPixels({
+            selector: Pixel.Selector.Feature,
+            receiver: (pixels) => {
+              if (pixels) {
+                const coordinate = vp.cssPixelsToDevicePixels(1);
+                feature = pixels.getPixel(coordinate, coordinate).feature;
+              }
+            },
+          });
+
+          expect(feature).toBeDefined();
+          expect(feature!.elementId).toBe("0xa");
+          expect(feature!.iModelRef.iModel).toBe(otherIModel);
+          expect(feature!.iModelRef.linearTransformToParent).toBe(transformFromIModel);
+        });
+      } finally {
+        otherIModel.closeSync();
+      }
+    });
+
     it("attributes tiles from a TiledGraphicsProvider's foreign iModel to that iModel", async () => {
       const foreignIModel = createBlankConnection();
       try {

@@ -99,10 +99,15 @@ export class BranchState {
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
     // Resolve the deprecated GraphicBranchOptions.iModel / transformFromIModel attribution now that the view's iModel
-    // references are accessible through the previous state's reference.
+    // references are accessible through the previous state's reference. The legacy fields were inherited independently:
+    // a child branch could supply only transformFromIModel, inheriting the parent's iModel - so an explicit legacy
+    // transform resolves against the child's explicit legacy iModel, falling back to the inherited reference's iModel.
     let branchIModelRef = branch.iModelRef;
-    if (!branchIModelRef && branch.legacyIModel && prev.iModelRef && (branch.legacyIModel !== prev.iModelRef.iModel || branch.legacyTransformFromIModel))
-      branchIModelRef = resolveIModelDisplayReference(prev.iModelRef.parent, branch.legacyIModel, branch.legacyTransformFromIModel);
+    if (!branchIModelRef && prev.iModelRef) {
+      const legacyIModel = branch.legacyIModel ?? (branch.legacyTransformFromIModel ? prev.iModelRef.iModel : undefined);
+      if (legacyIModel && (legacyIModel !== prev.iModelRef.iModel || branch.legacyTransformFromIModel))
+        branchIModelRef = resolveIModelDisplayReference(prev.iModelRef.parent, legacyIModel, branch.legacyTransformFromIModel);
+    }
 
     // At the boundary of an iModel display reference, apply the reference's view flag and hidden-line overrides as
     // defaults beneath the branch's own (e.g., per-model or section-cut) overrides. Like the branch's overrides, the
