@@ -165,5 +165,9 @@ export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference,
   if (!unloaded)
     return;
 
-  return ref.iModel.models.load(unloaded);
+  // Notify when the load completes so tile-tree references refresh and the scene is invalidated - as
+  // Viewport.addViewedModels did. Note the set mutation above raises no event when retrying a failed load (the Ids
+  // are already present), so this direct load may be the only one in flight.
+  await ref.iModel.models.load(unloaded);
+  ref.onViewedModelsLoaded.raiseEvent();
 }

@@ -286,7 +286,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
    */
   #trackLoad(promise: Promise<unknown>): void {
     ++this.#pendingLoads;
-    void promise.finally(() => --this.#pendingLoads);
+    // Decrement on either outcome without consuming the caller's rejection - a failed load must not leave the
+    // reference permanently incomplete, nor produce an unhandled rejection from this tracking chain.
+    const decrement = () => --this.#pendingLoads;
+    void promise.then(decrement, decrement);
   }
 
   #loadViewedModels(): void {
@@ -456,7 +459,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
-    return addAndLoadViewedModels(this, modelIds);
+    // Track the direct load so isLoadingComplete reports false while it is pending - when retrying after a failed
+    // load, the set mutation raises no event and this is the only load in flight.
+    const promise = addAndLoadViewedModels(this, modelIds);
+    this.#trackLoad(promise);
+    return promise;
   }
 }
 

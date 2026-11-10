@@ -1954,6 +1954,42 @@ describe("Viewport", () => {
         await linkedIModel.close();
       }
     });
+
+    it("notifies when retrying a failed model load succeeds", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        await vi.waitFor(() => expect(linkedRef.isLoadingComplete).toBe(true));
+
+        // The first load fails; the model Id remains in viewedModels.
+        const modelId = "0x123";
+        const loadModels = vi.spyOn(linkedIModel.models, "load").mockRejectedValue(new Error("load failed"));
+        await expect(linkedRef.addAndLoadViewedModels([modelId])).rejects.toThrow("load failed");
+        expect(linkedRef.viewedModels.has(modelId)).toBe(true);
+
+        // A failed load must not leave the reference permanently incomplete.
+        await vi.waitFor(() => expect(linkedRef.isLoadingComplete).toBe(true));
+
+        // Retrying adds nothing to the set - no onChanged fires - so the direct load must notify on completion for
+        // tile-tree references to refresh and the scene to be invalidated.
+        let loaded = 0;
+        const removeListener = linkedRef.onViewedModelsLoaded.addListener(() => loaded++);
+        loadModels.mockResolvedValue(undefined);
+        await linkedRef.addAndLoadViewedModels([modelId]);
+        expect(loaded).toBe(1);
+
+        removeListener();
+        refs.unlink(linkedRef);
+        loadModels.mockRestore();
+      } finally {
+        await linkedIModel.close();
+      }
+    });
   });
 
   describe("generic iModelRefs default", () => {
