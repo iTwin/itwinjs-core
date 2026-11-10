@@ -575,4 +575,42 @@ describe("SubCategoriesCache", () => {
 
     queue[Symbol.dispose]();
   });
+
+  it("queues a request pushed from a cached pending entry's completion callback behind remaining pending entries", async () => {
+    const currentResult = createDeferred<SubCategoryResultRow[]>();
+    const currentQuery = vi.fn().mockReturnValue(currentResult.promise);
+    const currentCache = new SubCategoriesCache({ isClosed: false, querySubCategories: currentQuery } as unknown as IModelConnection);
+
+    // These caches already contain their categories, so their pending entries are satisfied synchronously while draining.
+    const makeLoadedCache = (categoryId: string, subCategoryId: string) => {
+      const cache = new SubCategoriesCache({ isClosed: false } as unknown as IModelConnection);
+      cache.add(categoryId, subCategoryId, new SubCategoryAppearance(), true);
+      return cache;
+    };
+    const firstCache = makeLoadedCache("0x2", "0x20");
+    const secondCache = makeLoadedCache("0x3", "0x30");
+    const nestedCache = makeLoadedCache("0x4", "0x40");
+
+    const queue = new SubCategoriesCache.Queue();
+    const order: string[] = [];
+
+    // The current request dispatches immediately and remains in flight while the pending entries accumulate.
+    queue.push(currentCache, ["0x1"], () => order.push("current"));
+
+    // The first pending entry's completion callback pushes another request while the second entry is still pending.
+    queue.push(firstCache, ["0x2"], () => {
+      order.push("first");
+      queue.push(nestedCache, ["0x4"], (loaded) => order.push(`nested:${loaded}`));
+    });
+    queue.push(secondCache, ["0x3"], () => order.push("second"));
+
+    currentResult.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+
+    // The nested push must wait its turn behind the already-pending second entry.
+    expect(order).toEqual(["current", "first", "second", "nested:true"]);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
 });

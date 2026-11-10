@@ -390,7 +390,7 @@ export namespace SubCategoriesCache {
     public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
       if (this._disposed)
         return;
-      else if (undefined === this._current)
+      else if (undefined === this._current && 0 === this._next.length)
         this.pushCurrent(cache, categoryIds, func);
       else
         this.pushNext(cache, categoryIds, func);
@@ -469,8 +469,9 @@ export namespace SubCategoriesCache {
     }
 
     private pushNext(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
-      assert(undefined !== this._current);
-      assert(undefined !== this._request);
+      // Either a request is in flight, or a completion callback is pushing while processNext is still draining
+      // already-satisfied pending entries - in both cases this request must wait its turn behind the existing work.
+      assert(undefined !== this._current || 0 < this._next.length);
 
       const last = this._next[this._next.length - 1];
       if (undefined === last || last.cache !== cache) {
