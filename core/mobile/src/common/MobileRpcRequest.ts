@@ -12,6 +12,7 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
 /** @internal */
 export class MobileRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
+  private _rejectSend?: (reason: unknown) => void;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
@@ -19,12 +20,26 @@ export class MobileRpcRequest extends RpcRequest {
 
   /** Sends the request. */
   protected async send(): Promise<number> {
-    this.protocol.requests.set(this.id, this);
-    const parts = await MobileRpcProtocol.encodeRequest(this);
-    this.protocol.sendToBackend(parts);
-    return new Promise<number>((resolve) => {
+    return new Promise<number>((resolve, reject) => {
       this._res = resolve;
+      this._rejectSend = reject;
+      this.protocol.requests.set(this.id, this);
+      MobileRpcProtocol.encodeRequest(this).then((parts) => {
+        if (this.protocol.requests.get(this.id) === this && this._rejectSend === reject)
+          this.protocol.sendToBackend(parts);
+      }).catch((error: unknown) => {
+        if (this._rejectSend === reject)
+          this.protocol.requests.delete(this.id);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      });
     });
+  }
+
+  public notifyConnectionError(error: Error): void {
+    this.cancel();
+    this.reject(error);
+    this._rejectSend?.(error);
+    this._rejectSend = undefined;
   }
 
   /** Loads the request. */

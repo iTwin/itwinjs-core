@@ -8,8 +8,9 @@
 
 import {
   IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
-  SerializedRpcRequest,
+  SerializedRpcRequest, serializeIpcError,
 } from "@itwin/core-common";
+import { Logger } from "@itwin/core-bentley";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";
@@ -26,6 +27,7 @@ class IpcInterface extends RpcInterface {
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
+  private _pendingInvocations = new Map<number, IpcWebSocketMessage>();
 
   public constructor(protocol: MobileRpcProtocol) {
     super();
@@ -57,14 +59,49 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
+    if (message.response !== undefined)
+      this._pendingInvocations.delete(message.response);
     this.broadcast({} as Event, message);
     return true;
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    using request = new MobileRpcRequest(this._client, "send", [message]);
-    const encoded = await MobileRpcProtocol.encodeRequest(request);
-    this._protocol.sendToBackend(encoded);
+    if (message.type === IpcWebSocketMessageType.Invoke && message.request !== undefined)
+      this._pendingInvocations.set(message.request, message);
+
+    const socket = this._protocol.socket;
+    try {
+      using request = new MobileRpcRequest(this._client, "send", [message]);
+      const encoded = await MobileRpcProtocol.encodeRequest(request);
+      if (socket !== this._protocol.socket)
+        return;
+      if (message.type === IpcWebSocketMessageType.Invoke && (message.request === undefined || !this._pendingInvocations.has(message.request)))
+        return;
+
+      this._protocol.sendToBackend(encoded);
+    } catch (error) {
+      this.failInvocation(message, error);
+    }
+  }
+
+  public notifyConnectionError(error: Error): void {
+    const pending = Array.from(this._pendingInvocations.values());
+    for (const message of pending)
+      this.failInvocation(message, error);
+  }
+
+  private failInvocation(message: IpcWebSocketMessage, error: unknown) {
+    if (message.request === undefined) {
+      Logger.logError("core-mobile.MobileIpc", "Mobile IPC send failed.", { error });
+      return;
+    }
+    if (!this._pendingInvocations.delete(message.request))
+      return;
+
+    this.broadcast({} as Event, {
+      type: IpcWebSocketMessageType.Response, channel: message.channel, response: message.request, sequence: -1,
+      data: serializeIpcError(error, false) as any,
+    });
   }
 
   private sendToFrontend(message: IpcWebSocketMessage) {

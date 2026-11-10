@@ -9,7 +9,7 @@ import { IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
-import { BentleyStatus, expectDefined, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined, Logger, ProcessDetector } from "@itwin/core-bentley";
 
 interface MobileAddon {
   notifyListening: (port: number, rpcToken: string) => void;
@@ -93,6 +93,7 @@ export class MobileRpcServer {
     this._server.on("connection", (connection) => {
       this._connection = connection;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
+      connection.on("error", (error) => this._onSendError(connection, error));
       this._createSender();
       this._sendPending();
       (global as any).__iTwinJsRpcReady = true;
@@ -106,29 +107,43 @@ export class MobileRpcServer {
         return;
       }
 
-      const connection = expectDefined(this._connection, "No connection.");
-      connection.send(message, (err) => {
-        if (err) {
-          throw err;
-        }
-      });
+      this._send(message);
     };
 
     MobileRpcServer.interop.sendString = sender;
     MobileRpcServer.interop.sendBinary = sender;
   }
 
+  private _onSendError(connection: ws, error: unknown) {
+    Logger.logError("core-mobile-backend.MobileRpcServer", "Mobile RPC socket failed.", { connectionId: this._connectionId, error });
+    connection.terminate();
+  }
+
+  private _send(message: string | Uint8Array) {
+    const connection = expectDefined(this._connection, "No connection.");
+    if (connection.readyState !== ws.OPEN) {
+      Logger.logError("core-mobile-backend.MobileRpcServer", "Cannot send mobile RPC message: socket is not open.", {
+        connectionId: this._connectionId, readyState: connection.readyState,
+      });
+      return;
+    }
+
+    try {
+      connection.send(message, (error) => {
+        if (error)
+          this._onSendError(connection, error);
+      });
+    } catch (error) {
+      this._onSendError(connection, error);
+    }
+  }
+
   private _sendPending() {
     if (this._pendingMessages === undefined)
       return;
 
-    const connection = expectDefined(this._connection, "No connection.");
     for (const message of this._pendingMessages) {
-      connection.send(message, (err) => {
-        if (err) {
-          throw err;
-        }
-      });
+      this._send(message);
     }
     this._pendingMessages.length = 0;
   }
