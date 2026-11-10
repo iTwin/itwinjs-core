@@ -1635,6 +1635,22 @@ describe("Viewport", () => {
         expect(ref.viewedCategories.has(categoryId)).toBe(false);
       });
     });
+
+    it("reads a one-shot categories iterable exactly once", () => {
+      testBlankViewport((viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        const categoryId = "0x1";
+        const subCategoryId = "0x2";
+        ref.iModel.subcategories.add(categoryId, subCategoryId, new SubCategoryAppearance({ invisible: true }), true);
+
+        function* categories() { yield categoryId; }
+        ref.changeCategoryDisplay({ categories: categories(), display: true, enableAllSubCategories: true });
+
+        expect(ref.viewedCategories.has(categoryId)).toBe(true);
+        // enableAllSubCategories depends on a second read of the input - a generator would be exhausted by then.
+        expect(ref.isSubCategoryVisible(subCategoryId)).toBe(true);
+      });
+    });
   });
 
   describe("SpatialIModelDisplayReference viewed models", () => {
@@ -1651,6 +1667,33 @@ describe("Viewport", () => {
           expect(ref.viewedModels.has(modelId)).toBe(true);
           expect(loadModels).toHaveBeenCalled();
         } finally {
+          loadModels.mockRestore();
+        }
+      });
+    });
+
+    it("reads a one-shot modelIds iterable exactly once", async () => {
+      await testBlankViewportAsync(async (viewport) => {
+        const ref = viewport.iModelRefs.primary;
+        if (!ref.isSpatial())
+          throw new Error("Expected a spatial viewport");
+
+        const modelId = "0x123";
+        // Mock load so the viewedModels auto-load listener does not reach the real filterLoaded;
+        // the only direct filterLoaded call is then the one made by addAndLoadViewedModels itself.
+        const loadModels = vi.spyOn(ref.iModel.models, "load").mockResolvedValue();
+        const filterLoaded = vi.spyOn(ref.iModel.models, "filterLoaded");
+        try {
+          function* modelIds() { yield modelId; }
+          await ref.addAndLoadViewedModels(modelIds());
+
+          expect(ref.viewedModels.has(modelId)).toBe(true);
+          // The load set is built from a second read of the input - a generator would be exhausted by then.
+          expect(filterLoaded).toHaveBeenCalledTimes(1);
+          const requested = new Set(filterLoaded.mock.calls[0][0] as Iterable<string>);
+          expect(requested.has(modelId)).toBe(true);
+        } finally {
+          filterLoaded.mockRestore();
           loadModels.mockRestore();
         }
       });

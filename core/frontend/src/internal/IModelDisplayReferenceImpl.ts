@@ -46,26 +46,26 @@ export function computeIModelRefDisplayTransform(ref: IModelDisplayReference, mo
 }
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
-  const ids = Id64.iterable(args.categories);
+  // args.categories may be a one-shot iterable (e.g., a generator) - materialize it exactly once.
+  const categories = Id64.toIdSet(args.categories);
   if (!args.display) {
     if (args.noBatchNotify) {
-      for (const id of ids)
-      ref.viewedCategories.delete(id);
+      for (const id of categories)
+        ref.viewedCategories.delete(id);
     } else {
-      ref.viewedCategories.deleteAll(ids);
+      ref.viewedCategories.deleteAll(categories);
     }
 
     return;
   }
 
   if (args.noBatchNotify) {
-    for (const id of ids)
-    ref.viewedCategories.add(id);
+    for (const id of categories)
+      ref.viewedCategories.add(id);
   } else {
-    ref.viewedCategories.addAll(ids);
+    ref.viewedCategories.addAll(categories);
   }
 
-  const categories = Id64.toIdSet(args.categories);
   ref.parent.subcategories.push(ref.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
     if (args.enableAllSubCategories) {
       for (const catId of categories) {
@@ -158,8 +158,10 @@ export function listenForSubCategoryChanges(ref: IModelDisplayReference): () => 
 }
 
 export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference, modelIds: Iterable<Id64String>): Promise<void> {
-  ref.viewedModels.addAll(modelIds);
-  const unloaded = ref.iModel.models.filterLoaded(Id64.toIdSet(modelIds));
+  // modelIds may be a one-shot iterable (e.g., a generator) - materialize it exactly once.
+  const ids = Id64.toIdSet(modelIds);
+  ref.viewedModels.addAll(ids);
+  const unloaded = ref.iModel.models.filterLoaded(ids);
   if (!unloaded)
     return;
 
