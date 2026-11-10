@@ -86,6 +86,18 @@ export interface DbRuntimeStats {
   memUsed: number;
   /** In milliseconds */
   prepareTime: number;
+  /** Elapsed wait attributed to successful block downloads for the main Cloud SQLite database, in fractional milliseconds. */
+  downloadTime?: number;
+  /** Active execution elapsed time excluding main-database block waits, in fractional milliseconds. */
+  executionTime?: number;
+  /** Number of successful main-database block acquisitions that waited, including shared downloads but excluding cache hits. */
+  downloadBlocks?: number;
+  /** Bytes of the main-database blocks counted by [[downloadBlocks]]. */
+  downloadBytes?: number;
+  /** Whether this attempt executed and supplied complete Cloud SQLite timings.
+   * @internal
+   */
+  cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
   /** Whether this page resumed an unfinished native statement.
    * @internal
    */
