@@ -1226,21 +1226,6 @@ export class AccuSnap implements Decorator {
     this.errorIcon.decorate(context);
   }
 
-  private clearElemFromHitList(element: string) {
-    if (this.aSnapHits)
-      this.aSnapHits.removeHitsFrom(element);
-  }
-
-  /** @internal */
-  public clearIfElement(sourceId: string): void {
-    this.clearElemFromHitList(sourceId);
-
-    const hit = this.currHit;
-    if (hit && hit.sourceId === sourceId) {
-      this.destroy();
-    }
-  }
-
   /** Enable locating elements.
    * @public
    */

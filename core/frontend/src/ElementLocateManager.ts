@@ -447,8 +447,9 @@ export class ElementLocateManager {
     this.setCurrHit(hit);
 
     // if we found a hit, remove it from the list of remaining hits near the current search point.
+    // Qualified by display reference as well as element Id - distinct references may contain elements with colliding Ids.
     if (hit && this.hitList)
-      this.hitList.removeHitsFrom(hit.sourceId);
+      this.hitList.removeHitsFrom(hit.sourceId, hit.feature.iModelRef);
     return hit;
   }
 }

@@ -14,7 +14,7 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { GraphicType } from "./common/render/GraphicType";
-import { IModelDisplayFeature } from "./IModelDisplayReference";
+import { IModelDisplayFeature, IModelDisplayReference } from "./IModelDisplayReference";
 import { getForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 
 /**
@@ -705,14 +705,24 @@ export class HitList<T extends HitDetail> {
     this.hits.splice(hitNum, 1);
   }
 
-  /** search through list and remove any hits that contain a specified element id. */
-  public removeHitsFrom(sourceId: string): boolean {
+  /** Search through list and remove any hits that contain a specified element id.
+   * @note Distinct display references (e.g., linked iModels) may contain elements with colliding Ids; this removes hits from
+   * all of them. Use the overload accepting an [[IModelDisplayReference]] to remove hits from only one.
+   */
+  public removeHitsFrom(sourceId: string): boolean;
+
+  /** Search through list and remove any hits that contain a specified element id displayed through the specified reference.
+   * @beta
+   */
+  public removeHitsFrom(sourceId: string, iModelRef: IModelDisplayReference): boolean;
+
+  public removeHitsFrom(sourceId: string, iModelRef?: IModelDisplayReference): boolean {
     let removedOne = false;
 
     // walk backwards through list so we don't have to worry about what happens on remove
     for (let i = this.length - 1; i >= 0; i--) {
       const thisHit = this.hits[i];
-      if (thisHit && sourceId === thisHit.sourceId) {
+      if (thisHit && sourceId === thisHit.sourceId && (undefined === iModelRef || iModelRef === thisHit.feature.iModelRef)) {
         removedOne = true;
         this.removeHit(i);
       }

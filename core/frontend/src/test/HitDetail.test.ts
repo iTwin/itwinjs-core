@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { EmptyLocalization, GeometryClass } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitDetailFeatureProps, HitDetailProps, HitPriority, HitSource, SnapDetail } from "../HitDetail";
+import { HitDetail, HitDetailFeatureProps, HitDetailProps, HitList, HitPriority, HitSource, SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelDisplayFeature } from "../IModelDisplayReference";
 import { ScreenViewport } from "../Viewport";
@@ -194,5 +194,50 @@ describe("HitDetail", () => {
     expect(legacyFeature).toBe(featureSourceId);
     // @ts-expect-error Neither construction overload accepts props without an identity.
     expect(() => new HitDetail(props)).toThrow("HitDetail requires a feature or sourceId");
+  });
+
+  it("removes hits qualified by display reference when given a HitDetail", () => {
+    using viewport = openBlankViewport();
+    const otherIModel = createBlankConnection();
+    try {
+      const refs = viewport.view.iModelRefs;
+      if (!refs.isSpatial)
+        throw new Error("Expected spatial iModel references");
+
+      const linkedRef = refs.link({ iModel: otherIModel });
+      const { sourceId: _sourceId, ...props } = makeProps(viewport);
+      const makeFeatureHit = (id: string, iModelRef: IModelDisplayFeature["iModelRef"]) => new HitDetail({
+        ...props,
+        feature: { elementId: id, subCategoryId: Id64.invalid, geometryClass: GeometryClass.Primary, modelId: Id64.invalid, iModelRef },
+      });
+
+      // Elements in distinct references may share an element Id.
+      const elementId = "0x123";
+      const primaryHit = makeFeatureHit(elementId, refs.primary);
+      const linkedHit = makeFeatureHit(elementId, linkedRef);
+      const otherLinkedHit = makeFeatureHit("0x456", linkedRef);
+
+      let list = new HitList<HitDetail>();
+      for (const hit of [primaryHit, linkedHit, otherLinkedHit])
+        list.addHit(hit);
+
+      // Given a display reference, only hits from that reference are removed.
+      expect(list.removeHitsFrom(elementId, refs.primary)).toBe(true);
+      expect(list.hits).not.toContain(primaryHit);
+      expect(list.hits).toContain(linkedHit);
+      expect(list.hits).toContain(otherLinkedHit);
+
+      // Given a bare element Id, hits from all display references are removed.
+      list = new HitList<HitDetail>();
+      for (const hit of [primaryHit, linkedHit, otherLinkedHit])
+        list.addHit(hit);
+
+      expect(list.removeHitsFrom(elementId)).toBe(true);
+      expect(list.hits).toEqual([otherLinkedHit]);
+
+      refs.unlink(linkedRef);
+    } finally {
+      otherIModel.closeSync();
+    }
   });
 });

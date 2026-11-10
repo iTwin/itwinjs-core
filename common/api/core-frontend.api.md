@@ -1052,8 +1052,6 @@ export class AccuSnap implements Decorator {
     aSnapHits?: HitList<HitDetail>;
     clear(): void;
     // @internal (undocumented)
-    clearIfElement(sourceId: string): void;
-    // @internal (undocumented)
     clearToolTip(ev?: BeButtonEvent): void;
     readonly cross: SpriteLocation;
     currHit?: HitDetail;
@@ -4979,6 +4977,8 @@ export class HitList<T extends HitDetail> {
     removeCurrentHit(): void;
     removeHit(hitNum: number): void;
     removeHitsFrom(sourceId: string): boolean;
+    // @beta
+    removeHitsFrom(sourceId: string, iModelRef: IModelDisplayReference): boolean;
     // (undocumented)
     resetCurrentHit(): void;
     // (undocumented)
