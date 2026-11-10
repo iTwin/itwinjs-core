@@ -760,6 +760,30 @@ describe("Viewport", () => {
         removeListener();
       });
     });
+
+    it("refreshes stale symbology overrides when a view is reattached after its style was mutated while detached", () => {
+      testBlankViewport((viewport) => {
+        const view = viewport.view;
+        const ref = view.iModelRefs.primary;
+
+        // Detach the view by switching to a clone.
+        viewport.changeView(view.clone());
+
+        // Warm the detached reference's cache, then mutate its style - the listeners that would invalidate it are detached.
+        const warm = ref.getSymbologyOverrides();
+        expect(ref.getSymbologyOverrides()).toBe(warm);
+        const appearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
+        view.displayStyle.settings.modelAppearanceOverrides.set("0x123", appearance);
+        expect(ref.getSymbologyOverrides()).toBe(warm);
+
+        // Reattaching must discard the stale cache - as Viewport.attachToView did before iModel display references -
+        // so the rebuilt overrides reflect the mutation.
+        viewport.changeView(view);
+        const fresh = ref.getSymbologyOverrides();
+        expect(fresh).not.toBe(warm);
+        expect(fresh.getModelOverridesById("0x123")).toEqual(appearance);
+      });
+    });
   });
 
   describe("linked iModel tile tree lifecycle", () => {

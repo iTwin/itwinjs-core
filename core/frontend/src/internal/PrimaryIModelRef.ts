@@ -233,6 +233,12 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.#displayStyleReplaced(style);
 
     this.#syncViewedCategoriesBinding();
+
+    // The style's contents may have been mutated - and the iModel's subcategory cache invalidated - while the view was
+    // detached, with the listeners that would invalidate and reload removed. Mirror the old Viewport.attachToView, which
+    // unconditionally refreshed subcategories and rebuilt the symbology overrides on every attach.
+    this.invalidateSymbologyOverrides();
+    void loadViewedCategories(this);
   }
   public [_detachFromViewport](): void {
     this.#removeSubCategoryChangesListener?.();

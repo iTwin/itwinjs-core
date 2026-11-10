@@ -412,6 +412,11 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     if (style.settings !== this.#boundStyleSettings)
       this.#displayStyleReplaced(style);
 
+    // This iModel's subcategory cache may have been invalidated while the view was detached, with the listener that
+    // would reload it removed - refresh the viewed categories and the symbology overrides baking in their appearances.
+    this.invalidateSymbologyOverrides();
+    void loadViewedCategories(this);
+
     this[_treeRefs].attachToViewport(args);
   }
 
