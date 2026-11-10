@@ -168,6 +168,79 @@ describe("ConcurrentQuery", () => {
     }
   });
 
+  it("returns primary query responses synchronously, including paging and errors", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { globalQuota: { time: 60, memory: 8388608 } });
+      const query = "SELECT ECInstanceId,ECClassId,Model FROM bis.Element ORDER BY ECInstanceId LIMIT 10";
+      const request: DbQueryRequest = { query, usePrimaryConn: true, convertClassIdsToClassNames: true };
+      const immediate = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], request);
+      const wrapped = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], request);
+      expect(immediate.status).eq(DbResponseStatus.Done);
+      expect(immediate.data).deep.eq(wrapped.data);
+      expect(immediate.meta).deep.eq(wrapped.meta);
+      expect(immediate.rowCount).eq(wrapped.rowCount);
+      expect(immediate.stats.resumed).eq(false);
+      const empty = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], { ...request, query: `${query.replace(" ORDER BY ECInstanceId LIMIT 10", "")} WHERE ECInstanceId=0` });
+      expect(empty.status).eq(DbResponseStatus.Done);
+      expect(empty.data).deep.eq([]);
+      expect(empty.meta).deep.eq(immediate.meta);
+      expect(() => ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], { query })).to.throw("must use the primary connection");
+      const invalid: DbQueryRequest = { query: "SELECT * FROM MissingSchema.MissingClass", usePrimaryConn: true, suppressLogErrors: true };
+      const error = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], invalid);
+      const wrappedError = await ConcurrentQuery.executeQueryRequest(db[_nativeDb], invalid);
+      expect(error.status).greaterThanOrEqual(DbResponseStatus.Error);
+      expect(error.status).eq(wrappedError.status);
+      expect(error.error).eq(wrappedError.error);
+      expect(error.data).deep.eq([]);
+
+      ConcurrentQuery.shutdown(db[_nativeDb]);
+      ConcurrentQuery.resetConfig(db[_nativeDb], { globalQuota: { time: 60, memory: 1 } });
+      const first = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], request);
+      expect(first.status).eq(DbResponseStatus.Partial);
+      expect(first.data.length).eq(1);
+      const next = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], { ...request, includeMetaData: false, limit: { offset: 1, count: -1 } });
+      expect(next.data).deep.eq([immediate.data[1]]);
+      expect(next.meta).deep.eq([]);
+    } finally {
+      ConcurrentQuery.resetConfig(db[_nativeDb]);
+      db.close();
+    }
+  });
+
+  it("reads primary query options once during native decoding", () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    try {
+      ConcurrentQuery.resetConfig(db[_nativeDb], { globalQuota: { time: 60, memory: 8388608 } });
+      let queryReads = 0, metadataReads = 0, limitReads = 0;
+      const request: DbQueryRequest = {
+        usePrimaryConn: true,
+        get query() {
+          ++queryReads;
+          return "SELECT ECInstanceId FROM bis.Element ORDER BY ECInstanceId";
+        },
+        get includeMetaData() {
+          ++metadataReads;
+          return true;
+        },
+        get limit() {
+          ++limitReads;
+          return { count: 1, offset: 0 };
+        },
+      };
+      const response = ConcurrentQuery.executePrimaryQueryRequest(db[_nativeDb], request);
+      expect(response.status).eq(DbResponseStatus.Done);
+      expect(response.data.length).eq(1);
+      expect(response.meta.length).eq(1);
+      expect(queryReads).eq(1);
+      expect(metadataReads).eq(1);
+      expect(limitReads).eq(1);
+    } finally {
+      ConcurrentQuery.resetConfig(db[_nativeDb]);
+      db.close();
+    }
+  });
+
   it("time limit check", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);

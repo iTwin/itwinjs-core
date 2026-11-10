@@ -35,6 +35,23 @@ A retained statement can hold sorter memory, temporary files, and a read snapsho
 
 Result conversion reduces repeated metadata lookups and temporary JSON allocations for supported scalars, navigation properties, points, structs, and arrays. Point-coordinate reuse and more efficient ID formatting reduce per-row work. Unsupported result shapes continue using the existing conversion path. The documented [row-format](../ECSQLRowFormat.md) and null-handling rules are unchanged.
 
+## Query timing statistics
+
+`reader.stats` accumulates over the lifetime of an asynchronous reader, including retries and failed attempts; create a new reader for fresh totals. Its timing fields overlap, so do not add them together. See [QueryStats]($common) for the scope of each field.
+
+To measure Cloud SQLite downloads for the main database, start the backend with `await IModelHost.startup({ collectCloudSqliteStats: true })`. Asynchronous readers served by that backend, including frontend readers, then report:
+
+- `backendDownloadTime`: time spent waiting for block downloads, in fractional milliseconds.
+- `backendExecutionTime`: the rest of the backend execution time, in fractional milliseconds. It is not CPU usage.
+- `backendDownloadBlocks`: number of block acquisitions that waited for a download. Warm-cache reads report zero.
+- `backendDownloadBytes`: bytes of those blocks. A block downloaded again after eviction, or a download shared by several requests, counts each time, so this is not unique network traffic.
+
+Collection is off by default because it adds work to every request. The fields are absent for local databases, unsupported Cloud SQLite versions, and incomplete measurements, so check for `undefined` rather than treating absence as zero. `withQueryReader` does not report them.
+
+```ts
+[[include:ExecuteECSql_Cloud_Timing_Async]]
+```
+
 ## Examples
 
 - [Asynchronous query examples](../ECSQLCodeExamples.md) — recommended starting point for frontend and backend queries.
