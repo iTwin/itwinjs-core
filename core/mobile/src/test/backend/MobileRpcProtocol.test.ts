@@ -1,7 +1,7 @@
 import { setImmediate } from "node:timers/promises";
 import { spawnSync } from "node:child_process";
 import { expect } from "chai";
-import { IpcInvokeReturn, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessageType, RpcInterface, RpcManager, RpcMarshaling, RpcRequest, RpcRequestStatus, unwrapIpcInvokeReturn } from "@itwin/core-common";
+import { IpcInvokeReturn, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessageType, RpcConfiguration, RpcInterface, RpcManager, RpcMarshaling, RpcRequest, RpcRequestStatus, SerializedRpcRequest, unwrapIpcInvokeReturn } from "@itwin/core-common";
 import { MobileRpcManager } from "../../common/MobileRpcManager";
 import { MobileRpcProtocol } from "../../common/MobileRpcProtocol";
 import { MobileRpcRequest } from "../../common/MobileRpcRequest";
@@ -42,9 +42,11 @@ describe("MobileRpcProtocol disconnects", () => {
   const socketDescriptor = Object.getOwnPropertyDescriptor(globalThis, "WebSocket");
   const originalTransport = IpcWebSocket.transport;
   let originalReceivers: typeof IpcWebSocket.receivers;
+  let serializeContext: typeof RpcConfiguration.requestContext.serialize;
 
   beforeEach(() => {
     submitted = Promise.resolve();
+    serializeContext = RpcConfiguration.requestContext.serialize;
     originalReceivers = new Set(IpcWebSocket.receivers);
     Object.defineProperty(globalThis, "window", {
       configurable: true,
@@ -56,6 +58,7 @@ describe("MobileRpcProtocol disconnects", () => {
   });
 
   afterEach(async () => {
+    RpcConfiguration.requestContext.serialize = serializeContext;
     request?.cancel();
     socket.close();
     socket.dispatchEvent(new Event("close"));
@@ -84,6 +87,20 @@ describe("MobileRpcProtocol disconnects", () => {
     submitted = request.submit();
     await setImmediate();
     expect(protocol.requests.size).to.equal(1);
+  }
+
+  function pauseHeaders() {
+    let resume = () => {};
+    const paused = new Promise<void>((resolve) => { resume = resolve; });
+    let first = true;
+    RpcConfiguration.requestContext.serialize = async (value) => {
+      if (first) {
+        first = false;
+        await paused;
+      }
+      return serializeContext(value);
+    };
+    return resume;
   }
 
   it("roundtrips binary values in messages no larger than 4 MiB", () => {
@@ -297,6 +314,88 @@ describe("MobileRpcProtocol disconnects", () => {
       }),
     }) }));
     expect(unwrapIpcInvokeReturn(await result)).to.equal("completed");
+  });
+
+  it("does not retry requests canceled while the replacement socket connects", async () => {
+    await submit(true);
+    (window as any)._imodeljs_rpc_reconnect(12346, token);
+    socket = protocol.socket as unknown as TestSocket;
+    request.cancel();
+    socket.open();
+    await setImmediate();
+    expect(socket.sent).to.have.lengthOf(0);
+    expect(protocol.requests.size).to.equal(0);
+    expect(RpcRequest.activeRequests.has(request.id)).to.equal(false);
+  });
+
+  for (const beforeOpen of [true, false]) {
+    it(`does not duplicate a request whose delayed headers finish ${beforeOpen ? "before" : "after"} reconnect opens`, async () => {
+      const resume = pauseHeaders();
+      socket.open();
+      request = new MobileRpcRequest(RpcManager.getClientForInterface(TestRpc), "operation", []);
+      response = request.response.then(() => undefined, (error: unknown) => error);
+      submitted = request.submit();
+      await setImmediate();
+      expect(protocol.requests.size).to.equal(0);
+      (window as any)._imodeljs_rpc_reconnect(12346, token);
+      socket = protocol.socket as unknown as TestSocket;
+      if (beforeOpen) {
+        resume();
+        await setImmediate();
+      }
+      socket.open();
+      if (!beforeOpen)
+        resume();
+      await setImmediate();
+      expect(socket.sent).to.have.lengthOf(1);
+      socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+        id: request.id, interfaceName: TestRpc.interfaceName, status: protocol.getCode(RpcRequestStatus.Resolved),
+        result: RpcMarshaling.serialize(protocol, undefined),
+      }) }));
+      expect(await response).to.equal(undefined);
+      await submitted;
+    });
+  }
+
+  it("does not send a rejected request whose delayed headers finish after reconnect", async () => {
+    const resume = pauseHeaders();
+    socket.open();
+    request = new MobileRpcRequest(RpcManager.getClientForInterface(TestRpc), "operation", []);
+    response = request.response.then(() => undefined, (error: unknown) => error);
+    submitted = request.submit();
+    await setImmediate();
+    socket.close();
+    socket.dispatchEvent(new Event("close"));
+    expect(await response).to.be.instanceOf(Error);
+    await submitted;
+    (window as any)._imodeljs_rpc_reconnect(12346, token);
+    socket = protocol.socket as unknown as TestSocket;
+    socket.open();
+    resume();
+    await setImmediate();
+    expect(socket.sent).to.have.lengthOf(0);
+    expect(protocol.requests.size).to.equal(0);
+    expect(RpcRequest.activeRequests.has(request.id)).to.equal(false);
+  });
+
+  it("chunks large binary IPC uploads using the mobile protocol", async () => {
+    socket.open();
+    const source = new Uint8Array(8 * 1024 * 1024 + 19).fill(0x5a);
+    const ipc = new IpcWebSocketFrontend();
+    const result = ipc.invoke("itwin.test", "upload", source) as Promise<IpcInvokeReturn>;
+    await setImmediate();
+    const binary = socket.sent.slice(1) as Uint8Array[];
+    expect(binary.map((part) => part.byteLength)).to.deep.equal([4 * 1024 * 1024, 4 * 1024 * 1024, 19]);
+    const header = JSON.parse(socket.sent[0] as string) as SerializedRpcRequest;
+    header.parameters.data = binary;
+    const message = RpcMarshaling.deserialize(protocol, header.parameters)[0];
+    expect(message.method).to.equal("upload");
+    expect(message.data).to.have.lengthOf(1);
+    expect(message.data[0]).to.deep.equal(source);
+    socket.close();
+    socket.dispatchEvent(new Event("close"));
+    const value = await result;
+    expect(() => unwrapIpcInvokeReturn(value)).to.throw("Mobile RPC socket closed.");
   });
 
   it("retains the native-triggered retry of already-active RPC requests", async () => {

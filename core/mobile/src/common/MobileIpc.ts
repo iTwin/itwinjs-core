@@ -71,7 +71,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
 
     const socket = this._protocol.socket;
     try {
-      using request = new MobileRpcRequest(this._client, "send", [message]);
+      using request = new MobileRpcRequest(this._client, "send", [message], this._protocol);
       const encoded = await MobileRpcProtocol.encodeRequest(request);
       if (socket !== this._protocol.socket)
         return;

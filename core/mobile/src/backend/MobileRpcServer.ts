@@ -66,6 +66,7 @@ export class MobileRpcServer {
     });
     this._connectionId = ++MobileRpcServer._nextId;
     MobileRpcServer.interop.connectionId = this._connectionId;
+    this._resetConnection();
     this._onListening();
     this._onConnection();
   }
@@ -93,15 +94,20 @@ export class MobileRpcServer {
 
   private _onConnection() {
     this._server.on("connection", (connection) => {
+      if (this._connection) {
+        this._connectionId = ++MobileRpcServer._nextId;
+        MobileRpcServer.interop.connectionId = this._connectionId;
+      }
       this._connection = connection;
-      this._sendQueue.length = 0;
-      this._sending = false;
-      this._connection.on("message", (data) => this._onConnectionMessage(data));
+      this._resetConnection();
+      connection.on("message", (data) => {
+        if (connection === this._connection && MobileRpcServer.interop.connectionId === this._connectionId)
+          this._onConnectionMessage(data);
+      });
       connection.on("error", (error) => this._onSendError(connection, error));
       connection.on("close", () => {
         if (connection === this._connection) {
-          this._sendQueue.length = 0;
-          this._sending = false;
+          this._resetConnection();
         }
       });
       this._createSender();
@@ -127,10 +133,16 @@ export class MobileRpcServer {
   private _onSendError(connection: ws, error: unknown) {
     Logger.logError("core-mobile-backend.MobileRpcServer", "Mobile RPC socket failed.", { connectionId: this._connectionId, error });
     if (connection === this._connection) {
-      this._sendQueue.length = 0;
-      this._sending = false;
+      this._resetConnection();
     }
     connection.terminate();
+  }
+
+  private _resetConnection() {
+    this._sendQueue.length = 0;
+    this._sending = false;
+    if (MobileRpcServer.interop.connectionId === this._connectionId)
+      MobileRpcServer.interop.reset?.();
   }
 
   private _send(message: string | Uint8Array) {
@@ -196,8 +208,7 @@ export class MobileRpcServer {
 
   public [Symbol.dispose]() {
     clearInterval(this._pingTimer);
-    this._sendQueue.length = 0;
-    this._sending = false;
+    this._resetConnection();
     if (this._connection) {
       MobileRpcServer.interop.sendString = () => { };
       MobileRpcServer.interop.sendBinary = () => { };

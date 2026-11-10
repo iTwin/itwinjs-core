@@ -3,13 +3,16 @@ import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
 import * as WebSocket from "ws";
 import { Logger } from "@itwin/core-bentley";
+import { IpcWebSocket, IpcWebSocketMessageType, RpcMarshaling } from "@itwin/core-common";
 import { MobileHost } from "../../backend/MobileHost";
 import { MobileRpcServer } from "../../backend/MobileRpcServer";
+import { MobileRpcManager } from "../../common/MobileRpcManager";
+import { MobileRpcProtocol } from "../../common/MobileRpcProtocol";
 
-export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue"): Promise<void> {
+export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue" | "interrupted-upload" | "restarted-upload"): Promise<void> {
   MobileHost.reconnect = () => undefined;
   const pending = mode === "pending" ? ["pending response", new Uint8Array([9])] : undefined;
-  const server = new MobileRpcServer(pending);
+  let server = new MobileRpcServer(pending);
   let client: WebSocket | undefined;
   try {
     while (!MobileRpcServer.interop.port)
@@ -44,6 +47,59 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
 
     if (mode === "connected" || mode === "pending")
       return;
+
+    if (mode === "interrupted-upload" || mode === "restarted-upload") {
+      MobileRpcProtocol.obtainInterop = () => interop;
+      const protocol = MobileRpcManager.initializeImpl([]).protocol;
+      const source = new Uint8Array(4 * 1024 * 1024 + 19).fill(0x5a);
+      const parameters = RpcMarshaling.serialize(protocol, [{
+        type: IpcWebSocketMessageType.Send, channel: "itwin.upload", sequence: 0, data: [source],
+      }]);
+      const chunks = parameters.data;
+      const header = JSON.stringify({ operation: { interfaceDefinition: "__ipc__" }, parameters: { ...parameters, data: chunks.map((part) => part.byteLength) } });
+      let receivedChunk = () => {};
+      const partial = new Promise<void>((resolve) => { receivedChunk = resolve; });
+      const handler = interop.handler;
+      interop.handler = (data, connectionId) => {
+        handler(data, connectionId);
+        if (typeof data !== "string")
+          receivedChunk();
+      };
+      client.send(header);
+      client.send(chunks[0]);
+      await partial;
+      strictEqual((Reflect.get(protocol, "_partialData") as unknown[]).length, 1);
+      const backendConnection = Reflect.get(server, "_connection") as WebSocket;
+      const uploadConnectionClosed = once(backendConnection, "close");
+      if (mode === "restarted-upload")
+        server[Symbol.dispose]();
+      else
+        client.close();
+      await uploadConnectionClosed;
+      strictEqual(Reflect.get(protocol, "_partialRequest"), undefined);
+      strictEqual((Reflect.get(protocol, "_partialData") as unknown[]).length, 0);
+      if (mode === "restarted-upload") {
+        interop.port = 0;
+        server = new MobileRpcServer();
+        while (!interop.port)
+          await setImmediate();
+      }
+      client = new WebSocket(`ws://127.0.0.1:${interop.port}`, `itwin-rpc.${MobileRpcServer.rpcToken}`);
+      await once(client, "open");
+      const completed = new Promise<void>((resolve) => {
+        IpcWebSocket.receivers.add((_event, message) => {
+          if (message.channel === "itwin.upload") {
+            deepStrictEqual(message.data, [source]);
+            resolve();
+          }
+        });
+      });
+      client.send(header);
+      for (const chunk of chunks)
+        client.send(chunk);
+      await completed;
+      return;
+    }
 
     if (mode === "send-queue") {
       const connection = Reflect.get(server, "_connection") as WebSocket;

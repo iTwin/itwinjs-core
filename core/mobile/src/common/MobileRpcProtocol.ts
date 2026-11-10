@@ -25,6 +25,7 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 /** @internal */
 export interface MobileRpcGateway {
   handler: (payload: ArrayBuffer | string, connectionId: number) => void;
+  reset?: () => void;
   sendString: (message: string, connectionId: number) => void;
   sendBinary: (message: Uint8Array, connectionId: number) => void;
   port: number;
@@ -37,7 +38,7 @@ export interface MobileRpcGateway {
 export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
-  private _pending: MobileRpcChunks[] = [];
+  private _pending: Array<{ message: MobileRpcChunks, request?: MobileRpcRequest }> = [];
   private _sendIndex = 0;
   private _capacity: number = Number.MAX_SAFE_INTEGER;
   private _sendInterval: number | undefined = undefined;
@@ -148,6 +149,9 @@ export class MobileRpcProtocol extends RpcProtocol {
       }
 
       for (const request of requests) {
+        if (RpcRequest.activeRequests.get(request.id) !== request)
+          continue;
+
         request.cancel();
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         request.submit();
@@ -228,7 +232,7 @@ export class MobileRpcProtocol extends RpcProtocol {
       if (this.socket.bufferedAmount >= this.transferChunkThreshold)
         break;
 
-      const next = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.");
+      const next = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.").message;
       if (this._sendIndex === 0)
         --this._capacity;
       try {
@@ -320,6 +324,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     }
 
     mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
+    mobilegateway.reset = () => this.reset();
     RpcPushConnection.for = (channel, client) => new MobilePushConnection(channel, client, this);
     RpcPushChannel.enabled = true;
   }
@@ -378,7 +383,12 @@ export class MobileRpcProtocol extends RpcProtocol {
     this.sendToFrontend(response, connection);
   }
 
-  public sendToBackend(message: MobileRpcChunks): void {
+  public cancelRequest(request: MobileRpcRequest): void {
+    this.requests.delete(request.id);
+    this._pending = this._pending.filter((pending, index) => pending.request !== request || (index === 0 && this._sendIndex !== 0));
+  }
+
+  public sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void {
     if (this._connectionError)
       throw this._connectionError;
 
@@ -388,7 +398,7 @@ export class MobileRpcProtocol extends RpcProtocol {
       throw error;
     }
 
-    this._pending.push(message);
+    this._pending.push({ message, request });
     this.scheduleSend();
   }
 
