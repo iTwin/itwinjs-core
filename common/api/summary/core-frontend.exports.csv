@@ -230,6 +230,7 @@ public;class;FuzzySearch
 public;interface;FuzzySearchResult
 public;class;FuzzySearchResults
 beta;interface;GenericAbortSignal
+beta;interface;GenericIModelDisplayReferences
 public;class;GeoConverter
 internal;interface;GeoConverterOptions
 beta;class;GeographicTilingScheme

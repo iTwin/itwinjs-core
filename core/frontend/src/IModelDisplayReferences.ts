@@ -126,6 +126,19 @@ export interface SpatialIModelDisplayReferences extends BaseIModelDisplayReferen
   unlink(ref: IModelDisplayReference): void;
 }
 
+/** The iModel references for a view that is neither spatial nor 2d - i.e., a direct subclass of [[ViewState]] or
+ * [[ViewState3d]] that does not supply its own specialized implementation. It represents only the primary iModel,
+ * deriving its state from the view's category selector and display style and its tile trees from the view's own
+ * tile-tree enumeration.
+ * @beta
+ */
+export interface GenericIModelDisplayReferences extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference> {
+  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
+  readonly is2d?: never;
+  /** Allows apps to discriminate between spatial and 2d IModelDisplayReferences. */
+  readonly isSpatial?: never;
+}
+
 /** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] and interactble with via a [[Viewport]].
  * A view always has exactly one "primary" iModel reference, which cannot be removed or replaced.
  * Spatial views also support linking any number of additional iModels to be presented in the context of
@@ -133,4 +146,4 @@ export interface SpatialIModelDisplayReferences extends BaseIModelDisplayReferen
  * @see [[ViewState.iModelRefs]] to inspect or modify the iModel references associated with a view.
  * @beta
  */
-export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;
+export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences | GenericIModelDisplayReferences;

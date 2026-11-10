@@ -14,7 +14,7 @@ import { assert, BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-be
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelDisplayReferenceFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
-import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { GenericIModelDisplayReferences, IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
@@ -468,4 +468,38 @@ export function createPrimaryIModelDisplayReference2d(refs: IModelDisplayReferen
 
 export function createPrimarySpatialIModelDisplayReference(refs: SpatialIModelDisplayReferences): SpatialIModelDisplayReference {
   return new PrimarySpatialIModelRef(refs);
+}
+
+/** The primary reference for a view that is neither spatial nor 2d - i.e., a direct subclass of ViewState or ViewState3d
+ * that does not supply its own specialized iModel references. All of its state derives from facilities every ViewState
+ * provides (category selector, display style); its tile trees come from the view subclass's own [[ViewState.getModelTreeRefs]]
+ * implementation - the inverse of the specialized references, whose views delegate getModelTreeRefs to the reference.
+ */
+class GenericPrimaryIModelRef extends PrimaryIModelRef {
+  protected override get _view(): ViewState {
+    return this.parent[_backingView];
+  }
+
+  public readonly parent: GenericIModelDisplayReferences;
+
+  public override get overrides() {
+    return this._ovrs;
+  }
+
+  public constructor(refs: GenericIModelDisplayReferences) {
+    super(refs, createIModelDisplayOverrides());
+    this.parent = refs;
+
+    this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+
+    void loadViewedCategories(this);
+  }
+
+  public override get tileTreeRefs(): Iterable<TileTreeReference> {
+    return this._view.getModelTreeRefs();
+  }
+}
+
+export function createGenericPrimaryIModelDisplayReference(refs: GenericIModelDisplayReferences): IModelDisplayReference {
+  return new GenericPrimaryIModelRef(refs);
 }

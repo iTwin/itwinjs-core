@@ -3900,6 +3900,12 @@ export interface GenericAbortSignal {
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
 }
 
+// @beta
+export interface GenericIModelDisplayReferences extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference> {
+    readonly is2d?: never;
+    readonly isSpatial?: never;
+}
+
 // @public
 export class GeoConverter {
     // @internal
@@ -5602,7 +5608,7 @@ export interface IModelDisplayReferenceFeatureOverrideProvider {
 }
 
 // @beta
-export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;
+export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences | GenericIModelDisplayReferences;
 
 // @beta
 export interface IModelDisplayReferences2d extends BaseIModelDisplayReferences, Iterable<IModelDisplayReference2d> {
@@ -10767,7 +10773,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // @beta
-    readonly iModelRefs: SpatialIModelDisplayReferences;
+    get iModelRefs(): SpatialIModelDisplayReferences;
     // (undocumented)
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
@@ -14411,7 +14417,7 @@ export abstract class ViewState extends ElementState {
     get globeMode(): GlobeMode;
     hasSameCoordinates(other: ViewState): boolean;
     // @beta
-    abstract get iModelRefs(): IModelDisplayReferences;
+    get iModelRefs(): IModelDisplayReferences;
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
     get isAttachedToViewport(): boolean;
@@ -14509,7 +14515,7 @@ export abstract class ViewState2d extends ViewState {
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
     // @beta
-    readonly iModelRefs: IModelDisplayReferences2d;
+    get iModelRefs(): IModelDisplayReferences2d;
     is3d(): this is ViewState3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;

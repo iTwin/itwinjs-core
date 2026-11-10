@@ -44,7 +44,7 @@ import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _attachToViewport, _detachFromViewport, _invalidateTileTreeRef, _scheduleScriptReference } from "./common/internal/Symbols";
 import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
-import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
+import { createGenericIModelDisplayReferences, createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
 /** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
  * display metadata such as its name and description.
@@ -251,10 +251,17 @@ export abstract class ViewState extends ElementState {
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
+  #iModelRefs?: IModelDisplayReferences;
+
   /** The set of iModels displayed by this view.
+   * Subclasses that display specialized content - [[SpatialViewState]] and [[ViewState2d]] - supply their own
+   * implementations. For other subclasses, the default represents only the primary iModel, deriving its state from
+   * the view's category selector and display style, and its tile trees from [[getModelTreeRefs]].
    * @beta
    */
-  public abstract get iModelRefs(): IModelDisplayReferences;
+  public get iModelRefs(): IModelDisplayReferences {
+    return this.#iModelRefs ??= createGenericIModelDisplayReferences(this);
+  }
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
@@ -2432,10 +2439,14 @@ export abstract class ViewState2d extends ViewState {
   public readonly angle: Angle;
   protected _baseModelId: Id64String;
   public get baseModelId(): Id64String { return this._baseModelId; }
+  readonly #iModelRefs: IModelDisplayReferences2d;
+
   /** The set of iModels displayed by this view.
    * @beta
    */
-  public readonly iModelRefs: IModelDisplayReferences2d;
+  public override get iModelRefs(): IModelDisplayReferences2d {
+    return this.#iModelRefs;
+  }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -2448,7 +2459,7 @@ export abstract class ViewState2d extends ViewState {
 
     this._details = new ViewDetails(this.jsonProperties);
 
-    this.iModelRefs = createIModelDisplayReferences2d(this);
+    this.#iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {

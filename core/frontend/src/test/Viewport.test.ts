@@ -16,7 +16,7 @@ import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { EmphasizeElements } from "../EmphasizeElements";
 import { IModelDisplayReference } from "../IModelDisplayReference";
 import { CategorySelectorState } from "../CategorySelectorState";
-import { DisplayStyle2dState } from "../DisplayStyleState";
+import { DisplayStyle2dState, DisplayStyle3dState } from "../DisplayStyleState";
 import { DrawingViewState } from "../DrawingViewState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
@@ -36,6 +36,7 @@ import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { createClassifierTileTreeReference, createMaskTreeReference, createRealityTileTreeReference, DisclosedTileTreeSet, GraphicsCollectorDrawArgs, RealityModelSource, TileGraphicType, TileTree, TileTreeReference } from "../tile/internal";
 import { RealityDataSource } from "../RealityDataSource";
 import type { GeometricModelState } from "../ModelState";
+import { ExtentLimits, ViewState3d } from "../ViewState";
 import type { SpatialClassifiersState } from "../SpatialClassifiersState";
 import { computeSectionCutForIModelCoords } from "../internal/tile/PrimaryTileTree";
 import { computeIModelRefDisplayTransform } from "../internal/IModelDisplayReferenceImpl";
@@ -1780,6 +1781,69 @@ describe("Viewport", () => {
         loadModels.mockRestore();
       } finally {
         await linkedIModel.close();
+      }
+    });
+  });
+
+  describe("generic iModelRefs default", () => {
+    it("supplies a working primary-only default for direct ViewState3d subclasses", () => {
+      const iModel = createBlankConnection();
+      try {
+        const modelProps = { model: "0x1", code: Code.createEmpty().toJSON() };
+        const categoryId = "0xc";
+        const categorySelector = new CategorySelectorState({ ...modelProps, id: "0x2", classFullName: CategorySelectorState.classFullName, categories: [categoryId] }, iModel);
+        const displayStyle = new DisplayStyle3dState({ ...modelProps, id: "0x3", classFullName: DisplayStyle3dState.classFullName }, iModel);
+
+        const treeRefs: TileTreeReference[] = [{} as TileTreeReference];
+        class CustomView3d extends ViewState3d {
+          public isSpatialView(): this is SpatialViewState { return false; }
+          public get defaultExtentLimits(): ExtentLimits { return { min: 1, max: 100 }; }
+          public getViewedExtents() { return Range3d.createNull(); }
+          public computeFitRange() { return Range3d.createNull(); }
+          public viewsModel(): boolean { return false; }
+          public forEachModel(_func: (model: GeometricModelState) => void): void { }
+          public getModelTreeRefs(): Iterable<TileTreeReference> { return treeRefs; }
+        }
+
+        const view = new CustomView3d({
+          ...modelProps,
+          id: "0x5",
+          classFullName: "BisCore:ViewDefinition3d",
+          categorySelectorId: categorySelector.id,
+          displayStyleId: displayStyle.id,
+          cameraOn: false,
+          origin: { x: 0, y: 0, z: 0 },
+          extents: { x: 1, y: 1, z: 1 },
+          camera: { lens: 90, focusDist: 1, eye: { x: 0, y: 0, z: 0 } },
+        }, iModel, categorySelector, displayStyle);
+
+        // The default is created lazily and cached.
+        const refs = view.iModelRefs;
+        expect(view.iModelRefs).toBe(refs);
+
+        // Neither spatial nor 2d - and it holds only the primary reference.
+        expect(refs.isSpatial).toBeUndefined();
+        expect(refs.is2d).toBeUndefined();
+        expect([...refs].length).toBe(1);
+        expect([...refs.iModels]).toEqual([iModel]);
+
+        const primary = refs.primary;
+        expect(primary.iModel).toBe(iModel);
+        expect(primary.isSpatial()).toBe(false);
+        expect(primary.is2d()).toBe(false);
+
+        // Viewed categories derive from the view's category selector.
+        expect(primary.viewedCategories.has(categoryId)).toBe(true);
+
+        // Tile trees come from the view subclass's own getModelTreeRefs implementation.
+        expect([...primary.tileTreeRefs]).toEqual(treeRefs);
+
+        // Display state derives from the view's display style, and symbology overrides can be built.
+        expect(primary.subCategoryOverrides).toBe(displayStyle.settings.subCategoryOverrides);
+        expect(primary.activeViewFlags).toEqual(view.viewFlags);
+        expect(primary.getSymbologyOverrides()).toBeDefined();
+      } finally {
+        iModel.closeSync();
       }
     });
   });

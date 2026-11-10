@@ -144,9 +144,11 @@ describe("SpatialViewState", () => {
   function createView(ranges: Range3d[]): SpatialViewState {
     const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     const refs = ranges.map((range) => new TreeRef(range));
-    (view as any).iModelRefs = [{
-      tileTreeRefs: refs,
-    }];
+    // iModelRefs is an accessor - shadow it with an instance property supplying the stub references.
+    Object.defineProperty(view, "iModelRefs", {
+      value: [{ tileTreeRefs: refs }],
+      configurable: true,
+    });
 
     return view;
   }

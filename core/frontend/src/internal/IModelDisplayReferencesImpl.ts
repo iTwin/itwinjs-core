@@ -9,12 +9,12 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { _attachToViewport, _backingView, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { GenericIModelDisplayReferences, IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { SpatialViewState } from "../SpatialViewState";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
 import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
-import { createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
+import { createGenericPrimaryIModelDisplayReference, createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
 import { DisplayStyleSettings, FeatureAppearance } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -178,11 +178,38 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
 
 }
 
+/** The default iModel references for a view that is neither spatial nor 2d - i.e., a direct subclass of ViewState or
+ * ViewState3d that does not supply its own specialized implementation. It supports only the primary iModel.
+ */
+class GenericDisplayRefsImpl extends DisplayRefsImpl<IModelDisplayReference, ViewState> implements GenericIModelDisplayReferences {
+  protected override createPrimaryRef(): IModelDisplayReference {
+    return createGenericPrimaryIModelDisplayReference(this);
+  }
+
+  public constructor(view: ViewState) {
+    super(view);
+  }
+
+  public *[Symbol.iterator](): Iterator<IModelDisplayReference> {
+    yield this.primary;
+  }
+
+  public get iModels(): Iterable<IModelConnection> {
+    return [this.primary.iModel];
+  }
+}
+
 /** @internal */
 export function createIModelDisplayReferences2d(view: ViewState2d): IModelDisplayReferences2d {
   return new DisplayRefs2dImpl(view);
 }
 
+/** @internal */
 export function createSpatialIModelDisplayReferences(view: SpatialViewState): SpatialIModelDisplayReferences {
   return new SpatialDisplayRefsImpl(view);
+}
+
+/** @internal */
+export function createGenericIModelDisplayReferences(view: ViewState): GenericIModelDisplayReferences {
+  return new GenericDisplayRefsImpl(view);
 }

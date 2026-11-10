@@ -45,10 +45,14 @@ export class SpatialViewState extends ViewState3d {
   private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
+  readonly #iModelRefs: SpatialIModelDisplayReferences;
+
   /** The set of iModels displayed by this view.
    * @beta
    */
-  public readonly iModelRefs: SpatialIModelDisplayReferences;
+  public override get iModelRefs(): SpatialIModelDisplayReferences {
+    return this.#iModelRefs;
+  }
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @public
@@ -119,7 +123,7 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this._modelSelector = arg3.modelSelector.clone();
 
-    this.iModelRefs = createSpatialIModelDisplayReferences(this);
+    this.#iModelRefs = createSpatialIModelDisplayReferences(this);
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }
