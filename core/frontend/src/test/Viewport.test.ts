@@ -1698,6 +1698,37 @@ describe("Viewport", () => {
         }
       });
     });
+
+    it("reports loading incomplete while linked model metadata is being loaded", async () => {
+      const linkedIModel = createBlankConnection();
+      try {
+        using viewport = openBlankViewport();
+        const refs = viewport.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        // Hold the linked iModel's model-metadata loading unresolved.
+        let resolveLoad!: () => void;
+        const loadModels = vi.spyOn(linkedIModel.models, "load").mockReturnValue(new Promise<void>((resolve) => resolveLoad = resolve));
+
+        const linkedRef = refs.link({ iModel: linkedIModel, viewedModels: ["0x123"] });
+        expect(loadModels).toHaveBeenCalled();
+
+        // Before the ModelStates are loaded the reference has no tile-tree references, but it must not report completion -
+        // waitForSceneCompletion would otherwise resolve before the linked content can produce any graphics.
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        expect(viewport.view.areAllTileTreesLoaded).toBe(false);
+
+        resolveLoad();
+        await vi.waitFor(() => expect(linkedRef.isLoadingComplete).toBe(true));
+        expect(viewport.view.areAllTileTreesLoaded).toBe(true);
+
+        refs.unlink(linkedRef);
+        loadModels.mockRestore();
+      } finally {
+        await linkedIModel.close();
+      }
+    });
   });
 
   describe("IModelDisplayReference2d", () => {

@@ -167,12 +167,12 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
-    void loadViewedModels(this);
+    this.#loadViewedModels();
     this.viewedModels.onChanged.addListener(() => {
       // Refresh the owning tile-reference collection - e.g., batched tile sets copy the viewed model Ids into the set
       // used for visibility and fit ranges - mirroring SpatialViewState.markModelSelectorChanged for the primary reference.
       this[_treeRefs].update();
-      void loadViewedModels(this);
+      this.#loadViewedModels();
     });
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
@@ -271,8 +271,19 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public isSpatial(): this is SpatialIModelDisplayReference { return true; }
   public is2d(): this is IModelDisplayReference2d { return false; }
 
+  #pendingViewedModelLoads = 0;
+
+  /** Load the viewed models' metadata, tracking the outstanding load so that [[isLoadingComplete]] reports false while
+   * it is pending - before the ModelStates exist, the tile-tree reference collection is empty and would vacuously report
+   * completion, e.g., to [[Viewport.waitForSceneCompletion]].
+   */
+  #loadViewedModels(): void {
+    ++this.#pendingViewedModelLoads;
+    void loadViewedModels(this).finally(() => --this.#pendingViewedModelLoads);
+  }
+
   public get isLoadingComplete(): boolean {
-    return isLoadingComplete(this);
+    return 0 === this.#pendingViewedModelLoads && isLoadingComplete(this);
   }
 
   public get isAlwaysDrawnExclusive() {
