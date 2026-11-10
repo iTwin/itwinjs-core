@@ -1,6 +1,6 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "5.16.0-dev.4",
+  "version": "5.16.0-dev.9",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/perf-tools.js",
   "typings": "lib/cjs/perf-tools",
@@ -32,14 +32,14 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0"
+    "fs-extra": "catalog:utilities"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^6.0.0",
-    "@types/fs-extra": "^4.0.7",
-    "eslint": "^9.31.0",
-    "rimraf": "^6.0.1",
-    "typescript": "~5.6.2"
+    "@itwin/eslint-plugin": "catalog:linting",
+    "@types/fs-extra": "catalog:utilities",
+    "eslint": "catalog:linting",
+    "rimraf": "catalog:build",
+    "typescript": "catalog:build"
   }
 }

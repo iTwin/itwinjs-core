@@ -1,6 +1,24 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Nov 2026 16:53:07 GMT and should not be manually modified.
+
+## 5.15.1
+Mon, 09 Nov 2026 16:52:11 GMT
+
+_Version update only_
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:37 GMT
+
+### Updates
+
+- Add `KoqPropertyValueFormatter.createCachedFormatter()` to reuse quantity formatter specs within a caller-controlled caching scope.
+- Improved performance of content localization by localizing response data in place instead of copying it.
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+_Version update only_
 
 ## 5.14.5
 Tue, 27 Oct 2026 12:19:48 GMT

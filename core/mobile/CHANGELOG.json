@@ -2,6 +2,33 @@
   "name": "@itwin/core-mobile",
   "entries": [
     {
+      "version": "5.15.1",
+      "tag": "@itwin/core-mobile_v5.15.1",
+      "date": "Mon, 09 Nov 2026 16:52:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.15.0",
+      "tag": "@itwin/core-mobile_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to send and receive queries from native host"
+          },
+          {
+            "comment": "Authenticate mobile RPC WebSocket connections with a per-launch secret to reject unauthorized on-device clients. Requires an updated mobile native runtime."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.14.6",
+      "tag": "@itwin/core-mobile_v5.14.6",
+      "date": "Wed, 04 Nov 2026 17:35:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.5",
       "tag": "@itwin/core-mobile_v5.14.5",
       "date": "Tue, 27 Oct 2026 12:19:48 GMT",

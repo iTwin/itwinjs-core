@@ -772,23 +772,40 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BulkDeleteElementsArgs {
+    // @deprecated (undocumented)
     skipFKConstraintValidations?: boolean;
 }
 
 // @beta
 export interface BulkDeleteElementsResult {
+    // @deprecated
     failedIds: Id64Set;
+    failures: BulkDeleteFailure[];
     sqlDeleteStatus: DbResult;
     status: BulkDeleteElementsStatus;
 }
 
 // @beta
 export enum BulkDeleteElementsStatus {
+    ConstraintViolation = 1,
     DeletionFailed = 2,
-    PartialSuccess = 1,
     Success = 0
+}
+
+// @beta
+export interface BulkDeleteFailure {
+    elementId: Id64String;
+    reason: BulkDeleteFailureReason;
+}
+
+// @beta
+export enum BulkDeleteFailureReason {
+    DefinitionInUse = 1,
+    ProtectedElement = 2,
+    ReadOnlyDomain = 3,
+    ReferencedByForeignKey = 0
 }
 
 // @public
@@ -2851,7 +2868,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
-    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
+    deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -4648,6 +4665,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     cacheDir?: LocalDirName;
     // (undocumented)
+    collectCloudSqliteStats?: boolean;
+    // (undocumented)
     compressCachedTiles?: boolean;
     // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
@@ -4693,6 +4712,7 @@ export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
+    collectCloudSqliteStats?: boolean;
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
@@ -7245,7 +7265,7 @@ export class SQLiteDb {
     readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     // @internal
-    applyChangeset(changesetFile: LocalFileName): void;
+    applyChangeset(changesetFile: LocalFileName, flags?: SQLiteDb.ApplyChangesetFlags, conflictHandler?: SQLiteDb.ChangesetConflictPolicy | SQLiteDb.ChangesetConflictHandler): void;
     closeDb(saveChanges?: boolean): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
@@ -7291,6 +7311,14 @@ export class SQLiteDb {
 // @public (undocumented)
 export namespace SQLiteDb {
     // @internal
+    export enum ApplyChangesetFlags {
+        FkNoAction = 4,
+        IgnoreNoop = 2,
+        Invert = 1,
+        None = 0,
+        NoUpdateLoop = 8
+    }
+    // @internal
     export interface BlobIO {
         changeRow(row: number): void;
         close(): void;
@@ -7313,6 +7341,15 @@ export namespace SQLiteDb {
             offset: number;
             blob: ArrayBuffer;
         }): void;
+    }
+    // @internal
+    export type ChangesetConflictArgs = IModelJsNative.SQLiteChangesetConflictArgs;
+    // @internal
+    export type ChangesetConflictHandler = (args: ChangesetConflictArgs) => DbConflictResolution;
+    // @internal
+    export enum ChangesetConflictPolicy {
+        AbortOnAnyConflict = 0,
+        NoLocalChanges = 1
     }
     export type CreateParams = OpenOrCreateParams & PageSize;
     export enum DefaultTxnMode {

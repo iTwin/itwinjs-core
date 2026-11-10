@@ -86,6 +86,18 @@ export interface DbRuntimeStats {
   memUsed: number;
   /** In milliseconds */
   prepareTime: number;
+  /** Elapsed wait attributed to successful block downloads for the main Cloud SQLite database, in fractional milliseconds. */
+  downloadTime?: number;
+  /** Active execution elapsed time excluding main-database block waits, in fractional milliseconds. */
+  executionTime?: number;
+  /** Number of successful main-database block acquisitions that waited, including shared downloads but excluding cache hits. */
+  downloadBlocks?: number;
+  /** Bytes of the main-database blocks counted by [[downloadBlocks]]. */
+  downloadBytes?: number;
+  /** Whether this attempt executed and supplied complete Cloud SQLite timings.
+   * @internal
+   */
+  cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
   /** Whether this page resumed an unfinished native statement.
    * @internal
    */
@@ -210,9 +222,9 @@ export class QueryOptionsBuilder {
     return this;
   }
   /**
-   * By default all blobs are abbreviated to save memory and network bandwidth. If set to false, all blob data will be returned by query as is.
+   * By default blobs are not abbreviated and all blob data is returned by query as is. If set to true, blobs are abbreviated to save memory and network bandwidth.
    * Use @type BlobReader to access blob data more efficiently.
-   * @param val A boolean value, if set to false will return complete blob type property data. This could cost time and network bandwidth.
+   * @param val A boolean value, if set to true will abbreviate blob type property data instead of returning it in full. Returning complete blob data could cost time and network bandwidth.
    * @returns @type QueryOptionsBuilder for fluent interface.
    */
   public setAbbreviateBlobs(val: boolean) {

@@ -498,6 +498,7 @@ describe("FavoritePropertiesManager", () => {
       const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c" }) }], priority: 10, name: "C" });
       const d = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "d" }) }], priority: 10, name: "D" });
       const e = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "e" }) }], priority: 9, name: "E" });
+      const f = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "f" }) }], priority: 1, name: "F" });
 
       const favoriteFields = [a, b];
       const fieldInfos = getFieldsInfos(favoriteFields);
@@ -505,7 +506,7 @@ describe("FavoritePropertiesManager", () => {
       const orderInfos = getFieldsOrderInfos(favoriteFields);
       storageMock.loadPropertiesOrder.resolves(orderInfos);
 
-      const fields = [b, d, e, c, a];
+      const fields = [f, b, d, e, c, a];
       await manager.sortFieldsAsync(imodel, fields);
 
       expect(fields[0]).to.eq(a);
@@ -513,6 +514,7 @@ describe("FavoritePropertiesManager", () => {
       expect(fields[2]).to.eq(c);
       expect(fields[3]).to.eq(d);
       expect(fields[4]).to.eq(e);
+      expect(fields[5]).to.eq(f);
     });
 
     it("uses fields most recent property to sort by", async () => {

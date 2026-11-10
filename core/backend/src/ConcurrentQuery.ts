@@ -4,6 +4,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbBlobRequest, DbBlobResponse, DbQueryConfig, DbQueryRequest, DbQueryResponse, DbRequestKind, DbResponse, DbResponseKind } from "@itwin/core-common";
+import { IModelHost } from "./IModelHost";
 
 function isQueryResponse(response: DbResponse): response is DbQueryResponse {
   return "meta" in response && Array.isArray(response.meta) &&
@@ -24,7 +25,8 @@ export class ConcurrentQuery {
       throw new Error("A synchronous concurrent query request must use the primary connection");
     request.kind = DbRequestKind.ECSql;
     let response: DbResponse | undefined;
-    conn.concurrentQueryExecute(request, (value) => {
+    const nativeRequest = { ...request, collectCloudSqliteStats: IModelHost.configuration?.collectCloudSqliteStats === true };
+    conn.concurrentQueryExecute(nativeRequest, (value) => {
       response = value;
     });
     if (response === undefined)
@@ -40,7 +42,8 @@ export class ConcurrentQuery {
   public static async executeQueryRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbQueryRequest): Promise<DbQueryResponse> {
     return new Promise<DbQueryResponse>((resolve) => {
       request.kind = DbRequestKind.ECSql;
-      conn.concurrentQueryExecute(request, (response: any) => {
+      const nativeRequest = { ...request, collectCloudSqliteStats: IModelHost.configuration?.collectCloudSqliteStats === true };
+      conn.concurrentQueryExecute(nativeRequest, (response: any) => {
         resolve(response as DbQueryResponse);
       });
     });

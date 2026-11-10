@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Assert the changeset size delta contributed by element inserts instead of total changeset size",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
