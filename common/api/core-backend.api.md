@@ -2718,6 +2718,8 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     // @internal
     constructor(_executor: ECSqlRowExecutor, query: string, param?: QueryBinder, options?: SynchronousQueryOptions);
     getMetaData(): QueryPropertyMetaData[];
+    // @internal
+    protected getMetaDataInternal(): QueryPropertyMetaData[];
     // @internal (undocumented)
     protected getRowInternal(): any[];
     next(): IteratorResult<QueryRowProxy, any>;
@@ -4663,6 +4665,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     cacheDir?: LocalDirName;
     // (undocumented)
+    collectCloudSqliteStats?: boolean;
+    // (undocumented)
     compressCachedTiles?: boolean;
     // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
@@ -4708,6 +4712,7 @@ export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
+    collectCloudSqliteStats?: boolean;
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
