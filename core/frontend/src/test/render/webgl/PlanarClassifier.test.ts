@@ -56,6 +56,16 @@ describe("PlanarClassifier", () => {
     }
   });
 
+  it("uses at least one 256-texel bucket for an empty view rect", () => {
+    using vp = createViewport(100);
+    using classifier = (vp.target as Target).createPlanarClassifier(undefined);
+    vp.setRect(new ViewRect(0, 0, 0, 0));
+    expect(vp.viewRect.width).toEqual(0);
+    collect(classifier, vp);
+    classifier.getOrCreateClassifierTexture();
+    expect(textureWidth(classifier)).toEqual(256);
+  });
+
   it("does not allocate the classifier texture when it is looked up for binding", () => {
     using vp = createViewport(100);
     using classifier = (vp.target as Target).createPlanarClassifier(undefined);
