@@ -5,8 +5,8 @@ describe("MobileRpcServer", () => {
   const titles = {
     "connected": "sends small text and binary responses while connected",
     "pending": "replays queued messages when a client connects",
-    "string": "survives a string response after the client disconnects",
-    "binary": "survives a binary response after the client disconnects",
+    "string": "fails a string response sent after the client disconnects",
+    "binary": "fails a binary response sent after the client disconnects",
     "callback-error": "survives asynchronous send errors and closes the failed connection",
     "throw-error": "survives synchronous send errors and closes the failed connection",
     "socket-error": "survives socket errors and closes the failed connection",
@@ -14,8 +14,9 @@ describe("MobileRpcServer", () => {
     "send-queue": "paces writes by completion callbacks and discards queued sends on close",
     "interrupted-upload": "discards an interrupted upload when a client reconnects",
     "restarted-upload": "discards an interrupted upload when the server is recreated",
+    "late-replies": "drops late RPC and IPC replies safely and fails backend-originated IPC sends after disconnect",
   };
-  for (const mode of ["connected", "pending", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection", "send-queue", "interrupted-upload", "restarted-upload"] as const) {
+  for (const mode of ["connected", "pending", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection", "send-queue", "interrupted-upload", "restarted-upload", "late-replies"] as const) {
     it(titles[mode], function () {
       this.timeout(15000);
       const fixture = require.resolve("./MobileRpcServerTestProcess");
@@ -34,6 +35,8 @@ describe("MobileRpcServer", () => {
         expect(result.stdout, diagnostics).to.include("Backend survived the late send.");
       if (mode === "callback-error" || mode === "throw-error" || mode === "socket-error")
         expect(result.stdout, diagnostics).to.include("Backend survived a socket failure.");
+      if (mode === "late-replies")
+        expect(result.stdout, diagnostics).to.include("Backend survived late replies.");
     });
   }
 });

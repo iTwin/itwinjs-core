@@ -386,6 +386,9 @@ describe("MobileRpcProtocol disconnects", () => {
     await setImmediate();
     const binary = socket.sent.slice(1) as Uint8Array[];
     expect(binary.map((part) => part.byteLength)).to.deep.equal([4 * 1024 * 1024, 4 * 1024 * 1024, 19]);
+    // Pending invocation bookkeeping must not retain the upload buffers while the backend executes the invoke.
+    const pendingInvocations = Reflect.get(IpcWebSocket.transport, "_pendingInvocations") as Map<number, string>;
+    expect(Array.from(pendingInvocations.values())).to.deep.equal(["itwin.test"]);
     const header = JSON.parse(socket.sent[0] as string) as SerializedRpcRequest;
     header.parameters.data = binary;
     const message = RpcMarshaling.deserialize(protocol, header.parameters)[0];

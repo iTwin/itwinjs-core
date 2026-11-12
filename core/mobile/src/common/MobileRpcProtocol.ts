@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, expectDefined } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined, Logger } from "@itwin/core-bentley";
 import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
   SerializedRpcRequest,
@@ -380,7 +380,12 @@ export class MobileRpcProtocol extends RpcProtocol {
     MobileEventLoop.removeTask();
 
     const response = MobileRpcProtocol.encodeResponse(fulfillment);
-    this.sendToFrontend(response, connection);
+    try {
+      this.sendToFrontend(response, connection);
+    } catch (error) {
+      // An ordinary RPC reply to a closed connection is safe to drop: the frontend resubmits its active requests after reconnecting.
+      Logger.logError("core-mobile.MobileRpcProtocol", "Dropped mobile RPC response: socket failed.", { error });
+    }
   }
 
   public cancelRequest(request: MobileRpcRequest): void {

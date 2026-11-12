@@ -27,7 +27,8 @@ class IpcInterface extends RpcInterface {
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
-  private _pendingInvocations = new Map<number, IpcWebSocketMessage>();
+  /** Maps in-flight invoke request ids to their channels. Retains no arguments so large upload buffers are released once sent. */
+  private _pendingInvocations = new Map<number, string>();
 
   public constructor(protocol: MobileRpcProtocol) {
     super();
@@ -66,8 +67,11 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    if (message.type === IpcWebSocketMessageType.Invoke && message.request !== undefined)
-      this._pendingInvocations.set(message.request, message);
+    const invocation = (message.type === IpcWebSocketMessageType.Invoke && message.request !== undefined)
+      ? { request: message.request, channel: message.channel }
+      : undefined;
+    if (invocation)
+      this._pendingInvocations.set(invocation.request, invocation.channel);
 
     const socket = this._protocol.socket;
     try {
@@ -75,31 +79,30 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       const encoded = await MobileRpcProtocol.encodeRequest(request);
       if (socket !== this._protocol.socket)
         return;
-      if (message.type === IpcWebSocketMessageType.Invoke && (message.request === undefined || !this._pendingInvocations.has(message.request)))
+      if (message.type === IpcWebSocketMessageType.Invoke && (invocation === undefined || !this._pendingInvocations.has(invocation.request)))
         return;
 
       this._protocol.sendToBackend(encoded);
     } catch (error) {
-      this.failInvocation(message, error);
+      if (invocation)
+        this.failInvocation(invocation.channel, invocation.request, error);
+      else
+        Logger.logError("core-mobile.MobileIpc", "Mobile IPC send failed.", { error });
     }
   }
 
   public notifyConnectionError(error: Error): void {
-    const pending = Array.from(this._pendingInvocations.values());
-    for (const message of pending)
-      this.failInvocation(message, error);
+    const pending = Array.from(this._pendingInvocations.entries());
+    for (const [request, channel] of pending)
+      this.failInvocation(channel, request, error);
   }
 
-  private failInvocation(message: IpcWebSocketMessage, error: unknown) {
-    if (message.request === undefined) {
-      Logger.logError("core-mobile.MobileIpc", "Mobile IPC send failed.", { error });
-      return;
-    }
-    if (!this._pendingInvocations.delete(message.request))
+  private failInvocation(channel: string, request: number, error: unknown) {
+    if (!this._pendingInvocations.delete(request))
       return;
 
     this.broadcast({} as Event, {
-      type: IpcWebSocketMessageType.Response, channel: message.channel, response: message.request, sequence: -1,
+      type: IpcWebSocketMessageType.Response, channel, response: request, sequence: -1,
       data: serializeIpcError(error, false) as any,
     });
   }
@@ -111,7 +114,16 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
 
     const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 };
     const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
-    this._protocol.sendToFrontend(encoded);
+    try {
+      this._protocol.sendToFrontend(encoded);
+    } catch (error) {
+      // Backend-originated messages (IpcHost.send / IpcHost.invoke) must observe the transport failure so pending invokes reject.
+      if (message.type !== IpcWebSocketMessageType.Response)
+        throw error;
+
+      // An undeliverable reply to a frontend invoke is safe to drop: the frontend settles its own pending invocations on disconnect.
+      Logger.logError("core-mobile.MobileIpc", "Dropped IPC response: socket failed.", { error });
+    }
   }
 
   private broadcast(evt: Event, message: IpcWebSocketMessage) {

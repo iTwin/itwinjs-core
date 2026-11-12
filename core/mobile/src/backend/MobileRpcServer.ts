@@ -151,7 +151,10 @@ export class MobileRpcServer {
       Logger.logError("core-mobile-backend.MobileRpcServer", "Cannot send mobile RPC message: socket is not open.", {
         connectionId: this._connectionId, readyState: connection.readyState,
       });
-      return;
+      // Throwing (rather than dropping) lets backend-originated IPC messages observe the transport failure,
+      // so pending IpcHost.invoke calls reject instead of hanging until shutdown. Callers that can safely
+      // drop late replies to a closed connection catch this error.
+      throw new IModelError(BentleyStatus.ERROR, "Mobile RPC socket is not open.");
     }
 
     this._sendQueue.push(message);

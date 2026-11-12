@@ -3,13 +3,13 @@ import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
 import * as WebSocket from "ws";
 import { Logger } from "@itwin/core-bentley";
-import { IpcWebSocket, IpcWebSocketMessageType, RpcMarshaling } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketMessageType, RpcInterface, RpcManager, RpcMarshaling } from "@itwin/core-common";
 import { MobileHost } from "../../backend/MobileHost";
 import { MobileRpcServer } from "../../backend/MobileRpcServer";
 import { MobileRpcManager } from "../../common/MobileRpcManager";
 import { MobileRpcProtocol } from "../../common/MobileRpcProtocol";
 
-export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue" | "interrupted-upload" | "restarted-upload"): Promise<void> {
+export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue" | "interrupted-upload" | "restarted-upload" | "late-replies"): Promise<void> {
   MobileHost.reconnect = () => undefined;
   const pending = mode === "pending" ? ["pending response", new Uint8Array([9])] : undefined;
   let server = new MobileRpcServer(pending);
@@ -166,6 +166,60 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
       return;
     }
 
+    if (mode === "late-replies") {
+      MobileRpcProtocol.obtainInterop = () => interop;
+      let invoked = () => {};
+      const invocationReceived = new Promise<void>((resolve) => { invoked = resolve; });
+      let release = () => {};
+      const released = new Promise<void>((resolve) => { release = resolve; });
+      class LateRpc extends RpcInterface {
+        public static readonly interfaceName = "MobileLateRpc";
+        public static readonly interfaceVersion = "1.0.0";
+        public async operation(): Promise<string> { return this.forward(arguments); }
+      }
+      class LateRpcImpl extends RpcInterface {
+        public async operation(): Promise<string> {
+          invoked();
+          await released;
+          return "late";
+        }
+      }
+      RpcManager.registerImpl(LateRpc, LateRpcImpl);
+      const protocol = MobileRpcManager.initializeImpl([LateRpc]).protocol;
+      const transport = IpcWebSocket.transport;
+
+      client.send(JSON.stringify({
+        id: "late-request", method: "", path: "",
+        operation: { interfaceDefinition: LateRpc.interfaceName, operationName: "operation", interfaceVersion: LateRpc.interfaceVersion },
+        parameters: RpcMarshaling.serialize(protocol, []),
+      }));
+      await invocationReceived;
+
+      const lateClosed = once(client, "close");
+      client.close();
+      await lateClosed;
+
+      const lateErrors: unknown[] = [];
+      Logger.logError = (_category, message) => { lateErrors.push(message); };
+
+      // Backend-originated IPC messages must observe the transport failure so pending IpcHost.invoke calls reject.
+      throws(
+        () => transport.send({ type: IpcWebSocketMessageType.Push, channel: "itwin.event", data: ["event"], sequence: -1 }),
+        /Mobile RPC socket is not open\./,
+      );
+
+      // An undeliverable reply to a frontend invoke is dropped; the frontend settles its own pending invocations.
+      transport.send({ type: IpcWebSocketMessageType.Response, channel: "itwin.invoke", response: 1, data: ["result"], sequence: -1 });
+      strictEqual(lateErrors.includes("Dropped IPC response: socket failed."), true);
+
+      // A late ordinary RPC reply is dropped without crashing the backend.
+      release();
+      while (!lateErrors.includes("Dropped mobile RPC response: socket failed."))
+        await setImmediate();
+      process.stdout.write("Backend survived late replies.\n");
+      return;
+    }
+
     const closed = once(client, "close");
     client.close();
     await closed;
@@ -174,12 +228,12 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
     const loggedErrors: unknown[] = [];
     Logger.logError = (_category, message) => { loggedErrors.push(message); };
     if (mode === "string")
-      interop.sendString("late response", interop.connectionId);
+      throws(() => interop.sendString("late response", interop.connectionId), /Mobile RPC socket is not open\./);
     else
-      interop.sendBinary(new Uint8Array([4, 5, 6]), interop.connectionId);
+      throws(() => interop.sendBinary(new Uint8Array([4, 5, 6]), interop.connectionId), /Mobile RPC socket is not open\./);
 
     await setImmediate();
-  deepStrictEqual(loggedErrors, ["Cannot send mobile RPC message: socket is not open."]);
+    deepStrictEqual(loggedErrors, ["Cannot send mobile RPC message: socket is not open."]);
     process.stdout.write("Backend survived the late send.\n");
   } finally {
     client?.terminate();
