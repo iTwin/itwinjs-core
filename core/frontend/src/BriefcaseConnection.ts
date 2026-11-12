@@ -492,7 +492,6 @@ export class BriefcaseConnection extends IModelConnection {
     } finally {
       removeListeners();
     }
-    // Pushing first merges incoming changesets, which may include schema changes.
     await this.invalidateSchemaViewIfChanged();
     return changeset;
   }
