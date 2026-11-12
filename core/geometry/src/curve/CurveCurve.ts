@@ -120,6 +120,7 @@ export class CurveCurve {
         curveA.dispatchToGeometryHandler(handler);
       }
     }
+    handler.snapNearTangentIntersectionsToEndpoints();
     return handler.grabPairedResults();
   }
   /**

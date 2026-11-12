@@ -2981,4 +2981,73 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "TinyLineBigArcIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentArcIntersectionIsReportedAtEndpoint", () => {
+    // Circle, upper fillet and shared arc of https://github.com/iTwin/itwinjs-core/issues/9857. The fillet ends about 4.0e-9
+    // inside the circle, at the end of an arc that is coincident with the circle, and crosses the circle at a shallow angle
+    // 1.9e-4 from its end. The arcs are within tolerance of each other between the crossing and the fillet's end.
+    const ck = new Checker();
+    const radius = 18.288;
+    const fillet = Arc3d.createXY(Point3d.create(-14.21492567, 19.812), 6.096, AngleSweep.createStartEndDegrees(-54.340912307, -90));
+    const createCircle = (r: number) => Arc3d.createXY(Point3d.createZero(), r, AngleSweep.createStartEndDegrees(0, 360));
+    const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(-172.8192442185, 125.659087693 - 360));
+    // fillet fractions of the intersections of the fillet and the halves of the circle, among all the given curves
+    const filletFractions = (curves: CurvePrimitive[]): number[] => {
+      const fractions: number[] = [];
+      for (const pair of CurveCurve.allIntersectionsAmongPrimitivesXY(curves)) {
+        const filletDetail = pair.detailA.curve === fillet ? pair.detailA : pair.detailB.curve === fillet ? pair.detailB : undefined;
+        const otherDetail = filletDetail === pair.detailA ? pair.detailB : pair.detailA;
+        if (filletDetail && otherDetail.curve !== sharedArc) {
+          ck.testLE(pair.detailA.point.distanceXY(pair.detailB.point), Geometry.smallMetricDistance, "intersection points coincide");
+          fractions.push(filletDetail.fraction);
+        }
+      }
+      return fractions;
+    };
+    for (const reverse of [false, true]) {
+      const circle = createCircle(radius);
+      const halves = [circle.clonePartialCurve(0, 0.5), circle.clonePartialCurve(0.5, 1)];
+      // the circle has a vertex at the fillet's end (the end of its overlap with the shared arc): the intersection is moved there
+      const curves: CurvePrimitive[] = [...halves, fillet, sharedArc];
+      let fractions = filletFractions(reverse ? curves.reverse() : curves);
+      if (ck.testExactNumber(1, fractions.length, "the circle and the fillet have one intersection"))
+        ck.testExactNumber(0, fractions[0], "with the shared arc, the intersection is at the fillet's start");
+      // the circle has no vertex there: the crossing is kept
+      fractions = filletFractions(reverse ? [fillet, ...halves] : [...halves, fillet]);
+      if (ck.testExactNumber(1, fractions.length, "the circle and the fillet have one intersection"))
+        ck.testTrue(fractions[0] > 1.0e-6, "without the shared arc, the crossing is kept");
+      // a circle with radius 1.0e-8 larger is not coincident with the shared arc, and has no vertex there: the crossing is kept
+      const largerCircle = createCircle(radius + 1.0e-8);
+      const largerCurves: CurvePrimitive[] = [largerCircle.clonePartialCurve(0, 0.5), largerCircle.clonePartialCurve(0.5, 1), fillet, sharedArc];
+      fractions = filletFractions(reverse ? largerCurves.reverse() : largerCurves);
+      if (ck.testExactNumber(1, fractions.length, "the larger circle and the fillet have one intersection"))
+        ck.testTrue(fractions[0] > 1.0e-6, "the crossing with the larger circle is kept");
+      // the intersection of just two curves is not moved
+      const pairs = reverse ? CurveCurve.intersectionXYPairs(fillet, false, halves[0], false) : CurveCurve.intersectionXYPairs(halves[0], false, fillet, false);
+      if (ck.testExactNumber(1, pairs.length, "one intersection of two curves"))
+        ck.testTrue((reverse ? pairs[0].detailA : pairs[0].detailB).fraction > 1.0e-6, "the intersection of two curves is not moved");
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("SmallAngleArcIntersectionIsNotMoved", () => {
+    // Arcs of equal radius with centers slightly more than tolerance apart cross at a small angle, and stay within
+    // tolerance of each other between the crossing and the start of the second arc. A chord closes the second arc, and
+    // gives the circle a vertex near the start of the arc. The crossing is a proper one, and is not moved to the endpoint.
+    const ck = new Checker();
+    const circle = Arc3d.createXY(Point3d.createZero(), 10, AngleSweep.createStartEndDegrees(0, 360));
+    for (const [offset, startDegrees, sweepDegrees] of [[5.0e-6, 80, 45], [1.0e-5, 85, 65], [3.0e-6, 60, 40]]) {
+      const arc = Arc3d.createXY(Point3d.create(offset, 0), 10, AngleSweep.createStartSweepDegrees(startDegrees, sweepDegrees));
+      const chord = LineSegment3d.create(arc.endPoint(), arc.startPoint());
+      const pairs = CurveCurve.allIntersectionsAmongPrimitivesXY([circle, arc, chord]).filter(
+        (pair) => (pair.detailA.curve === circle && pair.detailB.curve === arc) || (pair.detailA.curve === arc && pair.detailB.curve === circle),
+      );
+      // the circle and the arc also meet within tolerance at the arc's start
+      const crossings = pairs.filter((pair) => pair.detailA.point.distanceXY(arc.startPoint()) > Geometry.smallMetricDistance);
+      if (ck.testExactNumber(1, crossings.length, "one crossing")) {
+        const [arcDetail, circleDetail] = crossings[0].detailA.curve === arc ? [crossings[0].detailA, crossings[0].detailB] : [crossings[0].detailB, crossings[0].detailA];
+        ck.testLE(circleDetail.point.distanceXY(Point3d.create(0, 10)), 1.0e-5, "crossing is near 90 degrees, not moved");
+        ck.testTrue(arcDetail.fraction > 0 && arcDetail.fraction < 1, "crossing is interior to the arc");
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });

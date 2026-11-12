@@ -1539,6 +1539,427 @@ function classifyAreasByAnyInternalPoint(candidates: Loop[], accept: (loop: Loop
   return acceptedLoops;
 }
 */
+describe("RegionBooleanNearTangentArcs", () => {
+  /**
+   * Geometry of https://github.com/iTwin/itwinjs-core/issues/9857: a circle and an adjoining boundary that shares an arc
+   * with the circle and has two fillet arcs. Each fillet overlaps the circle by about 4.0e-9 at its endpoint on the shared
+   * arc, so it is tangent to the circle there to within tolerance.
+   * * Optionally the circle radius is larger by `circleRadiusIncrement`, and the circle starts at `circleStartDegrees` and
+   * is constructed clockwise.
+   */
+  function createCircleAndNearTangentBoundary(
+    mirror: boolean, rotationDegrees: number = 0, circleRadiusIncrement: number = 0, circleStartDegrees: number = 0, clockwiseCircle: boolean = false,
+  ): { circle: Loop, boundary: Loop } {
+    const radius = 18.288;
+    const createCircleArc = (startDegrees: number, endDegrees: number, r: number = radius) =>
+      Arc3d.createXY(Point3d.createZero(), r, AngleSweep.createStartEndDegrees(startDegrees, endDegrees));
+    const lowerFillet = Arc3d.createXY(Point3d.create(-24.19274997, -3.048), 6.096, AngleSweep.createStartEndDegrees(90, 7.1807557815));
+    const upperFillet = Arc3d.createXY(Point3d.create(-14.21492567, 19.812), 6.096, AngleSweep.createStartEndDegrees(-54.340912307, -90));
+    const bottom = Point3d.create(-70, 3.048);
+    const top = Point3d.create(-70, 13.716);
+    const mirrorTransform = Transform.createOriginAndMatrix(Point3d.create(-140, 0), Matrix3d.createScale(-1, 1, 1));
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(rotationDegrees)));
+    const circleSweep = clockwiseCircle ? [circleStartDegrees + 360, circleStartDegrees] : [circleStartDegrees, circleStartDegrees + 360];
+    const circle = Loop.create(createCircleArc(circleSweep[0], circleSweep[1], radius + circleRadiusIncrement));
+    const boundary = Loop.create(
+      LineSegment3d.create(bottom, lowerFillet.startPoint()),
+      lowerFillet,
+      createCircleArc(-172.8192442185, 125.659087693 - 360), // shared with the circle
+      upperFillet,
+      LineSegment3d.create(upperFillet.endPoint(), top),
+      LineSegment3d.create(top, bottom),
+    );
+    for (const loop of [circle, boundary]) {
+      if (mirror)
+        loop.tryTransformInPlace(mirrorTransform);
+      loop.tryTransformInPlace(rotationTransform);
+      if (RegionOps.computeXYArea(loop)! < 0)
+        loop.reverseInPlace();
+    }
+    return { circle, boundary };
+  }
+  it("NearTangentArcsWithSharedArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4; // a few multiples of (distance tolerance * perimeter)
+    let x0 = 0;
+    for (const mirror of [true, false]) {
+      for (const rotationDegrees of [0, 7, 30]) {
+        const { circle, boundary } = createCircleAndNearTangentBoundary(mirror, rotationDegrees);
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const boundaryArea = RegionOps.computeXYArea(boundary)!;
+        ck.testCoordinate(1050.708629, circleArea, "input circle area");
+        ck.testCoordinate(585.229419, boundaryArea, "input boundary area");
+        const range = circle.range().union(boundary.range());
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, boundary], x0, 0);
+        let y0 = 0;
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [boundary, circle] : [circle, boundary];
+          const [areaA, areaB] = swapOperands ? [boundaryArea, circleArea] : [circleArea, boundaryArea];
+          for (const simplifyUnion of [true, false]) {
+            y0 += range.yLength() * 1.2;
+            const expectedAreas: Array<[RegionBinaryOpType, number | undefined]> = [
+              [RegionBinaryOpType.Union, areaA + areaB],
+              [RegionBinaryOpType.Parity, areaA + areaB],
+              [RegionBinaryOpType.AMinusB, areaA],
+              [RegionBinaryOpType.BMinusA, areaB],
+              [RegionBinaryOpType.Intersection, undefined], // the regions overlap only by a sliver
+            ];
+            for (const [op, expectedArea] of expectedAreas) {
+              if (simplifyUnion && op !== RegionBinaryOpType.Union)
+                continue; // simplifyUnion is documented for unions only
+              const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+              const message = `mirror=${mirror} rotation=${rotationDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+              if (expectedArea === undefined) {
+                ck.testUndefined(result, message);
+                continue;
+              }
+              if (ck.testDefined(result, message) && result) {
+                const area = RegionOps.computeXYArea(result)!;
+                ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+                if (op === RegionBinaryOpType.Union)
+                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
+              }
+            }
+          }
+        }
+        x0 += range.xLength() * 1.2;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentArcsWithSharedArc");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentArcsWithSlightlyLargerCircle", () => {
+    // The circle of NearTangentArcsWithSharedArc with a radius larger by up to a few 1.0e-7. The circle is not coincident
+    // with the shared arc, and runs just outside of it. The fillets cross the circle near their ends, and these crossings
+    // must not be moved to the fillet ends, since the circle has no vertex there.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4;
+    let x0 = 0;
+    for (const radiusIncrement of [1.0e-8, 1.0e-7, 3.0e-7]) {
+      let y0 = 0;
+      for (const circleStartDegrees of [0, 37, 180, 270]) {
+        const { circle, boundary } = createCircleAndNearTangentBoundary(false, 0, radiusIncrement, circleStartDegrees, true);
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const boundaryArea = RegionOps.computeXYArea(boundary)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, boundary], x0, y0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [boundary, circle] : [circle, boundary];
+          const [areaA, areaB] = swapOperands ? [boundaryArea, circleArea] : [circleArea, boundaryArea];
+          const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+            [RegionBinaryOpType.Union, true, areaA + areaB],
+            [RegionBinaryOpType.Union, false, areaA + areaB],
+            [RegionBinaryOpType.Parity, false, areaA + areaB],
+            [RegionBinaryOpType.AMinusB, false, areaA],
+            [RegionBinaryOpType.BMinusA, false, areaB],
+            [RegionBinaryOpType.Intersection, false, 0], // the regions overlap only by a sliver
+          ];
+          for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `radiusIncrement=${radiusIncrement} circleStart=${circleStartDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+            if (op === RegionBinaryOpType.Intersection && !result)
+              continue;
+            if (ck.testDefined(result, message) && result) {
+              const area = RegionOps.computeXYArea(result)!;
+              ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+            }
+          }
+        }
+        y0 += 50;
+      }
+      x0 += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentArcsWithSlightlyLargerCircle");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  /**
+   * Circle of radius 18.288 at the origin, and an adjoining boundary that shares the circle arc from 150 to 210 degrees and
+   * has fillets of radius 6.096 at its ends. The fillet centers are at distance (18.288 + 6.096 - overlap) from the origin,
+   * so each fillet overlaps the circle by `overlap` near its endpoint (which is its nearest point to the circle).
+   */
+  function createCircleAndFilletedBoundary(overlap: number, rotationDegrees: number): { circle: Loop, boundary: Loop } {
+    const radius = 18.288;
+    const filletRadius = 6.096;
+    const filletCenterDistance = radius + filletRadius - overlap;
+    const createFilletCenter = (degrees: number) => Point3d.create(
+      filletCenterDistance * Math.cos(Angle.degreesToRadians(degrees)), filletCenterDistance * Math.sin(Angle.degreesToRadians(degrees)),
+    );
+    const upperFillet = Arc3d.createXY(createFilletCenter(150), filletRadius, AngleSweep.createStartEndDegrees(240, 330));
+    const lowerFillet = Arc3d.createXY(createFilletCenter(210), filletRadius, AngleSweep.createStartEndDegrees(30, 120));
+    const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(150, 210));
+    const upperLeft = Point3d.create(-60, upperFillet.startPoint().y);
+    const lowerLeft = Point3d.create(-60, lowerFillet.endPoint().y);
+    const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(0, 360)));
+    const boundary = Loop.create(
+      upperFillet,
+      sharedArc,
+      lowerFillet,
+      LineSegment3d.create(lowerFillet.endPoint(), lowerLeft),
+      LineSegment3d.create(lowerLeft, upperLeft),
+      LineSegment3d.create(upperLeft, upperFillet.startPoint()),
+    );
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(rotationDegrees)));
+    for (const loop of [circle, boundary]) {
+      loop.tryTransformInPlace(rotationTransform);
+      if (RegionOps.computeXYArea(loop)! < 0)
+        loop.reverseInPlace();
+    }
+    return { circle, boundary };
+  }
+  it("NearTangentFilletOverlapUpToTolerance", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4;
+    let x0 = 0;
+    // overlaps up to a large fraction of the default distance tolerance (1.0e-6), in particular above half of it
+    for (const overlap of [1.0e-9, 1.0e-7, 5.0e-7, 6.0e-7]) {
+      let y0 = 0;
+      for (const rotationDegrees of [0, 30, 113, 200]) {
+        const { circle, boundary } = createCircleAndFilletedBoundary(overlap, rotationDegrees);
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const boundaryArea = RegionOps.computeXYArea(boundary)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, boundary], x0, y0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [boundary, circle] : [circle, boundary];
+          const [areaA, areaB] = swapOperands ? [boundaryArea, circleArea] : [circleArea, boundaryArea];
+          const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+            [RegionBinaryOpType.Union, true, areaA + areaB],
+            [RegionBinaryOpType.Union, false, areaA + areaB],
+            [RegionBinaryOpType.Parity, false, areaA + areaB],
+            [RegionBinaryOpType.AMinusB, false, areaA],
+            [RegionBinaryOpType.BMinusA, false, areaB],
+          ];
+          for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `overlap=${overlap} rotation=${rotationDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+            if (ck.testDefined(result, message) && result) {
+              const area = RegionOps.computeXYArea(result)!;
+              ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+            }
+          }
+        }
+        y0 += 50;
+      }
+      x0 += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentFilletOverlapUpToTolerance");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentFilletContinuingSharedArcInside", () => {
+    // A region inside a circle shares the circle arc from 150 to 210 degrees. At each end of the shared arc, the region
+    // boundary continues smoothly into a fillet that is internally tangent to the circle and overlaps it by 1.0e-7. The
+    // fillets cross the circle just beyond the ends of the shared arc. These crossings must not be moved to the fillet
+    // ends, since the fillets and the circle turn to the same side there.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4;
+    const radius = 18.288;
+    const overlap = 1.0e-7;
+    const createPoint = (distance: number, degrees: number) => Point3d.create(
+      distance * Math.cos(Angle.degreesToRadians(degrees)), distance * Math.sin(Angle.degreesToRadians(degrees)),
+    );
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    let x0 = 0;
+    for (const filletRadius of [6.096, 0.5 * radius]) {
+      let y0 = 0;
+      for (const [rotationDegrees, circleStartDegrees, clockwiseCircle] of [[0, 0, false], [30, 180, true], [113, 37, false], [251, 270, true]] as const) {
+        const circleSweep = clockwiseCircle ? [circleStartDegrees + 360, circleStartDegrees] : [circleStartDegrees, circleStartDegrees + 360];
+        const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(circleSweep[0], circleSweep[1])));
+        const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(150, 210));
+        const lowerFillet = Arc3d.createXY(createPoint(radius - filletRadius + overlap, 210), filletRadius, AngleSweep.createStartEndDegrees(210, 290));
+        const upperFillet = Arc3d.createXY(createPoint(radius - filletRadius + overlap, 150), filletRadius, AngleSweep.createStartEndDegrees(70, 150));
+        const region = Loop.create(sharedArc, lowerFillet, LineSegment3d.create(lowerFillet.endPoint(), upperFillet.startPoint()), upperFillet);
+        const rotationTransform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(rotationDegrees)));
+        for (const loop of [circle, region]) {
+          loop.tryTransformInPlace(rotationTransform);
+          if (RegionOps.computeXYArea(loop)! < 0)
+            loop.reverseInPlace();
+        }
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const regionArea = RegionOps.computeXYArea(region)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, region], x0, y0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [region, circle] : [circle, region];
+          const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+            [RegionBinaryOpType.Union, true, circleArea],
+            [RegionBinaryOpType.Union, false, circleArea],
+            [RegionBinaryOpType.Parity, false, circleArea - regionArea],
+            [RegionBinaryOpType.Intersection, false, regionArea],
+            [swapOperands ? RegionBinaryOpType.BMinusA : RegionBinaryOpType.AMinusB, false, circleArea - regionArea],
+          ];
+          for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `filletRadius=${filletRadius} rotation=${rotationDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+            if (ck.testDefined(result, message) && result) {
+              const area = resultArea(result);
+              ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+            }
+          }
+        }
+        y0 += 50;
+      }
+      x0 += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentFilletContinuingSharedArcInside");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentFilletCuspInsideCircle", () => {
+    // A crescent inside a circle shares the circle arc from 150 to 210 degrees. At 210 degrees its boundary turns back
+    // into a fillet that is internally tangent to the circle and overlaps it by 1.0e-7, and a chord closes it. The fillet
+    // crosses the circle just beyond its start. This crossing must not be moved to the fillet start, since the arcs turn
+    // to the same side there.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4;
+    const radius = 18.288;
+    const overlap = 1.0e-7;
+    const createPoint = (distance: number, degrees: number) => Point3d.create(
+      distance * Math.cos(Angle.degreesToRadians(degrees)), distance * Math.sin(Angle.degreesToRadians(degrees)),
+    );
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    let x0 = 0;
+    for (const filletRadius of [6.096, 0.5 * radius]) {
+      let y0 = 0;
+      for (const [rotationDegrees, circleStartDegrees, clockwiseCircle] of [[113, 0, false], [251, 180, true], [113, 180, true], [251, 0, false]] as const) {
+        const circleSweep = clockwiseCircle ? [circleStartDegrees + 360, circleStartDegrees] : [circleStartDegrees, circleStartDegrees + 360];
+        const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(circleSweep[0], circleSweep[1])));
+        const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(150, 210));
+        const fillet = Arc3d.createXY(createPoint(radius - filletRadius + overlap, 210), filletRadius, AngleSweep.createStartEndDegrees(210, 170));
+        const region = Loop.create(sharedArc, fillet, LineSegment3d.create(fillet.endPoint(), sharedArc.startPoint()));
+        const rotationTransform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(rotationDegrees)));
+        for (const loop of [circle, region]) {
+          loop.tryTransformInPlace(rotationTransform);
+          if (RegionOps.computeXYArea(loop)! < 0)
+            loop.reverseInPlace();
+        }
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const regionArea = RegionOps.computeXYArea(region)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, region], x0, y0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [region, circle] : [circle, region];
+          const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+            [RegionBinaryOpType.Union, true, circleArea],
+            [RegionBinaryOpType.Union, false, circleArea],
+            [RegionBinaryOpType.Parity, false, circleArea - regionArea],
+            [RegionBinaryOpType.Intersection, false, regionArea],
+            [swapOperands ? RegionBinaryOpType.BMinusA : RegionBinaryOpType.AMinusB, false, circleArea - regionArea],
+          ];
+          for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `filletRadius=${filletRadius} rotation=${rotationDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+            if (ck.testDefined(result, message) && result) {
+              const area = resultArea(result);
+              ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+            }
+          }
+        }
+        y0 += 50;
+      }
+      x0 += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentFilletCuspInsideCircle");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentFilletInflectionOutsideCircle", () => {
+    // A region outside a circle shares the circle arc from 150 to 210 degrees. At each end of the shared arc, its boundary
+    // continues smoothly into a fillet that turns away from the circle (an inflection), is externally tangent to it and
+    // overlaps it by 1.0e-7. The fillets cross the circle just beyond the ends of the shared arc. These crossings are moved
+    // to the fillet ends.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const areaTolerance = 1.0e-4;
+    const radius = 18.288;
+    const overlap = 1.0e-7;
+    const createPoint = (distance: number, degrees: number) => Point3d.create(
+      distance * Math.cos(Angle.degreesToRadians(degrees)), distance * Math.sin(Angle.degreesToRadians(degrees)),
+    );
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    let x0 = 0;
+    for (const filletRadius of [6.096, 0.5]) {
+      let y0 = 0;
+      const sweepDegrees = Math.min(40, Angle.radiansToDegrees(8 / filletRadius));
+      for (const [rotationDegrees, circleStartDegrees, clockwiseCircle] of [[0, 0, false], [30, 180, true], [113, 37, false], [251, 270, true]] as const) {
+        const circleSweep = clockwiseCircle ? [circleStartDegrees + 360, circleStartDegrees] : [circleStartDegrees, circleStartDegrees + 360];
+        const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(circleSweep[0], circleSweep[1])));
+        const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(150, 210));
+        const lowerFillet = Arc3d.createXY(createPoint(radius + filletRadius - overlap, 210), filletRadius, AngleSweep.createStartEndDegrees(30, 30 - sweepDegrees));
+        const upperFillet = Arc3d.createXY(createPoint(radius + filletRadius - overlap, 150), filletRadius, AngleSweep.createStartEndDegrees(-30 + sweepDegrees, -30));
+        const left = Math.min(lowerFillet.endPoint().x, upperFillet.startPoint().x, -radius) - 20;
+        const corner0 = Point3d.create(left, lowerFillet.endPoint().y);
+        const corner1 = Point3d.create(left, upperFillet.startPoint().y);
+        const region = Loop.create(sharedArc, lowerFillet, LineSegment3d.create(lowerFillet.endPoint(), corner0), LineSegment3d.create(corner0, corner1),
+          LineSegment3d.create(corner1, upperFillet.startPoint()), upperFillet);
+        const rotationTransform = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(rotationDegrees)));
+        for (const loop of [circle, region]) {
+          loop.tryTransformInPlace(rotationTransform);
+          if (RegionOps.computeXYArea(loop)! < 0)
+            loop.reverseInPlace();
+        }
+        const circleArea = RegionOps.computeXYArea(circle)!;
+        const regionArea = RegionOps.computeXYArea(region)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, region], x0, y0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [region, circle] : [circle, region];
+          const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+            [RegionBinaryOpType.Union, true, circleArea + regionArea],
+            [RegionBinaryOpType.Union, false, circleArea + regionArea],
+            [RegionBinaryOpType.Parity, false, circleArea + regionArea],
+            [swapOperands ? RegionBinaryOpType.BMinusA : RegionBinaryOpType.AMinusB, false, circleArea],
+            [swapOperands ? RegionBinaryOpType.AMinusB : RegionBinaryOpType.BMinusA, false, regionArea],
+          ];
+          for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `filletRadius=${filletRadius} rotation=${rotationDegrees} swap=${swapOperands} simplifyUnion=${simplifyUnion} op=${RegionBinaryOpType[op]}`;
+            if (ck.testDefined(result, message) && result) {
+              const area = resultArea(result);
+              ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+            }
+          }
+        }
+        y0 += 80;
+      }
+      x0 += 150;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentFilletInflectionOutsideCircle");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("EqualRadiusArcsCrossingAtSmallAngle", () => {
+    // Arcs of equal radius with centers slightly more than tolerance apart cross at a small angle and stay within tolerance
+    // of each other over a long distance. Their crossing must not be moved to the arc endpoint.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), 10, AngleSweep.createStartEndDegrees(0, 360)));
+    const arc = Arc3d.createXY(Point3d.create(5.0e-6, 0), 10, AngleSweep.createStartSweepDegrees(80, 45));
+    const segment = Loop.create(arc, LineSegment3d.create(arc.endPoint(), arc.startPoint()));
+    const circleArea = RegionOps.computeXYArea(circle)!;
+    const segmentArea = RegionOps.computeXYArea(segment)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, segment]);
+    for (const swapOperands of [false, true]) {
+      const [regionA, regionB] = swapOperands ? [segment, circle] : [circle, segment];
+      const expectedAreas: Array<[RegionBinaryOpType, number]> = [
+        [RegionBinaryOpType.Union, circleArea],
+        [RegionBinaryOpType.Intersection, segmentArea],
+        [swapOperands ? RegionBinaryOpType.BMinusA : RegionBinaryOpType.AMinusB, circleArea - segmentArea],
+      ];
+      for (const [op, expectedArea] of expectedAreas) {
+        const result = RegionOps.regionBooleanXY(regionA, regionB, op);
+        const message = `swap=${swapOperands} op=${RegionBinaryOpType[op]}`;
+        if (ck.testDefined(result, message) && result)
+          ck.testCoordinate(expectedArea, RegionOps.computeXYArea(result)!, message);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "EqualRadiusArcsCrossingAtSmallAngle");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
 describe("GeneralSweepBooleans", () => {
   it("Rectangles", () => {
     const ck = new Checker();

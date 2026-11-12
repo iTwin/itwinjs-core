@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix RegionOps.regionBooleanXY returning undefined or an incomplete result for arcs that are tangent to within tolerance near an endpoint where a coincident overlap starts: report such near-tangent arc-arc intersections at the endpoint, and report both pieces of an arc overlap that spans the start of the other arc when the first arc sweeps backward.",
+      "type": "none",
+      "packageName": "@itwin/core-geometry"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "54706661+rowmanempire@users.noreply.github.com"
+}

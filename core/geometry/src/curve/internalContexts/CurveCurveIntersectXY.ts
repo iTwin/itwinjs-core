@@ -17,8 +17,10 @@ import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps"
 import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
@@ -44,6 +46,19 @@ import { TransitionSpiral3d } from "../spiral/TransitionSpiral3d";
 import { StrokeOptions } from "../StrokeOptions";
 
 // cspell:word XYRR
+/** A recorded intersection of two near-tangent arcs, and its candidate location at an endpoint of one of the arcs. */
+interface NearTangentSnap {
+  /** the recorded intersection */
+  pair: CurveLocationDetailPair;
+  /** the arc with the endpoint */
+  arc: Arc3d;
+  /** fraction of the endpoint of `arc` (0 or 1) */
+  fraction: number;
+  /** the other arc */
+  other: Arc3d;
+  /** fraction of the projection of the endpoint on `other` */
+  otherFraction: number;
+}
 /**
  * Handler class for XY intersections between _geometryB and another geometry.
  * * Instances are initialized and called from CurveCurve.
@@ -57,6 +72,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _extendB0: boolean;
   private _extendB1: boolean;
   private _results: CurveLocationDetailPair[];
+  /** Recorded near-tangent arc-arc intersections that may be moved to an arc endpoint. */
+  private _nearTangentSnaps: NearTangentSnap[];
   private _worldToLocalPerspective: Matrix4d | undefined;
   private _worldToLocalAffine: Transform | undefined;
   private _coincidentGeometryContext: CoincidentGeometryQuery;
@@ -72,6 +89,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private static _workPointA1 = Point3d.create();
   private static _workPointB0 = Point3d.create();
   private static _workPointB1 = Point3d.create();
+  private static _workRayA = Ray3d.createZero();
+  private static _workRayB = Ray3d.createZero();
+  private static _workPlaneA = Plane3dByOriginAndVectors.createXYPlane();
+  private static _workPlaneB = Plane3dByOriginAndVectors.createXYPlane();
   private _xyzwA0?: Point4d;
   private _xyzwA1?: Point4d;
   private _xyzwPlane?: Point4d;
@@ -106,6 +127,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this._results = [];
+    this._nearTangentSnaps = [];
   }
   /**
    * Reset geometryA extension flags.
@@ -162,8 +184,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    */
   public grabPairedResults(reinitialize: boolean = false): CurveLocationDetailPair[] {
     const result = this._results;
-    if (reinitialize)
+    if (reinitialize) {
       this._results = [];
+      this._nearTangentSnaps = [];
+    }
     return result;
   }
   /**
@@ -544,6 +568,149 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.computeSegmentArc(cpA, extendA0, pointA0, fractionA0, pointA1, fractionA1, extendA1, arc, extendB0, extendB1, reversed);
   }
   /**
+   * Return the sine of the xy-angle from the tangent of `arcA` at `fractionA` to the tangent of `arcB` at `fractionB`,
+   * or undefined if either tangent is zero.
+   */
+  private static tangentSineXY(arcA: Arc3d, fractionA: number, arcB: Arc3d, fractionB: number): number | undefined {
+    const tangentA = arcA.fractionToPointAndDerivative(fractionA, CurveCurveIntersectXY._workRayA).direction;
+    const tangentB = arcB.fractionToPointAndDerivative(fractionB, CurveCurveIntersectXY._workRayB).direction;
+    const magnitudes = tangentA.magnitudeXY() * tangentB.magnitudeXY();
+    return magnitudes === 0 ? undefined : tangentA.crossProductXY(tangentB) / magnitudes;
+  }
+  /**
+   * Whether `arcA` at `fractionA` and `arcB` at `fractionB` turn to opposite sides of the xy-tangent of `arcA`, that is,
+   * whether near-tangent arcs are externally tangent there.
+   */
+  private static turnToOppositeSidesXY(arcA: Arc3d, fractionA: number, arcB: Arc3d, fractionB: number): boolean {
+    const planeA = arcA.fractionToPointAnd2Derivatives(fractionA, CurveCurveIntersectXY._workPlaneA);
+    const planeB = arcB.fractionToPointAnd2Derivatives(fractionB, CurveCurveIntersectXY._workPlaneB);
+    // the sign of the cross product of the tangent with the second derivative tells to which side of the tangent an arc turns
+    return planeA.vectorU.crossProductXY(planeA.vectorV) * planeA.vectorU.crossProductXY(planeB.vectorV) < 0;
+  }
+  /**
+   * Examine an isolated intersection of `arc` and `other` near the nearest endpoint of `arc`.
+   * @returns the endpoint fraction of `arc` and the fraction of its projection on `other` if the intersection is a
+   * candidate to move to that endpoint, or undefined otherwise. See [[findNearTangentSnap]].
+   */
+  private snapToEndOfArc(
+    arc: Arc3d, fraction: number, extend0: boolean, extend1: boolean, other: Arc3d, otherFraction: number,
+  ): { fraction: number, otherFraction: number } | undefined {
+    if (arc.sweep.isFullCircle)
+      return undefined; // closed arc has no end to snap to
+    const endFraction = fraction < 0.5 ? 0 : 1;
+    if (endFraction === 0 ? extend0 : extend1)
+      return undefined;
+    const tol = this._coincidentGeometryContext.tolerance;
+    // The snapped intersection is merged with nearby vertices at distance tolerance, so require a margin below it. Near
+    // the tolerance, roundoff would decide whether the intersection moves.
+    const snapTol = 0.75 * tol;
+    const point = arc.fractionToPoint(fraction, CurveCurveIntersectXY._workPointAA0);
+    const endPoint = arc.fractionToPoint(endFraction, CurveCurveIntersectXY._workPointAA1);
+    const distance = point.distanceXY(endPoint);
+    if (distance <= tol)
+      return undefined; // already within clustering distance of the endpoint
+    const sine = CurveCurveIntersectXY.tangentSineXY(arc, fraction, other, otherFraction);
+    // Locally the separation of the arcs is s(u) = sine * u + c * u * u at distance u from the intersection. If the
+    // midpoint and the endpoint are within snapTol of the other arc, then |sine| * distance <= 4 * snapTol (attained
+    // when the endpoint is at the other root of s), so this test quickly rejects transverse crossings without
+    // rejecting any intersection that passes the tests below.
+    if (sine === undefined || Math.abs(sine) * distance > 4 * snapTol)
+      return undefined;
+    // the endpoint must be near the other arc...
+    const closest = other.closestPointXY(endPoint, false);
+    if (!closest || closest.a > snapTol)
+      return undefined;
+    // ...and so must the arc between the intersection and the endpoint (check the midpoint)...
+    const midPoint = arc.fractionToPoint(0.5 * (fraction + endFraction), CurveCurveIntersectXY._workPointBB0);
+    const closestToMidPoint = other.closestPointXY(midPoint, false);
+    if (!closestToMidPoint || closestToMidPoint.a > snapTol)
+      return undefined;
+    // ...and the arcs must come together toward the endpoint because they curve differently (a near tangency), not
+    // separate at a nearly constant small angle (a transverse crossing of arcs of almost equal curvature). For the
+    // quadratic s above, the ratio of the sines at the endpoint and at the intersection is 1 for equal curvatures, 0 at
+    // the extremum of s, and -1 at the other root of s. Require the endpoint to be at least halfway from the intersection
+    // to the extremum, and before the other root.
+    const endSine = CurveCurveIntersectXY.tangentSineXY(arc, endFraction, other, closest.fraction);
+    if (endSine === undefined || endSine * sine > 0.5 * sine * sine || endSine * sine <= -sine * sine)
+      return undefined;
+    // ...and the arcs must turn to opposite sides at the endpoint (externally tangent, as a fillet outside a circle). If
+    // they turn to the same side (internally tangent), the moved intersection would be a vertex where the arcs leave in
+    // the same direction and stay on the same side of their tangent, and their order at that vertex is unreliable.
+    if (!CurveCurveIntersectXY.turnToOppositeSidesXY(arc, endFraction, other, closest.fraction))
+      return undefined;
+    return { fraction: endFraction, otherFraction: closest.fraction };
+  }
+  /**
+   * Examine an isolated intersection of two near-tangent xy-arcs near an endpoint of one of the arcs.
+   * * Two arcs that are tangent to within tolerance can have an isolated intersection that is a short distance (much
+   * larger than tolerance) from an endpoint of one arc, yet the arcs are within tolerance of each other between the
+   * intersection and the endpoint.
+   * * Such an intersection is a candidate to move to the endpoint if the nearest endpoint of an arc is not extended, is
+   * farther than the distance tolerance from the intersection, lies well within the distance tolerance of the other arc,
+   * the arc between the intersection and that endpoint stays well within the distance tolerance of the other arc, the
+   * angle between the arcs decreases toward the endpoint (the arcs are near-tangent there rather than crossing at a small
+   * angle), and the arcs are externally tangent there (they turn to opposite sides). See
+   * [[snapNearTangentIntersectionsToEndpoints]] for when a candidate is actually moved.
+   * @returns the arc with the endpoint, the endpoint fraction, the other arc and the fraction of the endpoint's
+   * projection on it, or undefined if the intersection is not a candidate.
+   */
+  private findNearTangentSnap(
+    arcA: Arc3d, fractionA: number, extendA0: boolean, extendA1: boolean,
+    arcB: Arc3d, fractionB: number, extendB0: boolean, extendB1: boolean,
+  ): Omit<NearTangentSnap, "pair"> | undefined {
+    const snappedB = this.snapToEndOfArc(arcB, fractionB, extendB0, extendB1, arcA, fractionA);
+    if (snappedB)
+      return { arc: arcB, fraction: snappedB.fraction, other: arcA, otherFraction: snappedB.otherFraction };
+    const snappedA = this.snapToEndOfArc(arcA, fractionA, extendA0, extendA1, arcB, fractionB);
+    if (snappedA)
+      return { arc: arcA, fraction: snappedA.fraction, other: arcB, otherFraction: snappedA.otherFraction };
+    return undefined;
+  }
+  /**
+   * Whether `curve` has a recorded coincident interval with a curve other than `excludedCurve` that starts or ends within
+   * `tol` of `point`.
+   */
+  private hasCoincidentIntervalEndNearPoint(curve: CurvePrimitive, point: Point3d, tol: number, excludedCurve: CurvePrimitive): boolean {
+    for (const pair of this._results) {
+      if (pair.detailA.curve === excludedCurve || pair.detailB.curve === excludedCurve)
+        continue;
+      const detail = pair.detailA.curve === curve ? pair.detailA : pair.detailB.curve === curve ? pair.detailB : undefined;
+      if (detail && detail.isInterval() && (detail.point.distanceXY(point) <= tol || detail.point1.distanceXY(point) <= tol))
+        return true;
+    }
+    return false;
+  }
+  /**
+   * Move recorded near-tangent arc-arc intersections to the nearby arc endpoint if a coincident overlap of the other arc
+   * with a third arc starts or ends there.
+   * * Call this after recording the intersections among all curves that will be assembled into a planar subdivision.
+   * * Typically the arc ends where the next curve of its loop starts to overlap the other arc (a cusp, as with a fillet
+   * outside a circle and an arc shared with the circle). The endpoint and the nearby point on the other arc are then
+   * vertices, and a near-tangent intersection a short distance from the endpoint leaves a sliver bigon whose two edges
+   * are ordered at the endpoint by the (indeterminate) tangent comparison, and at the other end of the bigon by the
+   * crossing, yielding an inconsistent graph. Moving the intersection to the endpoint removes the bigon.
+   * * Otherwise the intersection is not moved. For instance, if the next curve runs alongside the other arc but is not
+   * coincident with it, moving the intersection would create a vertex from which these two curves leave in the same
+   * direction, that is, it would create such a bigon instead of removing one.
+   * * See [[findNearTangentSnap]] for the intersections that are candidates.
+   */
+  public snapNearTangentIntersectionsToEndpoints(): void {
+    const tol = this._coincidentGeometryContext.tolerance;
+    for (const snap of this._nearTangentSnaps) {
+      if (!this._results.includes(snap.pair))
+        continue; // the pair was replaced, e.g. by conversion to a chain detail
+      const arcIsA = snap.pair.detailA.curve === snap.arc;
+      const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
+      const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
+      const endPoint = snap.arc.fractionToPoint(snap.fraction, CurveCurveIntersectXY._workPointAA1);
+      if (!this.hasCoincidentIntervalEndNearPoint(snap.other, endPoint, tol, snap.arc))
+        continue;
+      arcDetail.setFP(snap.fraction, endPoint);
+      otherDetail.setFP(snap.otherFraction, snap.other.fractionToPoint(snap.otherFraction, CurveCurveIntersectXY._workPointBB1));
+    }
+    this._nearTangentSnaps = [];
+  }
+  /**
    * Compute the intersection of two xy-arcs.
    * * Each matrix has [U V C] in (x,y,w) form from homogeneous projection (local to world).
    * * Arcs are ordered so that matrixA is better conditioned.
@@ -579,7 +746,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         let fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
         let fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
         if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
+          const numResults = this._results.length;
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+          if (this._results.length > numResults && !this._worldToLocalPerspective && !this._worldToLocalAffine) {
+            const snap = this.findNearTangentSnap(cpA, fractionA, extendA0, extendA1, cpB, fractionB, extendB0, extendB1);
+            if (snap)
+              this._nearTangentSnaps.push({ pair: this._results[numResults], ...snap });
+          }
         } else { // check for endpoint intersection beyond angular tolerance but within point tolerance
           fractionA = cpA.sweep.fractionToSignedPeriodicFraction(fractionA) < 0.5 ? 0 : 1;
           fractionB = cpB.sweep.fractionToSignedPeriodicFraction(fractionB) < 0.5 ? 0 : 1;
