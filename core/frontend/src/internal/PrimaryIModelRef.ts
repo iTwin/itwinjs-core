@@ -236,7 +236,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public get activeViewFlags() {
-    return this.#resolvedViewFlags;
+    // While detached, the style-settings listeners that keep the resolved flags current are unbound (the settings may
+    // outlive the view) - compute fresh. While attached, the listeners maintain the cache for per-frame access.
+    return this.#attached ? this.#resolvedViewFlags : this._view.viewFlags.override(this.overrides.viewFlags);
   }
 
   public [_attachToViewport](_args: AttachToViewportArgs): void {

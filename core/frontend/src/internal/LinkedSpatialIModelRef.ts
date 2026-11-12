@@ -333,7 +333,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public get activeViewFlags() {
-    return this.#resolvedViewFlags;
+    // While detached, the style-settings listeners that keep the resolved flags current are unbound (the settings may
+    // outlive the view) - compute fresh. While attached, the listeners maintain the cache for per-frame access.
+    return this.#attached ? this.#resolvedViewFlags : this.#spatialView.viewFlags.override(this.overrides.viewFlags);
   }
 
   public getSymbologyOverrides(): FeatureSymbology.Overrides {
