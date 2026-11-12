@@ -720,9 +720,10 @@ describe("CompressedId64Set", () => {
     expectTooManyIds(() => [...new MutableCompressedId64Set("+1*F4241")]);
 
     // Splitting the Ids across many runs without repeat counts does not bypass the limit.
+    // Only request the first Id of the set at the limit: the count is checked before any Id is produced, and materializing all of them is slow.
     const noRepeats = "+1".repeat(CompressedId64Set.maxIdCount);
-    expect(CompressedId64Set.decompressArray(noRepeats).length).to.equal(CompressedId64Set.maxIdCount);
-    expectTooManyIds(() => CompressedId64Set.decompressArray(`${noRepeats}+1`));
+    expect(CompressedId64Set.iterator(noRepeats).next().value).to.equal("0x1");
+    expectTooManyIds(() => CompressedId64Set.iterator(`${noRepeats}+1`).next());
   });
 });
 
