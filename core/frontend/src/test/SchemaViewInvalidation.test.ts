@@ -130,31 +130,18 @@ describe("SchemaView frontend cache invalidation", () => {
     expect(await (manager as any)._viewPromise).toBe(view);
   });
 
-  it("pushChanges invalidates schema view when merged incoming changes included a schema change", async () => {
+  it("pushChanges checks for schema changes once the push completes", async () => {
     const conn = await openMockedConnection();
-    const view = new SchemaViewBuilder().build("token-before");
-    const manager = installCachedSchemaView(conn, view);
+    let resolvePush!: (changeset: { index: number, id: string }) => void;
+    vi.mocked(IpcApp.appFunctionIpc.pushChanges).mockReturnValue(new Promise((resolve) => resolvePush = resolve));
+    const invalidate = vi.spyOn(conn as any, "invalidateSchemaViewIfChanged").mockResolvedValue(undefined);
 
-    // Simulate that the pull merged before pushing brought in a schema changeset - token differs afterwards.
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader("token-after"));
+    const push = conn.pushChanges("test");
+    await Promise.resolve();
+    expect(invalidate).not.toHaveBeenCalled();
 
-    expect(await conn.pushChanges("test")).toEqual({ index: 6, id: "cs-0006" });
-
-    expect(view.isOutdated).toBe(true);
-    expect(await (manager as any)._viewPromise).toBeUndefined();
-  });
-
-  it("pushChanges preserves schema view when no schema change was merged", async () => {
-    const conn = await openMockedConnection();
-    const token = "stable-token";
-    const view = new SchemaViewBuilder().build(token);
-    const manager = installCachedSchemaView(conn, view);
-
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
-
-    await conn.pushChanges("test");
-
-    expect(view.isOutdated).toBe(false);
-    expect(await (manager as any)._viewPromise).toBe(view);
+    resolvePush({ index: 6, id: "cs-0006" });
+    expect(await push).toEqual({ index: 6, id: "cs-0006" });
+    expect(invalidate).toHaveBeenCalledOnce();
   });
 });
