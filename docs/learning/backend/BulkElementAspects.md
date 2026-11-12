@@ -14,32 +14,33 @@ Each operation is **all-or-nothing**: either every row is written, or - if any r
 ## Basic usage
 
 ```typescript
-const inserted: BulkInsertElementAspectsResult = txn.insertAspects([
-  { classFullName: "MySchema:MyMultiAspect", element: { id: elementId }, label: "a" },
-  { classFullName: "MySchema:MyUniqueAspect", element: { id: elementId }, label: "b" },
-]);
-
-switch (inserted.status) {
-  case BulkElementAspectsStatus.Success:
-    // inserted.ids[i] is the Id of the aspect inserted for row i.
-    break;
-  case BulkElementAspectsStatus.ValidationFailed:
-    // Some rows are invalid, so nothing was written and no handlers were called.
-    // Inspect inserted.failures, fix those rows, and retry.
-    for (const failure of inserted.failures)
-      console.log(`Row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]}`);
-    break;
+interface MyAspectProps extends ElementAspectProps {
+  label: string;
 }
 
-txn.updateAspects([
+const rows: MyAspectProps[] = [
+  { classFullName: "MySchema:MyMultiAspect", element: { id: elementId }, label: "a" },
+  { classFullName: "MySchema:MyUniqueAspect", element: { id: elementId }, label: "b" },
+];
+const inserted: BulkInsertElementAspectsResult = txn.insertAspects(rows);
+if (inserted.status === BulkElementAspectsStatus.ValidationFailed) {
+  // Some rows are invalid, so nothing was written and no handlers were called.
+  // Inspect inserted.failures, fix those rows, and retry.
+  const details = inserted.failures.map((failure) => `row ${failure.index}: ${BulkElementAspectFailureReason[failure.reason]}`);
+  throw new Error(`Invalid aspects: ${details.join(", ")}`);
+}
+
+// inserted.ids[i] is the Id of the aspect inserted for row i.
+const updates: MyAspectProps[] = [
   { classFullName: "MySchema:MyMultiAspect", element: { id: elementId }, id: inserted.ids[0], label: "a2" },
   { classFullName: "MySchema:MyUniqueAspect", element: { id: elementId }, label: "b2" },
-]);
+];
+txn.updateAspects(updates);
 
 txn.deleteAspects([inserted.ids[0]]);
 ```
 
-- `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`.
+- `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`. `classFullName` may name a base class of the aspect's class; only the properties of that class are updated, and the others keep their values. Rows that name the same aspect are applied in order.
 - `insertAspects` replaces an existing [ElementUniqueAspect]($backend) of the same class on the same element. If the same element and class appear more than once in a call, the last row wins.
 - `deleteAspects` deletes duplicate ids once. Like [EditTxn.deleteElements]($backend), it ignores ids that do not identify an aspect, such as aspects that were already deleted. It throws an [ITwinError]($bentley) before writing anything if an id is not a well-formed, valid [Id64String]($bentley).
 
@@ -58,11 +59,11 @@ Every row is validated before anything is modified, so `ValidationFailed` always
 | Reason | Cause |
 |---|---|
 | `InvalidProps` | The row is not an object, has no `classFullName`, or its properties cannot be converted to the aspect class. |
-| `InvalidId` | The aspect id (for an update) or the owning element id is missing or not a valid [Id64String]($bentley). |
+| `InvalidId` | The aspect id (for an update) or the owning element id is missing or not a valid [Id64String]($bentley), as tested by [Id64.isValidId64]($bentley). |
 | `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. |
 | `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. |
 | `ElementNotFound` | The owning element does not exist. |
-| `AspectNotFound` | The aspect to update does not exist, or is not owned by `element`. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). `deleteAspects` ignores ids that do not identify an aspect instead. |
+| `AspectNotFound` | The aspect to update does not exist, is not owned by `element`, or is not of the class named by `classFullName` or a subclass of it. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). `deleteAspects` ignores ids that do not identify an aspect instead. |
 
 ## Handlers
 
@@ -78,7 +79,7 @@ Each method calls batch handlers once per aspect class:
 
 The default handlers call the per-aspect handlers (`onInsert`, `onInserted`, `onUpdate`, ...) for each aspect, so existing overrides still run. Override a batch handler only to replace that loop with something faster, and call `super`.
 
-Each owning element is updated once per call, so its `onUpdated` handler (and its parent's `onChildUpdate` handler) is called once, after the aspects are written.
+Each owning element is updated once per call, so its `onUpdated` handler and its parent's `onChildUpdate` and `onChildUpdated` handlers are called once per element, not once per aspect. They are called at the same points as with the single-aspect methods: the parent's `onChildUpdate` and the element's `onUpdated` run before the element's aspects are written or deleted, and the parent's `onChildUpdated` runs after. Owning elements are updated one after the other, so when the element's `onUpdated` runs, the aspects of the elements updated before it have already been written or deleted. To act on the outcome of the whole call, use the "after" aspect handlers (`onBulkInserted`, `onBulkUpdated`, `onBulkDeleted`, or the per-aspect handlers they call), which run once every aspect has been written or deleted.
 
 ## Errors
 

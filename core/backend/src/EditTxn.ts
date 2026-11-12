@@ -122,7 +122,7 @@ export enum BulkElementAspectFailureReason {
   NotAnAspectClass = 3,
   /** The owning element does not exist. */
   ElementNotFound = 4,
-  /** The aspect to update does not exist, or is not owned by the given element. Also returned by [[EditTxn.updateAspects]] for an
+  /** The aspect to update does not exist, is not owned by the given element, or is not of the given class or a subclass of it. Also returned by [[EditTxn.updateAspects]] for an
    * aspect class with a native handler, which cannot be updated as a generic aspect. Not returned by [[EditTxn.deleteAspects]], which
    * ignores ids that do not identify an aspect, like [[EditTxn.deleteElements]].
    */
@@ -689,6 +689,7 @@ export class EditTxn {
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements and the converted
    * properties of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param aspectProps The properties of the aspects to update. [[ElementMultiAspect]]s are identified by `id`, [[ElementUniqueAspect]]s by `element` and `classFullName`.
+   * `classFullName` may name a base class of the aspect's class, in which case only the properties of that class are updated. Rows that name the same aspect are applied in order.
    * @returns A result object describing the outcome of the operation and the invalid rows (if any).
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if a pre-update handler throws. Nothing is written in that case.
