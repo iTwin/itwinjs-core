@@ -115,6 +115,10 @@ describe("MobileRpcProtocol disconnects", () => {
   });
 
   it("roundtrips overlapping chunked RPC calls over real sockets in both directions", function () {
+    // Mobile backends never run on Windows, and the nested instrumented node processes spawned
+    // below routinely exceed the spawn budget on Windows CI agents.
+    if (process.platform === "win32")
+      this.skip();
     this.timeout(15000);
     const fixture = require.resolve("./MobileRpcMemoryTestProcess");
     const result = spawnSync(process.execPath, ["--expose-gc", fixture, "roundtrip"], { encoding: "utf8", timeout: 10000 });
