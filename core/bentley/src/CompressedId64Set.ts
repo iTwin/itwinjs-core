@@ -336,9 +336,13 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * @throws [[BentleyError]] with [[IModelStatus.BadArg]] if `ids` represents more than [[CompressedId64Set.maxIdCount]] Ids.
    */
   export function* iterator(ids: CompressedId64Set): Iterator<Id64String> {
-    const numIds = count(ids);
-    if (numIds > maxIdCount)
-      throw new BentleyError(IModelStatus.BadArg, `CompressedId64Set contains ${numIds} Ids, which exceeds the maximum of ${maxIdCount}`);
+    let numIds = 0;
+    const counter = new RunParser(ids);
+    while (counter.next()) {
+      numIds += counter.multiplier;
+      if (numIds > maxIdCount)
+        throw new BentleyError(IModelStatus.BadArg, `CompressedId64Set exceeds the maximum of ${maxIdCount} Ids`);
+    }
 
     const parser = new RunParser(ids);
     const curId = new Uint64();

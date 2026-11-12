@@ -698,7 +698,7 @@ describe("CompressedId64Set", () => {
 
       expect(error).instanceOf(BentleyError);
       expect((error as BentleyError).errorNumber).to.equal(IModelStatus.BadArg);
-      expect((error as BentleyError).message).to.include("exceeds the maximum of 1000000");
+      expect((error as BentleyError).message).to.equal("CompressedId64Set exceeds the maximum of 1000000 Ids");
     };
 
     // 0xF4240 = 1,000,000 and 0xF4241 = 1,000,001.
@@ -719,8 +719,10 @@ describe("CompressedId64Set", () => {
     expectTooManyIds(() => CompressedId64Set.decompressSet("+1*80000+1*80000"));
     expectTooManyIds(() => [...new MutableCompressedId64Set("+1*F4241")]);
 
-    // Overflow is also detected before any Id is produced.
-    expect(() => [...CompressedId64Set.iterable("+FFFFFFFFFFFFFFFF+1")]).to.throw("exceeds the maximum 64-bit value");
+    // Splitting the Ids across many runs without repeat counts does not bypass the limit.
+    const noRepeats = "+1".repeat(CompressedId64Set.maxIdCount);
+    expect(CompressedId64Set.decompressArray(noRepeats).length).to.equal(CompressedId64Set.maxIdCount);
+    expectTooManyIds(() => CompressedId64Set.decompressArray(`${noRepeats}+1`));
   });
 });
 

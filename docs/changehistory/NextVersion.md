@@ -10,7 +10,7 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
-    - [Limit on Ids decompressed from compressed Id sets](#limit-on-ids-decompressed-from-compressed-id-sets)
+    - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
@@ -129,13 +129,9 @@ If you relied on the previous best-effort behavior, inspect `failures` and, for 
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 
-### Limit on Ids decompressed from compressed Id sets
+### CompressedId64Set size limit
 
-A [CompressedId64Set]($bentley) can represent a very large number of Ids in a short string. For example, the 11-character string `+1*FFFFFFFF` represents over four billion Ids. To keep untrusted input from forcing a backend to materialize that many Ids, a single compressed set can now represent at most [CompressedId64Set.maxIdCount]($bentley) (1,000,000) Ids. Every function that decompresses a set, including [CompressedId64Set.iterator]($bentley), [CompressedId64Set.decompressSet]($bentley), [CompressedId64Set.decompressArray]($bentley), and [MutableCompressedId64Set]($bentley), counts the Ids before producing any of them. If the count exceeds the limit, the function throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley). This applies in both the frontend and the backend, including to arguments of RPC methods such as [IModelReadRpcInterface]($common) `querySubCategories`. Code that needs more Ids should split them across multiple sets.
-
-[ViewStore]($backend) applies the same limit to Ids supplied as arrays, and to the total number of Ids across all of a render timeline's batches. These throw a [ViewStoreError]($common) with the `"invalid-value"` key.
-
-The new [CompressedId64Set.count]($bentley) function returns the number of Ids in a `CompressedId64Set` without materializing them.
+For security reasons, a single [CompressedId64Set]($bentley) can now represent at most [CompressedId64Set.maxIdCount]($bentley) (1,000,000) Ids. Decompressing a larger set throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley), in both the frontend and the backend. Split larger sets into multiple smaller ones, and use the new [CompressedId64Set.count]($bentley) to check a set's size without decompressing it.
 
 ### Cloud SQLite query timings
 
