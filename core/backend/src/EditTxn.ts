@@ -122,7 +122,9 @@ export enum BulkElementAspectFailureReason {
   NotAnAspectClass = 3,
   /** The owning element does not exist. */
   ElementNotFound = 4,
-  /** The aspect to update or delete does not exist, or is not owned by the given element. */
+  /** The aspect to update or delete does not exist, or is not owned by the given element. Also returned by [[EditTxn.updateAspects]] for an
+   * aspect class with a native handler, which cannot be updated as a generic aspect.
+   */
   AspectNotFound = 5,
 }
 

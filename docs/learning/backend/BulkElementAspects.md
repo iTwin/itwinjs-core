@@ -5,7 +5,7 @@
 They are faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) once per aspect because:
 
 - Each owning element is loaded and updated once per call, no matter how many of its aspects are written.
-- Lock and channel checks run once per owning element and model.
+- The exclusive lock of each owning element is checked once per call, instead of once per aspect.
 
 These methods are `@beta`.
 
@@ -62,7 +62,7 @@ Every row is validated before anything is modified, so `ValidationFailed` always
 | `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. |
 | `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. |
 | `ElementNotFound` | The owning element does not exist. |
-| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. |
+| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). |
 
 ## Handlers
 
