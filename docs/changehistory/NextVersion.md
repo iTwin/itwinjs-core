@@ -11,6 +11,8 @@ publish: false
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Bulk ElementAspect operations](#bulk-elementaspect-operations)
+    - [CompressedId64Set size limit](#compressedid64set-size-limit)
+    - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
 
@@ -146,6 +148,17 @@ The new [ElementAspect.onBulkInsert]($backend), `onBulkInserted`, `onBulkUpdate`
 
 See [Bulk ElementAspect Operations]($docs/learning/backend/BulkElementAspects.md) for details.
 
+### CompressedId64Set size limit
+
+For security reasons, a single [CompressedId64Set]($bentley) can now represent at most [CompressedId64Set.maxIdCount]($bentley) (1,000,000) Ids. Decompressing a larger set throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley), in both the frontend and the backend. Split larger sets into multiple smaller ones, and use the new [CompressedId64Set.count]($bentley) to check a set's size without decompressing it.
+
+### Cloud SQLite query timings
+
+Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asynchronous ECSQL readers report Cloud SQLite downloads for the main database. `reader.stats` then includes `backendDownloadTime` (time spent waiting for block downloads) and `backendExecutionTime` (the rest of the backend execution time), both in fractional milliseconds, plus `backendDownloadBlocks` and `backendDownloadBytes` (the number and bytes of block acquisitions that waited for a download). Collection is off by default. The fields are absent for local databases, unsupported Cloud SQLite versions, and incomplete measurements. `withQueryReader` does not report them.
+
+Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
+
+See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
 ## Platform support
 
 ### Node.js 26 support

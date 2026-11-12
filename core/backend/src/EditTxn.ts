@@ -20,11 +20,11 @@ import { withBulkAspectChecks } from "./internal/BulkAspectChecks";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
- * @deprecated Options are no longer used and [[EditTxn.deleteElements]] ignores this argument.
+ * @deprecated in 5.15.0 - will not be removed until after 2027-11-05. Options are no longer used and [[EditTxn.deleteElements]] ignores this argument.
  */
 export interface BulkDeleteElementsArgs {
   /**
-   * @deprecated Skipping FK constraint validation is no longer supported.
+   * @deprecated in 5.15.0 - will not be removed until after 2027-11-05. Skipping FK constraint validation is no longer supported.
    */
   skipFKConstraintValidations?: boolean;
 }
@@ -78,7 +78,7 @@ export interface BulkDeleteElementsResult {
    *   Nothing was deleted, including requested ids that are not listed.
    * - On `DeletionFailed`: every requested id (the iModel may be partially modified; abandon the current txn).
    * - On `Success`: empty.
-   * @deprecated Use `failures` for a more detailed failure report.
+   * @deprecated in 5.15.0 - will not be removed until after 2027-11-05. Use `failures` for a more detailed failure report.
    */
   failedIds: Id64Set;
 }
