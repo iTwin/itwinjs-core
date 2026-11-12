@@ -22,6 +22,8 @@ async function openMockedConnection(): Promise<BriefcaseConnection> {
     openBriefcase: vi.fn().mockResolvedValue(fakeBriefcaseProps),
     pullChanges: vi.fn().mockResolvedValue({ index: 5, id: "cs-0005" }),
     cancelPullChangesRequest: vi.fn(),
+    pushChanges: vi.fn().mockResolvedValue({ index: 6, id: "cs-0006" }),
+    cancelPushChangesRequest: vi.fn(),
     closeIModel: vi.fn().mockResolvedValue(undefined),
   } as any);
   return BriefcaseConnection.openFile({ fileName: "test.bim" });
@@ -123,6 +125,34 @@ describe("SchemaView frontend cache invalidation", () => {
     vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
 
     await conn.pullChanges();
+
+    expect(view.isOutdated).toBe(false);
+    expect(await (manager as any)._viewPromise).toBe(view);
+  });
+
+  it("pushChanges invalidates schema view when merged incoming changes included a schema change", async () => {
+    const conn = await openMockedConnection();
+    const view = new SchemaViewBuilder().build("token-before");
+    const manager = installCachedSchemaView(conn, view);
+
+    // Simulate that the pull merged before pushing brought in a schema changeset - token differs afterwards.
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader("token-after"));
+
+    expect(await conn.pushChanges("test")).toEqual({ index: 6, id: "cs-0006" });
+
+    expect(view.isOutdated).toBe(true);
+    expect(await (manager as any)._viewPromise).toBeUndefined();
+  });
+
+  it("pushChanges preserves schema view when no schema change was merged", async () => {
+    const conn = await openMockedConnection();
+    const token = "stable-token";
+    const view = new SchemaViewBuilder().build(token);
+    const manager = installCachedSchemaView(conn, view);
+
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
+
+    await conn.pushChanges("test");
 
     expect(view.isOutdated).toBe(false);
     expect(await (manager as any)._viewPromise).toBe(view);

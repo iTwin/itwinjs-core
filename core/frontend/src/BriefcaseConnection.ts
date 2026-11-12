@@ -486,11 +486,15 @@ export class BriefcaseConnection extends IModelConnection {
       downloadProgressInterval: options?.downloadProgressInterval,
       enableCancellation: !!options?.abortSignal,
     };
+    let changeset: ChangesetIndexAndId;
     try {
-      return this.changeset = await IpcApp.appFunctionIpc.pushChanges(this.key, description, ipcAppOptions);
+      changeset = this.changeset = await IpcApp.appFunctionIpc.pushChanges(this.key, description, ipcAppOptions);
     } finally {
       removeListeners();
     }
+    // Pushing first merges incoming changesets, which may include schema changes.
+    await this.invalidateSchemaViewIfChanged();
+    return changeset;
   }
 
   /** The current graphical editing scope, if one is in progress.
