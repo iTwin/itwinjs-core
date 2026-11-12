@@ -254,6 +254,8 @@ export class CoincidentGeometryQuery {
             appendCoincidentIntersection(Segment1d.create(fractionB0 - fractionPeriodA, fractionB1 - fractionPeriodA), true);
           else if (fractionB0 === 0.0)
             appendCoincidentIntersection(Segment1d.create(fractionB0 + fractionPeriodA, fractionB1 + fractionPeriodA), true);
+          else if (fractionB1 < 0.0) // arcB sweeps backward across the start of arcA
+            appendCoincidentIntersection(Segment1d.create(fractionB0 + fractionPeriodA, fractionB1 + fractionPeriodA), false);
         }
       }
     }
