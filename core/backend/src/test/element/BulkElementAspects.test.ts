@@ -121,9 +121,6 @@ describe("EditTxn bulk ElementAspect operations", () => {
       const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }]);
       expect(updated).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, id: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
 
-      const deleted = txn.deleteAspects([ids[0], "0xffffff"]);
-      expect(deleted).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, id: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
-
       handlers.forEach((handler) => expect(handler.callCount).to.equal(0));
       expect(ownerUpdates()).to.deep.equal([]);
       expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
@@ -245,6 +242,29 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(ownerUpdates().sort()).to.deep.equal([e1, e2].sort());
       expect(aspectsOf(e1)).to.deep.equal([]);
       expect(aspectsOf(e2)).to.deep.equal([]);
+    });
+  });
+
+  it("deleteAspects ignores ids that do not identify an aspect, like deleteElements", () => {
+    inAbandonedTxn((txn) => {
+      const [e1] = insertOwners(txn, 1);
+      const { ids } = txn.insertAspects([multiProps(e1, "m1"), multiProps(e1, "m2")]);
+      txn.deleteAspects([ids[1]]);
+      const onDelete = sinon.spy(ElementAspect as any, "onDelete");
+      const onDeleted = sinon.spy(ElementAspect as any, "onDeleted");
+
+      // an aspect that was already deleted, an id that was never used, and an element id
+      const deleted = txn.deleteAspects([ids[1], ids[0], "0xffffff", e1]);
+      expect(deleted).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
+      expect(onDelete.getCalls().map((c) => c.args[0].aspectId)).to.deep.equal([ids[0]]);
+      expect(onDeleted.getCalls().map((c) => c.args[0].aspectId)).to.deep.equal([ids[0]]);
+      expect(aspectsOf(e1)).to.deep.equal([]);
+      expect(iModel.elements.tryGetElementProps(e1)).to.not.be.undefined;
+
+      const ownerUpdates = spyOwnerUpdates();
+      expect(txn.deleteAspects([ids[0], ids[1]])).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
+      expect(onDelete.callCount).to.equal(1);
+      expect(ownerUpdates()).to.deep.equal([]);
     });
   });
 

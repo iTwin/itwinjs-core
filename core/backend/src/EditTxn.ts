@@ -122,8 +122,9 @@ export enum BulkElementAspectFailureReason {
   NotAnAspectClass = 3,
   /** The owning element does not exist. */
   ElementNotFound = 4,
-  /** The aspect to update or delete does not exist, or is not owned by the given element. Also returned by [[EditTxn.updateAspects]] for an
-   * aspect class with a native handler, which cannot be updated as a generic aspect.
+  /** The aspect to update does not exist, or is not owned by the given element. Also returned by [[EditTxn.updateAspects]] for an
+   * aspect class with a native handler, which cannot be updated as a generic aspect. Not returned by [[EditTxn.deleteAspects]], which
+   * ignores ids that do not identify an aspect, like [[EditTxn.deleteElements]].
    */
   AspectNotFound = 5,
 }
@@ -707,10 +708,11 @@ export class EditTxn {
 
   /** Delete many aspects from the iModel in a single bulk operation.
    * Each owning element is updated once, no matter how many of its aspects are deleted. Duplicate ids are deleted once.
+   * Like [[EditTxn.deleteElements]], ids that do not identify an aspect (e.g. aspects that were already deleted) are ignored.
    *
    * The operation is all-or-nothing:
-   * - Every aspect is looked up first. If any aspect is not found, nothing is deleted, no handlers are called, and the result is `ValidationFailed`
-   *   with [[BulkElementAspectsResult.failures]] listing every missing aspect.
+   * - Every aspect is looked up and validated first. If any aspect cannot be deleted, nothing is deleted, no handlers are called, and the result is
+   *   `ValidationFailed` with [[BulkElementAspectsResult.failures]] listing every such aspect.
    * - Otherwise [[ElementAspect.onBulkDelete]] is called for every aspect class, the aspects are deleted, and [[ElementAspect.onBulkDeleted]] is called for every aspect class.
    * - If the delete fails unexpectedly (e.g. a SQLite error), an IModelError is thrown, no post-delete handlers are called, and the iModel may be partially modified;
    *   the caller must abandon the changes with [[EditTxn.abandonChanges]].
@@ -718,7 +720,7 @@ export class EditTxn {
    * The caller chooses the batch size. The cost per aspect does not depend much on the size of the call, but a call holds the owning elements
    * of all its aspects in memory at once, so batches of up to a few thousand aspects (for example, the aspects of about 1,000 elements) are recommended.
    * @param ids The ids of the aspects to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @returns A result object describing the outcome of the operation and the missing aspects (if any).
+   * @returns A result object describing the outcome of the operation and the aspects that cannot be deleted (if any).
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @throws IModelError if a pre-delete handler throws. Nothing is written in that case.

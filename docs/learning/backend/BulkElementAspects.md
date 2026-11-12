@@ -41,7 +41,7 @@ txn.deleteAspects([inserted.ids[0]]);
 
 - `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`.
 - `insertAspects` replaces an existing [ElementUniqueAspect]($backend) of the same class on the same element. If the same element and class appear more than once in a call, the last row wins.
-- `deleteAspects` deletes duplicate ids once. It throws an [ITwinError]($bentley) before writing anything if an id is not a well-formed, valid [Id64String]($bentley).
+- `deleteAspects` deletes duplicate ids once. Like [EditTxn.deleteElements]($backend), it ignores ids that do not identify an aspect, such as aspects that were already deleted. It throws an [ITwinError]($bentley) before writing anything if an id is not a well-formed, valid [Id64String]($bentley).
 
 ## Results
 
@@ -62,7 +62,7 @@ Every row is validated before anything is modified, so `ValidationFailed` always
 | `ClassNotFound` | `classFullName` does not name a class in the iModel, e.g. because its schema has not been imported. |
 | `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. |
 | `ElementNotFound` | The owning element does not exist. |
-| `AspectNotFound` | The aspect to update or delete does not exist, or an updated aspect is not owned by `element`. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). |
+| `AspectNotFound` | The aspect to update does not exist, or is not owned by `element`. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). `deleteAspects` ignores ids that do not identify an aspect instead. |
 
 ## Handlers
 
