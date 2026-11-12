@@ -705,13 +705,41 @@ export namespace ViewStore {
       const fedGuid = this.guidMap.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
+    /** [CompressedId64Set.iterator]($bentley) enforces [CompressedId64Set.maxIdCount]($bentley) for each compressed set.
+     * This applies the same limit to Ids that aren't checked by the iterator, such as array-form Ids and totals across multiple sets.
+     */
+    private validateIdCount(numIds: number): void {
+      const maxIds = CompressedId64Set.maxIdCount;
+      if (numIds > maxIds)
+        ViewStoreError.throwError("invalid-value", { message: `Id set contains ${numIds} Ids, which exceeds the maximum of ${maxIds}` });
+    }
+    /** Each batch is checked individually, so also limit the total so that many batches can't add up to an unbounded number of Ids.
+     * Array-form batches are counted too, because they are stored in compressed form and checked against the same limit when read.
+     */
+    private validateTimelineIdCount(script: RenderSchedule.ScriptProps): void {
+      let numIds = 0;
+      for (const model of script) {
+        for (const batch of model.elementTimelines ?? []) {
+          if (typeof batch.elementIds === "string")
+            numIds += CompressedId64Set.count(batch.elementIds);
+          else if (Array.isArray(batch.elementIds))
+            numIds += batch.elementIds.length;
+        }
+      }
+      this.validateIdCount(numIds);
+    }
     private toCompressedGuidRows(ids: Id64String[] | CompressedId64Set): CompressedId64Set {
+      // Arrays aren't checked by the iterator. The stored set can't be larger than the array, so a successful write can always be read back.
+      if (Array.isArray(ids))
+        this.validateIdCount(ids.length);
+
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(id);
         if (undefined !== guidRow)
           result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
+
       return CompressedId64Set.compressSet(result);
     }
     private fromGuidRow(guidRow: RowId): Id64String | undefined {
@@ -784,6 +812,7 @@ export namespace ViewStore {
       }
     }
     private scriptToGuids(script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      this.validateTimelineIdCount(script);
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
         const modelGuidRow = this.toGuidRow(model.modelId);
@@ -797,6 +826,8 @@ export namespace ViewStore {
       return scriptProps;
     }
     private scriptFromGuids(script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
+      if (!omitElementIds)
+        this.validateTimelineIdCount(script);
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
         const modelId = this.fromGuidRow(toRowId(model.modelId));

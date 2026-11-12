@@ -35,6 +35,7 @@ public;function;compareStringsOrUndefined
 public;function;compareWithTolerance
 public;type;CompressedId64Set
 public;namespace;CompressedId64Set
+beta;function;count
 public;type;ComputePriorityFunction
 public;type;Constructor
 internal;enum;DbChangeStage
