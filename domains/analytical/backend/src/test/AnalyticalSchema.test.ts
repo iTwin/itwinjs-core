@@ -57,6 +57,10 @@ describe("AnalyticalSchema", () => {
     }
   });
 
+  after(
+    async () => IModelHost.shutdown()
+  );
+
   it("should import Analytical schema", async () => {
     const iModelFileName: string = path.join(outputDir, "ImportAnalytical.bim");
     if (IModelJsFs.existsSync(iModelFileName)) {

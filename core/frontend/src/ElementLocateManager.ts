@@ -6,13 +6,15 @@
  * @module LocatingElements
  */
 
-import { expectDefined, Id64, Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
+import { IModelDisplayReference } from "./IModelDisplayReference";
+import { isForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { ReadPixelsArgs, ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./common/ViewRect";
 
 /** The possible actions for which a locate filter can be called.
@@ -62,10 +64,10 @@ export class LocateOptions {
   public maxHits = 20;
   /** The [[HitSource]] identifying the caller. */
   public hitSource = HitSource.DataPoint;
-  /** If true, also test graphics from an IModelConnection other than the one associated with the Viewport. This can occur if, e.g., a
-   * [[TiledGraphicsProvider]] is used to display graphics from a different iModel into the [[Viewport]].
-   * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other IModelConnections.
-   * @see [[HitDetail.iModel]] and [[HitDetail.isExternalIModelHit]]
+  /** If true, also test graphics from linked [[IModelDisplayReference]]s in addition to the Viewport's primary
+   * IModelDisplayReference.
+   * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other iModels.
+   * @see [[HitDetail.feature]] to determine from which reference the hit originated.
    */
   public allowExternalIModels = false;
   /** If true, then the world point of a hit on a model will preserve any transforms applied to the model at display time,
@@ -193,10 +195,11 @@ export class ElementPicker {
    * @param pickPointWorld Pick location in world coordinates
    * @param pickRadiusView Pick radius in pixels
    * @param options Pick options to use
-   * @param excludedElements Optional ids to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
+   * @param excludedElements Optional elements to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
+   * @note Unqualified ids apply to the primary IModelDisplayReference.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number {
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: ReadPixelsArgs["excludedElements"]): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -220,58 +223,66 @@ export class ElementPicker {
       testPointView.y = vp.cssPixelsToDevicePixels(testPointView.y);
       pixelRadius = vp.cssPixelsToDevicePixels(pixelRadius);
 
-      const elmHits = new Map<string, Point2d>();
+      // Qualify hits by display reference as well as element Id; distinct references may contain elements with colliding Ids.
+      const elmHits = new Map<IModelDisplayReference, Map<string, Point2d>>();
       const testPoint = Point2d.createZero();
       for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
         for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+          const feature = pixel?.feature;
+          if (undefined === feature || Id64.isInvalid(feature.elementId))
             continue; // no geometry at this location...
 
           const distXY = testPointView.distance(testPoint);
           if (distXY > pixelRadius)
             continue; // ignore corners. it's a locate circle not square...
 
-          const oldPoint = elmHits.get(pixel.elementId);
+          let refHits = elmHits.get(feature.iModelRef);
+          if (undefined === refHits)
+            elmHits.set(feature.iModelRef, refHits = new Map<string, Point2d>());
+
+          const oldPoint = refHits.get(feature.elementId);
           if (undefined !== oldPoint) {
             if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
               oldPoint.setFrom(testPoint); // new hit is better, update location...
           } else {
-            elmHits.set(pixel.elementId, testPoint.clone());
+            refHits.set(feature.elementId, testPoint.clone());
           }
         }
       }
       if (0 === elmHits.size)
         return;
 
-      for (const elmPoint of elmHits.values()) {
-        const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId)
-          continue;
+      for (const refHits of elmHits.values()) {
+        for (const elmPoint of refHits.values()) {
+          const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId)
+            continue;
 
-        const hitPointWorld = vp.getPixelDataWorldPoint({
-          pixels,
-          x: elmPoint.x,
-          y: elmPoint.y,
-          preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
-        });
+          const hitPointWorld = vp.getPixelDataWorldPoint({
+            pixels,
+            x: elmPoint.x,
+            y: elmPoint.y,
+            preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
+          });
 
-        if (!hitPointWorld)
-          continue;
+          if (!hitPointWorld)
+            continue;
 
-        const hit = new HitDetail({
-          ...pixel.toHitProps(vp),
-          testPoint: pickPointWorld,
-          viewport: vp,
-          hitSource: options.hitSource,
-          hitPoint: hitPointWorld,
-          distXY: testPointView.distance(elmPoint),
-        });
+          const hit = new HitDetail({
+            ...pixel.toHitProps(vp),
+            testPoint: pickPointWorld,
+            viewport: vp,
+            hitSource: options.hitSource,
+            hitPoint: hitPointWorld,
+            distXY: testPointView.distance(elmPoint),
+          });
 
-        const hitList = expectDefined(this.hitList);
-        hitList.addHit(hit);
-        if (hitList.hits.length > options.maxHits)
-          hitList.hits.length = options.maxHits; // truncate array...
+          const hitList = expectDefined(this.hitList);
+          hitList.addHit(hit);
+          if (hitList.hits.length > options.maxHits)
+            hitList.hits.length = options.maxHits; // truncate array...
+        }
       }
 
       result = expectDefined(this.hitList).length;
@@ -326,7 +337,7 @@ export class ElementLocateManager {
     const preLocated = fromAccuSnap ?? IModelApp.tentativePoint.getHitAndList(this);
 
     if (preLocated) {
-      const excludedElements = (preLocated.isElementHit ? new Set<string>([preLocated.sourceId]) : undefined);
+      const excludedElements = preLocated.isElementHit ? [[preLocated.sourceId, preLocated.feature.iModelRef] as const] : undefined;
 
       if (excludedElements || !fromAccuSnap) {
         // NOTE: For tentative snap, get new hit list at snap point; want reset to cycle hits using adjusted point location...
@@ -369,8 +380,11 @@ export class ElementLocateManager {
       return LocateFilterStatus.Reject;
     }
 
-    if (undefined !== hit.subCategoryId && !hit.isExternalIModelHit) {
-      const appearance = hit.viewport.getSubCategoryAppearance(hit.subCategoryId);
+    if (undefined !== hit.subCategoryId && !isForeignIModelDisplayReference(hit.feature.iModelRef)) {
+      // Linked references carry their own subcategory data, so the "don't locate" check applies to them just as to the
+      // primary. Exempt only foreign references (graphics displayed without being part of the view, e.g. via
+      // TiledGraphicsProvider) - nothing loads their subcategory appearances, so the check would be meaningless.
+      const appearance = hit.feature.iModelRef.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatableSubCategory");
         return LocateFilterStatus.Reject;
@@ -437,8 +451,9 @@ export class ElementLocateManager {
     this.setCurrHit(hit);
 
     // if we found a hit, remove it from the list of remaining hits near the current search point.
+    // Qualified by display reference as well as element Id - distinct references may contain elements with colliding Ids.
     if (hit && this.hitList)
-      this.hitList.removeHitsFrom(hit.sourceId);
+      this.hitList.removeHitsFrom(hit.sourceId, hit.feature.iModelRef);
     return hit;
   }
 }

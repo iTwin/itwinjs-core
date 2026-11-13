@@ -11,7 +11,6 @@ import {
   ContourDisplay,
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic } from "./RenderGraphic";
@@ -21,6 +20,8 @@ import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
+import { IModelDisplayReference } from "../IModelDisplayReference";
+import { IModelConnection } from "../IModelConnection";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
@@ -138,11 +139,23 @@ export interface GraphicBranchOptions {
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
   /** Optionally replaces the view's hidden line settings when drawing the branch. */
   hline?: HiddenLine.Settings;
-  /** The iModel from which the graphics originate, if different than that associated with the view. */
+  /** The iModel reference from which these graphics originate. If unspecified, the iModel reference from any parent [[GraphicBranch]] is inherited by this branch.
+   * Otherwise, it defaults to the view's primary iModel reference ([[IModelDisplayReferences.primary]]).
+   * @beta
+   */
+  iModelRef?: IModelDisplayReference;
+  /** The iModel from which the graphics originate, if different than that associated with the view.
+   * @deprecated Use [[iModelRef]] instead. When this property is supplied without [[iModelRef]], the graphics are
+   * attributed to the view's [[IModelDisplayReference]] displaying this iModel if one exists, or otherwise to a reference
+   * identifying it as a foreign iModel. If both are supplied, [[iModelRef]] takes precedence.
+   */
   iModel?: IModelConnection;
   /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
    * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
    * with the [[Viewport]]).
+   * @deprecated Use [[iModelRef]] instead - the transform is supplied by [[IModelDisplayReference.linearTransformToParent]].
+   * When this property is supplied along with [[iModel]] and without [[iModelRef]], the graphics are attributed to a
+   * reference whose `linearTransformToParent` is this transform.
    */
   transformFromIModel?: Transform;
   /** @internal */

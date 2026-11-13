@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
 import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
+import { GeometricModel3dState, IModelDisplayReference, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
+import { IModelDisplayReferencePicker } from "./IModelDisplayReferencePicker";
 
 // cspell:ignore dehilite textbox subcat
 
 export abstract class IdPicker extends ToolBarDropDown {
+  private _iModelRefPicker?: IModelDisplayReferencePicker;
   protected readonly _vp: ScreenViewport;
   protected readonly _element: HTMLElement;
   protected readonly _parent: HTMLElement;
@@ -71,6 +73,12 @@ export abstract class IdPicker extends ToolBarDropDown {
   }
 
   protected abstract _populate(): Promise<void>;
+
+  protected get iModelRef(): IModelDisplayReference {
+    assert(undefined !== this._iModelRefPicker);
+    return this._iModelRefPicker.selectedIModelRef;
+  }
+
   public async populate(): Promise<void> {
     this._availableIds.clear();
     this._checkboxes.length = 0;
@@ -81,6 +89,10 @@ export abstract class IdPicker extends ToolBarDropDown {
     this._parent.style.display = visible ? "block" : "none";
     if (!visible)
       return;
+
+    const selectedRef = this._iModelRefPicker?.selectedIModelRef ?? this._vp.primaryIModelRef;
+    this._iModelRefPicker = new IModelDisplayReferencePicker(this._vp, this._elementType, this._element, selectedRef);
+    this._iModelRefPicker.onChanged.addListener(async () => this.populate());
 
     createComboBox({
       name: "Display: ",
@@ -164,9 +176,9 @@ export abstract class IdPicker extends ToolBarDropDown {
         this.hiliteEnabled("Hilite" === which);
         return;
       case "SetFirstActive":
-        if (this._vp.iModel.isBriefcaseConnection()) {
+        if (this.iModelRef === this._vp.primaryIModelRef && this.iModelRef.iModel.isBriefcaseConnection()) {
           const first = Array.from(this._enabledIds)[0];
-          this._vp.iModel.editorToolSettings[this._settingsType] = first;
+          this.iModelRef.iModel.editorToolSettings[this._settingsType] = first;
         }
         return;
       case "":
@@ -193,7 +205,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     if (is2d && elementType === "Model")
       return [];
 
-    const selectedElems = this._vp.iModel.selectionSet.elements;
+    const selectedElems = this.iModelRef.iModel.selectionSet.elements;
     if (0 === selectedElems.size || selectedElems.size > 20) {
       if (0 < selectedElems.size)
         alert("Too many elements selected");
@@ -205,7 +217,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
     const rows = [];
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for await (const queryRow of this._vp.view.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const queryRow of this.iModelRef.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
     const column = `${elementType.toLowerCase()}.id`;
@@ -240,7 +252,9 @@ export class CategoryPicker extends IdPicker {
 
   protected get _elementType(): "Category" { return "Category"; }
   protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
-  protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeCategoryDisplay(ids, enabled); }
+  protected changeDisplay(ids: Id64Arg, enabled: boolean) {
+    this.iModelRef.viewedCategories[enabled ? "addAll" : "deleteAll"](Id64.toIdSet(ids));
+  }
 
   protected override get _comboBoxEntries(): ComboBoxEntry[] {
     const entries = super._comboBoxEntries;
@@ -248,20 +262,21 @@ export class CategoryPicker extends IdPicker {
     return entries;
   }
 
-  protected async _populate(): Promise<void> {
+  protected override async _populate(): Promise<void> {
     this._element.appendChild(document.createElement("hr"));
 
-    const view = this._vp.view;
-    if (!view.iModel.isOpen)
+    const ref = this.iModelRef;
+    if (!ref.iModel.isOpen)
       return;
 
-    const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
-    const bindings = view.is2d() ? [view.baseModelId] : undefined;
+    const ecsql = ref.isSpatial() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
+    const bindings = ref.is2d() ? [ref.viewedModel] : undefined;
     const rows: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for await (const queryRow of view.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const queryRow of ref.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
+
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);
@@ -275,12 +290,12 @@ export class CategoryPicker extends IdPicker {
 
     for (const row of rows) {
       const name = getCategoryName(row);
-      this.addCheckbox(name, row.id, view.categorySelector.has(row.id));
+      this.addCheckbox(name, row.id, ref.viewedCategories.has(row.id));
     }
 
     // Remove any unused categories from category selector (otherwise areAllEnabled criterion is broken).
     let unusedCategories: Set<string> | undefined;
-    for (const categoryId of view.categorySelector.categories) {
+    for (const categoryId of ref.viewedCategories) {
       if (!this._availableIds.has(categoryId)) {
         if (undefined === unusedCategories)
           unusedCategories = new Set<string>();
@@ -290,20 +305,25 @@ export class CategoryPicker extends IdPicker {
     }
 
     if (undefined !== unusedCategories)
-      this._vp.changeCategoryDisplay(unusedCategories, false);
+      ref.viewedCategories.deleteAll(unusedCategories);
   }
 
   protected override show(which: string): void {
-    if ("Subcategories" === which)
-      this._vp.changeCategoryDisplay(this._enabledIds, true, true);
-    else
+    if ("Subcategories" === which) {
+      this.iModelRef.changeCategoryDisplay({
+        categories: this._enabledIds,
+        display: true,
+        enableAllSubCategories: true,
+      })
+    } else {
       super.show(which);
+    }
   }
 
   protected hiliteEnabled(hiliteOn: boolean): void {
     const catIds = this._enabledIds;
-    const cache = this._vp.iModel.subcategories;
-    const set = this._vp.iModel.hilited.subcategories;
+    const cache = this.iModelRef.iModel.subcategories;
+    const set = this.iModelRef.iModel.hilited.subcategories;
     for (const catId of catIds) {
       const subcatIds = cache.getSubCategories(catId);
       if (undefined !== subcatIds) {
@@ -330,15 +350,13 @@ export class ModelPicker extends IdPicker {
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
   protected override get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
-    if (enabled)
-      this._vp.addViewedModels(ids); // eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      this._vp.changeModelDisplay(ids, enabled);
+    assert(this.iModelRef.isSpatial());
+    this.iModelRef.viewedModels[enabled ? "addAll" : "deleteAll"](Id64.toIdSet(ids));
   }
 
   protected hiliteEnabled(hiliteOn: boolean): void {
     const modelIds = this._enabledIds;
-    const hilites = this._vp.iModel.hilited;
+    const hilites = this.iModelRef.iModel.hilited;
     for (const modelId of modelIds) {
       if (hiliteOn)
         hilites.models.addId(modelId);
@@ -406,11 +424,11 @@ export class ModelPicker extends IdPicker {
     });
     this._element.appendChild(buttons);
 
-    const view = this._vp.view;
-    assert(undefined !== view && view.isSpatialView());
+    const ref = this.iModelRef;
+    assert(ref.isSpatial());
 
     const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
-    const props = await view.iModel.models.queryProps(query);
+    const props = await ref.iModel.models.queryProps(query);
     props.forEach((prop) => {
       if (prop.isPrivate)
         prop.name = `~${prop.name}`;
@@ -418,10 +436,9 @@ export class ModelPicker extends IdPicker {
 
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
-    const selector = view.modelSelector;
     for (const prop of props) {
       if (undefined !== prop.id && undefined !== prop.name) {
-        this.addCheckbox(prop.name, prop.id, selector.has(prop.id));
+        this.addCheckbox(prop.name, prop.id, ref.viewedModels.has(prop.id));
         if ((prop as GeometricModel3dProps).isPlanProjection)
           this._planProjectionIds.push(prop.id);
       }

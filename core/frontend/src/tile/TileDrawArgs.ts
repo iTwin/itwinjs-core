@@ -19,6 +19,8 @@ import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { IModelDisplayReference } from "../IModelDisplayReference";
+import { resolveIModelDisplayReference } from "../internal/ForeignIModelRef";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -67,8 +69,6 @@ export interface TileDrawArgParams {
   boundingRange?: Range3d;
   /** @alpha */
   maximumScreenSpaceError?: number;
-  /** @alpha */
-  transformFromIModel?: Transform;
 }
 
 /**
@@ -131,8 +131,6 @@ export class TileDrawArgs {
   public readonly groupNodeId?: number;
   /** @alpha */
   public maximumScreenSpaceError;
-  /** @alpha */
-  public transformFromIModel?: Transform;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -277,7 +275,6 @@ export class TileDrawArgs {
     this.groupNodeId = params.groupNodeId;
     this.boundingRange = params.boundingRange;
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
-    this.transformFromIModel = params.transformFromIModel;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -346,6 +343,20 @@ export class TileDrawArgs {
     return this._appearanceProvider;
   }
 
+  /** The iModel reference to which the tiles' graphics - and the hits they produce - are attributed.
+   * @internal
+   */
+  protected get _branchIModelRef(): IModelDisplayReference {
+    const contextRef = this.context.iModelRef;
+    if (this.tree.iModel === contextRef.iModel)
+      return contextRef;
+
+    // The tree originates from an IModelConnection other than the one being drawn - e.g., it was supplied by a
+    // TiledGraphicsProvider. Attribute its graphics to a reference to its own iModel so that picking, snapping,
+    // tooltips, and hilite use that iModel.
+    return resolveIModelDisplayReference(this.context.viewport.view.iModelRefs, this.tree.iModel);
+  }
+
   /** @internal */
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
@@ -361,8 +372,7 @@ export class TileDrawArgs {
       return undefined;
 
     const opts: GraphicBranchOptions = {
-      iModel: this.tree.iModel,
-      transformFromIModel: this.transformFromIModel,
+      iModelRef: this._branchIModelRef,
       clipVolume: this.clipVolume,
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,
