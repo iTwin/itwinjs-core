@@ -44,7 +44,7 @@ Appearance-only changes to the primary iModel, including feature override provid
 
 ### Display customization compatibility
 
-Legacy [EmphasizeElements]($frontend) operations continue to call overridable instance methods, including selected-element operations, override-key creation, serialization, and appearance accessors. Primary symbology honors overrides of `ViewState.getSubCategoryOverride` and `DisplayStyleState.getSubCategoryOverride` for visibility and appearance.
+Legacy [EmphasizeElements]($frontend) operations continue to call overridable instance methods, including selected-element operations, override-key creation, serialization, and appearance accessors. Primary symbology honors overrides of `ViewState.getSubCategoryOverride` and `DisplayStyleState.getSubCategoryOverride` for visibility and appearance. Primary subcategory visibility changes also call `DisplayStyleState.overrideSubCategory`, keeping custom getter/setter pairs consistent.
 
 Plain element IDs in [ReadPixelsArgs.excludedElements]($frontend) exclude geometry from the primary iModel, including sheet and section-drawing attachment references. Reference-qualified exclusions remain specific to that reference and do not affect other references displaying the same iModel. Neither form excludes unrelated iModels.
 

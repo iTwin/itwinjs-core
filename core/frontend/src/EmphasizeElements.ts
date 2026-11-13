@@ -491,19 +491,26 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasized = this.getEmphasizedElements(vp);
     if (emphasized) {
       const appearance = this.wantEmphasis ? this.#state.emphasizedAppearance : FeatureAppearance.defaults;
-      for (const elementId of emphasized)
-        overrides.override({ elementId, appearance });
+      const overrideArgs = { elementId: "", appearance };
+      for (const elementId of emphasized) {
+        overrideArgs.elementId = elementId;
+        overrides.override(overrideArgs);
+      }
 
       overrides.ignoreAnimationOverrides((args) => !emphasized.has(Id64.fromUint32Pair(args.elementId.lower, args.elementId.upper)));
     }
 
     const overridden = this.getOverriddenElements();
-    if (overridden)
+    if (overridden) {
+      const overrideArgs = { elementId: "", appearance: FeatureAppearance.defaults };
       for (const [key, ids] of overridden) {
-        const appearance = this.createAppearanceFromKey(key);
-        for (const elementId of ids)
-          overrides.override({ elementId, appearance });
+        overrideArgs.appearance = this.createAppearanceFromKey(key);
+        for (const elementId of ids) {
+          overrideArgs.elementId = elementId;
+          overrides.override(overrideArgs);
+        }
       }
+    }
 
     const unanimated = this.unanimatedAppearance;
     if (unanimated) {

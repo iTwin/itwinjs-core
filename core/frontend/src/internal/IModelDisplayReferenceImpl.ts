@@ -99,7 +99,8 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
   if (!app)
     return false; // category not enabled or not loaded
 
-  const curOvr = ref === ref.parent.primary ? ref.parent[_backingView].getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
+  const primaryView = ref === ref.parent.primary ? ref.parent[_backingView] : undefined;
+  const curOvr = primaryView ? primaryView.getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
   const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
   if (isAlreadyVisible === visible)
     return false;
@@ -107,7 +108,14 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
   // Preserve existing overrides - just flip the visibility flag.
   const json = undefined !== curOvr ? curOvr.toJSON() : {};
   json.invisible = !visible;
-  ref.subCategoryOverrides.set(id, SubCategoryOverride.fromJSON(json));
+  const ovr = SubCategoryOverride.fromJSON(json);
+  if (primaryView) {
+    primaryView.displayStyle.overrideSubCategory(id, ovr);
+    // A custom setter may store overrides outside the observable settings map.
+    ref.invalidateSymbologyOverrides();
+  } else {
+    ref.subCategoryOverrides.set(id, ovr);
+  }
   return true;
 }
 

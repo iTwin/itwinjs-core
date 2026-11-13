@@ -8,6 +8,7 @@ import { EmphasizeElements, EmphasizeIModelElements } from "../EmphasizeElements
 import { IModelApp } from "../IModelApp";
 import { OffScreenViewport } from "../Viewport";
 import { SpatialViewState } from "../SpatialViewState";
+import { DisplayStyle3dState } from "../DisplayStyleState";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { ViewRect } from "../common/ViewRect";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -149,6 +150,28 @@ describe("Legacy display compatibility", () => {
     expect(overrides.getElementOverridesById("0x123")?.transparency).toBe(0.9);
   });
 
+  it("reuses override arguments across large emphasis and color sets", () => {
+    using vp = openBlankViewport();
+    const provider = new EmphasizeElements();
+    const emphasized = Array.from({ length: 1000 }, (_, i) => `0x${(i + 1).toString(16)}`);
+    const colored = Array.from({ length: 1000 }, (_, i) => `0x${(i + 0x10000).toString(16)}`);
+    provider.emphasizeElements(emphasized, vp);
+    provider.overrideElements(colored.slice(0, 500), vp, ColorDef.red);
+    provider.overrideElements(colored.slice(500), vp, ColorDef.blue);
+    const overrides = new FeatureSymbology.Overrides();
+    const apply = vi.spyOn(overrides, "override");
+    provider.addFeatureOverrides(overrides, vp);
+    expect(apply).toHaveBeenCalledTimes(2000);
+    expect(new Set(apply.mock.calls.slice(0, 1000).map(([args]) => args)).size).toBe(1);
+    expect(new Set(apply.mock.calls.slice(1000).map(([args]) => args)).size).toBe(1);
+    for (const id of emphasized)
+      expect(overrides.getElementOverridesById(id)).toBeDefined();
+    for (const id of colored.slice(0, 500))
+      expect(overrides.getElementOverridesById(id)?.rgb).toEqual(expect.objectContaining({ r: 255, g: 0, b: 0 }));
+    for (const id of colored.slice(500))
+      expect(overrides.getElementOverridesById(id)?.rgb).toEqual(expect.objectContaining({ r: 0, g: 0, b: 255 }));
+  });
+
   it("retains nested clearing, ID-set, and serialization hooks", () => {
     using vp = openBlankViewport();
     const provider = new EmphasizeElements();
@@ -219,6 +242,45 @@ describe("Legacy display compatibility", () => {
     expect(second.neverDrawn).toBe(ref.neverDrawnElements);
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the documented legacy getter behavior.
     expect(second.alwaysDrawn).toBe(ref.alwaysDrawnElements);
+  });
+
+  it("writes primary visibility changes through a custom style's override setter", async () => {
+    using vp = openBlankViewport();
+    class CustomStyle extends DisplayStyle3dState {
+      private readonly _overrides = new Map<string, SubCategoryOverride>();
+      public writes = 0;
+      public override getSubCategoryOverride(id: string) { return this._overrides.get(id); }
+      public override overrideSubCategory(id: string, value: SubCategoryOverride): void {
+        ++this.writes;
+        this._overrides.set(id, value);
+      }
+    }
+    const style = new CustomStyle(vp.displayStyle.toJSON(), vp.iModel);
+    vp.displayStyle = style;
+    const ref = vp.primaryIModelRef;
+    vp.iModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+    ref.viewedCategories.add("0x10");
+    style.overrideSubCategory("0x11", SubCategoryOverride.fromJSON({ transp: 0.9, priority: 12 }));
+    await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+    vp.renderFrame();
+    const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+    expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x11")).toBe(true);
+    expect(ref.isSubCategoryVisible("0x11")).toBe(true);
+    expect(ref.changeSubCategoryDisplay("0x11", false)).toBe(true);
+    expect(style.writes).toBe(2);
+    expect(ref.isSubCategoryVisible("0x11")).toBe(false);
+    expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x11")).toBe(false);
+    vp.renderFrame();
+    expect(applied.mock.calls.at(-1)?.[0].isSubCategoryIdVisible("0x11")).toBe(false);
+    expect(new FeatureSymbology.Overrides(vp).isSubCategoryIdVisible("0x11")).toBe(false);
+    expect(style.getSubCategoryOverride("0x11")?.transparency).toBe(0.9);
+    expect(ref.changeSubCategoryDisplay("0x11", true)).toBe(true);
+    expect(style.writes).toBe(3);
+    expect(ref.isSubCategoryVisible("0x11")).toBe(true);
+    expect(ref.getSubCategoryAppearance("0x11").transparency).toBe(0.9);
+    expect(style.getSubCategoryOverride("0x11")?.priority).toBe(12);
+    expect(ref.changeSubCategoryDisplay("0x11", true)).toBe(false);
+    expect(style.writes).toBe(3);
   });
 
   for (const source of ["view", "style"] as const) {
