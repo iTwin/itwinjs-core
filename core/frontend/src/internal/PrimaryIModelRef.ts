@@ -21,7 +21,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import type { DisplayStyleState } from "../DisplayStyleState";
-import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly [_implementationProhibited] = undefined;
@@ -42,7 +42,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   #removeViewedCategoriesListener: VoidFunction;
   readonly #viewedCategoriesChanged = () => {
     this.invalidateSymbologyOverrides();
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   };
 
   protected readonly _ovrs: IModelDisplayOverrides;
@@ -267,7 +267,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     // detached, with the listeners that would invalidate and reload removed. Mirror the old Viewport.attachToView, which
     // unconditionally refreshed subcategories and rebuilt the symbology overrides on every attach.
     this.invalidateSymbologyOverrides();
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
   public [_detachFromViewport](): void {
     this.#attached = false;
@@ -328,7 +328,7 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -375,7 +375,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   #boundViewedModels?: ObservableSet<Id64String>;
   #removeViewedModelsListener?: VoidFunction;
   readonly #viewedModelsChanged = () => {
-    void loadViewedModels(this);
+    void scheduleViewedModelsLoad(this);
   };
 
   public constructor(refs: SpatialIModelDisplayReferences) {
@@ -406,9 +406,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       return removals;
     });
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
 
-    void loadViewedModels(this);
+    void scheduleViewedModelsLoad(this);
     this.#boundViewedModels = this.viewedModels;
     this.#removeViewedModelsListener = this.#boundViewedModels.onChanged.addListener(this.#viewedModelsChanged);
     this._view.onViewedModelsChanged.addListener(() => this.#syncViewedModelsBinding());
@@ -530,7 +530,7 @@ class GenericPrimaryIModelRef extends PrimaryIModelRef {
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
 
   public override get tileTreeRefs(): Iterable<TileTreeReference> {

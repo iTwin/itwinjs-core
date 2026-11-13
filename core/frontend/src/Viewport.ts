@@ -480,6 +480,20 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateDecorations();
   }
 
+  private maybeInvalidateScene(): void {
+    if (!this._sceneValid)
+      return;
+
+    // Shadows and sheet attachments bake visibility and appearance into their scene graphics.
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
+      this.invalidateScene();
+
+    this.onSceneVisibilityChanged();
+  }
+
+  /** @internal Invoked when scene visibility changes without necessarily changing the scene graphics. */
+  protected onSceneVisibilityChanged(): void { }
+
   /** Mark the viewport's "render plan" as having changed, so that the next call to [[renderFrame]] will recreate it.
    * This method is not typically invoked directly - the render plan is automatically invalidated in response to events such as changing aspects
    * of the viewport's [[displayStyle]].
@@ -1300,7 +1314,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // Raised on mutation of the category selector's contents *and* on replacement of the selector itself -
     // the primary reference's viewedCategories delegates to the view's current selector.
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
-      this.invalidateScene();
+      this.maybeInvalidateScene();
       this._changeFlags.setViewedCategories();
     }));
 
@@ -1350,7 +1364,11 @@ export abstract class Viewport implements Disposable, TileUser {
     const isPrimary = ref === this.iModelRefs.primary;
 
     const categoriesChanged = () => {
-      this.invalidateScene();
+      if (isPrimary)
+        this.maybeInvalidateScene();
+      else
+        this.invalidateScene();
+
       if (ref === this.primaryIModelRef)
         this._changeFlags.setViewedCategories();
     };
@@ -1362,21 +1380,19 @@ export abstract class Viewport implements Disposable, TileUser {
     const invalidateScene = () => this.invalidateScene();
     removals.push(ref.onActiveViewFlagsChanged.addListener(invalidateScene));
     removals.push(ref.onActiveClipStyleChanged.addListener(invalidateScene));
-    removals.push(ref.onSymbologyOverridesInvalidated.addListener(invalidateScene));
+    removals.push(ref.onSymbologyOverridesInvalidated.addListener(() => {
+      if (isPrimary) {
+        this._changeFlags.setFeatureOverrideProvider();
+        this.maybeInvalidateScene();
+      } else {
+        this.invalidateScene();
+      }
+    }));
     removals.push(ref.onModelDisplayTransformProviderChanged.addListener(invalidateScene));
     removals.push(ref.perModelCategoryVisibility.onChanged.addListener(() => this.setViewedCategoriesPerModelChanged()));
-    removals.push(ref.neverDrawnElements.onChanged.addListener(() => {
-      this._changeFlags.setNeverDrawn();
-      this.invalidateScene();
-    }));
-    removals.push(ref.alwaysDrawnElements.onChanged.addListener(() => {
-      this._changeFlags.setAlwaysDrawn();
-      this.invalidateScene();
-    }));
-    removals.push(ref.onIsAlwaysDrawnExclusiveChanged.addListener(() => {
-      this._changeFlags.setAlwaysDrawn();
-      this.invalidateScene();
-    }));
+    removals.push(ref.neverDrawnElements.onChanged.addListener(() => this._changeFlags.setNeverDrawn()));
+    removals.push(ref.alwaysDrawnElements.onChanged.addListener(() => this._changeFlags.setAlwaysDrawn()));
+    removals.push(ref.onIsAlwaysDrawnExclusiveChanged.addListener(() => this._changeFlags.setAlwaysDrawn()));
 
     const styleAndOverridesChanged = () => {
       this.invalidateRenderPlan();
@@ -1441,7 +1457,7 @@ export abstract class Viewport implements Disposable, TileUser {
     };
 
     const styleAndOverridesChanged = () => {
-      displayStyleChanged();
+      this._changeFlags.setDisplayStyle();
       this.setFeatureOverrideProviderChanged();
     };
 
@@ -1454,7 +1470,10 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
-    removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onClipStyleChanged.addListener(() => {
+      displayStyleChanged();
+      this.setFeatureOverrideProviderChanged();
+    }));
     removals.push(settings.onPlanarClipMaskChanged.addListener(() => {
       displayStyleChanged();
       this.invalidateScene();
@@ -1544,11 +1563,7 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
     removals.push(settings.onMapImageryChanged.addListener(mapChanged));
 
-    removals.push(settings.onExcludedElementsChanged.addListener(() => {
-      this._changeFlags.setDisplayStyle();
-      this.invalidateScene();
-      this.setFeatureOverrideProviderChanged();
-    }));
+    removals.push(settings.onExcludedElementsChanged.addListener(styleAndOverridesChanged));
 
     if (settings.is3d()) {
       removals.push(settings.onLightsChanged.addListener(displayStyleChanged));
@@ -1845,7 +1860,6 @@ export abstract class Viewport implements Disposable, TileUser {
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
     this.primaryIModelRef.invalidateSymbologyOverrides();
-    this.invalidateScene();
   }
 
   /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
@@ -3469,6 +3483,12 @@ export class ScreenViewport extends Viewport {
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
     this._decorationCache.clear();
+  }
+
+  /** @internal */
+  protected override onSceneVisibilityChanged(): void {
+    this._decorationCache.clear();
+    this.invalidateDecorations();
   }
 
   /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.

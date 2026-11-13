@@ -687,11 +687,10 @@ export namespace RealityModelTileTree {
       return composeSourcePlacement(this._source, super.computeTransform(tree));
     }
 
-    /** A reality model displayed through an iModel reference uses that reference's symbology overrides - a context
-     * reality model (whose source is the display style) uses the viewport's.
-     */
+    /** Primary and context reality models inherit the viewport's overrides; linked models supply their own. */
     protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
-      return this._source instanceof DisplayStyleState ? undefined : this._source.getSymbologyOverrides();
+      return this._source instanceof DisplayStyleState || this._source === this._source.parent.primary
+        ? undefined : this._source.getSymbologyOverrides();
     }
 
     public override unionFitRange(union: Range3d): void {

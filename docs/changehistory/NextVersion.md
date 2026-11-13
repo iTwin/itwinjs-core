@@ -7,6 +7,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [Frontend](#frontend)
     - [Linked iModels](#linked-imodels)
+    - [Category and model loading performance](#category-and-model-loading-performance)
     - [ViewState property updates](#viewstate-property-updates)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
@@ -26,6 +27,14 @@ publish: false
 ### Linked iModels
 
 Spatial views can display linked iModels, each with its own visibility, display overrides, and feature override providers. Use [IModelDisplayReferenceFeatureOverrideProvider]($frontend) or [EmphasizeIModelElements]($frontend) to provide reference-specific symbology or emphasis. See [Referencing Linked iModels](../learning/LinkedIModels.md) for details.
+
+### Category and model loading performance
+
+Category and model selector changes now coalesce metadata loads at the end of the current synchronous task. Category loads use the viewport's subcategory queue, and model loads wait for earlier loads on the same display reference. This avoids duplicate requests when enabling many categories or models, including those in linked iModels.
+
+If your code needs model metadata after changing a selector, await [SpatialIModelDisplayReference.addAndLoadViewedModels]($frontend) instead of assuming that the selector change starts a request immediately. To wait for category metadata and tiles, await [Viewport.waitForSceneCompletion]($frontend).
+
+Appearance-only changes to the primary iModel, including feature override providers and schedule-script visibility or color changes, no longer rebuild the scene unless shadows or sheet views require it. Linked references retain their own branch overrides. Primary feature override providers run once per override update, and their transparency overrides take precedence over plan-projection transparency. An exclusive, empty always-drawn set now hides all primary elements consistently.
 
 ### ViewState property updates
 

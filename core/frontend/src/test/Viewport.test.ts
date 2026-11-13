@@ -975,10 +975,10 @@ describe("Viewport", () => {
         expectPlacement(linkedReality, true);
         expect((linkedReality as any).getSymbologyOverrides(stubTree)).toBe(linkedRef.getSymbologyOverrides());
 
-        // The primary reference's placement is the identity; it uses the primary's overrides.
+        // The primary reference's placement is the identity; it inherits the target's overrides.
         const primaryReality = makeRealityRef(refs.primary);
         expectPlacement(primaryReality, false);
-        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBe(refs.primary.getSymbologyOverrides());
+        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBeUndefined();
 
         // A context reality model (owned by the display style) is not placed and inherits the viewport's overrides.
         const contextReality = makeRealityRef(viewport.view.displayStyle);
@@ -1906,7 +1906,9 @@ describe("Viewport", () => {
         const loadModels = vi.spyOn(linkedIModel.models, "load").mockReturnValue(new Promise<void>((resolve) => resolveLoad = resolve));
 
         const linkedRef = refs.link({ iModel: linkedIModel, viewedModels: ["0x123"] });
-        expect(loadModels).toHaveBeenCalled();
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        await Promise.resolve();
+        expect(loadModels).toHaveBeenCalledOnce();
 
         // Before the ModelStates are loaded the reference has no tile-tree references, but it must not report completion -
         // waitForSceneCompletion would otherwise resolve before the linked content can produce any graphics.
@@ -1938,7 +1940,9 @@ describe("Viewport", () => {
         const loadSubCategories = vi.spyOn(linkedIModel.subcategories, "load").mockReturnValue({ promise } as ReturnType<typeof linkedIModel.subcategories.load>);
 
         const linkedRef = refs.link({ iModel: linkedIModel, viewedCategories: ["0xc"] });
-        expect(loadSubCategories).toHaveBeenCalled();
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        await Promise.resolve();
+        expect(loadSubCategories).toHaveBeenCalledOnce();
 
         // The reference's symbology is not final until its subcategories load - it must not report completion.
         expect(linkedRef.isLoadingComplete).toBe(false);
