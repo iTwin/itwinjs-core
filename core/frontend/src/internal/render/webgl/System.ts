@@ -23,6 +23,8 @@ import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBran
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import type { GaussianSplatData } from "../GaussianSplatData";
+import { loadedGaussianSplatModule, loadGaussianSplatModule } from "../GaussianSplatModuleLoader";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
@@ -43,6 +45,8 @@ import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
+import type { GaussianSplatAtlas } from "./GaussianSplatAtlas";
+import type { GaussianSplatGeometry } from "./GaussianSplatGeometry";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
@@ -293,7 +297,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private readonly _capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   public readonly glTimer: GLTimer;
-  private readonly _textureBindings: TextureBinding[] = [];
+  /** The texture bound to each unit, per target: a unit holds a binding for each target, so that unbinding one target leaves the others. */
+  private readonly _textureBindings = new Map<GL.Texture.Target, TextureBinding[]>();
+  private _gaussianSplatAtlas?: GaussianSplatAtlas;
   private _removeEventListener?: () => void;
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
@@ -333,6 +339,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override get maxTextureSize(): number { return this._capabilities.maxTextureSize; }
+  public get maxArrayTextureLayers(): number { return this._capabilities.maxArrayTextureLayers; }
   public override get supportsCreateImageBitmap(): boolean { return this._capabilities.supportsCreateImageBitmap; }
   public get maxRenderType() { return this._capabilities.maxRenderType; }
   public get fragDepthDoesNotDisableEarlyZ() { return this._capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ; }
@@ -414,12 +421,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return undefined === this._techniques
       && undefined === this._lineCodeTexture
       && undefined === this._noiseTexture
-      && undefined === this._screenSpaceEffects;
+      && undefined === this._screenSpaceEffects
+      && undefined === this._gaussianSplatAtlas;
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   public dispose() {
     this._techniques = dispose(this._techniques);
+    this._gaussianSplatAtlas = dispose(this._gaussianSplatAtlas);
     this._screenSpaceEffects = dispose(this._screenSpaceEffects);
     this._lineCodeTexture = dispose(this._lineCodeTexture);
     if (this._lineCodeTextureListener) {
@@ -599,6 +608,19 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createPointCloudGeometry(args: PointCloudArgs): PointCloudGeometry {
     return new PointCloudGeometry(args);
+  }
+
+  public override createGaussianSplatGeometry(args: GaussianSplatData): GaussianSplatGeometry | undefined {
+    const splatModule = this.options.enableGaussianSplats ? loadedGaussianSplatModule() : undefined;
+    return splatModule ? new splatModule.GaussianSplatGeometry(args, this.gaussianSplatAtlas) : undefined;
+  }
+
+  /** The GPU copies of every Gaussian splat tile, shared by every viewport. Only splat geometry and its renderer use it, and
+   * those exist only once the splat module has loaded.
+   */
+  public get gaussianSplatAtlas(): GaussianSplatAtlas {
+    const splatModule = expectDefined(loadedGaussianSplatModule());
+    return this._gaussianSplatAtlas ??= new splatModule.GaussianSplatAtlas(this.maxArrayTextureLayers);
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
@@ -825,6 +847,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
     canvas.addEventListener("webglcontextlost", async () => RenderSystem.contextLossHandler(), false);
+
+    // Start loading the splat module now, so that it is usually ready before the first splat tile arrives. A tile that needs it
+    // while it cannot load reports the failure.
+    if (options.enableGaussianSplats)
+      loadGaussianSplatModule().catch(() => { });
   }
 
   /** Exposed strictly for tests. */
@@ -835,14 +862,18 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding, makeActive: boolean): void {
     const index = unit - TextureUnit.Zero;
-    if (this._textureBindings[index] === texture) {
+    let bindings = this._textureBindings.get(target);
+    if (!bindings)
+      this._textureBindings.set(target, bindings = []);
+
+    if (bindings[index] === texture) {
       if (makeActive)
         this.context.activeTexture(unit);
 
       return;
     }
 
-    this._textureBindings[index] = texture;
+    bindings[index] = texture;
     this.context.activeTexture(unit);
     this.context.bindTexture(target, undefined !== texture ? texture : null);
   }
@@ -851,10 +882,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, false); }
   /** Bind the specified texture to the specified unit. This may *or may not* make the texture *active* */
   public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, false); }
+  /** Bind the specified 2D array texture to the specified unit. This may *or may not* make the texture *active* */
+  public bindTexture2dArray(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDeeArray, texture, false); }
   /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
   public activateTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, true); }
   /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
   public activateTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, true); }
+  /** Bind the specified 2D array texture to the specified unit. This *always* makes the texture *active* */
+  public activateTexture2dArray(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDeeArray, texture, true); }
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
@@ -867,11 +902,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public disposeTexture(texture: WebGLTexture) {
     System.instance.context.deleteTexture(texture);
-    for (let i = 0; i < this._textureBindings.length; i++) {
-      if (this._textureBindings[i] === texture) {
-        this._textureBindings[i] = undefined;
-        break;
-      }
+    for (const bindings of this._textureBindings.values()) {
+      const index = bindings.indexOf(texture);
+      if (index >= 0)
+        bindings[index] = undefined;
     }
   }
 
@@ -961,6 +995,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public compileAllShaders(): boolean {
+    // The splat techniques are registered on first use; register them now so that they compile with the others. If the splat
+    // module has not loaded yet, they still compile on first use.
+    if (this.options.enableGaussianSplats)
+      loadedGaussianSplatModule()?.gaussianSplatTechniques(this.techniques);
+
     return this.techniques.compileShaders();
   }
 
@@ -978,6 +1017,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     for (const idMap of this.resourceCache.values())
       idMap.collectStatistics(stats);
+
+    // Tiles report their own Gaussian splat CPU copies and atlas rows. What all viewports share is reported here, once: the
+    // atlas's spare rows, content viewports still display after their tiles released it, and the decoder worker's memory, which
+    // is not tile content.
+    this._gaussianSplatAtlas?.collectStatistics(stats);
+    stats.addGaussianSplats(loadedGaussianSplatModule()?.gaussianSplatDecoderBytes() ?? 0);
   }
 
   public setMaxAnisotropy(max: number | undefined): void {

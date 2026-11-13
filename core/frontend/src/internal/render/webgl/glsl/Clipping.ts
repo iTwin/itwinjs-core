@@ -14,7 +14,8 @@ import { addPixelWidthFactor } from "./FeatureSymbology";
 import { computeAlphaWeight, computeOutputs } from "./Translucency";
 import { addModelViewMatrix } from "./Vertex";
 
-const getClipPlaneFloat = `
+/** Reads clip plane `index` from `s_clipSampler`, one plane per row. @internal */
+export const getClipPlaneFloat = `
 vec4 getClipPlane(int index) {
   return texelFetch(s_clipSampler, ivec2(0, index), 0);
 }
@@ -34,7 +35,8 @@ float unpackFloat(vec4 v) {
 }
 `;
 
-const calcClipPlaneDist = `
+/** @internal */
+export const calcClipPlaneDist = `
 float calcClipPlaneDist(vec3 camPos, vec4 plane) {
   return dot(vec4(camPos, 1.0), plane);
 }
@@ -44,7 +46,11 @@ const applyClipPlanesLoop = `
     for (int i = u_clipParams[0]; i < u_clipParams[1]; i++) {
 `;
 
-const applyClipPlanesLoopBody = `
+/** The body of a loop over clip planes `i`: tracks, in `numPlaneSets`, `numSetsClippedBy` and `clippedByCurrentPlaneSet`, whether
+ * `v_eyeSpace` is clipped by every set of a union of convex plane sets, and breaks once it is.
+ * @internal
+ */
+export const applyClipPlanesLoopBody = `
       vec4 plane = getClipPlane(i);
       if (plane.x == 2.0) { // indicates start of new UnionOfConvexClipPlaneSets
         if (numSetsClippedBy + int(clippedByCurrentPlaneSet) == numPlaneSets)

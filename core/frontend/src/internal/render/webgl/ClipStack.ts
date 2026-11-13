@@ -106,6 +106,43 @@ export class ClipStack {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
+  /** The clips this stack would apply with `volumes` pushed above the view clip. An empty view clip applies no planes. */
+  private clipsWith(volumes: readonly ClipVolume[]): readonly ClipVolume[] {
+    return this.hasViewClip ? [this._stack[0] as ClipVolume, ...volumes] : volumes;
+  }
+
+  /** The number of clip planes this stack would apply with `volumes` pushed above the view clip, without pushing them. */
+  public planeCountWith(volumes: readonly ClipVolume[]): number {
+    return this.clipsWith(volumes).reduce((sum, clip) => sum + clip.numRows, 0);
+  }
+
+  /** Write the eye-space planes this stack would apply with `volumes` pushed above the view clip, without pushing them, into
+   * `planes` from plane `firstPlane` on: four floats per plane, as the clip texture holds them.
+   */
+  public writePlanesWith(volumes: readonly ClipVolume[], planes: Float32Array, firstPlane: number): void {
+    const transform = this._getTransform();
+    const bytes = new Uint8Array(planes.buffer, planes.byteOffset);
+    let byteOffset = firstPlane * 16;
+    for (const clip of this.clipsWith(volumes)) {
+      const data = clip.getData(transform);
+      bytes.set(data, byteOffset);
+      byteOffset += data.byteLength;
+    }
+  }
+
+  /** Whether `range`, transformed by `transform`, is entirely outside the view clip or one of `volumes`, as [[isRangeClipped]]
+   * would find with `volumes` pushed (by a branch whose `clipStyleDisabled`, if so), without pushing them.
+   */
+  public isRangeClippedWith(range: Range3d, transform: Transform, volumes: readonly ClipVolume[], clipStyleDisabled: boolean): boolean {
+    const clips = this.clipsWith(volumes);
+    const outsideColored = this.hasOutsideColor && !clipStyleDisabled;
+    if (outsideColored || !clips.length)
+      return false;
+
+    const corners = getRangeCorners(transform.multiplyRange(range));
+    return clips.some((clip) => ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(corners));
+  }
+
   public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle }): void {
     assert(this._stack.length === 1);
 

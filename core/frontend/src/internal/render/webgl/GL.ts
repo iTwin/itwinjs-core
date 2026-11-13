@@ -158,6 +158,7 @@ export namespace GL {
   export namespace Texture {
     export enum Target {
       TwoDee = WebGLRenderingContext.TEXTURE_2D, // regular 2D texture
+      TwoDeeArray = WebGL2RenderingContext.TEXTURE_2D_ARRAY, // layers of 2D textures of one size
       CubeMap = WebGLRenderingContext.TEXTURE_CUBE_MAP, // six-sided cubemap texture
       CubeMapPositiveX = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, // right side
       CubeMapNegativeX = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, // left side
@@ -172,6 +173,7 @@ export namespace GL {
       DepthStencil = WebGLRenderingContext.DEPTH_STENCIL,
       Luminance = WebGLRenderingContext.LUMINANCE,
       DepthComponent = WebGLRenderingContext.DEPTH_COMPONENT,
+      RgbaInteger = WebGL2RenderingContext.RGBA_INTEGER,
     }
 
     // This name is unambiguous as it is qualified by the namespace...https://github.com/palantir/tslint/issues/3789
