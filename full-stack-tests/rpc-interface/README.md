@@ -51,10 +51,10 @@ In order to run the integration tests they need to have a valid OIDC client id w
 
 Once all the required environment variables are setup, to run the integration tests:
 
-1. Install dependencies: `npm install`
-2. Clean output: `npm run clean`
-3. Build source: `npm run build`
-4. Run tests: `npm test:integration`
+1. Install dependencies: `rush install` (from the repository root)
+2. Clean output: `rushx clean`
+3. Build source: `rushx build`
+4. Run tests: `rushx test:integration`
 
 ## Development instructions
 

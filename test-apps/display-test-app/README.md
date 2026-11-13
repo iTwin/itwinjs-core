@@ -30,13 +30,13 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 * To start the application in Electron, navigate to the root of display-test-app, and use the command:
 
 ```cmd
-npm run start
+rushx start
 ```
 
 * To start the application in a browser, run the following command, and then navigate to localhost:3000 in any supported browser (not Internet Explorer):
 
 ```cmd
-npm run start:servers
+rushx start:servers
 ```
 
 ## Using display-test-app
@@ -83,23 +83,23 @@ Debugging display-test-app can be accomplished using the following procedures to
 
 In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
 
-1. Make sure the backend is built `npm run build:backend`
-1. Run `npm run start:webserver` (`npm run start:mobile` for Android and iOS)
+1. Make sure the backend is built `rushx build:backend`
+1. Run `rushx start:webserver` (`rushx start:mobile` for Android and iOS)
     * Launches the vite dev server, providing hot-module reloading of the frontend
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
 A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
 
-1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
+1. Initialize the backend build using `rushx build:backend --watch` in one terminal
     * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
     * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
-1. Run `npm run start:webserver` in a separate terminal (`npm run start:mobile` for Android and iOS)
+1. Run `rushx start:webserver` in a separate terminal (`rushx start:mobile` for Android and iOS)
     * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
 ### What if a change is made in a dependent package in the monorepo?
 
-The display-test-app is part of a monorepo which is setup to link all packages with symlinks so any time you make a change in a dependent package, and run that package's `npm run build` script, the output will automatically be picked up by the application. The steps to pick up that change is different depending on if it was a backend or frontend change.
+The display-test-app is part of a monorepo which is setup to link all packages with symlinks so any time you make a change in a dependent package, and run that package's `rushx build` script, the output will automatically be picked up by the application. The steps to pick up that change is different depending on if it was a backend or frontend change.
 
 For the frontend, if the page doesn't automatically refresh just refresh the page and the updated source will be available.
 
@@ -234,7 +234,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
-  * If defined on mobile, the URL used to open the frontend. (This is used in conjunction with `npm run start:mobile` and is the URL to the debug web server running on the developer's computer.)
+  * If defined on mobile, the URL used to open the frontend. (This is used in conjunction with `rushx start:mobile` and is the URL to the debug web server running on the developer's computer.)
 * IMJS_EXIT_AFTER_MODEL_OPENED
   * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 * IMJS_NO_ELECTRON_AUTH
@@ -305,7 +305,7 @@ To add one:
     ].forEach((tool) => tool.register(svtToolNamespace));
     ```
 
-4. Rebuild and run (`npm run build` then `npm run start` from this directory - see [Getting Started](#getting-started)), press backtick, and type `dta my example`.
+4. Rebuild and run (`rushx build` then `rushx start` from this directory - see [Getting Started](#getting-started)), press backtick, and type `dta my example`.
 
 ## Key-ins
 
@@ -429,6 +429,6 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 The steps to run the display test app in an iOS app:
 
-1. Run `npm run build:mobile`
+1. Run `rushx build:mobile`
 2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
 3. Start the XCode Project to an iPad
