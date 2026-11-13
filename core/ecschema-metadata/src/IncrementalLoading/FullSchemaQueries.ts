@@ -8,6 +8,8 @@ import { modifier, strength, strengthDirection } from "./SchemaStubQueries";
 /**
  * Queries that return full Schema JSON data are found here. Shared SELECTS and
  * WITH clauses are broken down into individual variables.
+ * Wrap JSON-valued scalar subqueries in json(...) because SQLite 3.54.1 clears
+ * their JSON subtype when returning to the enclosing expression.
  */
 
 const propertyType = (alias: string) => {
@@ -202,7 +204,7 @@ SELECT
     'maxOccurs', [pd].[ArrayMaxOccurs],
     'direction', ${navigationDirection("pd")},
     'relationshipName', IIF([navRelDef].[Name] IS NULL, NULL, CONCAT([navSchemaDef].[Name], '.', [navRelDef].[Name])),
-    'customAttributes', (${propertyCustomAttribute("pd")})
+    'customAttributes', json((${propertyCustomAttribute("pd")}))
   ) as [property]
 FROM
   [meta].[ECPropertyDef] as [pd]
@@ -249,7 +251,7 @@ const baseEntityQuery = `
       'baseClass', (
         ${selectBaseClasses}
       ),
-      'mixins', (
+      'mixins', json((
         SELECT
           json_group_array(
             ec_classname([baseClass].[ECInstanceId], 's.c')
@@ -261,11 +263,11 @@ const baseEntityQuery = `
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
           AND EXISTS(SELECT 1 FROM [meta].[ClassCustomAttribute] [ca] WHERE [baseClass].[ECInstanceId] = [ca].[Class].[Id]
           AND [ca].[CustomAttributeClass].[Id] Is ([CoreCA].[IsMixin]))
-      ),
-      'customAttributes', (${classCustomAttribute("class")}),
-      'properties', (
+      )),
+      'customAttributes', json((${classCustomAttribute("class")})),
+      'properties', json((
         ${selectProperties}
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   JOIN
@@ -309,21 +311,21 @@ const baseMixinQuery = `
         FROM [AppliesToCTE] [atCTE]
         WHERE [atCTE].[AppliesToId] = [class].[ECInstanceId]
       ),
-      'customAttributes', (
+      'customAttributes', json((
         SELECT
           json_group_array(json(XmlCAToJson([ca].[Class].[Id], [ca].[Instance])))
         FROM [meta].[CustomAttribute] [ca]
         WHERE [ca].[ContainerId] = [class].[ECInstanceId] AND [ca].[ContainerType] = 30
           AND json_extract(XmlCAToJson([ca].[Class].[Id], [ca].[Instance]), '$.ecClass') <> 'IsMixin'
-      ),
-      'properties', (
+      )),
+      'properties', json((
         SELECT
           json_group_array(json([classProperties].[property]))
         FROM
           [ClassProperties] [classProperties]
         WHERE
           [classProperties].[ClassId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   JOIN
@@ -365,11 +367,11 @@ const baseRelationshipClassQuery = `
       'baseClass', (
         ${selectBaseClasses}
       ),
-      'customAttributes', (${classCustomAttribute("class")}),
-      'properties', (
+      'customAttributes', json((${classCustomAttribute("class")})),
+      'properties', json((
         ${selectProperties}
-      ),
-      'source', (
+      )),
+      'source', json((
         SELECT
           json_object (
             'multiplicity', [sourceConst].[Multiplicity],
@@ -377,20 +379,20 @@ const baseRelationshipClassQuery = `
             'polymorphic', IIF([sourceConst].[IsPolyMorphic] = 1, json('true'), json('false')),
             'abstractConstraint', [sourceConst].[AbstractConstraint],
             'constraintClasses', json([sourceConst].[ConstraintClasses]),
-            'customAttributes', (
+            'customAttributes', json((
               SELECT
                 json_group_array(json(XmlCAToJson([ca].[Class].[Id], [ca].[Instance])))
               FROM [meta].[CustomAttribute] [ca]
               WHERE [ca].[ContainerId] = [sourceConst].[ConstraintId] AND [ca].[ContainerType] = 1024
               ORDER BY [ca].[Ordinal]
-            )
+            ))
           )
         FROM
           [ClassRelationshipConstraints] [sourceConst]
         WHERE [sourceConst].[relationshipEnd] = 0
           AND [sourceConst].[ClassId] = [class].[ECInstanceId]
-      ),
-      'target', (
+      )),
+      'target', json((
         SELECT
           json_object (
             'multiplicity', [targetConst].[Multiplicity],
@@ -398,19 +400,19 @@ const baseRelationshipClassQuery = `
             'polymorphic', IIF([targetConst].[IsPolyMorphic] = 1, json('true'), json('false')),
             'abstractConstraint', [targetConst].[AbstractConstraint],
             'constraintClasses', json([targetConst].[ConstraintClasses]),
-            'customAttributes', (
+            'customAttributes', json((
               SELECT
                 json_group_array(json(XmlCAToJson([ca].[Class].[Id], [ca].[Instance])))
               FROM [meta].[CustomAttribute] [ca]
               WHERE [ca].[ContainerId] = [targetConst].[ConstraintId] AND [ca].[ContainerType] = 2048
               ORDER BY [ca].[Ordinal]
-            )
+            ))
           )
         FROM
             [ClassRelationshipConstraints] [targetConst]
         WHERE [targetConst].[relationshipEnd] = 1
             AND [targetConst].[ClassId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   JOIN
@@ -448,10 +450,10 @@ const baseStructQuery = `
       'baseClass', (
         ${selectBaseClasses}
       ),
-      'customAttributes', (${classCustomAttribute("class")}),
-      'properties', (
+      'customAttributes', json((${classCustomAttribute("class")})),
+      'properties', json((
         ${selectProperties}
-      )
+      ))
     ) AS item
   FROM [meta].[ECClassDef] [class]
   JOIN
@@ -489,10 +491,10 @@ const baseCustomAttributeQuery = `
       'baseClass', (
         ${selectBaseClasses}
       ),
-      'customAttributes', (${classCustomAttribute("class")}),
-      'properties', (
+      'customAttributes', json((${classCustomAttribute("class")})),
+      'properties', json((
         ${selectProperties}
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   JOIN
@@ -562,15 +564,15 @@ SELECT
     'description', [schemaDef].[Description],
     'ecSpecMajorVersion', [schemaDef].[OriginalECXmlVersionMajor],
     'ecSpecMinorVersion', [schemaDef].[OriginalECXmlVersionMinor],
-    'customAttributes', (${schemaCustomAttribute("schemaDef")}),
-    'references', (
+    'customAttributes', json((${schemaCustomAttribute("schemaDef")})),
+    'references', json((
       SELECT
         json_group_array(json([schemaReferences].[reference]))
       FROM
         [SchemaReferences] [schemaReferences]
       WHERE
         [schemaReferences].[SchemaId] = [schemaDef].[ECInstanceId]
-    )
+    ))
   ) as [schema]
 FROM
   [meta].[ECSchemaDef] [schemaDef] WHERE [Name] = :schemaName
@@ -595,23 +597,23 @@ SELECT
     'description', [schemaDef].[Description],
     'ecSpecMajorVersion', [schemaDef].[OriginalECXmlVersionMajor],
     'ecSpecMinorVersion', [schemaDef].[OriginalECXmlVersionMinor],
-    'customAttributes', (${schemaCustomAttribute("schemaDef")}),
-    'references', (
+    'customAttributes', json((${schemaCustomAttribute("schemaDef")})),
+    'references', json((
       SELECT
         json_group_array(json([schemaReferences].[reference]))
       FROM
         [SchemaReferences] [schemaReferences]
       WHERE
         [schemaReferences].[SchemaId] = [schemaDef].[ECInstanceId]
-    ),
-    'items', (
+    )),
+    'items', json((
       SELECT
         json_group_array(json(json_object(
           'item', json([items].[item])
         )))
       FROM
         [SchemaItems] [items]
-    )
+    ))
 ) as [schema]
 FROM
   [meta].[ECSchemaDef] [schemaDef] WHERE [Name] = :schemaName
