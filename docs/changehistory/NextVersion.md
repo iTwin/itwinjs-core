@@ -8,6 +8,7 @@ publish: false
   - [Frontend](#frontend)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
+    - [Map feature info inside polygons with a transparent fill](#map-feature-info-inside-polygons-with-a-transparent-fill)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
@@ -99,6 +100,14 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRe
 `layerUrl` is also the URL of a [MapLayerSource]($frontend) during validation, so the same entry serves the attach dialog's validation request and every later request of the layer.
 
 This per-layer example intentionally supports only same-origin requests. Cross-origin authentication requires explicit approval for that particular secret. Also enable `MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins` to block redirects of handler-injected values: it does not replace the direct-destination checks in these samples.
+
+### Map feature info inside polygons with a transparent fill
+
+Map layers often draw polygons with a transparent fill, such as state or parcel boundaries. A click or hover inside such a polygon picks the layer or base map drawn below it, so [Viewport.getMapFeatureInfo]($frontend), map layer tooltips and [MapFeatureInfoTool]($map-layers-formats) used to find the polygon only on its outline.
+
+When the picked map pixel is below other map layers, they now also query the visible layers drawn above it whose provider supports map feature info, topmost first, overlay layers before background layers. The first layer that returns a feature wins, and no further layers are queried. If none returns a feature, the result is the same as before.
+
+This changes the result when such a layer is drawn above another layer that supports feature info: inside the polygon, the upper layer's feature is returned instead of the lower layer's. [MapFeatureInfoTool]($map-layers-formats) now also runs its query on the base map below a layer that supports feature info, and reports no features when nothing is found.
 
 ## Backend
 

@@ -1115,6 +1115,7 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Obtain feature information from a map layer model, if any, identified by the specified [[HitDetail]].
+   * When the hit is on a map pixel below other map layers, for example inside a polygon with a transparent fill, the visible layers drawn above it that support feature info are queried first, topmost first, and the first one that returns a feature wins.
    * @see [[ElementLocateManager]]
    * @see [[MapFeatureInfo]]
    * @beta
@@ -1747,6 +1748,11 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   public mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
     return undefined === hit.modelId ? [] : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  }
+
+  /** @internal */
+  public mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
+    return this._mapTiledGraphicsProvider?.mapFeatureInfoLayersFromHit(hit) ?? [];
   }
 
   /** @internal */

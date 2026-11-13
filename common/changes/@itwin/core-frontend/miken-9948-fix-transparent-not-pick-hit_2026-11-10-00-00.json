@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Map feature info and map layer tooltips find features inside polygons with a transparent fill by querying the map layers drawn above the picked pixel. Fixed the map layer index reported for layers that existed when the view was attached.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "165919461+MikeNBentley@users.noreply.github.com"
+}

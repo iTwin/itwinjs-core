@@ -241,7 +241,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     if (fromCache) {
       mapLayerFromHit = fromCache;
     } else if (this.targetView) {
-      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      mapLayerFromHit = this.targetView?.mapFeatureInfoLayersFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
       this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
     }
 
