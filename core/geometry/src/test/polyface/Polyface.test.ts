@@ -749,6 +749,37 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
   }
 }
 
+describe("PolyfaceBuilder.addTransformedRangeMesh", () => {
+  it("shouldTriangulate produces only triangular facets", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3);
+    const transform = Transform.createOriginAndMatrix(
+      Point3d.create(1, 2, 3), Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 1), Angle.createDegrees(30)),
+    );
+    for (const shouldTriangulate of [false, true]) {
+      for (const reversed of [false, true]) {
+        for (const faceSelector of [undefined, [true, false, true, false, false, false]]) {
+          const options = StrokeOptions.createForFacets();
+          options.shouldTriangulate = shouldTriangulate;
+          const builder = PolyfaceBuilder.create(options);
+          if (reversed)
+            builder.toggleReversedFacetFlag();
+          builder.addTransformedRangeMesh(transform, range, faceSelector);
+          const polyface = builder.claimPolyface(true);
+          const message = `shouldTriangulate=${shouldTriangulate} reversed=${reversed} faceSelector=${faceSelector !== undefined}`;
+          // each selected box side is one quad, or two triangles when triangulated
+          const numSides = faceSelector ? 2 : 6;
+          ck.testExactNumber(polyface.facetCount, shouldTriangulate ? 2 * numSides : numSides, `facet count (${message})`);
+          const visitor = polyface.createVisitor(0);
+          while (visitor.moveToNextFacet())
+            ck.testExactNumber(visitor.pointCount, shouldTriangulate ? 3 : 4, `facet vertex count (${message})`);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
 describe("Polyface.Faces", () => {
   it("Verify FacetFaceData Exists", () => {
     const ck = new Checker();

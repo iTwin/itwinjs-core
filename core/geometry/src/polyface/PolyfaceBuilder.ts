@@ -274,12 +274,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         if (this._reversed)
           myFacet.reverse();
         if (this._options.shouldTriangulate) {
-          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2], false);
-          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3], false);
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2]);
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3]);
         } else {
-          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2], false);
+          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2]);
         }
-        this._polyface.terminateFacet();
       }
       faceCounter++;
     }
