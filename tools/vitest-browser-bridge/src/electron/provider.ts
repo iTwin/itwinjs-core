@@ -29,6 +29,10 @@ export interface ElectronProviderOptions {
   readonly startupTimeout?: number;
 }
 
+/** The part of Vitest's `TestProject` the provider reads. `createElectronBrowserProviderOption` passes
+ * Vitest's own project here, so if Vitest renames or retypes these fields the package stops compiling
+ * instead of drifting silently.
+ */
 interface ElectronProject {
   readonly config: {
     readonly root: string;
@@ -57,7 +61,9 @@ const FORCE_KILL_TIMEOUT = 1_000;
 
 function cleanupCacheDir(cacheDir: string): void {
   try {
-    fs.rmSync(cacheDir, { recursive: true, force: true });
+    // On Windows, Chromium helpers can hold the profile open for a moment after the main process
+    // exits. Retry instead of leaving the directory behind in %TEMP%.
+    fs.rmSync(cacheDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   } catch {
     // Teardown is best effort after the child process has gone away.
   }
@@ -286,6 +292,8 @@ export class ElectronBrowserProvider {
   }
 
   private async _openPage(sessionId: string, url: string): Promise<void> {
+    // Vitest opens one page per browser worker and runs every test file in it, so with parallelism
+    // disabled this starts one Electron process per test run. A second call replaces the session.
     if (this._session !== undefined)
       await this._closeCurrentSession();
     if (this._closing)
