@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support displaying and interacting with linked iModels in a viewport.",
+      "type": "none",
+      "packageName": "@itwin/core-common"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "198982749+Copilot@users.noreply.github.com"
+}

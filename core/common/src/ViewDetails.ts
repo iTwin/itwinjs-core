@@ -185,8 +185,12 @@ export class ViewDetails3d extends ViewDetails {
     return this._json;
   }
 
-  /** Event raised when just before assignment to the [[modelClipGroups]] property. */
+  /** Event raised just before assignment to the [[modelClipGroups]] property. */
   public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
+  /** Event raised just after assignment to the [[modelClipGroups]] property.
+   * @beta
+   */
+  public readonly onAfterModelClipGroupsChanged = new BeEvent<() => void>();
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetails3dProps }) {
@@ -216,6 +220,7 @@ export class ViewDetails3d extends ViewDetails {
     this.onModelClipGroupsChanged.raiseEvent(groups);
     this._modelClipGroups = groups;
     this._json3d.modelClipGroups = groups.toJSON();
+    this.onAfterModelClipGroupsChanged.raiseEvent();
   }
 
   /** Returns the internal JSON representation. This is *not* a copy.

@@ -287,7 +287,11 @@ export namespace CompressedId64Set {
     export function compressArray(ids: Id64Array): CompressedId64Set;
     export function compressIds(ids: OrderedId64Iterable): CompressedId64Set;
     export function compressSet(ids: Id64Set): CompressedId64Set;
+    // @beta
+    export function count(ids: CompressedId64Set): number;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
+    const // @beta
+    maxIdCount = 1000000;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
     export function isValid(ids: unknown): ids is CompressedId64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
@@ -691,10 +695,10 @@ export namespace Id64 {
     export function isValidId64(id: string): boolean;
     const invalid = "0";
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
-    export function iterable(ids: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Iterable<Id64String>;
+    export function iterable(ids: Id64String | Iterable<Id64String>): Iterable<Id64String>;
     export function iterator(ids: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): Iterator<Id64String>;
     export function sizeOf(arg: ReadonlyArray<Id64String> | ReadonlySet<Id64String> | Id64String): number;
-    export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
+    export function toIdSet(arg: Id64String | Iterable<Id64String>, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
         clear(): void;
         forEach(func: (lo: number, hi: number, value: T) => void): void;
@@ -1424,10 +1428,13 @@ export class ObservableMap<K, V> extends Map<K, V> {
     get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<readonly [K, V]> | undefined);
     clear(): void;
+    protected _clear(): void;
     delete(key: K): boolean;
+    protected _delete(key: K): boolean;
     deleteAll(keys: Iterable<K>): number;
     readonly onChanged: BeEvent<() => void>;
     set(key: K, value: V): this;
+    protected _set(key: K, value: V): this;
     setAll(items: Iterable<readonly [K, V]>): void;
 }
 
@@ -1439,6 +1446,7 @@ export class ObservableSet<T> extends Set<T> {
     add(item: T): this;
     addAll(items: Iterable<T>): number;
     clear(): void;
+    clearEventListeners(): void;
     delete(item: T): boolean;
     deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;

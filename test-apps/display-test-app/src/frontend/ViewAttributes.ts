@@ -1053,9 +1053,8 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       value: this._vp.view.displayStyle.id,
       handler: async (select) => {
         const style = displayStyles.get(select.value)!;
-        await style.load();
-        this._vp.displayStyle = style;
-        this._vp.invalidateScene();
+        const styledView = await this._vp.view.cloneWithDisplayStyle(style);
+        this._vp.changeView(styledView);
       },
       entries: styleEntries,
     });

@@ -116,22 +116,13 @@ describe("DisplayStyleSettings", () => {
 
     it("deletes plan projection settings", () => {
       const settings = new DisplayStyle3dSettings({});
-      expect(settings.planProjectionSettings).to.be.undefined;
+      expect(settings.planProjectionSettings.size).to.equal(0);
 
-      const countSettings = () => {
-        let count = 0;
-        const iter = settings.planProjectionSettings;
-        if (undefined !== iter)
-          for (const _entry of iter)
-            ++count;
-
-        return count;
-      };
+      const countSettings = () => settings.planProjectionSettings.size;
 
       const makeSettings = (props: PlanProjectionSettingsProps) => PlanProjectionSettings.fromJSON(props);
 
       settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
-      expect(settings.planProjectionSettings).not.to.be.undefined;
       expect(countSettings()).to.equal(1);
       expect(settings.getPlanProjectionSettings("0x1")!.elevation).to.equal(1);
 
@@ -153,7 +144,6 @@ describe("DisplayStyleSettings", () => {
 
       settings.setPlanProjectionSettings("0x2", undefined);
       expect(countSettings()).to.equal(0);
-      expect(settings.planProjectionSettings).to.be.undefined;
     });
   });
 
@@ -288,6 +278,22 @@ describe("DisplayStyleSettings", () => {
       [makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
+
+      // Regression: clear() must also reset the internal id->index map so that re-adding a previously-present
+      // id allocates a slot in a fresh JSON array instead of indexing into the discarded one.
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => {
+        map.clear();
+        map.set("0x1", makeSettings(3));
+      }, [["0x1", makeSettings(3)]], [makeProps(3, "0x1")]);
+
+      expectMasks(undefined, (map) => {
+        map.set("0x1", makeSettings(1));
+        map.set("0x2", makeSettings(2));
+        map.clear();
+        map.set("0x2", makeSettings(4));
+        map.set("0x1", makeSettings(5));
+      }, [["0x2", makeSettings(4)], ["0x1", makeSettings(5)]],
+      [makeProps(4, "0x2"), makeProps(5, "0x1")]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
         style.toJSON().planarClipOvr = [makeProps(4, "0x4")];

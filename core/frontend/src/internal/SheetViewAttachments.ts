@@ -344,19 +344,22 @@ export class SheetViewAttachments implements Disposable {
   }
 
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    const renderer = undefined !== args.viewAttachmentId ? this.findRendererById(args.viewAttachmentId) : undefined;
+    if (undefined === args.viewAttachmentId)
+      return undefined;
+
+    const renderer = this.findRendererById(args.viewAttachmentId);
     const ortho = renderer?.ortho;
     const sheetTransform = ortho?.toSheet;
     if (!sheetTransform) {
       return undefined;
     }
 
-    const sectionTransform = args.inSectionDrawingAttachment ? ortho.view.computeDisplayTransform(args) : undefined;
-    if (!sectionTransform) {
+    const viewTransform = ortho.view.computeDisplayTransform({ ...args, output: undefined });
+    if (!viewTransform) {
       return sheetTransform.clone(args.output);
     }
 
-    return sheetTransform.multiplyTransformTransform(sectionTransform, args.output);
+    return sheetTransform.multiplyTransformTransform(viewTransform, args.output);
   }
 
   /** Strictly for tests. */

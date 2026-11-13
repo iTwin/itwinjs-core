@@ -489,4 +489,171 @@ describe("SubCategoriesCache", () => {
 
     queue[Symbol.dispose]();
   });
+
+  it("loads overlapping delayed queue requests from two connections through their own caches", async () => {
+    const primaryResult = createDeferred<SubCategoryResultRow[]>();
+    const linkedResult = createDeferred<SubCategoryResultRow[]>();
+    const primaryQuery = vi.fn().mockReturnValue(primaryResult.promise);
+    const linkedQuery = vi.fn().mockReturnValue(linkedResult.promise);
+
+    const primaryIModel = { isClosed: false, querySubCategories: primaryQuery } as unknown as IModelConnection;
+    const linkedIModel = { isClosed: false, querySubCategories: linkedQuery } as unknown as IModelConnection;
+
+    const primaryCache = new SubCategoriesCache(primaryIModel);
+    const linkedCache = new SubCategoriesCache(linkedIModel);
+    const queue = new SubCategoriesCache.Queue();
+
+    const primaryLoaded = vi.fn();
+    const linkedLoaded = vi.fn();
+
+    // The primary request dispatches immediately and remains in flight.
+    queue.push(primaryCache, ["0x1"], primaryLoaded);
+    expect(primaryQuery).toHaveBeenCalledTimes(1);
+
+    // Overlapping requests for a linked connection arrive while the primary request is in flight.
+    // They share a category Id with the primary request and must not be satisfied by the primary cache.
+    queue.push(linkedCache, ["0x1"], linkedLoaded);
+    queue.push(linkedCache, ["0x5"], linkedLoaded);
+    expect(linkedQuery).not.toHaveBeenCalled();
+
+    primaryResult.resolve([{ parentId: "0x1", id: "0x2", appearance: {} }]);
+    await waitForPromises();
+
+    expect(primaryLoaded).toHaveBeenCalledExactlyOnceWith(true);
+    expect(primaryQuery).toHaveBeenCalledTimes(1);
+
+    // The pending linked requests were batched and dispatched through the linked cache.
+    expect(linkedQuery).toHaveBeenCalledTimes(1);
+    expect([...CompressedId64Set.iterable(linkedQuery.mock.calls[0][0])]).toEqual(["0x1", "0x5"]);
+    expect(linkedLoaded).not.toHaveBeenCalled();
+
+    linkedResult.resolve([
+      { parentId: "0x1", id: "0x3", appearance: {} },
+      { parentId: "0x5", id: "0x6", appearance: {} },
+    ]);
+    await waitForPromises();
+
+    expect(linkedLoaded).toHaveBeenCalledTimes(2);
+    expect(linkedLoaded).toHaveBeenCalledWith(true);
+
+    // Each connection's subcategories reside in its own cache.
+    expect(primaryCache.getSubCategories("0x1")?.has("0x2")).toBe(true);
+    expect(primaryCache.getSubCategories("0x1")?.has("0x3")).toBe(false);
+    expect(linkedCache.getSubCategories("0x1")?.has("0x3")).toBe(true);
+    expect(linkedCache.getSubCategories("0x5")?.has("0x6")).toBe(true);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
+
+  it("preserves ordering across pending queue requests on alternating caches", async () => {
+    const firstResult = createDeferred<SubCategoryResultRow[]>();
+    const primaryQuery = vi.fn()
+      .mockReturnValueOnce(firstResult.promise)
+      .mockImplementation(async () => [{ parentId: "0x7", id: "0x8", appearance: {} }]);
+    const linkedQuery = vi.fn(async () => [{ parentId: "0x1", id: "0x3", appearance: {} }]);
+
+    const primaryIModel = { isClosed: false, querySubCategories: primaryQuery } as unknown as IModelConnection;
+    const linkedIModel = { isClosed: false, querySubCategories: linkedQuery } as unknown as IModelConnection;
+
+    const primaryCache = new SubCategoriesCache(primaryIModel);
+    const linkedCache = new SubCategoriesCache(linkedIModel);
+    const queue = new SubCategoriesCache.Queue();
+
+    const order: string[] = [];
+    queue.push(primaryCache, ["0x1"], () => order.push("primary1"));
+    queue.push(linkedCache, ["0x1"], () => order.push("linked"));
+    queue.push(primaryCache, ["0x7"], () => order.push("primary2"));
+
+    firstResult.resolve([{ parentId: "0x1", id: "0x2", appearance: {} }]);
+    await waitForPromises();
+
+    expect(order).toEqual(["primary1", "linked", "primary2"]);
+    expect(primaryQuery).toHaveBeenCalledTimes(2);
+    expect(linkedQuery).toHaveBeenCalledTimes(1);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
+
+  it("queues a request pushed from a cached pending entry's completion callback behind remaining pending entries", async () => {
+    const currentResult = createDeferred<SubCategoryResultRow[]>();
+    const currentQuery = vi.fn().mockReturnValue(currentResult.promise);
+    const currentCache = new SubCategoriesCache({ isClosed: false, querySubCategories: currentQuery } as unknown as IModelConnection);
+
+    // These caches already contain their categories, so their pending entries are satisfied synchronously while draining.
+    const makeLoadedCache = (categoryId: string, subCategoryId: string) => {
+      const cache = new SubCategoriesCache({ isClosed: false } as unknown as IModelConnection);
+      cache.add(categoryId, subCategoryId, new SubCategoryAppearance(), true);
+      return cache;
+    };
+    const firstCache = makeLoadedCache("0x2", "0x20");
+    const secondCache = makeLoadedCache("0x3", "0x30");
+    const nestedCache = makeLoadedCache("0x4", "0x40");
+
+    const queue = new SubCategoriesCache.Queue();
+    const order: string[] = [];
+
+    // The current request dispatches immediately and remains in flight while the pending entries accumulate.
+    queue.push(currentCache, ["0x1"], () => order.push("current"));
+
+    // The first pending entry's completion callback pushes another request while the second entry is still pending.
+    queue.push(firstCache, ["0x2"], () => {
+      order.push("first");
+      queue.push(nestedCache, ["0x4"], (loaded) => order.push(`nested:${loaded}`));
+    });
+    queue.push(secondCache, ["0x3"], () => order.push("second"));
+
+    currentResult.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+
+    // The nested push must wait its turn behind the already-pending second entry.
+    expect(order).toEqual(["current", "first", "second", "nested:true"]);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
+
+  it("queues uncached requests pushed from the final already-loaded entry's callbacks", async () => {
+    const currentResult = createDeferred<SubCategoryResultRow[]>();
+    const currentQuery = vi.fn().mockReturnValue(currentResult.promise);
+    const currentCache = new SubCategoriesCache({ isClosed: false, querySubCategories: currentQuery } as unknown as IModelConnection);
+
+    // The final pending entry's categories are already loaded, so its callbacks run synchronously while draining.
+    const loadedCache = new SubCategoriesCache({ isClosed: false } as unknown as IModelConnection);
+    loadedCache.add("0x2", "0x20", new SubCategoryAppearance(), true);
+
+    // The nested requests are NOT already loaded - each requires its own asynchronous query.
+    const nestedQueryA = vi.fn(async () => [{ parentId: "0x3", id: "0x30", appearance: {} }]);
+    const nestedCacheA = new SubCategoriesCache({ isClosed: false, querySubCategories: nestedQueryA } as unknown as IModelConnection);
+    const nestedQueryB = vi.fn(async () => [{ parentId: "0x4", id: "0x40", appearance: {} }]);
+    const nestedCacheB = new SubCategoriesCache({ isClosed: false, querySubCategories: nestedQueryB } as unknown as IModelConnection);
+
+    const queue = new SubCategoriesCache.Queue();
+    const order: string[] = [];
+
+    queue.push(currentCache, ["0x1"], () => order.push("current"));
+
+    // Two callbacks batched into the same (final) pending entry, each pushing an uncached request while draining.
+    queue.push(loadedCache, ["0x2"], () => {
+      order.push("first");
+      queue.push(nestedCacheA, ["0x3"], (loaded) => order.push(`nestedA:${loaded}`));
+    });
+    queue.push(loadedCache, ["0x2"], () => {
+      order.push("second");
+      queue.push(nestedCacheB, ["0x4"], (loaded) => order.push(`nestedB:${loaded}`));
+    });
+
+    currentResult.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+    await waitForPromises();
+
+    // Neither nested request's callbacks may be lost, and they execute in FIFO order after the drain.
+    expect(order).toEqual(["current", "first", "second", "nestedA:true", "nestedB:true"]);
+    expect(nestedQueryA).toHaveBeenCalledTimes(1);
+    expect(nestedQueryB).toHaveBeenCalledTimes(1);
+    expect(queue.isEmpty).toBe(true);
+
+    queue[Symbol.dispose]();
+  });
 });

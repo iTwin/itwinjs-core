@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
-import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
+import { _backingView, _getModelClip, RenderClipVolume, SpatialIModelDisplayReference } from "@itwin/core-frontend";
 import { ModelMetadata } from "./BatchedTilesetReader.js";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup.js";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms.js";
@@ -18,7 +18,7 @@ import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms.js";
  * @internal
  */
 export class BatchedModelGroups implements ModelGroupingContext {
-  private readonly _view: SpatialViewState;
+  private readonly _iModelRef: SpatialIModelDisplayReference;
   private readonly _includedModelIds: Id64Set;
   private readonly _metadata: Map<Id64String, ModelMetadata>;
   private _script?: RenderSchedule.Script;
@@ -34,15 +34,15 @@ export class BatchedModelGroups implements ModelGroupingContext {
   public groups: ModelGroup[] = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
 
-  public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set, metadata: Map<Id64String, ModelMetadata>) {
+  public constructor(iModelRef: SpatialIModelDisplayReference, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set, metadata: Map<Id64String, ModelMetadata>) {
     this._script = script;
-    this._view = view;
+    this._iModelRef = iModelRef;
     this._includedModelIds = includedModelIds;
     this._metadata = metadata;
-    this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(includedModelIds, view.modelDisplayTransformProvider);
+    this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(includedModelIds, iModelRef.modelDisplayTransformProvider);
 
-    this._view.onModelDisplayTransformProviderChanged.addListener(() => this._transformsValid = false);
-    this._view.details.onModelClipGroupsChanged.addListener(() => this._groupsValid = false);
+    this._iModelRef.onModelDisplayTransformProviderChanged.addListener(() => this._transformsValid = false);
+    this._iModelRef.onModelClipGroupsChanged.addListener(() => this._groupsValid = false);
     this.listenForDisplayStyleEvents();
 
     this.update();
@@ -56,20 +56,34 @@ export class BatchedModelGroups implements ModelGroupingContext {
   public invalidateTransforms(): void { this._transformsValid = false; }
 
   private listenForDisplayStyleEvents(): void {
-    const removeListener = this._view.displayStyle.settings.onPlanProjectionSettingsChanged.addListener(() => this._groupsValid = false);
-    this._view.onDisplayStyleChanged.addListener(() => {
+    let removeListener = this._iModelRef.planProjectionSettings.onChanged.addListener(() => this._groupsValid = false);
+
+    // The primary reference's plan projection settings delegate to the view's current display style, which can be
+    // replaced wholesale - rebind to the replacement style's map when that happens. A linked reference owns its map,
+    // which is never replaced.
+    const refs = this._iModelRef.parent;
+    if (this._iModelRef !== refs.primary)
+      return;
+
+    refs[_backingView].onDisplayStyleChanged.addListener((newStyle) => {
       this._groupsValid = false;
       removeListener();
-      this.listenForDisplayStyleEvents();
+      removeListener = () => undefined;
+
+      // The event is raised just before the view's displayStyle property is reassigned - bind to the replacement's
+      // map supplied by the event. A spatial view's display style is always 3d; the guard satisfies the type system.
+      const settings = newStyle.settings;
+      if (settings.is3d())
+        removeListener = settings.planProjectionSettings.onChanged.addListener(() => this._groupsValid = false);
     });
   }
 
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
-    return this._view.getModelClip(modelId);
+    return this._iModelRef[_getModelClip](modelId);
   }
 
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
-    return this._view.displayStyle.settings.getPlanProjectionSettings(modelId);
+    return this._iModelRef.planProjectionSettings.get(modelId);
   }
 
   public getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined {
@@ -96,7 +110,7 @@ export class BatchedModelGroups implements ModelGroupingContext {
    * @returns true if the groupings changed as a result.
    */
   public update(): boolean {
-    if (!this._transformsValid && this.modelGroupDisplayTransforms.update(this._view.modelDisplayTransformProvider)) {
+    if (!this._transformsValid && this.modelGroupDisplayTransforms.update(this._iModelRef.modelDisplayTransformProvider)) {
       this._groupsValid = false;
     }
 
