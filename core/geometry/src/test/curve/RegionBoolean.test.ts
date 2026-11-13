@@ -1746,6 +1746,47 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentFilletOverlapUpToTolerance");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentSnapDoesNotReorderVertices", () => {
+    // Near-tangent arc intersections near an arc endpoint, where another intersection on one of the arcs lies between
+    // the near-tangent intersection and the endpoint, or the overlap of the other arc ends a tolerance away. Moving the
+    // intersection to the endpoint would reorder or split vertices, so these intersections must stay where they are.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapRegressions.imjs", "utf8"))) as Loop[];
+    // expected areas of Union, Union with simplifyUnion, Intersection (undefined if empty), AMinusB, BMinusA, Parity
+    const expectedAreas: Array<Array<number | undefined>> = [
+      [537.1261, 537.1261, undefined, 210.14173, 326.98438, 537.1261],
+      [1697.9086, 1703.7003, 0.47226, 1051.13375, 652.0943, 1703.22805],
+      [1103.66156, 1103.66049, undefined, 1050.70816, 52.95348, 1103.66156],
+    ];
+    const ops: Array<[RegionBinaryOpType, boolean]> = [
+      [RegionBinaryOpType.Union, false], [RegionBinaryOpType.Union, true], [RegionBinaryOpType.Intersection, false],
+      [RegionBinaryOpType.AMinusB, false], [RegionBinaryOpType.BMinusA, false], [RegionBinaryOpType.Parity, false],
+    ];
+    if (ck.testExactNumber(2 * expectedAreas.length, inputs.length, "input loops")) {
+      let x0 = 0;
+      for (let i = 0; i < expectedAreas.length; i++) {
+        const [regionA, regionB] = [inputs[2 * i], inputs[2 * i + 1]];
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB], x0);
+        for (let j = 0; j < ops.length; j++) {
+          const [op, simplifyUnion] = ops[j];
+          const expectedArea = expectedAreas[i][j];
+          const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+          const message = `case=${i} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+          if (expectedArea === undefined) {
+            ck.testUndefined(result, message);
+          } else if (ck.testDefined(result, message) && result) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, 100 * (j + 1));
+            const area = RegionOps.computeXYArea(result)!;
+            ck.testTrue(Math.abs(expectedArea - area) < 1.0e-4, message, expectedArea, area);
+          }
+        }
+        x0 += 100;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapDoesNotReorderVertices");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearTangentFilletContinuingSharedArcInside", () => {
     // A region inside a circle shares the circle arc from 150 to 210 degrees. At each end of the shared arc, the region
     // boundary continues smoothly into a fillet that is internally tangent to the circle and overlaps it by 1.0e-7. The

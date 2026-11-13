@@ -629,9 +629,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     // separate at a nearly constant small angle (a transverse crossing of arcs of almost equal curvature). For the
     // quadratic s above, the ratio of the sines at the endpoint and at the intersection is 1 for equal curvatures, 0 at
     // the extremum of s, and -1 at the other root of s. Require the endpoint to be at least halfway from the intersection
-    // to the extremum, and before the other root.
+    // to the extremum, and not past the extremum beyond roundoff: past it, the arcs cross again toward the endpoint, and
+    // the endpoint is not where they touch.
     const endSine = CurveCurveIntersectXY.tangentSineXY(arc, endFraction, other, closest.fraction);
     if (endSine === undefined || endSine * sine > 0.5 * sine * sine || endSine * sine <= -sine * sine)
+      return undefined;
+    if (endSine * sine < 0 && Math.abs(endSine) > Geometry.smallFraction)
       return undefined;
     // ...and the arcs must turn to opposite sides at the endpoint (externally tangent, as a fillet outside a circle). If
     // they turn to the same side (internally tangent), the moved intersection would be a vertex where the arcs leave in
@@ -680,6 +683,40 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     return false;
   }
+  /** Whether a coincident interval between `curveA` and `curveB` has been recorded. */
+  private hasCoincidentInterval(curveA: CurvePrimitive, curveB: CurvePrimitive): boolean {
+    for (const pair of this._results) {
+      if (pair.detailA.isInterval() && ((pair.detailA.curve === curveA && pair.detailB.curve === curveB)
+        || (pair.detailA.curve === curveB && pair.detailB.curve === curveA)))
+        return true;
+    }
+    return false;
+  }
+  /**
+   * Return the end of a recorded coincident interval of `curve` with a curve other than `excludedCurve` that is closest
+   * to `point` within `tol`, or undefined if there is none.
+   */
+  private closestCoincidentIntervalEnd(
+    curve: CurvePrimitive, point: Point3d, tol: number, excludedCurve: CurvePrimitive,
+  ): { fraction: number, point: Point3d } | undefined {
+    let result: { fraction: number, point: Point3d } | undefined;
+    let minDist = tol;
+    for (const pair of this._results) {
+      if (pair.detailA.curve === excludedCurve || pair.detailB.curve === excludedCurve)
+        continue;
+      const detail = pair.detailA.curve === curve ? pair.detailA : pair.detailB.curve === curve ? pair.detailB : undefined;
+      if (!detail || !detail.isInterval())
+        continue;
+      for (const [fraction, end] of [[detail.fraction, detail.point], [detail.fraction1, detail.point1]] as const) {
+        const dist = end.distanceXY(point);
+        if (dist <= minDist) {
+          minDist = dist;
+          result = { fraction, point: end.clone() };
+        }
+      }
+    }
+    return result;
+  }
   /**
    * Move recorded near-tangent arc-arc intersections to the nearby arc endpoint if a coincident overlap of the other arc
    * with a third arc starts or ends there.
@@ -688,26 +725,98 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * outside a circle and an arc shared with the circle). The endpoint and the nearby point on the other arc are then
    * vertices, and a near-tangent intersection a short distance from the endpoint leaves a sliver bigon whose two edges
    * are ordered at the endpoint by the (indeterminate) tangent comparison, and at the other end of the bigon by the
-   * crossing, yielding an inconsistent graph. Moving the intersection to the endpoint removes the bigon.
+   * crossing, yielding an inconsistent graph. Moving the intersection to the endpoint removes the bigon. On the other
+   * arc, the intersection is moved to the end of the overlap, so that both become the same vertex.
    * * Otherwise the intersection is not moved. For instance, if the next curve runs alongside the other arc but is not
    * coincident with it, moving the intersection would create a vertex from which these two curves leave in the same
    * direction, that is, it would create such a bigon instead of removing one.
+   * * The intersection is not moved either if, on one of the two arcs, another intersection lies between the old and the
+   * new location (measured by xy-distance, not by arc fraction), or within twice the moved distance of the old location.
+   * Moving it would then reorder or merge vertices of the arc. The exception is an intersection at the old location with
+   * a third arc that is coincident with the other arc and passes through its new location: this is the same crossing,
+   * so it is moved along.
+   * * All decisions are made before any intersection is moved.
    * * See [[findNearTangentSnap]] for the intersections that are candidates.
    */
   public snapNearTangentIntersectionsToEndpoints(): void {
     const tol = this._coincidentGeometryContext.tolerance;
+    interface Move { detail: CurveLocationDetail, fraction: number, point: Point3d }
+    interface Side { curve: Arc3d, oldPoint: Point3d, newFraction: number, newPoint: Point3d, counterpart: Arc3d, counterpartPoint: Point3d }
+    const candidates: { snap: NearTangentSnap, endPoint: Point3d, sides: Side[], moves: Move[] }[] = [];
     for (const snap of this._nearTangentSnaps) {
       if (!this._results.includes(snap.pair))
         continue; // the pair was replaced, e.g. by conversion to a chain detail
+      const endPoint = snap.arc.fractionToPoint(snap.fraction);
+      if (!this.hasCoincidentIntervalEndNearPoint(snap.other, endPoint, tol, snap.arc))
+        continue;
+      let otherFraction = snap.otherFraction;
+      let otherPoint = snap.other.fractionToPoint(otherFraction);
+      const overlapEnd = this.closestCoincidentIntervalEnd(snap.other, endPoint, tol, snap.arc);
+      // The overlap must end near the projection of the endpoint on the other arc. If they are almost a tolerance apart,
+      // whether the moved intersection and the end of the overlap are merged into one vertex is decided by roundoff.
+      if (overlapEnd && overlapEnd.point.distanceXY(otherPoint) > 0.7 * tol)
+        continue;
+      if (overlapEnd) {
+        otherFraction = overlapEnd.fraction;
+        otherPoint = overlapEnd.point;
+      }
       const arcIsA = snap.pair.detailA.curve === snap.arc;
       const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
       const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
-      const endPoint = snap.arc.fractionToPoint(snap.fraction, CurveCurveIntersectXY._workPointAA1);
-      if (!this.hasCoincidentIntervalEndNearPoint(snap.other, endPoint, tol, snap.arc))
-        continue;
-      arcDetail.setFP(snap.fraction, endPoint);
-      otherDetail.setFP(snap.otherFraction, snap.other.fractionToPoint(snap.otherFraction, CurveCurveIntersectXY._workPointBB1));
+      candidates.push({
+        snap, endPoint,
+        sides: [
+          { curve: snap.arc, oldPoint: arcDetail.point, newFraction: snap.fraction, newPoint: endPoint, counterpart: snap.other, counterpartPoint: otherPoint },
+          { curve: snap.other, oldPoint: otherDetail.point, newFraction: otherFraction, newPoint: otherPoint, counterpart: snap.arc, counterpartPoint: endPoint },
+        ],
+        moves: [
+          { detail: arcDetail, fraction: snap.fraction, point: endPoint },
+          { detail: otherDetail, fraction: otherFraction, point: otherPoint },
+        ],
+      });
     }
+    const movesToSameTarget = (pair: CurveLocationDetailPair, endPoint: Point3d) =>
+      candidates.some((c) => c.snap.pair === pair && c.endPoint.distanceXY(endPoint) <= tol);
+    const accepted: Move[][] = [];
+    for (const candidate of candidates) {
+      const moves = candidate.moves;
+      let blocked = false;
+      for (const pair of this._results) {
+        if (blocked || pair === candidate.snap.pair || movesToSameTarget(pair, candidate.endPoint))
+          continue;
+        for (const side of candidate.sides) {
+          const span = side.oldPoint.distanceXY(side.newPoint);
+          for (const [detail, otherDetail] of [[pair.detailA, pair.detailB], [pair.detailB, pair.detailA]]) {
+            if (blocked || detail.curve !== side.curve)
+              continue;
+            const points = detail.isInterval() ? [detail.point, detail.point1] : [detail.point];
+            for (const point of points) {
+              if (blocked || point.distanceXY(side.newPoint) <= tol)
+                continue; // already at the new location
+              const distToOld = point.distanceXY(side.oldPoint);
+              const atOld = distToOld <= tol;
+              if (!atOld && distToOld > 2 * span && distToOld + point.distanceXY(side.newPoint) > span + tol)
+                continue; // neither between the old and new location nor near the old location
+              if (atOld && !detail.isInterval() && otherDetail.curve !== side.counterpart && otherDetail.curve instanceof Arc3d
+                && this.hasCoincidentInterval(otherDetail.curve, side.counterpart)) {
+                const closest = otherDetail.curve.closestPointXY(side.counterpartPoint, false);
+                if (closest && closest.point.distanceXY(side.counterpartPoint) <= tol) { // the same crossing; move it along
+                  moves.push({ detail, fraction: side.newFraction, point: side.newPoint });
+                  moves.push({ detail: otherDetail, fraction: closest.fraction, point: closest.point });
+                  continue;
+                }
+              }
+              blocked = true;
+            }
+          }
+        }
+      }
+      if (!blocked)
+        accepted.push(moves);
+    }
+    for (const moves of accepted)
+      for (const move of moves)
+        move.detail.setFP(move.fraction, move.point.clone());
     this._nearTangentSnaps = [];
   }
   /**
