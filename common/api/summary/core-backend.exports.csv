@@ -457,8 +457,8 @@ public;interface;NativeHostOpts
 beta;interface;OnAspectArg
 beta;interface;OnAspectIdArg
 beta;interface;OnAspectPropsArg
-beta;interface;OnAspectsIdArg
-beta;interface;OnAspectsPropsArg
+beta;interface;OnBulkAspectIdBatchArg
+beta;interface;OnBulkAspectPropsBatchArg
 beta;interface;OnBulkChildDeleteArg
 beta;interface;OnBulkChildDeletedBatchArg
 beta;interface;OnBulkDeleteArg

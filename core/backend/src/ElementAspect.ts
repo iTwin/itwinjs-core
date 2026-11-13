@@ -46,7 +46,7 @@ export interface OnAspectIdArg extends OnAspectArg {
 /** Argument for the `ElementAspect.onBulkInsert`, `onBulkInserted`, `onBulkUpdate` and `onBulkUpdated` static methods.
  * @beta
  */
-export interface OnAspectsPropsArg {
+export interface OnBulkAspectPropsBatchArg {
   /** The iModel for the aspects affected by this event. */
   iModel: IModelDb;
   /** The aspects of this class affected by this event, in input order. */
@@ -56,7 +56,7 @@ export interface OnAspectsPropsArg {
 /** Argument for the `ElementAspect.onBulkDelete` and `onBulkDeleted` static methods.
  * @beta
  */
-export interface OnAspectsIdArg {
+export interface OnBulkAspectIdBatchArg {
   /** The iModel for the aspects affected by this event. */
   iModel: IModelDb;
   /** The aspects of this class affected by this event, in input order. Each entry supplies the owning element. */
@@ -143,7 +143,7 @@ export class ElementAspect extends Entity {
    * @note `this` is the class of the aspects in the batch.
    * @beta
    */
-  protected static onBulkInsert(arg: OnAspectsPropsArg): void {
+  protected static onBulkInsert(arg: OnBulkAspectPropsBatchArg): void {
     withActiveBulkAspectChecks(arg.iModel, () => {
       for (const aspect of arg.aspects)
         this.onInsert(aspect);
@@ -155,7 +155,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onBulkInserted(arg: OnAspectsPropsArg): void {
+  protected static onBulkInserted(arg: OnBulkAspectPropsBatchArg): void {
     for (const aspect of arg.aspects)
       this.onInserted(aspect);
   }
@@ -166,7 +166,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onBulkUpdate(arg: OnAspectsPropsArg): void {
+  protected static onBulkUpdate(arg: OnBulkAspectPropsBatchArg): void {
     withActiveBulkAspectChecks(arg.iModel, () => {
       for (const aspect of arg.aspects)
         this.onUpdate(aspect);
@@ -178,7 +178,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onBulkUpdated(arg: OnAspectsPropsArg): void {
+  protected static onBulkUpdated(arg: OnBulkAspectPropsBatchArg): void {
     for (const aspect of arg.aspects)
       this.onUpdated(aspect);
   }
@@ -189,7 +189,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onBulkDelete(arg: OnAspectsIdArg): void {
+  protected static onBulkDelete(arg: OnBulkAspectIdBatchArg): void {
     withActiveBulkAspectChecks(arg.iModel, () => {
       for (const aspect of arg.aspects)
         this.onDelete(aspect);
@@ -201,7 +201,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onBulkDeleted(arg: OnAspectsIdArg): void {
+  protected static onBulkDeleted(arg: OnBulkAspectIdBatchArg): void {
     for (const aspect of arg.aspects)
       this.onDeleted(aspect);
   }

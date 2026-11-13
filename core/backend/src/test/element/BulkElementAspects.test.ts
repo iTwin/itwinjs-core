@@ -119,7 +119,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
       });
 
       const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }]);
-      expect(updated).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, id: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
+      expect(updated).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, aspectId: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
 
       handlers.forEach((handler) => expect(handler.callCount).to.equal(0));
       expect(ownerUpdates()).to.deep.equal([]);

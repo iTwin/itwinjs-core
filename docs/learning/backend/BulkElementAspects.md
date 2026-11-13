@@ -51,7 +51,7 @@ Each method returns a [BulkElementAspectsResult]($backend). `insertAspects` retu
 | Field | Description |
 |---|---|
 | `status` | [BulkElementAspectsStatus]($backend): `Success` or `ValidationFailed` |
-| `failures` | [BulkElementAspectFailure]($backend) entries, only populated on `ValidationFailed`: the row `index` in the input, the aspect `id` when known, and a [BulkElementAspectFailureReason]($backend) |
+| `failures` | [BulkElementAspectFailure]($backend) entries, only populated on `ValidationFailed`: the row `index` in the input, the `aspectId` when known, and a [BulkElementAspectFailureReason]($backend) |
 | `ids` | `insertAspects` only: on `Success`, the Id of the aspect inserted for each row. Empty on `ValidationFailed` |
 
 Every row is validated before anything is modified, so `ValidationFailed` always leaves the iModel - and the current txn - untouched. `failures` lists every invalid row, in ascending index order.
@@ -64,6 +64,7 @@ Every row is validated before anything is modified, so `ValidationFailed` always
 | `NotAnAspectClass` | The class exists but is not an [ElementUniqueAspect]($backend) or [ElementMultiAspect]($backend) class. |
 | `ElementNotFound` | The owning element does not exist. |
 | `AspectNotFound` | The aspect to update does not exist, is not owned by `element`, or is not of the class named by `classFullName` or a subclass of it. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). `deleteAspects` ignores ids that do not identify an aspect instead. |
+| `AmbiguousAspect` | `updateAspects` only: a unique aspect row names a base class of the aspect, and the owning element has more than one unique aspect of that class or its subclasses. Name the class of the aspect instead. |
 
 ## Handlers
 
@@ -77,13 +78,14 @@ Each method calls batch handlers once per aspect class:
 
 `arg.aspects` lists the aspects of that class in input order. `onBulkDelete` and `onBulkDeleted` supply the owning element of each aspect.
 
-The default handlers call the per-aspect handlers (`onInsert`, `onInserted`, `onUpdate`, ...) for each aspect, so existing overrides still run. Override a batch handler only to replace that loop with something faster, and call `super`.
+The default handlers call the per-aspect handlers (`onInsert`, `onInserted`, `onUpdate`, ...) for each aspect, so existing overrides still run. Override a batch handler to add work for the whole batch, and call `super`.
 
 Each owning element is updated once per call, so its `onUpdated` handler and its parent's `onChildUpdate` and `onChildUpdated` handlers are called once per element, not once per aspect. They are called at the same points as with the single-aspect methods: the parent's `onChildUpdate` and the element's `onUpdated` run before the element's aspects are written or deleted, and the parent's `onChildUpdated` runs after. Owning elements are updated one after the other, so when the element's `onUpdated` runs, the aspects of the elements updated before it have already been written or deleted. To act on the outcome of the whole call, use the "after" aspect handlers (`onBulkInserted`, `onBulkUpdated`, `onBulkDeleted`, or the per-aspect handlers they call), which run once every aspect has been written or deleted.
 
 ## Errors
 
 - If a "before" handler throws, nothing is written and the method throws.
+- If a "before" handler deletes an aspect of the call, or the owning element of an aspect to delete, the method throws.
 - If a write fails unexpectedly (e.g. a SQLite error), the method throws an [IModelError]($common) and no "after" handlers are called.
 - If a write, the update of an owning element or an "after" handler fails, aspects already written stay in the [EditTxn]($backend), as with the single-aspect methods. Call [EditTxn.abandonChanges]($backend) to discard them.
 

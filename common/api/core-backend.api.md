@@ -810,13 +810,14 @@ export enum BulkDeleteFailureReason {
 
 // @beta
 export interface BulkElementAspectFailure {
-    id?: Id64String;
+    aspectId?: Id64String;
     index: number;
     reason: BulkElementAspectFailureReason;
 }
 
 // @beta
 export enum BulkElementAspectFailureReason {
+    AmbiguousAspect = 6,
     AspectNotFound = 5,
     ClassNotFound = 2,
     ElementNotFound = 4,
@@ -3060,17 +3061,17 @@ export class ElementAspect extends Entity {
     // (undocumented)
     element: RelatedElement;
     // @beta
-    protected static onBulkDelete(arg: OnAspectsIdArg): void;
+    protected static onBulkDelete(arg: OnBulkAspectIdBatchArg): void;
     // @beta
-    protected static onBulkDeleted(arg: OnAspectsIdArg): void;
+    protected static onBulkDeleted(arg: OnBulkAspectIdBatchArg): void;
     // @beta
-    protected static onBulkInsert(arg: OnAspectsPropsArg): void;
+    protected static onBulkInsert(arg: OnBulkAspectPropsBatchArg): void;
     // @beta
-    protected static onBulkInserted(arg: OnAspectsPropsArg): void;
+    protected static onBulkInserted(arg: OnBulkAspectPropsBatchArg): void;
     // @beta
-    protected static onBulkUpdate(arg: OnAspectsPropsArg): void;
+    protected static onBulkUpdate(arg: OnBulkAspectPropsBatchArg): void;
     // @beta
-    protected static onBulkUpdated(arg: OnAspectsPropsArg): void;
+    protected static onBulkUpdated(arg: OnBulkAspectPropsBatchArg): void;
     // @beta
     protected static onDelete(arg: OnAspectIdArg): void;
     // @beta
@@ -5717,7 +5718,7 @@ export interface OnAspectPropsArg extends OnAspectArg {
 }
 
 // @beta
-export interface OnAspectsIdArg {
+export interface OnBulkAspectIdBatchArg {
     aspects: Array<OnAspectIdArg & {
         element: Id64String;
     }>;
@@ -5725,7 +5726,7 @@ export interface OnAspectsIdArg {
 }
 
 // @beta
-export interface OnAspectsPropsArg {
+export interface OnBulkAspectPropsBatchArg {
     aspects: OnAspectPropsArg[];
     iModel: IModelDb;
 }

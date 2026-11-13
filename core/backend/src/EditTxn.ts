@@ -127,6 +127,10 @@ export enum BulkElementAspectFailureReason {
    * ignores ids that do not identify an aspect, like [[EditTxn.deleteElements]].
    */
   AspectNotFound = 5,
+  /** [[EditTxn.updateAspects]] only: the unique aspect to update is given by a base class, and the element has more than one unique aspect of
+   * that class or its subclasses. Give the class of the aspect instead.
+   */
+  AmbiguousAspect = 6,
 }
 
 /**
@@ -137,7 +141,7 @@ export interface BulkElementAspectFailure {
   /** The index of the row in the input array. */
   index: number;
   /** The id of the aspect, when known. */
-  id?: Id64String;
+  aspectId?: Id64String;
   /** Why the row is invalid. */
   reason: BulkElementAspectFailureReason;
 }
