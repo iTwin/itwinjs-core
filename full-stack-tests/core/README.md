@@ -32,4 +32,4 @@ To run the integration tests, there is an initial configuration step required to
     IMJS_OIDC_BROWSER_TEST_SCOPES="openid email profile organization imodelhub context-registry-service:read-only"
     ```
 
-> Important: Every time the `.env` file, or environment variables, are changed it requires the tests be re-built using `npm run build`
+> Important: Every time the `.env` file, or environment variables, are changed it requires the tests be re-built using `rushx build`

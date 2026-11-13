@@ -1,6 +1,6 @@
 # Running core tests on ios
 
-Steps 1 and 2 occur when running `npm run ios:build:tests`
+Steps 1 and 2 occur when running `rushx ios:build:tests` in core/backend
 
 1. Bundle Mocha and the tests with Vite.
     - `ios.vite.config.mts` creates an ordered entry that configures Mocha, registers the compiled tests selected by `TESTS_GLOB`, and then runs Mocha. `TEST_RESULTS_PATH`, which is set in `ViewController.swift`, is passed to `BentleyMochaReporter`. Finally, `runMocha.js` signals test completion to `IModelJsMobile` on process exit.
