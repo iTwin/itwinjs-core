@@ -10,6 +10,10 @@ parameters:
   - name: rushBuildCacheEnabled
     type: number
     default: 1
+  # Opt in only with the separately protected writer credential group.
+  - name: rushBuildCacheWriteAllowed
+    type: boolean
+    default: false
   - name: buildMobile
     type: boolean
     default: false
@@ -42,9 +46,17 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
-  - script: node common/scripts/set-rush-write-cache-variables.js
-    displayName: "Set Rush Write Cache Variables"
+  - script: node --test common/scripts/test/set-rush-write-cache-variables.test.js
+    displayName: Test Rush build cache policy
     workingDirectory: ${{ parameters.workingDir }}
+
+  - script: node common/scripts/set-rush-write-cache-variables.js
+    displayName: "Configure Rush build cache"
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
+      ITWIN_RUSH_CACHE_WRITE_ENABLED: ${{ lower(parameters.rushBuildCacheWriteAllowed) }}
+      ITWIN_NATIVE_PR_VALIDATION: ${{ lower(parameters.nativePrVal) }}
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
@@ -56,8 +68,12 @@ steps:
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     env:
-      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+      ${{ if parameters.rushBuildCacheWriteAllowed }}:
+        RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheWriteSAS)
+      ${{ else }}:
+        RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: $(RUSH_BUILD_CACHE_WRITE_ALLOWED)
       VITE_CI: true
 
   - script: npm run android:all
