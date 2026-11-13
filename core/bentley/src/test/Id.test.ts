@@ -5,7 +5,8 @@
 
 import { assert, describe, expect, it } from "vitest";
 import {
-  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64String, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
+  BentleyError, CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64String, IModelStatus, MutableCompressedId64Set, OrderedId64Iterable,
+  TransientIdSequence,
 } from "../core-bentley";
 
 class Uint64Id {
@@ -577,6 +578,7 @@ describe("CompressedId64Set", () => {
 
       const decompressedArray = CompressedId64Set.decompressArray(compressedArray);
       expect(decompressedArray).to.deep.equal(ids);
+      expect(CompressedId64Set.count(compressedArray)).to.equal(ids.length);
 
       // Round-trip the Ids as a Set.
       const set = new Set<string>(ids);
@@ -665,6 +667,73 @@ describe("CompressedId64Set", () => {
     expect(CompressedId64Set.isValid("+garbage")).to.be.true;
     expect(() => [...CompressedId64Set.iterable("+0")]).to.throw();
     expect(() => [...CompressedId64Set.iterable("+garbage")]).to.throw();
+  });
+
+  it("count", () => {
+    expect(CompressedId64Set.count("")).to.equal(0);
+    expect(CompressedId64Set.count("+")).to.equal(0);
+    expect(CompressedId64Set.count("+2")).to.equal(1);
+    expect(CompressedId64Set.count("+1*4+4*3+1")).to.equal(8);
+    expect(CompressedId64Set.count("+ABCDEF0123456789+1000000000")).to.equal(2);
+
+    // Counts large sets without materializing them.
+    expect(CompressedId64Set.count("+1*FFFFFFFF")).to.equal(0xffffffff);
+    expect(CompressedId64Set.count("+1*FFFFFFFF+1*FFFFFFFF+1")).to.equal(2 * 0xffffffff + 1);
+
+    // A repeat count followed by an unexpected character terminates the set; matches iterator behavior.
+    expect(CompressedId64Set.count("+1*3x+5")).to.equal([...CompressedId64Set.iterable("+1*3x+5")].length);
+
+    for (const invalid of ["0x1", "+0", "+garbage", "+1*0", "+1-2"]) {
+      expect(() => CompressedId64Set.count(invalid)).to.throw("Invalid CompressedId64Set");
+      expect(() => [...CompressedId64Set.iterable(invalid)]).to.throw("Invalid CompressedId64Set");
+    }
+
+    // Ids may reach but not exceed the maximum 64-bit value.
+    expect(CompressedId64Set.count("+FFFFFFFFFFFFFFFF")).to.equal(1);
+    expect(CompressedId64Set.count("+FFFFFFFFFFFFFFFE+1")).to.equal(2);
+    expect(CompressedId64Set.count("+1*FFFFFFFF+FFFFFFFF00000000")).to.equal(0x100000000);
+    for (const overflow of ["+FFFFFFFFFFFFFFFF*2", "+FFFFFFFFFFFFFFFF+1", "+8000000000000000*2", "+FFFFFFFF00000000+1*FFFFFFFF+1"])
+      expect(() => CompressedId64Set.count(overflow)).to.throw("CompressedId64Set contains an Id that exceeds the maximum 64-bit value");
+  });
+
+  it("maxIdCount", () => {
+    expect(CompressedId64Set.maxIdCount).to.equal(1000000);
+    const expectTooManyIds = (func: () => unknown) => {
+      let error: unknown;
+      try {
+        func();
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).instanceOf(BentleyError);
+      expect((error as BentleyError).errorNumber).to.equal(IModelStatus.BadArg);
+      expect((error as BentleyError).message).to.equal("CompressedId64Set exceeds the maximum of 1000000 Ids");
+    };
+
+    // 0xF4240 = 1,000,000 and 0xF4241 = 1,000,001.
+    expect(CompressedId64Set.count("+1*F4240")).to.equal(CompressedId64Set.maxIdCount);
+    expect(CompressedId64Set.decompressArray("+1*3")).to.deep.equal(["0x1", "0x2", "0x3"]);
+    expect(CompressedId64Set.decompressSet("+1+1+1").size).to.equal(3);
+
+    // Rejected before any Id is produced.
+    let numProduced = 0;
+    expectTooManyIds(() => {
+      for (const _id of CompressedId64Set.iterable("+1*F4241"))
+        ++numProduced;
+    });
+    expect(numProduced).to.equal(0);
+
+    expectTooManyIds(() => CompressedId64Set.decompressArray("+1*FFFFFFFF"));
+    // Splitting the Ids across multiple runs does not bypass the limit.
+    expectTooManyIds(() => CompressedId64Set.decompressSet("+1*80000+1*80000"));
+    expectTooManyIds(() => [...new MutableCompressedId64Set("+1*F4241")]);
+
+    // Splitting the Ids across many runs without repeat counts does not bypass the limit.
+    // Only request the first Id of the set at the limit: the count is checked before any Id is produced, and materializing all of them is slow.
+    const noRepeats = "+1".repeat(CompressedId64Set.maxIdCount);
+    expect(CompressedId64Set.iterator(noRepeats).next().value).to.equal("0x1");
+    expectTooManyIds(() => CompressedId64Set.iterator(`${noRepeats}+1`).next());
   });
 });
 
