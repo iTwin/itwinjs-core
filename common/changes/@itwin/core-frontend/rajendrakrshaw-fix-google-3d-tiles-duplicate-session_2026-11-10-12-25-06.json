@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed duplicate session query parameters in Google 3D Tiles tile requests.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "rajendrakrshaw@users.noreply.github.com"
+}
