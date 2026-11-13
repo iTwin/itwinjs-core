@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix PolyfaceBuilder producing non-triangular facets for sweep sides when StrokeOptions.shouldTriangulate is set.",
+      "type": "none",
+      "packageName": "@itwin/core-geometry"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "54706661+rowmanempire@users.noreply.github.com"
+}
