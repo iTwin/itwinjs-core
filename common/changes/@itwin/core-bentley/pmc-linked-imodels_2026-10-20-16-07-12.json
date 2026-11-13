@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Accept arbitrary iterables in Id64.iterable and Id64.toIdSet.",
+      "type": "none",
+      "packageName": "@itwin/core-bentley"
+    }
+  ],
+  "packageName": "@itwin/core-bentley",
+  "email": "198982749+Copilot@users.noreply.github.com"
+}

@@ -221,6 +221,7 @@ describe("Viewport performance", () => {
     const vp = ScreenViewport.create(viewDiv, vpView);
     const categories = generateCategoryIds(50_000);
     const start = Date.now();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(categories, true, undefined, true);
     const elapsed = Date.now() - start;
     expect(elapsed).to.be.lessThan(15_000, `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`);

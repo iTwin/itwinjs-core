@@ -36,6 +36,7 @@ import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTo
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
+import { ClearEmphasizedIModelElementsTool, EmphasizeSelectedIModelElementsTool } from "./tools/EmphasizeIModelElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
@@ -121,6 +122,7 @@ export class FrontendDevTools {
       ChangeViewFlagsTool,
       ClearEffectsTool,
       ClearEmphasizedElementsTool,
+      ClearEmphasizedIModelElementsTool,
       ClearIsolatedElementsTool,
       ClipColorTool,
       ClipIntersectionTool,
@@ -133,6 +135,7 @@ export class FrontendDevTools {
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      EmphasizeSelectedIModelElementsTool,
       EmphasizeVisibleElementsTool,
       ExplosionEffect,
       FadeOutTool,
