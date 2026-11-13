@@ -324,11 +324,30 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // Start with entire project.
     const shadowRange = worldToMapTransform.multiplyRange(iModel.projectExtents);
 
+    // Pair each tile tree with a context created for its owning reference. TileDrawArgs labels produced graphic branches with
+    // the context's reference, and the webgl layer keys per-batch state (e.g. symbology overrides and hilites) on that
+    // reference - drawing a linked tree with the primary context would initialize that state against the wrong connection.
+    const linkedContexts: SceneContext[] = [];
+    const shadowTrees: Array<{ ttRef: TileTreeReference, treeContext: SceneContext }> = [];
+    for (const ttRef of style.getTileTreeRefs())
+      shadowTrees.push({ ttRef, treeContext: context });
+
+    for (const iModelRef of view.iModelRefs) {
+      let treeContext = context;
+      if (iModelRef !== view.iModelRefs.primary) {
+        treeContext = new SceneContext({ viewport: context.viewport, frustum: context.frustum, iModelRef });
+        linkedContexts.push(treeContext);
+      }
+
+      for (const ttRef of iModelRef.tileTreeRefs)
+        shadowTrees.push({ ttRef, treeContext });
+    }
+
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
-    for (const ref of view.getTileTreeRefs()) {
-      if (ref.castsShadows) {
-        if (ref.isGlobal) {
+    for (const { ttRef } of shadowTrees) {
+      if (ttRef.castsShadows) {
+        if (ttRef.isGlobal) {
           // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
           for (const p3 of viewFrustum.points) {
             const p4 = worldToMap.multiplyPoint3d(p3, 1);
@@ -338,7 +357,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
               viewTileRange.high.z = Math.max(1.0, viewTileRange.high.z); // behind eye plane.
           }
         } else {
-          ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+          ttRef.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
         }
       }
     }
@@ -376,11 +395,11 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const tileRange = Range3d.createNull();
     scratchFrustumPlanes.init(this._shadowFrustum);
-    for (const ref of view.getTileTreeRefs()) {
-      if (!ref.castsShadows)
+    for (const { ttRef, treeContext } of shadowTrees) {
+      if (!ttRef.castsShadows)
         continue;
 
-      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes, (tiles: Tile[]) => {
+      const drawArgs = createDrawArgs(treeContext, this, ttRef, scratchFrustumPlanes, (tiles: Tile[]) => {
         for (const tile of tiles)
           tileRange.extendRange(tileToMapTransform.multiplyRange(tile.range, this._scratchRange));
       });
@@ -390,6 +409,17 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
       drawArgs.tree.draw(drawArgs);
+    }
+
+    // Tiles requested for linked references must be enqueued with the viewport via the primary context.
+    for (const linkedContext of linkedContexts) {
+      for (const missingTile of linkedContext.missingTiles)
+        context.insertMissingTile(missingTile);
+
+      // Also propagate the children-still-loading flag so that the scene does not report itself complete while
+      // linked shadow tiles are still loading.
+      if (linkedContext.hasMissingTiles)
+        context.markChildrenLoading();
     }
 
     if (tileRange.isNull) {

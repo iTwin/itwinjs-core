@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { IModelDisplayReference } from "./IModelDisplayReference";
 import { Viewport } from "./Viewport";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
@@ -13,6 +14,9 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
  * When the viewport needs to recreate the symbology overrides, it invokes the provider's [[addFeatureOverrides]] method.
  * If necessary - for example, because of changes to some state from which the provider derives the overrides - the provider
  * can request that the viewport recreate the overrides by calling [[Viewport.setFeatureOverrideProviderChanged]].
+ * The provider follows primary display-reference changes within the same iModel connection. It is removed if the viewport changes to a different connection,
+ * because unqualified element Ids could otherwise identify unrelated elements. Use [[IModelDisplayReferenceFeatureOverrideProvider]] when state must be associated with a
+ * particular display reference.
  *
  * @see [[Viewport.addFeatureOverrideProvider]] to register a provider with a viewport.
  * @public
@@ -21,4 +25,16 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 export interface FeatureOverrideProvider {
   /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+/** An object that customizes the appearances of [[IModelDisplayFeature]]s within an [[IModelDisplayReference]] using [[FeatureSymbology.Overrides]].
+ * The [[addFeatureOverrides]] method will be invoked whenever the symbology overrides need to be recreated.
+ * If some internal state of your provider changes such that the overrides should be recreated, invoke [[IModelDisplayReference.invalidateSymbologyOverrides]].
+ *
+ * @see [[IModelDisplayReference.featureOverrideProviders]] for the set of override providers associated with an [[IModelDisplayReference]].
+ * @see [[EmphasizeIModelElements]] for an example implementation of this interface.
+ * @beta
+ */
+export interface IModelDisplayReferenceFeatureOverrideProvider {
+  addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
 }
