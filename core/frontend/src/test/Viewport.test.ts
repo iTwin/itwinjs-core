@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { BeEvent, CompressedId64Set, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
   AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, HiddenLine, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
@@ -975,10 +975,10 @@ describe("Viewport", () => {
         expectPlacement(linkedReality, true);
         expect((linkedReality as any).getSymbologyOverrides(stubTree)).toBe(linkedRef.getSymbologyOverrides());
 
-        // The primary reference's placement is the identity; it uses the primary's overrides.
+        // The primary reference's placement is the identity; it inherits the target's overrides.
         const primaryReality = makeRealityRef(refs.primary);
         expectPlacement(primaryReality, false);
-        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBe(refs.primary.getSymbologyOverrides());
+        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBeUndefined();
 
         // A context reality model (owned by the display style) is not placed and inherits the viewport's overrides.
         const contextReality = makeRealityRef(viewport.view.displayStyle);
@@ -1906,7 +1906,9 @@ describe("Viewport", () => {
         const loadModels = vi.spyOn(linkedIModel.models, "load").mockReturnValue(new Promise<void>((resolve) => resolveLoad = resolve));
 
         const linkedRef = refs.link({ iModel: linkedIModel, viewedModels: ["0x123"] });
-        expect(loadModels).toHaveBeenCalled();
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        await Promise.resolve();
+        expect(loadModels).toHaveBeenCalledOnce();
 
         // Before the ModelStates are loaded the reference has no tile-tree references, but it must not report completion -
         // waitForSceneCompletion would otherwise resolve before the linked content can produce any graphics.
@@ -1938,7 +1940,9 @@ describe("Viewport", () => {
         const loadSubCategories = vi.spyOn(linkedIModel.subcategories, "load").mockReturnValue({ promise } as ReturnType<typeof linkedIModel.subcategories.load>);
 
         const linkedRef = refs.link({ iModel: linkedIModel, viewedCategories: ["0xc"] });
-        expect(loadSubCategories).toHaveBeenCalled();
+        expect(linkedRef.isLoadingComplete).toBe(false);
+        await Promise.resolve();
+        expect(loadSubCategories).toHaveBeenCalledOnce();
 
         // The reference's symbology is not final until its subcategories load - it must not report completion.
         expect(linkedRef.isLoadingComplete).toBe(false);
@@ -2740,6 +2744,96 @@ describe("Viewport", () => {
         });
       } finally {
         linkedIModel.closeSync();
+      }
+    });
+
+    it("merges mixed exclusions once per reference per pixel read", () => {
+      testBlankViewport((vp) => {
+        vp.renderFrame();
+        const target = vp.target as Target;
+        const primary = vp.primaryIModelRef;
+        const attachment = vp.view.clone().iModelRefs.primary;
+        const ids = Array.from({ length: 10000 }, (_, i) => Id64.fromLocalAndBriefcaseIds(i + 100, 0));
+        const exclusions: NonNullable<ReadPixelsArgs["excludedElements"]> = [...ids, ["0x1", primary], ["0x2", attachment]];
+        const reads: Id64.Uint32Set[] = [];
+        const read = vi.spyOn(target as any, "readPixelsFromFbo").mockImplementation(() => {
+          const combined = target.getPickExclusions(primary)!;
+          expect(combined.hasId("0x1")).toBe(true);
+          expect(combined.hasId("0x2")).toBe(false);
+          expect(combined.hasId(ids[9999])).toBe(true);
+          const attached = target.getPickExclusions(attachment)!;
+          expect(attached.hasId("0x1")).toBe(false);
+          expect(attached.hasId("0x2")).toBe(true);
+          expect(attached.hasId(ids[9999])).toBe(true);
+          for (let batch = 0; batch < 1000; ++batch) {
+            expect(target.getPickExclusions(primary)).toBe(combined);
+            expect(target.getPickExclusions(attachment)).toBe(attached);
+          }
+          reads.push(combined);
+          return undefined;
+        });
+        try {
+          for (let i = 0; i < 2; ++i) {
+            vp.readPixels({ excludedElements: exclusions, receiver: () => {} });
+            expect(target.getPickExclusions(primary)).toBeUndefined();
+            expect(target.getPickExclusions(attachment)).toBeUndefined();
+          }
+          expect(reads).toHaveLength(2);
+          expect(reads[0]).not.toBe(reads[1]);
+          read.mockImplementationOnce(() => {
+            expect(target.getPickExclusions(primary)).toBeDefined();
+            throw new Error("pixel read failed");
+          });
+          expect(() => vp.readPixels({ excludedElements: exclusions, receiver: () => {} })).toThrow("pixel read failed");
+          expect(target.getPickExclusions(primary)).toBeUndefined();
+          expect(target.getPickExclusions(attachment)).toBeUndefined();
+        } finally {
+          read.mockRestore();
+        }
+      });
+    });
+
+    it("applies plain-ID exclusions to same-iModel attachment branches without excluding other iModels", () => {
+      const other = createBlankConnection();
+      try {
+        testBlankViewport((vp) => {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+
+          // Sheet and section-drawing attachments render through the attached view's primary reference.
+          const attachmentRef = vp.view.clone().iModelRefs.primary;
+          const linked = refs.link({ iModel: other });
+          for (const [ref, id, z] of [[refs.primary, "0xa", 0], [attachmentRef, "0xa", -5], [attachmentRef, "0xb", -7], [linked, "0xa", -10]] as const) {
+            const points = [new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z)];
+            vp.viewToWorldArray(points);
+            const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id }, computeChordTolerance: () => 0 });
+            builder.addShape(points);
+            const branch = new GraphicBranch(true);
+            branch.add(builder.finish());
+            const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { iModelRef: ref });
+            addDecorator({ decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, graphic) });
+          }
+          vp.renderFrame();
+          const read = (excludedElements?: ReadPixelsArgs["excludedElements"]) => {
+            let feature: Pixel.Data["feature"];
+            vp.readPixels({ selector: Pixel.Selector.Feature, excludedElements, receiver: (pixels) => {
+              const coordinate = vp.cssPixelsToDevicePixels(1);
+              feature = pixels?.getPixel(coordinate, coordinate).feature;
+            } });
+            return feature;
+          };
+          expect(read()?.iModelRef).toBe(refs.primary);
+          expect(read([["0xa", refs.primary]])?.iModelRef).toBe(attachmentRef);
+          expect(read(["0xa"])?.elementId).toBe("0xb");
+          expect(read(["0xa", ["0xb", attachmentRef]])?.iModelRef).toBe(linked);
+          expect(read(["0xa", "0xb"])?.iModelRef).toBe(linked);
+          expect(read(["0xa", "0xb", ["0xa", linked]])).toBeUndefined();
+          expect(read()?.iModelRef).toBe(refs.primary);
+          refs.unlink(linked);
+        });
+      } finally {
+        other.closeSync();
       }
     });
 

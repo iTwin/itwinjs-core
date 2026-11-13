@@ -9768,7 +9768,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     readImageToCanvas(_overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // @internal (undocumented)
-    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
+    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>): void;
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
@@ -10033,6 +10033,8 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
+    // @internal (undocumented)
+    protected onSceneVisibilityChanged(): void;
     // @internal
     onViewManagerAdd(): void;
     // @internal
@@ -10921,6 +10923,7 @@ export class SubCategoriesCache {
 export namespace SubCategoriesCache {
     export class Queue {
         [Symbol.dispose](): void;
+        cancel(cache: SubCategoriesCache): void;
         // (undocumented)
         protected _current?: QueueEntry;
         // (undocumented)
@@ -11225,7 +11228,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
-    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void;
+    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>): void;
     // (undocumented)
     get readPixelsSelector(): Pixel.Selector;
     // (undocumented)
@@ -14063,6 +14066,8 @@ export abstract class Viewport implements Disposable, TileUser {
     readonly onResized: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
+    // @internal
+    protected onSceneVisibilityChanged(): void;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;

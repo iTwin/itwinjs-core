@@ -210,7 +210,7 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
-    return this.iModelRef.getSymbologyOverrides();
+    return this.iModelRef === this.iModelRef.parent.primary ? undefined : this.iModelRef.getSymbologyOverrides();
   }
 
   protected override getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {

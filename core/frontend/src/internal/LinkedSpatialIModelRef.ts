@@ -23,7 +23,7 @@ import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
 import type { DisplayStyleState } from "../DisplayStyleState";
-import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, cancelViewedCategoriesLoad, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
 
 class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public readonly [_implementationProhibited] = undefined;
@@ -121,10 +121,10 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     });
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
-    this.#loadViewedCategories();
+    scheduleViewedCategoriesLoad(this);
     this.viewedCategories.onChanged.addListener(() => {
       this.invalidateSymbologyOverrides();
-      this.#loadViewedCategories();
+      scheduleViewedCategoriesLoad(this);
     });
 
     this.#boundStyleSettings = view.displayStyle.settings;
@@ -168,12 +168,12 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
 
     this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
-    this.#loadViewedModels();
+    void scheduleViewedModelsLoad(this);
     this.viewedModels.onChanged.addListener(() => {
       // Refresh the owning tile-reference collection - e.g., batched tile sets copy the viewed model Ids into the set
       // used for visibility and fit ranges - mirroring SpatialViewState.markModelSelectorChanged for the primary reference.
       this[_treeRefs].update();
-      this.#loadViewedModels();
+      void scheduleViewedModelsLoad(this);
     });
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
@@ -231,6 +231,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   #dispose(): void {
+    cancelViewedCategoriesLoad(this);
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;
     this.#planarClipMaskStates.clear();
@@ -278,30 +279,8 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public isSpatial(): this is SpatialIModelDisplayReference { return true; }
   public is2d(): this is IModelDisplayReference2d { return false; }
 
-  #pendingLoads = 0;
-
-  /** Track an asynchronous load so that [[isLoadingComplete]] reports false while it is pending - e.g., before the
-   * ModelStates exist the tile-tree reference collection is empty and would vacuously report completion, and before
-   * the subcategories load the symbology is not final (e.g., for [[Viewport.waitForSceneCompletion]]).
-   */
-  #trackLoad(promise: Promise<unknown>): void {
-    ++this.#pendingLoads;
-    // Decrement on either outcome without consuming the caller's rejection - a failed load must not leave the
-    // reference permanently incomplete, nor produce an unhandled rejection from this tracking chain.
-    const decrement = () => --this.#pendingLoads;
-    void promise.then(decrement, decrement);
-  }
-
-  #loadViewedModels(): void {
-    this.#trackLoad(loadViewedModels(this));
-  }
-
-  #loadViewedCategories(): void {
-    this.#trackLoad(loadViewedCategories(this));
-  }
-
   public get isLoadingComplete(): boolean {
-    return 0 === this.#pendingLoads && isLoadingComplete(this);
+    return isLoadingComplete(this);
   }
 
   public get isAlwaysDrawnExclusive() {
@@ -446,7 +425,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     // This iModel's subcategory cache may have been invalidated while the view was detached, with the listener that
     // would reload it removed - refresh the viewed categories and the symbology overrides baking in their appearances.
     this.invalidateSymbologyOverrides();
-    this.#loadViewedCategories();
+    scheduleViewedCategoriesLoad(this);
 
     this[_treeRefs].attachToViewport(args);
   }
@@ -461,11 +440,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
-    // Track the direct load so isLoadingComplete reports false while it is pending - when retrying after a failed
-    // load, the set mutation raises no event and this is the only load in flight.
-    const promise = addAndLoadViewedModels(this, modelIds);
-    this.#trackLoad(promise);
-    return promise;
+    return addAndLoadViewedModels(this, modelIds);
   }
 }
 
