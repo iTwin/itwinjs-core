@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { withEditTxn } from "../../EditTxn";
 import {
-  CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
-  TypeDefinitionElementProps,
+  CalloutProps, CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
+  RelatedElement, TypeDefinitionElementProps, ViewAttachmentLabelProps,
 } from "@itwin/core-common";
 import {
   DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
   GenericPhysicalType, GenericSchema, Graphic3d, GraphicalPartition3d, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs,
   PhysicalElementIsOfPhysicalMaterial, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial,
-  SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  SectionCallout, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements, ViewAttachmentLabel,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -174,5 +174,58 @@ describe("Generic Domain", () => {
     });
 
     iModelDb.close();
+  });
+
+  describe("getReferenceIds", () => {
+    let iModelDb: SnapshotDb;
+
+    before(() => {
+      iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericReferenceIds.bim"), {
+        rootSubject: { name: "GenericReferenceIds" },
+      });
+    });
+
+    after(() => iModelDb.close());
+
+    const detailingSymbolProps = { model: "0x34", category: "0x78", code: Code.createEmpty() };
+    // references reported by the base classes: code scope, category, and model
+    const baseIds = ["e0x1", "e0x78", "m0x34"];
+
+    it("ViewAttachmentLabel reports its ViewAttachment", () => {
+      const props: ViewAttachmentLabelProps = {
+        ...detailingSymbolProps,
+        classFullName: ViewAttachmentLabel.classFullName,
+        viewAttachment: { id: "0x56", relClassName: "Generic.ViewAttachmentLabelAnnotatesViewAttachment" },
+      };
+      const label = new ViewAttachmentLabel(props, iModelDb);
+      expect(label.viewAttachment?.id).to.equal("0x56");
+      expect([...label.getReferenceIds()]).to.have.members(["e0x56", ...baseIds]);
+    });
+
+    it("ViewAttachmentLabel without a ViewAttachment reports no attachment reference", () => {
+      const withoutAttachment = new ViewAttachmentLabel({ ...detailingSymbolProps, classFullName: ViewAttachmentLabel.classFullName }, iModelDb);
+      expect(withoutAttachment.viewAttachment).to.be.undefined;
+      expect([...withoutAttachment.getReferenceIds()]).to.have.members(baseIds);
+
+      const withInvalidAttachment = new ViewAttachmentLabel({ ...detailingSymbolProps, classFullName: ViewAttachmentLabel.classFullName, viewAttachment: RelatedElement.none }, iModelDb);
+      expect([...withInvalidAttachment.getReferenceIds()]).to.have.members(baseIds);
+    });
+
+    it("Callout reports its DrawingModel", () => {
+      const props: CalloutProps = {
+        ...detailingSymbolProps,
+        classFullName: SectionCallout.classFullName,
+        drawingModel: { id: "0x9a", relClassName: "Generic.CalloutRefersToDrawingModel" },
+      };
+      const callout = new SectionCallout(props, iModelDb);
+      expect(callout.drawingModel?.id).to.equal("0x9a");
+      expect([...callout.getReferenceIds()]).to.have.members(["m0x9a", ...baseIds]);
+    });
+
+    it("Callout without a DrawingModel reports no drawing model reference", () => {
+      const callout = new SectionCallout({ ...detailingSymbolProps, classFullName: SectionCallout.classFullName }, iModelDb);
+      expect(callout.drawingModel).to.be.undefined;
+      expect([...callout.getReferenceIds()]).to.have.members(baseIds);
+    });
   });
 });
