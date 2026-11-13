@@ -17,8 +17,9 @@ function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: Fea
     vp.view.forEachModel((model) => {
       if (name === undefined || model.name === name) {
         changed = true;
-        const existingOverrides = vp.displayStyle.settings.getModelAppearanceOverride(model.id);
-        vp.overrideModelAppearance(model.id, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
+        const ref = vp.primaryIModelRef;
+        const existingOverrides = ref.modelAppearanceOverrides.get(model.id);
+        ref.modelAppearanceOverrides.set(model.id, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
       }
     });
 
@@ -204,7 +205,7 @@ export class ClearModelAppearanceOverrides extends Tool {
     if (vp !== undefined && vp.view instanceof SpatialViewState) {
       vp.view.forEachModel((model) => {
         if (name === undefined || model.name === name)
-          vp.dropModelAppearanceOverride(model.id);
+          vp.primaryIModelRef.modelAppearanceOverrides.delete(model.id);
       });
     }
 

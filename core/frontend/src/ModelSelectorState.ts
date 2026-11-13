@@ -27,9 +27,8 @@ export class ModelSelectorState extends ElementState {
   }
 
   public set models(models: Set<string>) {
-    this.models.clear();
-    for (const model of models)
-      this.models.add(model);
+    this._models.clear();
+    this._models.addAll(models);
   }
 
   /** @internal */
@@ -72,14 +71,12 @@ export class ModelSelectorState extends ElementState {
 
   /** Add one or more models to this ModelSelectorState */
   public addModels(arg: Id64Arg): void {
-    for (const id of Id64.iterable(arg))
-      this.models.add(id);
+    this._models.addAll(Id64.iterable(arg));
   }
 
   /** Drop one or more models from this ModelSelectorState */
   public dropModels(arg: Id64Arg): void {
-    for (const id of Id64.iterable(arg))
-      this.models.delete(id);
+    this._models.deleteAll(Id64.iterable(arg));
   }
 
   /** Determine whether this ModelSelectorState includes the specified modelId value */

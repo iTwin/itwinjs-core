@@ -125,7 +125,12 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-  const contours = (style.is3d() && style.settings.contours.groups.length > 0) ? style.settings.contours : undefined;
+  // A non-spatial primary reference (e.g., the generic default of a custom ViewState3d subclass) has no per-reference
+  // contour overrides - fall back to the display style's contours, as before iModel display references.
+  const activeContours = vp.primaryIModelRef.isSpatial()
+    ? vp.primaryIModelRef.activeContours
+    : (style.is3d() ? style.settings.contours : undefined);
+  const contours = (style.is3d() && activeContours && activeContours.groups.length > 0) ? activeContours : undefined;
   const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere : false;
   const atmosphere = shouldDisplayAtmosphere ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 

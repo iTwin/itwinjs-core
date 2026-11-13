@@ -1630,6 +1630,8 @@ export abstract class IModelDb extends IModel {
           try {
             nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
           } catch (err: any) {
+            // A failed native import clears the ECDb cache, which invalidates our cached statements.
+            this.clearCaches();
             if (SchemaSync.requiresUpgrade(err))
               throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
 
@@ -1672,6 +1674,8 @@ export abstract class IModelDb extends IModel {
       try {
         nativeImportOp(schemas, nativeImportOptions);
       } catch (err: any) {
+        // A failed native import clears the ECDb cache, which invalidates our cached statements.
+        this.clearCaches();
         throw new IModelError(err.errorNumber, err.message);
       }
     }
@@ -4623,6 +4627,8 @@ export class BriefcaseDb extends IModelDb {
           schemaSyncDbUri: syncAccess.getUri(),
         });
       } catch (err: any) {
+        // A failed native import clears the ECDb cache, which invalidates our cached statements.
+        this.clearCaches();
         this.abandonSchemaChanges();
         throw new IModelError(err.errorNumber, err.message);
       }
