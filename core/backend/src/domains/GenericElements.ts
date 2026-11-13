@@ -6,10 +6,10 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
-  InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps,
+  CalloutProps, DefinitionElementProps, ElementProps, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
+  InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, RelatedElement, TypeDefinitionElementProps, ViewAttachmentLabelProps,
 } from "@itwin/core-common";
 import {
   Document, GraphicalElement2d, GraphicalElement3d, GraphicalPartition3d, GraphicalType2d, GroupInformationElement, GroupInformationPartition,
@@ -47,8 +47,20 @@ export class TitleText extends DetailingSymbol {
  */
 export class ViewAttachmentLabel extends DetailingSymbol {
   public static override get className(): string { return "ViewAttachmentLabel"; }
+  /** The [[ViewAttachment]] that this label annotates.
+   * @beta
+   */
+  public viewAttachment?: RelatedElement;
+
   public constructor(props: ViewAttachmentLabelProps, iModel: IModelDb) {
     super(props, iModel);
+    this.viewAttachment = RelatedElement.fromJSON(props.viewAttachment);
+  }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.viewAttachment && Id64.isValidId64(this.viewAttachment.id))
+      referenceIds.addElement(this.viewAttachment.id);
   }
 }
 
@@ -57,8 +69,20 @@ export class ViewAttachmentLabel extends DetailingSymbol {
  */
 export abstract class Callout extends DetailingSymbol {
   public static override get className(): string { return "Callout"; }
+  /** The [[DrawingModel]] that this callout refers to.
+   * @beta
+   */
+  public drawingModel?: RelatedElement;
+
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
+    this.drawingModel = RelatedElement.fromJSON(props.drawingModel);
+  }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.drawingModel && Id64.isValidId64(this.drawingModel.id))
+      referenceIds.addModel(this.drawingModel.id);
   }
 }
 

@@ -813,6 +813,10 @@ export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    drawingModel?: RelatedElement;
 }
 
 // @beta
@@ -8200,6 +8204,10 @@ export class ViewAttachmentLabel extends DetailingSymbol {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    viewAttachment?: RelatedElement;
 }
 
 // @public @preview
