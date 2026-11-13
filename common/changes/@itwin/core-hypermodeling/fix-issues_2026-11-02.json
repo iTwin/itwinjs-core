@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-hypermodeling",
+      "comment": "Fix SectionDrawingLocationState placement bbox.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-hypermodeling"
+}

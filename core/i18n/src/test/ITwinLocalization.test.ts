@@ -1171,6 +1171,25 @@ describe("ITwinLocalization", () => {
     });
   });
 
+  describe("missing key logging", () => {
+    it("logs a missing key as a single-line warning", async () => {
+      itwinLocalization = new ITwinLocalization({ initOptions: { lng: "en", fallbackLng: false, debug: true } });
+      await itwinLocalization.initialize([]);
+
+      const warnings: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Preserve the exact method reference so the test can restore it.
+      const originalLogWarning = Logger.logWarning;
+      Logger.logWarning = (_category, message) => warnings.push(String(message));
+      try {
+        itwinLocalization.getLocalizedString("random non-existing key");
+        assert.isTrue(warnings.some((w) => w.includes("missingKey") && !w.includes("
+")));
+      } finally {
+        Logger.logWarning = originalLogWarning;
+      }
+    });
+  });
+
   // unregisterNamespace() isn't used and basically does nothing
   // describe("#unregisterNamespace", () => {
   // });

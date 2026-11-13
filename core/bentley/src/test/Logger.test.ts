@@ -345,6 +345,8 @@ describe("Logger", () => {
       (c, m, d) => outinfo = [c, m, d],
       (c, m, d) => outtrace = [c, m, d]);
 
+    callLoggerConfigLevels({ defaultLevel: "INFO" }, false);
+    callLoggerConfigLevels({ categoryLevels: [{ category: "c1", logLevel: "wArNiNg" }] }, false);
     callLoggerConfigLevels({ categoryLevels: { stuff: 0 } }, true);
     callLoggerConfigLevels({ xcategoryLevels: [{ category: "c1", logLevel: "Error" }] }, true);
     callLoggerConfigLevels({ categoryLevels: [{ xcategory: "c1", logLevel: "Error" }] }, true);
