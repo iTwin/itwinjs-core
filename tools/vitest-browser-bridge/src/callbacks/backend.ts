@@ -38,7 +38,11 @@ export function registerBackendCallback<Arguments extends readonly unknown[]>(na
   assertCallbackName(name);
   if (typeof callback !== "function")
     throw new Error(`Callback "${name}" must be a function.`);
-  getState().callbacks.set(name, callback);
+
+  const callbacks = getState().callbacks;
+  if (callbacks.has(name))
+    throw new Error(`Backend callback "${name}" is already registered.`);
+  callbacks.set(name, callback);
 }
 
 /** Remove every callback during provider-session teardown.
