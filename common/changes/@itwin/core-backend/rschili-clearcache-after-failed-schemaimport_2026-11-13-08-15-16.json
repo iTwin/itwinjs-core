@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "clean cache after failed schema imports",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
