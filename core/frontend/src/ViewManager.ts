@@ -365,6 +365,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
    * This is rarely needed - viewports keep track of their own states to detect when the overrides need to be recreated.
+   * @note This invalidates the overrides of each viewport's primary [[IModelDisplayReference]] only. For state associated with
+   * a linked reference, use [[IModelDisplayReference.invalidateSymbologyOverrides]].
    */
   public invalidateSymbologyOverridesAllViews(): void {
     for (const vp of this)

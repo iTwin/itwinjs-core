@@ -20,6 +20,8 @@ import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { _requestSnap } from "./common/internal/Symbols";
+import { computeIModelRefDisplayTransform } from "./internal/IModelDisplayReferenceImpl";
+import { isForeignIModelDisplayReference } from "./internal/ForeignIModelRef";
 import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder } from "./AccuDraw";
 
 // cspell:ignore dont primitivetools
@@ -555,7 +557,7 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     for (const vp of this.areFlashed)
-      vp.flashedId = undefined;
+      vp.flashedElement = undefined;
 
     this.areFlashed.clear();
   }
@@ -756,8 +758,11 @@ export class AccuSnap implements Decorator {
     }
 
     hitVp = hitVp ?? thisHit.viewport;
-    if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
-      const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
+    // Linked references carry their own subcategory data, so the "don't snap" check applies to them just as to the
+    // primary. Exempt only foreign references (graphics displayed without being part of the view) - nothing loads
+    // their subcategory appearances, so the check would be meaningless.
+    if (undefined !== thisHit.subCategoryId && !isForeignIModelDisplayReference(thisHit.feature.iModelRef)) {
+      const appearance = thisHit.feature.iModelRef.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
@@ -779,6 +784,11 @@ export class AccuSnap implements Decorator {
         snapModes.push(SnapMode.Nearest);
     }
 
+    // Supply the transform into the view's world space whenever the hit's reference has one - like the old
+    // transformFromSourceIModel, this is keyed on the transform itself, not on whether the iModel differs from the
+    // viewport's: a branch displaying the viewport's own iModel through a transform needs it too.
+    const refToParent = thisHit.feature.iModelRef.linearTransformToParent;
+    const modelToWorld = refToParent.isIdentity ? undefined : refToParent;
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
@@ -790,7 +800,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
-      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
+      modelToWorld: modelToWorld?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
@@ -854,12 +864,17 @@ export class AccuSnap implements Decorator {
 
       let displayTransform;
       if (undefined !== thisHit.modelId) {
-        displayTransform = thisHit.viewport.view.computeDisplayTransform({
-          modelId: thisHit.modelId,
-          elementId: thisHit.sourceId,
-          viewAttachmentId: thisHit.path?.viewAttachment?.id,
-          inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
-        });
+        if (thisHit.isExternalIModelHit) {
+          // The hit originated from a linked reference; its display transform comes from that reference, not from the view.
+          displayTransform = computeIModelRefDisplayTransform(thisHit.feature.iModelRef, thisHit.modelId);
+        } else {
+          displayTransform = thisHit.viewport.view.computeDisplayTransform({
+            modelId: thisHit.modelId,
+            elementId: thisHit.sourceId,
+            viewAttachmentId: thisHit.path?.viewAttachment?.id,
+            inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
+          });
+        }
       }
 
       const snapPoint = Point3d.fromJSON(result.snapPoint);
@@ -1217,21 +1232,6 @@ export class AccuSnap implements Decorator {
     }
 
     this.errorIcon.decorate(context);
-  }
-
-  private clearElemFromHitList(element: string) {
-    if (this.aSnapHits)
-      this.aSnapHits.removeHitsFrom(element);
-  }
-
-  /** @internal */
-  public clearIfElement(sourceId: string): void {
-    this.clearElemFromHitList(sourceId);
-
-    const hit = this.currHit;
-    if (hit && hit.sourceId === sourceId) {
-      this.destroy();
-    }
   }
 
   /** Enable locating elements.

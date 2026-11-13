@@ -97,7 +97,10 @@ export class BingElevationProvider {
     if (pointOrCarto instanceof Cartographic) {
       carto = pointOrCarto;
     } else {
-      carto = iModel!.spatialToCartographicFromEcef(pointOrCarto);
+      if (!iModel)
+        return 0.0;
+
+      carto = iModel.spatialToCartographicFromEcef(pointOrCarto);
     }
 
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);

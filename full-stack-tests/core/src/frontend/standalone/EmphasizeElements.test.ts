@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
+  EmphasizeElements, EmphasizeIModelElements, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -31,6 +31,18 @@ describe("EmphasizeElements tests", () => {
   after(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
+  });
+
+  it("EmphasizeIModelElements operates on IModelDisplayReference", async () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const ref = vp.primaryIModelRef;
+    const emph = EmphasizeIModelElements.getOrCreate(ref);
+
+    assert.isTrue(emph.hideElements(new Set<string>(["0x1", "0x2"]), true));
+    assert.isTrue(ref.neverDrawnElements.size === 2);
+
+    EmphasizeElements.clear(vp);
   });
 
   it("Emphasize add/replace/clear", async () => {
@@ -101,6 +113,30 @@ describe("EmphasizeElements tests", () => {
     assert.isTrue(undefined === currIds);
 
     EmphasizeElements.clear(vp);
+  });
+
+  it("Static clear resets always-drawn exclusivity after isolate", async () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const ref = vp.primaryIModelRef;
+
+    const emph = EmphasizeElements.getOrCreate(vp);
+    assert.isTrue(emph.isolateElements(new Set<string>(["0x1"]), vp, true));
+    assert.isTrue(ref.isAlwaysDrawnExclusive);
+    assert.isTrue(1 === ref.alwaysDrawnElements.size);
+
+    EmphasizeElements.clear(vp);
+    assert.isFalse(ref.isAlwaysDrawnExclusive, "EmphasizeElements.clear should reset exclusivity so ordinary visibility is restored");
+    assert.isTrue(0 === ref.alwaysDrawnElements.size);
+    assert.isTrue(0 === ref.neverDrawnElements.size);
+
+    const refEmph = EmphasizeIModelElements.getOrCreate(ref);
+    assert.isTrue(refEmph.isolateElements(new Set<string>(["0x2"]), true));
+    assert.isTrue(ref.isAlwaysDrawnExclusive);
+
+    EmphasizeIModelElements.clear(ref);
+    assert.isFalse(ref.isAlwaysDrawnExclusive, "EmphasizeIModelElements.clear should reset exclusivity so ordinary visibility is restored");
+    assert.isTrue(0 === ref.alwaysDrawnElements.size);
   });
 
   it("Hide add/replace/clear", async () => {
@@ -421,6 +457,7 @@ describe("EmphasizeElements tests", () => {
       }
 
       expect(after.wantEmphasis).to.equal(before.wantEmphasis);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(vp2.isAlwaysDrawnExclusive).to.equal(vp1.isAlwaysDrawnExclusive);
 
       const aApp = after.defaultAppearance;
