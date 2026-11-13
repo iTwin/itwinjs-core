@@ -413,24 +413,20 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   // foreign key declared ON DELETE CASCADE, so SchemaWriter clears every reference before it deletes
   // the row - otherwise the cascade takes the whole ECProperty, its property map and its data.
   //
-  // A briefcase applying the resulting changeset does not get that ordering. TxnManager's
-  // ApplySchemaChangesInOrder deliberately applies effective deletes ahead of updates so that an
-  // invert cannot violate a unique constraint, which puts the ec_KindOfQuantity delete before the
-  // ec_Property update that clears the pointer. Foreign key actions are live for a schema changeset
-  // that leaves ec_cache_ alone, so the cascade fires on the pulling briefcase and the update that
-  // follows is a NotFound conflict, which the ec_ conflict rules skip. The property is gone on b2
-  // and still there on b1.
+  // A briefcase applying the resulting changeset does not get that ordering, so the ec_KindOfQuantity
+  // delete can land before the ec_Property update that clears the pointer. With foreign key actions
+  // live, the cascade deleted the property on the pulling briefcase, and the update that followed was
+  // a NotFound conflict, which the ec_ conflict rules skip: the property was gone on b2 and still there
+  // on b1. ECDb::ApplySchemaChangeSet now applies the ec_ rows with foreign key actions off and checks
+  // the foreign keys once the whole changeset has been applied, so the order of the rows no longer
+  // matters.
   //
-  // Nothing about this is specific to schema sync - the same changeset from an ordinary iModel does
-  // the same thing - which is why the test drives it through the upgrade path, where SchemaWriter
-  // runs against the briefcase directly and b1 is unambiguously correct.
+  // Nothing about this is specific to schema sync - a changeset from an ordinary iModel is applied
+  // the same way - which is why the test drives it through the upgrade path, where SchemaWriter runs
+  // against the briefcase directly and b1 is unambiguously correct.
   //
-  // SKIPPED, not fixed: the agreed fix is an ECDb profile upgrade moving these three foreign keys
-  // from ON DELETE CASCADE to ON DELETE SET NULL, so that merge and rebase - which differ in whether
-  // foreign key actions run at all - both end up with a nulled cell instead of a deleted property.
-  // Unskip that as part of that profile change; it is the acceptance test for it.
-  // Story on the backlog tracking the issue: itwinjs-backlog#2333
-  it.skip("a referenced KindOfQuantity deletion must not drop the property in another schema", async () => {
+  // Acceptance test for itwinjs-backlog#2333 (duplicate: itwinjs-backlog#2606), fixed by imodel-native#1710.
+  it("a referenced KindOfQuantity deletion must not drop the property in another schema", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-16" });
     const accessToken = "sync life referenced koq token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life referenced koq", accessToken });
@@ -494,7 +490,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       assert.equal(countMetadataItemRows(b1, "ec_KindOfQuantity", "SharedLength"), 0, "the KindOfQuantity should be gone on the importer");
       assert.equal(readElementProp(b1, measuredId, "length"), 12.5, "the importer should keep the property and its value");
 
-      // b2 applies that changeset, and this is where it goes wrong today.
+      // b2 applies that changeset and must end up where b1 is: the KindOfQuantity gone, the property and its value kept.
       await b2.pullChanges({ accessToken });
       assert.equal(countMetadataItemRows(b2, "ec_KindOfQuantity", "SharedLength"), 0, "the KindOfQuantity should be gone on the puller");
       assert.deepEqual(queryPropNames(b2, "SyncLifeQuantityConsumer:MeasuredThing"), queryPropNames(b1, "SyncLifeQuantityConsumer:MeasuredThing"),
