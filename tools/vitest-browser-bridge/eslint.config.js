@@ -14,12 +14,17 @@ module.exports = [
     },
   },
   {
-    files: ["**/*.{ts,mts}"],
+    // The provider and its Electron session report process and window failures on the console.
+    files: ["src/electron/provider.ts", "src/electron/provider-session.ts"],
     rules: {
-      "@typescript-eslint/no-misused-promises": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/unbound-method": "off",
       "no-console": "off",
+    },
+  },
+  {
+    // The session loads consumers' CommonJS backend initialization modules with require().
+    files: ["src/electron/provider-session.ts"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
   ...eslintBaseConfig,

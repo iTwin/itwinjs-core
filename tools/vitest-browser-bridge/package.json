@@ -36,22 +36,22 @@
   "scripts": {
     "build": "rimraf lib && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
     "clean": "rimraf lib",
-    "cover": "npm run -s test",
+    "cover": "npm run -s test:unit && npm run -s test:electron-provider:built",
     "docs": "",
     "lint": "tsc -p tsconfig.eslint.json && eslint \"./src/**/*.{ts,mts}\"",
-    "test": "npm run -s build && npm run -s test:unit && npm run -s test:electron-provider:built",
+    "test": "npm run -s test:unit && npm run -s test:electron-provider:built",
     "test:unit": "vitest run --config src/test/vitest.config.mts",
     "test:electron-provider": "npm run -s build && npm run -s test:electron-provider:built",
     "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts && vitest run --config src/test/vitest.electron-startup.config.mts"
   },
   "dependencies": {
-    "@vitest/browser": "^4.1.10",
+    "@vitest/browser": "catalog:testing",
     "electron": "catalog:electron"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
-    "@opentelemetry/api": "1.0.4",
+    "@opentelemetry/api": "1.9.1",
     "@types/node": "catalog:build",
     "eslint": "catalog:linting",
     "rimraf": "catalog:build",

@@ -23,8 +23,16 @@ export interface ElectronProviderOptions {
   readonly backendInitModule?: string;
   /** Absolute path to an optional consumer preload module. */
   readonly preloadModule?: string;
+  /** Enable the Electron renderer's loopback debugging endpoint on this port. Disabled by default. */
+  readonly remoteDebuggingPort?: number;
+  /** Milliseconds to wait for the provider session to become ready. Use 0 to disable the timeout. */
+  readonly startupTimeout?: number;
 }
 
+/** The part of Vitest's `TestProject` the provider reads. `createElectronBrowserProviderOption` passes
+ * Vitest's own project here, so if Vitest renames or retypes these fields the package stops compiling
+ * instead of drifting silently.
+ */
 interface ElectronProject {
   readonly config: {
     readonly root: string;
@@ -53,7 +61,9 @@ const FORCE_KILL_TIMEOUT = 1_000;
 
 function cleanupCacheDir(cacheDir: string): void {
   try {
-    fs.rmSync(cacheDir, { recursive: true, force: true });
+    // On Windows, Chromium helpers can hold the profile open for a moment after the main process
+    // exits. Retry instead of leaving the directory behind in %TEMP%.
+    fs.rmSync(cacheDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   } catch {
     // Teardown is best effort after the child process has gone away.
   }
@@ -162,9 +172,11 @@ class ElectronSession {
           throw new Error(`Electron provider session ${this._configuration.sessionId} exited before ready: code=${code ?? "none"}, signal=${signal ?? "none"}`);
         }),
         new Promise<never>((_resolve, reject) => {
-          timeout = setTimeout(() => reject(new Error(
-            `Timed out after ${timeoutMs}ms waiting for Electron provider session ${this._configuration.sessionId} to load ${this._configuration.url}`,
-          )), timeoutMs);
+          if (timeoutMs > 0) {
+            timeout = setTimeout(() => reject(new Error(
+              `Timed out after ${timeoutMs}ms waiting for Electron provider session ${this._configuration.sessionId} to load ${this._configuration.url}`,
+            )), timeoutMs);
+          }
         }),
       ]);
     } finally {
@@ -280,6 +292,8 @@ export class ElectronBrowserProvider {
   }
 
   private async _openPage(sessionId: string, url: string): Promise<void> {
+    // Vitest opens one page per browser worker and runs every test file in it, so with parallelism
+    // disabled this starts one Electron process per test run. A second call replaces the session.
     if (this._session !== undefined)
       await this._closeCurrentSession();
     if (this._closing)
@@ -343,6 +357,9 @@ export function createElectronBrowserProviderOption(
     name: "electron",
     supportedBrowser: ["electron"],
     options,
-    providerFactory: (project) => new ElectronBrowserProvider(project, options, sessionEntryPath),
+    providerFactory: (project) => new ElectronBrowserProvider(project, options, sessionEntryPath, {
+      electronArgs: options.remoteDebuggingPort === undefined ? [] : [`--remote-debugging-port=${options.remoteDebuggingPort}`],
+      startupTimeout: options.startupTimeout,
+    }),
   });
 }
