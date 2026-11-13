@@ -8,6 +8,7 @@ publish: false
   - [Frontend](#frontend)
     - [Linked iModels](#linked-imodels)
     - [Category and model loading performance](#category-and-model-loading-performance)
+    - [Display customization compatibility](#display-customization-compatibility)
     - [ViewState property updates](#viewstate-property-updates)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
@@ -21,6 +22,11 @@ publish: false
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
+  - [Breaking changes](#breaking-changes)
+    - [View-owned visibility state](#view-owned-visibility-state)
+    - [Viewport feature override provider lifetime](#viewport-feature-override-provider-lifetime)
+    - [TileTreeReference transform hook removal](#tiletreereference-transform-hook-removal)
+    - [Always-present viewport visibility sets](#always-present-viewport-visibility-sets)
 
 ## Frontend
 
@@ -30,11 +36,19 @@ Spatial views can display linked iModels, each with its own visibility, display 
 
 ### Category and model loading performance
 
-Category and model selector changes now coalesce metadata loads at the end of the current synchronous task. Category loads use the viewport's subcategory queue, and model loads wait for earlier loads on the same display reference. This avoids duplicate requests when enabling many categories or models, including those in linked iModels.
+Category and model selector changes now coalesce metadata loads at the end of the current synchronous task. Category loads use the viewport's subcategory queue, and model loads wait for earlier loads on the same display reference. This avoids duplicate requests when enabling many categories or models, including those in linked iModels. Explicit `addAndLoadViewedModels` calls retain their requested model IDs even if visibility changes before loading finishes. Unlinking a reference cancels its pending category work so it cannot block completion of the remaining scene.
 
 If your code needs model metadata after changing a selector, await [SpatialIModelDisplayReference.addAndLoadViewedModels]($frontend) instead of assuming that the selector change starts a request immediately. To wait for category metadata and tiles, await [Viewport.waitForSceneCompletion]($frontend).
 
 Appearance-only changes to the primary iModel, including feature override providers and schedule-script visibility or color changes, no longer rebuild the scene unless shadows or sheet views require it. Linked references retain their own branch overrides. Primary feature override providers run once per override update, and their transparency overrides take precedence over plan-projection transparency. An exclusive, empty always-drawn set now hides all primary elements consistently.
+
+### Display customization compatibility
+
+Legacy [EmphasizeElements]($frontend) operations continue to call overridable instance methods, including selected-element operations, override-key creation, serialization, and appearance accessors. Primary symbology honors overrides of `ViewState.getSubCategoryOverride` and `DisplayStyleState.getSubCategoryOverride` for visibility and appearance.
+
+Plain element IDs in [ReadPixelsArgs.excludedElements]($frontend) exclude geometry from the primary iModel, including sheet and section-drawing attachment references. Reference-qualified exclusions remain specific to that reference and do not affect other references displaying the same iModel. Neither form excludes unrelated iModels.
+
+Primary references subscribe to shared category and model selectors only while attached to a viewport. Detaching removes those subscriptions; reattaching reloads selector-derived state, including changes made while detached.
 
 ### ViewState property updates
 
@@ -189,3 +203,29 @@ Viewport-level APIs for model and category display overrides, viewed models, and
 ### Graphic branch iModel attribution
 
 The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
+
+## Breaking changes
+
+### View-owned visibility state
+
+Never-drawn and always-drawn elements, the exclusive always-drawn flag, and per-model category visibility now belong to a view's primary [IModelDisplayReference]($frontend), rather than its viewport. Disposing a viewport does not clear them. Opening the same `ViewState` object in a new viewport retains its hidden or isolated elements and category overrides. This affects applications that cache and reuse views, even if they never link iModels.
+
+To start with clean visibility when reusing a view, clear its primary reference's `neverDrawnElements` and `alwaysDrawnElements`, set `isAlwaysDrawnExclusive` to `false`, and call `perModelCategoryVisibility.clearOverrides()`. When changing between views of the same iModel in an existing viewport, the viewport still transfers its previous view's visibility state to the replacement.
+
+### Viewport feature override provider lifetime
+
+Viewport-level [FeatureOverrideProvider]($frontend)s, including [EmphasizeElements]($frontend), remain registered when changing views within the same [IModelConnection]($frontend), but are removed when the primary connection changes. Previously, they stayed registered across connection changes. This prevents element IDs from the previous iModel from overriding unrelated elements in the new iModel.
+
+Applications that register a provider once and reuse a viewport for multiple iModels must register the appropriate provider again after `changeView` switches connections. Recreate any connection-specific IDs and emphasis state before registering it. For state that belongs to a particular display reference, use [IModelDisplayReferenceFeatureOverrideProvider]($frontend) instead.
+
+### TileTreeReference transform hook removal
+
+The beta `TileTreeReference.getTransformFromIModel` method was removed. Remove overrides of this method from custom tile-tree references, including those supplied by [TiledGraphicsProvider]($frontend), to avoid TypeScript error TS4113.
+
+Feature attribution and the transform from an iModel into the parent view now come from the [IModelDisplayReference]($frontend) associated with [SceneContext.iModelRef]($frontend) or [GraphicBranchOptions.iModelRef]($frontend), including its `linearTransformToParent`. There is no direct replacement for the removed attribution hook. The protected `TileTreeReference.computeTransform` method still controls a tile tree's drawing location; it does not replace reference attribution.
+
+### Always-present viewport visibility sets
+
+The deprecated `Viewport.neverDrawn` and `Viewport.alwaysDrawn` getters now always return the primary reference's sets, including when those sets are empty. They no longer return `undefined` before the first assignment. Replace truthiness checks such as `if (viewport.neverDrawn)` with a size check, preferably `if (viewport.primaryIModelRef.neverDrawnElements.size > 0)`, and do the same for always-drawn elements.
+
+`EmphasizeElements.getNeverDrawnElements` and `getAlwaysDrawnElements` continue to return `undefined` for empty sets. Serialization continues to omit the corresponding JSON properties.

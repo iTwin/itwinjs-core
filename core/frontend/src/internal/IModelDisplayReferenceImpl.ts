@@ -10,6 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
+import { _backingView } from "../common/internal/Symbols";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
@@ -98,7 +99,7 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
   if (!app)
     return false; // category not enabled or not loaded
 
-  const curOvr = ref.subCategoryOverrides.get(id);
+  const curOvr = ref === ref.parent.primary ? ref.parent[_backingView].getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
   const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
   if (isAlreadyVisible === visible)
     return false;
@@ -120,7 +121,7 @@ export function getSubCategoryAppearance(ref: IModelDisplayReference, id: Id64St
 }
 
 const scheduledCategoryLoads = new WeakSet<IModelDisplayReference>();
-const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, Promise<void>>();
+const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, { promise: Promise<void>, explicitIds: Set<Id64String> }>();
 const pendingModelLoads = new WeakMap<SpatialIModelDisplayReference, Promise<void>>();
 
 export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void {
@@ -130,33 +131,48 @@ export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void 
   scheduledCategoryLoads.add(ref);
   // Coalesce selector notifications and wait behind changeCategoryDisplay's own queued request.
   queueMicrotask(() => {
-    scheduledCategoryLoads.delete(ref);
+    if (!scheduledCategoryLoads.delete(ref))
+      return; // Unlinked before the microtask ran.
+
     ref.parent.subcategories.push(ref.iModel.subcategories, ref.viewedCategories, (anyLoaded) => {
-      if (anyLoaded) {
-        ref.invalidateSymbologyOverrides();
+      // A concurrent category-info load can populate the cache before this queued request starts.
+      ref.invalidateSymbologyOverrides();
+      if (anyLoaded)
         ref.onViewedCategoriesLoaded.raiseEvent();
-      }
     });
   });
 }
 
+export function cancelViewedCategoriesLoad(ref: IModelDisplayReference): void {
+  scheduledCategoryLoads.delete(ref);
+  ref.parent.subcategories.cancel(ref.iModel.subcategories);
+}
+
 // Return the shared promise itself, including its rejection handler for fire-and-forget selector listeners.
 // eslint-disable-next-line @typescript-eslint/promise-function-async
-export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference): Promise<void> {
+export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, modelIds?: Iterable<Id64String>): Promise<void> {
   const scheduled = scheduledModelLoads.get(ref);
-  if (scheduled)
-    return scheduled;
+  if (scheduled) {
+    for (const id of modelIds ?? [])
+      scheduled.explicitIds.add(id);
+    return scheduled.promise;
+  }
 
+  const explicitIds = new Set(modelIds);
   const previous = pendingModelLoads.get(ref);
   const load = (async () => {
     // Defer synchronous bursts, and serialize later bursts behind the current request so loaded Ids aren't re-requested.
     await previous?.catch(() => {});
     scheduledModelLoads.delete(ref);
-    await ref.iModel.models.load(ref.viewedModels);
+    // Explicit requests must finish even if their models are hidden before this batch is dispatched.
+    const ids = new Set(ref.viewedModels);
+    for (const id of explicitIds)
+      ids.add(id);
+    await ref.iModel.models.load(ids);
     ref.onViewedModelsLoaded.raiseEvent();
   })();
 
-  scheduledModelLoads.set(ref, load);
+  scheduledModelLoads.set(ref, { promise: load, explicitIds });
   pendingModelLoads.set(ref, load);
   const complete = () => {
     if (pendingModelLoads.get(ref) === load)
@@ -203,5 +219,5 @@ export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference,
     return;
 
   // Reuse the selector listener's load. Also schedule on retries, when the Ids are already in the selector.
-  await scheduleViewedModelsLoad(ref);
+  await scheduleViewedModelsLoad(ref, unloaded);
 }

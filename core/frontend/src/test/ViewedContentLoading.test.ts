@@ -25,6 +25,44 @@ describe("Viewed content loading", () => {
   afterAll(async () => IModelApp.shutdown());
   afterEach(() => vi.restoreAllMocks());
 
+  for (const phase of ["scheduled", "in flight", "queued"] as const) {
+    it(`does not wait for an unlinked reference's ${phase} category work`, async () => {
+      using vp = openBlankViewport();
+      const other = createBlankConnection();
+      const gate = deferred();
+      const primaryGate = deferred();
+      try {
+        const refs = vp.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected spatial references");
+        await vi.waitFor(() => expect(refs.primary.isLoadingComplete).toBe(true));
+        vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
+        const query = vi.spyOn(other, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+        if (phase === "queued") {
+          vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+          vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await primaryGate.promise; return []; });
+          refs.primary.viewedCategories.add("0x111");
+          await Promise.resolve();
+        }
+        const ref = refs.link({ iModel: other, viewedCategories: ["0xabc"] });
+        if (phase !== "scheduled")
+          await Promise.resolve();
+        refs.unlink(ref);
+        await Promise.resolve();
+        primaryGate.resolve();
+        await vi.waitFor(() => expect(refs.primary.isLoadingComplete).toBe(true));
+        expect([...refs.linked]).toHaveLength(0);
+        expect(vp.areAllTileTreesLoaded).toBe(true);
+        expect(refs.subcategories.isEmpty).toBe(true);
+        expect(query).toHaveBeenCalledTimes(phase === "in flight" ? 1 : 0);
+      } finally {
+        primaryGate.resolve();
+        gate.resolve();
+        other.closeSync();
+      }
+    });
+  }
+
   for (const linked of [false, true]) {
     describe(linked ? "linked reference" : "primary reference", () => {
       for (const count of [10, 100, 500]) {
@@ -82,6 +120,74 @@ describe("Viewed content loading", () => {
             }
           });
         }
+      }
+
+      it("refreshes overrides when a concurrent category-info load wins the deferred load", async () => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          vp.renderFrame();
+          vi.spyOn(ref.iModel, "isClosed", "get").mockReturnValue(false);
+          const query = vi.spyOn(ref.iModel, "querySubCategories").mockResolvedValue([{ parentId: "0xabc", id: "0xabd", appearance: {} }]);
+          const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+          const info = ref.iModel.categories.getCategoryInfo(["0xabc"]);
+          await Promise.resolve();
+          ref.viewedCategories.add("0xabc");
+          const before = ref.getSymbologyOverrides();
+          vp.renderFrame();
+          expect(before.isSubCategoryIdVisible("0xabd")).toBe(false);
+          await info;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          vp.renderFrame();
+          expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0xabd")).toBe(true);
+          if (!linked)
+            expect(applied.mock.calls.at(-1)?.[0].isSubCategoryIdVisible("0xabd")).toBe(true);
+          expect(query).toHaveBeenCalledOnce();
+        } finally {
+          other.closeSync();
+        }
+      });
+
+      for (const queued of [false, true]) {
+        it(`loads explicitly requested models removed ${queued ? "while queued" : "before dispatch"}`, async () => {
+          using vp = openBlankViewport();
+          const other = createBlankConnection();
+          const gate = deferred();
+          try {
+            const refs = vp.iModelRefs;
+            if (!refs.isSpatial)
+              throw new Error("Expected spatial references");
+            const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+            await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+            const getProps = vi.spyOn(ref.iModel.models, "getProps").mockImplementation(async (ids) => {
+              const snapshot = [...Id64.iterable(ids)];
+              await gate.promise;
+              return snapshot.map((id) => ({ id, classFullName: "BisCore:PhysicalModel", modeledElement: { id } }));
+            });
+            let first: Promise<void> | undefined;
+            if (queued) {
+              first = ref.addAndLoadViewedModels(["0x123"]);
+              await vi.waitFor(() => expect(getProps).toHaveBeenCalledOnce());
+            }
+            const load = ref.addAndLoadViewedModels(["0x124"]);
+            ref.viewedModels.delete("0x124");
+            gate.resolve();
+            await first;
+            await load;
+            expect(ref.iModel.models.getLoaded("0x124")).toBeDefined();
+            expect(ref.viewedModels.has("0x124")).toBe(false);
+            expect(getProps).toHaveBeenCalledTimes(queued ? 2 : 1);
+            expect(getProps.mock.calls.flatMap(([ids]) => [...Id64.iterable(ids)])).toEqual(queued ? ["0x123", "0x124"] : ["0x124"]);
+          } finally {
+            gate.resolve();
+            other.closeSync();
+          }
+        });
       }
 
       for (const mode of ["individual toggles", "selector", "add and load"] as const) {

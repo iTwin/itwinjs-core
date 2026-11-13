@@ -287,7 +287,8 @@ export interface ReadPixelsArgs {
   /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
   excludeNonLocatable?: boolean;
   /** Optional elements that should not be drawn, potentially revealing other geometry they would otherwise obscure.
-   * An Id applies only to the primary IModelDisplayReference; a [Id, IModelDisplayReference] pair applies only to that reference.
+   * An Id applies to the primary iModel, including its sheet and section-drawing attachment references.
+   * An [Id, IModelDisplayReference] pair applies only to that reference.
    * @beta
    */
   excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>;
@@ -1700,7 +1701,7 @@ export abstract class Viewport implements Disposable, TileUser {
       ref.isAlwaysDrawnExclusive = false;
 
       this._changeFlags.setAlwaysDrawn();
-      this.invalidateScene();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1714,7 +1715,7 @@ export abstract class Viewport implements Disposable, TileUser {
       neverDrawnElements.clear();
 
       this._changeFlags.setNeverDrawn();
-      this.invalidateScene();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1732,7 +1733,7 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     this._changeFlags.setNeverDrawn();
-    this.invalidateScene();
+    this.maybeInvalidateScene();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1754,7 +1755,7 @@ export abstract class Viewport implements Disposable, TileUser {
     ref.isAlwaysDrawnExclusive = exclusive;
 
     this._changeFlags.setAlwaysDrawn();
-    this.invalidateScene();
+    this.maybeInvalidateScene();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view.
@@ -3030,15 +3031,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
     }
 
-    let exclusions: Array<readonly [Id64String, IModelDisplayReference]> | undefined;
-    if (excludedElements) {
-      exclusions = [];
-      for (const exclusion of excludedElements) {
-        exclusions.push(typeof exclusion === "string" ? [exclusion, this.iModelRefs.primary] : exclusion);
-      }
-    }
-
-    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, exclusions);
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
   }
 
   /** @internal */

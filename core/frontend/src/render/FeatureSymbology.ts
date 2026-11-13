@@ -95,7 +95,7 @@ export namespace FeatureSymbology {
      */
     public initFromView(view: ViewState): void {
       this._initFromView(view);
-      this._initSubCategoryOverrides(view.displayStyle.settings.subCategoryOverrides);
+      this._initSubCategoryOverrides((id) => view.getSubCategoryOverride(id));
     }
 
     /** Initialize these Overrides based on a specific viewport.
@@ -107,6 +107,8 @@ export namespace FeatureSymbology {
 
     /** @internal */
     public initFromIModelDisplayReference(ref: IModelDisplayReference): void {
+      const primaryView = ref === ref.parent.primary ? ref.parent[_backingView] : undefined;
+      const getSubCategoryOverride = (id: Id64String) => primaryView ? primaryView.getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();
 
@@ -138,8 +140,7 @@ export namespace FeatureSymbology {
           if (!app)
             continue; // not loaded
 
-          const ovr = ref.subCategoryOverrides.get(subCategoryId);
-          const invisible = ovr?.invisible ?? app.invisible;
+          const invisible = primaryView ? !primaryView.isSubCategoryVisible(subCategoryId) : (getSubCategoryOverride(subCategoryId)?.invisible ?? app.invisible);
           if (invisible)
             continue;
 
@@ -175,7 +176,7 @@ export namespace FeatureSymbology {
 
       ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
-      this._initSubCategoryOverrides(ref.subCategoryOverrides);
+      this._initSubCategoryOverrides(getSubCategoryOverride);
     }
 
     private _initFromView(view: ViewState): void {
@@ -235,10 +236,10 @@ export namespace FeatureSymbology {
       }
     }
 
-    private _initSubCategoryOverrides(overrides: Map<Id64String, SubCategoryOverride>): void {
+    private _initSubCategoryOverrides(getOverride: (id: Id64String) => SubCategoryOverride | undefined): void {
       const addOverride = (idLo: number, idHi: number) => {
         const subCategoryId = Id64.fromUint32Pair(idLo, idHi);
-        const ovr = overrides.get(subCategoryId);
+        const ovr = getOverride(subCategoryId);
         if (undefined !== ovr) {
           const app = FeatureAppearance.fromSubCategoryOverride(ovr);
           if (app.overridesSymbology)

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated -- Verify the still-supported viewport visibility methods. */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization, FeatureAppearance, PlanProjectionSettings, RenderSchedule, SubCategoryOverride } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -42,6 +43,14 @@ describe("Primary appearance changes", () => {
         () => vp.displayStyle.overrideSubCategory("0x321", SubCategoryOverride.fromJSON({ color: 0xff })),
         () => vp.displayStyle.settings.overrideModelAppearance("0x123", FeatureAppearance.fromJSON({ transparency: 0.5 })),
         () => vp.displayStyle.settings.addExcludedElements("0x456"),
+        () => vp.setNeverDrawn(new Set(["0x123"])),
+        () => vp.setNeverDrawn(ref.neverDrawnElements),
+        () => vp.clearNeverDrawn(),
+        () => vp.setAlwaysDrawn(new Set(["0x123"])),
+        () => vp.setAlwaysDrawn(ref.alwaysDrawnElements),
+        () => vp.clearAlwaysDrawn(),
+        () => ref.isAlwaysDrawnExclusive = true,
+        () => vp.clearAlwaysDrawn(),
       ];
       for (const mutate of mutations) {
         createScene.mockClear();

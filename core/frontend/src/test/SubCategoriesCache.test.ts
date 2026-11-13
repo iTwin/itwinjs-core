@@ -546,6 +546,59 @@ describe("SubCategoriesCache", () => {
     queue[Symbol.dispose]();
   });
 
+  it("cancels a cache's current and queued work without blocking another cache or accepting a late response", async () => {
+    const canceled = createDeferred<SubCategoryResultRow[]>();
+    const remaining = createDeferred<SubCategoryResultRow[]>();
+    const canceledQuery = vi.fn().mockReturnValue(canceled.promise);
+    const remainingQuery = vi.fn().mockReturnValue(remaining.promise);
+    const first = new SubCategoriesCache({ isClosed: false, querySubCategories: canceledQuery } as unknown as IModelConnection);
+    const second = new SubCategoriesCache({ isClosed: false, querySubCategories: remainingQuery } as unknown as IModelConnection);
+    class InspectableQueue extends SubCategoriesCache.Queue {
+      public get currentCallbacks() { return this._current?.funcs; }
+    }
+    using queue = new InspectableQueue();
+    const firstLoaded = vi.fn();
+    const secondLoaded = vi.fn();
+    queue.push(first, ["0x1"], firstLoaded);
+    queue.push(second, ["0x2"], secondLoaded);
+    queue.push(first, ["0x3"], firstLoaded);
+    const callbacks = queue.currentCallbacks;
+    queue.cancel(first);
+    expect(callbacks).toHaveLength(0);
+    expect(remainingQuery).toHaveBeenCalledOnce();
+    expect(queue.isEmpty).toBe(false);
+    canceled.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+    expect(firstLoaded).not.toHaveBeenCalled();
+    expect(first.getSubCategories("0x1")).toBeUndefined();
+    expect(queue.isEmpty).toBe(false);
+    remaining.resolve([{ parentId: "0x2", id: "0x20", appearance: {} }]);
+    await waitForPromises();
+    expect(secondLoaded).toHaveBeenCalledExactlyOnceWith(true);
+    expect(canceledQuery).toHaveBeenCalledOnce();
+    expect(queue.isEmpty).toBe(true);
+  });
+
+  it("does not clear a new request when a completion callback cancels its own cache", async () => {
+    const firstResult = createDeferred<SubCategoryResultRow[]>();
+    const secondResult = createDeferred<SubCategoryResultRow[]>();
+    const first = new SubCategoriesCache({ isClosed: false, querySubCategories: async () => firstResult.promise } as unknown as IModelConnection);
+    const secondQuery = vi.fn().mockReturnValue(secondResult.promise);
+    const second = new SubCategoriesCache({ isClosed: false, querySubCategories: secondQuery } as unknown as IModelConnection);
+    using queue = new SubCategoriesCache.Queue();
+    const secondLoaded = vi.fn();
+    queue.push(first, ["0x1"], () => queue.cancel(first));
+    queue.push(second, ["0x2"], secondLoaded);
+    firstResult.resolve([{ parentId: "0x1", id: "0x10", appearance: {} }]);
+    await waitForPromises();
+    expect(secondQuery).toHaveBeenCalledOnce();
+    expect(queue.isEmpty).toBe(false);
+    secondResult.resolve([{ parentId: "0x2", id: "0x20", appearance: {} }]);
+    await waitForPromises();
+    expect(secondLoaded).toHaveBeenCalledExactlyOnceWith(true);
+    expect(queue.isEmpty).toBe(true);
+  });
+
   it("preserves ordering across pending queue requests on alternating caches", async () => {
     const firstResult = createDeferred<SubCategoryResultRow[]>();
     const primaryQuery = vi.fn()
