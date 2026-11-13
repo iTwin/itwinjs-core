@@ -30,12 +30,18 @@ function serializeCallbackError(reason: unknown): { readonly message: string; re
     if (!isRecord(reason))
       return { message: String(reason) };
     return {
-      message: typeof reason.message === "string" ? reason.message : "Unknown callback error.",
+      message: typeof reason.message === "string" ? reason.message : describeThrownObject(reason),
       ...(typeof reason.stack === "string" ? { stack: reason.stack } : {}),
     };
   } catch {
     return { message: "Unknown callback error." };
   }
+}
+
+// A thrown object without a message, such as `{ code: "FOO" }`, keeps whatever it carries.
+function describeThrownObject(reason: Record<string, unknown>): string {
+  const json = JSON.stringify(reason);
+  return json !== undefined && json !== "{}" ? json : "Unknown callback error.";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -97,10 +103,13 @@ export function unwrapCallbackResponse(response: unknown, source = "backend call
     || (responseError.stack !== undefined && typeof responseError.stack !== "string"))
     throw new Error(`Invalid callback response from the ${source}.`);
 
-  const error = new Error(responseError.message);
-  if (typeof responseError.stack === "string")
-    error.stack = responseError.stack;
-  throw error;
+  if (typeof responseError.stack !== "string")
+    throw new Error(responseError.message);
+
+  // Keep this call site in the stack and attach the backend stack as the cause, which Vitest prints.
+  const cause = new Error(responseError.message);
+  cause.stack = responseError.stack;
+  throw new Error(responseError.message, { cause });
 }
 
 /** Reject values that the HTTP transport cannot send, so a callback behaves the same in every runtime.

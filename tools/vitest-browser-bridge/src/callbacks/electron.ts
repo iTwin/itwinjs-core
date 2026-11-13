@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { dispatchBackendCallback } from "./backend.js";
-import { CALLBACK_CHANNEL } from "./protocol.js";
+import { CALLBACK_CHANNEL, type CallbackResponse } from "./protocol.js";
 
 interface IpcMainCallbackEvent {
   readonly sender: {
@@ -29,7 +29,7 @@ export function installElectronCallbackHandler(
   ipcMain.handle(CALLBACK_CHANNEL, async (event, payload) => {
     if (event.sender.id !== expectedSenderId)
       throw new Error("Callback request came from an unexpected Electron browser window.");
-    return dispatchBackendCallback(payload);
+    return ensureCloneable(await dispatchBackendCallback(payload));
   });
 
   return () => {
@@ -38,4 +38,19 @@ export function installElectronCallbackHandler(
     disposed = true;
     ipcMain.removeHandler(CALLBACK_CHANNEL);
   };
+}
+
+/** Electron copies IPC replies with the structured clone algorithm. Check the result here so a value it
+ * cannot copy, such as a function, becomes an ordinary callback failure instead of an opaque IPC error.
+ */
+function ensureCloneable(response: CallbackResponse): CallbackResponse {
+  if (!response.ok)
+    return response;
+  try {
+    structuredClone(response.value);
+    return response;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return { ok: false, error: { message: `Backend callback result cannot be sent over Electron IPC: ${reason}` } };
+  }
 }

@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it, vi } from "vitest";
+// Imported by package name on purpose, unlike the rest of the package: this smoke test checks the
+// built package as consumers load it, through its exports map.
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 
 describe("Vitest Electron BrowserProvider", () => {
