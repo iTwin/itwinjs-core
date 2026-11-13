@@ -52,9 +52,10 @@ In order to run the integration tests they need to have a valid OIDC client id w
 Once all the required environment variables are setup, to run the integration tests:
 
 1. Install dependencies: `rush install` (from the repository root)
-2. Clean output: `rushx clean`
-3. Build source: `rushx build`
-4. Run tests: `rushx test:integration`
+2. Change to this package's directory: `cd full-stack-tests/rpc-interface`
+3. Clean output: `rushx clean`
+4. Build source: `rushx build`
+5. Run tests: `rushx test:integration`
 
 ## Development instructions
 
