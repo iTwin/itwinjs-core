@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Size planar clip mask and classifier textures to the viewport instead of always using the maximum texture size.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

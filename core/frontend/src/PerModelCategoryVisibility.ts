@@ -6,10 +6,11 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 
 /** Per-model category visibility permits the visibility of categories within a [[Viewport]] displaying a [[SpatialViewState]] to be overridden in
  * the context of individual [[GeometricModelState]]s.
@@ -49,16 +50,33 @@ export namespace PerModelCategoryVisibility {
     getOverride(modelId: Id64String, categoryId: Id64String): Override;
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
-    /** Changes multiple overrides, given an array of overrides *
+    /**
+     * Changes multiple overrides, given an array of overrides
      * @beta
      */
-    setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+    setOverrides(perModelCategoryVisibility: Props[]): Promise<void>;
+    /**
+     * Changes multiple overrides, given an array of overrides
+     * @beta
+     * @deprecated The overrides are bound to a single iModel. To target another iModel, use its [[IModelDisplayReference.perModelCategoryVisibility]].
+     */
+    setOverrides(perModelCategoryVisibility: Props[], iModel: IModelConnection | undefined): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */
     [Symbol.iterator]: () => Iterator<OverrideEntry>;
     /** Populate the symbology overrides based on the per-model category visibility. */
     addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+    readonly onChanged: BeEvent<() => void>;
+  }
+
+  export namespace Overrides {
+    /** Instantiate a [[PerModelCategoryVisibility.Overrides]].
+     * @internal nobody else needs this.
+     */
+    export function create(args: CreateOverridesArgs): Overrides {
+      return new PerModelCategoryVisibilityOverrides(args);
+    }
   }
 
   /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
@@ -74,8 +92,28 @@ export namespace PerModelCategoryVisibility {
     visOverride: PerModelCategoryVisibility.Override;
   }
 
+  /** Arguments supplied to [[PerModelCategoryVisibility.Overrides.create]].
+   * @internal
+   */
+  export interface CreateOverridesArgs {
+    /** The iModel whose models and categories will be used. */
+    iModel: IModelConnection;
+    /** ###TODO see if we can get rid of this. */
+    queue: SubCategoriesCache.Queue;
+  }
+
+  /** Create a standalone set of overrides associated with the specified viewport's iModel.
+   * @deprecated The returned object is not consulted when rendering - to query or change the per-model category
+   * visibility actually applied to an iModel displayed in a viewport, use [[IModelDisplayReference.perModelCategoryVisibility]]
+   * (e.g., via `viewport.iModelRefs.primary`).
+   */
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
-    return new PerModelCategoryVisibilityOverrides(viewport);
+    const pmcv = new PerModelCategoryVisibilityOverrides({
+      iModel: viewport.iModel,
+      queue: viewport.view.iModelRefs.subcategories,
+    });
+    pmcv.onChanged.addListener(() => viewport.setViewedCategoriesPerModelChanged());
+    return pmcv;
   }
 }
 type Writeable<T extends object> = { -readonly [P in keyof T]: T[P] };
@@ -88,12 +126,15 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
   private readonly _map = new Map<Id64String, ModelEntry>();
   /** Flat set of all override entries, providing O(1) iteration via [Symbol.iterator]. Kept in sync with `_map`. */
   private readonly _set = new Set<WriteableOverrideEntry>();
-  private readonly _vp: Viewport;
+  private readonly _iModel: IModelConnection;
+  private readonly _queue: SubCategoriesCache.Queue;
 
-  public constructor(vp: Viewport) {
-    this._vp = vp;
+  public readonly onChanged = new BeEvent<() => void>();
+
+  public constructor(args: PerModelCategoryVisibility.CreateOverridesArgs) {
+    this._iModel = args.iModel;
+    this._queue = args.queue;
   }
-
 
   public [Symbol.iterator](): Iterator<PerModelCategoryVisibility.OverrideEntry> {
     return this._set[Symbol.iterator]();
@@ -168,15 +209,13 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
    * set the overrides for multiple perModelCategoryVisibility props, loading categoryIds from the iModel if necessary.
    * @see [[PerModelCategoryVisibility]]
    * @param perModelCategoryVisibility array of model category visibility overrides @see [[PerModelCategoryVisibility.Props]]
-   * @param iModel Optional param iModel. If no iModel is provided, then the iModel associated with the viewport (used to construct this class) is used.
-   * This optional iModel param is useful for apps which may show multiple iModels at once. Passing in an iModel ensures that the subcategories cache for the provided iModel
-   * is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
+   * @param iModel Deprecated. The iModel whose subcategories are loaded; defaults to the iModel these overrides are bound to.
    * @returns a promise that resolves once the overrides have been applied.
    */
   public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], iModel?: IModelConnection): Promise<void> {
     let anyChanged = false;
     const catIdsToLoad: string[] = [];
-    const iModelToUse = iModel ? iModel : this._vp.iModel;
+    const iModelToUse = iModel ? iModel : this._iModel;
     for (const override of perModelCategoryVisibility) {
       // The caller may pass a single categoryId as a string, if we don't convert this to an array we will iterate
       // over each individual character of that string, which is not the desired behavior.
@@ -185,9 +224,9 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
         anyChanged = true;
     }
     if (anyChanged) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
       if (catIdsToLoad.length !== 0) {
-        this._vp.subcategories.push(iModelToUse.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._queue.push(iModelToUse.subcategories, catIdsToLoad, () => this.onChanged.raiseEvent());
       }
     }
   }
@@ -201,11 +240,11 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
     }
 
     if (changed) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
 
       if (override !== PerModelCategoryVisibility.Override.None) {
         // Ensure subcategories loaded.
-        this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._queue.push(this._iModel.subcategories, categoryIds, () => this.onChanged.raiseEvent());
       }
     }
   }
@@ -215,7 +254,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       if (this._map.size > 0) {
         this._map.clear();
         this._set.clear();
-        this._vp.setViewedCategoriesPerModelChanged();
+        this.onChanged.raiseEvent();
       }
       return;
     }
@@ -233,12 +272,12 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       this._map.delete(modelId);
     }
     if (changed) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
     }
   }
 
   public addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    const cache = this._vp.iModel.subcategories;
+    const cache = this._iModel.subcategories;
 
     for (const ovr of this._set) {
       const subcats = cache.getSubCategories(ovr.categoryId);
