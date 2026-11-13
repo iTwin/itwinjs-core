@@ -81,6 +81,10 @@ describe("callback transport", () => {
     registerBackendCallback("nullPrototypeFailure", () => {
       throw Object.create(null);
     });
+    registerBackendCallback("codeFailure", () => {
+      const reason: unknown = { code: "FOO" };
+      throw reason;
+    });
 
     await expect(dispatchBackendCallback(request("syncFailure", [])))
       .resolves.toMatchObject({ ok: false, error: { message: "sync failure" } });
@@ -88,6 +92,30 @@ describe("callback transport", () => {
       .resolves.toMatchObject({ ok: false, error: { message: "async failure" } });
     await expect(dispatchBackendCallback(request("nullPrototypeFailure", [])))
       .resolves.toEqual({ ok: false, error: { message: "Unknown callback error." } });
+    await expect(dispatchBackendCallback(request("codeFailure", [])))
+      .resolves.toEqual({ ok: false, error: { message: '{"code":"FOO"}' } });
+  });
+
+  it("rejects a second registration of the same callback name", () => {
+    registerBackendCallback("once", () => 1);
+    expect(() => registerBackendCallback("once", () => 2)).toThrow('Backend callback "once" is already registered.');
+  });
+
+  it("keeps the renderer stack and attaches the backend stack as the cause", () => {
+    const backendStack = "Error: backend failure\n    at backendCallback (backend.js:1:1)";
+    let thrown: unknown;
+    try {
+      unwrapCallbackResponse({ ok: false, error: { message: "backend failure", stack: backendStack } });
+    } catch (caught) {
+      thrown = caught;
+    }
+
+    expect(thrown).toBeInstanceOf(Error);
+    const error = thrown as Error;
+    expect(error.message).toBe("backend failure");
+    expect(error.stack).toContain("callbacks.test.ts");
+    expect(error.stack).not.toContain("backend.js");
+    expect((error.cause as Error).stack).toBe(backendStack);
   });
 
   it("requires an explicit value in successful responses at the renderer boundary", () => {
@@ -233,6 +261,10 @@ describe("callback transport", () => {
       .resolves.toEqual({ ok: true, value: "from provider" });
     await expect(handler?.(eventFrom(7), request("echo", ["from another window"])))
       .rejects.toThrow("unexpected Electron browser window");
+
+    registerBackendCallback("function", () => () => 1);
+    await expect(handler?.(eventFrom(42), request("function", [])))
+      .resolves.toMatchObject({ ok: false, error: { message: expect.stringContaining("cannot be sent over Electron IPC") } });
 
     dispose();
     dispose();

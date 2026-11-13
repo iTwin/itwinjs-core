@@ -31,6 +31,15 @@ export default defineConfig({
 });
 ```
 
+`electron()` accepts:
+
+- `backendInitModule`: absolute path to a module loaded in the Electron main process before the window opens.
+- `preloadModule`: absolute path to a preload script for the test window.
+- `remoteDebuggingPort`: starts Electron with `--remote-debugging-port` on this port so a debugger can attach. Off by default.
+- `startupTimeout`: milliseconds to wait for the window to load. Defaults to 30,000; `0` waits indefinitely, for debugging startup.
+
+The Electron executable, extra command-line switches and the shutdown timeout are internal test hooks, not options. Electron always comes from this package's dependency, and no consumer needs the others yet; add an option when one does.
+
 The provider is registered through Vitest's `defineBrowserProvider` factory and conforms to its `BrowserProvider` contract. It does not collect tests, rewrite imports, install globals, use `require.cache`, implement custom sharding or resource monitoring, or aggregate results. Parallel sessions are disabled until concurrent-session behavior has dedicated coverage.
 
 The optional backend initialization module is loaded once for its module-evaluation side effects; exported functions are not invoked as implicit initializers.
@@ -50,7 +59,7 @@ The callback surfaces are deliberately separate so browser-only code does not im
 - `@itwin/vitest-browser-bridge/callbacks/http` holds the HTTP endpoint handler, the per-run token helpers, and an explicit invoker for backends that do not follow the shared port layout.
 - `@itwin/vitest-browser-bridge/electron/frame-routing` provides an internal backend hook for routing iTwin RPC messages to Vitest's tester iframe.
 
-The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled transport errors. Every successful response carries a `value`, which may be `undefined`. Because JSON cannot carry `undefined`, the HTTP transport marks an `undefined` result explicitly. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
+The Electron IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, asynchronous rejections, and results that Electron cannot copy between processes become explicit callback failures without surfacing as unhandled transport errors. A failure keeps the test's stack and carries the backend stack as its `cause`. Each callback name can be registered once per backend process; registering it again throws. Every successful response carries a `value`, which may be `undefined`. Because JSON cannot carry `undefined`, the HTTP transport marks an `undefined` result explicitly. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
 
 ```ts
 // Backend init module
