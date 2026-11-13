@@ -23,11 +23,11 @@ SELECT
     'relativeError', [koq].[RelativeError],
     'persistenceUnit', [koq].[PersistenceUnit]
     ${singleSchema ? `
-    ,'presentationUnits', (
+    ,'presentationUnits', json((
         SELECT json_group_array(js."value")
         FROM [meta].[KindOfQuantityDef] [koq1], json1.json_each([PresentationUnits]) js
         WHERE [koq1].[ECInstanceId] = [koq].[ECInstanceId]
-    ) `: ""}
+    )) `: ""}
   ) as [item]
 FROM
   [meta].[KindOfQuantityDef] [koq]
@@ -75,7 +75,7 @@ SELECT
     'description', [ed].[Description],
     'type', IIF([ed].[Type] = 1281, 'int', IIF([ed].[Type] = 2305, 'string', null)),
     'isStrict', IIF([ed].[IsStrict] = 1, json('true'), json('false')),
-    'enumerators', (
+    'enumerators', json((
       SELECT json_group_array(json(json_object(
         'name', json_extract(js."value", '$.Name'),
         'value', IFNULL(json_extract(js."value", '$.StringValue'), (json_extract(js."value", '$.IntValue'))),
@@ -84,7 +84,7 @@ SELECT
       )))
       FROM [meta].[ECEnumerationDef] [enumerationDef], json1.json_each([EnumValues]) js
       WHERE [enumerationDef].[ECInstanceId] = [ed].[ECInstanceId]
-    )
+    ))
   ) as [item]
 FROM
   [meta].[ECEnumerationDef] [ed]
@@ -268,12 +268,12 @@ SELECT
     'stationSeparator', json_extract([fd].[NumericSpec], '$.stationSeparator'),
     'formatTraits', json_extract([fd].[NumericSpec], '$.formatTraits')
     ${singleSchema ? `
-    ,'composite', (
+    ,'composite', json((
       SELECT
         json_object(
           'spacer', json_extract([fd1].[CompositeSpec], '$.spacer'),
           'includeZero', json(IIF(json_extract([fd1].[CompositeSpec], '$.includeZero') = 1, 'true', IIF(json_extract([fd1].[CompositeSpec], '$.includeZero') = 0, 'false', null))),
-          'units', (
+          'units', json((
             SELECT json_group_array(json(json_object(
               'name', CONCAT([sd].[Name], '.', [ud].[Name]),
               'label', [fud].[Label]
@@ -283,11 +283,11 @@ SELECT
               LEFT JOIN [meta].[UnitDef] [ud] ON [ud].[ECInstanceId] = [fud].[Unit].[Id]
               INNER JOIN [meta].[ECSchemaDef] [sd] ON [sd].[ECInstanceId] = [ud].[Schema].[Id]
             WHERE [fd2].[ECInstanceId] = [fd1].[ECInstanceId]
-          )
+          ))
         )
       FROM [meta].[FormatDef] [fd1]
       WHERE [fd1].[ECInstanceId]= [fd].[ECInstanceId] AND [fd1].[CompositeSpec] IS NOT NULL
-    )` : ""}
+    ))` : ""}
 ) AS item
 FROM
   [meta].[FormatDef] [fd]

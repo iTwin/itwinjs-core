@@ -74,7 +74,7 @@ const customAttributeQuery = `
       'label', [class].[DisplayLabel],
       'description', [class].[Description],
       'appliesTo', [class].[CustomAttributeContainerType],
-      'baseClasses', (
+      'baseClasses', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -90,7 +90,7 @@ const customAttributeQuery = `
         INNER JOIN [meta].[ClassHasAllBaseClasses] [baseClassMap]
           ON [baseClassMap].[TargetECInstanceId] = [baseclass].[ECInstanceId]
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   WHERE [class].[Type] = 3
@@ -105,7 +105,7 @@ const structQuery = `
       'modifier', ${modifier("class")},
       'label', [class].[DisplayLabel],
       'description', [class].[Description],
-      'baseClasses', (
+      'baseClasses', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -120,7 +120,7 @@ const structQuery = `
         INNER JOIN [meta].[ClassHasAllBaseClasses] [baseClassMap]
           ON [baseClassMap].[TargetECInstanceId] = [baseclass].[ECInstanceId]
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   WHERE [class].[Type] = 2
@@ -137,7 +137,7 @@ const relationshipQuery = `
       'description', [class].[Description],
       'strength', ${strength("class")},
       'strengthDirection', ${strengthDirection("class")},
-      'baseClasses', (
+      'baseClasses', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -154,7 +154,7 @@ const relationshipQuery = `
         INNER JOIN [meta].[ClassHasAllBaseClasses] [baseClassMap]
           ON [baseClassMap].[TargetECInstanceId] = [baseclass].[ECInstanceId]
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   WHERE [class].[Type] = 1
@@ -169,7 +169,7 @@ const entityQuery = `
       'modifier', ${modifier("class")},
       'label', [class].[DisplayLabel],
       'description', [class].[Description],
-      'baseClasses', (
+      'baseClasses', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -186,8 +186,8 @@ const entityQuery = `
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
           AND NOT EXISTS(SELECT 1 FROM [meta].[ClassCustomAttribute] [ca] WHERE [baseClass].[ECInstanceId] = [ca].[Class].[Id]
             AND [ca].[CustomAttributeClass].[Id] Is ([CoreCA].[IsMixin]))
-        ),
-      'mixins', (
+        )),
+      'mixins', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -201,7 +201,7 @@ const entityQuery = `
               FROM [AppliesToCTE] [atCTE]
               WHERE [atCTE].[AppliesToId] = [baseClass].[ECInstanceId]
             ),
-            'baseClasses', (
+            'baseClasses', json((
               SELECT
                 json_group_array(json(json_object(
                   'schema', ec_classname([mixinBaseClass].[ECInstanceId], 's'),
@@ -221,7 +221,7 @@ const entityQuery = `
               INNER JOIN [meta].[ClassHasAllBaseClasses] [mixinBaseClassMap]
                 ON [mixinBaseClassMap].[TargetECInstanceId] = [mixinBaseClass].[ECInstanceId]
               WHERE [mixinBaseClassMap].[SourceECInstanceId] = [baseClass].[ECInstanceId]
-            )
+            ))
           )))
         FROM
           [meta].[ECClassDef] [baseClass]
@@ -230,7 +230,7 @@ const entityQuery = `
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
           AND EXISTS(SELECT 1 FROM [meta].[ClassCustomAttribute] [ca] WHERE [baseClass].[ECInstanceId] = [ca].[Class].[Id]
             AND [ca].[CustomAttributeClass].[Id] Is ([CoreCA].[IsMixin]))
-          )
+          ))
     ) AS [item]
   FROM [meta].[ECClassDef] [class]
   WHERE [class].[Type] = 0
@@ -252,7 +252,7 @@ const mixinQuery = `
         FROM [AppliesToCTE] [atCTE]
         WHERE [atCTE].[AppliesToId] = [class].[ECInstanceId]
       ),
-      'baseClasses', (
+      'baseClasses', json((
         SELECT
           json_group_array(json(json_object(
             'schema', ec_classname([baseClass].[ECInstanceId], 's'),
@@ -272,7 +272,7 @@ const mixinQuery = `
         INNER JOIN [meta].[ClassHasAllBaseClasses] [baseClassMap]
           ON [baseClassMap].[TargetECInstanceId] = [baseclass].[ECInstanceId]
         WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
-      )
+      ))
     ) AS [item]
     FROM [meta].[ECClassDef] [class]
     WHERE [class].[Type] = 0 AND EXISTS (SELECT 1 FROM [meta].[ClassCustomAttribute] [ca] WHERE [class].[ECInstanceId] = [ca].[Class].[Id]
