@@ -820,6 +820,7 @@ export enum BulkElementAspectFailureReason {
     AmbiguousAspect = 6,
     AspectNotFound = 5,
     ClassNotFound = 2,
+    ConflictingAspects = 7,
     ElementNotFound = 4,
     InvalidId = 1,
     InvalidProps = 0,

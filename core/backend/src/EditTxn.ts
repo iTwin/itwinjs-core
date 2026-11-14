@@ -131,6 +131,10 @@ export enum BulkElementAspectFailureReason {
    * that class or its subclasses. Give the class of the aspect instead.
    */
   AmbiguousAspect = 6,
+  /** [[EditTxn.insertAspects]] only: the unique aspects to insert on the same element include classes that differ but are related by
+   * inheritance, so writing one could replace the other. Insert them in separate calls, in the intended order.
+   */
+  ConflictingAspects = 7,
 }
 
 /**

@@ -41,7 +41,7 @@ txn.deleteAspects([inserted.ids[0]]);
 ```
 
 - `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`. `classFullName` may name a base class of the aspect's class; only the properties of that class are updated, and the others keep their values. Rows that name the same aspect are applied in order.
-- `insertAspects` replaces an existing [ElementUniqueAspect]($backend) of the same class on the same element. If the same element and class appear more than once in a call, the last row wins.
+- `insertAspects` replaces an existing [ElementUniqueAspect]($backend) of the same class on the same element. If the same element and class appear more than once in a call, the last row wins. Unique aspects of the same element whose classes are related by inheritance are rejected with `ConflictingAspects`.
 - `deleteAspects` deletes duplicate ids once. Like [EditTxn.deleteElements]($backend), it ignores ids that do not identify an aspect, such as aspects that were already deleted. It throws an [ITwinError]($bentley) before writing anything if an id is not a well-formed, valid [Id64String]($bentley).
 
 ## Results
@@ -65,6 +65,7 @@ Every row is validated before anything is modified, so `ValidationFailed` always
 | `ElementNotFound` | The owning element does not exist. |
 | `AspectNotFound` | The aspect to update does not exist, is not owned by `element`, or is not of the class named by `classFullName` or a subclass of it. Also returned by `updateAspects` for an aspect class with a native handler, which cannot be updated as a generic aspect (the same limitation as [EditTxn.updateAspect]($backend)). `deleteAspects` ignores ids that do not identify an aspect instead. |
 | `AmbiguousAspect` | `updateAspects` only: a unique aspect row names a base class of the aspect, and the owning element has more than one unique aspect of that class or its subclasses. Name the class of the aspect instead. |
+| `ConflictingAspects` | `insertAspects` only: the unique aspect rows of one owning element name classes that differ but are related by inheritance, e.g. a class and its subclass. Writing one could replace the other, so insert them in separate calls, in the intended order. |
 
 ## Handlers
 
