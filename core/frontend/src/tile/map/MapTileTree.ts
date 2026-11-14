@@ -815,8 +815,8 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const layerTree of this._layerRefHandler.layerTrees) {
-      assert(layerTree instanceof MapLayerTileTreeReference);
-      func(layerTree);
+      if (layerTree)
+        func(layerTree);
     }
   }
 
@@ -1040,6 +1040,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   private getQueryableLayersAbove(position: number): MapLayerOnMap[] {
     const layers: MapLayerOnMap[] = [];
+    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
     const layerTrees = this._layerRefHandler.layerTrees;
     for (let i = layerTrees.length - 1; i > position; i--) {
       const layer = layerTrees[i];
@@ -1048,7 +1049,13 @@ export class MapTileTreeReference extends TileTreeReference {
         continue;
 
       const provider = layer.imageryProvider;
-      if (provider?.status === MapLayerImageryProviderStatus.Valid && provider.supportsMapFeatureInfo)
+      // Also gates tooltips: a provider without feature info (e.g. WMS) cannot report "no feature", so it would always win.
+      if (provider?.status !== MapLayerImageryProviderStatus.Valid || !provider.supportsMapFeatureInfo)
+        continue;
+
+      // A layer out of its zoom range across the whole view draws nothing to query.
+      const imageryTreeId = layer.treeOwner.tileTree?.id;
+      if (undefined === imageryTreeId || tree?.getImageryTreeState(imageryTreeId)?.getScaleRangeVisibility() !== MapTileTreeScaleRangeVisibility.Hidden)
         layers.push({ map: this, layer });
     }
 
@@ -1056,9 +1063,20 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   private getImageryTilesAt(hit: HitDetail, layer: MapLayerTileTreeReference, carto: Cartographic): ImageryMapTile[] {
-    const mapTile = (this.treeOwner.tileTree as MapTileTree | undefined)?.tileFromQuadId(QuadId.createFromContentId(expectDefined(hit.tileId)));
+    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
+    if (undefined === tree)
+      return [];
+
+    // The map above refines independently of the picked map, so it may still draw an ancestor of the hit's tile.
+    let quadId = QuadId.createFromContentId(expectDefined(hit.tileId));
+    let imageryTiles = tree.tileFromQuadId(quadId)?.imageryTiles;
+    while (undefined === imageryTiles && quadId.level > tree.sourceTilingScheme.rootLevel) {
+      quadId = new QuadId(quadId.level - 1, quadId.column >> 1, quadId.row >> 1);
+      imageryTiles = tree.tileFromQuadId(quadId)?.imageryTiles;
+    }
+
     const imageryTree = layer.treeOwner.tileTree;
-    return [...new Set(mapTile?.imageryTiles?.filter((tile) => tile.imageryTree === imageryTree && !tile.isOutOfLodRange && tile.rectangle.containsCartographic(carto)))];
+    return [...new Set(imageryTiles?.filter((tile) => tile.imageryTree === imageryTree && !tile.isOutOfLodRange && tile.rectangle.containsCartographic(carto)))];
   }
 
   private async getLayerFeatureInfo(layer: MapLayerTileTreeReference, hit: HitDetail, carto: Cartographic, options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[]> {

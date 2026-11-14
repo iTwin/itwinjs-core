@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent } from "@itwin/core-bentley";
-import { MapImagerySettings } from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, MapImagerySettings } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
 import { LayerTileTreeReference, LayerTileTreeReferenceHandler } from "../../internal/tile/LayerTileTreeReferenceHandler";
 import { MapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
+import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 
 /** Minimal mock event that tracks listener count */
@@ -167,5 +168,23 @@ describe("LayerTileTreeReferenceHandler", () => {
     expect(onMapImageryChanged.numberOfListeners).toBe(0);
     expect(onChangeView.numberOfListeners).toBe(0);
     expect(onViewedModelsChanged.numberOfListeners).toBe(0);
+  });
+
+  it("draws a map whose only layer has an unregistered format, when attached or changed", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    try {
+      const ref: LayerTileTreeReference = {
+        iModel: {} as IModelConnection,
+        treeOwner: { load: () => ({ layerHandler: { layerImageryTrees: [] } }) } as unknown as TileTreeOwner,
+        shouldDrapeLayer: () => true,
+      };
+      const layer = ImageMapLayerSettings.fromJSON({ formatId: "Unregistered", name: "U", url: "https://test.invalid/U" });
+      const handler = new LayerTileTreeReferenceHandler(ref, false, undefined, [layer], true);
+      expect(handler.initializeLayers({} as SceneContext)).toBe(true);
+      handler.setLayerSettings([layer]);
+      expect(handler.initializeLayers({} as SceneContext)).toBe(true);
+    } finally {
+      await IModelApp.shutdown();
+    }
   });
 });

@@ -16,6 +16,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { MapLayerFeatureInfo } from "../../../tile/map/MapFeatureInfo";
 import { ImageryMapLayerFormat } from "../../../tile/map/MapLayerImageryFormats";
 import { MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../tile/map/MapLayerImageryProvider";
+import { QuadId } from "../../../tile/map/QuadId";
 import { testBlankViewportAsync } from "../../openBlankViewport";
 
 let hollowTile: ImageSource;
@@ -82,7 +83,8 @@ async function getFeatureInfoLayerNames(vp: ScreenViewport, hit: HitDetail): Pro
   return (await vp.getMapFeatureInfo(hit)).layerInfos?.map((info) => info.layerName);
 }
 
-describe("Map feature info", () => {
+// Map tiles load for real: up to 5 s per test locally, several times longer on software-WebGL CI agents.
+describe("Map feature info", { timeout: 60000 }, () => {
   const white = ColorDef.white.tbgr;
 
   beforeAll(async () => {
@@ -143,6 +145,7 @@ describe("Map feature info", () => {
     await testBlankViewportAsync(async (vp) => {
       const hit = await pickMap(vp, { backgroundBase: white, backgroundLayers: [layer("A", { feature: true, outOfRange: true })] });
       expect(await getFeatureInfoLayerNames(vp, hit)).toEqual([]);
+      expect(vp.mapFeatureInfoLayersFromHit(hit)).toEqual([]);
     });
   });
 
@@ -156,10 +159,16 @@ describe("Map feature info", () => {
     });
   });
 
-  it("queries overlay layers above the background map", async () => {
+  it("queries overlay layers above the background map, even where the overlay draws a coarser tile", async () => {
     await testBlankViewportAsync(async (vp) => {
       const hit = await pickMap(vp, { backgroundBase: white, overlayLayers: [layer("O", { hollow: true, feature: true })] });
       expect(await getFeatureInfoLayerNames(vp, hit)).toEqual(["O"]);
+
+      // The overlay map refines independently, so it can still draw the parent of the picked tile.
+      const tileId = QuadId.createFromContentId(expectDefined(hit.tileId)).getChildIds()[0].contentId;
+      const { testPoint, viewport, hitSource, hitPoint, feature, priority, distXY, distFraction } = hit;
+      const childHit = new HitDetail({ testPoint, viewport, hitSource, hitPoint, feature, priority, distXY, distFraction, tileId });
+      expect(await getFeatureInfoLayerNames(vp, childHit)).toEqual(["O"]);
     });
   });
 
@@ -195,10 +204,11 @@ describe("Map feature info", () => {
   it("reports the display style index of a layer that existed when the view was attached", async () => {
     await testBlankViewportAsync(async (vp) => {
       const style = vp.displayStyle.clone();
-      style.settings.applyOverrides({ viewflags: { backgroundMap: true }, mapImagery: { backgroundBase: white, backgroundLayers: [layer("A")] } });
+      // A layer of an unregistered format has no tile tree but still holds index 0.
+      style.settings.applyOverrides({ viewflags: { backgroundMap: true }, mapImagery: { backgroundBase: white, backgroundLayers: [layer("Unregistered", {}, { formatId: "Unregistered" }), layer("A")] } });
       vp.displayStyle = style;
       const hit = await pickCenter(vp);
-      expect(vp.mapLayerFromHit(hit).map((info) => info.index)).toEqual([{ isOverlay: false, index: 0 }]);
+      expect(vp.mapLayerFromHit(hit).map((info) => info.index)).toEqual([{ isOverlay: false, index: 1 }]);
     });
   });
 });

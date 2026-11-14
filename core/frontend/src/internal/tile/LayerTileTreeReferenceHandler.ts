@@ -6,7 +6,6 @@
  * @module Tiles
  */
 
-import { expectDefined } from "@itwin/core-bentley";
 import { BaseLayerSettings, ColorDef, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../../ViewContext";
 import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
@@ -21,6 +20,7 @@ export interface LayerTileTreeReference {
 
 /** @internal */
 export class LayerTileTreeReferenceHandler {
+  // An undefined entry is a layer without a tree (e.g. an unregistered format), so positions match the display style indices.
   protected readonly _layerTrees = new Array<MapLayerTileTreeReference | undefined>();
   public isOverlay: boolean;
   protected _baseImageryLayerIncluded = false;
@@ -67,8 +67,7 @@ export class LayerTileTreeReferenceHandler {
 
     if (undefined !== this._layerSettings) {
       for (let i = 0; i < this._layerSettings.length; i++)
-        if (undefined !== (tree = createMapLayerTreeReference(this._layerSettings[i], i + 1, this._ref.iModel)))
-          this._layerTrees.push(tree);
+        this._layerTrees.push(createMapLayerTreeReference(this._layerSettings[i], i + 1, this._ref.iModel));
     }
   }
 
@@ -111,7 +110,7 @@ export class LayerTileTreeReferenceHandler {
     }
 
     layerHandler.layerImageryTrees.length = 0;
-    if (0 === this._layerTrees.length) {
+    if (this._layerTrees.every((layerTreeRef) => undefined === layerTreeRef)) {
       return !this.isOverlay;
     }
 
@@ -125,9 +124,12 @@ export class LayerTileTreeReferenceHandler {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
-      const hasValidTileTree = layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
+      if (undefined === layerTreeRef)
+        continue;
+
+      const hasValidTileTree = TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
       const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
-      const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef?.layerSettings.visible));
+      const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef.layerSettings.visible));
 
       if (!this._ref.shouldDrapeLayer(layerTreeRef)) {
         // If the layer is not to be displayed, then we should skip adding it to the tile tree.
@@ -202,7 +204,7 @@ export class LayerTileTreeReferenceHandler {
     for (let i = 0; i < layerSettings.length; i++) {
       const treeIndex = i + baseLayerIndex;
       if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex]?.layerSettings.displayMatches(layerSettings[i]))
-        this._layerTrees[treeIndex] = expectDefined(createMapLayerTreeReference(layerSettings[i], treeIndex, this._ref.iModel));
+        this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._ref.iModel);
     }
     this.clearLayers();
   }
