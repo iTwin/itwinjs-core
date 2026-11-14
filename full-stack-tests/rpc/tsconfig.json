@@ -1,7 +1,12 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "baseUrl": ".",
+    "paths": {
+      "@itwin/vitest-browser-bridge/callbacks/backend": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/backend.d.ts"],
+      "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"]
+    }
   },
   "include": [
     "src/**/*.ts"
