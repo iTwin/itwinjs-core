@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { EntityClass, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
@@ -9,7 +10,8 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { assert, expect } from "chai";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Schema Locater Tests", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("Schema Locater Tests", () => {
   let context = new SchemaContext();
   let imodel: IModelConnection;
 
@@ -33,16 +35,16 @@ describe("Schema Locater Tests", () => {
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
     assert.isDefined(schema);
-    assert.strictEqual(schema!.schemaKey.name, "Gist");
-    assert.strictEqual(schema!.schemaKey.version.toString(), "01.00.00");
+    assert.strictEqual(schema.schemaKey.name, "Gist");
+    assert.strictEqual(schema.schemaKey.version.toString(), "01.00.00");
 
     // Check that the schema is cached in the context
     // Even though getSchemaSync is not supported for locating schemas over RPC/HTTP,
     // it will return the schema if it has already been cached by a previous async getSchema call.
     const schemaSync = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
     assert.isDefined(schemaSync);
-    assert.strictEqual(schemaSync!.schemaKey.name, "Gist");
-    assert.strictEqual(schemaSync!.schemaKey.version.toString(), "01.00.00");
+    assert.strictEqual(schemaSync.schemaKey.name, "Gist");
+    assert.strictEqual(schemaSync.schemaKey.version.toString(), "01.00.00");
   });
 
   it("locating a non-existent schema asynchronously should return undefined", async () => {
