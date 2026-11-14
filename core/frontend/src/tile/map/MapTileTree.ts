@@ -741,15 +741,13 @@ const mapTreeSupplier = new MapTreeSupplier();
 /** @internal */
 type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
 
-/** A map layer, and the map that draws it. */
 interface MapLayerOnMap {
   map: MapTileTreeReference;
   layer: MapLayerTileTreeReference;
 }
 
-/** The map layers that can own the map feature at a hit. */
 interface FeatureInfoLayers {
-  /** Layers drawn above the picked pixel that can be queried, topmost first. */
+  /** Queryable layers drawn above the picked pixel, topmost first. */
   above: MapLayerOnMap[];
   /** The layer that owns the picked pixel; undefined over the base color. */
   picked?: MapLayerOnMap;
@@ -767,7 +765,7 @@ function isLayerDrawn(settings: MapLayerSettings): boolean {
   return settings.visible && !settings.allSubLayersInvisible && settings.transparency < 1;
 }
 
-/** Query the layers above the picked pixel (seen through a transparent fill) top-down: the first result with content wins, otherwise the picked layer's. */
+/** The pick passes through transparent fills, so ask the layers above the picked pixel first, top-down; the first with content wins, else the picked layer answers. */
 async function queryTopDown<T>(layers: FeatureInfoLayers, query: (layer: MapLayerOnMap) => Promise<T>, hasContent: (result: T) => boolean, empty: T): Promise<T> {
   for (const layer of layers.above) {
     const result = await query(layer);
@@ -1011,7 +1009,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   private getLayerInfo(layer: MapLayerTileTreeReference): MapLayerInfoFromTileTree {
-    // The position in layerTrees maps to the display style index (see getLayerImageryTreeRef); layer.layerIndex does not always.
+    // Derive the display style index from the position, as getLayerImageryTreeRef does; layer.layerIndex can be off by one.
     const index = this._layerRefHandler.layerTrees.indexOf(layer) - (this._layerRefHandler.baseImageryLayerIncluded ? 1 : 0);
     const isBaseLayer = index < 0;
     return {
@@ -1026,15 +1024,15 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d || undefined === hit.tileId)
       return undefined;
 
-    // Identical layers share a tree; the topmost drawn one draws the picked pixel.
+    // Identical layers share a tree; the topmost drawn one owns the pixel.
     const picked = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId).filter((layer) => isLayerDrawn(layer.layerSettings)).pop();
     if (undefined === picked && hit.sourceId !== tree.modelId)
       return undefined;
 
-    // A hit on the map tree itself is on the base color, below every layer.
+    // A hit on the map tree itself is the base color, below every layer.
     const pickedPosition = picked ? this._layerRefHandler.layerTrees.indexOf(picked) : -1;
     return {
-      // Every layer of the map above is drawn above all of this map's layers.
+      // The map above (the overlay) is drawn over all of this map's layers.
       above: [...(this._mapAbove?.getQueryableLayersAbove(-1) ?? []), ...this.getQueryableLayersAbove(pickedPosition)],
       picked: picked && { map: this, layer: picked },
     };
@@ -1069,7 +1067,7 @@ export class MapTileTreeReference extends TileTreeReference {
       try {
         await tile.imageryTree.imageryLoader.getMapFeatureInfo(info, tile.quadId, carto, tile.imageryTree, hit, options);
       } catch {
-        // Keep the results of the other tiles.
+        // Skip a failed tile.
       }
     }
 
@@ -1081,13 +1079,13 @@ export class MapTileTreeReference extends TileTreeReference {
     if (0 === tiles.length)
       return [];
 
-    // getToolTip uses innerHTML because imageryLoader.getToolTip may deliberately supply markup.
+    // Escaped: getToolTip uses innerHTML because providers may supply markup.
     const strings = [`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${escapeHtml(layer.layerSettings.name)}`];
     for (const tile of tiles) {
       try {
         await tile.imageryTree.imageryLoader.getToolTip(strings, tile.quadId, carto, tile.imageryTree);
       } catch {
-        // Keep the lines of the other tiles.
+        // Skip a failed tile.
       }
     }
 
@@ -1106,7 +1104,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const layers = this.getFeatureInfoLayers(hit);
     const carto = layers && await getHitCartographic(hit);
-    // A layer has content when its provider adds lines after the layer name line.
+    // The first line is the layer name; more lines mean the provider found something.
     const strings: string[] = layers && carto ? await queryTopDown(layers, async ({ map, layer }) => map.getLayerToolTip(layer, hit, carto), (lines) => lines.length > 1, []) : [];
 
     if (carto && strings.length > 0) {

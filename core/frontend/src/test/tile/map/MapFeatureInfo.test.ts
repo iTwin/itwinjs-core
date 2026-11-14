@@ -21,7 +21,7 @@ import { testBlankViewportAsync } from "../../openBlankViewport";
 let hollowTile: ImageSource;
 let solidTile: ImageSource;
 
-// Stands in for a map service. A hollow layer draws only transparent pixels, like the inside of a polygon with a transparent fill.
+// Fake map service. A hollow layer draws only transparent pixels, like the inside of an unfilled polygon.
 class TestProvider extends MapLayerImageryProvider {
   private get _properties() { return this._settings.properties ?? {}; }
   public override get supportsMapFeatureInfo() { return !this._properties.notCapable; }
@@ -59,13 +59,13 @@ async function createTile(alpha: number): Promise<ImageSource> {
   return new ImageSource(new Uint8Array(await expectNotNull(blob).arrayBuffer()), ImageSourceFormat.Png);
 }
 
-// A distinct url per layer, because layers with identical settings share a tile tree.
+// Distinct urls, because layers with identical settings share a tile tree.
 function layer(name: string, properties: MapLayerProviderProperties = {}, props: Partial<ImageMapLayerProps> = {}): ImageMapLayerProps {
   return { formatId: TestFormat.formatId, name, url: `https://test.invalid/${name}`, visible: true, subLayers: [{ name, visible: true }], properties, ...props };
 }
 
 async function pickCenter(vp: ScreenViewport): Promise<HitDetail> {
-  // Map layers other than the base disappear past zoom level 22, and the blank view is 1 m wide.
+  // The blank view is 1 m wide, and map layers other than the base vanish past zoom level 22.
   vp.zoomToVolume(Range3d.createXYZXYZ(-500, -500, -10, 500, 500, 10));
   await vp.waitForSceneCompletion();
   const picker = IModelApp.locateManager.picker;
