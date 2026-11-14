@@ -36,6 +36,11 @@ beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
 beta;interface;BulkDeleteFailure
 beta;enum;BulkDeleteFailureReason
+beta;interface;BulkElementAspectFailure
+beta;enum;BulkElementAspectFailureReason
+beta;interface;BulkElementAspectsResult
+beta;enum;BulkElementAspectsStatus
+beta;interface;BulkInsertElementAspectsResult
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb
@@ -452,6 +457,8 @@ public;interface;NativeHostOpts
 beta;interface;OnAspectArg
 beta;interface;OnAspectIdArg
 beta;interface;OnAspectPropsArg
+beta;interface;OnBulkAspectIdBatchArg
+beta;interface;OnBulkAspectPropsBatchArg
 beta;interface;OnBulkChildDeleteArg
 beta;interface;OnBulkChildDeletedBatchArg
 beta;interface;OnBulkDeleteArg
