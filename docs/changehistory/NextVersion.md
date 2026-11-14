@@ -14,6 +14,7 @@ publish: false
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
+    - [Converting legacy text annotations](#converting-legacy-text-annotations)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
   - [API deprecations](#api-deprecations)
@@ -154,6 +155,14 @@ Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asyn
 Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
 
 See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
+
+### Converting legacy text annotations
+
+Older iModels store an annotation's text in the deprecated `BisCore:TextAnnotationData` aspect instead of in [TextAnnotation2d]($backend) or [TextAnnotation3d]($backend) `textAnnotationData`. Use the new `@beta` methods [TextAnnotation2d.readLegacyTextAnnotation]($backend) and [TextAnnotation3d.readLegacyTextAnnotation]($backend) to convert that legacy content into [TextAnnotationProps]($common), for example to migrate it with [TextAnnotation.fromJSON]($common) and [TextAnnotation2d.setAnnotation]($backend).
+
+The result contains no element Ids: legacy text, frame, and leader styles are expressed as style overrides. Each method returns `undefined` if the element has no legacy content, and reports legacy features that cannot be represented exactly as a list of [LegacyTextAnnotationIssue]($backend)s. For 2d annotations, text sizes are divided by the drawing's scale factor so that the text keeps its legacy size.
+
+If no font can be resolved for the legacy text (for example, because its legacy text style or font no longer exists), the result specifies no font and includes a `noFont` issue. As with any text annotation that lacks a font, writing it to an element throws until a font that exists in the iModel is set.
 
 ## Platform support
 

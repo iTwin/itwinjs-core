@@ -480,6 +480,9 @@ importers:
       '@types/deep-equal-in-any-order':
         specifier: ^1.0.4
         version: 1.0.4
+      '@types/flatbuffers':
+        specifier: ~1.10.0
+        version: 1.10.3
       '@types/fs-extra':
         specifier: catalog:utilities
         version: 4.0.15
@@ -522,6 +525,9 @@ importers:
       eslint:
         specifier: catalog:linting
         version: 9.39.5
+      flatbuffers:
+        specifier: ~1.12.0
+        version: 1.12.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal

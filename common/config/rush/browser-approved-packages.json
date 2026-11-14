@@ -596,7 +596,7 @@
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "flatbush",

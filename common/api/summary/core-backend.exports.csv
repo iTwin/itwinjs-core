@@ -415,6 +415,8 @@ public;class;KnownLocations
 beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
+beta;interface;LegacyTextAnnotationConversion
+beta;interface;LegacyTextAnnotationIssue
 internal;class;LightLocation
 beta;class;LineLayout
 public;class;LineStyle
