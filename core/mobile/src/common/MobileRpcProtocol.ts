@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, expectDefined } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined, Logger } from "@itwin/core-bentley";
 import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
   SerializedRpcRequest,
@@ -25,6 +25,7 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 /** @internal */
 export interface MobileRpcGateway {
   handler: (payload: ArrayBuffer | string, connectionId: number) => void;
+  reset?: () => void;
   sendString: (message: string, connectionId: number) => void;
   sendBinary: (message: Uint8Array, connectionId: number) => void;
   port: number;
@@ -37,7 +38,8 @@ export interface MobileRpcGateway {
 export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
-  private _pending: MobileRpcChunks[] = [];
+  private _pending: Array<{ message: MobileRpcChunks, request?: MobileRpcRequest }> = [];
+  private _sendIndex = 0;
   private _capacity: number = Number.MAX_SAFE_INTEGER;
   private _sendInterval: number | undefined = undefined;
   private _sendIntervalHandler = () => this.trySend();
@@ -47,6 +49,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialData: Uint8Array[] = [];
   private _port: number = 0;
   private _rpcToken: string = "";
+  private _connectionError?: Error;
   private _transport?: MobilePushTransport;
   private _ipc: MobileIpcTransport;
   public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
@@ -70,6 +73,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
+    this.transferChunkThreshold = 4 * 1024 * 1024;
 
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
@@ -114,10 +118,16 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private connect(port: number, reset: boolean) {
+    const requests = reset ? Array.from(RpcRequest.activeRequests.values()).filter((request) => request.protocol === this) : [];
+    if (reset) {
+      this.reset();
+      this._ipc.notifyConnectionError(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket replaced."));
+    }
+    this._connectionError = undefined;
     const socket = new WebSocket(`ws://127.0.0.1:${port}`, `itwin-rpc.${this._rpcToken}`);
     socket.binaryType = "arraybuffer";
     this.connectMessageHandler(socket);
-    this.connectOpenHandler(socket, reset);
+    this.connectOpenHandler(socket, requests);
     this.connectErrorHandler(socket);
     this.socket = socket;
   }
@@ -132,21 +142,19 @@ export class MobileRpcProtocol extends RpcProtocol {
     });
   }
 
-  private connectOpenHandler(socket: WebSocket, reset: boolean) {
+  private connectOpenHandler(socket: WebSocket, requests: RpcRequest[]) {
     socket.addEventListener("open", (_event) => {
       if (this.socket !== socket) {
         return;
       }
 
-      if (reset) {
-        this.reset();
+      for (const request of requests) {
+        if (RpcRequest.activeRequests.get(request.id) !== request)
+          continue;
 
-        const requests = new Map(RpcRequest.activeRequests);
-        requests.forEach((req) => {
-          req.cancel();
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          req.submit();
-        });
+        request.cancel();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        request.submit();
       }
 
       this.scheduleSend();
@@ -159,12 +167,38 @@ export class MobileRpcProtocol extends RpcProtocol {
         return;
       }
 
-      throw new IModelError(BentleyStatus.ERROR, "Socket error.");
+      this.failConnection(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket error."));
     });
+    socket.addEventListener("close", (_event) => {
+      if (this.socket !== socket)
+        return;
+
+      this.failConnection(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket closed."));
+    });
+  }
+
+  private failConnection(error: Error) {
+    if (this._connectionError)
+      return;
+
+    this._connectionError = error;
+    const requests = new Set(this.requests.values());
+    for (const request of RpcRequest.activeRequests.values()) {
+      if (request.protocol === this)
+        requests.add(request as MobileRpcRequest);
+    }
+    this.reset();
+    for (const request of requests)
+      request.notifyConnectionError(error);
+
+    this._ipc.notifyConnectionError(error);
+    this.socket.close();
   }
 
   private reset() {
     this.requests.clear();
+    this._pending.length = 0;
+    this._sendIndex = 0;
     this._capacity = Number.MAX_SAFE_INTEGER;
 
     if (typeof (this._sendInterval) !== "undefined") {
@@ -194,11 +228,22 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
-    while (this._capacity !== 0 && this._pending.length) {
-      --this._capacity;
-      const next = expectDefined(this._pending.shift(), "Expected pending RPC chunk after queue length check.");
-      for (const chunk of next) {
-        this.socket.send(chunk);
+    while (this._pending.length && (this._capacity !== 0 || this._sendIndex !== 0)) {
+      if (this.socket.bufferedAmount >= this.transferChunkThreshold)
+        break;
+
+      const next = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.").message;
+      if (this._sendIndex === 0)
+        --this._capacity;
+      try {
+        this.socket.send(next[this._sendIndex++]);
+      } catch (error) {
+        this.failConnection(error instanceof Error ? error : new IModelError(BentleyStatus.ERROR, "Mobile RPC send failed."));
+        return;
+      }
+      if (this._sendIndex === next.length) {
+        this._pending.shift();
+        this._sendIndex = 0;
       }
     }
 
@@ -259,9 +304,9 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
-    const request = this.requests.get(response.id) as MobileRpcRequest;
+    const request = this.requests.get(response.id);
     this.requests.delete(response.id);
-    request.notifyResponse(response);
+    request?.notifyResponse(response);
   }
 
   private consumePartialData(value: RpcSerializedValue) {
@@ -279,6 +324,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     }
 
     mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
+    mobilegateway.reset = () => this.reset();
     RpcPushConnection.for = (channel, client) => new MobilePushConnection(channel, client, this);
     RpcPushChannel.enabled = true;
   }
@@ -334,11 +380,30 @@ export class MobileRpcProtocol extends RpcProtocol {
     MobileEventLoop.removeTask();
 
     const response = MobileRpcProtocol.encodeResponse(fulfillment);
-    this.sendToFrontend(response, connection);
+    try {
+      this.sendToFrontend(response, connection);
+    } catch (error) {
+      // An ordinary RPC reply to a closed connection is safe to drop: the frontend resubmits its active requests after reconnecting.
+      Logger.logError("core-mobile.MobileRpcProtocol", "Dropped mobile RPC response: socket failed.", { error });
+    }
   }
 
-  public sendToBackend(message: MobileRpcChunks): void {
-    this._pending.push(message);
+  public cancelRequest(request: MobileRpcRequest): void {
+    this.requests.delete(request.id);
+    this._pending = this._pending.filter((pending, index) => pending.request !== request || (index === 0 && this._sendIndex !== 0));
+  }
+
+  public sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void {
+    if (this._connectionError)
+      throw this._connectionError;
+
+    if (this.socket.readyState === WebSocket.CLOSED || this.socket.readyState === WebSocket.CLOSING) {
+      const error = new IModelError(BentleyStatus.ERROR, "Mobile RPC socket is not open.");
+      this.failConnection(error);
+      throw error;
+    }
+
+    this._pending.push({ message, request });
     this.scheduleSend();
   }
 

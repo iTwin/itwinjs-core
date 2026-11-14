@@ -17,6 +17,7 @@ import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcEndpoint } from '@itwin/core-common';
+import { RpcInterface } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcProtocol } from '@itwin/core-common';
 import { RpcRequest } from '@itwin/core-common';
@@ -248,6 +249,8 @@ export interface MobileRpcGateway {
     // (undocumented)
     port: number;
     // (undocumented)
+    reset?: () => void;
+    // (undocumented)
     sendBinary: (message: Uint8Array, connectionId: number) => void;
     // (undocumented)
     sendString: (message: string, connectionId: number) => void;
@@ -265,6 +268,8 @@ export class MobileRpcManager {
 export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
+    cancelRequest(request: MobileRpcRequest): void;
+    // (undocumented)
     static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
     // (undocumented)
     static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks;
@@ -275,7 +280,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     // (undocumented)
     readonly requestType: typeof MobileRpcRequest;
     // (undocumented)
-    sendToBackend(message: MobileRpcChunks): void;
+    sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void;
     // (undocumented)
     sendToFrontend(message: MobileRpcChunks, connection?: number): void;
     // (undocumented)
@@ -284,12 +289,19 @@ export class MobileRpcProtocol extends RpcProtocol {
 
 // @internal (undocumented)
 export class MobileRpcRequest extends RpcRequest {
+    constructor(client: RpcInterface, operation: string, parameters: any[], protocol?: MobileRpcProtocol);
+    // (undocumented)
+    cancel(): void;
     protected load(): Promise<RpcSerializedValue>;
+    // (undocumented)
+    notifyConnectionError(error: Error): void;
     // (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
     readonly protocol: MobileRpcProtocol;
     protected send(): Promise<number>;
     protected setHeader(_name: string, _value: string): void;
+    // (undocumented)
+    protected setHeaders(): Promise<void>;
 }
 
 // @beta (undocumented)
