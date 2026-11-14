@@ -400,7 +400,7 @@
     },
     {
       "name": "@vitest/browser-playwright",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@vitest/coverage-v8",
@@ -780,7 +780,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "prettier",
