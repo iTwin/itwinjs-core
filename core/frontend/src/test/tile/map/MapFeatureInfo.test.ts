@@ -94,20 +94,6 @@ describe("Map feature info", () => {
 
   afterAll(async () => IModelApp.shutdown());
 
-  it("queries a hollow layer drawn above the base color", async () => {
-    await testBlankViewportAsync(async (vp) => {
-      const hit = await pickMap(vp, { backgroundBase: white, backgroundLayers: [layer("A", { hollow: true, feature: true })] });
-      expect(await getFeatureInfoLayerNames(vp, hit)).toEqual(["A"]);
-    });
-  });
-
-  it("queries a hollow layer drawn above an imagery base", async () => {
-    await testBlankViewportAsync(async (vp) => {
-      const hit = await pickMap(vp, { backgroundBase: layer("Base"), backgroundLayers: [layer("A", { hollow: true, feature: true })] });
-      expect(await getFeatureInfoLayerNames(vp, hit)).toEqual(["A"]);
-    });
-  });
-
   it("returns only the topmost layer with a feature", async () => {
     await testBlankViewportAsync(async (vp) => {
       const hit = await pickMap(vp, { backgroundBase: white, backgroundLayers: [layer("B", { hollow: true, feature: true }), layer("A", { hollow: true, feature: true })] });
@@ -117,7 +103,7 @@ describe("Map feature info", () => {
 
   it("skips layers above that have no feature at the hit", async () => {
     await testBlankViewportAsync(async (vp) => {
-      const hit = await pickMap(vp, { backgroundBase: white, backgroundLayers: [layer("B", { hollow: true, feature: true }), layer("A", { hollow: true })] });
+      const hit = await pickMap(vp, { backgroundBase: layer("Base"), backgroundLayers: [layer("B", { hollow: true, feature: true }), layer("A", { hollow: true })] });
       expect(await getFeatureInfoLayerNames(vp, hit)).toEqual(["B"]);
     });
   });
