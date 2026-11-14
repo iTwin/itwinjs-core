@@ -108,7 +108,7 @@ class ActiveMapLayerState {
     if (this.hasActiveMapLayers()) {
       const currentMls = this.activeMapLayers[0];    // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
-        if (currentMls.index?.index === scaleRangeVisibility.index) {
+        if (currentMls.index?.index === scaleRangeVisibility.index && currentMls.index.isOverlay === scaleRangeVisibility.isOverlay) {
           this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;
         }
       }
@@ -241,7 +241,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     if (fromCache) {
       mapLayerFromHit = fromCache;
     } else if (this.targetView) {
-      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      mapLayerFromHit = this.targetView?.mapFeatureInfoLayersFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
       this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
     }
 
@@ -283,6 +283,11 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           const pixelRadius = Math.floor(aperture + 0.5);
           mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
           if (mapInfo) {
+            // Track the layer that answered; results identify layers only by name, so an ambiguous name keeps the candidates.
+            const answeredLayerName = mapInfo.layerInfos?.[0]?.layerName;
+            const answered = mapLayersHit.filter((info) => info.settings.name === answeredLayerName);
+            if (1 === answered.length)
+              this._state.activeMapLayers = answered;
             this._decorator.setData({ hit, mapInfo });
           } else {
             IModelApp.toolAdmin.setCursor(undefined);

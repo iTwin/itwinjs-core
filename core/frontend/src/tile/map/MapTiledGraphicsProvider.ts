@@ -9,6 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { DisplayStyleState } from "../../DisplayStyleState";
+import { HitDetail } from "../../HitDetail";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { DisclosedTileTreeSet, MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTree, TileTreeOwner, TileTreeReference } from "../internal";
@@ -53,8 +54,8 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   constructor(viewportId: number, displayStyle: DisplayStyleState) {
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;
-    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, viewportId, true, false);
+    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, false, () => displayStyle.overrideTerrainDisplay(), this.overlayMap);
     this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, true);
 
     const removals = this._detachFromDisplayStyle;
@@ -155,6 +156,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const bgMapLayers = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
     const ovlMapLayers = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
     return [...bgMapLayers, ...ovlMapLayers];
+  }
+
+  /** @internal */
+  public mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
+    return [...this.backgroundMap.mapFeatureInfoLayersFromHit(hit), ...this.overlayMap.mapFeatureInfoLayersFromHit(hit)];
   }
 }
 
