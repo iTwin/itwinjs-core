@@ -121,6 +121,7 @@
       "@types/mocha": "^10.0.6",
       "@types/sinon": "^17.0.2",
       "@types/sinon-chai": "^3.2.0",
+      "@vitest/browser": "^4.1.10",
       "@vitest/browser-playwright": "^4.1.10",
       "@vitest/coverage-v8": "^4.1.10",
       "azurite": "^3.37.0",
