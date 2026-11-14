@@ -300,13 +300,13 @@ catalogs:
       specifier: ^3.2.0
       version: 3.2.12
     '@vitest/browser':
-      specifier: ^4.1.10
+      specifier: ^4.1.11
       version: 4.1.11
     '@vitest/browser-playwright':
-      specifier: ^4.1.10
+      specifier: ^4.1.11
       version: 4.1.11
     '@vitest/coverage-v8':
-      specifier: ^4.1.10
+      specifier: ^4.1.11
       version: 4.1.11
     azurite:
       specifier: ^3.37.0
@@ -363,7 +363,7 @@ catalogs:
       specifier: ^3.7.0
       version: 3.7.0
     vitest:
-      specifier: ^4.1.10
+      specifier: ^4.1.11
       version: 4.1.11
   types:
     '@types/express-ws':
@@ -1008,9 +1008,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../backend
@@ -1026,18 +1023,15 @@ importers:
       '@itwin/eslint-plugin':
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
-      '@types/chai':
-        specifier: catalog:testing
-        version: 4.3.1
-      '@types/mocha':
-        specifier: catalog:testing
-        version: 10.0.10
+      '@itwin/vitest-browser-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-browser-bridge
       '@types/node':
         specifier: catalog:build
         version: 20.17.58
-      chai:
+      '@vitest/browser':
         specifier: catalog:testing
-        version: 4.5.0
+        version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       cpx2:
         specifier: catalog:build
         version: 8.0.2
@@ -1047,27 +1041,15 @@ importers:
       eslint:
         specifier: catalog:linting
         version: 9.39.5
-      glob:
-        specifier: catalog:build
-        version: 13.0.6
-      mocha:
-        specifier: catalog:testing
-        version: 11.8.0
       rimraf:
         specifier: catalog:build
         version: 6.1.3
-      source-map-loader:
-        specifier: catalog:bundling
-        version: 5.0.0(webpack@5.111.1)
       typescript:
         specifier: catalog:build
         version: 5.6.3
-      webpack:
-        specifier: catalog:bundling
-        version: 5.111.1(webpack-cli@5.1.4)
-      webpack-cli:
-        specifier: catalog:bundling
-        version: 5.1.4(webpack@5.111.1)
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
 
   ../../core/express-server:
     dependencies:

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { deepStrictEqual } from "node:assert/strict";
 import { BeDuration } from "@itwin/core-bentley";
 import { IpcListener, IpcSocket } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "../../common/ElectronRpcProtocol";
@@ -64,5 +64,5 @@ async function testLateResponseAfterShutdown() {
     process.off("unhandledRejection", onUnhandledRejection);
   }
 
-  assert.deepEqual(rejections, []);
+  deepStrictEqual(rejections, []);
 }
