@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add TextAnnotation2d.readLegacyTextAnnotation and TextAnnotation3d.readLegacyTextAnnotation to convert legacy TextAnnotationData aspect content into TextAnnotationProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "DanRod1999@users.noreply.github.com"
+}

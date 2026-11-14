@@ -6,15 +6,17 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ECVersionString, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, traverseTextBlockComponent, VersionedJSON } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ECVersionString, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, IModelError, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, traverseTextBlockComponent, VersionedJSON } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { AnnotationElement2d, DefinitionElement, Drawing, Element, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
+import { assert, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
+import { convertLegacyTextAnnotationJson } from "../internal/annotations/legacyTextAnnotation";
+import { _nativeDb } from "../internal/Symbols";
 
 import * as semver from "semver";
 
@@ -86,6 +88,55 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps: annotationProps ?? {}, builder, categoryId });
 
   return { entryArray: builder.entries };
+}
+
+/** Describes legacy content that could not be converted exactly by [[TextAnnotation2d.readLegacyTextAnnotation]] or [[TextAnnotation3d.readLegacyTextAnnotation]].
+ * @beta
+ */
+export interface LegacyTextAnnotationIssue {
+  /** Identifies the kind of issue, e.g., "missingTextStyle", "missingFont", "noFont", "frameEllipse", or "leaderCurved".
+   * New codes may be added in the future.
+   */
+  code: string;
+  /** A human-readable description of the issue, for diagnostic purposes. */
+  message: string;
+  /** The location of the affected content within the legacy annotation, e.g., "textBlock.paragraphs[0].runs[2]", "frame", or "leaders[1]". */
+  path?: string;
+}
+
+/** The result of [[TextAnnotation2d.readLegacyTextAnnotation]] or [[TextAnnotation3d.readLegacyTextAnnotation]].
+ * @beta
+ */
+export interface LegacyTextAnnotationConversion {
+  /** The converted annotation. All legacy styling is expressed as style overrides, so it contains no element IDs and can be
+   * written to any iModel as-is, for example via [[TextAnnotation2d.setAnnotation]] or [[TextAnnotation2dCreateArgs.textAnnotationProps]].
+   * It does not use a default [[AnnotationTextStyle]].
+   * @note If no font could be resolved for the text (e.g., because the legacy text style or font no longer exists), the annotation
+   * specifies no font and [[issues]] contains a "noFont" issue. As with any annotation that lacks a font, inserting or updating
+   * an element with it throws until a font that exists in the iModel is set.
+   */
+  textAnnotation: TextAnnotationProps;
+  /** Legacy content that was dropped or approximated during conversion. Empty if the conversion is exact. */
+  issues: LegacyTextAnnotationIssue[];
+}
+
+function readLegacyTextAnnotation(iModel: IModelDb, elementId: Id64String, expectedClass: typeof TextAnnotation2d | typeof TextAnnotation3d): LegacyTextAnnotationConversion | undefined {
+  const element = iModel.elements.getElement(elementId);
+  if (!(element instanceof expectedClass))
+    throw new IModelError(IModelStatus.WrongClass, `Element ${elementId} is not a ${expectedClass.classFullName}.`);
+
+  const json = iModel[_nativeDb].readLegacyTextAnnotation(elementId);
+  if (!json)
+    return undefined;
+
+  let scaleFactor = 1;
+  if (element instanceof TextAnnotation2d) {
+    const model = iModel.elements.tryGetElement<Element>(element.model);
+    if (model instanceof Drawing)
+      scaleFactor = model.scaleFactor;
+  }
+
+  return convertLegacyTextAnnotationJson({ json, scaleFactor });
 }
 
 /** Arguments supplied when creating a [[TextAnnotation2d]].
@@ -199,6 +250,20 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
       code: arg.code ?? Code.createEmpty(),
     };
     return new this(elementProps, iModelDb);
+  }
+
+  /** Converts the legacy text content of a `TextAnnotation2d` into [TextAnnotationProps]($common).
+   * Older iModels store annotation text only in the deprecated `BisCore:TextAnnotationData` aspect, which is ignored by [[getAnnotation]].
+   * Use this method to migrate that content, e.g., by passing the result to [[setAnnotation]].
+   * Legacy text, frame, and leader styles are converted into style overrides, so the result contains no element IDs.
+   * @param iModel The iModel containing the element.
+   * @param elementId The ID of the `TextAnnotation2d` element.
+   * @returns The converted annotation and any issues encountered, or `undefined` if the element has no legacy text content.
+   * @throws [IModelError]($common) if the element does not exist, is not a `TextAnnotation2d`, or its legacy content cannot be decoded.
+   * @beta
+   */
+  public static readLegacyTextAnnotation(iModel: IModelDb, elementId: Id64String): LegacyTextAnnotationConversion | undefined {
+    return readLegacyTextAnnotation(iModel, elementId, TextAnnotation2d);
   }
 
   /**
@@ -386,6 +451,20 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
       code: arg.code ?? Code.createEmpty(),
     };
     return new this(elementProps, iModelDb);
+  }
+
+  /** Converts the legacy text content of a `TextAnnotation3d` into [TextAnnotationProps]($common).
+   * Older iModels store annotation text only in the deprecated `BisCore:TextAnnotationData` aspect, which is ignored by [[getAnnotation]].
+   * Use this method to migrate that content, e.g., by passing the result to [[setAnnotation]].
+   * Legacy text, frame, and leader styles are converted into style overrides, so the result contains no element IDs.
+   * @param iModel The iModel containing the element.
+   * @param elementId The ID of the `TextAnnotation3d` element.
+   * @returns The converted annotation and any issues encountered, or `undefined` if the element has no legacy text content.
+   * @throws [IModelError]($common) if the element does not exist, is not a `TextAnnotation3d`, or its legacy content cannot be decoded.
+   * @beta
+   */
+  public static readLegacyTextAnnotation(iModel: IModelDb, elementId: Id64String): LegacyTextAnnotationConversion | undefined {
+    return readLegacyTextAnnotation(iModel, elementId, TextAnnotation3d);
   }
 
   /**
