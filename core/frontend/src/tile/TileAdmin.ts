@@ -184,6 +184,7 @@ export class TileAdmin {
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
   private readonly _cloudStorage?: FrontendStorage;
+  private readonly _retriesWhenOnline = new Set<() => void>();
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -328,9 +329,41 @@ export class TileAdmin {
       }),
     ];
 
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+      const onOnline = () => this.retryFailuresWhileOffline();
+      window.addEventListener("online", onOnline);
+      removals.push(() => window.removeEventListener("online", onOnline));
+    }
+
     this._cleanup = () => {
       removals.forEach((removal) => removal());
     };
+  }
+
+  /** Returns true if the browser reports that it has no network connection.
+   * @internal
+   */
+  public get isOffline(): boolean {
+    return typeof navigator !== "undefined" && false === navigator.onLine;
+  }
+
+  /** Runs `retry` the next time the browser goes back online, so that a tile or tile tree that failed to load while offline can be loaded again.
+   * @internal
+   */
+  public retryWhenOnline(retry: () => void): void {
+    this._retriesWhenOnline.add(retry);
+  }
+
+  private retryFailuresWhileOffline(): void {
+    if (0 === this._retriesWhenOnline.size)
+      return;
+
+    const retries = [...this._retriesWhenOnline];
+    this._retriesWhenOnline.clear();
+    for (const retry of retries)
+      retry();
+
+    this.invalidateAllScenes();
   }
 
   private _tileStorage?: TileStorage;
@@ -598,6 +631,7 @@ export class TileAdmin {
       req.abandon();
 
     this._requestsPerUser.clear();
+    this._retriesWhenOnline.clear();
     this._tileUserSetsForRequests.clear();
     this._tileUsagePerUser.clear();
     this._tileTreePropsRequests.length = 0;

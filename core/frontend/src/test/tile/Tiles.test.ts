@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -11,6 +11,7 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
   Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
+  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeSupplier,
 } from "../../tile/internal";
@@ -164,6 +165,44 @@ describe("Tiles", () => {
     await imodel.close();
     if (IModelApp.initialized)
       await MockRender.App.shutdown();
+  });
+
+  it("reloads tile trees that failed to load while offline once the browser is back online", async () => {
+    let shouldFail = true;
+    const failingSupplier: TileTreeSupplier = {
+      compareTileTreeIds: (lhs: TestTree, rhs: TestTree) => lhs.treeId - rhs.treeId,
+      createTileTree: async (tree: TestTree) => {
+        if (shouldFail)
+          throw new Error("Failed to fetch");
+
+        return tree;
+      },
+    };
+
+    const treeFailedOnline = new TestTree(100, imodel);
+    const treeFailedOffline = new TestTree(100, imodel);
+    const ownerFailedOnline = imodel.tiles.getTileTreeOwner(treeFailedOnline, failingSupplier);
+    const ownerFailedOffline = imodel.tiles.getTileTreeOwner(treeFailedOffline, failingSupplier);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+
+    try {
+      await ownerFailedOnline.loadTree();
+      onLine.mockReturnValue(false);
+      await ownerFailedOffline.loadTree();
+      expect(ownerFailedOnline.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+      expect(ownerFailedOffline.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+
+      shouldFail = false;
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      expect(ownerFailedOnline.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+      expect(ownerFailedOffline.loadStatus).toEqual(TileTreeLoadStatus.NotLoaded);
+
+      expect(await ownerFailedOffline.loadTree()).toBe(treeFailedOffline);
+      expect(ownerFailedOffline.loadStatus).toEqual(TileTreeLoadStatus.Loaded);
+    } finally {
+      onLine.mockRestore();
+    }
   });
 
   it("resetTileTreeOwner should remove the tiletree", async () => {

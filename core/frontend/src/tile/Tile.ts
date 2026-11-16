@@ -206,6 +206,14 @@ export abstract class Tile {
     this._state = TileState.NotFound;
   }
 
+  /** Makes a tile that failed to load eligible to be requested again.
+   * @internal
+   */
+  public resetNotFound(): void {
+    if (TileState.NotFound === this._state)
+      this._state = TileState.NotReady;
+  }
+
   /** @public */
   public setIsReady(): void {
     if (this.hasGraphics)

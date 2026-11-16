@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
@@ -639,6 +639,43 @@ describe("TileRequestChannel", () => {
     channel.expectRequests(0, 0);
     expect(t2.isActive).toBe(false);
     t2.expectStatus(TileLoadStatus.Ready);
+  });
+
+  it("retries tiles that failed while offline once the browser is back online", async () => {
+    const channel = new LoggingChannel(10);
+    const tree = new TestTree(imodel, channel);
+    const failedOnline = new TestTile(tree, channel, 1);
+    const failedOffline = new TestTile(tree, channel, 2);
+    const vp = mockViewport(imodel);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+
+    try {
+      requestTiles(vp, [failedOnline]);
+      IModelApp.tileAdmin.process();
+      failedOnline.rejectRequest();
+      await processOnce();
+      failedOnline.expectStatus(TileLoadStatus.NotFound);
+
+      onLine.mockReturnValue(false);
+      requestTiles(vp, [failedOffline]);
+      IModelApp.tileAdmin.process();
+      // Map imagery providers return no content when the fetch fails.
+      failedOffline.resolveRequest("undefined");
+      await processOnce();
+      failedOffline.expectStatus(TileLoadStatus.NotFound);
+
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      failedOnline.expectStatus(TileLoadStatus.NotFound);
+      failedOffline.expectStatus(TileLoadStatus.NotLoaded);
+
+      requestTiles(vp, [failedOffline]);
+      IModelApp.tileAdmin.process();
+      await failedOffline.resolveBoth();
+      failedOffline.expectStatus(TileLoadStatus.Ready);
+    } finally {
+      onLine.mockRestore();
+    }
   });
 
   it("records statistics", async () => {

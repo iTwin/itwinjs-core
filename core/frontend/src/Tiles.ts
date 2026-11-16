@@ -61,8 +61,19 @@ class TreeOwner implements TileTreeOwner {
     if (TileTreeLoadStatus.Loading === this._loadStatus) {
       this._tileTree = tree;
       this._loadStatus = newStatus;
+      if (TileTreeLoadStatus.NotFound === newStatus && IModelApp.tileAdmin.isOffline)
+        IModelApp.tileAdmin.retryWhenOnline(() => this.resetNotFound());
+
       IModelApp.tileAdmin.onTileTreeLoad.raiseEvent(this);
     }
+  }
+
+  private resetNotFound(): void {
+    if (TileTreeLoadStatus.NotFound !== this._loadStatus)
+      return;
+
+    this._tileTree = dispose(this._tileTree);
+    this._loadStatus = TileTreeLoadStatus.NotLoaded;
   }
 }
 

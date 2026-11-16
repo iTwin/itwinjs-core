@@ -150,6 +150,12 @@ export class TileRequest {
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
     this.channel.recordFailure();
+
+    // Retrying immediately would fail again and redraw in a loop, so wait until the network is back.
+    if (IModelApp.tileAdmin.isOffline) {
+      const tile = this.tile;
+      IModelApp.tileAdmin.retryWhenOnline(() => tile.resetNotFound());
+    }
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */

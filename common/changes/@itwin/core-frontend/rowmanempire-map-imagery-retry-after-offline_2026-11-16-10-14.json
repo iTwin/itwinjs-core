@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Retry tiles and tile trees that failed to load while the browser was offline once it is back online, so map imagery recovers after a network outage.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "54706661+rowmanempire@users.noreply.github.com"
+}

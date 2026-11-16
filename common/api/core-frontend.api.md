@@ -11518,6 +11518,8 @@ export abstract class Tile {
     // @internal (undocumented)
     protected _request?: TileRequest;
     abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
+    // @internal
+    resetNotFound(): void;
     setContent(content: TileContent): void;
     // (undocumented)
     protected setGraphic(graphic: RenderGraphic | undefined): void;
@@ -11626,6 +11628,8 @@ export class TileAdmin {
     // @internal (undocumented)
     invalidateAllScenes(): void;
     // @internal
+    get isOffline(): boolean;
+    // @internal
     get isPreloadingAllowed(): boolean;
     // @internal
     isTileInUse(marker: TileUsageMarker): boolean;
@@ -11674,6 +11678,8 @@ export class TileAdmin {
     // @internal (undocumented)
     requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
     resetStatistics(): void;
+    // @internal
+    retryWhenOnline(retry: () => void): void;
     // @alpha
     get selectedLoadedTiles(): Iterable<Tile>;
     get statistics(): TileAdmin.Statistics;
