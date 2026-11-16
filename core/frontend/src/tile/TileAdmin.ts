@@ -184,7 +184,7 @@ export class TileAdmin {
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
   private readonly _cloudStorage?: FrontendStorage;
-  private readonly _retriesWhenOnline = new Set<() => void>();
+  private readonly _retriesWhenOnline = new Map<IModelConnection, Array<() => void>>();
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -348,20 +348,26 @@ export class TileAdmin {
   }
 
   /** Runs `retry` the next time the browser goes back online, so that a tile or tile tree that failed to load while offline can be loaded again.
+   * The retry is dropped if `iModel` is closed first.
    * @internal
    */
-  public retryWhenOnline(retry: () => void): void {
-    this._retriesWhenOnline.add(retry);
+  public retryWhenOnline(iModel: IModelConnection, retry: () => void): void {
+    let retries = this._retriesWhenOnline.get(iModel);
+    if (undefined === retries)
+      this._retriesWhenOnline.set(iModel, retries = []);
+
+    retries.push(retry);
   }
 
   private retryFailuresWhileOffline(): void {
     if (0 === this._retriesWhenOnline.size)
       return;
 
-    const retries = [...this._retriesWhenOnline];
+    const retries = [...this._retriesWhenOnline.values()];
     this._retriesWhenOnline.clear();
-    for (const retry of retries)
-      retry();
+    for (const retriesForIModel of retries)
+      for (const retry of retriesForIModel)
+        retry();
 
     this.invalidateAllScenes();
   }
@@ -999,6 +1005,7 @@ export class TileAdmin {
   }
 
   private onIModelClosed(iModel: IModelConnection): void {
+    this._retriesWhenOnline.delete(iModel);
     this._requestsPerUser.forEach((_req, user) => {
       if (user.iModel === iModel)
         this.onUserIModelClosed(user);

@@ -11679,7 +11679,7 @@ export class TileAdmin {
     requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
     resetStatistics(): void;
     // @internal
-    retryWhenOnline(retry: () => void): void;
+    retryWhenOnline(iModel: IModelConnection, retry: () => void): void;
     // @alpha
     get selectedLoadedTiles(): Iterable<Tile>;
     get statistics(): TileAdmin.Statistics;

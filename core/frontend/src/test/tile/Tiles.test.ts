@@ -205,6 +205,19 @@ describe("Tiles", () => {
     }
   });
 
+  it("drops retries for an iModel that is closed before the browser is back online", async () => {
+    const closedIModel = createBlankConnection("closed");
+    const retryForClosed = vi.fn();
+    const retryForOpen = vi.fn();
+    IModelApp.tileAdmin.retryWhenOnline(closedIModel, retryForClosed);
+    IModelApp.tileAdmin.retryWhenOnline(imodel, retryForOpen);
+
+    await closedIModel.close();
+    window.dispatchEvent(new Event("online"));
+    expect(retryForClosed).not.toHaveBeenCalled();
+    expect(retryForOpen).toHaveBeenCalledOnce();
+  });
+
   it("resetTileTreeOwner should remove the tiletree", async () => {
 
     const contentSize = 100;

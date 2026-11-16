@@ -356,7 +356,8 @@ export class MapTile extends RealityTile {
     super.setNotFound();
 
     // For map tiles assume that an unfound tile implies descendants and siblings will also be unfound.
-    if (undefined !== this.parent)
+    // A tile that failed while offline is retried once online, so keep it and its siblings.
+    if (undefined !== this.parent && !IModelApp.tileAdmin.isOffline)
       this.parent.setLeaf();
   }
 

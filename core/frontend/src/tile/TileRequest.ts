@@ -154,7 +154,7 @@ export class TileRequest {
     // Retrying immediately would fail again and redraw in a loop, so wait until the network is back.
     if (IModelApp.tileAdmin.isOffline) {
       const tile = this.tile;
-      IModelApp.tileAdmin.retryWhenOnline(() => tile.resetNotFound());
+      IModelApp.tileAdmin.retryWhenOnline(tile.tree.iModel, () => tile.resetNotFound());
     }
   }
 
