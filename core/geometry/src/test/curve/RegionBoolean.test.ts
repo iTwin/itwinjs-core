@@ -1752,12 +1752,16 @@ describe("RegionBooleanNearTangentArcs", () => {
     // intersection to the endpoint would reorder or split vertices, so these intersections must stay where they are.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapRegressions.imjs", "utf8"))) as Loop[];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapRegressions.imjs", "utf8"))) as AnyRegion[];
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
     // expected areas of Union, Union with simplifyUnion, Intersection (undefined if empty), AMinusB, BMinusA, Parity
     const expectedAreas: Array<Array<number | undefined>> = [
       [537.1261, 537.1261, undefined, 210.14173, 326.98438, 537.1261],
-      [1697.9086, 1703.7003, 0.47226, 1051.13375, 652.0943, 1703.22805],
-      [1103.66156, 1103.66049, undefined, 1050.70816, 52.95348, 1103.66156],
+      [1703.7003, 1703.7003, 0.47226, 1051.13375, 652.0943, 1703.22805],
+      [1103.66003, 1103.66049, undefined, 1050.70816, 52.95187, 1103.66003],
     ];
     const ops: Array<[RegionBinaryOpType, boolean]> = [
       [RegionBinaryOpType.Union, false], [RegionBinaryOpType.Union, true], [RegionBinaryOpType.Intersection, false],
@@ -1777,7 +1781,7 @@ describe("RegionBooleanNearTangentArcs", () => {
             ck.testUndefined(result, message);
           } else if (ck.testDefined(result, message) && result) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, 100 * (j + 1));
-            const area = RegionOps.computeXYArea(result)!;
+            const area = resultArea(result);
             ck.testTrue(Math.abs(expectedArea - area) < 1.0e-4, message, expectedArea, area);
           }
         }
@@ -1785,6 +1789,54 @@ describe("RegionBooleanNearTangentArcs", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapDoesNotReorderVertices");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentSnapKeepsVertexGroupsTogether", () => {
+    // Near-tangent arc intersections that would move to the same arc endpoint must move together or not at all, and must
+    // not move to an endpoint where a neighbouring curve that is near-tangent to the same arc starts.
+    // Case 0: a thin quadrilateral in A crosses the circle just beyond the end of the shared arc, so the intersection of
+    // the fillet with the circle stays, and the intersection of the fillet with the shared arc must stay too.
+    // Cases 1 and 2: two shapes of B meet at nearly the same point of the circle from both sides, one of their fillets
+    // overlaps the circle by up to the tolerance and is not moved, so the other one must not be moved either.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapGroups.imjs", "utf8"))) as AnyRegion[];
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    // expected areas of Union, Union with simplifyUnion, Intersection (0: empty or a sliver), AMinusB, BMinusA, Parity
+    const expectedAreas: number[][] = [
+      [2644.10755, 2644.10755, 0.25354, 1053.5687, 1590.28531, 2643.85401],
+      [1217.85087, 1217.85087, 0, 1050.70863, 167.14224, 1217.85087],
+      [1270.77354, 1270.77354, 0, 1050.70863, 220.06491, 1270.77354],
+    ];
+    const ops: Array<[RegionBinaryOpType, boolean]> = [
+      [RegionBinaryOpType.Union, false], [RegionBinaryOpType.Union, true], [RegionBinaryOpType.Intersection, false],
+      [RegionBinaryOpType.AMinusB, false], [RegionBinaryOpType.BMinusA, false], [RegionBinaryOpType.Parity, false],
+    ];
+    if (ck.testExactNumber(2 * expectedAreas.length, inputs.length, "input regions")) {
+      let x0 = 0;
+      for (let i = 0; i < expectedAreas.length; i++) {
+        const [regionA, regionB] = [inputs[2 * i], inputs[2 * i + 1]];
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB], x0);
+        for (let j = 0; j < ops.length; j++) {
+          const [op, simplifyUnion] = ops[j];
+          const expectedArea = expectedAreas[i][j];
+          const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+          const message = `case=${i} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+          if (expectedArea === 0 && result === undefined)
+            continue;
+          if (ck.testDefined(result, message) && result) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, 100 * (j + 1));
+            const area = resultArea(result);
+            ck.testTrue(Math.abs(expectedArea - area) < 1.0e-4, message, expectedArea, area);
+          }
+        }
+        x0 += 100;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapKeepsVertexGroupsTogether");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("NearTangentFilletContinuingSharedArcInside", () => {

@@ -13,6 +13,7 @@ import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
 import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -683,6 +684,58 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     return false;
   }
+  /**
+   * Whether a curve that is neither `otherArc` nor `arc`, nor coincident with `otherArc`, nor on its extension (as
+   * another piece of the same ellipse) has an isolated intersection with `arc` within `tol` of `point`, or has an
+   * isolated intersection with `otherArc` and an endpoint within `2 * tol` of `point` (e.g. the fillet of a neighbouring
+   * shape that starts there and is itself near-tangent to `otherArc`).
+   * * Only a curve that is tangent to `otherArc` at `point` (angle below 1.0e-4 radians) and stays within `tol` of
+   * `otherArc` over the distance `moveDistance` from `point` counts. A curve that leaves `otherArc` sooner (e.g. a line
+   * at a small angle to it) does not keep the moved intersection from being merged with the endpoint.
+   */
+  private hasForeignCurveAtPoint(arc: Arc3d, point: Point3d, tol: number, otherArc: Arc3d, moveDistance: number): boolean {
+    let fullEllipse: Arc3d | undefined;
+    for (const pair of this._results) {
+      for (const [detail, partner] of [[pair.detailA, pair.detailB], [pair.detailB, pair.detailA]]) {
+        const partnerCurve = partner.curve;
+        if (!partnerCurve || detail.isInterval() || partnerCurve === otherArc || partnerCurve === arc)
+          continue;
+        if (detail.curve === arc) {
+          if (detail.point.distanceXY(point) > tol)
+            continue;
+        } else if (detail.curve === otherArc) {
+          if (partnerCurve.startPoint().distanceXY(point) > 2 * tol && partnerCurve.endPoint().distanceXY(point) > 2 * tol)
+            continue;
+        } else {
+          continue;
+        }
+        if (this.hasCoincidentInterval(partnerCurve, otherArc))
+          continue;
+        if (!fullEllipse)
+          fullEllipse = Arc3d.create(otherArc.center, otherArc.vector0, otherArc.vector90, AngleSweep.create360());
+        const onExtension = fullEllipse.closestPointXY(partnerCurve.fractionToPoint(0.5), false);
+        if (onExtension && onExtension.a <= tol)
+          continue; // another piece of the same ellipse
+        // only a curve that leaves the point tangent to the other arc (e.g. a fillet) is foreign, not a curve that
+        // crosses it there or is only nearly tangent to it (e.g. a line at a small angle)
+        const partnerFraction = partnerCurve.startPoint().distanceXY(point) <= partnerCurve.endPoint().distanceXY(point) ? 0 : 1;
+        const partnerTangent = partnerCurve.fractionToPointAndDerivative(partnerFraction, CurveCurveIntersectXY._workRayA).direction;
+        const closest = otherArc.closestPointXY(point, false);
+        if (!closest)
+          continue;
+        const otherTangent = otherArc.fractionToPointAndDerivative(closest.fraction, CurveCurveIntersectXY._workRayB).direction;
+        const magnitudes = partnerTangent.magnitudeXY() * otherTangent.magnitudeXY();
+        if (magnitudes === 0 || Math.abs(partnerTangent.crossProductXY(otherTangent)) > 1.0e-4 * magnitudes)
+          continue;
+        const partnerLength = partnerCurve.curveLength();
+        const step = partnerLength > 0 ? Math.min(1, moveDistance / partnerLength) : 0;
+        const sample = fullEllipse.closestPointXY(partnerCurve.fractionToPoint(partnerFraction === 0 ? step : 1 - step), false);
+        if (sample && sample.a <= tol)
+          return true;
+      }
+    }
+    return false;
+  }
   /** Whether a coincident interval between `curveA` and `curveB` has been recorded. */
   private hasCoincidentInterval(curveA: CurvePrimitive, curveB: CurvePrimitive): boolean {
     for (const pair of this._results) {
@@ -742,13 +795,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const tol = this._coincidentGeometryContext.tolerance;
     interface Move { detail: CurveLocationDetail, fraction: number, point: Point3d }
     interface Side { curve: Arc3d, oldPoint: Point3d, newFraction: number, newPoint: Point3d, counterpart: Arc3d, counterpartPoint: Point3d }
-    const candidates: { snap: NearTangentSnap, endPoint: Point3d, sides: Side[], moves: Move[] }[] = [];
+    const candidates: { snap: NearTangentSnap, endPoint: Point3d, sides: Side[], moves: Move[], blocked: boolean }[] = [];
     for (const snap of this._nearTangentSnaps) {
       if (!this._results.includes(snap.pair))
         continue; // the pair was replaced, e.g. by conversion to a chain detail
       const endPoint = snap.arc.fractionToPoint(snap.fraction);
       if (!this.hasCoincidentIntervalEndNearPoint(snap.other, endPoint, tol, snap.arc))
         continue;
+      // Another curve that is not coincident with the other arc leaves the endpoint nearly tangent to it (e.g. the fillet
+      // of a neighbouring shape that starts there): the endpoint would become a vertex of two curves tangent to the other
+      // arc. Such a candidate is not moved, and it also blocks the candidates moving to the same endpoint (see below).
+      const arcIsA = snap.pair.detailA.curve === snap.arc;
+      const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
+      const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
+      const blocked = this.hasForeignCurveAtPoint(snap.arc, endPoint, tol, snap.other, arcDetail.point.distanceXY(endPoint));
       let otherFraction = snap.otherFraction;
       let otherPoint = snap.other.fractionToPoint(otherFraction);
       const overlapEnd = this.closestCoincidentIntervalEnd(snap.other, endPoint, tol, snap.arc);
@@ -760,9 +820,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         otherFraction = overlapEnd.fraction;
         otherPoint = overlapEnd.point;
       }
-      const arcIsA = snap.pair.detailA.curve === snap.arc;
-      const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
-      const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
       candidates.push({
         snap, endPoint,
         sides: [
@@ -773,19 +830,45 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           { detail: arcDetail, fraction: snap.fraction, point: endPoint },
           { detail: otherDetail, fraction: otherFraction, point: otherPoint },
         ],
+        blocked,
       });
     }
+    if (candidates.length === 0) {
+      this._nearTangentSnaps = [];
+      return;
+    }
+    // index the recorded pairs by curve, and the candidate targets by pair, so the test below is linear in the number
+    // of pairs on the two arcs of a candidate rather than in the number of all pairs
+    const targetsByPair = new Map<CurveLocationDetailPair, Point3d[]>();
+    for (const c of candidates) {
+      const targets = targetsByPair.get(c.snap.pair);
+      if (targets)
+        targets.push(c.endPoint);
+      else
+        targetsByPair.set(c.snap.pair, [c.endPoint]);
+    }
+    const pairsByCurve = new Map<CurvePrimitive | undefined, CurveLocationDetailPair[]>();
+    for (const pair of this._results) {
+      for (const curve of pair.detailA.curve === pair.detailB.curve ? [pair.detailA.curve] : [pair.detailA.curve, pair.detailB.curve]) {
+        const pairs = pairsByCurve.get(curve);
+        if (pairs)
+          pairs.push(pair);
+        else
+          pairsByCurve.set(curve, [pair]);
+      }
+    }
     const movesToSameTarget = (pair: CurveLocationDetailPair, endPoint: Point3d) =>
-      candidates.some((c) => c.snap.pair === pair && c.endPoint.distanceXY(endPoint) <= tol);
-    const accepted: Move[][] = [];
-    for (const candidate of candidates) {
+      targetsByPair.get(pair)?.some((target) => target.distanceXY(endPoint) <= tol) ?? false;
+    const blockedCandidates = new Set<number>();
+    for (let iCandidate = 0; iCandidate < candidates.length; iCandidate++) {
+      const candidate = candidates[iCandidate];
       const moves = candidate.moves;
-      let blocked = false;
-      for (const pair of this._results) {
-        if (blocked || pair === candidate.snap.pair || movesToSameTarget(pair, candidate.endPoint))
-          continue;
-        for (const side of candidate.sides) {
-          const span = side.oldPoint.distanceXY(side.newPoint);
+      let blocked = candidate.blocked;
+      for (const side of candidate.sides) {
+        const span = side.oldPoint.distanceXY(side.newPoint);
+        for (const pair of pairsByCurve.get(side.curve) ?? []) {
+          if (blocked || pair === candidate.snap.pair || movesToSameTarget(pair, candidate.endPoint))
+            continue;
           for (const [detail, otherDetail] of [[pair.detailA, pair.detailB], [pair.detailB, pair.detailA]]) {
             if (blocked || detail.curve !== side.curve)
               continue;
@@ -811,12 +894,30 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           }
         }
       }
-      if (!blocked)
-        accepted.push(moves);
+      if (blocked)
+        blockedCandidates.add(iCandidate);
     }
-    for (const moves of accepted)
-      for (const move of moves)
-        move.detail.setFP(move.fraction, move.point.clone());
+    // Candidates moving to the same target skip each other in the test above, so they must move together: if one of
+    // them is blocked, so are the others (else, e.g., the intersection of a fillet with a circle stays while the one with
+    // an arc coincident with the circle moves).
+    for (let changed = true; changed;) {
+      changed = false;
+      for (let i = 0; i < candidates.length; i++) {
+        if (blockedCandidates.has(i))
+          continue;
+        for (const j of blockedCandidates) {
+          if (candidates[i].endPoint.distanceXY(candidates[j].endPoint) <= tol) {
+            blockedCandidates.add(i);
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+    for (let i = 0; i < candidates.length; i++)
+      if (!blockedCandidates.has(i))
+        for (const move of candidates[i].moves)
+          move.detail.setFP(move.fraction, move.point.clone());
     this._nearTangentSnaps = [];
   }
   /**
