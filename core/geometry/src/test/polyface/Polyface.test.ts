@@ -2257,3 +2257,30 @@ describe("ClashExamples", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+describe("PolyfaceBuilder.shouldTriangulate", () => {
+  it("RotationalSweep facets are all triangles", () => {
+    const ck = new Checker();
+    const contour = Loop.create(Arc3d.createXY(Point3d.create(2, 0, 0), 0.5));
+    const axis = Ray3d.create(Point3d.createZero(), Vector3d.unitY());
+    for (const capped of [false, true]) {
+      for (const needNormals of [false, true]) {
+        for (const needParams of [false, true]) {
+          const sweep = RotationalSweep.create(contour, axis, Angle.createDegrees(90), capped)!;
+          const options = StrokeOptions.createForFacets();
+          options.shouldTriangulate = true;
+          options.needNormals = needNormals;
+          options.needParams = needParams;
+          const builder = PolyfaceBuilder.create(options);
+          builder.addRotationalSweep(sweep);
+          const polyface = builder.claimPolyface(true);
+          ck.testTrue(polyface.facetCount > 0, "polyface has facets");
+          const visitor = polyface.createVisitor(0);
+          while (visitor.moveToNextFacet())
+            ck.testExactNumber(visitor.pointCount, 3, `all facets are triangles (capped=${capped}, normals=${needNormals}, params=${needParams})`);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
