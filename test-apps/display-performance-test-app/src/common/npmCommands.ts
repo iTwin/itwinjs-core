@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as child_process from "child_process";
+import * as child_process from "node:child_process";
 
 const execSync = child_process.execSync;
 let args = "";

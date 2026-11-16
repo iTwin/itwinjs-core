@@ -30,7 +30,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: "24.x"
+          node-version: "26.x"
 
       - name: Run invalidate-status-checks.mjs
         run: |

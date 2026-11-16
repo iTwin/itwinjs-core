@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { RealityDataSourceGoogle3dTilesImpl } from "../internal/RealityDataSourceGoogle3dTilesImpl";
 import { getGoogle3dTilesUrl, Google3dTilesProvider } from "../RealityDataSource";
@@ -209,6 +209,32 @@ describe("RealityDataSourceGoogle3dTilesImpl", async () => {
       // Because all tileset search params are stored in RealityDataSourceGoogle3dTilesImpl._searchParams, not just root, the tile will recieve both session ids.
       // In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
+    });
+
+    it("does not forward search params to a different origin", async () => {
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: "https://tile.googleapis.com/v1/root.json?key=key&session=s" });
+      expect(source?.getTileUrl("https://evil.example.com/tile.glb")).toEqual("https://evil.example.com/tile.glb");
+      expect(source?.getTileUrl("//evil.example.com/tile.glb")).toEqual("https://evil.example.com/tile.glb");
+      expect(source?.getTileUrl("https://evil.example.com/tileset.json?session=x")).toEqual("https://evil.example.com/tileset.json?session=x");
+      // Cross-origin tileset params must not be accumulated either.
+      expect(source?.getTileUrl("tile.glb")).toEqual("https://tile.googleapis.com/tile.glb?key=key&session=s");
+    });
+
+    it("only sends the auth token to the root origin", async () => {
+      const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("{}"));
+      const getAuthToken = vi.fn(async () => "token");
+      const url = "https://tile.googleapis.com/v1/root.json";
+      const source = await RealityDataSourceGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url }, undefined, undefined, getAuthToken) as TestGoogle3dTilesImpl;
+      source.setBaseUrl(url);
+
+      await source.getTileJson("https://evil.example.com/tileset.json");
+      expect(getAuthToken).not.toHaveBeenCalled();
+      expect(new Headers(fetchStub.mock.lastCall?.[1]?.headers).has("authorization")).toBe(false);
+
+      await source.getTileJson("tileset.json");
+      expect(getAuthToken).toHaveBeenCalledTimes(1);
+      expect(new Headers(fetchStub.mock.lastCall?.[1]?.headers).get("authorization")).toContain("token");
+      fetchStub.mockRestore();
     });
   });
 });

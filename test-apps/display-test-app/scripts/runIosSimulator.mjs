@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
-import { execSync, spawnSync } from 'child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
@@ -45,6 +45,7 @@ class SimctlWithOpts extends Simctl {
     const { stdout, stderr } = await this.exec('launch', {
       args: [...options, this.requireUdid('launch'), bundleId, ...args],
       architectures: "arm64",
+      logErrors: false,
     });
     const trimmedOut = stdout.trim();
     const trimmedErr = stderr.trim();
@@ -159,14 +160,17 @@ async function startBoot(simctl, context = "") {
  * repair the service, erase the device to clear the corrupted state, and retry the boot once.
  * @param {SimctlWithOpts} simctl
  * @param {{ name: string; udid: string; state: string; }} device
+ * @param {boolean} [forceRepair=false] Skip the initial boot and require repair before booting.
  */
-async function bootSimulator(simctl, device) {
-  log(`Booting simulator: ${device.name}`);
-  try {
-    await startBoot(simctl);
-    return;
-  } catch {
-    // Fall through to repair-and-retry below.
+async function bootSimulator(simctl, device, forceRepair = false) {
+  if (!forceRepair) {
+    log(`Booting simulator: ${device.name}`);
+    try {
+      await startBoot(simctl);
+      return;
+    } catch {
+      // Fall through to repair-and-retry below.
+    }
   }
 
   // Recover a wedged CoreSimulator service and clear any corrupted device state, then retry once.
@@ -175,11 +179,41 @@ async function bootSimulator(simctl, device) {
   try {
     await simctl.exec("erase", { args: [device.udid] });
   } catch (err) {
+    if (forceRepair)
+      throw err;
     log(`Failed to erase simulator (continuing): ${err}`);
   }
 
   log(`Re-booting simulator: ${device.name}`);
   await startBoot(simctl, " after repair");
+}
+
+/** @param {unknown} err */
+function isTimeout(err) {
+  return typeof err === "object" && err !== null && (
+    ("code" in err && err.code === "ETIMEDOUT") ||
+    ("message" in err && typeof err.message === "string" && /timed out after \d+ms/.test(err.message))
+  );
+}
+
+/**
+ * @param {string} name
+ * @param {(simctl: SimctlWithOpts) => Promise<boolean>} startRun
+ * @param {SimctlWithOpts} simctl
+ * @param {{ name: string; udid: string; state: string; }} device
+ */
+async function runWithTimeoutRecovery(name, startRun, simctl, device) {
+  try {
+    return await startRun(simctl);
+  } catch (err) {
+    if (!isTimeout(err))
+      throw err;
+
+    log(`${name} timed out; repairing simulators, erasing the device, and retrying once`);
+    await simctl.logDiagnostics();
+    await bootSimulator(simctl, device, true);
+    return startRun(simctl);
+  }
 }
 
 async function main() {
@@ -286,7 +320,7 @@ async function main() {
   const testResults = {};
   for (const [name, startRun] of runs) {
     try {
-      testResults[name] = await startRun(simctl);
+      testResults[name] = await runWithTimeoutRecovery(name, startRun, simctl, device);
     } catch (err) {
       log(`${name} test error: ${err}`);
       testResults[name] = false;
@@ -311,7 +345,7 @@ async function main() {
  * @param {string[]} [options]
  */
 function runXcode(action, scheme, simctl, options = []) {
-  const timeoutMs = 10 * 60 * 1000;
+  const timeoutMs = 5 * 60 * 1000;
   const result = spawnSync("xcrun", [
     "xcodebuild",
     action,
@@ -328,6 +362,8 @@ function runXcode(action, scheme, simctl, options = []) {
   ], { cwd: `${dtaRootDir}/ios/${appName}`, stdio: "inherit", timeout: timeoutMs });
   if (result.error) {
     log(`Xcode ${action} for ${scheme} did not complete: ${result.error}`);
+    if (isTimeout(result.error))
+      throw result.error;
     return false;
   }
   return result.status === 0;

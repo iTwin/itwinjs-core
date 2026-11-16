@@ -4,7 +4,7 @@
 # All other versions are run on `master` and `release/*` branches.
 #
 # Core graphics tests run in a separate blocking job, parallel to the remaining suites.
-# Move the graphics job's pool to a GPU/Mac lane for #2355 once pool access policy is settled.
+# Hosted Ubuntu renders with SwiftShader, which PlanarClipMask logs on every run.
 #
 # Note: Currently a subset of all integration tests
 
@@ -33,7 +33,7 @@ variables:
   - group: Rush Build Cache SAS Token
 
 jobs:
-  - job: Node_24_x
+  - job: Node_26_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
@@ -44,10 +44,10 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 26.x
           coreFullStackTests: no-graphics
 
-  - job: Core_Graphics_Node_24_x
+  - job: Core_Graphics_Node_26_x
     dependsOn: []
     pool:
       vmImage: ubuntu-latest
@@ -58,5 +58,5 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 26.x
           coreFullStackTests: graphics

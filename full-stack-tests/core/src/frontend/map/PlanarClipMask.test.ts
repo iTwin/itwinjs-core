@@ -19,6 +19,22 @@ describe("Planar clip mask (#integration #graphics)", () => {
   let imodel: IModelConnection;
   let viewport: ScreenTestViewport;
   let originalModelIds: Id64String[];
+  let restoreMaxTexSizeAllow: (() => void) | undefined;
+
+  /** The planar clip mask texture is always allocated at the render system's maxTexSizeAllow (4096x4096) and rasterized every
+   * frame regardless of viewport size. On software renderers (SwiftShader in CI) that makes a single masked frame take long
+   * enough to trip Electron's ~15s GPU watchdog. The 100x100 viewport needs nowhere near that resolution, so cap it for this
+   * suite only. maxTexSizeAllow also limits other textures, so the original value is restored in `after`.
+   * The WebGL System and its Capabilities are internal to core-frontend, so this reaches them structurally.
+   */
+  function capMaxTexSizeAllow(size: number): () => void {
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Mirrors private field names in core-frontend/webgl-compatibility.
+    const capabilities = (IModelApp.renderSystem as unknown as { _capabilities?: { _maxTexSizeAllow?: number } })._capabilities;
+    const original = capabilities?._maxTexSizeAllow;
+    assert(capabilities !== undefined && typeof original === "number", "Unable to locate the render system's maxTexSizeAllow");
+    capabilities._maxTexSizeAllow = Math.min(original, size);
+    return () => { capabilities._maxTexSizeAllow = original; };
+  }
 
   before(async () => {
     await TestUtility.startFrontend({
@@ -49,6 +65,8 @@ describe("Planar clip mask (#integration #graphics)", () => {
       userAgent: text(navigator.userAgent),
     })}`);
 
+    restoreMaxTexSizeAllow = capMaxTexSizeAllow(512);
+
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
     const view = await imodel.views.load("0x24");
     assert(view.isSpatialView());
@@ -74,6 +92,9 @@ describe("Planar clip mask (#integration #graphics)", () => {
         }
       }
     } finally {
+      restoreMaxTexSizeAllow?.();
+      restoreMaxTexSizeAllow = undefined;
+
       if (imodel)
         await imodel.close();
 
@@ -94,6 +115,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
     try {
       let phaseStart = performance.now();
       requestedTiles.start = vp.numRequestedTiles;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels(originalModelIds);
       vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
       vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
@@ -194,16 +216,18 @@ describe("Planar clip mask (#integration #graphics)", () => {
     await expectPixels("models visible", mask, "model");
 
     // If the model is not visible, it makes a hole in the map revealing the background color.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await expectPixels("models invisible", mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
-  it("is masked by DesignModel priority",  async function () {
+  it("is masked by DesignModel priority", async function () {
     // These tests can exceed the default timeout due to shader compilation for draping.
     this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
     await expectPixels("priority visible", mask, "model");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await expectPixels("priority invisible", mask, "map", (vp) => vp.changeViewedModels([]));
   });
 
@@ -244,6 +268,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
       getReferences: () => [treeRef],
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeViewedModels([]);
   }
 
@@ -251,7 +276,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
     await expectPixels("dynamic default", undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry",  async function () {
+  it("is masked by dynamic element geometry", async function () {
     // These tests can exceed the default timeout due to shader compilation for draping.
     this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
@@ -271,6 +296,7 @@ describe("Planar clip mask (#integration #graphics)", () => {
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
     }, "model", (vp) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels([]);
       vp.addTiledGraphicsProvider({
         forEachTileTreeRef: (_, func) => func(treeRef),
