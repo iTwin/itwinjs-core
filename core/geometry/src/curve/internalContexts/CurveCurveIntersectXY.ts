@@ -671,20 +671,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /**
-   * Whether `curve` has a recorded coincident interval with a curve other than `excludedCurve` that starts or ends within
-   * `tol` of `point`.
-   */
-  private hasCoincidentIntervalEndNearPoint(curve: CurvePrimitive, point: Point3d, tol: number, excludedCurve: CurvePrimitive): boolean {
-    for (const pair of this._results) {
-      if (pair.detailA.curve === excludedCurve || pair.detailB.curve === excludedCurve)
-        continue;
-      const detail = pair.detailA.curve === curve ? pair.detailA : pair.detailB.curve === curve ? pair.detailB : undefined;
-      if (detail && detail.isInterval() && (detail.point.distanceXY(point) <= tol || detail.point1.distanceXY(point) <= tol))
-        return true;
-    }
-    return false;
-  }
-  /**
    * Whether a curve that is neither `otherArc` nor `arc`, nor coincident with `otherArc`, nor on its extension (as
    * another piece of the same ellipse) has an isolated intersection with `arc` within `tol` of `point`, or has an
    * isolated intersection with `otherArc` and an endpoint within `2 * tol` of `point` (e.g. the fillet of a neighbouring
@@ -746,6 +732,62 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return false;
   }
   /**
+   * Whether `point` is within `tol` of an endpoint of `otherArc` where another curve of the same region as `otherArc`
+   * starts or ends and leaves at an angle to `otherArc` (above 1.0e-4 radians), that is, whether `point` is a corner of
+   * that region, as where an arc of a loop is followed by a chord, and no curve coincident with `otherArc` passes
+   * through `point`.
+   * * Curves of the same region have the same `parent` (set by region booleans to the region group member). Curves
+   * without `parent` are treated as one region. Other curves, e.g. the bridge segments that region booleans add to connect
+   * loops, are not part of the corner.
+   * * Moving an intersection of `arc` with `otherArc` to such a corner makes it a vertex where `arc` and `otherArc` (and
+   * the curves coincident with it, which end there too) leave in nearly the same direction, next to the curve that
+   * leaves the corner, and the order of the edges at that vertex was found to be unreliable. If a coincident curve passes
+   * through the corner (e.g. a circle that a sector of another region shares an arc with), the move is kept.
+   * * `pairs` are the recorded pairs with a detail on `otherArc`.
+   */
+  private isCornerOfArc(
+    otherArc: Arc3d, point: Point3d, arc: Arc3d, pairs: CurveLocationDetailPair[] | undefined, tol: number,
+  ): boolean {
+    if (!pairs || otherArc.sweep.isFullCircle)
+      return false;
+    let otherFraction: number;
+    if (otherArc.startPoint(CurveCurveIntersectXY._workPointAA0).distanceXY(point) <= tol)
+      otherFraction = 0;
+    else if (otherArc.endPoint(CurveCurveIntersectXY._workPointAA0).distanceXY(point) <= tol)
+      otherFraction = 1;
+    else
+      return false;
+    for (const pair of pairs) {
+      const partner = pair.detailA.curve === otherArc ? pair.detailB.curve : pair.detailA.curve;
+      if (!(partner instanceof Arc3d) || partner === otherArc || !pair.detailA.isInterval())
+        continue;
+      if (partner.sweep.isFullCircle
+        || (partner.startPoint(CurveCurveIntersectXY._workPointBB0).distanceXY(point) > tol && partner.endPoint(CurveCurveIntersectXY._workPointBB0).distanceXY(point) > tol)) {
+        const closest = partner.closestPointXY(point, false);
+        if (closest && closest.a <= tol)
+          return false; // a coincident curve passes through the point
+      }
+    }
+    const otherTangent = otherArc.fractionToPointAndDerivative(otherFraction, CurveCurveIntersectXY._workRayB).direction;
+    for (const pair of pairs) {
+      const partner = pair.detailA.curve === otherArc ? pair.detailB.curve : pair.detailA.curve;
+      if (!partner || partner === otherArc || partner === arc || partner.parent !== otherArc.parent || pair.detailA.isInterval())
+        continue;
+      let partnerFraction: number;
+      if (partner.startPoint(CurveCurveIntersectXY._workPointBB0).distanceXY(point) <= tol)
+        partnerFraction = 0;
+      else if (partner.endPoint(CurveCurveIntersectXY._workPointBB0).distanceXY(point) <= tol)
+        partnerFraction = 1;
+      else
+        continue;
+      const partnerTangent = partner.fractionToPointAndDerivative(partnerFraction, CurveCurveIntersectXY._workRayA).direction;
+      const magnitudes = partnerTangent.magnitudeXY() * otherTangent.magnitudeXY();
+      if (magnitudes > 0 && Math.abs(partnerTangent.crossProductXY(otherTangent)) > 1.0e-4 * magnitudes)
+        return true;
+    }
+    return false;
+  }
+  /**
    * Return the end of a recorded coincident interval of `curve` with a curve other than `excludedCurve` that is closest
    * to `point` within `tol`, or undefined if there is none.
    */
@@ -788,6 +830,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * Moving it would then reorder or merge vertices of the arc. The exception is an intersection at the old location with
    * a third arc that is coincident with the other arc and passes through its new location: this is the same crossing,
    * so it is moved along.
+   * * The intersection is not moved either if the new location on the other arc (or on the third arc, for an intersection
+   * moved along) is a corner of the region of that arc, where it ends and another curve of the region leaves at an
+   * angle (see [[isCornerOfArc]]).
    * * All decisions are made before any intersection is moved.
    * * See [[findNearTangentSnap]] for the intersections that are candidates.
    */
@@ -800,7 +845,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       if (!this._results.includes(snap.pair))
         continue; // the pair was replaced, e.g. by conversion to a chain detail
       const endPoint = snap.arc.fractionToPoint(snap.fraction);
-      if (!this.hasCoincidentIntervalEndNearPoint(snap.other, endPoint, tol, snap.arc))
+      const overlapEnd = this.closestCoincidentIntervalEnd(snap.other, endPoint, tol, snap.arc);
+      if (!overlapEnd)
         continue;
       // Another curve that is not coincident with the other arc leaves the endpoint nearly tangent to it (e.g. the fillet
       // of a neighbouring shape that starts there): the endpoint would become a vertex of two curves tangent to the other
@@ -809,17 +855,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
       const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
       const blocked = this.hasForeignCurveAtPoint(snap.arc, endPoint, tol, snap.other, arcDetail.point.distanceXY(endPoint));
-      let otherFraction = snap.otherFraction;
-      let otherPoint = snap.other.fractionToPoint(otherFraction);
-      const overlapEnd = this.closestCoincidentIntervalEnd(snap.other, endPoint, tol, snap.arc);
       // The overlap must end near the projection of the endpoint on the other arc. If they are almost a tolerance apart,
       // whether the moved intersection and the end of the overlap are merged into one vertex is decided by roundoff.
-      if (overlapEnd && overlapEnd.point.distanceXY(otherPoint) > 0.7 * tol)
+      if (overlapEnd.point.distanceXY(snap.other.fractionToPoint(snap.otherFraction)) > 0.7 * tol)
         continue;
-      if (overlapEnd) {
-        otherFraction = overlapEnd.fraction;
-        otherPoint = overlapEnd.point;
-      }
+      const otherFraction = overlapEnd.fraction;
+      const otherPoint = overlapEnd.point;
       candidates.push({
         snap, endPoint,
         sides: [
@@ -863,7 +904,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     for (let iCandidate = 0; iCandidate < candidates.length; iCandidate++) {
       const candidate = candidates[iCandidate];
       const moves = candidate.moves;
-      let blocked = candidate.blocked;
+      let blocked = candidate.blocked
+        || this.isCornerOfArc(candidate.snap.other, candidate.sides[1].newPoint, candidate.snap.arc, pairsByCurve.get(candidate.snap.other), tol);
       for (const side of candidate.sides) {
         const span = side.oldPoint.distanceXY(side.newPoint);
         for (const pair of pairsByCurve.get(side.curve) ?? []) {
@@ -883,7 +925,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               if (atOld && !detail.isInterval() && otherDetail.curve !== side.counterpart && otherDetail.curve instanceof Arc3d
                 && this.hasCoincidentInterval(otherDetail.curve, side.counterpart)) {
                 const closest = otherDetail.curve.closestPointXY(side.counterpartPoint, false);
-                if (closest && closest.point.distanceXY(side.counterpartPoint) <= tol) { // the same crossing; move it along
+                if (closest && closest.point.distanceXY(side.counterpartPoint) <= tol // the same crossing; move it along...
+                  && !this.isCornerOfArc(otherDetail.curve, closest.point, side.curve, pairsByCurve.get(otherDetail.curve), tol)) { // ...unless to a corner
                   moves.push({ detail, fraction: side.newFraction, point: side.newPoint });
                   moves.push({ detail: otherDetail, fraction: closest.fraction, point: closest.point });
                   continue;

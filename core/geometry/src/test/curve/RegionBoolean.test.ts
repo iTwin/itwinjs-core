@@ -1758,6 +1758,7 @@ describe("RegionBooleanNearTangentArcs", () => {
       ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
       : Math.abs(RegionOps.computeXYArea(result)!);
     // expected areas of Union, Union with simplifyUnion, Intersection (undefined if empty), AMinusB, BMinusA, Parity
+    // (in case 2, the union with simplifyUnion differs from the union by 4.6e-4, as on master)
     const expectedAreas: Array<Array<number | undefined>> = [
       [537.1261, 537.1261, undefined, 210.14173, 326.98438, 537.1261],
       [1703.7003, 1703.7003, 0.47226, 1051.13375, 652.0943, 1703.22805],
@@ -1837,6 +1838,53 @@ describe("RegionBooleanNearTangentArcs", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapKeepsVertexGroupsTogether");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentSnapNotToCornerOfOtherRegion", () => {
+    // A is an elliptical arc closed by a chord. B shares the end of the arc of A, and the fillet of B that starts at the
+    // corner of A (where the chord leaves the arc) is tangent to the arc of A to within tolerance. The near-tangent
+    // intersection of the fillet with the arc of A must not be moved to that corner, where the chord of A leaves.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapCorner.imjs", "utf8"))) as AnyRegion[];
+    const [regionA, regionB] = inputs;
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    // the areas of the input regions (B is clockwise), and a tolerance relative to them
+    const areaA = 273712449.249607;
+    const areaB = 202031877.114556;
+    const areaTolerance = 1.0e-9 * (areaA + areaB);
+    if (ck.testExactNumber(2, inputs.length, "input regions")
+      && ck.testTrue(Math.abs(areaA - Math.abs(RegionOps.computeXYArea(regionA)!)) < areaTolerance, "area A")
+      && ck.testTrue(Math.abs(areaB - Math.abs(RegionOps.computeXYArea(regionB)!)) < areaTolerance, "area B")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB]);
+      let y0 = 0;
+      for (const swapOperands of [false, true]) {
+        const [first, second] = swapOperands ? [regionB, regionA] : [regionA, regionB];
+        const [areaFirst, areaSecond] = swapOperands ? [areaB, areaA] : [areaA, areaB];
+        // the regions only touch, so the intersection is empty or a sliver
+        const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+          [RegionBinaryOpType.Union, false, areaFirst + areaSecond], [RegionBinaryOpType.Union, true, areaFirst + areaSecond],
+          [RegionBinaryOpType.Intersection, false, 0], [RegionBinaryOpType.AMinusB, false, areaFirst],
+          [RegionBinaryOpType.BMinusA, false, areaSecond], [RegionBinaryOpType.Parity, false, areaFirst + areaSecond],
+        ];
+        for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+          const result = RegionOps.regionBooleanXY(first, second, op, { simplifyUnion });
+          const message = `swap=${swapOperands} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+          if (expectedArea === 0 && result === undefined)
+            continue;
+          if (ck.testDefined(result, message) && result) {
+            y0 += 50000;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 0, y0);
+            const area = resultArea(result);
+            ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapNotToCornerOfOtherRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("NearTangentFilletContinuingSharedArcInside", () => {
