@@ -153,7 +153,7 @@ See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for f
 
 ### Extended ECSQL casting
 
-ECSQL casts support more target types and conversions, including in CTEs, compound queries, subqueries, and data-modification statements.
+ECSQL casts support more target types and conversions.
 
 - PostgreSQL-style postfix casts: `SELECT ECInstanceId::TEXT FROM bis.Element`.
 - Parameter casts, which give the parameter its binding type: `?::INTEGER` or `CAST(:p AS INTEGER)`.
@@ -208,6 +208,20 @@ The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($fronte
 
 ### Changed CAST results
 
-Existing `CAST(...)` expressions now use the extended rules. Boolean-to-TEXT returns `true`/`false` instead of `1`/`0`, DateTime-to-TEXT returns ISO-8601 instead of a Julian day number, Binary-to-TEXT returns Base64 instead of raw bytes, Id-to-TEXT returns hexadecimal instead of decimal, and strict enumeration casts return `NULL` for values that are not enumerators.
+Existing `CAST(...)` expressions now use the extended rules, which changes these results:
 
-Update consumers that parse those text results. For numeric Boolean or Julian day results, cast to `INTEGER` or `DOUBLE` respectively instead of `TEXT`. For decimal Id text using SQLite's signed integer representation, cast through `LONG`: `ECInstanceId::LONG::TEXT`. Converting Id text back to a number changes too: `ECInstanceId::TEXT::LONG` now returns `0`, because text-to-`LONG` keeps SQLite's rules. Use `ECInstanceId::LONG`, or `::Id` to parse Id text. For raw binary data, select the Binary value directly. Validate strict enumeration inputs before casting if the application requires invalid values to be reported.
+| Cast | Before | Now |
+| --- | --- | --- |
+| Boolean to `TEXT` | `1` or `0` | `true` or `false` |
+| DateTime to `TEXT` | Julian day number | ISO-8601 string |
+| Binary to `TEXT` | Raw bytes | Base64 string |
+| Guid to `TEXT` | Raw bytes | GUID string |
+| IGeometry to `TEXT` | Raw bytes | iModel JSON string |
+| Id to `TEXT` | Decimal | Hexadecimal |
+| `NULL` to `BOOLEAN` | `false` | `NULL` |
+| Text to `BOOLEAN` | `true` for text such as `'false'` and `'abc'` | `'false'` is `false`, `'abc'` is `NULL` |
+| Text to `DATETIME` | Leading number of the text, e.g. `2020` for `'2020-01-02'` | Parsed ISO-8601 date and time |
+| Any value to `DATE` | Time of day kept | Time of day removed |
+| Any value to a strict enumeration | Converted to the enumeration's integer or string type | `NULL` if the value isn't an enumerator |
+
+Update consumers that parse those text results. For numeric Boolean or Julian day results, cast to `INTEGER` or `DOUBLE` respectively instead of `TEXT`. For decimal Id text using SQLite's signed integer representation, cast through `LONG`: `ECInstanceId::LONG::TEXT`. Converting Id text back to a number changes too: `ECInstanceId::TEXT::LONG` now returns `0`, because text-to-`LONG` keeps SQLite's rules. Use `ECInstanceId::LONG`, or `::Id` to parse Id text. For raw binary data, select the Binary value directly. Use `IFNULL(CAST(x AS BOOLEAN), FALSE)` where `NULL` must still become `false`. Validate strict enumeration inputs before casting if the application requires invalid values to be reported.

@@ -346,6 +346,18 @@ SELECT CAST(TRUE AS TEXT) [b], CAST(e.dt AS TEXT) [d] FROM aps.TestElement e ORD
 [{ "b": "true", "d": "2017-01-01T00:00:00.000" }]
 ```
 
+# Extended cast to DATE removes the time of day
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT IIF(CAST(TIMESTAMP '2020-01-02T23:59:59' AS DATE) = DATE '2020-01-02', 'y', 'n') [a], '2020-01-02T10:00:00'::DATE::DOUBLE [b]
+```
+
+```json
+[{ "a": "y", "b": 2458850.5 }]
+```
+
 # Extended cast unsupported conversion fails to prepare
 
 - dataset: AllProperties.bim
@@ -457,6 +469,30 @@ WITH c(v) AS (SELECT 21::Id) SELECT v FROM c UNION ALL SELECT 22
 
 ```json
 [{ "v": "0x15" }, { "v": "0x16" }]
+```
+
+# Extended cast to Id checks compound column values at run time
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT v::Id [i] FROM (SELECT 21 v UNION ALL SELECT '0x15' UNION ALL SELECT 21.0 UNION ALL SELECT 1.5)
+```
+
+```json
+[{ "i": "0x15" }, { "i": "0x15" }, { "i": "0x15" }, {}]
+```
+
+# Extended cast to ClassName parses id text of compound columns
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT v::ClassName [c] FROM (SELECT 0 v UNION ALL SELECT ECInstanceId::TEXT FROM meta.ECClassDef WHERE Name = 'ECClassDef')
+```
+
+```json
+[{}, { "c": "ECDbMeta:ECClassDef" }]
 ```
 
 # Numeric casts through derived-table and CTE columns affect SQLite storage

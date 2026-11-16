@@ -94,7 +94,7 @@ An integer, or text holding a decimal or `0x` hexadecimal number, can be cast to
 
 - Text must be a complete number without spaces or a sign, and it must fit in 64 bits. Otherwise the result is `NULL`.
 - Integers are kept as they are, including their sign bit.
-- Floating-point and enumeration values cannot be cast to an Id.
+- Floating-point and enumeration values cannot be cast to an Id. Values of derived-table, CTE and compound `SELECT` columns are checked when the statement runs, because SQLite doesn't enforce column types: an integral number such as `21.0` is accepted, and other numbers return `NULL`.
 
 Casting an Id to `TEXT` returns hexadecimal, matching its representation in ECSQL results and JSON. Cast through `LONG` for decimal text using SQLite's signed integer representation: `ECInstanceId::LONG::TEXT`. Casting that hexadecimal text to `LONG` or `INTEGER` follows SQLite's rules and returns `0`, so cast it to an Id type instead, or cast the Id to `LONG` directly.
 
@@ -105,6 +105,8 @@ SELECT ' 21'::Id a, '-1'::Id b, ''::Id c, '0x1ffffffffffffffff'::Id d
 -- NULL | NULL | NULL | NULL
 SELECT 1.5::Id
 -- error
+SELECT v::Id a FROM (SELECT 21 v UNION ALL SELECT '0x15' UNION ALL SELECT 21.0 UNION ALL SELECT 1.5)
+-- 0x15, 0x15, 0x15, NULL
 SELECT '0xffffffffffffffff'::Id::TEXT a
 -- 0xffffffffffffffff
 SELECT ECInstanceId::TEXT a FROM bis.Element LIMIT 1
@@ -170,6 +172,7 @@ SELECT Model::TEXT FROM bis.Element LIMIT 1
 - `<navigation>::Id` (or `::NavId`) returns the id of the referenced instance (extended type `NavId`). `<navigation>::LONG` returns it as a plain `long`. Other Id targets, such as `<navigation>::ClassId`, aren't supported; use `<navigation>.RelECClassId` for the relationship class id.
 - `<text>::BOOLEAN` accepts `true` and `false` (any case, surrounding spaces ignored) and numeric text. A number converts to `true` if it is non-zero. Other text returns `NULL`.
 - `<text>::DATETIME` and `<text>::DATE` parse an ISO-8601 string; a trailing `Z` is dropped. A number is read as a Julian day. Malformed input returns `NULL`.
+- Casting to `DATE` removes the time of day, so `CAST(TIMESTAMP '2020-01-02T10:00:00' AS DATE) = DATE '2020-01-02'` is true.
 - `<value>::<enumeration>` returns `NULL` for a strict enumeration if the value isn't one of its enumerators. For integer enumerations, the value must be an integer, an integral number such as `2.0`, or integer text, so `'abc'` and `1.7` return `NULL`. A non-strict enumeration accepts any value. Casting an enumeration to `TEXT` returns its value, not the enumerator name.
 
 ```sql
