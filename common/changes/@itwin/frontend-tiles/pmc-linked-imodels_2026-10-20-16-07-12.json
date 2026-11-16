@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support displaying and interacting with linked iModels in a viewport.",
+      "type": "none",
+      "packageName": "@itwin/frontend-tiles"
+    }
+  ],
+  "packageName": "@itwin/frontend-tiles",
+  "email": "198982749+Copilot@users.noreply.github.com"
+}

@@ -20,12 +20,12 @@ import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometr
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
+import { _getPlanarClipMaskState } from "../../common/internal/Symbols";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   GeometryTileTreeReferenceOptions,
@@ -35,6 +35,8 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { IModelDisplayReference } from "../../IModelDisplayReference";
+import { FeatureSymbology } from "../../render/FeatureSymbology";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -551,7 +553,19 @@ class RealityModelTileLoader extends RealityTileLoader {
   }
 }
 
-export type RealityModelSource = ViewState | DisplayStyleState;
+export type RealityModelSource = IModelDisplayReference | DisplayStyleState;
+
+/** Compose the placement of `source`'s iModel into the view's coordinate space with a tile tree reference's base
+ * transform, mutating and returning `transform`. A placement applies only when the source is a linked
+ * [[IModelDisplayReference]] - a [[DisplayStyleState]] (context reality models) and the primary reference use the identity.
+ * @internal
+ */
+export function composeSourcePlacement(source: RealityModelSource, transform: Transform): Transform {
+  if (!(source instanceof DisplayStyleState) && !source.linearTransformToParent.isIdentity)
+    source.linearTransformToParent.multiplyTransformTransform(transform, transform);
+
+  return transform;
+}
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
@@ -666,6 +680,20 @@ export namespace RealityModelTileTree {
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
 
+    /** Compose a linked reference's placement into the view's coordinate space (no-op for the primary reference and
+     * for context reality models owned by the display style).
+     */
+    protected override computeTransform(tree: TileTree): Transform {
+      return composeSourcePlacement(this._source, super.computeTransform(tree));
+    }
+
+    /** A reality model displayed through an iModel reference uses that reference's symbology overrides - a context
+     * reality model (whose source is the display style) uses the viewport's.
+     */
+    protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+      return this._source instanceof DisplayStyleState ? undefined : this._source.getSymbologyOverrides();
+    }
+
     public override unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
       if (!contentRange.isNull && contentRange.diagonal().magnitude() < Constant.earthRadiusWGS84.equator)
@@ -697,7 +725,7 @@ export namespace RealityModelTileTree {
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
-      const planarClipMask = this._planarClipMask ?? context.viewport.displayStyle.getPlanarClipMaskState(this.modelId);
+      const planarClipMask = this._planarClipMask ?? (context.iModelRef.isSpatial() ? context.iModelRef[_getPlanarClipMaskState](this.modelId) : undefined);
       if (!classifierTree && !planarClipMask)
         return;
 
@@ -891,7 +919,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   private get _wantWiremesh(): boolean {
-    return this._source.viewFlags.wiremesh;
+    return this._source.activeViewFlags.wiremesh;
   }
 
   public override get castsShadows() {
@@ -1007,7 +1035,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-    /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
       cards.dataset.openStreetMapLogoCard = "true";

@@ -15,6 +15,7 @@ import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/c
 import { AccuDraw } from "../AccuDraw";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
+import type { IModelConnection } from "../IModelConnection";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
 import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -323,7 +324,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   public forcedHandle = ViewHandleType.None;
   /** @internal */
-  protected _depthPreview?: { testPoint: Point3d, pickRadius: number, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, isDefaultDepth: boolean, sourceId?: string };
+  protected _depthPreview?: { testPoint: Point3d, pickRadius: number, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, isDefaultDepth: boolean, sourceId?: string, sourceIModel?: IModelConnection };
   /** @internal */
   protected _startPose?: ViewPose;
 
@@ -393,7 +394,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   public pickDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
     if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
-      ev.viewport.flashedId = undefined;
+      ev.viewport.flashedElement = undefined;
 
     this.clearDepthPoint();
     if (isPreview && this.inDynamicUpdate)
@@ -427,7 +428,7 @@ export abstract class ViewManip extends ViewTool {
     isValidDepth = this.viewHandles.hitHandle.adjustDepthPoint(isValidDepth, vp, result.plane, result.source);
 
     if (isPreview)
-      this._depthPreview = { testPoint: ev.rawPoint, pickRadius: pickRadiusPixels, plane: result.plane, source: result.source, isDefaultDepth: !isValidDepth, sourceId: result.sourceId };
+      this._depthPreview = { testPoint: ev.rawPoint, pickRadius: pickRadiusPixels, plane: result.plane, source: result.source, isDefaultDepth: !isValidDepth, sourceId: result.sourceId, sourceIModel: result.sourceIModel };
 
     return (isValidDepth || isPreview ? result.plane.getOriginRef() : undefined);
   }
@@ -548,11 +549,14 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
 
     const prevSourceId = this.getDepthPointGeometryId();
+    const prevSourceIModel = this._depthPreview?.sourceIModel;
     const showDepthChanged = (undefined !== this.pickDepthPoint(ev, true) || this.clearDepthPoint());
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
-      if (currSourceId !== prevSourceId)
-        ev.viewport.flashedId = currSourceId;
+      const currSourceIModel = this._depthPreview?.sourceIModel;
+      // Compare the iModel too - when displaying linked iModels, elements of different iModels can share an Id.
+      if (currSourceId !== prevSourceId || currSourceIModel !== prevSourceIModel)
+        ev.viewport.flashedElement = undefined !== currSourceId ? { id: currSourceId, iModel: currSourceIModel ?? ev.viewport.iModel } : undefined;
 
       ev.viewport.invalidateDecorations();
     }
@@ -851,9 +855,10 @@ export abstract class ViewManip extends ViewTool {
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean> {
-    if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
+    const ref = viewport.primaryIModelRef;
+    if (!ref.isAlwaysDrawnExclusive || 0 === ref.alwaysDrawnElements.size)
       return false;
-    await viewport.zoomToElements(viewport.alwaysDrawn, options);
+    await viewport.zoomToElements(ref.alwaysDrawnElements, options);
     return true;
   }
 
