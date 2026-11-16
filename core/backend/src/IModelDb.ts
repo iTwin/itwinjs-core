@@ -690,7 +690,7 @@ export abstract class IModelDb extends IModel {
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
-      if (!this.isReadonly)
+      if (!this[_nativeDb].isReadonly())
         this[_nativeDb].saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
       this[_activeTxn] = undefined;
@@ -763,7 +763,7 @@ export abstract class IModelDb extends IModel {
     // Give the active txn a chance to save or abandon before beforeClose() cleanup runs.
     // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
     // subclasses that override onClose() to abandon changes can do so before that save.
-    if (!this.isReadonly)
+    if (!this[_nativeDb].isReadonly())
       (this[_activeTxn] ?? this[_implicitTxn]).onClose();
 
     this.beforeClose();
@@ -829,7 +829,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public vacuum(): void {
-    if (!this.isOpen || this.isReadonly)
+    if (!this.isOpen || this[_nativeDb].isReadonly())
       throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
 
     this[_nativeDb].clearECDbCache();
@@ -844,7 +844,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public analyze() {
-    if (!this.isOpen || this.isReadonly)
+    if (!this.isOpen || this[_nativeDb].isReadonly())
       throw new IModelError(IModelStatus.BadRequest, "IModel is not open or is read-only");
 
     this[_nativeDb].analyze();
@@ -1421,7 +1421,7 @@ export abstract class IModelDb extends IModel {
    * rarely be copied, and even less so while they're opened. But this scenario is sometimes encountered for tests.
    */
   public performCheckpoint() {
-    if (!this.isReadonly) {
+    if (!this[_nativeDb].isReadonly()) {
       this[_nativeDb].saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
@@ -3958,7 +3958,7 @@ export class BriefcaseDb extends IModelDb {
   protected makeLockControl() {
     if (this.useLockServer)
       this._locks = createServerBasedLocks(this);
-    else if (this._writeOnDemand && this.isReadonly)
+    else if (this._writeOnDemand && this[_nativeDb].isReadonly())
       this._locks = createWriteOnDemandLocks(this);
   }
 
@@ -3966,6 +3966,18 @@ export class BriefcaseDb extends IModelDb {
   private _writeOnDemand = false;
   private _editingScopeActive = false;
   private _switchBackTimer?: NodeJS.Timeout;
+  private _hubOperations = 0;
+
+  /** SPIKE: a push or pull holds write access until it ends. */
+  private async withHubOperation<T>(operation: () => Promise<T>): Promise<T> {
+    this._hubOperations++;
+    try {
+      return await operation();
+    } finally {
+      this._hubOperations--;
+      this.scheduleSwitchToReadonly();
+    }
+  }
 
   /** SPIKE: how long a write-on-demand briefcase waits after the last save before it switches back to read-only.
    * A short wait keeps a command that saves several times from switching back and forth.
@@ -3986,7 +3998,12 @@ export class BriefcaseDb extends IModelDb {
   /** SPIKE: true if this briefcase is read-only now but switches to read-write on the first write.
    * @alpha
    */
-  public get canBecomeWritable(): boolean { return this._writeOnDemand && this.isReadonly; }
+  public get canBecomeWritable(): boolean { return this._writeOnDemand && this[_nativeDb].isReadonly(); }
+
+  /** SPIKE: a write-on-demand briefcase is not read-only, because it can write. The first write switches the file to read-write.
+   * Code that checks `isReadonly` before it writes then reaches the write, and the write triggers the switch.
+   */
+  public override get isReadonly(): boolean { return super.isReadonly && !this._writeOnDemand; }
 
   /** SPIKE: switch a read-only write-on-demand briefcase to read-write in place.
    * Does nothing if the briefcase is already read-write, or was not opened with `writeOnDemand`.
@@ -4024,14 +4041,15 @@ export class BriefcaseDb extends IModelDb {
   public trySwitchToReadonly(): boolean {
     if (!this._writeOnDemand || !this.isOpen)
       return false;
-    if (this.isReadonly)
+    if (this[_nativeDb].isReadonly())
       return true;
 
     const busy = undefined !== this[_activeTxn]
       || this._editingScopeActive
       || this[_nativeDb].hasUnsavedChanges()
       || this.txns.isIndirectChanges
-      || this.txns.getMultiTxnOperationDepth() > 0;
+      || this.txns.getMultiTxnOperationDepth() > 0
+      || this._hubOperations > 0;
     if (busy)
       return false;
 
@@ -4228,12 +4246,15 @@ export class BriefcaseDb extends IModelDb {
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
         // SPIKE: a write-on-demand briefcase that is read-write now made the change itself.
-        if (!briefcaseDb.isReadonly)
+        if (!briefcaseDb[_nativeDb].isReadonly())
           return;
         // The other connection may have changed the schema, so drop everything prepared against the old one.
         briefcaseDb.clearCaches();
         nativeDb.restartDefaultTxn();
         briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
+        // SPIKE: reload the cached iModel properties (extents, geolocation, name) that the other connection may have changed.
+        // This raises the change events, so the frontend is told too.
+        briefcaseDb[_refreshIModelProps]();
       });
 
       // Stop the watcher when we close this connection.
@@ -4458,7 +4479,7 @@ export class BriefcaseDb extends IModelDb {
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
-    const isReadonly = this.isReadonly;
+    const isReadonly = this[_nativeDb].isReadonly();
     let locks: LockControl | undefined;
     try {
       if (isReadonly) {
@@ -4494,6 +4515,8 @@ export class BriefcaseDb extends IModelDb {
 
     // refresh cached properties that could have been changed by another process writing to the same briefcase
     this.changeset = this[_nativeDb].getCurrentChangeset();
+    // SPIKE: the iModel properties (extents, geolocation, name) can also have changed.
+    this[_refreshIModelProps]();
 
     // assert what should never change
     if (this.iModelId !== this[_nativeDb].getIModelId() || this.iTwinId !== this[_nativeDb].getITwinId())
@@ -4505,6 +4528,10 @@ export class BriefcaseDb extends IModelDb {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
   */
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
+    return this.withHubOperation(async () => this.pullChangesImpl(arg));
+  }
+
+  private async pullChangesImpl(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       SchemaSync.updateDbSchema(this);
@@ -4684,6 +4711,10 @@ export class BriefcaseDb extends IModelDb {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    */
   public async pushChanges(arg: PushChangesArgs): Promise<void> {
+    return this.withHubOperation(async () => this.pushChangesImpl(arg));
+  }
+
+  private async pushChangesImpl(arg: PushChangesArgs): Promise<void> {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
       return;
 
@@ -4783,7 +4814,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close(options?: CloseIModelArgs) {
-    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
+    if (this.isBriefcase && this.isOpen && !this[_nativeDb].isReadonly() && this.txns.rebaser.inProgress()) {
       this[_nativeDb].abandonChanges();
     }
     super.close(options);
@@ -5070,7 +5101,7 @@ export class StandaloneDb extends BriefcaseDb {
   */
   protected override beforeClose(): void {
     super.beforeClose();
-    if (this.isReadonly || !this.txns.hasLocalChanges)
+    if (this[_nativeDb].isReadonly() || !this.txns.hasLocalChanges)
       return;
 
     const nativeDb = this[_nativeDb];

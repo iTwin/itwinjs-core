@@ -337,7 +337,10 @@ export class BriefcaseConnection extends IModelConnection {
    * Tools that need a writable briefcase can run on it.
    * @alpha
    */
-  public get canBecomeWritable(): boolean { return this._writeOnDemand && this.isReadonly; }
+  public get canBecomeWritable(): boolean { return this._writeOnDemand && this.openMode === OpenMode.Readonly; }
+
+  /** SPIKE: a write-on-demand briefcase is not read-only, because it can write. The first write switches it to read-write. */
+  public override get isReadonly(): boolean { return super.isReadonly && !this._writeOnDemand; }
 
   /** SPIKE: called when the backend switches a write-on-demand briefcase between read-only and read-write.
    * @internal
