@@ -61,12 +61,6 @@ export class ImageryMapTile extends RealityTile {
     this._failedWhileOffline = IModelApp.tileAdmin.isOffline;
   }
 
-  /** @internal */
-  public override resetNotFound(): void {
-    super.resetNotFound();
-    this._failedWhileOffline = false;
-  }
-
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
