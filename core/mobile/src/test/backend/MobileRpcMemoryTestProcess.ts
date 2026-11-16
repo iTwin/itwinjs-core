@@ -156,7 +156,10 @@ async function measure(payloadBytes: number, roundtrip = false): Promise<MemoryR
   try {
     const [ready] = await nextMessage() as [{ port: number, token: string }];
     Object.defineProperty(globalThis, "window", {
-      value: { location: { hash: `#port=${ready.port}&rpcToken=${ready.token}` }, setInterval, clearInterval },
+      value: {
+        location: { hash: `#port=${ready.port}&rpcToken=${ready.token}` }, setInterval, clearInterval,
+        setTimeout: (callback: () => void, delay: number) => setTimeout(callback, delay).unref(), clearTimeout,
+      },
     });
     Object.defineProperty(globalThis, "WebSocket", { value: HostWebSocket, configurable: true });
     const protocol = MobileRpcManager.initializeClient([MemoryRpc]).protocol;

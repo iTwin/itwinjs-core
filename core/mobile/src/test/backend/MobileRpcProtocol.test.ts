@@ -1,6 +1,7 @@
 import { setImmediate } from "node:timers/promises";
 import { spawnSync } from "node:child_process";
 import { expect } from "chai";
+import { IModelStatus } from "@itwin/core-bentley";
 import { IpcInvokeReturn, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessageType, RpcConfiguration, RpcInterface, RpcManager, RpcMarshaling, RpcRequest, RpcRequestStatus, SerializedRpcRequest, unwrapIpcInvokeReturn } from "@itwin/core-common";
 import { MobileRpcManager } from "../../common/MobileRpcManager";
 import { MobileRpcProtocol } from "../../common/MobileRpcProtocol";
@@ -37,6 +38,7 @@ describe("MobileRpcProtocol disconnects", () => {
   let request: MobileRpcRequest;
   let response: Promise<unknown>;
   let submitted: Promise<void>;
+  let reconnect: { callback: () => void, delay: number } | undefined;
   const token = "a".repeat(64);
   const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
   const socketDescriptor = Object.getOwnPropertyDescriptor(globalThis, "WebSocket");
@@ -46,11 +48,20 @@ describe("MobileRpcProtocol disconnects", () => {
 
   beforeEach(() => {
     submitted = Promise.resolve();
+    reconnect = undefined;
     serializeContext = RpcConfiguration.requestContext.serialize;
     originalReceivers = new Set(IpcWebSocket.receivers);
     Object.defineProperty(globalThis, "window", {
       configurable: true,
-      value: { location: { hash: `#port=12345&rpcToken=${token}` }, setInterval, clearInterval },
+      value: {
+        location: { hash: `#port=12345&rpcToken=${token}` }, setInterval, clearInterval,
+        setTimeout: (callback: () => void, delay: number) => {
+          expect(reconnect).to.equal(undefined);
+          reconnect = { callback, delay };
+          return 1;
+        },
+        clearTimeout: () => { reconnect = undefined; },
+      },
     });
     Object.defineProperty(globalThis, "WebSocket", { configurable: true, value: TestSocket });
     protocol = MobileRpcManager.initializeClient([TestRpc]).protocol;
@@ -101,6 +112,14 @@ describe("MobileRpcProtocol disconnects", () => {
       return serializeContext(value);
     };
     return resume;
+  }
+
+  function reconnectSocket() {
+    expect(reconnect).not.to.equal(undefined);
+    const callback = reconnect!.callback;
+    reconnect = undefined;
+    callback();
+    socket = protocol.socket as unknown as TestSocket;
   }
 
   it("roundtrips binary values in messages no larger than 4 MiB", () => {
@@ -184,17 +203,119 @@ describe("MobileRpcProtocol disconnects", () => {
     expect(RpcRequest.activeRequests.has(request.id)).to.equal(false);
   });
 
-  it("rejects new requests on a closed connection instead of queueing forever", async function () {
+  it("queues new requests during automatic reconnection without replaying failed calls", async function () {
     this.timeout(1000);
-    socket.open();
+    await submit(true);
+    const failedRequest = request;
     socket.close();
     socket.dispatchEvent(new Event("close"));
-    request = new MobileRpcRequest(RpcManager.getClientForInterface(TestRpc), "operation", []);
-    response = request.response.then(() => undefined, (error: unknown) => error);
-    submitted = request.submit();
     expect(await response).to.be.instanceOf(Error);
     await submitted;
+
+    await submit(false);
+    const oldSocket = socket;
+    reconnectSocket();
+    socket.open();
+    expect(socket.sent).to.have.lengthOf(1);
+    expect(JSON.parse(socket.sent[0] as string).id).to.equal(request.id);
+    expect(RpcRequest.activeRequests.has(failedRequest.id)).to.equal(false);
+    oldSocket.dispatchEvent(new Event("close"));
+    expect(reconnect).to.equal(undefined);
+    socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+      id: request.id, interfaceName: TestRpc.interfaceName, status: protocol.getCode(RpcRequestStatus.Resolved),
+      result: RpcMarshaling.serialize(protocol, undefined),
+    }) }));
+    expect(await response).to.equal(undefined);
+    await submitted;
     expect(protocol.requests.size).to.equal(0);
+  });
+
+  it("backs off repeated connection failures and resets the delay after recovery", () => {
+    socket.dispatchEvent(new Event("error"));
+    expect(reconnect?.delay).to.equal(1000);
+    socket.dispatchEvent(new Event("close"));
+    expect(reconnect?.delay).to.equal(1000);
+    for (const delay of [2000, 4000, 8000, 16000, 30000, 30000]) {
+      reconnectSocket();
+      socket.dispatchEvent(new Event("error"));
+      expect(reconnect?.delay).to.equal(delay);
+    }
+
+    reconnectSocket();
+    socket.open();
+    socket.dispatchEvent(new Event("close"));
+    expect(reconnect?.delay).to.equal(1000);
+  });
+
+  it("settles queued RPC and IPC calls if the reconnect attempt also fails", async () => {
+    socket.dispatchEvent(new Event("close"));
+    await submit(false);
+    const ipc = new IpcWebSocketFrontend();
+    const ipcResponse = ipc.invoke("itwin.test", "operation") as Promise<IpcInvokeReturn>;
+    await setImmediate();
+    reconnectSocket();
+    socket.dispatchEvent(new Event("error"));
+    expect(await response).to.have.property("errorNumber", IModelStatus.ServerTimeout);
+    const ipcResult = await ipcResponse;
+    expect(() => unwrapIpcInvokeReturn(ipcResult)).to.throw("Mobile RPC socket error.");
+    await submitted;
+    reconnectSocket();
+    socket.open();
+    expect(socket.sent).to.have.lengthOf(0);
+  });
+
+  it("cancels scheduled recovery when native replaces the connection", () => {
+    socket.dispatchEvent(new Event("close"));
+    expect(reconnect).not.to.equal(undefined);
+    (window as any)._imodeljs_rpc_reconnect(12346, token);
+    socket = protocol.socket as unknown as TestSocket;
+    expect(reconnect).to.equal(undefined);
+    socket.open();
+    expect(reconnect).to.equal(undefined);
+  });
+
+  it("preserves another request awaiting a Pending retry when disconnected", async function () {
+    this.timeout(1000);
+    await submit(true);
+    const pendingRequest = request;
+    const pendingResponse = response;
+    pendingRequest.retryInterval = Infinity;
+    try {
+      socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+        id: pendingRequest.id, interfaceName: TestRpc.interfaceName, status: protocol.getCode(RpcRequestStatus.Pending),
+        result: { objects: "waiting", data: [] },
+      }) }));
+      await submitted;
+      expect(pendingRequest.status).to.equal(RpcRequestStatus.Pending);
+      expect(RpcRequest.activeRequests.has(pendingRequest.id)).to.equal(false);
+      await submit(false);
+      socket.dispatchEvent(new Event("close"));
+      expect(await response).to.be.instanceOf(Error);
+      await submitted;
+
+      (window as any)._imodeljs_rpc_reconnect(12346, token);
+      socket = protocol.socket as unknown as TestSocket;
+      socket.send = (data) => {
+        socket.sent.push(data);
+        socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+          id: pendingRequest.id, interfaceName: TestRpc.interfaceName, status: protocol.getCode(RpcRequestStatus.Resolved),
+          result: RpcMarshaling.serialize(protocol, undefined),
+        }) }));
+      };
+      socket.open();
+      pendingRequest.retryInterval = 0;
+      expect(await pendingResponse).to.equal(undefined);
+      expect(socket.sent).to.have.lengthOf(1);
+    } finally {
+      pendingRequest.cancel();
+    }
+  });
+
+  it("rejects disconnected calls with the transient error recognized by tile requests", async () => {
+    await submit(true);
+    socket.dispatchEvent(new Event("close"));
+    expect(await response).to.have.property("errorNumber", IModelStatus.ServerTimeout);
+    await submitted;
   });
 
   it("ignores close events from a socket replaced by native reconnection", async () => {
@@ -230,7 +351,8 @@ describe("MobileRpcProtocol disconnects", () => {
     request = new MobileRpcRequest(RpcManager.getClientForInterface(TestRpc), "operation", []);
     response = request.response.then(() => undefined, (reason: unknown) => reason);
     submitted = request.submit();
-    expect(await response).to.equal(error);
+    expect(await response).to.have.property("message", error.message);
+    expect(await response).to.have.property("errorNumber", IModelStatus.ServerTimeout);
     await submitted;
     expect(protocol.requests.size).to.equal(0);
   });
@@ -283,13 +405,23 @@ describe("MobileRpcProtocol disconnects", () => {
     });
   }
 
-  it("settles IPC invokes made after a disconnect", async () => {
+  it("sends IPC invokes queued after a disconnect once automatically reconnected", async () => {
     socket.open();
     socket.close();
     socket.dispatchEvent(new Event("close"));
     const ipc = new IpcWebSocketFrontend();
-    const result = await ipc.invoke("itwin.test", "operation") as IpcInvokeReturn;
-    expect(() => unwrapIpcInvokeReturn(result)).to.throw("Mobile RPC socket closed.");
+    const result = ipc.invoke("itwin.test", "operation") as Promise<IpcInvokeReturn>;
+    await setImmediate();
+    reconnectSocket();
+    socket.open();
+    expect(socket.sent).to.have.lengthOf(1);
+    socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+      id: "itwin.test", interfaceName: "__ipc__", status: 0,
+      result: RpcMarshaling.serialize(protocol, {
+        type: IpcWebSocketMessageType.Response, channel: "itwin.test", response: 1, data: { result: "recovered" }, sequence: -1,
+      }),
+    }) }));
+    expect(unwrapIpcInvokeReturn(await result)).to.equal("recovered");
   });
 
   it("settles IPC invokes from a connection replaced by native reconnection", async () => {
@@ -300,6 +432,32 @@ describe("MobileRpcProtocol disconnects", () => {
     socket = protocol.socket as unknown as TestSocket;
     const value = await result;
     expect(() => unwrapIpcInvokeReturn(value)).to.throw("Mobile RPC socket replaced.");
+  });
+
+  it("preserves IPC invokes whose encoding finishes after automatic reconnection", async () => {
+    socket.open();
+    socket.dispatchEvent(new Event("close"));
+    let resume = () => {};
+    const paused = new Promise<void>((resolve) => { resume = resolve; });
+    const serialize = protocol.serialize.bind(protocol);
+    protocol.serialize = async (value) => {
+      await paused;
+      return serialize(value);
+    };
+    const ipc = new IpcWebSocketFrontend();
+    const result = ipc.invoke("itwin.test", "operation") as Promise<IpcInvokeReturn>;
+    reconnectSocket();
+    socket.open();
+    resume();
+    await setImmediate();
+    expect(socket.sent).to.have.lengthOf(1);
+    socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+      id: "itwin.test", interfaceName: "__ipc__", status: 0,
+      result: RpcMarshaling.serialize(protocol, {
+        type: IpcWebSocketMessageType.Response, channel: "itwin.test", response: 1, data: { result: "completed" }, sequence: -1,
+      }),
+    }) }));
+    expect(unwrapIpcInvokeReturn(await result)).to.equal("completed");
   });
 
   it("preserves IPC invokes queued while the replacement socket connects", async () => {

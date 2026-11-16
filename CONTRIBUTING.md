@@ -93,6 +93,8 @@ Set one to `1`, `true` or `yes` and run the package's usual test script. CI enab
 
 Mobile RPC memory tests default to 16, 64, and 128 MiB responses. Set `ITWIN_MOBILE_RPC_MEMORY_MIB` to a comma-separated list of integer sizes from 1 to 512 MiB to override them. Reports include baseline, sampled peak, and post-GC Node.js memory plus the process-lifetime RSS high-water mark; sampled peaks can miss short spikes. These host tests do not measure WebKit Networking or WebContent processes, and RSS is not required to return to baseline after GC.
 
+Mobile RPC socket-loss tests run in the default mobile test suite. Recovery retries start after one second and double up to 30 seconds, resetting after the socket opens. Failed RPC and IPC calls are rejected, not replayed; new calls wait for recovery. RPC connection failures use the transient `ServerTimeout` error code so tile requests can retry instead of being marked permanently not found. Native-triggered connection replacement retains its existing active-RPC resubmission behavior and cancels any scheduled automatic reconnect.
+
 Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
 
 ## Ask questions or report issues

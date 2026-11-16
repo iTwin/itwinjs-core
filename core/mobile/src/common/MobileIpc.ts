@@ -27,6 +27,7 @@ class IpcInterface extends RpcInterface {
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
+  private _generation = 0;
   /** Maps in-flight invoke request ids to their channels. Retains no arguments so large upload buffers are released once sent. */
   private _pendingInvocations = new Map<number, string>();
 
@@ -73,11 +74,11 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     if (invocation)
       this._pendingInvocations.set(invocation.request, invocation.channel);
 
-    const socket = this._protocol.socket;
+    const generation = this._generation;
     try {
       using request = new MobileRpcRequest(this._client, "send", [message], this._protocol);
       const encoded = await MobileRpcProtocol.encodeRequest(request);
-      if (socket !== this._protocol.socket)
+      if (generation !== this._generation)
         return;
       if (message.type === IpcWebSocketMessageType.Invoke && (invocation === undefined || !this._pendingInvocations.has(invocation.request)))
         return;
@@ -92,6 +93,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   public notifyConnectionError(error: Error): void {
+    ++this._generation;
     const pending = Array.from(this._pendingInvocations.entries());
     for (const [request, channel] of pending)
       this.failInvocation(channel, request, error);

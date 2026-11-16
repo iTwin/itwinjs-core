@@ -9,7 +9,7 @@
 import { BentleyStatus, expectDefined, Logger } from "@itwin/core-bentley";
 import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
-  SerializedRpcRequest,
+  SerializedRpcRequest, ServerTimeoutError,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileIpcTransport } from "./MobileIpc";
@@ -50,6 +50,8 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _port: number = 0;
   private _rpcToken: string = "";
   private _connectionError?: Error;
+  private _reconnectTimer?: number;
+  private _reconnectDelay = 1000;
   private _transport?: MobilePushTransport;
   private _ipc: MobileIpcTransport;
   public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
@@ -118,6 +120,11 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private connect(port: number, reset: boolean) {
+    if (this._reconnectTimer !== undefined) {
+      window.clearTimeout(this._reconnectTimer);
+      this._reconnectTimer = undefined;
+    }
+
     const requests = reset ? Array.from(RpcRequest.activeRequests.values()).filter((request) => request.protocol === this) : [];
     if (reset) {
       this.reset();
@@ -148,6 +155,7 @@ export class MobileRpcProtocol extends RpcProtocol {
         return;
       }
 
+      this._reconnectDelay = 1000;
       for (const request of requests) {
         if (RpcRequest.activeRequests.get(request.id) !== request)
           continue;
@@ -181,7 +189,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     if (this._connectionError)
       return;
 
-    this._connectionError = error;
+    Logger.logWarning("core-mobile.MobileRpcProtocol", "Mobile RPC socket failed; reconnecting.", { error });
+    // Tile requests treat this existing transient error code as retryable instead of permanently marking tiles not found.
+    const connectionError = new ServerTimeoutError(error.message);
+    this._connectionError = connectionError;
     const requests = new Set(this.requests.values());
     for (const request of RpcRequest.activeRequests.values()) {
       if (request.protocol === this)
@@ -189,9 +200,11 @@ export class MobileRpcProtocol extends RpcProtocol {
     }
     this.reset();
     for (const request of requests)
-      request.notifyConnectionError(error);
+      request.notifyConnectionError(connectionError);
 
-    this._ipc.notifyConnectionError(error);
+    this._ipc.notifyConnectionError(connectionError);
+    this._reconnectTimer = window.setTimeout(() => this.connect(this._port, false), this._reconnectDelay);
+    this._reconnectDelay = Math.min(this._reconnectDelay * 2, 30000);
     this.socket.close();
   }
 
@@ -212,7 +225,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private scheduleSend() {
-    if (!this._pending.length) {
+    if (!this._pending.length || this._connectionError) {
       return;
     }
 
@@ -224,7 +237,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private trySend() {
-    if (this.socket.readyState !== WebSocket.OPEN) {
+    if (this._connectionError || this.socket.readyState !== WebSocket.OPEN) {
       return;
     }
 
@@ -383,7 +396,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     try {
       this.sendToFrontend(response, connection);
     } catch (error) {
-      // An ordinary RPC reply to a closed connection is safe to drop: the frontend resubmits its active requests after reconnecting.
+      // The frontend settles requests on socket failure, so an ordinary RPC reply to the failed connection is safe to drop.
       Logger.logError("core-mobile.MobileRpcProtocol", "Dropped mobile RPC response: socket failed.", { error });
     }
   }
@@ -394,11 +407,8 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   public sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void {
-    if (this._connectionError)
-      throw this._connectionError;
-
-    if (this.socket.readyState === WebSocket.CLOSED || this.socket.readyState === WebSocket.CLOSING) {
-      const error = new IModelError(BentleyStatus.ERROR, "Mobile RPC socket is not open.");
+    if (!this._connectionError && (this.socket.readyState === WebSocket.CLOSED || this.socket.readyState === WebSocket.CLOSING)) {
+      const error = new ServerTimeoutError("Mobile RPC socket is not open.");
       this.failConnection(error);
       throw error;
     }
