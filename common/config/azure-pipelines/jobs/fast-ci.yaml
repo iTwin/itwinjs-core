@@ -5,7 +5,7 @@ trigger:
   - release/*
 
 variables:
-  - group: Rush Build Cache SAS Token
+  - group: Rush Build Cache Reader SAS Token
   - group: Travis Cobbs - GitHub PAT
   - group: imodel-native secret variables
   - name: win_pool

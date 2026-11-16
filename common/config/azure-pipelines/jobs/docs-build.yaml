@@ -82,7 +82,7 @@ jobs:
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
           RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))

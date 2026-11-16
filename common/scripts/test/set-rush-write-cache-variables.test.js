@@ -86,10 +86,29 @@ test("isolate the exact Node version and retain OS/architecture keys in a new co
   assert.equal(config("24.11.0").cacheHashSalt, first.cacheHashSalt);
 });
 
-test("never cache builds that inject the job environment into browser bundles", () => {
-  for (const folder of ["core/electron", "core/i18n", "full-stack-tests/core", "test-apps/display-test-app", "test-apps/display-performance-test-app"]) {
+test("exclude environment-dependent app and full-stack builds from shared caching", () => {
+  for (const folder of ["full-stack-tests/core", "test-apps/display-test-app", "test-apps/display-performance-test-app"]) {
     const config = JSON.parse(readFileSync(path.join(__dirname, "../../..", folder, "config/rush-project.json"), "utf8"));
     assert.equal(config.operationSettings.find((operation) => operation.operationName === "build").disableBuildCacheForOperation, true);
+  }
+});
+
+test("prepare Electron and i18n test bundles after cacheable builds", () => {
+  for (const [folder, webpackOutput, commands] of [
+    ["core/electron", "lib/cjs/test/frontend/webpack", ["test:integration:frontend"]],
+    ["core/i18n", "lib/cjs/test/webpack", ["test:chrome", "test:debug"]],
+  ]) {
+    const projectPath = path.join(__dirname, "../../..", folder);
+    const { scripts } = JSON.parse(readFileSync(path.join(projectPath, "package.json"), "utf8"));
+    assert.ok(scripts.build.startsWith(`rimraf -g ${webpackOutput} && `), folder);
+    assert.ok(!scripts.build.includes("webpack:test"), folder);
+    assert.ok(!scripts.build.includes("test:prepare"), folder);
+    assert.ok(scripts["test:prepare"].startsWith("webpack --config "), folder);
+    assert.ok(!Object.hasOwn(scripts, "webpack:test"), folder);
+    for (const command of commands)
+      assert.ok(scripts[command].startsWith("npm run -s test:prepare && certa "), `${folder}: ${command}`);
+    const config = JSON.parse(readFileSync(path.join(projectPath, "config/rush-project.json"), "utf8"));
+    assert.notEqual(config.operationSettings.find((operation) => operation.operationName === "build").disableBuildCacheForOperation, true);
   }
 });
 
@@ -108,10 +127,26 @@ test("wire every Azure reader to the runtime cache configuration without enablin
     const yaml = readFileSync(path.join(__dirname, "../../config/azure-pipelines", file), "utf8");
     assert.ok(yaml.includes("node common/scripts/set-rush-write-cache-variables.js"));
     assert.ok(yaml.includes("RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)"));
+    assert.ok(yaml.includes("RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)"));
+    assert.ok(!yaml.includes("$(RushBuildCacheSAS)"));
     if (file !== "templates/core-build.yaml") {
       assert.ok(yaml.includes("ITWIN_RUSH_CACHE_WRITE_ENABLED: false"));
       assert.ok(yaml.includes("RUSH_BUILD_CACHE_WRITE_ALLOWED: 0"));
     }
+  }
+});
+
+test("keep migrated readers separate from the legacy credential group", () => {
+  for (const file of [
+    "jobs/fast-ci.yaml",
+    "jobs/docs-ci.yaml",
+    "integration-pr-validation.yaml",
+    "integration-validation.yaml",
+    "integration-client-regression-pr-validation.yaml",
+  ]) {
+    const yaml = readFileSync(path.join(__dirname, "../../config/azure-pipelines", file), "utf8");
+    assert.ok(yaml.includes("- group: Rush Build Cache Reader SAS Token"), file);
+    assert.ok(!yaml.includes("- group: Rush Build Cache SAS Token"), file);
   }
 });
 

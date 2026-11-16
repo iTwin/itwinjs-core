@@ -71,7 +71,7 @@ steps:
       ${{ if parameters.rushBuildCacheWriteAllowed }}:
         RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheWriteSAS)
       ${{ else }}:
-        RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+        RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
       RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
       RUSH_BUILD_CACHE_WRITE_ALLOWED: $(RUSH_BUILD_CACHE_WRITE_ALLOWED)
       VITE_CI: true

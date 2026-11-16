@@ -64,7 +64,7 @@ steps:
       - script: node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
         displayName: "Rush build"
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
           RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
@@ -82,7 +82,7 @@ steps:
           --to rpcinterface-full-stack-tests
         displayName: "Rush build"
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
           RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
           RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
