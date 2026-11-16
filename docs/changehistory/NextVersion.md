@@ -15,6 +15,7 @@ publish: false
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
+    - [SQLite 3.54.1](#sqlite-3541)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
   - [API deprecations](#api-deprecations)
@@ -159,6 +160,12 @@ Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asyn
 Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
 
 See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
+
+### SQLite 3.54.1
+
+The native platform now uses [SQLite 3.54.1](https://sqlite.org/releaselog/3_54_1.html). This version deliberately clears SQLite value subtypes when values cross a scalar-subquery boundary. Consequently, a JSON-valued scalar subquery embedded directly in another JSON expression is now treated as text. For example, `json_object('items', (SELECT json_group_array(1)))` produces `{"items":"[1]"}` instead of `{"items":[1]}`.
+
+iTwin.js queries have been updated for this behavior. Applications with raw SQLite or ECSQL queries that embed JSON-valued scalar subqueries should restore the JSON subtype explicitly by wrapping the complete subquery with `json(...)`, for example `json_object('items', json((SELECT json_group_array(1))))`.
 
 ## Platform support
 
