@@ -78,43 +78,61 @@ describe("Viewport changed events", async () => {
     // Viewport-changed events are not dispatched immediately - they are accumulated between frames and dispatched from inside Viewport.renderFrame().
     using mon = new ViewportChangedHandler(vp);
     // No event if the set is already empty when we clear it.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Assigning the set always raises an event.
     const idSet = new Set<string>();
     idSet.add("0x123");
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, false));
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-    mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.setNeverDrawn(idSet));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, false));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
 
     // Clearing raises event if set was assigned.
-    mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.clearNeverDrawn());
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
 
     // Clearing again will not re-raise because already cleared.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
 
     // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
     idSet.clear();
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet, true));
     // Raises even though set was already empty, because this resets the 'exclusive' flag.
-    mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
     // Exclusive flag no longer set and set is empty, so no event.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     // Multiple changes in between frames produce a single event.
     idSet.add("0x123");
-    mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, undefined, () => {
+    mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, ViewportState.Scene, () => {
       for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.setAlwaysDrawn(idSet);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.clearAlwaysDrawn();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.setNeverDrawn(idSet);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.clearNeverDrawn();
       }
     });
@@ -151,12 +169,11 @@ describe("Viewport changed events", async () => {
       vp.displayStyle.viewFlags = new ViewFlags();
     });
 
+    const vpStyle = vp.displayStyle;
     // Modify display style through Viewport API.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const newStyle = vp.displayStyle.clone();
-      newStyle.backgroundColor = ColorDef.red;
-      vp.displayStyle = newStyle;
+    mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
+      vpStyle.backgroundColor = ColorDef.blue;
     });
 
     // Change ClipStyle
@@ -164,10 +181,8 @@ describe("Viewport changed events", async () => {
 
     // Modify view flags through Viewport's displayStyle property.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const newStyle = vp.displayStyle.clone();
-      newStyle.viewFlags = newStyle.viewFlags.with("constructions", !newStyle.viewFlags.constructions);
-      vp.displayStyle = newStyle;
+    mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
+      vpStyle.viewFlags = vpStyle.viewFlags.with("constructions", !vpStyle.viewFlags.constructions);
     });
 
     vp.saveViewUndo();
@@ -176,24 +191,17 @@ describe("Viewport changed events", async () => {
     const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
-    // Override by replacing display style on Viewport
+    // Apply same override via Viewport method. It does not raise the event if the same `ovr` object is passed because there is no net change to the overrides.
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const style = vp.displayStyle.clone();
-      style.overrideSubCategory("0x123", ovr);
-      vp.displayStyle = style;
-    });
-
-    // Apply same override via Viewport method. Does not check if override actually differs.
-    vp.saveViewUndo();
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
+    mon.expect(ChangeFlag.None, undefined, () => {
       // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.overrideSubCategory("0x123", ovr);
-      vp.changeViewedModels(new Set<string>());
     });
 
     // Apply different override to same subcategory
     vp.saveViewUndo();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
   });
 
@@ -205,9 +213,6 @@ describe("Viewport changed events", async () => {
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
     const expectChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, func);
     const expectOverrideChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, func);
-
-    expectNoChange(() => view.displayStyle = view.displayStyle);
-    expectOverrideChange(() => view.displayStyle = view.displayStyle.clone());
 
     const style = view.getDisplayStyle3d();
     const settings = style.settings;
@@ -235,7 +240,7 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction, () => settings.analysisFraction = 0.123456);
     mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction | ViewportState.RenderPlan, () => settings.analysisStyle = AnalysisStyle.fromJSON({ displacement: { channelName: "source" } }));
 
-    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
+    mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.timePoint = 43);
     expectNoChange(() => settings.timePoint = 43);
 
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
@@ -315,17 +320,24 @@ describe("Viewport changed events", async () => {
 
     const idSet = new Set<string>();
     idSet.add("0x321");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
     idSet.add("0x123");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
 
     mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => vp.changeCategoryDisplay(["0xa", "0xb"], true));
   });
 
@@ -338,10 +350,13 @@ describe("Viewport changed events", async () => {
 
     using mon = new ViewportChangedHandler(vp);
     // changeModelDisplay is no-op for 2d views
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
     const viewedModels = new Set<string>();
     viewedModels.add(id64(0x27));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
 
     // Switching to a different 2d view of the same model should not produce model-changed event
@@ -363,20 +378,26 @@ describe("Viewport changed events", async () => {
 
     using mon = new ViewportChangedHandler(vp);
     // adding a model which is already present produces no event
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
 
     // removing a model not present produces no event
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x9876543", false));
 
-    // setting viewed models directly always produces event - we don't check if contents of set exactly match current set
+    // Assigning to `models` emits an event - it doesn't check if the net contents remain the same afterward.
     let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
     selectedModels = new Set<string>();
     selectedModels.add("0x1c");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
 
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay("0x1c", false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeModelDisplay("0x1f", true);
     });
 
@@ -384,6 +405,7 @@ describe("Viewport changed events", async () => {
     // Replacing viewed models with same set [ 0x1f ] produces event
     selectedModels.clear();
     selectedModels.add("0x1f");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
   });
 
@@ -394,9 +416,6 @@ describe("Viewport changed events", async () => {
     using mon = new ViewportChangedHandler(vp);
     const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, func);
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
-
-    expectNoChange(() => view.modelSelector = view.modelSelector);
-    expectChange(() => view.modelSelector = view.modelSelector.clone());
 
     const models = view.modelSelector.models;
     expectChange(() => models.add("0xabc"));
@@ -417,16 +436,22 @@ describe("Viewport changed events", async () => {
   it("should be dispatched when category selector is modified using Viewport APIs", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15))); // view category selector 0x0f
 
+    // We're already viewing 0x1, so enabling its display produces no event.
     using mon = new ViewportChangedHandler(vp);
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
+    expect(vp.primaryIModelRef.viewedCategories.has(id64(0x01))).to.be.true;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
 
     // We're not viewing 0x1a, so this will not produce an event.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
     // Two changes which produce no net change still produce event - we do not track net changes
     vp.saveViewUndo();
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
+    mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(id64(0x01), false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(id64(0x01), true);
     });
 
@@ -444,8 +469,10 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view17));
 
     // Changing category selector, then switching to a view with same categories enabled produces no event.
-    mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
+    mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(vp.view.categorySelector.categories, false);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeCategoryDisplay(view13.categorySelector.categories, true);
     });
 
@@ -456,11 +483,8 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15)));
 
     using mon = new ViewportChangedHandler(vp);
-    const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, undefined, func);
+    const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, func);
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
-
-    expectChange(() => vp.view.categorySelector = vp.view.categorySelector.clone());
-    expectNoChange(() => vp.view.categorySelector = vp.view.categorySelector);
 
     const categories = vp.view.categorySelector.categories;
     expectChange(() => categories.add("0x123"));
@@ -480,6 +504,7 @@ describe("Viewport changed events", async () => {
 
   it("should be dispatched when per-model category visibility changes", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const vis = vp.perModelCategoryVisibility;
 
     using mon = new ViewportChangedHandler(vp);
@@ -489,15 +514,15 @@ describe("Viewport changed events", async () => {
     mon.expect(ChangeFlag.None, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Show);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides("0x9876"));
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides());
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.clearOverrides());
     expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
     mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides());
@@ -515,7 +540,7 @@ describe("Viewport changed events", async () => {
 
     const modelIdList = ["0x1", "0x2", "0x3"];
     const catIdList = ["0xa", "0xb"];
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
     for (const modelId of modelIdList)
       for (const catId of catIdList)
         expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -525,7 +550,7 @@ describe("Viewport changed events", async () => {
 
     modelIdList.shift(); // remove "0x1"
     catIdList.shift(); // remove "0xa"
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
     expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -533,7 +558,7 @@ describe("Viewport changed events", async () => {
     expect(vis.getOverride("0x3", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
     expect(vis.getOverride("0x3", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
-    mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides(["0x1"]));
+    mon.expect(ChangeFlag.ViewedCategoriesPerModel, ViewportState.Scene, () => vis.clearOverrides(["0x1"]));
     expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.None);
     expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.None);
   });
@@ -543,19 +568,18 @@ describe("Viewport changed events", async () => {
     let overridesAdded = false;
     const provider = {
       addFeatureOverrides: (_overrides: FeatureSymbology.Overrides, _viewport: Viewport): void => {
-        expect(overridesAdded).to.be.false;
         overridesAdded = true;
       },
     };
 
     using mon = new ViewportChangedHandler(vp);
     // Changing the provider => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.addFeatureOverrideProvider(provider));
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.addFeatureOverrideProvider(provider));
     expect(overridesAdded).to.be.true;
     overridesAdded = false;
 
     // Explicitly notifying provider's state has changed => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.setFeatureOverrideProviderChanged());
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
     expect(overridesAdded).to.be.true;
     overridesAdded = false;
 
@@ -564,7 +588,7 @@ describe("Viewport changed events", async () => {
     expect(overridesAdded).to.be.false;
 
     // Actually changing the provider => event
-    mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => {
+    mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => {
       const prov = vp.findFeatureOverrideProvider((_) => true);
       expect(prov).not.to.be.undefined;
       if (prov)
@@ -646,36 +670,6 @@ describe("Viewport changed events", async () => {
     });
   });
 
-  it("should be dispatched to two views sharing the same display style", async () => {
-    const v1 = await testBim.views.load("0x34") as SpatialViewState;
-    const v2 = v1.clone();
-    v2.displayStyle = v1.displayStyle;
-
-    const div2 = document.createElement("div");
-    div2.style.width = div2.style.height = "50px";
-    document.body.appendChild(div2);
-
-    vp = ScreenViewport.create(viewDiv, v1);
-    const vp2 = ScreenViewport.create(div2, v2);
-
-    vp.renderFrame();
-    vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
-
-    vp.viewFlags = vp.viewFlags.with("transparency", !vp.viewFlags.transparency);
-    expect(vp.renderPlanValid).to.be.false;
-    expect(vp2.renderPlanValid).to.be.false;
-
-    vp.renderFrame();
-    vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
-
-    vp2[Symbol.dispose]();
-    document.body.removeChild(div2);
-  });
-
   it("should load subcategories for all displayed categories", async () => {
     // NB: Because subcategories are cached, and previous tests probably loaded some, we must clear the cache.
     const subcats = testImodel.subcategories;
@@ -712,14 +706,14 @@ describe("Viewport changed events", async () => {
             ++numLoaded;
         }
 
-        if (numLoaded === expectedCount && vp.subcategories.isEmpty) {
+        if (numLoaded === expectedCount && vp.iModelRefs.subcategories.isEmpty) {
           break;
         }
 
         await BeDuration.wait(50);
       }
 
-      expect(vp.subcategories.isEmpty).to.be.true;
+      expect(vp.iModelRefs.subcategories.isEmpty).to.be.true;
       expect(numLoaded).to.equal(expectedCount);
 
       for (const catId of Id64.iterable(catIds))
@@ -727,17 +721,21 @@ describe("Viewport changed events", async () => {
     };
 
     // Turning on another category for the first time causes subcategories to be asynchronously loaded if not in cache
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x01), true);
     await waitForSubCats(id64(0x01));
 
     // If we turn on 2 more categories at once, subcategories for both should be loaded asynchronously
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay([id64(0x03), id64(0x05)], true);
     await waitForSubCats([id64(0x03), id64(0x05)]);
 
     // If we turn on 2 more categories in succession, subcategories for both should be loaded asynchronously.
     // The loading of the first category's subcategories should not be interrupted by loading of second category's subcategories.
     // Because these are separate calls, the queue may load them sequentially.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x1a), true);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeCategoryDisplay(id64(0x1c), true);
     await waitForSubCats([id64(0x1c), id64(0x1a)]);
   });

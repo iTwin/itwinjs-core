@@ -34,7 +34,9 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   public override get frustumPlanes(): FrustumPlanes { return this._planes; }
   public override get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public override drawGraphicsWithType(_graphicType: TileGraphicType, graphics: GraphicBranch) {
-    this._collector.addGraphic(this.context.createBranch(graphics, this.location));
+    // Supply the iModel reference so that batches have a defined reference when the collected graphics are drawn on a
+    // fresh branch stack whose root state has none - e.g., by BackgroundMapDrape or PlanarClassifier.
+    this._collector.addGraphic(this.context.createGraphicBranch(graphics, this.location, { iModelRef: this._branchIModelRef }));
   }
 
   public override drawGraphics(): void {

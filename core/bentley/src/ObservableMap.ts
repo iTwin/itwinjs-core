@@ -31,13 +31,28 @@ export class ObservableMap<K, V> extends Map<K, V> {
       this.setAll(elements);
   }
 
+  /** Invoked by [[set]] and [[setAll]]. Override this if you need to perform additional logic when updating a value in the map.
+   * @note Make sure to call `super._set`.
+   */
+  protected _set(key: K, value: V): this { return super.set(key, value); }
+
+  /** Invoked by [[delete]] and [[deleteAll]]. Override this if you need to perform additional logic when deleting a value from the map.
+   * @note Make sure to call `super._delete`.
+   */
+  protected _delete(key: K): boolean { return super.delete(key); }
+
+  /** Invoked by [[clear]]. Override this if you need to perform additional logic when emptying the map.
+   * @note Make sure to call `super._clear`.
+   */
+  protected _clear(): void { super.clear(); }
+
   /** Invokes [Map.set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/set), raising
    * the [[onChanged]] event unless `key` is already present with the same `value`.
    */
   public override set(key: K, value: V): this {
     const valueChanged = !this.has(key) || !Object.is(this.get(key), value);
     if (valueChanged)
-      super.set(key, value);
+      this._set(key, value);
 
     if (valueChanged) {
       this.onChanged.raiseEvent();
@@ -50,7 +65,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
    * the [[onChanged]] event if the key was removed from the map.
    */
   public override delete(key: K): boolean {
-    const ret = super.delete(key);
+    const ret = this._delete(key);
     if (ret) {
       this.onChanged.raiseEvent();
     }
@@ -63,7 +78,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
    */
   public override clear(): void {
     if (0 !== this.size) {
-      super.clear();
+      this._clear();
       this.onChanged.raiseEvent();
     }
   }
@@ -78,7 +93,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
     try {
       for (const [key, value] of items) {
         if (!this.has(key) || !Object.is(this.get(key), value)) {
-          super.set(key, value);
+          this._set(key, value);
           changed = true;
         }
       }
@@ -99,7 +114,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
     let deletedAny = false;
     try {
       for (const key of keys) {
-        if (super.delete(key))
+        if (this._delete(key))
           deletedAny = true;
       }
     } finally {

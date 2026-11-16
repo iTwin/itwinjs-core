@@ -6,16 +6,31 @@ publish: false
 <!-- prettier-ignore -->
 - [NextVersion](#nextversion)
   - [Frontend](#frontend)
+    - [Linked iModels](#linked-imodels)
+    - [ViewState property updates](#viewstate-property-updates)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
+    - [Planar clip mask and classifier textures are sized to the viewport](#planar-clip-mask-and-classifier-textures-are-sized-to-the-viewport)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
+  - [API deprecations](#api-deprecations)
+    - [HitDetail feature identity](#hitdetail-feature-identity)
+    - [Viewport display APIs](#viewport-display-apis)
+    - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
 
 ## Frontend
+
+### Linked iModels
+
+Spatial views can display linked iModels, each with its own visibility, display overrides, and feature override providers. Use [IModelDisplayReferenceFeatureOverrideProvider]($frontend) or [EmphasizeIModelElements]($frontend) to provide reference-specific symbology or emphasis. See [Referencing Linked iModels](../learning/LinkedIModels.md) for details.
+
+### ViewState property updates
+
+The `categorySelector`, `modelSelector`, and `displayStyle` setters remain supported, but wholesale replacement of these objects is discouraged. Prefer updating selector contents instead of replacing selectors, and use `cloneWithDisplayStyle` to create a view with a different display style. The `ViewState.setDisplayStyle` and `ViewState.setCategorySelector` methods are deprecated in favor of those approaches.
 
 ### Custom authentication for map-layer requests
 
@@ -101,6 +116,10 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRe
 
 This per-layer example intentionally supports only same-origin requests. Cross-origin authentication requires explicit approval for that particular secret. Also enable `MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins` to block redirects of handler-injected values: it does not replace the direct-destination checks in these samples.
 
+### Planar clip mask and classifier textures are sized to the viewport
+
+The off-screen texture used to render planar clip masks and [spatial classifiers]($docs/learning/display/Classification.md) was always allocated at the maximum supported size (up to 4096x4096 texels), so every frame paid for rasterizing it regardless of the viewport size. It is now sized to four times the viewport's larger dimension (rounded up to a multiple of 256 and still capped at the maximum), which preserves the texel density the fixed-size texture provided to a 1024-pixel viewport. Viewports larger than 960 device pixels in either dimension still use the maximum size and are unaffected. Smaller viewports use less GPU memory: for a 416-pixel viewport, a classifier's textures drop from 320 MiB to 61 MiB. Smaller viewports also spend less time rasterizing masks on software renderers: with SwiftShader, masked frames in a 100x100 viewport rendered in tens of milliseconds instead of about 2 seconds. No measurable frame-time difference was observed on a hardware GPU.
+
 ## Backend
 
 ### Bulk Element Deletion API changes
@@ -146,3 +165,23 @@ See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing
 ### Node.js 26 support
 
 In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 26](https://nodejs.org/en/blog/release/v26.13.0). Node.js 26 is not yet supported by `@itwin/core-mobile`.
+
+## API deprecations
+
+### HitDetail feature identity
+
+The [HitDetailProps]($frontend) interface is deprecated in favor of [HitDetailFeatureProps]($frontend).
+
+Similarly, the `sourceId`, `subCategoryId`, `geometryClass`, and `modelId` members of [Pixel.HitProps]($frontend) are deprecated in favor of its `feature` member, and `Pixel.Data.iModel` is deprecated in favor of the `iModelRef` of [Pixel.Data.feature]($frontend). Note that `Pixel.Data.iModel` was previously defined only for geometry originating from an iModel other than the viewport's own; it is now defined for every pixel produced by a feature.
+
+Additionally, the type of `Pixel.Data.feature` widened from the [Feature]($common) class to `Feature & IModelDisplayFeature`. The value remains an instance of the `Feature` class - `equals`, `compare`, `instanceof` checks, and assignment to `Feature`-typed variables all behave as before - and it now also exposes the `modelId` and `iModelRef` of [IModelDisplayFeature]($frontend). Because its type now names that beta interface, the member is tagged `@beta` while the iModel display reference API stabilizes; its `Feature` contract is unchanged.
+
+### Viewport display APIs
+
+Viewport-level APIs for model and category display overrides, viewed models, and always/never-drawn elements are deprecated in favor of APIs on [IModelDisplayReference]($frontend) and [SpatialIModelDisplayReference]($frontend).
+
+`PerModelCategoryVisibility.createOverrides` is also deprecated: the standalone object it returns is never consulted when rendering. Use the [IModelDisplayReference.perModelCategoryVisibility]($frontend) of the iModel reference whose display you want to change.
+
+### Graphic branch iModel attribution
+
+The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
