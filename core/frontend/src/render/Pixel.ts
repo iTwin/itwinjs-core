@@ -7,11 +7,26 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
+import { BatchType, Feature, GeometryClass } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
-import { IModelConnection } from "../IModelConnection";
+import { IModelDisplayFeature, IModelDisplayReference } from "../IModelDisplayReference";
+import type { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
-import { Transform } from "@itwin/core-geometry";
+
+/** The feature stored on a [[Pixel.Data]]: a genuine [Feature]($common) - preserving `instanceof`, `equals`, `compare`,
+ * and `isDefined`/`isUndefined` for pre-existing consumers - augmented with the [[ModelFeature.modelId]] and the
+ * [[IModelDisplayReference]] through which the geometry was displayed.
+ */
+class PixelFeature extends Feature implements IModelDisplayFeature {
+  public readonly modelId: Id64String;
+  public readonly iModelRef: IModelDisplayReference;
+
+  public constructor(feature: IModelDisplayFeature) {
+    super(feature.elementId, feature.subCategoryId, feature.geometryClass);
+    this.modelId = feature.modelId;
+    this.iModelRef = feature.iModelRef;
+  }
+}
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -21,9 +36,21 @@ import { Transform } from "@itwin/core-geometry";
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    /** The feature that produced the pixel. */
-    public readonly feature?: Feature;
-    public readonly modelId?: Id64String;
+    /** The feature that produced the pixel.
+     * The value is an instance of the [Feature]($common) class - as it was before iModel display references were
+     * introduced - augmented with the [[ModelFeature.modelId]] and [[IModelDisplayFeature.iModelRef]] identifying
+     * the model and display reference from which the geometry originated.
+     * @beta
+     */
+    public readonly feature?: Feature & IModelDisplayFeature;
+    /** The Id of the model containing this pixel's [[feature]]. */
+    public get modelId(): Id64String | undefined { return this.feature?.modelId; }
+    /** The iModel from which the geometry producing the pixel originated.
+     * @deprecated Use [[feature]]'s [[IModelDisplayFeature.iModelRef]] instead.
+     * @note Previously, this was defined only for geometry originating from an iModel other than the [[Viewport]]'s own.
+     * It is now defined for every pixel produced by a feature, including those originating from the viewport's primary iModel.
+     */
+    public get iModel(): IModelConnection | undefined { return this.feature?.iModelRef.iModel; }
     /** The pixel's depth in [[CoordSystem.Npc]] coordinates (0 to 1), or -1 if depth was not written or not requested. */
     public readonly distanceFraction: number;
     /** The type of geometry that produced the pixel. */
@@ -32,10 +59,6 @@ export namespace Pixel {
     public readonly planarity: Planarity;
     /** @internal */
     public readonly batchType?: BatchType;
-    /** The iModel from which the geometry producing the pixel originated. */
-    public readonly iModel?: IModelConnection;
-    /** @internal */
-    public readonly transformFromIModel?: Transform;
     /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
@@ -53,16 +76,14 @@ export namespace Pixel {
 
     /** @internal */
     public constructor(args?: {
-      feature?: ModelFeature;
+      feature?: IModelDisplayFeature;
       distanceFraction?: number;
       type?: GeometryType;
       planarity?: Planarity;
       batchType?: BatchType;
-      iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
       inSectionDrawingAttachment?: boolean;
-      transformFromIModel?: Transform;
     }) {
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
@@ -73,15 +94,11 @@ export namespace Pixel {
         return;
       }
 
-      if (args.feature) {
-        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
-      }
+      if (args.feature)
+        this.feature = new PixelFeature(args.feature);
 
-      this.modelId = args.feature?.modelId;
-      this.iModel = args.iModel;
       this.tileId = args.tileId;
       this.viewAttachmentId = args.viewAttachmentId;
-      this.transformFromIModel = args.transformFromIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -136,28 +153,35 @@ export namespace Pixel {
         const checkVp = path?.viewAttachment?.viewport ?? viewport;
         const attachVp = checkVp.view.getAttachmentViewport({ inSectionDrawingAttachment: true });
         if (attachVp) {
-          path = path ?? { };
+          path = path ?? {};
           path.sectionDrawingAttachment = { viewport: attachVp };
         }
       }
 
+      const feature = this.feature ?? {
+        elementId: Id64.invalid,
+        subCategoryId: Id64.invalid,
+        modelId: Id64.invalid,
+        geometryClass: GeometryClass.Primary,
+        iModelRef: viewport.iModelRefs.primary,
+      };
+
       return {
+        feature,
         sourceId: this.elementId ?? Id64.invalid,
-        priority: this.computeHitPriority(),
-        distFraction: this.distanceFraction,
         subCategoryId: this.subCategoryId,
         geometryClass: this.geometryClass,
         modelId: this.modelId,
+        priority: this.computeHitPriority(),
+        distFraction: this.distanceFraction,
         tileId: this.tileId,
         isClassifier: this.isClassifier,
-        sourceIModel: this.iModel,
-        transformFromSourceIModel: this.transformFromIModel,
         path,
       };
     }
   }
 
-  /** Describes a subset of [[HitDetailProps]] computed from a [[Pixel.Data]], suitable for constructing a [[HitDetail]].
+  /** Describes a subset of [[HitDetailFeatureProps]] computed from a [[Pixel.Data]], suitable for constructing a [[HitDetail]].
    * For example, the following function creates a `HitDetail` from a `Pixel.Data` and other hit information:
    * ```ts
    *  function makeHitDetail(pixel: Pixel.Data, viewport: ScreenViewport, testPoint: Point3d, hitSource: HitSource, hitPoint: Point3d, distXY: number): HitDetail {
@@ -171,26 +195,30 @@ export namespace Pixel {
    * @public
    */
   export interface HitProps {
-    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
+    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations.
+     * @beta
+     */
+    feature: IModelDisplayFeature;
+    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations.
+     * @deprecated Use [[feature]]'s [[ModelFeature.elementId]] instead.
+     */
     sourceId: Id64String;
+    /** The [SubCategory]($backend) to which the hit geometry belongs.
+     * @deprecated Use [[feature]]'s [[ModelFeature.subCategoryId]] instead.
+     */
+    subCategoryId?: Id64String;
+    /** The class of the hit geometry.
+     * @deprecated Use [[feature]]'s [[ModelFeature.geometryClass]] instead.
+     */
+    geometryClass?: GeometryClass;
+    /** The Id of the [[ModelState]] from which the hit originated.
+     * @deprecated Use [[feature]]'s [[ModelFeature.modelId]] instead.
+     */
+    modelId?: Id64String;
     /** The hit geometry priority/classification. */
     priority: HitPriority;
     /** The distance in view coordinates between the hit and the near plane. */
     distFraction: number;
-    /** The [SubCategory]($backend) to which the hit geometry belongs. */
-    subCategoryId?: Id64String;
-    /** The class of the hit geometry. */
-    geometryClass?: GeometryClass;
-    /** The Id of the [[ModelState]] from which the hit originated. */
-    modelId?: Id64String;
-    /** The IModelConnection from which the hit originated.
-     * This should almost always be left undefined, unless the hit is known to have originated from an iModel
-     * other than the one associated with the viewport.
-     * @internal
-     */
-    sourceIModel?: IModelConnection;
-    /** @internal */
-    transformFromSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.
@@ -238,7 +266,8 @@ export namespace Pixel {
   export enum Selector {
     None = 0,
     /** Select the [[Feature]] which produced each pixel. */
-    Feature = 1 << 0, // eslint-disable-line @typescript-eslint/no-shadow
+    // eslint-disable-next-line @typescript-eslint/no-shadow -- pre-existing public enum member; renaming would break the API.
+    Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
     /** Select all aspects of each pixel. */
