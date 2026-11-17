@@ -668,15 +668,14 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
 
   /**
    * Create a bspline surface.
-   * * This `create` variant takes control points in a "grid" array, with the points from
-   *   each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z]`
+   * * This `create` variant takes control points in a "grid" array of numPolesV rows, each with numPolesU points.
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
    * * When knots are given, two knot count conditions are recognized in each direction:
    *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
    *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
-   * @param points Array of points, ordered along the U direction.
+   * @param points array of `numPolesU * numPolesV` points, with ordering `points[0..numVPoles-1][0..numUPoles-1][x,y,z]`.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayU knots for the V direction.  See note above about knot counts.
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)

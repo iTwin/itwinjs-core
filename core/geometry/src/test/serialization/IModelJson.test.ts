@@ -400,6 +400,17 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, surf.knots[UVSelect.uDirection].knots.length, "surface has 4 u knots");
       ck.testExactNumber(4, surf.knots[UVSelect.vDirection].knots.length, "surface has 4 v knots");
     }
+
+    let invalidProps = props;
+    invalidProps.orderU = 10000;
+    const invalidSurface0 = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface0, "expect parse failure for surface with overly large order");
+
+    invalidProps = props;
+    invalidProps.orderV = 1;
+    const invalidSurface1 = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface1, "expect parse failure for surface with overly small order");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -420,6 +431,17 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, bcurve.order, "curve has order 4");
       ck.testExactNumber(6, bcurve.knotsRef.length, "curve has 6 knots");
     }
+
+    let invalidProps = props;
+    invalidProps.order = 10000;
+    const invalidCurve0 = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve0, "expect parse failure for curve with overly large order");
+
+    invalidProps = props;
+    invalidProps.order = 1;
+    const invalidCurve1 = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve1, "expect parse failure for curve with overly small order");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 

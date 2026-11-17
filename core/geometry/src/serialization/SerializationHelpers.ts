@@ -564,6 +564,9 @@ export namespace SerializationHelpers {
      * @returns whether data was successfully prepared
      */
     public static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean {
+      if (data.params.order < 2 || data.params.order > data.params.numPoles)
+        return false; // avoid invalid loop limit below
+
       let polesExpanded: number[][] | undefined;
       let weightsExpanded: number[] | undefined;
       let knotsCorrected: number[] | Float64Array | undefined;
@@ -618,6 +621,9 @@ export namespace SerializationHelpers {
      * @returns whether data was successfully prepared
      */
     public static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean {
+      if (data.uParams.order < 2 || data.uParams.order > data.uParams.numPoles || data.vParams.order < 2 || data.vParams.order > data.vParams.numPoles)
+        return false; // avoid invalid loop limit below
+
       let polesExpanded: number[][][] | undefined;
       let weightsExpanded: number[][] | undefined;
       let uKnotsCorrected: number[] | Float64Array | undefined;
