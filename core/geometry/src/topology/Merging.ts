@@ -312,7 +312,7 @@ export class HalfEdgeGraphMerge {
   //   * only want to do anything here when curves are present.
   //   * k0<=k<k1 are around a vertex
   //   * These are sorted by theta.
-  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number, radianTol: number = Geometry.smallAngleRadians, clusterTol: number = Geometry.smallMetricDistance) {
+  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number, radianTol: number = Geometry.smallAngleRadians, clusterTol: number = Geometry.smallMetricDistance, sortAlmostTangentEdgesByProbe: boolean = true) {
     const sortData: VertexNeighborhoodSortData[] = [];
 
     for (let k = k0; k < k1;) {
@@ -333,6 +333,8 @@ export class HalfEdgeGraphMerge {
       k = kB;
     }
     // Second pass: edges with the same or almost the same tangent are ordered by points on the edges.
+    if (!sortAlmostTangentEdgesByProbe)
+      return;
     for (let k = k0; k < k1;) {
       const kB = this.getAlmostTangentEndIndex(clusters, order, allNodes, k, k1, radianTol, clusterTol);
       if (k + 1 < kB) {
@@ -480,12 +482,16 @@ export class HalfEdgeGraphMerge {
    * @param graph input graph
    * @param outboundRadiansFunction optional function to compute the sort angle of an edge at its start vertex
    * @param clusterTol optional distance tolerance for clustering vertices. Default value is [[Geometry.smallMetricDistance]].
+   * @param radianTol optional angle tolerance for equal outbound angles. Default value is [[Geometry.smallAngleRadians]].
+   * @param sortAlmostTangentEdgesByProbe whether to order edges leaving a vertex with almost the same tangent by points
+   * on the edges (default `true`). If `false`, such edges are ordered only by their exact angle and curvature.
    */
   public static clusterAndMergeXYTheta(
     graph: HalfEdgeGraph,
     outboundRadiansFunction?: (he: HalfEdge) => number,
     clusterTol: number = Geometry.smallMetricDistance,
     radianTol: number = Geometry.smallAngleRadians,
+    sortAlmostTangentEdgesByProbe: boolean = true,
   ) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
@@ -550,7 +556,7 @@ export class HalfEdgeGraphMerge {
         // nodes identified in order[k0]..order[k1-1] are tentatively sorted around a vertex by theta
         if (k1 > k0) {
           if (k1 > k0 + 1)
-            this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1, radianTol, clusterTol); // finalize order by resolving ties via curvature
+            this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1, radianTol, clusterTol, sortAlmostTangentEdgesByProbe); // finalize order by resolving ties via curvature
           this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);
           const iA = clusters.getExtraData(order[k0], 1);
           thetaA = clusters.getExtraData(order[k0], 0);

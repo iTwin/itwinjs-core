@@ -133,12 +133,16 @@ export class PlanarSubdivision {
    * @param primitives input curves
    * @param allPairs array of curve-curve xy-intersections
    * @param mergeTolerance optional distance tolerance for clustering vertices. Default value is [[Geometry.smallMetricDistance]].
+   * @param radianTolerance optional angle tolerance for equal outbound angles. Default value is [[Geometry.smallAngleRadians]].
+   * @param sortAlmostTangentEdgesByProbe whether to order edges leaving a vertex with almost the same tangent by points on
+   * the edges (default `true`). See [[HalfEdgeGraphMerge.clusterAndMergeXYTheta]].
    */
   public static assembleHalfEdgeGraph(
     primitives: CurvePrimitive[],
     allPairs: CurveLocationDetailPair[],
     mergeTolerance: number = Geometry.smallMetricDistance,
     radianTolerance: number = Geometry.smallAngleRadians,
+    sortAlmostTangentEdgesByProbe: boolean = true,
   ): HalfEdgeGraph {
     // map from key CurvePrimitive to CurveLocationDetailPair
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();
@@ -187,7 +191,7 @@ export class PlanarSubdivision {
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
     // every edge got its sortAngle defined by addHalfEdge
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance, radianTolerance);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance, radianTolerance, sortAlmostTangentEdgesByProbe);
     return graph;
   }
 

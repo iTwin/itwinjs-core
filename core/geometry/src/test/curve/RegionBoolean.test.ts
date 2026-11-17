@@ -2273,6 +2273,33 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "EqualRadiusArcsCrossingAtSmallAngle");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentAdjustmentsKeepMemberBoundariesClosed", () => {
+    // A part of a large circle cut by a chord, and a long strip outside the circle that shares a short arc with the circle
+    // and has fillets tangent to the circle to within tolerance (two placements). The near-tangent adjustments leave the
+    // boundary of the strip open in the graph, so the faces cannot be classified consistently and the whole strip was
+    // reported as inside the circle. Then the graph must be assembled without these adjustments. The true intersection
+    // area is about 0.08.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapFallback.imjs", "utf8"))) as AnyRegion[];
+    if (ck.testExactNumber(4, inputs.length, "input loops")) {
+      let x0 = 0;
+      for (let i = 0; i < inputs.length; i += 2) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [inputs[i], inputs[i + 1]], x0);
+        for (const swapOperands of [false, true]) {
+          const [regionA, regionB] = swapOperands ? [inputs[i + 1], inputs[i]] : [inputs[i], inputs[i + 1]];
+          const result = RegionOps.regionBooleanXY(regionA, regionB, RegionBinaryOpType.Intersection);
+          const area = result ? Math.abs(RegionOps.computeXYArea(result)!) : 0;
+          ck.testTrue(area < 1, `case=${i / 2} swap=${swapOperands}`, area);
+          if (result)
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, swapOperands ? 2000 : 1000);
+        }
+        x0 += 2000;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentAdjustmentsKeepMemberBoundariesClosed");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 describe("GeneralSweepBooleans", () => {
   it("Rectangles", () => {

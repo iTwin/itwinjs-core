@@ -877,6 +877,32 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return result;
   }
   /**
+   * Return xy intersections among all pairs of the input curves.
+   * @param primitives input curves to intersect
+   * @param tolerance distance tolerance for coincidence
+   * @param snapNearTangent whether to apply [[snapNearTangentIntersectionsToEndpoints]] to the results
+   * @param unadjustedResults optional array to receive copies of the results before they are snapped
+   */
+  public static allIntersectionsAmongPrimitivesXY(
+    primitives: CurvePrimitive[], tolerance: number, snapNearTangent: boolean, unadjustedResults?: CurveLocationDetailPair[],
+  ): CurveLocationDetailPair[] {
+    const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
+    for (let i = 0; i < primitives.length; i++) {
+      const curveA = primitives[i];
+      for (let j = i + 1; j < primitives.length; j++) {
+        handler.resetGeometryB(primitives[j]);
+        curveA.dispatchToGeometryHandler(handler);
+      }
+    }
+    if (snapNearTangent) {
+      if (unadjustedResults)
+        for (const pair of handler._results)
+          unadjustedResults.push(pair.clone());
+      handler.snapNearTangentIntersectionsToEndpoints();
+    }
+    return handler.grabPairedResults();
+  }
+  /**
    * Move recorded near-tangent arc-arc intersections to the nearby arc endpoint if a coincident overlap of the other arc
    * with a third arc starts or ends there.
    * * Call this after recording the intersections among all curves that will be assembled into a planar subdivision.

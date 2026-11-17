@@ -18,11 +18,11 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
 import { Arc3d } from "./Arc3d";
-import { CurveCurve } from "./CurveCurve";
-import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { TransferWithSplitArcs } from "./internalContexts/TransferWithSplitArcs";
 import { LineSegment3d } from "./LineSegment3d";
@@ -549,9 +549,88 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
+    // Near-tangent intersections are snapped to arc endpoints and almost tangent edges at a vertex are ordered by points
+    // on the edges. If the resulting graph does not have closed member boundaries (e.g., because of another gap within
+    // tolerance), rebuild it without these adjustments, so that such input is handled as before them.
+    const unadjustedIntersections: CurveLocationDetailPair[] = [];
+    const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, true, unadjustedIntersections);
+    let graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
+    if (!RegionBooleanContext.isGraphConsistentWithMembers(graph))
+      graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, unadjustedIntersections, mergeTolerance, undefined, false);
     RegionOps.removeExtraneousBridgeEdges(this.graph = graph, undefined, this.faceAreaFunction = faceAreaFromCurvedEdgeData);
+  }
+  /**
+   * Whether crossing each edge of the graph changes the parity of exactly the region member that owns the edge.
+   * * This holds when the boundary of each member is closed in the graph. Bridge edges are ignored.
+   */
+  private static isGraphConsistentWithMembers(graph: HalfEdgeGraph): boolean {
+    const memberIndex = new Map<RegionGroupMember, number>();
+    const getMemberIndex = (node: HalfEdge): number => {
+      for (const data of [node.edgeTag, node.edgeMate.edgeTag]) {
+        let member: unknown = data;
+        if (data instanceof CurveLocationDetail && data.curve)
+          member = data.curve.parent;
+        if (member instanceof RegionGroupMember) {
+          if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding || member.region instanceof CurvePrimitive)
+            return -1;
+          let index = memberIndex.get(member);
+          if (index === undefined)
+            memberIndex.set(member, index = memberIndex.size);
+          return index;
+        }
+      }
+      return -1;
+    };
+    const faceStarts = graph.collectFaceLoops();
+    const faceIndex = new Map<HalfEdge, number>();
+    const edgeMember = new Map<HalfEdge, number>();
+    for (let i = 0; i < faceStarts.length; i++) {
+      let node = faceStarts[i];
+      do {
+        faceIndex.set(node, i);
+        edgeMember.set(node, getMemberIndex(node));
+        node = node.faceSuccessor;
+      } while (node !== faceStarts[i]);
+    }
+    const numWords = Math.ceil(memberIndex.size / 32);
+    if (numWords === 0)
+      return true;
+    const parity = new Uint32Array(faceStarts.length * numWords);
+    const visited = new Uint8Array(faceStarts.length);
+    const stack: number[] = [];
+    for (let start = 0; start < faceStarts.length; start++) {
+      if (visited[start])
+        continue;
+      visited[start] = 1;
+      stack.push(start);
+      for (let f = stack.pop(); f !== undefined; f = stack.pop()) {
+        let node = faceStarts[f];
+        do {
+          const g = faceIndex.get(node.edgeMate);
+          const m = edgeMember.get(node) ?? -1;
+          if (g !== undefined) {
+            if (!visited[g]) {
+              visited[g] = 1;
+              for (let w = 0; w < numWords; w++)
+                parity[g * numWords + w] = parity[f * numWords + w];
+              if (m >= 0)
+                parity[g * numWords + (m >> 5)] ^= (1 << (m & 31));
+              stack.push(g);
+            } else {
+              for (let w = 0; w < numWords; w++) {
+                let expected = parity[f * numWords + w];
+                if (m >= 0 && w === (m >> 5))
+                  expected = (expected ^ (1 << (m & 31))) >>> 0;
+                if (parity[g * numWords + w] !== expected)
+                  return false;
+              }
+            }
+          }
+          node = node.faceSuccessor;
+        } while (node !== faceStarts[f]);
+      }
+    }
+    return true;
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
