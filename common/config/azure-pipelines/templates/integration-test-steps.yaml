@@ -28,10 +28,10 @@ parameters:
     default: 1
   - name: cacheMode
     type: string
-    default: read
+    default: "read"
     values:
       - "off"
-      - read
+      - "read"
 
 steps:
   - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:

@@ -13,11 +13,11 @@ parameters:
     default: 1
   - name: cacheMode
     type: string
-    default: read
+    default: "read"
     values:
       - "off"
-      - read
-      - write
+      - "read"
+      - "write"
   - name: buildMobile
     type: boolean
     default: false
