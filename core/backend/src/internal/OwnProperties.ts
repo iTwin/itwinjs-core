@@ -13,5 +13,10 @@
  * @internal
  */
 export function setOwnProperty<T>(target: { [name: string]: T }, name: string, value: T): void {
-  Object.defineProperty(target, name, { value, writable: true, enumerable: true, configurable: true });
+  // A plain assignment only reliably creates an own data property when the name does not exist yet. Inherited names
+  // can be accessors such as __proto__, or read-only. Defining is slower, so it is reserved for names that exist.
+  if (name in target)
+    Object.defineProperty(target, name, { value, writable: true, enumerable: true, configurable: true });
+  else
+    target[name] = value;
 }
