@@ -122,6 +122,30 @@ describe("SQLiteDb", () => {
     expect(() => SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true })).throws("db must be open");
   });
 
+  it("reads changeset columns named like Object.prototype members as own properties", () => {
+    const changesetFileName = IModelTestUtils.resolveAssetFile("_mocks_/ReadOnlyTest/csets/dbe4b3824129f99e4eb485fb7cd9d2fea2354be1.cs");
+    const dbFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "changeset-reader-prototype-names.db");
+    const db = new SQLiteDb();
+    db.createDb(dbFileName, undefined, { rawSQLite: true });
+    try {
+      using reader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true });
+      expect(reader.step()).true;
+      const columnNames = ["__proto__", "constructor", ...Array.from({ length: reader.columnCount - 2 }, (_, i) => `c${i}`)];
+      db.executeSQL(`CREATE TABLE "${reader.tableName}" (${columnNames.map((name) => `"${name}"`).join(",")})`);
+      const stage = reader.op === "Deleted" ? "Old" : "New";
+      const rawValues = reader.getChangeValuesArray(stage)!;
+
+      const values = reader.getChangeValuesObject(stage, { includeNullColumns: true })!;
+
+      expect(Object.getPrototypeOf(values)).equal(Object.prototype);
+      expect(Object.keys(values)).deep.equal(columnNames);
+      expect(Object.getOwnPropertyDescriptor(values, "__proto__")?.value).deep.equal(rawValues[0]);
+      expect(Object.getOwnPropertyDescriptor(values, "constructor")?.value).deep.equal(rawValues[1]);
+    } finally {
+      db.closeDb();
+    }
+  });
+
   describe("applyChangeset", () => {
     const applyFlags = SQLiteDb.ApplyChangesetFlags;
     const policy = SQLiteDb.ChangesetConflictPolicy;
