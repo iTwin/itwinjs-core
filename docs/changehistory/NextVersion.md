@@ -123,7 +123,7 @@ The off-screen texture used to render planar clip masks and [spatial classifiers
 
 ### Map feature info inside polygons with a transparent fill
 
-[Viewport.getMapFeatureInfo]($frontend), map layer tooltips and [MapFeatureInfoTool]($map-layers-formats) now find a feature inside a polygon with a transparent fill (such as a state or parcel boundary), not only on its outline. A click inside such a polygon picks what is drawn below it, so the visible map layers drawn above that support feature info are now queried first, top-down, and the first one that returns a feature wins. If none does, the result is unchanged.
+[Viewport.getMapFeatureInfo]($frontend) and [MapFeatureInfoTool]($map-layers-formats) now find a feature inside a polygon with a transparent fill (such as a state or parcel boundary), not only on its outline. A click inside such a polygon picks what is drawn below it, so the visible map layers drawn above it that support feature info are now queried too, and the topmost one that returns a feature wins. If none does, the result is unchanged. Hover tooltips still describe only the layer that owns the pixel.
 
 As a result, a layer with a transparent fill takes precedence over a layer below it that also supports feature info. [MapFeatureInfoTool]($map-layers-formats) also runs its query on the base map below such a layer, and reports no features when nothing is found.
 

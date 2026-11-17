@@ -172,14 +172,14 @@ describe("Map feature info", { timeout: 60000 }, () => {
     });
   });
 
-  it("shows the tooltip of the topmost layer with tooltip text", async () => {
+  it("keeps the hover tooltip on the layer that owns the pixel", async () => {
     await testBlankViewportAsync(async (vp) => {
-      const hit = await pickMap(vp, { backgroundBase: white, backgroundLayers: [layer("B", { hollow: true, feature: true }), layer("A", { hollow: true })] });
+      const hit = await pickMap(vp, { backgroundBase: layer("Base", { feature: true }), backgroundLayers: [layer("A", { hollow: true, feature: true })] });
       const tooltip = await vp.getToolTip(hit);
       expect(tooltip).toBeInstanceOf(HTMLElement);
       expect((tooltip as HTMLElement).innerHTML.split("<br>")).toEqual([
-        "MapLayers.ImageryLayer: B",
-        "feature of B",
+        "MapLayers.ImageryLayer: Base",
+        "feature of Base",
         expect.stringMatching(/^MapLayers\.Latitude: /),
         expect.stringMatching(/^MapLayers\.Longitude: /),
       ]);

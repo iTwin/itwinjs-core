@@ -755,7 +755,9 @@ interface FeatureInfoLayers {
 
 async function getHitCartographic(hit: HitDetail): Promise<Cartographic | undefined> {
   try {
-    return (await hit.viewport.displayStyle.getBackgroundMapGeometry()?.dbToWGS84CartographicFromGcs([hit.hitPoint.clone()]))?.[0];
+    const geometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    const cartographics = await geometry?.dbToWGS84CartographicFromGcs([hit.hitPoint]);
+    return cartographics?.[0];
   } catch {
     return undefined;
   }
@@ -765,15 +767,9 @@ function isLayerDrawn(settings: MapLayerSettings): boolean {
   return settings.visible && !settings.allSubLayersInvisible && settings.transparency < 1;
 }
 
-/** The pick passes through transparent fills, so ask the layers above the picked pixel first, top-down; the first with content wins, else the picked layer answers. */
-async function queryTopDown<T>(layers: FeatureInfoLayers, query: (layer: MapLayerOnMap) => Promise<T>, hasContent: (result: T) => boolean, empty: T): Promise<T> {
-  for (const layer of layers.above) {
-    const result = await query(layer);
-    if (hasContent(result))
-      return result;
-  }
-
-  return layers.picked ? query(layers.picked) : empty;
+/** The pick passes through transparent fills, so the layers drawn above the picked pixel come before it. */
+function topDown({ above, picked }: FeatureInfoLayers): MapLayerOnMap[] {
+  return picked ? [...above, picked] : above;
 }
 
 /** Specialization of tile tree that represents background map.
@@ -1001,11 +997,7 @@ export class MapTileTreeReference extends TileTreeReference {
   /** The map layers that [[getMapFeatureInfo]] queries for a hit on this map, topmost first. */
   public mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
     const layers = this.getFeatureInfoLayers(hit);
-    if (undefined === layers)
-      return [];
-
-    const ordered = layers.picked ? [...layers.above, layers.picked] : layers.above;
-    return ordered.map(({ map, layer }) => map.getLayerInfo(layer));
+    return layers ? topDown(layers).map(({ map, layer }) => map.getLayerInfo(layer)) : [];
   }
 
   private getLayerInfo(layer: MapLayerTileTreeReference): MapLayerInfoFromTileTree {
@@ -1049,7 +1041,6 @@ export class MapTileTreeReference extends TileTreeReference {
         continue;
 
       const provider = layer.imageryProvider;
-      // Also gates tooltips: a provider without feature info (e.g. WMS) cannot report "no feature", so it would always win.
       if (provider?.status !== MapLayerImageryProviderStatus.Valid || !provider.supportsMapFeatureInfo)
         continue;
 
@@ -1120,10 +1111,10 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || tree.modelId !== hit.modelId)
       return undefined;
 
-    const layers = this.getFeatureInfoLayers(hit);
-    const carto = layers && await getHitCartographic(hit);
-    // The first line is the layer name; more lines mean the provider found something.
-    const strings: string[] = layers && carto ? await queryTopDown(layers, async ({ map, layer }) => map.getLayerToolTip(layer, hit, carto), (lines) => lines.length > 1, []) : [];
+    // Only the picked layer: AccuSnap asks at every cursor pause, and asking the layers above would send a request per layer.
+    const picked = this.getFeatureInfoLayers(hit)?.picked;
+    const carto = picked && await getHitCartographic(hit);
+    const strings = picked && carto ? await this.getLayerToolTip(picked.layer, hit, carto) : [];
 
     if (carto && strings.length > 0) {
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Latitude")}: ${carto.latitudeDegrees.toFixed(4)}`);
@@ -1145,12 +1136,15 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const layers = this.getFeatureInfoLayers(hit);
-    const carto = layers && await getHitCartographic(hit);
-    if (!layers || !carto)
+    const asked = layers ? topDown(layers) : [];
+    const carto = asked.length > 0 ? await getHitCartographic(hit) : undefined;
+    if (!carto)
       return [];
 
-    return queryTopDown(layers, async ({ map, layer }) => map.getLayerFeatureInfo(layer, hit, carto, options),
-      (info) => info.some((layerInfo) => layerInfo.subLayerInfos?.some((subLayer) => subLayer.features.length > 0)), []);
+    // Ask all at once so a click waits about one round trip; the topmost with a feature wins, else the picked layer answers.
+    const results = await Promise.all(asked.map(async ({ map, layer }) => map.getLayerFeatureInfo(layer, hit, carto, options)));
+    const hasFeature = (info: MapLayerFeatureInfo[]) => info.some((layerInfo) => layerInfo.subLayerInfos?.some((subLayer) => subLayer.features.length > 0));
+    return results.find(hasFeature) ?? (layers?.picked ? results[results.length - 1] : []);
   }
 
   /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
