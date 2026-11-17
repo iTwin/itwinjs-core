@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { getOwnProperty } from "@itwin/core-bentley";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -131,8 +132,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       if (!isObject(items) || Array.isArray(items))
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
 
-      // eslint-disable-next-line guard-for-in
-      for (const itemName in items) {
+      for (const itemName of Object.keys(items)) {
         const item = items[itemName];
         if (!isObject(item))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);
@@ -157,7 +157,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       if (!isObject(items) || Array.isArray(items))
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'items' attribute. It should be of type 'object'.`);
 
-      const item = items[itemName];
+      const item = getOwnProperty(items, itemName);
       if (undefined !== item) {
         if (!isObject(item))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `A SchemaItem in ${this._schemaName} is an invalid JSON object.`);

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "write data-supplied names as own properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
