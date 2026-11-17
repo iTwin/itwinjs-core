@@ -66,6 +66,7 @@ internal;function;expectDefined
 internal;function;expectNotNull
 public;enum;GeoServiceStatus
 public;type;GetMetaDataFunction
+internal;function;getOwnProperty
 public;namespace;Guid
 public;type;GuidString
 beta;enum;HttpStatus
@@ -142,6 +143,7 @@ public;type;RemapTransientLocalId
 internal;enum;RepositoryStatus
 public;type;RequireAtLeastOne
 beta;enum;RpcInterfaceStatus
+internal;function;setOwnProperty
 public;function;shallowClone
 beta;type;SimpleTypesArray
 public;class;SortedArray
