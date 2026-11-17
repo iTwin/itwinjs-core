@@ -5015,6 +5015,19 @@ export interface LayoutTextBlockArgs extends LayoutTextArgs {
     textBlock: TextBlock;
 }
 
+// @beta
+export interface LegacyTextAnnotationConversion {
+    issues: LegacyTextAnnotationIssue[];
+    textAnnotation: TextAnnotationProps;
+}
+
+// @beta
+export interface LegacyTextAnnotationIssue {
+    code: string;
+    message: string;
+    path?: string;
+}
+
 // @internal
 export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
@@ -7726,6 +7739,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // @internal (undocumented)
     static onUpdated(arg: OnElementIdArg): void;
     // @beta
+    static readLegacyTextAnnotation(iModel: IModelDb, elementId: Id64String): LegacyTextAnnotationConversion | undefined;
+    // @beta
     static serialize(props: TextAnnotation2dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
     toJSON(): TextAnnotation2dProps;
@@ -7774,6 +7789,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @internal (undocumented)
     static onUpdated(arg: OnElementIdArg): void;
+    // @beta
+    static readLegacyTextAnnotation(iModel: IModelDb, elementId: Id64String): LegacyTextAnnotationConversion | undefined;
     // @beta
     static serialize(props: TextAnnotation3dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
