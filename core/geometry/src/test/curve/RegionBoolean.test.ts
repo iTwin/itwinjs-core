@@ -1960,6 +1960,59 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapNotToCornerOfOtherRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentSnapNextToTangentFillet", () => {
+    // A is the unit circle. B shares a short arc of the circle. At the end of the shared arc, the fillet of B dips into
+    // the circle by 5.0e-7, so its near-tangent intersection with the circle is moved onto the end of the shared arc,
+    // where the fillet and the circle become exactly tangent. At the start of the shared arc, B has a cusp: a small
+    // fillet inside the circle arrives tangent to the circle. There the small fillet and the circle leave with the same
+    // tangent and turn to the same side, so ordering them by signed radius puts them the wrong way and the circle is lost.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndRadians(0, 2 * Math.PI)));
+    const p0 = Point3d.create(-0.30852317381153105, -1.130426171193243);
+    const p1 = Point3d.create(-2.2580775346881286, -3.4106098905428577);
+    const p2 = Point3d.create(-2.5865934912642237, -3.0480411636911953);
+    const p3 = Point3d.create(-0.6370391303876264, -0.7678574443415807);
+    const boundary = Loop.create(
+      Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndRadians(4, 4.01)),
+      Arc3d.createXY(Point3d.create(-1.938128797383356, -2.2899025666507287), 2, AngleSweep.createStartEndRadians(0.8684073464102066, 0.6184073464102066)),
+      LineSegment3d.create(p0, p1),
+      LineSegment3d.create(p1, p2),
+      LineSegment3d.create(p2, p3),
+      Arc3d.createXY(Point3d.create(-0.601352131194523, -0.6962582956832939), 0.08, AngleSweep.createStartEndRadians(-2.033185307179586, -2.283185307179586)),
+    );
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    const circleArea = Math.PI;
+    const boundaryArea = Math.abs(RegionOps.computeXYArea(boundary)!);
+    const areaTolerance = 1.0e-4; // the regions overlap only in slivers
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, boundary]);
+    let y0 = 0;
+    for (const swapOperands of [false, true]) {
+      const [regionA, regionB] = swapOperands ? [boundary, circle] : [circle, boundary];
+      const [areaA, areaB] = swapOperands ? [boundaryArea, circleArea] : [circleArea, boundaryArea];
+      const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+        [RegionBinaryOpType.Union, false, areaA + areaB], [RegionBinaryOpType.Union, true, areaA + areaB],
+        [RegionBinaryOpType.Intersection, false, 0], [RegionBinaryOpType.AMinusB, false, areaA],
+        [RegionBinaryOpType.BMinusA, false, areaB], [RegionBinaryOpType.Parity, false, areaA + areaB],
+      ];
+      for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+        const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+        const message = `swap=${swapOperands} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+        if (expectedArea === 0 && result === undefined)
+          continue;
+        if (ck.testDefined(result, message) && result) {
+          y0 += 5;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 0, y0);
+          ck.testTrue(Math.abs(expectedArea - resultArea(result)) < areaTolerance, message, expectedArea, resultArea(result));
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapNextToTangentFillet");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearTangentSnapEllipticFillet", () => {
     // B is an ellipse. A lies outside B and shares an arc of the ellipse, and at each end of the shared arc the boundary of
     // A continues into a small elliptic fillet that is externally tangent to B to within tolerance. One fillet crosses B
