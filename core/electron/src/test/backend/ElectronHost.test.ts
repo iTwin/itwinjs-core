@@ -274,6 +274,7 @@ async function testElectronProtocolContainment() {
     fs.mkdirSync(path.join(tempDir, "frontend-backup"));
     fs.writeFileSync(path.join(webResourcesPath, "index.html"), "inside webResourcesPath");
     fs.writeFileSync(path.join(webResourcesPath, "100%.png"), "raw percent");
+    fs.writeFileSync(path.join(webResourcesPath, "my file%.png"), "mixed percent");
     fs.writeFileSync(path.join(tempDir, "frontend-owned.html"), secret);
     fs.writeFileSync(path.join(tempDir, "frontend-backup", "secret.txt"), secret);
 
@@ -293,6 +294,7 @@ async function testElectronProtocolContainment() {
     assert.equal(await fetchText("electron://frontend/"), "inside webResourcesPath");
     assert.equal(await fetchText("electron://frontend/100%.png"), "raw percent");
     assert.equal(await fetchText("electron://frontend/100%25.png"), "raw percent");
+    assert.equal(await fetchText("electron://frontend/my%20file%.png"), "mixed percent");
 
     const escapes = [
       "electron://frontend.../frontend-owned.html",

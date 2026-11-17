@@ -190,13 +190,14 @@ export class ElectronHost {
     if (url.host !== this._electronFrontendHost)
       throw new Error(`Unsupported host "${url.host}" in "${requestedUrl}"`);
 
-    let assetPath: string;
-    try {
-      assetPath = decodeURIComponent(url.pathname);
-    } catch {
-      // Not a valid escape sequence, e.g. a raw "%" in "100%.png", so use the path as written.
-      assetPath = url.pathname;
-    }
+    // Decode each run of escapes separately, so a raw "%" (e.g. "my%20file%.png") doesn't prevent decoding the rest.
+    let assetPath = url.pathname.replace(/(?:%[0-9a-f]{2})+/gi, (escapes) => {
+      try {
+        return decodeURIComponent(escapes);
+      } catch {
+        return escapes; // Not valid UTF-8, so keep it as written.
+      }
+    });
 
     assetPath = assetPath.replace(/^\/+/, "");
     if (assetPath.length === 0)
