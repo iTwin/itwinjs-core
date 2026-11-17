@@ -35,6 +35,7 @@ export class MobileRpcServer {
 
   private _server: ws.Server;
   private _connection: ws | undefined;
+  private _loggedClosedSocket = false;
   private _sendQueue: Array<string | Uint8Array> = [];
   private _sending = false;
   private _port: number;
@@ -99,6 +100,7 @@ export class MobileRpcServer {
         MobileRpcServer.interop.connectionId = this._connectionId;
       }
       this._connection = connection;
+      this._loggedClosedSocket = false;
       this._resetConnection();
       connection.on("message", (data) => {
         if (connection === this._connection && MobileRpcServer.interop.connectionId === this._connectionId)
@@ -148,9 +150,13 @@ export class MobileRpcServer {
   private _send(message: string | Uint8Array) {
     const connection = expectDefined(this._connection, "No connection.");
     if (connection.readyState !== ws.OPEN) {
-      Logger.logError("core-mobile-backend.MobileRpcServer", "Cannot send mobile RPC message: socket is not open.", {
-        connectionId: this._connectionId, readyState: connection.readyState,
-      });
+      if (!this._loggedClosedSocket) {
+        // Log forwarding can synchronously attempt another send over this socket.
+        this._loggedClosedSocket = true;
+        Logger.logError("core-mobile-backend.MobileRpcServer", "Cannot send mobile RPC message: socket is not open.", {
+          connectionId: this._connectionId, readyState: connection.readyState,
+        });
+      }
       // Throwing (rather than dropping) lets backend-originated IPC messages observe the transport failure,
       // so pending IpcHost.invoke calls reject instead of hanging until shutdown. Callers that can safely
       // drop late replies to a closed connection catch this error.

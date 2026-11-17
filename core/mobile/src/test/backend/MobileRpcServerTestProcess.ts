@@ -226,14 +226,34 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
     process.stdout.write("Client disconnected.\n");
 
     const loggedErrors: unknown[] = [];
-    Logger.logError = (_category, message) => { loggedErrors.push(message); };
-    if (mode === "string")
-      throws(() => interop.sendString("late response", interop.connectionId), /Mobile RPC socket is not open\./);
-    else
-      throws(() => interop.sendBinary(new Uint8Array([4, 5, 6]), interop.connectionId), /Mobile RPC socket is not open\./);
+    Logger.logError = (_category, message) => {
+      loggedErrors.push(message);
+      if (loggedErrors.length === 1)
+        throws(() => interop.sendString("forwarded log", interop.connectionId), /Mobile RPC socket is not open\./);
+    };
+    const sendLateResponse = () => {
+      if (mode === "string")
+        interop.sendString("late response", interop.connectionId);
+      else
+        interop.sendBinary(new Uint8Array([4, 5, 6]), interop.connectionId);
+    };
+    throws(sendLateResponse, /Mobile RPC socket is not open\./);
+    throws(sendLateResponse, /Mobile RPC socket is not open\./);
 
     await setImmediate();
     deepStrictEqual(loggedErrors, ["Cannot send mobile RPC message: socket is not open."]);
+
+    client = new WebSocket(`ws://127.0.0.1:${interop.port}`, `itwin-rpc.${MobileRpcServer.rpcToken}`);
+    await once(client, "open");
+    const reconnectedClosed = once(client, "close");
+    client.close();
+    await reconnectedClosed;
+    throws(sendLateResponse, /Mobile RPC socket is not open\./);
+    throws(sendLateResponse, /Mobile RPC socket is not open\./);
+    deepStrictEqual(loggedErrors, [
+      "Cannot send mobile RPC message: socket is not open.",
+      "Cannot send mobile RPC message: socket is not open.",
+    ]);
     process.stdout.write("Backend survived the late send.\n");
   } finally {
     client?.terminate();
