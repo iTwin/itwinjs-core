@@ -8,6 +8,9 @@ variables:
   - group: Rush Build Cache Reader SAS Token
   - group: Travis Cobbs - GitHub PAT
   - group: imodel-native secret variables
+  - name: cacheMode
+    value: ${{ iif(and(in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))), 'write', 'read') }}
+    readonly: true
   - name: win_pool
     value: "imodelNative-Win11-VS2022"
   - name: linuxX64_pool
@@ -214,8 +217,8 @@ jobs:
       - name: shouldPublishNpm
         value: $[ dependencies.ParseCommitNotes.outputs['publishNote.shouldPublish'] ]
       # Resource checks on this group enforce branch protection outside PR-editable YAML.
-      # Provision it before merging; see ../RushBuildCache.md.
-      - ${{ if and(in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) }}:
+      # Require branch protection and reject unknown protection status.
+      - ${{ if eq(variables.cacheMode, 'write') }}:
           - group: Rush Build Cache Writer SAS Token
 
     steps:
@@ -227,7 +230,7 @@ jobs:
         parameters:
           nodeVersion: 26.x
           buildMobile: true
-          rushBuildCacheWriteAllowed: ${{ and(in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) }}
+          cacheMode: ${{ variables.cacheMode }}
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:

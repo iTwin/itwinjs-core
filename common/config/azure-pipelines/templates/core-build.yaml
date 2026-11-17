@@ -7,16 +7,17 @@ parameters:
   - name: workingDir
     type: string
     default: $(System.DefaultWorkingDirectory)
-  - name: rushBuildCacheEnabled
-    type: number
-    default: 1
-  # Opt in only with the separately protected writer credential group.
-  - name: rushBuildCacheWriteAllowed
-    type: boolean
-    default: false
+  - name: cacheMode
+    type: string
+    default: read
+    values:
+      - "off"
+      - read
+      - write
   - name: buildMobile
     type: boolean
     default: false
+  # Shared input for native-validation pipelines outside this repository.
   - name: nativePrVal
     type: boolean
     default: false
@@ -46,34 +47,22 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
-  - script: node --test common/scripts/test/set-rush-write-cache-variables.test.js
-    displayName: Test Rush build cache policy
-    workingDirectory: ${{ parameters.workingDir }}
-
-  - script: node common/scripts/set-rush-write-cache-variables.js
-    displayName: "Configure Rush build cache"
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
-      ITWIN_RUSH_CACHE_WRITE_ENABLED: ${{ lower(parameters.rushBuildCacheWriteAllowed) }}
-      ITWIN_NATIVE_PR_VALIDATION: ${{ lower(parameters.nativePrVal) }}
-
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
     timeoutInMinutes: 5
     retryCountOnTaskFailure: 1
 
-  - script: node common/scripts/install-run-rush.js build -v -p max
+  - script: node common/scripts/run-rush-build.js ${{ iif(parameters.nativePrVal, 'off', parameters.cacheMode) }} -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     env:
-      ${{ if parameters.rushBuildCacheWriteAllowed }}:
+      ${{ if parameters.nativePrVal }}:
+        ITWIN_NATIVE_PR_VALIDATION: "true"
+      ${{ elseif eq(parameters.cacheMode, 'write') }}:
         RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheWriteSAS)
-      ${{ else }}:
+      ${{ elseif eq(parameters.cacheMode, 'read') }}:
         RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
-      RUSH_BUILD_CACHE_ENABLED: $(RushBuildCacheEnabled)
-      RUSH_BUILD_CACHE_WRITE_ALLOWED: $(RUSH_BUILD_CACHE_WRITE_ALLOWED)
       VITE_CI: true
 
   - script: npm run android:all

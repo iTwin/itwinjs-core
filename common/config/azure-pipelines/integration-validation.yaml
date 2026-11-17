@@ -129,10 +129,8 @@ jobs:
         parameters:
           nodeVersion: $(nodeVersion)
           coreFullStackTests: node-compat
-          # Cache entries are keyed [os]-[arch]-[hash] without the Node version, so a
-          # cache hit here would restore lib output built under Node 26 and this lane
-          # would no longer prove that the packages build under Node 20/22/24.
-          rushBuildCacheEnabled: 0
+          # Build from source so this lane proves compilation under its Node version.
+          cacheMode: "off"
 
       - script: npm test
         workingDirectory: "core/backend"
