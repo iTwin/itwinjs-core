@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "add helpers for owned properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -5,3 +5,4 @@
 
 export { RepositoryStatus } from "./RepositoryStatus";
 export { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType } from "./BeSQLiteInternal";
+export { getOwnProperty, setOwnProperty } from "./OwnProperties";
