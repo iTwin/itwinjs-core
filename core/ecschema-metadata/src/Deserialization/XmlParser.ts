@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, setOwnProperty } from "@itwin/core-bentley";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECClass, StructClass } from "../Metadata/Class";
@@ -20,7 +20,6 @@ import {
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
 import { ECSpecVersion, SchemaReadHelper } from "./Helper";
-import { setOwnProperty } from "../utils/OwnProperties";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 // Reimplements `UseJsPropertyNames` value shaping so `@public`/`@beta` output stays the same after it's
 // deprecated. not permanent - see https://github.com/iTwin/itwinjs-core/issues/9489.
+import { setOwnProperty } from "@itwin/core-bentley";
 import { AnyClass, ECClass, PrimitiveType, Property, StructClass } from "@itwin/ecschema-metadata";
 import { IModelDb } from "../IModelDb";
-import { setOwnProperty } from "./OwnProperties";
 
 /** Maps `SELECT *` system properties/pseudo-columns to their legacy JS property name. `*ClassId` columns
  * also resolve their raw class Id to a dot-separated class name (e.g. "BisCore.PhysicalElement").

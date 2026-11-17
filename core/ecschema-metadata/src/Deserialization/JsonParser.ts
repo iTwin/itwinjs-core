@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { getOwnProperty } from "@itwin/core-bentley";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -15,7 +16,6 @@ import {
   StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
 import { ECSpecVersion, SchemaReadHelper } from "./Helper";
-import { getOwnProperty } from "../utils/OwnProperties";
 
 interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {

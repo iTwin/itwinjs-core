@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { setOwnProperty } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
@@ -35,7 +36,6 @@ import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
-import { setOwnProperty } from "../utils/OwnProperties";
 
 /**
  * @public @preview

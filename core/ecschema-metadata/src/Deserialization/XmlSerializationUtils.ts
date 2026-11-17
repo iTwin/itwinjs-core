@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { getOwnProperty } from "@itwin/core-bentley";
 import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ArrayProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
 import { Schema } from "../Metadata/Schema";
-import { getOwnProperty } from "../utils/OwnProperties";
 
 /**
  * Namespace holding utility functions for serializing EC types to the EC XML format.

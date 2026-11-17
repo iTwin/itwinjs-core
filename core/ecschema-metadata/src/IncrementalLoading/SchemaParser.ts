@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { setOwnProperty } from "@itwin/core-bentley";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps, SchemaProps } from "../Deserialization/JsonProps";
 import { parseSchemaItemType, SchemaItemType } from "../ECObjects";
@@ -10,7 +11,6 @@ import { SchemaInfo } from "../Interfaces";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { ClassParser, CustomAttributeClassParser, MixinParser, RelationshipClassParser } from "./ClassParsers";
 import { KindOfQuantityParser, SchemaItemParser } from "./SchemaItemParsers";
-import { setOwnProperty } from "../utils/OwnProperties";
 
 function clean(_key: string, value: any) {
   return value === null ? undefined : value;

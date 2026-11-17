@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Utils
+ */
 
-// Schema item, property and custom attribute names can match members of Object.prototype, such as `__proto__`
-// or `constructor`. A plain `target[name] = value` with `__proto__` replaces the target's prototype, and a plain
-// read returns inherited members. Objects keyed by such names go through these helpers.
+// Names that come from data, such as schema item, property or column names, can match members of Object.prototype,
+// such as `__proto__` or `constructor`. A plain `target[name] = value` with `__proto__` replaces the target's prototype,
+// and a plain read returns inherited members. Objects keyed by such names go through these helpers.
 
 /** Adds or replaces `name` as an own enumerable property of `target`.
  * @internal

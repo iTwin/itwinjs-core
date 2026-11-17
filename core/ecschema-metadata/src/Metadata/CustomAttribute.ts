@@ -6,8 +6,8 @@
  * @module Metadata
  */
 
+import { setOwnProperty } from "@itwin/core-bentley";
 import { Schema } from "./Schema";
-import { setOwnProperty } from "../utils/OwnProperties";
 
 /** @public @preview */
 export interface CustomAttribute {

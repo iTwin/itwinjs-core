@@ -36,6 +36,9 @@ describe("QueryRowProxy", () => {
     expect(row[0]).to.equal("r");
     expect(row.TOARRAY).to.equal("a");
     expect("getmetadata" in row).to.be.true;
+    expect("toRow" in row).to.be.true;
+    expect(2 in row).to.be.true;
+    expect(3 in row).to.be.false;
     expect("Missing" in row).to.be.false;
   }
 

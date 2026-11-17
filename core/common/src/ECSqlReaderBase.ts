@@ -158,7 +158,12 @@ export abstract class ECSqlReaderBase {
       return undefined;
     },
     has: (target: ECSqlReaderBase, p: string | symbol) => {
-      return typeof p === "string" && target._props.findByNoCase(p) !== undefined;
+      if (typeof p !== "string")
+        return false;
+      const idx = Number.parseInt(p, 10);
+      if (!Number.isNaN(idx))
+        return idx >= 0 && idx < target._props.length;
+      return p === "getMetaData" || p === "toRow" || p === "toArray" || target._props.findByNoCase(p) !== undefined;
     },
     ownKeys: (target: ECSqlReaderBase) => {
       const keys = [];

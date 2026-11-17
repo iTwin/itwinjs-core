@@ -5,11 +5,10 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, setOwnProperty } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { setOwnProperty } from "./internal/OwnProperties";
 import { _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 

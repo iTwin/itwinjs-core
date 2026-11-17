@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@itwin/core-bentley";
+import { getOwnProperty, Logger, setOwnProperty } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemProps, SchemaItemUnitProps, SchemaProps,
@@ -10,7 +10,6 @@ import { ConstantProps, CustomAttributeClassProps, EntityClassProps, Enumeration
 import { SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { SchemaInfo, WithSchemaKey } from "../Interfaces";
 import { SchemaKey } from "../SchemaKey";
-import { getOwnProperty, setOwnProperty } from "../utils/OwnProperties";
 import { FullSchemaQueries } from "./FullSchemaQueries";
 import { IncrementalSchemaLocater, SchemaLocaterOptions } from "./IncrementalSchemaLocater";
 import { SchemaItemQueries } from "./SchemaItemQueries";
