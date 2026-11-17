@@ -126,7 +126,7 @@ export interface ElectronHostOptions {
    * If true, only pages with the same origin as [[frontendURL]] can communicate with the backend over IPC. IPC messages sent from pages with
    * any other origin are rejected, and pages with any other origin loaded into the main window don't receive the `window.itwinjs` IPC bridge.
    * [[frontendURL]] must then have a non-`file:` origin, such as the default `electron://frontend` or `http://localhost:3000` for a development server.
-   * Default is false, in which case IPC messages are accepted from any page.
+   * @default false
    */
   restrictIpcToFrontendOrigin?: boolean;
 }
