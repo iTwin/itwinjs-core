@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-electron",
-      "comment": "Move frontend test bundling from build to test preparation so library builds can use the Rush cache.",
+      "comment": "",
       "type": "none"
     }
   ],
