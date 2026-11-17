@@ -15,6 +15,9 @@ publish: false
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
+  - [Electron](#electron)
+    - [Restricting IPC to the frontend origin](#restricting-ipc-to-the-frontend-origin)
+    - [`electron://` requests are confined to `webResourcesPath`](#electron-requests-are-confined-to-webresourcespath)
   - [Platform support](#platform-support)
     - [Node.js 26 support](#nodejs-26-support)
   - [API deprecations](#api-deprecations)
@@ -159,6 +162,22 @@ Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asyn
 Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
 
 See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
+
+## Electron
+
+### Restricting IPC to the frontend origin
+
+By default, any page loaded into the main window of an [ElectronHost]($electron) application can use the `window.itwinjs` IPC bridge, including pages from other sites that the window navigates to. Set the new [ElectronHostOptions.restrictIpcToFrontendOrigin]($electron) option to allow IPC only from pages with the same origin as `frontendURL`:
+
+```ts
+await ElectronHost.startup({ electronHost: { webResourcesPath, restrictIpcToFrontendOrigin: true } });
+```
+
+IPC messages from any other origin are rejected, and pages from other origins don't receive `window.itwinjs`. `frontendURL` must not be a `file:` URL, because every local file shares that origin; `startup` throws in that case. If you don't set `restrictIpcToFrontendOrigin`, behavior is unchanged, so your application should prevent navigation to untrusted content itself.
+
+### `electron://` requests are confined to `webResourcesPath`
+
+`ElectronHost` now validates the host of `electron://frontend/` requests and only serves files inside `webResourcesPath`. Previously, crafted URLs could load sibling files whose paths merely started with the `webResourcesPath` string. A relative `webResourcesPath` is now resolved against the current working directory. If `webResourcesPath` is empty, `ElectronHost` no longer registers the `electron://` protocol handler, and logs an error if `frontendURL` uses `electron://`. Applications that load their frontend through `electron://` must set `webResourcesPath`.
 
 ## Platform support
 
