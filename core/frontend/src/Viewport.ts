@@ -287,7 +287,7 @@ export interface ReadPixelsArgs {
   /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
   excludeNonLocatable?: boolean;
   /** Optional elements that should not be drawn, potentially revealing other geometry they would otherwise obscure.
-   * An Id applies to the primary iModel, including its sheet and section-drawing attachment references.
+   * An Id applies to this viewport's primary reference and the primary references of its same-iModel attachment views.
    * An [Id, IModelDisplayReference] pair applies only to that reference.
    * @beta
    */
@@ -2889,8 +2889,7 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     if (overridesNeeded) {
-      const ovr = new FeatureSymbology.Overrides(this);
-      target.overrideFeatureSymbology(ovr);
+      target.overrideFeatureSymbology(this.primaryIModelRef.getSymbologyOverrides());
       isRedrawNeeded = true;
     }
 
@@ -3031,7 +3030,36 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
     }
 
-    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
+    const exclusions = excludedElements ? this.qualifyPixelExclusions(excludedElements) : undefined;
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, exclusions);
+  }
+
+  private *qualifyPixelExclusions(exclusions: NonNullable<ReadPixelsArgs["excludedElements"]>): IterableIterator<readonly [Id64String, IModelDisplayReference]> {
+    let primaryRefs: IModelDisplayReference[] | undefined;
+    for (const exclusion of exclusions) {
+      if (typeof exclusion !== "string") {
+        yield exclusion;
+        continue;
+      }
+
+      if (!primaryRefs) {
+        const refs = new Set<IModelDisplayReference>();
+        const collect = (view: ViewState): void => {
+          const ref = view.iModelRefs.primary;
+          if (refs.has(ref))
+            return;
+          refs.add(ref);
+          for (const viewport of view.secondaryViewports)
+            collect(viewport.view);
+        };
+        collect(this.view);
+        // Attachments have their own primary references, but plain IDs still belong to this viewport's iModel.
+        primaryRefs = [...refs].filter((ref) => ref.iModel === this.iModel);
+      }
+
+      for (const ref of primaryRefs)
+        yield [exclusion, ref];
+    }
   }
 
   /** @internal */

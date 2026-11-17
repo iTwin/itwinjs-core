@@ -41,13 +41,13 @@ Category and model selector changes now coalesce metadata loads at the end of th
 
 If your code needs model metadata after changing a selector, await [SpatialIModelDisplayReference.addAndLoadViewedModels]($frontend) instead of assuming that the selector change starts a request immediately. To wait for category metadata and tiles, await [Viewport.waitForSceneCompletion]($frontend).
 
-Appearance-only changes to the primary iModel, including feature override providers and schedule-script visibility or color changes, no longer rebuild the scene unless shadows or sheet views require it. Linked references retain their own branch overrides. Primary feature override providers run once per override update, and their transparency overrides take precedence over plan-projection transparency. An exclusive, empty always-drawn set now hides all primary elements consistently.
+Appearance-only changes to the primary iModel, including feature override providers and schedule-script visibility or color changes, no longer rebuild the scene unless shadows or sheet views require it. Primary tile branches inherit the viewport's primary-reference override snapshot, including its feature override providers. Linked references retain their own branch overrides. Primary feature override providers run once per override update, and their transparency overrides take precedence over plan-projection transparency. An exclusive, empty always-drawn set now hides all primary elements consistently.
 
 ### Display customization compatibility
 
 Legacy [EmphasizeElements]($frontend) operations continue to call overridable instance methods, including selected-element operations, override-key creation, serialization, and appearance accessors. Primary symbology honors overrides of `ViewState.getSubCategoryOverride` and `DisplayStyleState.getSubCategoryOverride` for visibility and appearance. Primary subcategory visibility changes also call `DisplayStyleState.overrideSubCategory`, keeping custom getter/setter pairs consistent.
 
-Plain element IDs in [ReadPixelsArgs.excludedElements]($frontend) exclude geometry from the primary iModel, including sheet and section-drawing attachment references. Reference-qualified exclusions remain specific to that reference and do not affect other references displaying the same iModel. Neither form excludes unrelated iModels.
+Plain element IDs in [ReadPixelsArgs.excludedElements]($frontend) are resolved to the viewport's primary reference and the primary references of its same-iModel sheet and section-drawing attachments. Reference-qualified exclusions remain specific to that reference and do not affect other references displaying the same iModel. Neither form excludes unrelated iModels.
 
 Primary references subscribe to shared category and model selectors only while attached to a viewport. Detaching removes those subscriptions; reattaching reloads selector-derived state, including changes made while detached.
 

@@ -28,7 +28,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
-  #symbologyOverrides?: FeatureSymbology.Overrides;
   #removeSubCategoryChangesListener?: () => void;
 
   // The view's display style and category selector can be replaced wholesale. Listeners registered on those objects (or
@@ -283,18 +282,15 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public getSymbologyOverrides(): FeatureSymbology.Overrides {
-    if (!this.#symbologyOverrides) {
-      this.#symbologyOverrides = new FeatureSymbology.Overrides();
-      this.#symbologyOverrides.initFromIModelDisplayReference(this);
-    }
-
-    return this.#symbologyOverrides;
+    // Viewport requests a fresh snapshot when overrides are dirty; the target owns that snapshot.
+    const overrides = new FeatureSymbology.Overrides();
+    overrides.initFromIModelDisplayReference(this);
+    return overrides;
   }
 
   public readonly onSymbologyOverridesInvalidated = new BeEvent<() => void>();
 
   public invalidateSymbologyOverrides(): void {
-    this.#symbologyOverrides = undefined;
     this.onSymbologyOverridesInvalidated.raiseEvent();
   }
 

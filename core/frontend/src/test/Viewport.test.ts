@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { BeEvent, CompressedId64Set, Id64, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, HiddenLine, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
+  AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, HiddenLine, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, RenderMode, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { _getModelClip } from "../common/internal/Symbols";
@@ -30,15 +30,16 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { Branch } from "../internal/render/webgl/Graphic";
 import { Target } from "../internal/render/webgl/Target";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { FeatureSymbology } from "../render/FeatureSymbology";
 import { Decorator } from "../ViewManager";
 import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { createClassifierTileTreeReference, createMaskTreeReference, createRealityTileTreeReference, DisclosedTileTreeSet, GraphicsCollectorDrawArgs, RealityModelSource, TileGraphicType, TileTree, TileTreeReference } from "../tile/internal";
 import { RealityDataSource } from "../RealityDataSource";
-import type { GeometricModelState } from "../ModelState";
+import { GeometricModel3dState, type GeometricModelState } from "../ModelState";
 import { ExtentLimits, ViewState3d } from "../ViewState";
 import type { SpatialClassifiersState } from "../SpatialClassifiersState";
-import { computeSectionCutForIModelCoords } from "../internal/tile/PrimaryTileTree";
+import { computeSectionCutForIModelCoords, createPrimaryTileTreeReference } from "../internal/tile/PrimaryTileTree";
 import { computeIModelRefDisplayTransform } from "../internal/IModelDisplayReferenceImpl";
 import { EntityChanges, TxnEntityChanges } from "../TxnEntityChanges";
 
@@ -258,8 +259,8 @@ describe("Viewport", () => {
     });
   });
 
-  describe("symbology override cache invalidation", () => {
-    it("invalidates cached overrides when a txn invalidates cached subcategory information", async () => {
+  describe("symbology override updates", () => {
+    it("refreshes primary target overrides when a txn invalidates cached subcategory information", async () => {
       using viewport = openBlankViewport();
       const ref = viewport.iModelRefs.primary;
 
@@ -295,8 +296,9 @@ describe("Viewport", () => {
       await waitFor(() => undefined !== viewport.iModel.subcategories.getSubCategories(categoryId));
       await waitFor(() => ref.getSymbologyOverrides().isSubCategoryIdVisible("0x21"));
 
-      const warmed = ref.getSymbologyOverrides();
-      expect(warmed.isSubCategoryIdVisible("0x22")).toBe(false);
+      const applied = vi.spyOn(viewport.target, "overrideFeatureSymbology");
+      viewport.renderFrame();
+      expect(applied.mock.calls.at(-1)?.[0].isSubCategoryIdVisible("0x22")).toBe(false);
 
       // Simulate a txn inserting a new subcategory - the cache reloads and the ref's overrides must be rebuilt.
       subCategoryIds = ["0x21", "0x22"];
@@ -309,9 +311,11 @@ describe("Viewport", () => {
         meta: [{ name: "BisCore:SubCategory", bases: [] }],
       }));
 
-      await waitFor(() => ref.getSymbologyOverrides() !== warmed);
+      await waitFor(() => ref.getSymbologyOverrides().isSubCategoryIdVisible("0x22"));
       expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x21")).toBe(true);
       expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0x22")).toBe(true);
+      viewport.renderFrame();
+      expect(applied.mock.calls.at(-1)?.[0].isSubCategoryIdVisible("0x22")).toBe(true);
     });
 
     it("redraws when plan projection and reality model display settings maps are mutated", async () => {
@@ -336,17 +340,15 @@ describe("Viewport", () => {
         primary.planProjectionSettings.set("0x11", PlanProjectionSettings.fromJSON({ elevation: 10 })!);
         expect(anyVp._renderPlanValid).toBe(false);
 
-        // ...and rebuild the cached symbology overrides (transparency is baked in).
+        // ...and update the next primary snapshot's transparency.
         render();
-        let warmed = primary.getSymbologyOverrides();
         primary.planProjectionSettings.set("0x11", PlanProjectionSettings.fromJSON({ transparency: 0.5 })!);
-        expect(primary.getSymbologyOverrides()).not.toBe(warmed);
+        expect(primary.getSymbologyOverrides().getModelOverridesById("0x11")?.transparency).toBe(0.5);
         expect(anyVp._renderPlanValid).toBe(false);
 
         render();
-        warmed = primary.getSymbologyOverrides();
         primary.planProjectionSettings.delete("0x11");
-        expect(primary.getSymbologyOverrides()).not.toBe(warmed);
+        expect(primary.getSymbologyOverrides().getModelOverridesById("0x11")).toBeUndefined();
         expect(anyVp._renderPlanValid).toBe(false);
 
         render();
@@ -372,7 +374,7 @@ describe("Viewport", () => {
       }
     });
 
-    it("invalidates cached overrides when visibility and appearance inputs change on primary and linked references", async () => {
+    it("signals override updates when visibility and appearance inputs change on primary and linked references", async () => {
       const linkedIModel = createBlankConnection();
       try {
         using viewport = openBlankViewport();
@@ -384,10 +386,11 @@ describe("Viewport", () => {
 
         for (const ref of [refs.primary, linkedRef]) {
           const expectInvalidation = (mutate: () => void) => {
-            const warmed = ref.getSymbologyOverrides();
-            expect(ref.getSymbologyOverrides()).toBe(warmed);
+            const changed = vi.fn();
+            const remove = ref.onSymbologyOverridesInvalidated.addListener(changed);
             mutate();
-            expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+            remove();
+            expect(changed).toHaveBeenCalled();
           };
 
           expectInvalidation(() => ref.neverDrawnElements.add("0x123"));
@@ -401,12 +404,12 @@ describe("Viewport", () => {
           expectInvalidation(() => ref.modelAppearanceOverrides.set("0xabc", FeatureAppearance.fromJSON({ transparency: 0.5 })));
         }
 
-        // A linked reference's appearance maps must invalidate its own cache, not the primary's.
-        const primaryWarmed = refs.primary.getSymbologyOverrides();
+        // A linked reference's appearance maps must invalidate its cache without changing primary symbology.
+        const primarySnapshot = refs.primary.getSymbologyOverrides();
         const linkedWarmed = linkedRef.getSymbologyOverrides();
         linkedRef.subCategoryOverrides.set("0xdef", SubCategoryOverride.fromJSON({ invisible: true }));
         expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
-        expect(refs.primary.getSymbologyOverrides()).toBe(primaryWarmed);
+        expect(refs.primary.getSymbologyOverrides()).toEqual(primarySnapshot);
 
         refs.unlink(linkedRef);
       } finally {
@@ -426,28 +429,24 @@ describe("Viewport", () => {
         const primary = refs.primary;
         const style = viewport.view.displayStyle;
 
-        // A view flag change on the display style must invalidate both references' caches - both inherit the view's flags.
-        let primaryWarmed = primary.getSymbologyOverrides();
+        // Both references inherit the view's flags; only linked overrides are cached.
         let linkedWarmed = linkedRef.getSymbologyOverrides();
         const dimensions = !style.viewFlags.dimensions;
         style.viewFlags = style.viewFlags.with("dimensions", dimensions);
-        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
         expect(primary.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(dimensions);
         expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
         expect(linkedRef.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(dimensions);
 
         // A linked reference's view flag overrides must invalidate only its own cache.
-        primaryWarmed = primary.getSymbologyOverrides();
+        const primarySnapshot = primary.getSymbologyOverrides();
         linkedWarmed = linkedRef.getSymbologyOverrides();
         linkedRef.overrides.viewFlags = { dimensions: !dimensions };
-        expect(primary.getSymbologyOverrides()).toBe(primaryWarmed);
+        expect(primary.getSymbologyOverrides()).toEqual(primarySnapshot);
         expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
         expect(linkedRef.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(!dimensions);
 
-        // The primary reference's view flag overrides must invalidate its cache.
-        primaryWarmed = primary.getSymbologyOverrides();
+        // The next primary snapshot must include its reference's view flag overrides.
         primary.overrides.viewFlags = { dimensions: !dimensions };
-        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
         expect(primary.getSymbologyOverrides().isClassVisible(GeometryClass.Dimension)).toBe(!dimensions);
 
         refs.unlink(linkedRef);
@@ -472,22 +471,21 @@ describe("Viewport", () => {
         const primary = refs.primary;
 
         // The primary reference's plan projection settings live on the display style.
-        let primaryWarmed = primary.getSymbologyOverrides();
         let linkedWarmed = linkedRef.getSymbologyOverrides();
         settings.setPlanProjectionSettings("0x1c", PlanProjectionSettings.fromJSON({ transparency: 0.5 }));
-        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+        expect(primary.getSymbologyOverrides().getModelOverridesById("0x1c")?.transparency).toBe(0.5);
         expect(linkedRef.getSymbologyOverrides()).toBe(linkedWarmed);
 
-        primaryWarmed = primary.getSymbologyOverrides();
         settings.setPlanProjectionSettings("0x1c", undefined);
-        expect(primary.getSymbologyOverrides()).not.toBe(primaryWarmed);
+        expect(primary.getSymbologyOverrides().getModelOverridesById("0x1c")).toBeUndefined();
 
         // A linked reference owns its plan projection settings and must invalidate only its own cache.
-        primaryWarmed = primary.getSymbologyOverrides();
+        const primarySnapshot = primary.getSymbologyOverrides();
         linkedWarmed = linkedRef.getSymbologyOverrides();
         linkedRef.planProjectionSettings.set("0x2a", PlanProjectionSettings.fromJSON({ transparency: 0.25 })!);
         expect(linkedRef.getSymbologyOverrides()).not.toBe(linkedWarmed);
-        expect(primary.getSymbologyOverrides()).toBe(primaryWarmed);
+        expect(linkedRef.getSymbologyOverrides().getModelOverridesById("0x2a")?.transparency).toBe(0.25);
+        expect(primary.getSymbologyOverrides()).toEqual(primarySnapshot);
 
         refs.unlink(linkedRef);
       } finally {
@@ -506,10 +504,10 @@ describe("Viewport", () => {
         viewport.displayStyle = newStyle;
         expect(view.displayStyle).toBe(newStyle);
 
-        // Mutations of the replacement style must invalidate the primary reference's cached overrides.
-        let warmed = ref.getSymbologyOverrides();
+        // Mutations of the replacement style must signal a primary override update.
+        const invalidate = vi.spyOn(ref, "invalidateSymbologyOverrides");
         newStyle.settings.subCategoryOverrides.set("0x123", SubCategoryOverride.fromJSON({ invisible: true }));
-        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+        expect(invalidate).toHaveBeenCalled();
 
         // View flag changes on the replacement style must be reflected in the reference's active view flags.
         const vf = newStyle.viewFlags.with("dimensions", !newStyle.viewFlags.dimensions);
@@ -517,9 +515,9 @@ describe("Viewport", () => {
         expect(ref.activeViewFlags.dimensions).toBe(vf.dimensions);
 
         // Mutations of the replaced (old) style must have no effect.
-        warmed = ref.getSymbologyOverrides();
+        invalidate.mockClear();
         oldStyle.settings.subCategoryOverrides.set("0x456", SubCategoryOverride.fromJSON({ invisible: true }));
-        expect(ref.getSymbologyOverrides()).toBe(warmed);
+        expect(invalidate).not.toHaveBeenCalled();
       });
     });
 
@@ -531,17 +529,17 @@ describe("Viewport", () => {
         const newSelector = oldSelector.clone();
         view.categorySelector = newSelector;
 
-        const warmed = ref.getSymbologyOverrides();
+        const invalidate = vi.spyOn(ref, "invalidateSymbologyOverrides");
         newSelector.categories.add("0x999");
         expect(ref.viewedCategories.has("0x999")).toBe(true);
-        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+        expect(invalidate).toHaveBeenCalled();
         expect((viewport as any)._changeFlags.viewedCategories).toBe(true);
 
         // Mutations of the replaced (old) selector must have no effect.
-        const warmed2 = ref.getSymbologyOverrides();
+        invalidate.mockClear();
         oldSelector.categories.add("0xaaa");
         expect(ref.viewedCategories.has("0xaaa")).toBe(false);
-        expect(ref.getSymbologyOverrides()).toBe(warmed2);
+        expect(invalidate).not.toHaveBeenCalled();
       });
     });
 
@@ -572,14 +570,14 @@ describe("Viewport", () => {
         viewport.changeView(view2);
         const ref = viewport.iModelRefs.primary;
 
-        let warmed = ref.getSymbologyOverrides();
+        const invalidate = vi.spyOn(ref, "invalidateSymbologyOverrides");
         replacement.settings.subCategoryOverrides.set("0x123", SubCategoryOverride.fromJSON({ invisible: true }));
-        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+        expect(invalidate).toHaveBeenCalled();
 
-        warmed = ref.getSymbologyOverrides();
+        invalidate.mockClear();
         newSelector.categories.add("0x999");
         expect(ref.viewedCategories.has("0x999")).toBe(true);
-        expect(ref.getSymbologyOverrides()).not.toBe(warmed);
+        expect(invalidate).toHaveBeenCalled();
       });
     });
 
@@ -761,7 +759,7 @@ describe("Viewport", () => {
       });
     });
 
-    it("refreshes stale symbology overrides when a view is reattached after its style was mutated while detached", () => {
+    it("reflects detached style edits in primary snapshots and the target after reattach", () => {
       testBlankViewport((viewport) => {
         const view = viewport.view;
         const ref = view.iModelRefs.primary;
@@ -769,19 +767,15 @@ describe("Viewport", () => {
         // Detach the view by switching to a clone.
         viewport.changeView(view.clone());
 
-        // Warm the detached reference's cache, then mutate its style - the listeners that would invalidate it are detached.
-        const warm = ref.getSymbologyOverrides();
-        expect(ref.getSymbologyOverrides()).toBe(warm);
+        expect(ref.getSymbologyOverrides().getModelOverridesById("0x123")).toBeUndefined();
         const appearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
         view.displayStyle.settings.modelAppearanceOverrides.set("0x123", appearance);
-        expect(ref.getSymbologyOverrides()).toBe(warm);
+        expect(ref.getSymbologyOverrides().getModelOverridesById("0x123")).toEqual(appearance);
 
-        // Reattaching must discard the stale cache - as Viewport.attachToView did before iModel display references -
-        // so the rebuilt overrides reflect the mutation.
+        const applied = vi.spyOn(viewport.target, "overrideFeatureSymbology");
         viewport.changeView(view);
-        const fresh = ref.getSymbologyOverrides();
-        expect(fresh).not.toBe(warm);
-        expect(fresh.getModelOverridesById("0x123")).toEqual(appearance);
+        viewport.renderFrame();
+        expect(applied.mock.calls.at(-1)?.[0].getModelOverridesById("0x123")).toEqual(appearance);
       });
     });
 
@@ -2453,6 +2447,87 @@ describe("Viewport", () => {
       });
     });
 
+    it("qualifies plain exclusions with displayed primary references before calling the target", () => {
+      using vp = openBlankViewport();
+      using attachment = OffScreenViewport.create({ view: vp.view.clone(), viewRect: vp.viewRect });
+      const other = createBlankConnection();
+      try {
+        const otherView = SpatialViewState.createBlank(other, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+        using foreign = OffScreenViewport.create({ view: otherView, viewRect: vp.viewRect });
+        vi.spyOn(vp.view, "secondaryViewports", "get").mockReturnValue([attachment, foreign]);
+        const explicit = vp.view.clone().iModelRefs.primary;
+        let qualified: unknown;
+        const read = vi.spyOn(vp.target, "readPixels").mockImplementation((_rect, _selector, receiver, _nonLocatable, exclusions) => {
+          qualified = [...exclusions ?? []];
+          receiver(undefined);
+        });
+        try {
+          function* exclusions(): NonNullable<ReadPixelsArgs["excludedElements"]> {
+            yield "0xa";
+            yield ["0xb", explicit];
+            yield ["0xc", foreign.primaryIModelRef];
+          }
+          vp.readPixels({ excludedElements: exclusions(), receiver: () => {} });
+          expect(qualified).toEqual([
+            ["0xa", vp.primaryIModelRef], ["0xa", attachment.primaryIModelRef],
+            ["0xb", explicit], ["0xc", foreign.primaryIModelRef],
+          ]);
+        } finally {
+          read.mockRestore();
+        }
+      } finally {
+        other.closeSync();
+      }
+    });
+
+    it("uses primary-reference providers for primary tile graphics without rebuilding the scene", async () => {
+      using vp = openBlankViewport();
+      const primary = vp.primaryIModelRef;
+      vp.view.viewFlags = vp.view.viewFlags.override({ renderMode: RenderMode.SmoothShade, lighting: false });
+      vp.iModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+      primary.viewedCategories.add("0x10");
+      await vi.waitFor(() => expect(primary.isLoadingComplete).toBe(true));
+      const model = new GeometricModel3dState({ id: "0x123", classFullName: "BisCore:PhysicalModel", modeledElement: { id: "0x123" } }, vp.iModel);
+      const treeRef = createPrimaryTileTreeReference(primary, model);
+      const treeOverrides = (treeRef as unknown as { getSymbologyOverrides(): FeatureSymbology.Overrides | undefined }).getSymbologyOverrides();
+      const points = [new Point3d(0.1, 0.1, 0.5), new Point3d(0.9, 0.1, 0.5), new Point3d(0.9, 0.9, 0.5), new Point3d(0.1, 0.9, 0.5), new Point3d(0.1, 0.1, 0.5)];
+      vp.npcToWorldArray(points);
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, pickable: { id: "0xa" }, computeChordTolerance: () => 0 });
+      builder.activateFeature(new Feature("0xa", "0x11"));
+      builder.addShape(points);
+      const branch = new GraphicBranch(true);
+      branch.symbologyOverrides = treeOverrides;
+      branch.add(builder.finish());
+      // Retain the tile graphic while appearance changes recreate the scene decorations.
+      const graphic = IModelApp.renderSystem.createGraphicOwner(IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { iModelRef: primary }));
+      addDecorator({ decorate: (context) => context.addDecoration(GraphicType.Scene, graphic) });
+      const source = vi.spyOn(primary, "getSymbologyOverrides");
+      const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+      vp.renderFrame();
+      expect(source).toHaveBeenCalledOnce();
+      expect(applied).toHaveBeenLastCalledWith(source.mock.results[0].value);
+      expect(readUniqueFeatures(vp).contains(new Feature("0xa", "0x11"))).toBe(true);
+      const scene = vi.spyOn(vp.view, "createScene");
+      const provider = { addFeatureOverrides: vi.fn((overrides: FeatureSymbology.Overrides, ref: IModelDisplayReference) => {
+        expect(ref).toBe(primary);
+        overrides.setNeverDrawn("0xa");
+      }) };
+      primary.featureOverrideProviders.add(provider);
+      source.mockClear();
+      vp.renderFrame();
+      expect(source).toHaveBeenCalledOnce();
+      expect(provider.addFeatureOverrides).toHaveBeenCalledOnce();
+      expect(applied).toHaveBeenLastCalledWith(source.mock.results[0].value);
+      expect(readUniqueFeatures(vp).length).toBe(0);
+      vp.renderFrame();
+      expect(source).toHaveBeenCalledOnce();
+      expect(provider.addFeatureOverrides).toHaveBeenCalledOnce();
+      primary.featureOverrideProviders.delete(provider);
+      vp.renderFrame();
+      expect(readUniqueFeatures(vp).contains(new Feature("0xa", "0x11"))).toBe(true);
+      expect(scene).not.toHaveBeenCalled();
+    });
+
     it("can filter out specified elements", () => {
       class SquareDecorator {
         private readonly _graphic: RenderGraphic;
@@ -2747,14 +2822,17 @@ describe("Viewport", () => {
       }
     });
 
-    it("merges mixed exclusions once per reference per pixel read", () => {
+    it("builds one reference-scoped exclusion snapshot per pixel read", () => {
       testBlankViewport((vp) => {
         vp.renderFrame();
         const target = vp.target as Target;
         const primary = vp.primaryIModelRef;
-        const attachment = vp.view.clone().iModelRefs.primary;
+        using attachmentVp = OffScreenViewport.create({ view: vp.view.clone(), viewRect: vp.viewRect });
+        vi.spyOn(vp.view, "secondaryViewports", "get").mockReturnValue([attachmentVp]);
+        const attachment = attachmentVp.primaryIModelRef;
+        const explicit = vp.view.clone().iModelRefs.primary;
         const ids = Array.from({ length: 10000 }, (_, i) => Id64.fromLocalAndBriefcaseIds(i + 100, 0));
-        const exclusions: NonNullable<ReadPixelsArgs["excludedElements"]> = [...ids, ["0x1", primary], ["0x2", attachment]];
+        const exclusions: NonNullable<ReadPixelsArgs["excludedElements"]> = [...ids, ["0x1", primary], ["0x2", attachment], ["0x3", explicit]];
         const reads: Id64.Uint32Set[] = [];
         const read = vi.spyOn(target as any, "readPixelsFromFbo").mockImplementation(() => {
           const combined = target.getPickExclusions(primary)!;
@@ -2765,6 +2843,8 @@ describe("Viewport", () => {
           expect(attached.hasId("0x1")).toBe(false);
           expect(attached.hasId("0x2")).toBe(true);
           expect(attached.hasId(ids[9999])).toBe(true);
+          expect(target.getPickExclusions(explicit)?.hasId("0x3")).toBe(true);
+          expect(target.getPickExclusions(explicit)?.hasId(ids[9999])).toBe(false);
           for (let batch = 0; batch < 1000; ++batch) {
             expect(target.getPickExclusions(primary)).toBe(combined);
             expect(target.getPickExclusions(attachment)).toBe(attached);
@@ -2801,8 +2881,10 @@ describe("Viewport", () => {
           if (!refs.isSpatial)
             throw new Error("Expected spatial references");
 
-          // Sheet and section-drawing attachments render through the attached view's primary reference.
-          const attachmentRef = vp.view.clone().iModelRefs.primary;
+          // Sheet and section-drawing attachments render through their secondary viewport's primary reference.
+          using attachmentVp = OffScreenViewport.create({ view: vp.view.clone(), viewRect: vp.viewRect });
+          vi.spyOn(vp.view, "secondaryViewports", "get").mockReturnValue([attachmentVp]);
+          const attachmentRef = attachmentVp.primaryIModelRef;
           const linked = refs.link({ iModel: other });
           for (const [ref, id, z] of [[refs.primary, "0xa", 0], [attachmentRef, "0xa", -5], [attachmentRef, "0xb", -7], [linked, "0xa", -10]] as const) {
             const points = [new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z)];

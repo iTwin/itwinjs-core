@@ -101,9 +101,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
-  private _currPickExclusions = new Map<IModelDisplayReference | IModelConnection, Id64.Uint32Set>();
-  private _swapPickExclusions = new Map<IModelDisplayReference | IModelConnection, Id64.Uint32Set>();
-  private readonly _mergedPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
+  private _currPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
+  private _swapPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashedElem?: FlashedElem;
@@ -191,22 +190,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
-  public getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined {
-    const cached = this._mergedPickExclusions.get(iModelRef);
-    if (cached)
-      return cached;
-
-    const qualified = this._currPickExclusions.get(iModelRef);
-    const unqualified = this._currPickExclusions.get(iModelRef.iModel);
-    if (!qualified || !unqualified)
-      return qualified ?? unqualified;
-
-    const combined = new Id64.Uint32Set();
-    qualified.forEach((lo, hi) => combined.add(lo, hi));
-    unqualified.forEach((lo, hi) => combined.add(lo, hi));
-    this._mergedPickExclusions.set(iModelRef, combined);
-    return combined;
-  }
+  public getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined { return this._currPickExclusions.get(iModelRef); }
 
   public get flashedElem(): FlashedElem | undefined { return this._flashedElem; }
   public get flashIntensity(): number { return this._flashIntensity; }
@@ -796,7 +780,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String | readonly [Id64String, IModelDisplayReference]>): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void {
     if (!this.assignDC())
       return;
 
@@ -826,14 +810,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         if (excludedElements) {
           const swap = this._swapPickExclusions;
           swap.clear();
-          const primaryIModel = this.currentBranch.iModelRef?.iModel;
-          assert(undefined !== primaryIModel);
-          for (const exclusion of excludedElements) {
-            // Plain IDs apply to the primary connection, including its sheet/section attachment references.
-            const [id, scope] = typeof exclusion === "string" ? [exclusion, primaryIModel] : exclusion;
-            let ids = swap.get(scope);
+          for (const [id, ref] of excludedElements) {
+            let ids = swap.get(ref);
             if (!ids)
-              swap.set(scope, ids = new Id64.Uint32Set());
+              swap.set(ref, ids = new Id64.Uint32Set());
 
             ids.addId(id);
           }
@@ -861,7 +841,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
           result = this.readPixelsFromFbo(rect, selector);
         } finally {
           this._drawNonLocatable = true;
-          this._mergedPickExclusions.clear();
           if (updatedExclusions) {
             this._currPickExclusions.clear();
             desync(this.pickExclusionsSyncTarget);
@@ -869,6 +848,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         }
       });
     } finally {
+      this._swapPickExclusions.clear();
       this.disposeOrReuseReadPixelResources(resources);
     }
 
