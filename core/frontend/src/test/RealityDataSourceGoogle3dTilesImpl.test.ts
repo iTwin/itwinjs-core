@@ -206,9 +206,28 @@ describe("RealityDataSourceGoogle3dTilesImpl", async () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
 
       const returnedUrl3 = source.getTileUrl("tile.glb");
-      // Because all tileset search params are stored in RealityDataSourceGoogle3dTilesImpl._searchParams, not just root, the tile will recieve both session ids.
-      // In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
-      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
+      // Nested tileset search params are merged into _searchParams with set(), so duplicate keys
+      // (e.g. sessionId) keep only the latest value when passed down to child tiles.
+      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=456");
+    });
+
+    it("does not duplicate the same session across nested tilesets", async () => {
+      const url = "https://tile.googleapis.com/v1/root.json?key=key";
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
+      if (!source)
+        return;
+
+      // Simulate nested tileset resolution where Google repeats the same session on each tileset URL.
+      source.getTileUrl("tileset.json?session=abc");
+      source.getTileUrl("child/tileset.json?session=abc");
+      source.getTileUrl("child/nested/tileset.json?session=abc");
+
+      const tileUrl = source.getTileUrl("tile.glb");
+      const parsedUrl = new URL(tileUrl);
+      expect(parsedUrl.origin + parsedUrl.pathname).toEqual("https://tile.googleapis.com/tile.glb");
+      expect(parsedUrl.searchParams.get("key")).toEqual("key");
+      expect(parsedUrl.searchParams.getAll("session")).toEqual(["abc"]);
     });
 
     it("does not forward search params to a different origin", async () => {
