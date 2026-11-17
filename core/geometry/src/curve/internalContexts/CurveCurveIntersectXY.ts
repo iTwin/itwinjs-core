@@ -60,6 +60,39 @@ interface NearTangentSnap {
   /** fraction of the projection of the endpoint on `other` */
   otherFraction: number;
 }
+/** A planned change of a recorded intersection detail. */
+interface NearTangentMove {
+  detail: CurveLocationDetail;
+  fraction: number;
+  point: Point3d;
+}
+/** One of the two arcs of a near-tangent snap candidate, with the old and new location of the intersection on it. */
+interface NearTangentSide {
+  /** the arc */
+  curve: Arc3d;
+  /** the recorded intersection on `curve` */
+  oldPoint: Point3d;
+  /** fraction of the new location on `curve` */
+  newFraction: number;
+  /** the new location on `curve` */
+  newPoint: Point3d;
+  /** the other arc of the candidate */
+  counterpart: Arc3d;
+  /** the new location on `counterpart` */
+  counterpartPoint: Point3d;
+}
+/** A near-tangent intersection that may be moved to an arc endpoint. */
+interface NearTangentCandidate {
+  snap: NearTangentSnap;
+  /** the endpoint of `snap.arc` (the target) */
+  endPoint: Point3d;
+  /** the arc and the other arc */
+  sides: NearTangentSide[];
+  /** the planned moves, including intersections moved along */
+  moves: NearTangentMove[];
+  /** whether the candidate was found blocked when collected */
+  blocked: boolean;
+}
 /**
  * Handler class for XY intersections between _geometryB and another geometry.
  * * Instances are initialized and called from CurveCurve.
@@ -103,6 +136,25 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * * The sine is compared, so a curve that leaves almost backward along the arc (a cusp) counts as tangent too.
    */
   private static _tangentSineTolerance = 1.0e-4;
+  // Thresholds of the near-tangent snap (see snapNearTangentIntersectionsToEndpoints). Factors of the distance tolerance
+  // tol, below which vertices are merged, are margins below tol, chosen so that roundoff does not decide whether a moved
+  // intersection is merged with a nearby vertex. They are chosen, not derived. The others follow from the local model
+  // of two near-tangent arcs in snapToEndOfArc.
+  /** The arc endpoint and the arc up to it must be within this factor of tol of the other arc (chosen margin). */
+  private static readonly _snapToleranceFactor = 0.75;
+  /**
+   * The end of the overlap must be within this factor of tol of the projection of the endpoint on the other arc (chosen
+   * margin, independent of _snapToleranceFactor, which bounds a distance across the arcs rather than along them).
+   */
+  private static readonly _overlapEndToleranceFactor = 0.7;
+  /** Bound of |sine| * distance over the snap tolerance for an intersection that can pass the snap tests (derived). */
+  private static readonly _separationBoundFactor = 4;
+  /** Largest ratio of the sines at the endpoint and at the intersection: at least halfway to the extremum (chosen). */
+  private static readonly _endSineRatioLimit = 0.5;
+  /** Another intersection within this factor of the moved distance of the old location blocks the move (chosen). */
+  private static readonly _nearOldLocationSpanFactor = 2;
+  /** A foreign curve with an endpoint within this factor of tol of the new location counts (chosen). */
+  private static readonly _foreignEndpointToleranceFactor = 2;
   private _xyzwA0?: Point4d;
   private _xyzwA1?: Point4d;
   private _xyzwPlane?: Point4d;
@@ -613,7 +665,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const tol = this._coincidentGeometryContext.tolerance;
     // The snapped intersection is merged with nearby vertices at distance tolerance, so require a margin below it. Near
     // the tolerance, roundoff would decide whether the intersection moves.
-    const snapTol = 0.75 * tol;
+    const snapTol = CurveCurveIntersectXY._snapToleranceFactor * tol;
     const point = arc.fractionToPoint(fraction, CurveCurveIntersectXY._workPointAA0);
     const endPoint = arc.fractionToPoint(endFraction, CurveCurveIntersectXY._workPointAA1);
     const distance = point.distanceXY(endPoint);
@@ -624,7 +676,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     // midpoint and the endpoint are within snapTol of the other arc, then |sine| * distance <= 4 * snapTol (attained
     // when the endpoint is at the other root of s), so this test quickly rejects transverse crossings without
     // rejecting any intersection that passes the tests below.
-    if (sine === undefined || Math.abs(sine) * distance > 4 * snapTol)
+    if (sine === undefined || Math.abs(sine) * distance > CurveCurveIntersectXY._separationBoundFactor * snapTol)
       return undefined;
     // the endpoint must be near the other arc...
     const closest = other.closestPointXY(endPoint, false);
@@ -642,7 +694,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     // to the extremum, and not past the extremum beyond roundoff: past it, the arcs cross again toward the endpoint, and
     // the endpoint is not where they touch.
     const endSine = CurveCurveIntersectXY.tangentSineXY(arc, endFraction, other, closest.fraction);
-    if (endSine === undefined || endSine * sine > 0.5 * sine * sine || endSine * sine <= -sine * sine)
+    if (endSine === undefined || endSine * sine > CurveCurveIntersectXY._endSineRatioLimit * sine * sine || endSine * sine <= -sine * sine)
       return undefined;
     if (endSine * sine < 0 && Math.abs(endSine) > Geometry.smallFraction)
       return undefined;
@@ -699,7 +751,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           if (detail.point.distanceXY(point) > tol)
             continue;
         } else if (detail.curve === otherArc) {
-          if (partnerCurve.startPoint().distanceXY(point) > 2 * tol && partnerCurve.endPoint().distanceXY(point) > 2 * tol)
+          const endTol = CurveCurveIntersectXY._foreignEndpointToleranceFactor * tol;
+          if (partnerCurve.startPoint().distanceXY(point) > endTol && partnerCurve.endPoint().distanceXY(point) > endTol)
             continue;
         } else {
           continue;
@@ -840,20 +893,57 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * new location (measured by xy-distance, not by arc fraction), or within twice the moved distance of the old location.
    * Moving it would then reorder or merge vertices of the arc. The exception is an intersection at the old location with
    * a third arc that is coincident with the other arc and passes through its new location: this is the same crossing,
-   * so it is moved along.
+   * so it is moved along, unless the third arc would leave the new location to the other side than at the crossing (see
+   * [[isVertexMisorderedXY]]).
    * * The intersection is not moved either if the new location on the other arc (or on the third arc, for an intersection
    * moved along) is a corner of the region of that arc, where it ends and another curve of the region leaves at an
    * angle (see [[isCornerOfArc]]).
+   * * The intersection is not moved either if the arc would leave the new location to the other side of the other arc
+   * than at the crossing (see [[isVertexMisorderedXY]]).
    * * All decisions are made before any intersection is moved.
    * * See [[findNearTangentSnap]] for the intersections that are candidates.
    */
   public snapNearTangentIntersectionsToEndpoints(): void {
     const tol = this._coincidentGeometryContext.tolerance;
-    interface Move { detail: CurveLocationDetail, fraction: number, point: Point3d }
-    interface Side { curve: Arc3d, oldPoint: Point3d, newFraction: number, newPoint: Point3d, counterpart: Arc3d, counterpartPoint: Point3d }
-    const candidates: { snap: NearTangentSnap, endPoint: Point3d, sides: Side[], moves: Move[], blocked: boolean }[] = [];
+    const candidates = this.collectNearTangentCandidates(tol);
+    if (candidates.length > 0) {
+      const blocked = this.findBlockedNearTangentCandidates(candidates, tol);
+      for (let i = 0; i < candidates.length; i++)
+        if (!blocked.has(i))
+          for (const move of candidates[i].moves)
+            move.detail.setFP(move.fraction, move.point.clone());
+    }
+    this._nearTangentSnaps = [];
+  }
+  /**
+   * Whether the edges of `arcA` and `arcB` that leave a vertex at `vertexFractionA` and `vertexFractionB` may be ordered
+   * by a planar subdivision differently than the near-tangent arcs cross at `fractionA` and `fractionB`.
+   * * A planar subdivision orders the edges at a vertex by tangent angle, and by curvature only where the angles agree to
+   * within its angle tolerance, which is Geometry.smallAngleRadians for region booleans. The curvature order is right for
+   * externally tangent arcs, and the angle order agrees with it if `arcA` leaves the vertex to the same side of `arcB` as
+   * at the crossing. So the edges are misordered if the sine of the angle between the arcs changes sign from the crossing
+   * to the vertex and exceeds Geometry.smallAngleRadians at the vertex.
+   * * A caller with a larger angle tolerance (e.g. RegionOps.constructAllXYRegionLoops) gets a stricter test than needed,
+   * which only keeps more intersections where they were computed.
+   */
+  private static isVertexMisorderedXY(
+    arcA: Arc3d, fractionA: number, arcB: Arc3d, fractionB: number, vertexFractionA: number, vertexFractionB: number,
+  ): boolean {
+    const sine = CurveCurveIntersectXY.tangentSineXY(arcA, fractionA, arcB, fractionB);
+    const vertexSine = CurveCurveIntersectXY.tangentSineXY(arcA, vertexFractionA, arcB, vertexFractionB);
+    return sine === undefined || vertexSine === undefined
+      || (vertexSine * sine < 0 && Math.abs(vertexSine) > Geometry.smallAngleRadians);
+  }
+  /**
+   * Return the recorded near-tangent intersections that are still recorded and whose arc endpoint is where a coincident
+   * overlap of the other arc ends, with their planned moves. A candidate is marked as blocked if another curve leaves the
+   * endpoint tangent to the other arc, or if the moved intersection would be a misordered vertex.
+   */
+  private collectNearTangentCandidates(tol: number): NearTangentCandidate[] {
+    const candidates: NearTangentCandidate[] = [];
+    const recorded = new Set(this._results);
     for (const snap of this._nearTangentSnaps) {
-      if (!this._results.includes(snap.pair))
+      if (!recorded.has(snap.pair))
         continue; // the pair was replaced, e.g. by conversion to a chain detail
       const endPoint = snap.arc.fractionToPoint(snap.fraction);
       const overlapEnd = this.closestCoincidentIntervalEnd(snap.other, endPoint, tol, snap.arc);
@@ -861,28 +951,24 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         continue;
       // Another curve that is not coincident with the other arc leaves the endpoint nearly tangent to it (e.g. the fillet
       // of a neighbouring shape that starts there): the endpoint would become a vertex of two curves tangent to the other
-      // arc. Such a candidate is not moved, and it also blocks the candidates moving to the same endpoint (see below).
+      // arc. Such a candidate is not moved, and it also blocks the candidates moving to the same endpoint (see
+      // findBlockedNearTangentCandidates).
       const arcIsA = snap.pair.detailA.curve === snap.arc;
       const arcDetail = arcIsA ? snap.pair.detailA : snap.pair.detailB;
       const otherDetail = arcIsA ? snap.pair.detailB : snap.pair.detailA;
-      const blocked = this.hasForeignCurveAtPoint(snap.arc, endPoint, tol, snap.other, arcDetail.point.distanceXY(endPoint));
+      const hasForeignCurve = this.hasForeignCurveAtPoint(snap.arc, endPoint, tol, snap.other, arcDetail.point.distanceXY(endPoint));
       // The overlap must end near the projection of the endpoint on the other arc. If they are almost a tolerance apart,
       // whether the moved intersection and the end of the overlap are merged into one vertex is decided by roundoff.
-      if (overlapEnd.point.distanceXY(snap.other.fractionToPoint(snap.otherFraction)) > 0.7 * tol)
+      if (overlapEnd.point.distanceXY(snap.other.fractionToPoint(snap.otherFraction)) > CurveCurveIntersectXY._overlapEndToleranceFactor * tol)
         continue;
       const otherFraction = overlapEnd.fraction;
       const otherPoint = overlapEnd.point;
-      // At the new vertex, the arc and the other arc leave in nearly the same direction. A planar subdivision orders the
-      // edges at a vertex by tangent angle, and by curvature only where the angles agree to within
-      // Geometry.smallAngleRadians. The curvature order is right for externally tangent arcs, and the angle order agrees
-      // with it if the arc leaves the vertex to the same side of the other arc as at the intersection. Check the angle at
-      // the vertex, that is, at the end of the overlap on the other arc, not at the projection of the endpoint tested in
+      // At the new vertex, the arc and the other arc leave in nearly the same direction. Check their order at the vertex,
+      // that is, at the end of the overlap on the other arc, not at the projection of the endpoint tested in
       // snapToEndOfArc: the two points can be a small fraction of the tolerance apart, and between them the tangent of the
       // other arc turns by their distance over its radius of curvature.
-      const sine = CurveCurveIntersectXY.tangentSineXY(snap.arc, arcDetail.fraction, snap.other, otherDetail.fraction);
-      const vertexSine = CurveCurveIntersectXY.tangentSineXY(snap.arc, snap.fraction, snap.other, otherFraction);
-      const misordered = sine === undefined || vertexSine === undefined
-        || (vertexSine * sine < 0 && Math.abs(vertexSine) > Geometry.smallAngleRadians);
+      const misordered = CurveCurveIntersectXY.isVertexMisorderedXY(
+        snap.arc, arcDetail.fraction, snap.other, otherDetail.fraction, snap.fraction, otherFraction);
       candidates.push({
         snap, endPoint,
         sides: [
@@ -893,15 +979,19 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           { detail: arcDetail, fraction: snap.fraction, point: endPoint },
           { detail: otherDetail, fraction: otherFraction, point: otherPoint },
         ],
-        blocked: blocked || misordered,
+        blocked: hasForeignCurve || misordered,
       });
     }
-    if (candidates.length === 0) {
-      this._nearTangentSnaps = [];
-      return;
-    }
-    // index the recorded pairs by curve, and the candidate targets by pair, so the test below is linear in the number
-    // of pairs on the two arcs of a candidate rather than in the number of all pairs
+    return candidates;
+  }
+  /**
+   * Return the indices of the candidates that must not move: blocked when collected, moving to a corner of the region of
+   * the other arc, blocked by another intersection on one of their arcs (see [[isSideBlocked]]), or moving to the same
+   * target as a blocked candidate. Adds the intersections that are moved along to the moves of a candidate.
+   */
+  private findBlockedNearTangentCandidates(candidates: NearTangentCandidate[], tol: number): Set<number> {
+    // index the recorded pairs by curve, and the candidate targets by pair, so the test is linear in the number of pairs
+    // on the two arcs of a candidate rather than in the number of all pairs
     const targetsByPair = new Map<CurveLocationDetailPair, Point3d[]>();
     for (const c of candidates) {
       const targets = targetsByPair.get(c.snap.pair);
@@ -920,70 +1010,92 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           pairsByCurve.set(curve, [pair]);
       }
     }
-    const movesToSameTarget = (pair: CurveLocationDetailPair, endPoint: Point3d) =>
-      targetsByPair.get(pair)?.some((target) => target.distanceXY(endPoint) <= tol) ?? false;
-    const blockedCandidates = new Set<number>();
-    for (let iCandidate = 0; iCandidate < candidates.length; iCandidate++) {
-      const candidate = candidates[iCandidate];
-      const moves = candidate.moves;
-      let blocked = candidate.blocked
-        || this.isCornerOfArc(candidate.snap.other, candidate.sides[1].newPoint, candidate.snap.arc, pairsByCurve.get(candidate.snap.other), tol);
-      for (const side of candidate.sides) {
-        const span = side.oldPoint.distanceXY(side.newPoint);
-        for (const pair of pairsByCurve.get(side.curve) ?? []) {
-          if (blocked || pair === candidate.snap.pair || movesToSameTarget(pair, candidate.endPoint))
-            continue;
-          for (const [detail, otherDetail] of [[pair.detailA, pair.detailB], [pair.detailB, pair.detailA]]) {
-            if (blocked || detail.curve !== side.curve)
-              continue;
-            const points = detail.isInterval() ? [detail.point, detail.point1] : [detail.point];
-            for (const point of points) {
-              if (blocked || point.distanceXY(side.newPoint) <= tol)
-                continue; // already at the new location
-              const distToOld = point.distanceXY(side.oldPoint);
-              const atOld = distToOld <= tol;
-              if (!atOld && distToOld > 2 * span && distToOld + point.distanceXY(side.newPoint) > span + tol)
-                continue; // neither between the old and new location nor near the old location
-              if (atOld && !detail.isInterval() && otherDetail.curve !== side.counterpart && otherDetail.curve instanceof Arc3d
-                && this.hasCoincidentInterval(otherDetail.curve, side.counterpart)) {
-                const closest = otherDetail.curve.closestPointXY(side.counterpartPoint, false);
-                if (closest && closest.point.distanceXY(side.counterpartPoint) <= tol // the same crossing; move it along...
-                  && !this.isCornerOfArc(otherDetail.curve, closest.point, side.curve, pairsByCurve.get(otherDetail.curve), tol)) { // ...unless to a corner
-                  moves.push({ detail, fraction: side.newFraction, point: side.newPoint });
-                  moves.push({ detail: otherDetail, fraction: closest.fraction, point: closest.point });
-                  continue;
-                }
-              }
-              blocked = true;
-            }
-          }
-        }
-      }
-      if (blocked)
-        blockedCandidates.add(iCandidate);
+    const blocked = new Set<number>();
+    for (let i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      if (candidate.blocked
+        || this.isCornerOfArc(candidate.snap.other, candidate.sides[1].newPoint, candidate.snap.arc, pairsByCurve.get(candidate.snap.other), tol)
+        || candidate.sides.some((side) => this.isSideBlocked(candidate, side, pairsByCurve, targetsByPair, tol)))
+        blocked.add(i);
     }
-    // Candidates moving to the same target skip each other in the test above, so they must move together: if one of
-    // them is blocked, so are the others (else, e.g., the intersection of a fillet with a circle stays while the one with
-    // an arc coincident with the circle moves).
+    // Candidates moving to the same target skip each other in isSideBlocked, so they must move together: if one of them
+    // is blocked, so are the others (else, e.g., the intersection of a fillet with a circle stays while the one with an
+    // arc coincident with the circle moves).
     for (let changed = true; changed;) {
       changed = false;
       for (let i = 0; i < candidates.length; i++) {
-        if (blockedCandidates.has(i))
+        if (blocked.has(i))
           continue;
-        for (const j of blockedCandidates) {
+        for (const j of blocked) {
           if (candidates[i].endPoint.distanceXY(candidates[j].endPoint) <= tol) {
-            blockedCandidates.add(i);
+            blocked.add(i);
             changed = true;
             break;
           }
         }
       }
     }
-    for (let i = 0; i < candidates.length; i++)
-      if (!blockedCandidates.has(i))
-        for (const move of candidates[i].moves)
-          move.detail.setFP(move.fraction, move.point.clone());
-    this._nearTangentSnaps = [];
+    return blocked;
+  }
+  /**
+   * Whether another recorded intersection on `side.curve` keeps `candidate` from moving: it lies between the old and the
+   * new location on that arc, or within [[_nearOldLocationSpanFactor]] times the moved distance of the old location.
+   * * Intersections of candidates moving to the same target, and intersections already at the new location, are skipped.
+   * * An intersection at the old location with a third arc that is coincident with the counterpart arc and passes
+   * through its new location is the same crossing: it is added to the moves of the candidate instead, unless its new
+   * location is a corner of the region of the third arc, or the third arc would be misordered there with `side.curve`
+   * (see [[isVertexMisorderedXY]]). The third arc can be turned to the other side than the counterpart arc by much more
+   * than the angle tolerance of the planar subdivision, e.g. if its center is off by a fraction of the tolerance.
+   */
+  private isSideBlocked(
+    candidate: NearTangentCandidate, side: NearTangentSide, pairsByCurve: Map<CurvePrimitive | undefined, CurveLocationDetailPair[]>,
+    targetsByPair: Map<CurveLocationDetailPair, Point3d[]>, tol: number,
+  ): boolean {
+    const span = side.oldPoint.distanceXY(side.newPoint);
+    for (const pair of pairsByCurve.get(side.curve) ?? []) {
+      if (pair === candidate.snap.pair || (targetsByPair.get(pair)?.some((target) => target.distanceXY(candidate.endPoint) <= tol) ?? false))
+        continue; // the candidate itself, or a candidate moving to the same target
+      for (const [detail, otherDetail] of [[pair.detailA, pair.detailB], [pair.detailB, pair.detailA]]) {
+        if (detail.curve !== side.curve)
+          continue;
+        const points = detail.isInterval() ? [detail.point, detail.point1] : [detail.point];
+        for (const point of points) {
+          if (point.distanceXY(side.newPoint) <= tol)
+            continue; // already at the new location
+          const distToOld = point.distanceXY(side.oldPoint);
+          const atOld = distToOld <= tol;
+          if (!atOld && distToOld > CurveCurveIntersectXY._nearOldLocationSpanFactor * span && distToOld + point.distanceXY(side.newPoint) > span + tol)
+            continue; // neither between the old and new location nor near the old location
+          const moveAlong = atOld ? this.findMoveAlong(detail, otherDetail, side, pairsByCurve, tol) : undefined;
+          if (!moveAlong)
+            return true;
+          candidate.moves.push({ detail, fraction: side.newFraction, point: side.newPoint });
+          candidate.moves.push({ detail: otherDetail, fraction: moveAlong.fraction, point: moveAlong.point });
+        }
+      }
+    }
+    return false;
+  }
+  /**
+   * If `detail` on `side.curve` at the old location is an isolated intersection with a third arc (`otherDetail`) that is
+   * coincident with the counterpart arc and passes through the new location of the counterpart, return the new location
+   * on the third arc, unless that is a corner of its region or the third arc and `side.curve` would be misordered there.
+   */
+  private findMoveAlong(
+    detail: CurveLocationDetail, otherDetail: CurveLocationDetail, side: NearTangentSide,
+    pairsByCurve: Map<CurvePrimitive | undefined, CurveLocationDetailPair[]>, tol: number,
+  ): { fraction: number, point: Point3d } | undefined {
+    const thirdArc = otherDetail.curve;
+    if (detail.isInterval() || thirdArc === side.counterpart || !(thirdArc instanceof Arc3d) || !this.hasCoincidentInterval(thirdArc, side.counterpart))
+      return undefined;
+    const closest = thirdArc.closestPointXY(side.counterpartPoint, false);
+    if (!closest || closest.point.distanceXY(side.counterpartPoint) > tol)
+      return undefined; // not the same crossing
+    if (this.isCornerOfArc(thirdArc, closest.point, side.curve, pairsByCurve.get(thirdArc), tol))
+      return undefined;
+    if (CurveCurveIntersectXY.isVertexMisorderedXY(side.curve, detail.fraction, thirdArc, otherDetail.fraction, side.newFraction, closest.fraction))
+      return undefined;
+    return { fraction: closest.fraction, point: closest.point };
   }
   /**
    * Compute the intersection of two xy-arcs.

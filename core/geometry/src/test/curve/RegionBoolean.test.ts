@@ -1792,6 +1792,79 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapDoesNotReorderVertices");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentSnapDoesNotMoveThirdArcToOtherSide", () => {
+    // A circle (in A) and a boundary (in B) whose fillet is near-tangent to the circle and ends where the boundary runs
+    // along the circle on a shared arc. A third arc D, the arc of a slice of a region in A or B, is coincident with the
+    // circle but its center is moved by delta along the tangent at the end of the fillet, so at the end of the fillet D is
+    // turned against the circle by about delta / R. The near-tangent intersection of the fillet with the circle moves to
+    // the end of the fillet, and the intersection of the fillet with D is the same crossing, so it may move along. The
+    // fillet crosses the circle and D at a small angle, to the same side, but at the end of the fillet D is turned by
+    // about delta / R to the other side. The intersection with D must then stay, else the planar subdivision orders the
+    // fillet and D at the vertex by angle, against their order at the crossing, and the slice is lost (as on master,
+    // the intersection of the fillet with the circle then stays too).
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const radius = 18.288;
+    const filletRadius = 6.096;
+    const overlap = 1.0e-8;
+    const rotation = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30)));
+    const pointOnCircle = (r: number, degrees: number) => Point3d.create(r * Math.cos(Angle.degreesToRadians(degrees)), r * Math.sin(Angle.degreesToRadians(degrees)));
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    const ops: Array<[RegionBinaryOpType, boolean]> = [
+      [RegionBinaryOpType.Union, false], [RegionBinaryOpType.Union, true], [RegionBinaryOpType.Intersection, false],
+      [RegionBinaryOpType.AMinusB, false], [RegionBinaryOpType.BMinusA, false], [RegionBinaryOpType.Parity, false],
+    ];
+    let x0 = 0;
+    for (const delta of [1.0e-7, 5.0e-7, 9.0e-7]) {
+      for (const [sliceStart, sliceEnd] of [[140, 160], [100, 175]]) {
+        for (const sliceInB of [false, true]) {
+          const upper = Arc3d.createXY(pointOnCircle(radius + filletRadius - overlap, 150), filletRadius, AngleSweep.createStartEndDegrees(240, 330));
+          const lower = Arc3d.createXY(pointOnCircle(radius + filletRadius - overlap, 210), filletRadius, AngleSweep.createStartEndDegrees(30, 120));
+          const shared = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(150, 210));
+          const upperLeft = Point3d.create(-60, upper.startPoint().y);
+          const lowerLeft = Point3d.create(-60, lower.endPoint().y);
+          const boundary = Loop.create(upper, shared, lower, LineSegment3d.create(lower.endPoint(), lowerLeft),
+            LineSegment3d.create(lowerLeft, upperLeft), LineSegment3d.create(upperLeft, upper.startPoint()));
+          const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(0, 360)));
+          const tangent = Vector3d.create(-Math.sin(Angle.degreesToRadians(150)), Math.cos(Angle.degreesToRadians(150)));
+          const arcD = Arc3d.createXY(Point3d.createZero().plusScaled(tangent, delta), radius, AngleSweep.createStartEndDegrees(sliceStart, sliceEnd));
+          const inner = pointOnCircle(0.5 * radius, 150);
+          const slice = Loop.create(arcD, LineSegment3d.create(arcD.endPoint(), inner), LineSegment3d.create(inner, arcD.startPoint()));
+          for (const loop of [boundary, circle, slice]) {
+            loop.tryTransformInPlace(rotation);
+            if (RegionOps.computeXYArea(loop)! < 0)
+              loop.reverseInPlace();
+          }
+          const [areaC, areaB, areaS] = [circle, boundary, slice].map((loop) => RegionOps.computeXYArea(loop)!);
+          // the slice is inside the circle and meets the boundary only on the shared arc
+          const regionA = sliceInB ? circle : UnionRegion.create(circle, slice);
+          const regionB = sliceInB ? UnionRegion.create(boundary, slice) : boundary;
+          const expectedAreas = sliceInB
+            ? [areaC + areaB, areaC + areaB, areaS, areaC - areaS, areaB, areaC - areaS + areaB]
+            : [areaC + areaB, areaC + areaB, undefined, areaC, areaB, areaC + areaB];
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB], x0);
+          for (let j = 0; j < ops.length; j++) {
+            const [op, simplifyUnion] = ops[j];
+            const expectedArea = expectedAreas[j];
+            const result = RegionOps.regionBooleanXY(regionA, regionB, op, { simplifyUnion });
+            const message = `delta=${delta} slice=${sliceStart}-${sliceEnd} sliceInB=${sliceInB} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+            if (expectedArea === undefined) {
+              ck.testTrue(result === undefined || resultArea(result) < 1.0e-3, message, result ? resultArea(result) : 0); // at most a sliver
+            } else if (ck.testDefined(result, message) && result) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, 100 * (j + 1));
+              const area = resultArea(result);
+              ck.testTrue(Math.abs(expectedArea - area) < 1.0e-3, message, expectedArea, area);
+            }
+          }
+          x0 += 100;
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapDoesNotMoveThirdArcToOtherSide");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearTangentSnapKeepsVertexGroupsTogether", () => {
     // Near-tangent arc intersections that would move to the same arc endpoint must move together or not at all, and must
     // not move to an endpoint where a neighbouring curve that is near-tangent to the same arc starts.
