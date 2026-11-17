@@ -566,6 +566,13 @@ export namespace SerializationHelpers {
     public static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean {
       if (data.params.order < 2 || data.params.order > data.params.numPoles)
         return false; // avoid invalid loop limit below
+      if (data.params.closed) {
+        if (data.params.knots.length !== data.params.numPoles + 2 * data.params.order - 1)
+          return false; // unrecognized periodic knots
+      } else {
+        if (data.params.knots.length !== data.params.numPoles + data.params.order && data.params.knots.length !== data.params.numPoles + data.params.order - 2)
+          return false; // unrecognized clamped knots
+      }
 
       let polesExpanded: number[][] | undefined;
       let weightsExpanded: number[] | undefined;
@@ -623,6 +630,20 @@ export namespace SerializationHelpers {
     public static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean {
       if (data.uParams.order < 2 || data.uParams.order > data.uParams.numPoles || data.vParams.order < 2 || data.vParams.order > data.vParams.numPoles)
         return false; // avoid invalid loop limit below
+      if (data.uParams.closed) {
+        if (data.uParams.knots.length !== data.uParams.numPoles + 2 * data.uParams.order - 1)
+          return false; // unrecognized periodic knots
+      } else {
+        if (data.uParams.knots.length !== data.uParams.numPoles + data.uParams.order && data.uParams.knots.length !== data.uParams.numPoles + data.uParams.order - 2)
+          return false; // unrecognized clamped knots
+      }
+      if (data.vParams.closed) {
+        if (data.vParams.knots.length !== data.vParams.numPoles + 2 * data.vParams.order - 1)
+          return false; // unrecognized periodic knots
+      } else {
+        if (data.vParams.knots.length !== data.vParams.numPoles + data.vParams.order && data.vParams.knots.length !== data.vParams.numPoles + data.vParams.order - 2)
+          return false; // unrecognized clamped knots
+      }
 
       let polesExpanded: number[][][] | undefined;
       let weightsExpanded: number[][] | undefined;

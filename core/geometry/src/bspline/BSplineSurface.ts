@@ -638,11 +638,16 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
       numPoles /= 3;
     if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
       return undefined;
-    // shift knots-of-interest limits for over-clamped case ...
+
+    // validate knot counts
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
-    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
-    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
+    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic
+    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern
+      return undefined;
+    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);   // classic
+    if (!skipFirstAndLastV && numPolesV + orderV !== numKnotsV + 2) // modern
+      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -650,6 +655,9 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+    if (!knotsU.isValid || !knotsV.isValid)
+      return undefined;
+
     const coffs = new Float64Array(3 * numPolesU * numPolesV);
     if (controlPointArray instanceof Float64Array) {
       let i = 0;
@@ -694,11 +702,15 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
       return undefined;
 
-    // shift knots-of-interest limits for overclamped case ...
+    // validate knot counts
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
-    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
-    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
+    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic
+    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern
+      return undefined;
+    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);   // classic
+    if (!skipFirstAndLastV && numPolesV + orderV !== numKnotsV + 2) // modern
+      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -706,6 +718,8 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+    if (!knotsU.isValid || !knotsV.isValid)
+      return undefined;
 
     const coffs = new Float64Array(3 * numPolesU * numPolesV);
     let i = 0;
@@ -915,10 +929,15 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
       return undefined;
 
+    // validate knot counts
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
-    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
-    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
+    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic
+    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern
+      return undefined;
+    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);   // classic
+    if (!skipFirstAndLastV && numPolesV + orderV !== numKnotsV + 2) // modern
+      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -926,6 +945,9 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+    if (!knotsU.isValid || !knotsV.isValid)
+      return undefined;
+
     if (undefined === weightArray)
       weightArray = Array(numPoles).fill(1.0);  // unit weights
     const coffs = Point4dArray.packPointsAndWeightsToFloat64Array(controlPointArray, weightArray);
@@ -970,8 +992,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     // validate knot counts
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
-    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic over-clamped input knots
-    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern knots
+    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic
+    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern
       return undefined;
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);   // classic
     if (!skipFirstAndLastV && numPolesV + orderV !== numKnotsV + 2) // modern
@@ -983,6 +1005,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+    if (!knotsU.isValid || !knotsV.isValid)
+      return undefined;
 
     const coffs = new Float64Array(4 * numPoles);
     let i = 0;
