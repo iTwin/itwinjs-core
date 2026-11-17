@@ -20,7 +20,7 @@ export interface LayerTileTreeReference {
 
 /** @internal */
 export class LayerTileTreeReferenceHandler {
-  // An undefined entry is a layer without a tree (e.g. an unregistered format), so positions match the display style indices.
+  // One entry per display style layer, in order (after the base imagery, if any); undefined where no tree could be created (e.g. an unregistered format), so later layers keep their index.
   protected readonly _layerTrees = new Array<MapLayerTileTreeReference | undefined>();
   public isOverlay: boolean;
   protected _baseImageryLayerIncluded = false;
@@ -129,7 +129,7 @@ export class LayerTileTreeReferenceHandler {
 
       const hasValidTileTree = TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
       const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
-      const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef.layerSettings.visible));
+      const isLayerVisible = isImageryMapLayer || layerTreeRef.layerSettings.visible;
 
       if (!this._ref.shouldDrapeLayer(layerTreeRef)) {
         // If the layer is not to be displayed, then we should skip adding it to the tile tree.

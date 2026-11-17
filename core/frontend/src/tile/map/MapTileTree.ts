@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, IModelError, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
@@ -30,6 +30,7 @@ import {
 } from "../internal";
 
 const scratchPoint = Point3d.create();
+const loggerCategory = "MapTileTree";
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
@@ -758,7 +759,11 @@ async function getHitCartographic(hit: HitDetail): Promise<Cartographic | undefi
     const geometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     const cartographics = await geometry?.dbToWGS84CartographicFromGcs([hit.hitPoint]);
     return cartographics?.[0];
-  } catch {
+  } catch (error) {
+    // IModelError: the iModel has no geolocation or its GCS cannot convert the point. Anything else is unexpected.
+    if (!(error instanceof IModelError))
+      Logger.logError(loggerCategory, error);
+
     return undefined;
   }
 }
@@ -1023,11 +1028,10 @@ export class MapTileTreeReference extends TileTreeReference {
 
     // A hit on the map tree itself is the base color, below every layer.
     const pickedPosition = picked ? this._layerRefHandler.layerTrees.indexOf(picked) : -1;
-    return {
-      // The map above (the overlay) is drawn over all of this map's layers.
-      above: [...(this._mapAbove?.getQueryableLayersAbove(-1) ?? []), ...this.getQueryableLayersAbove(pickedPosition)],
-      picked: picked && { map: this, layer: picked },
-    };
+    // The map above (the overlay) is drawn over all of this map's layers, so all of its queryable layers come first.
+    const overlayLayers = this._mapAbove?.getQueryableLayersAbove(-1) ?? [];
+    const layersAbovePick = this.getQueryableLayersAbove(pickedPosition);
+    return { above: [...overlayLayers, ...layersAbovePick], picked: picked && { map: this, layer: picked } };
   }
 
   private getQueryableLayersAbove(position: number): MapLayerOnMap[] {
@@ -1058,7 +1062,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree)
       return [];
 
-    // The map above refines independently of the picked map, so it may still draw an ancestor of the hit's tile.
+    // hit.tileId is the picked map's tile; the overlay loads its own tiles and may still draw a parent of it, so use the nearest tile with imagery.
     let quadId = QuadId.createFromContentId(expectDefined(hit.tileId));
     let imageryTiles = tree.tileFromQuadId(quadId)?.imageryTiles;
     while (undefined === imageryTiles && quadId.level > tree.sourceTilingScheme.rootLevel) {
