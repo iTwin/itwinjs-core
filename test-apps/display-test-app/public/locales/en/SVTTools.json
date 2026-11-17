@@ -160,6 +160,9 @@
     "ReproJaggedCurves": {
       "keyin": "dta repro jagged curves"
     },
+    "ReproSceneWait": {
+      "keyin": "dta repro scene wait"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },

@@ -60,6 +60,7 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { SceneWaitReproTool } from "./SceneWaitReproTool";
 import { LinkIModelTool, UnlinkIModelsTool } from "./LinkedIModelTools";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
@@ -406,6 +407,7 @@ export class DisplayTestApp {
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
+      SceneWaitReproTool,
       SetEditorToolSettingsTool,
       ShutDownTool,
       SignInTool,
