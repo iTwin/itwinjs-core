@@ -167,7 +167,7 @@ See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing
 
 ### Restricting IPC to the frontend origin
 
-By default, any page loaded into the main window of an [ElectronHost]($electron) application can use the `window.itwinjs` IPC bridge, including pages from other sites that the window navigates to. Set the new [ElectronHostOptions.restrictIpcToFrontendOrigin]($electron) option to allow IPC only from pages with the same origin as `frontendURL`:
+By default, any page loaded into the main window of an [ElectronHost]($core-electron) application can use the `window.itwinjs` IPC bridge, including pages from other sites that the window navigates to. Set the new [ElectronHostOptions.restrictIpcToFrontendOrigin]($core-electron) option to allow IPC only from pages with the same origin as `frontendURL`:
 
 ```ts
 await ElectronHost.startup({ electronHost: { webResourcesPath, restrictIpcToFrontendOrigin: true } });
