@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, setOwnProperty } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 
@@ -310,7 +310,7 @@ export class EntityMetaData implements EntityMetaDataProps {
 
     for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+      setOwnProperty(this.properties, propName, new PropertyMetaData(jsonObj.properties[propName]));
     }
   }
 }
