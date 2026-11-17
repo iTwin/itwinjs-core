@@ -519,9 +519,9 @@ export class RegionOps {
     context.runClassificationSweep(
       operation,
       (_graph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
-        // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
-        if (face.countEdgesAroundFace() < 2)
-          return;
+        // ignore null faces, but not 2-edge "banana" faces or 1-edge faces with nonzero area. A face with one edge is
+        // bounded by a closed curve that starts and ends at the same vertex (e.g., a circle that touches another curve
+        // at its start point). A dangling edge has both sides in one face, so it does not make a face by itself.
         if (Math.abs(area) < areaTol)
           return;
         if (simplifyUnion) { // process the outer/negative faces later

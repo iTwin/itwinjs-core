@@ -117,7 +117,7 @@ export class CurveCurve {
   public static allIntersectionsAmongPrimitivesXY(
     primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    return CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(primitives, tolerance, true);
+    return CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(primitives, tolerance, { snapNearTangent: true }).pairs;
   }
   /**
    * Return at least one XY close approach between 2 curves.

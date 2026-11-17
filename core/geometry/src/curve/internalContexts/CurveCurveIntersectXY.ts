@@ -94,6 +94,36 @@ interface NearTangentCandidate {
   blocked: boolean;
 }
 /**
+ * Options for [[CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY]].
+ * @internal
+ */
+export interface AllIntersectionsAmongPrimitivesXYOptions {
+  /** Whether to apply [[CurveCurveIntersectXY.snapNearTangentIntersectionsToEndpoints]] to the results. Default `false`. */
+  snapNearTangent?: boolean;
+  /** Whether to keep copies of the results from before the near-tangent snap, if it moves any. Default `false`. */
+  keepUnsnappedPairs?: boolean;
+  /**
+   * Whether coincident arcs report the part of an overlap that wraps backward across the start of an arc (see
+   * [[CoincidentGeometryQuery.reportBackwardWrappedArcOverlaps]]). Default `true`.
+   */
+  reportBackwardWrappedArcOverlaps?: boolean;
+}
+/**
+ * Results of [[CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY]].
+ * @internal
+ */
+export interface AllIntersectionsAmongPrimitivesXY {
+  /** The intersections. */
+  pairs: CurveLocationDetailPair[];
+  /**
+   * Copies of the intersections from before the near-tangent snap, if requested and if the snap moved any of them.
+   * Undefined if no intersection was moved: then `pairs` are the intersections before the snap.
+   */
+  unsnappedPairs?: CurveLocationDetailPair[];
+  /** Number of reported parts of arc overlaps that wrap backward across the start of an arc. */
+  numBackwardWrappedArcOverlaps: number;
+}
+/**
  * Handler class for XY intersections between _geometryB and another geometry.
  * * Instances are initialized and called from CurveCurve.
  * * geometryB is saved for later reference.
@@ -880,13 +910,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * Return xy intersections among all pairs of the input curves.
    * @param primitives input curves to intersect
    * @param tolerance distance tolerance for coincidence
-   * @param snapNearTangent whether to apply [[snapNearTangentIntersectionsToEndpoints]] to the results
-   * @param unadjustedResults optional array to receive copies of the results before they are snapped
+   * @param options what to compute, see [[AllIntersectionsAmongPrimitivesXYOptions]]
    */
   public static allIntersectionsAmongPrimitivesXY(
-    primitives: CurvePrimitive[], tolerance: number, snapNearTangent: boolean, unadjustedResults?: CurveLocationDetailPair[],
-  ): CurveLocationDetailPair[] {
+    primitives: CurvePrimitive[], tolerance: number, options?: AllIntersectionsAmongPrimitivesXYOptions,
+  ): AllIntersectionsAmongPrimitivesXY {
     const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
+    handler._coincidentGeometryContext.reportBackwardWrappedArcOverlaps = options?.reportBackwardWrappedArcOverlaps ?? true;
     for (let i = 0; i < primitives.length; i++) {
       const curveA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {
@@ -894,13 +924,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         curveA.dispatchToGeometryHandler(handler);
       }
     }
-    if (snapNearTangent) {
-      if (unadjustedResults)
-        for (const pair of handler._results)
-          unadjustedResults.push(pair.clone());
-      handler.snapNearTangentIntersectionsToEndpoints();
-    }
-    return handler.grabPairedResults();
+    const unsnappedPairs = options?.keepUnsnappedPairs ? [] : undefined;
+    const numMoved = options?.snapNearTangent ? handler.snapNearTangentIntersectionsToEndpoints(unsnappedPairs) : 0;
+    return {
+      pairs: handler.grabPairedResults(),
+      unsnappedPairs: numMoved > 0 ? unsnappedPairs : undefined,
+      numBackwardWrappedArcOverlaps: handler._coincidentGeometryContext.numBackwardWrappedArcOverlaps,
+    };
   }
   /**
    * Move recorded near-tangent arc-arc intersections to the nearby arc endpoint if a coincident overlap of the other arc
@@ -928,18 +958,28 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * than at the crossing (see [[isVertexMisorderedXY]]).
    * * All decisions are made before any intersection is moved.
    * * See [[findNearTangentSnap]] for the intersections that are candidates.
+   * @param unsnappedResults optional array to receive copies of all results before the first intersection is moved. It
+   * is not changed if no intersection is moved.
+   * @returns the number of near-tangent intersections that were moved.
    */
-  public snapNearTangentIntersectionsToEndpoints(): void {
+  public snapNearTangentIntersectionsToEndpoints(unsnappedResults?: CurveLocationDetailPair[]): number {
     const tol = this._coincidentGeometryContext.tolerance;
     const candidates = this.collectNearTangentCandidates(tol);
+    let numMoved = 0;
     if (candidates.length > 0) {
       const blocked = this.findBlockedNearTangentCandidates(candidates, tol);
-      for (let i = 0; i < candidates.length; i++)
-        if (!blocked.has(i))
-          for (const move of candidates[i].moves)
-            move.detail.setFP(move.fraction, move.point.clone());
+      for (let i = 0; i < candidates.length; i++) {
+        if (blocked.has(i))
+          continue;
+        if (numMoved++ === 0 && unsnappedResults)
+          for (const pair of this._results)
+            unsnappedResults.push(pair.clone());
+        for (const move of candidates[i].moves)
+          move.detail.setFP(move.fraction, move.point.clone());
+      }
     }
     this._nearTangentSnaps = [];
+    return numMoved;
   }
   /**
    * Whether the edges of `arcA` and `arcB` that leave a vertex at `vertexFractionA` and `vertexFractionB` may be ordered

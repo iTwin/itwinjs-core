@@ -18,7 +18,7 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
 import { Arc3d } from "./Arc3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
@@ -549,14 +549,19 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-    // Near-tangent intersections are snapped to arc endpoints and almost tangent edges at a vertex are ordered by points
-    // on the edges. If the resulting graph does not have closed member boundaries (e.g., because of another gap within
-    // tolerance), rebuild it without these adjustments, so that such input is handled as before them.
-    const unadjustedIntersections: CurveLocationDetailPair[] = [];
-    const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, true, unadjustedIntersections);
-    let graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
-    if (!RegionBooleanContext.isGraphConsistentWithMembers(graph))
-      graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, unadjustedIntersections, mergeTolerance, undefined, false);
+    // Near-tangent intersections are snapped to arc endpoints, almost tangent edges at a vertex are ordered by points on
+    // the edges, and overlaps of arcs that wrap backward across the start of an arc are reported. If the resulting graph
+    // does not have closed member boundaries (e.g., because of another gap within tolerance, or a loop that is not closed
+    // within tolerance), rebuild it without these changes, so that such input is handled as before them. The snap only
+    // moves intersections, so the intersections are computed again only if a wrapped overlap was reported.
+    const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, { snapNearTangent: true, keepUnsnappedPairs: true });
+    let graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections.pairs, mergeTolerance);
+    if (!RegionBooleanContext.isGraphConsistentWithMembers(graph)) {
+      const pairs = intersections.numBackwardWrappedArcOverlaps > 0
+        ? CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, { reportBackwardWrappedArcOverlaps: false }).pairs
+        : intersections.unsnappedPairs ?? intersections.pairs;
+      graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, pairs, mergeTolerance, undefined, false);
+    }
     RegionOps.removeExtraneousBridgeEdges(this.graph = graph, undefined, this.faceAreaFunction = faceAreaFromCurvedEdgeData);
   }
   /**
@@ -571,7 +576,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         if (data instanceof CurveLocationDetail && data.curve)
           member = data.curve.parent;
         if (member instanceof RegionGroupMember) {
-          if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding || member.region instanceof CurvePrimitive)
+          if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
             return -1;
           let index = memberIndex.get(member);
           if (index === undefined)

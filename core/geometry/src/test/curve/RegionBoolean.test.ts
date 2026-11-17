@@ -2278,7 +2278,8 @@ describe("RegionBooleanNearTangentArcs", () => {
     // and has fillets tangent to the circle to within tolerance (two placements). The near-tangent adjustments leave the
     // boundary of the strip open in the graph, so the faces cannot be classified consistently and the whole strip was
     // reported as inside the circle. Then the graph must be assembled without these adjustments. The true intersection
-    // area is about 0.08.
+    // area is about 0.08. The other operations on this input are wrong on master too (the strip has a gap larger than the
+    // tolerance where it meets the circle), so only the intersection is checked: it must not become the whole strip.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapFallback.imjs", "utf8"))) as AnyRegion[];
@@ -2298,6 +2299,66 @@ describe("RegionBooleanNearTangentArcs", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentAdjustmentsKeepMemberBoundariesClosed");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClosedCurveFaceAtVertex", () => {
+    // One loop from an earlier union: a circle with a rounded notch, which also goes once around a small circle that
+    // touches the large circle from outside (gap 4e-11). The arcs of the large circle next to the small circle are
+    // traversed there and back. By parity, the region is the notch and the small circle. The small circle is a single
+    // edge of the graph, from the touch point back to it. Its face has one edge and must not be dropped.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/regionBooleanReusedResults.imjs", "utf8"))) as AnyRegion[];
+    if (ck.testExactNumber(3, inputs.length, "inputs")) {
+      const result = RegionOps.regionBooleanXY(inputs[0], undefined, RegionBinaryOpType.Union);
+      if (ck.testDefined(result, "union")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [inputs[0]]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 10);
+        const smallCircleCenter = Point3d.create(-4.015335694919783, 2.5217560603866276);
+        ck.testExactNumber(1, RegionOps.testPointInOnOutRegionXY(result, smallCircleCenter.x, smallCircleCenter.y), "small circle is in");
+        ck.testExactNumber(1, RegionOps.testPointInOnOutRegionXY(result, -2.5, -4.2), "notch is in");
+        ck.testExactNumber(-1, RegionOps.testPointInOnOutRegionXY(result, 0, 0), "rest of the large circle is out");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "ClosedCurveFaceAtVertex");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearFullArcsInLoopsOpenBeyondTolerance", () => {
+    // A is the union of a pinched loop (a large circle and a small circle inside it, tangent at the start of both) and a
+    // second loop around the small circle, so A is the large disk. B is a circle. The small circle arcs sweep 359.99999594
+    // degrees, not 360, so both loops are open by 4.7e-6, more than the tolerance (an earlier result, scaled up). The
+    // overlap of these arcs then makes a graph whose faces cannot be classified consistently, and the graph must be
+    // assembled as without the changes for near-tangent and coincident arcs.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/regionBooleanReusedResults.imjs", "utf8"))) as AnyRegion[];
+    if (ck.testExactNumber(3, inputs.length, "inputs")) {
+      const circleA = Arc3d.createXY(Point3d.createZero(), 161.79654403903731);
+      const circleB = Arc3d.createXY(Point3d.create(-53.57158734198718, -38.16978903502689), 142.46127864868552);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [inputs[1], inputs[2]]);
+      exerciseTwoDiskBooleans(ck, allGeometry, inputs[1], inputs[2], circleA, circleB, "open loops");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearFullArcsInLoopsOpenBeyondTolerance");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("FullArcsOverlapAcrossStart", () => {
+    // As in NearFullArcsInLoopsOpenBeyondTolerance, but with closed loops: the small circle arcs sweep 360 degrees, in
+    // opposite directions and from opposite points. Their overlap wraps across the start of one of them.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const theta = 162.93107888567988;
+    const radiusA = 161.79654403903731;
+    const radius = 66.19174179196312;
+    const center = Point3d.create((radiusA - radius) * Math.cos(Angle.degreesToRadians(theta)), (radiusA - radius) * Math.sin(Angle.degreesToRadians(theta)));
+    const circleA = Arc3d.createXY(Point3d.createZero(), radiusA, AngleSweep.createStartEndDegrees(theta, theta + 360));
+    const pinched = Loop.create(circleA, Arc3d.createXY(center, radius, AngleSweep.createStartEndDegrees(theta + 360, theta)));
+    const fill = Loop.create(Arc3d.createXY(center, radius, AngleSweep.createStartEndDegrees(theta + 180, theta + 540)));
+    const regionA = UnionRegion.create(pinched, fill);
+    const circleB = Arc3d.createXY(Point3d.create(-53.57158734198718, -38.16978903502689), 142.46127864868552);
+    const regionB = Loop.create(circleB.clone());
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB]);
+    exerciseTwoDiskBooleans(ck, allGeometry, regionA, regionB, circleA, circleB, "closed loops");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "FullArcsOverlapAcrossStart");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
@@ -2527,6 +2588,31 @@ describe("GeneralSweepBooleans", () => {
   });
 });
 
+/** Check the areas of the booleans of regions that are the disks of two overlapping circles. */
+function exerciseTwoDiskBooleans(
+  ck: Checker, allGeometry: GeometryQuery[], regionA: AnyRegion, regionB: AnyRegion, circleA: Arc3d, circleB: Arc3d, message: string,
+): void {
+  const rA = circleA.circularRadius()!;
+  const rB = circleB.circularRadius()!;
+  const d = circleA.center.distanceXY(circleB.center);
+  const lens = rA * rA * Math.acos((d * d + rA * rA - rB * rB) / (2 * d * rA)) + rB * rB * Math.acos((d * d + rB * rB - rA * rA) / (2 * d * rB))
+    - 0.5 * Math.sqrt((-d + rA + rB) * (d + rA - rB) * (d - rA + rB) * (d + rA + rB));
+  const areaA = Math.PI * rA * rA;
+  const areaB = Math.PI * rB * rB;
+  const expected: [RegionBinaryOpType, number][] = [
+    [RegionBinaryOpType.Union, areaA + areaB - lens], [RegionBinaryOpType.Parity, areaA + areaB - 2 * lens],
+    [RegionBinaryOpType.Intersection, lens], [RegionBinaryOpType.AMinusB, areaA - lens], [RegionBinaryOpType.BMinusA, areaB - lens],
+  ];
+  let y0 = 400;
+  for (const [op, area] of expected) {
+    const result = RegionOps.regionBooleanXY(regionA, regionB, op);
+    const resultArea = result ? RegionOps.computeXYArea(result) ?? 0 : 0;
+    ck.testTrue(Math.abs(resultArea - area) < 1.0e-6 * (areaA + areaB), `${message} op=${op}`, resultArea, area);
+    if (result)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 0, y0);
+    y0 += 400;
+  }
+}
 function exerciseAreaBooleans(
   dataA: AnyRegion[],
   dataB: AnyRegion[],
