@@ -14,7 +14,9 @@ function getBuildCacheConfig(mode, env, nodeVersion = process.versions.node) {
 
   // Native test artifacts can replace the published package without changing its version.
   const nativeBuild = env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === "true" || !!env.IMODELJS_NATIVE_OVERRIDE;
-  const enabled = mode !== "off" && !nativeBuild;
+  // A write credential cannot be downgraded after runtime-only native detection.
+  // Explicit native readers arrive in read mode with a reader credential.
+  const enabled = mode !== "off" && !(nativeBuild && mode === "write");
   return {
     ...buildCache,
     buildCacheEnabled: enabled,
@@ -22,17 +24,21 @@ function getBuildCacheConfig(mode, env, nodeVersion = process.versions.node) {
     cacheHashSalt: `${buildCache.cacheHashSalt}-node-${nodeVersion}`,
     azureBlobStorageConfiguration: {
       ...buildCache.azureBlobStorageConfiguration,
-      isCacheWriteAllowed: enabled && mode === "write",
+      isCacheWriteAllowed: enabled && mode === "write" && !nativeBuild,
     },
   };
 }
 
 function runRushBuild(mode, args, env = process.env) {
   const config = getBuildCacheConfig(mode, env);
-  const buildEnv = { ...env, RUSH_BUILD_CACHE_OVERRIDE_JSON: JSON.stringify(config) };
+  const buildEnv = {
+    ...env,
+    RUSH_BUILD_CACHE_OVERRIDE_JSON: JSON.stringify(config),
+    // Also prevent newly built output from entering Rush's local cache in read-only mode.
+    RUSH_BUILD_CACHE_WRITE_ALLOWED: config.azureBlobStorageConfiguration.isCacheWriteAllowed ? "1" : "0",
+  };
   // Inherited Rush switches must not override the selected mode.
   delete buildEnv.RUSH_BUILD_CACHE_ENABLED;
-  delete buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED;
   delete buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH;
   if (!config.buildCacheEnabled)
     delete buildEnv.RUSH_BUILD_CACHE_CREDENTIAL;
