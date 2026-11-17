@@ -94,6 +94,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private static _workRayB = Ray3d.createZero();
   private static _workPlaneA = Plane3dByOriginAndVectors.createXYPlane();
   private static _workPlaneB = Plane3dByOriginAndVectors.createXYPlane();
+  /**
+   * Sine of the xy-angle below which a curve that leaves a point counts as tangent to an arc there, and above which it
+   * counts as leaving at an angle (a corner), in [[hasForeignCurveAtPoint]] and [[isCornerOfArc]].
+   * * The value is a choice between two scales rather than a derived bound: curves that are tangent by construction (as
+   * a fillet) meet at angles of the size of roundoff or of the near-tangency handled here, far below it, and a chord or
+   * segment that leaves a corner typically meets the arc at an angle far above it.
+   * * The sine is compared, so a curve that leaves almost backward along the arc (a cusp) counts as tangent too.
+   */
+  private static _tangentSineTolerance = 1.0e-4;
   private _xyzwA0?: Point4d;
   private _xyzwA1?: Point4d;
   private _xyzwPlane?: Point4d;
@@ -675,9 +684,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * another piece of the same ellipse) has an isolated intersection with `arc` within `tol` of `point`, or has an
    * isolated intersection with `otherArc` and an endpoint within `2 * tol` of `point` (e.g. the fillet of a neighbouring
    * shape that starts there and is itself near-tangent to `otherArc`).
-   * * Only a curve that is tangent to `otherArc` at `point` (angle below 1.0e-4 radians) and stays within `tol` of
-   * `otherArc` over the distance `moveDistance` from `point` counts. A curve that leaves `otherArc` sooner (e.g. a line
-   * at a small angle to it) does not keep the moved intersection from being merged with the endpoint.
+   * * Only a curve that is tangent to `otherArc` at `point` (sine of the angle below [[_tangentSineTolerance]]) and
+   * stays within `tol` of `otherArc` over the distance `moveDistance` from `point` counts. A curve that leaves `otherArc`
+   * sooner (e.g. a line at a small angle to it) does not keep the moved intersection from being merged with the endpoint.
    */
   private hasForeignCurveAtPoint(arc: Arc3d, point: Point3d, tol: number, otherArc: Arc3d, moveDistance: number): boolean {
     let fullEllipse: Arc3d | undefined;
@@ -711,7 +720,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           continue;
         const otherTangent = otherArc.fractionToPointAndDerivative(closest.fraction, CurveCurveIntersectXY._workRayB).direction;
         const magnitudes = partnerTangent.magnitudeXY() * otherTangent.magnitudeXY();
-        if (magnitudes === 0 || Math.abs(partnerTangent.crossProductXY(otherTangent)) > 1.0e-4 * magnitudes)
+        if (magnitudes === 0 || Math.abs(partnerTangent.crossProductXY(otherTangent)) > CurveCurveIntersectXY._tangentSineTolerance * magnitudes)
           continue;
         const partnerLength = partnerCurve.curveLength();
         const step = partnerLength > 0 ? Math.min(1, moveDistance / partnerLength) : 0;
@@ -733,12 +742,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Whether `point` is within `tol` of an endpoint of `otherArc` where another curve of the same region as `otherArc`
-   * starts or ends and leaves at an angle to `otherArc` (above 1.0e-4 radians), that is, whether `point` is a corner of
-   * that region, as where an arc of a loop is followed by a chord, and no curve coincident with `otherArc` passes
-   * through `point`.
+   * starts or ends and leaves at an angle to `otherArc` (sine of the angle above [[_tangentSineTolerance]]), that is,
+   * whether `point` is a corner of that region, as where an arc of a loop is followed by a chord, and no curve
+   * coincident with `otherArc` passes through `point`.
    * * Curves of the same region have the same `parent` (set by region booleans to the region group member). Curves
-   * without `parent` are treated as one region. Other curves, e.g. the bridge segments that region booleans add to connect
-   * loops, are not part of the corner.
+   * without `parent` are treated as one region, e.g. if [[CurveCurve.allIntersectionsAmongPrimitivesXY]] is called
+   * directly. Then a curve of another shape can make a corner too, which only keeps more intersections where they were
+   * computed. Other curves, e.g. the bridge segments that region booleans add to connect loops, are not part of the
+   * corner.
    * * Moving an intersection of `arc` with `otherArc` to such a corner makes it a vertex where `arc` and `otherArc` (and
    * the curves coincident with it, which end there too) leave in nearly the same direction, next to the curve that
    * leaves the corner, and the order of the edges at that vertex was found to be unreliable. If a coincident curve passes
@@ -782,7 +793,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         continue;
       const partnerTangent = partner.fractionToPointAndDerivative(partnerFraction, CurveCurveIntersectXY._workRayA).direction;
       const magnitudes = partnerTangent.magnitudeXY() * otherTangent.magnitudeXY();
-      if (magnitudes > 0 && Math.abs(partnerTangent.crossProductXY(otherTangent)) > 1.0e-4 * magnitudes)
+      if (magnitudes > 0 && Math.abs(partnerTangent.crossProductXY(otherTangent)) > CurveCurveIntersectXY._tangentSineTolerance * magnitudes)
         return true;
     }
     return false;
@@ -861,6 +872,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         continue;
       const otherFraction = overlapEnd.fraction;
       const otherPoint = overlapEnd.point;
+      // At the new vertex, the arc and the other arc leave in nearly the same direction. A planar subdivision orders the
+      // edges at a vertex by tangent angle, and by curvature only where the angles agree to within
+      // Geometry.smallAngleRadians. The curvature order is right for externally tangent arcs, and the angle order agrees
+      // with it if the arc leaves the vertex to the same side of the other arc as at the intersection. Check the angle at
+      // the vertex, that is, at the end of the overlap on the other arc, not at the projection of the endpoint tested in
+      // snapToEndOfArc: the two points can be a small fraction of the tolerance apart, and between them the tangent of the
+      // other arc turns by their distance over its radius of curvature.
+      const sine = CurveCurveIntersectXY.tangentSineXY(snap.arc, arcDetail.fraction, snap.other, otherDetail.fraction);
+      const vertexSine = CurveCurveIntersectXY.tangentSineXY(snap.arc, snap.fraction, snap.other, otherFraction);
+      const misordered = sine === undefined || vertexSine === undefined
+        || (vertexSine * sine < 0 && Math.abs(vertexSine) > Geometry.smallAngleRadians);
       candidates.push({
         snap, endPoint,
         sides: [
@@ -871,7 +893,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           { detail: arcDetail, fraction: snap.fraction, point: endPoint },
           { detail: otherDetail, fraction: otherFraction, point: otherPoint },
         ],
-        blocked,
+        blocked: blocked || misordered,
       });
     }
     if (candidates.length === 0) {

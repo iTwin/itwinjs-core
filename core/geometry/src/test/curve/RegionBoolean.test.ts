@@ -1887,6 +1887,53 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapNotToCornerOfOtherRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("NearTangentSnapEllipticFillet", () => {
+    // B is an ellipse. A lies outside B and shares an arc of the ellipse, and at each end of the shared arc the boundary of
+    // A continues into a small elliptic fillet that is externally tangent to B to within tolerance. One fillet crosses B
+    // a short distance before its end. If that crossing is moved to the end of the fillet, the fillet and B leave the new
+    // vertex at angles that differ by roundoff in the wrong order, and B is lost from the results.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapEllipticFillet.imjs", "utf8"))) as AnyRegion[];
+    const [regionA, regionB] = inputs;
+    // area of a result without running the boolean again on the children of a UnionRegion
+    const resultArea = (result: AnyRegion): number => result instanceof UnionRegion
+      ? result.children.reduce((sum: number, child: AnyRegion) => sum + resultArea(child), 0)
+      : Math.abs(RegionOps.computeXYArea(result)!);
+    const areaA = 595.850576698680;
+    const areaB = 1101.049845973177;
+    const areaTolerance = 1.0e-9 * (areaA + areaB);
+    if (ck.testExactNumber(2, inputs.length, "input regions")
+      && ck.testTrue(Math.abs(areaA - Math.abs(RegionOps.computeXYArea(regionA)!)) < areaTolerance, "area A")
+      && ck.testTrue(Math.abs(areaB - Math.abs(RegionOps.computeXYArea(regionB)!)) < areaTolerance, "area B")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB]);
+      let y0 = 0;
+      for (const swapOperands of [false, true]) {
+        const [first, second] = swapOperands ? [regionB, regionA] : [regionA, regionB];
+        const [areaFirst, areaSecond] = swapOperands ? [areaB, areaA] : [areaA, areaB];
+        // the regions only touch, so the intersection is empty or a sliver
+        const expectedAreas: Array<[RegionBinaryOpType, boolean, number]> = [
+          [RegionBinaryOpType.Union, false, areaFirst + areaSecond], [RegionBinaryOpType.Union, true, areaFirst + areaSecond],
+          [RegionBinaryOpType.Intersection, false, 0], [RegionBinaryOpType.AMinusB, false, areaFirst],
+          [RegionBinaryOpType.BMinusA, false, areaSecond], [RegionBinaryOpType.Parity, false, areaFirst + areaSecond],
+        ];
+        for (const [op, simplifyUnion, expectedArea] of expectedAreas) {
+          const result = RegionOps.regionBooleanXY(first, second, op, { simplifyUnion });
+          const message = `swap=${swapOperands} op=${RegionBinaryOpType[op]} simplifyUnion=${simplifyUnion}`;
+          if (expectedArea === 0 && result === undefined)
+            continue;
+          if (ck.testDefined(result, message) && result) {
+            y0 += 100;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 0, y0);
+            const area = resultArea(result);
+            ck.testTrue(Math.abs(expectedArea - area) < areaTolerance, message, expectedArea, area);
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapEllipticFillet");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearTangentFilletContinuingSharedArcInside", () => {
     // A region inside a circle shares the circle arc from 150 to 210 degrees. At each end of the shared arc, the region
     // boundary continues smoothly into a fillet that is internally tangent to the circle and overlaps it by 1.0e-7. The
