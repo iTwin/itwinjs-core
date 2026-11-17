@@ -35,6 +35,7 @@ import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
+import { setOwnProperty } from "../utils/OwnProperties";
 
 /**
  * @public @preview
@@ -759,7 +760,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
-        schemaJson.items[schemaItem.name] = schemaItem.toJSON(false, true);
+        setOwnProperty(schemaJson.items, schemaItem.name, schemaItem.toJSON(false, true));
       });
     }
     return schemaJson as SchemaProps;

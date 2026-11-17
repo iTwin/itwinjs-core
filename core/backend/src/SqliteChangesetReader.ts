@@ -9,6 +9,7 @@ import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itw
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
+import { setOwnProperty } from "./internal/OwnProperties";
 import { _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 
@@ -390,7 +391,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
       const pkNames = this.getPrimaryKeyColumnNames();
       const pkValues = this.primaryKeyValues;
       pkNames.forEach((v, i) => {
-        out[v] = pkValues[i];
+        setOwnProperty(out, v, pkValues[i]);
       });
     }
     const isNullOrUndefined = (val: SqliteValue) => typeof val === "undefined";
@@ -401,7 +402,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
       if (!args.includeNullColumns && isNullOrUndefined(columnValue))
         continue;
 
-      out[columnName] = columnValue;
+      setOwnProperty(out, columnName, columnValue);
     }
     return out;
   }

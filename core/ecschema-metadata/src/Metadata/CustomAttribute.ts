@@ -7,6 +7,7 @@
  */
 
 import { Schema } from "./Schema";
+import { setOwnProperty } from "../utils/OwnProperties";
 
 /** @public @preview */
 export interface CustomAttribute {
@@ -40,10 +41,8 @@ export function serializeCustomAttributes(customAttributes: CustomAttributeSet |
     const attributes: any[] = [];
     for (const [, customAttribute] of customAttributes) {
       const attribute: { [value: string]: any } = {};
-      Object.keys(customAttribute).map((property: any) => {
-        const propertyName = property.toString();
-        attribute[propertyName] = customAttribute[property];
-      });
+      for (const propertyName of Object.keys(customAttribute))
+        setOwnProperty(attribute, propertyName, customAttribute[propertyName]);
       attributes.push(attribute);
     }
     return (attributes.length > 0) ? attributes : undefined;

@@ -33,6 +33,7 @@ import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
+import { setOwnProperty } from "./internal/OwnProperties";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -3314,7 +3315,7 @@ export namespace IModelDb {
       const row: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(parsedRow)) {
         const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
-        row[ECJsNames.toJsName(ecPropertyName)] = value;
+        setOwnProperty(row, ECJsNames.toJsName(ecPropertyName), value);
       }
 
       const className = row.className;

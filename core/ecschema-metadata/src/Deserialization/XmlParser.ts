@@ -20,6 +20,7 @@ import {
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
 import { ECSpecVersion, SchemaReadHelper } from "./Helper";
+import { setOwnProperty } from "../utils/OwnProperties";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
@@ -1059,7 +1060,7 @@ export class XmlParser extends AbstractParser<Element> {
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
-        instance[propertyElement.tagName] = value;
+        setOwnProperty(instance, propertyElement.tagName, value);
     }
 
     return instance;
@@ -1129,7 +1130,7 @@ export class XmlParser extends AbstractParser<Element> {
     for (const child of children) {
       const value = this.readPropertyValue(child, structClass);
       if (value !== undefined)
-        structObj[child.tagName] = value;
+        setOwnProperty(structObj, child.tagName, value);
     }
     return structObj;
   }

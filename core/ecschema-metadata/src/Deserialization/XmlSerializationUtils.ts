@@ -9,6 +9,7 @@ import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ArrayProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
 import { Schema } from "../Metadata/Schema";
+import { getOwnProperty } from "../utils/OwnProperties";
 
 /**
  * Namespace holding utility functions for serializing EC types to the EC XML format.
@@ -47,7 +48,7 @@ export namespace XmlSerializationUtils {
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    */
   export async function writeInstanceProperty(propertyClass: Property, instance: any, instanceElement: Element, schemaDoc: Document): Promise<void> {
-    const propertyValue = instance[propertyClass.name];
+    const propertyValue = getOwnProperty<any>(instance, propertyClass.name);
     if (propertyValue === undefined)
       return;
 

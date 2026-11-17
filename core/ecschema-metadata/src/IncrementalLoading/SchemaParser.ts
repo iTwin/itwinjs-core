@@ -10,6 +10,7 @@ import { SchemaInfo } from "../Interfaces";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { ClassParser, CustomAttributeClassParser, MixinParser, RelationshipClassParser } from "./ClassParsers";
 import { KindOfQuantityParser, SchemaItemParser } from "./SchemaItemParsers";
+import { setOwnProperty } from "../utils/OwnProperties";
 
 function clean(_key: string, value: any) {
   return value === null ? undefined : value;
@@ -77,7 +78,7 @@ export class SchemaParser {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
       const props = await this.parseItem(itemProps, schemaName, schemaInfos);
-      items[props.name] = props;
+      setOwnProperty(items, props.name, props);
       delete (props as any).name;
     }
 

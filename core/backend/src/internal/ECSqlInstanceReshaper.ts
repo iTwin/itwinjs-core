@@ -6,6 +6,7 @@
 // deprecated. not permanent - see https://github.com/iTwin/itwinjs-core/issues/9489.
 import { AnyClass, ECClass, PrimitiveType, Property, StructClass } from "@itwin/ecschema-metadata";
 import { IModelDb } from "../IModelDb";
+import { setOwnProperty } from "./OwnProperties";
 
 /** Maps `SELECT *` system properties/pseudo-columns to their legacy JS property name. `*ClassId` columns
  * also resolve their raw class Id to a dot-separated class name (e.g. "BisCore.PhysicalElement").
@@ -42,7 +43,7 @@ function reshapeStruct(value: { [propName: string]: any }, structClass: StructCl
     }
 
     const memberProp = structClass.getPropertySync(key);
-    result[lowerFirstChar(key)] = memberProp ? reshapePropertyValue(memberValue, memberProp, iModel) : memberValue;
+    setOwnProperty(result, lowerFirstChar(key), memberProp ? reshapePropertyValue(memberValue, memberProp, iModel) : memberValue);
   }
   return result;
 }
@@ -116,7 +117,7 @@ export function reshapeInstanceRow(row: { [propName: string]: any }, ecClass: An
     }
 
     const prop = ecClass.getPropertySync(key);
-    result[lowerFirstChar(key)] = prop ? reshapePropertyValue(value, prop, iModel) : value;
+    setOwnProperty(result, lowerFirstChar(key), prop ? reshapePropertyValue(value, prop, iModel) : value);
   }
   return result;
 }

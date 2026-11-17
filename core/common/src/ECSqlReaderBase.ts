@@ -140,10 +140,7 @@ export abstract class ECSqlReaderBase {
         if (!Number.isNaN(idx)) {
           return target.getRowInternal()[idx];
         }
-        const prop = target._props.findByNoCase(key);
-        if (prop) {
-          return target.getRowInternal()[prop.index];
-        }
+        // Methods go first, so a column with the same name cannot hide them. Such a column is still available by index.
         if (key === "getMetaData") {
           return () => target.getMetaDataInternal();
         }
@@ -153,11 +150,15 @@ export abstract class ECSqlReaderBase {
         if (key === "toArray") {
           return () => target.getRowInternal();
         }
+        const prop = target._props.findByNoCase(key);
+        if (prop) {
+          return target.getRowInternal()[prop.index];
+        }
       }
       return undefined;
     },
     has: (target: ECSqlReaderBase, p: string | symbol) => {
-      return !target._props.findByNoCase(p as string);
+      return typeof p === "string" && target._props.findByNoCase(p) !== undefined;
     },
     ownKeys: (target: ECSqlReaderBase) => {
       const keys = [];
