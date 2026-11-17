@@ -6,7 +6,10 @@
       "commandKind": "global",
       "summary": "Runs pnpm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
-      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
+      // Temporary advisory ignores (pnpm 11 no longer reads pnpm.auditConfig). Remove each once a patched version is published.
+      //   GHSA-fc5q-39xc-vjpf (CVE-2026-112366) picomatch <=4.0.7 ReDoS via vite|vitest|@rollup/pluginutils|tinyglobby>fdir>picomatch;
+      //   no patched picomatch published (fix pending micromatch/picomatch#254); globs come only from repo build/lint config.
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp --ignore GHSA-fc5q-39xc-vjpf"
     },
     {
       "name": "fix-copyrights",
