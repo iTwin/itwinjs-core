@@ -115,8 +115,17 @@ describe("Pickable graphic", () => {
     expectColors(viewport, [leftColor, rightColor, bgColor]);
     expectIds([leftId, rightId]);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     viewport.setNeverDrawn(new Set<string>([leftId]));
     expectColors(viewport, [rightColor, bgColor]);
     expectIds([rightId]);
+
+    viewport.primaryIModelRef.neverDrawnElements.delete(leftId);
+    expectColors(viewport, [leftColor, rightColor, bgColor]);
+    expectIds([leftId, rightId]);
+
+    viewport.primaryIModelRef.neverDrawnElements.add(rightId);
+    expectColors(viewport, [leftColor, bgColor]);
+    expectIds([leftId]);
   });
 });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Range1d } from "@itwin/core-geometry";
-import { calculateSunriseOrSunset, Cartographic } from "@itwin/core-common";
+import { calculateSunriseOrSunset, Cartographic, RenderSchedule } from "@itwin/core-common";
 import { Viewport } from "@itwin/core-frontend";
 import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
@@ -127,6 +127,8 @@ function createTimelineProvider(vp: Viewport): TimelineProvider {
 
 class TimelinePanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
+  private readonly _removeDisplayStyleListener: () => void;
+  private _script?: RenderSchedule.Script;
   private _provider: TimelineProvider;
   private _totalMillis: number;
   private _elapsedMillis = 0;
@@ -201,6 +203,15 @@ class TimelinePanel extends ToolBarDropDown {
     parent.appendChild(this._element);
 
     this.update();
+    this._removeDisplayStyleListener = vp.onDisplayStyleChanged.addListener(() => {
+      if (this._script !== vp.displayStyle.scheduleScript)
+        this.refreshProvider();
+    });
+  }
+
+  public override [Symbol.dispose](): void {
+    this._isPlaying = false;
+    this._removeDisplayStyleListener();
   }
 
   public get isOpen() {
@@ -216,14 +227,17 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   public override get onViewChanged(): Promise<void> {
+    this.refreshProvider();
+    return Promise.resolve();
+  }
+
+  private refreshProvider(): void {
     // Change the provider before invoking update
     this._provider = this.createProvider();
     if (this._isPlaying)
       this.pause();
     else
       this.update();
-
-    return Promise.resolve();
   }
 
   private start(): void {
@@ -312,6 +326,7 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   private createProvider(): TimelineProvider {
+    this._script = this._vp.displayStyle.scheduleScript;
     const provider = createTimelineProvider(this._vp);
 
     const time = provider.getCurrentTime(this._vp);

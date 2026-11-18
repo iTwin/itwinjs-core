@@ -846,6 +846,28 @@ export class TileAdmin {
       this._lruList.freeMemory(this._maxTotalTileContentBytes);
   }
 
+  /** Immediately dispose of all of `iModel`'s tile trees that are not currently in use by any registered [[TileUser]].
+   * Invoked when a linked iModel is unlinked from a view: the periodic purge only considers iModels currently associated
+   * with a user, so once the link is removed nothing else would ever reclaim the trees while the connection remains open.
+   * Trees still disclosed by another user (e.g., a different view linking the same iModel) are preserved, and a disposed
+   * tree's [[TileTreeOwner]] remains registered, so re-linking simply reloads on demand.
+   * @internal
+   */
+  public purgeUnusedTreesForIModel(iModel: IModelConnection): void {
+    // Note: no isOpen guard - purging a closed connection is a harmless no-op, and e.g. BlankConnections are never "open".
+    const trees = new DisclosedTileTreeSet();
+    for (const user of this._users)
+      user.discloseTileTrees(trees);
+
+    const inUse = new Set<TileTree>();
+    for (const tree of trees)
+      if (tree.iModel === iModel)
+        inUse.add(tree);
+
+    // A future cutoff disposes the unused trees regardless of when they were last drawn.
+    iModel.tiles.purge(BeTimePoint.fromNow(BeDuration.fromSeconds(1)), inUse);
+  }
+
   private pruneAndPurge(): void {
     const now = BeTimePoint.now();
     const needPrune = this._nextPruneTime.before(now);
@@ -864,8 +886,11 @@ export class TileAdmin {
         continue;
 
       user.discloseTileTrees(trees);
-      if (treesByIModel && undefined === treesByIModel.get(user.iModel))
-        treesByIModel.set(user.iModel, new Set<TileTree>());
+      if (treesByIModel) {
+        for (const iModel of user.iModels ?? [user.iModel])
+          if (iModel.isOpen && undefined === treesByIModel.get(iModel))
+            treesByIModel.set(iModel, new Set<TileTree>());
+      }
     }
 
     if (needPrune) {

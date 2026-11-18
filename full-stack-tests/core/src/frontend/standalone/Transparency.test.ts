@@ -117,6 +117,7 @@ describe("Transparency", async () => {
       expect(viewport.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       viewport.changeViewedModels([]);
       viewport.viewFlags = viewport.viewFlags.with("lighting", false);
       viewport.isFadeOutActive = true;
@@ -225,7 +226,7 @@ describe("Transparency", async () => {
   // Alpha in [0,255].
   function createBlueTexture(alpha?: number): RenderTexture {
     const fmt = undefined !== alpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
-    const bytes = [ 0, 0, 255 ];
+    const bytes = [0, 0, 255];
     if (undefined !== alpha)
       bytes.push(alpha);
 
@@ -255,11 +256,11 @@ describe("Transparency", async () => {
 
   it("should multiply material alpha with texture if material overrides alpha", async () => {
     const testCases: Array<[RenderMaterial, number]> = [
-      [ createMaterial(1, createBlueTexture(0x7f)), 0x7f ],
-      [ createMaterial(0.5, createBlueTexture()), 0x7f ],
-      [ createMaterial(0.5, createBlueTexture(0x7f)), 0xbf ],
-      [ createMaterial(0, createBlueTexture()), 0xff ],
-      [ createMaterial(1, createBlueTexture(0)), 0xff ],
+      [createMaterial(1, createBlueTexture(0x7f)), 0x7f],
+      [createMaterial(0.5, createBlueTexture()), 0x7f],
+      [createMaterial(0.5, createBlueTexture(0x7f)), 0xbf],
+      [createMaterial(0, createBlueTexture()), 0xff],
+      [createMaterial(1, createBlueTexture(0)), 0xff],
     ];
 
     for (const testCase of testCases) {
@@ -273,16 +274,16 @@ describe("Transparency", async () => {
   it("should apply texture weight to material color but not alpha", async () => {
     const testCases: Array<[RenderMaterial, ColorDef]> = [
       // Opaque
-      [ createMaterial(1, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x80, 0, 0x80) ],
-      [ createMaterial(1, createBlueTexture(), 0.25, ColorDef.red), ColorDef.from(0xc0, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(), 0, ColorDef.red), ColorDef.from(0xff, 0, 0) ],
+      [createMaterial(1, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x80, 0, 0x80)],
+      [createMaterial(1, createBlueTexture(), 0.25, ColorDef.red), ColorDef.from(0xc0, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(), 0, ColorDef.red), ColorDef.from(0xff, 0, 0)],
 
       // Translucent
-      [ createMaterial(0.5, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(0x80), 0.75, ColorDef.red), ColorDef.from(0x20, 0, 0x60) ],
-      [ createMaterial(0.5, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x20, 0, 0x20) ],
-      [ createMaterial(0.5, createBlueTexture(0x80), 0.25, ColorDef.red), ColorDef.from(0x30, 0, 0x10) ],
+      [createMaterial(0.5, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.75, ColorDef.red), ColorDef.from(0x20, 0, 0x60)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x20, 0, 0x20)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.25, ColorDef.red), ColorDef.from(0x30, 0, 0x10)],
     ];
 
     for (const testCase of testCases) {
@@ -296,16 +297,16 @@ describe("Transparency", async () => {
   it("should apply texture weight to element color but not alpha if material does not override color", async () => {
     const testCases: Array<[RenderMaterial, ColorDef]> = [
       // Opaque
-      [ createMaterial(1, createBlueTexture(), 0.5), ColorDef.from(0x80, 0, 0x80) ],
-      [ createMaterial(1, createBlueTexture(), 0.25), ColorDef.from(0xc0, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(), 0), ColorDef.from(0xff, 0, 0) ],
+      [createMaterial(1, createBlueTexture(), 0.5), ColorDef.from(0x80, 0, 0x80)],
+      [createMaterial(1, createBlueTexture(), 0.25), ColorDef.from(0xc0, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(), 0), ColorDef.from(0xff, 0, 0)],
 
       // Translucent
-      [ createMaterial(0.5, createBlueTexture(), 0.5), ColorDef.from(0x40, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(0x80), 0.5), ColorDef.from(0x40, 0, 0x40) ],
-      [ createMaterial(1, createBlueTexture(0x80), 0.75), ColorDef.from(0x20, 0, 0x60) ],
-      [ createMaterial(0.5, createBlueTexture(0x80), 0.5), ColorDef.from(0x20, 0, 0x20) ],
-      [ createMaterial(0.5, createBlueTexture(0x80), 0.25), ColorDef.from(0x30, 0, 0x10) ],
+      [createMaterial(0.5, createBlueTexture(), 0.5), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.5), ColorDef.from(0x40, 0, 0x40)],
+      [createMaterial(1, createBlueTexture(0x80), 0.75), ColorDef.from(0x20, 0, 0x60)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.5), ColorDef.from(0x20, 0, 0x20)],
+      [createMaterial(0.5, createBlueTexture(0x80), 0.25), ColorDef.from(0x30, 0, 0x10)],
     ];
 
     for (const testCase of testCases) {
@@ -319,11 +320,11 @@ describe("Transparency", async () => {
   it("should multiply element alpha with texture if material does not override alpha", async () => {
     // [Element transparency, material, expected transparency]
     const testCases: Array<[number, RenderMaterial, number]> = [
-      [ 0, createMaterial(undefined, createBlueTexture(0x7f)), 0x7f ],
-      [ 0x7f, createMaterial(undefined, createBlueTexture()), 0x7f ],
-      [ 0x7f, createMaterial(undefined, createBlueTexture(0x7f)), 0xbf ],
-      [ 0xff, createMaterial(undefined, createBlueTexture()), 0xff ],
-      [ 0, createMaterial(undefined, createBlueTexture(0)), 0xff ],
+      [0, createMaterial(undefined, createBlueTexture(0x7f)), 0x7f],
+      [0x7f, createMaterial(undefined, createBlueTexture()), 0x7f],
+      [0x7f, createMaterial(undefined, createBlueTexture(0x7f)), 0xbf],
+      [0xff, createMaterial(undefined, createBlueTexture()), 0xff],
+      [0, createMaterial(undefined, createBlueTexture(0)), 0xff],
     ];
 
     for (const testCase of testCases) {
@@ -455,7 +456,7 @@ describe("Transparency", async () => {
             (vp) => {
               vp.viewFlags = vp.viewFlags.with("transparency", transp).withRenderMode(renderMode);
               if (vp.displayStyle.settings.is3d())
-                vp.displayStyle.settings.hiddenLineSettings = vp.displayStyle.settings.hiddenLineSettings.override({ transThreshold: 1});
+                vp.displayStyle.settings.hiddenLineSettings = vp.displayStyle.settings.hiddenLineSettings.override({ transThreshold: 1 });
 
               decorator.add(vp, { color: ColorDef.green, pickableId, generateEdges: true });
               decorator.overrideTransparency(pickableId, 0.5, viewDep);
