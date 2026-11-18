@@ -2,7 +2,7 @@
 
 [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes, and [ElementUniqueAspect]($backend)s and [ElementMultiAspect]($backend)s can be mixed.
 
-They are faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) once per aspect because each owning element is updated once per call, no matter how many of its aspects are written. The single-aspect methods call the bulk methods with one aspect.
+They are faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) once per aspect because each owning element is updated once per call, no matter how many of its aspects are written. The single-aspect methods use the same native implementation with one aspect, and still throw an [IModelError]($common).
 
 These methods are `@beta`.
 

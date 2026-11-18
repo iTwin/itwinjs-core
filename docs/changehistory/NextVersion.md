@@ -161,9 +161,9 @@ See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for f
 
 ### Bulk ElementAspect operations
 
-The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) methods write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes. Each owning element is updated once per call instead of once per aspect, which makes these methods faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) for each aspect, especially when an element has several aspects. The single-aspect methods now call the bulk methods with one aspect.
+The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) methods write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes. Each owning element is updated once per call instead of once per aspect, which makes these methods faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) for each aspect, especially when an element has several aspects. The single-aspect methods now use the same native implementation and still throw an [IModelError]($common).
 
-Each method processes its input in order and throws an [ITwinError]($bentley) on the first problem. The aspects before the problem stay written, so the caller must abandon the txn when one of these methods throws.
+Each bulk method processes its input in order and throws an [ITwinError]($bentley) on the first problem. The aspects before the problem stay written, so the caller must call [EditTxn.abandonChanges]($backend) when one of these methods throws.
 
 ```ts
 const ids = txn.insertAspects(aspectProps);
