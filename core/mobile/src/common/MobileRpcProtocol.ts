@@ -221,6 +221,8 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   private reset() {
     this.requests.clear();
+    // One-way IPC sends are best-effort: discard even unstarted sends on reset rather than
+    // delivering stale events to the replacement connection or replaying a partial message.
     this._pending.length = 0;
     this._sendIndex = 0;
     this._capacity = Number.MAX_SAFE_INTEGER;

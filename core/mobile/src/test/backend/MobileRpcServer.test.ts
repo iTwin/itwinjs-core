@@ -3,14 +3,14 @@ import { expect } from "chai";
 
 describe("MobileRpcServer", () => {
   const titles = {
-    "connected": "sends small text and binary responses while connected",
+    "connected": "sends text and binary responses and closes the old socket on replacement",
     "pending": "replays queued messages when a client connects",
     "suspend": "buffers an in-flight IPC reply during suspension and replays it after foregrounding",
     "string": "fails a string response sent after the client disconnects",
     "binary": "fails a binary response sent after the client disconnects",
     "callback-error": "survives asynchronous send errors and closes the failed connection",
     "throw-error": "survives synchronous send errors and closes the failed connection",
-    "socket-error": "survives socket errors and closes the failed connection",
+    "socket-error": "survives a socket error when logging forwards over the failed connection",
     "missing-connection": "throws when an installed sender has no connection",
     "send-queue": "paces writes by completion callbacks and discards queued sends on close",
     "interrupted-upload": "discards an interrupted upload when a client reconnects",

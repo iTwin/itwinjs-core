@@ -49,7 +49,16 @@ export async function run(mode: "connected" | "pending" | "suspend" | "string" |
     deepStrictEqual((await received)[0], Buffer.from([1, 2, 3]));
     process.stdout.write("Connected transfers succeeded.\n");
 
-    if (mode === "connected" || mode === "pending")
+    if (mode === "connected") {
+      const previousClosed = once(client, "close");
+      client = new WebSocket(`ws://127.0.0.1:${interop.port}`, `itwin-rpc.${MobileRpcServer.rpcToken}`);
+      await Promise.all([once(client, "open"), previousClosed]);
+      received = once(client, "message");
+      interop.sendString("replacement response", interop.connectionId);
+      strictEqual((await received)[0], "replacement response");
+      return;
+    }
+    if (mode === "pending")
       return;
 
     if (mode === "interrupted-upload" || mode === "restarted-upload") {
@@ -155,7 +164,14 @@ export async function run(mode: "connected" | "pending" | "suspend" | "string" |
       const failed = once(client, "close");
       const error = new Error("Injected socket failure");
       if (mode === "socket-error") {
+        let attemptedForward = false;
+        Logger.logError = () => {
+          attemptedForward = true;
+          interop.sendString("forwarded log", interop.connectionId);
+        };
+        connection.close();
         connection.emit("error", error);
+        strictEqual(attemptedForward, true);
       } else {
         connection.send = ((_data: WebSocket.Data, callback: (err?: Error) => void) => {
           if (mode === "throw-error")

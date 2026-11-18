@@ -95,11 +95,13 @@ export class MobileRpcServer {
 
   private _onConnection() {
     this._server.on("connection", (connection) => {
-      if (this._connection) {
+      const previous = this._connection;
+      if (previous) {
         this._connectionId = ++MobileRpcServer._nextId;
         MobileRpcServer.interop.connectionId = this._connectionId;
       }
       this._connection = connection;
+      previous?.terminate();
       this._loggedClosedSocket = false;
       this._resetConnection();
       connection.on("message", (data) => {
@@ -133,11 +135,16 @@ export class MobileRpcServer {
   }
 
   private _onSendError(connection: ws, error: unknown) {
-    Logger.logError("core-mobile-backend.MobileRpcServer", "Mobile RPC socket failed.", { connectionId: this._connectionId, error });
     if (connection === this._connection) {
       this._resetConnection();
     }
     connection.terminate();
+    try {
+      Logger.logError("core-mobile-backend.MobileRpcServer", "Mobile RPC socket failed.", { connectionId: this._connectionId, error });
+    } catch (logError) {
+      // The app's log forwarder may itself send over the failed socket.
+      process.stderr.write(`Mobile RPC socket failed: ${String(error)}; log forwarding failed: ${String(logError)}\n`);
+    }
   }
 
   private _resetConnection() {
