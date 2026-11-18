@@ -300,7 +300,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
       const nFirstDigits = this._curIndex - startIndex;
       assert(nFirstDigits <= 8);
 
-      if (8 === nFirstDigits && this._curIndex + 1 < ids.length && isHexDigit(ids.charCodeAt(this._curIndex + 1))) {
+      if (8 === nFirstDigits && this._curIndex < ids.length && isHexDigit(ids.charCodeAt(this._curIndex))) {
         // We've got up to 8 more digits remaining
         const secondIndex = this._curIndex;
         const second = this.parseUint32();

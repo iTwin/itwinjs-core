@@ -150,6 +150,7 @@ describe("Tile unloading", async () => {
       const tree = getTileTree(vp);
       expect(tree.isDisposed).to.be.false;
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels([]);
 
       await waitForExpiration(vp);
@@ -169,6 +170,7 @@ describe("Tile unloading", async () => {
       await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
         await vp2.waitForAllTilesToRender();
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp2.changeViewedModels([]);
 
         await waitForExpiration(vp2);

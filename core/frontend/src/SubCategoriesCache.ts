@@ -360,38 +360,45 @@ export namespace SubCategoriesCache {
   export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
 
   export class QueueEntry {
+    public readonly cache: SubCategoriesCache;
     public readonly categoryIds: Id64Set;
     public readonly funcs: QueueFunc[];
 
-    public constructor(categoryIds: Id64Set, func: QueueFunc) {
+    public constructor(cache: SubCategoriesCache, categoryIds: Id64Set, func: QueueFunc) {
+      this.cache = cache;
       this.categoryIds = categoryIds;
       this.funcs = [func];
     }
   }
 
-  /** A "queue" of SubCategoriesRequests, which consists of between 0 and 2 entries. Each entry specifies the set of category IDs to be loaded and a list of functions to be executed
+  /** A "queue" of SubCategoriesRequests. Each entry specifies the cache through which to load a set of category IDs and a list of functions to be executed
    * when loading is completed. This is used to enforce ordering of operations upon subcategories despite the need to asynchronously load them. It incidentally also provides an
-   * opportunity to reduce the number of backend requests by batching consecutive requests.
-   * Chiefly used by [[Viewport]].
+   * opportunity to reduce the number of backend requests by batching consecutive requests on the same cache.
+   * Chiefly used by [[Viewport]], whose display references may load subcategories from more than one [[IModelConnection]]'s cache.
    * @internal
    */
   export class Queue {
     /* NB: Members marked protected for use in tests only. */
     protected _current?: QueueEntry;
-    protected _next?: QueueEntry;
+    protected _next: QueueEntry[] = [];
     protected _request?: SubCategoriesRequest;
     protected _disposed = false;
+    /** True while processNext is invoking an already-satisfied entry's callbacks. A nested push must then always wait in
+     * [[_next]] - even if the queue momentarily looks idle - because the drain loop owns [[_request]]/[[_current]] and
+     * would clobber a request that became current mid-loop.
+     */
+    protected _draining = false;
 
-    /** Push a request onto the queue. The requested categories will be loaded if necessary, and then
+    /** Push a request onto the queue. The requested categories will be loaded through the supplied cache if necessary, and then
      * the supplied function will be invoked. Any previously-pushed requests are guaranteed to be processed before this one.
      */
     public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
       if (this._disposed)
         return;
-      else if (undefined === this._current)
+      else if (undefined === this._current && 0 === this._next.length && !this._draining)
         this.pushCurrent(cache, categoryIds, func);
       else
-        this.pushNext(categoryIds, func);
+        this.pushNext(cache, categoryIds, func);
     }
 
     /** Cancel all requests and empty the queue. */
@@ -402,16 +409,17 @@ export namespace SubCategoriesCache {
         this._request = undefined;
       }
 
-      this._current = this._next = undefined;
+      this._current = undefined;
+      this._next.length = 0;
       this._disposed = true;
     }
 
     public get isEmpty(): boolean {
-      return undefined === this._current && undefined === this._next;
+      return undefined === this._current && 0 === this._next.length;
     }
 
     private pushCurrent(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
-      assert(undefined === this._next);
+      assert(0 === this._next.length);
       assert(undefined === this._current);
       assert(undefined === this._request);
 
@@ -422,14 +430,13 @@ export namespace SubCategoriesCache {
         return;
       } else {
         // We need to load the requested categories before invoking the function.
-        this.processCurrent(cache, new QueueEntry(Id64.toIdSet(categoryIds, true), func));
+        this.processCurrent(new QueueEntry(cache, Id64.toIdSet(categoryIds, true), func));
       }
     }
 
-    private processCurrent(cache: SubCategoriesCache, entry: QueueEntry): void {
+    private processCurrent(entry: QueueEntry): void {
       assert(undefined !== this._request);
       assert(undefined === this._current);
-      assert(undefined === this._next);
 
       this._current = entry;
       this._request.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -446,36 +453,49 @@ export namespace SubCategoriesCache {
         this._current = undefined;
 
         // If we have more requests, process them.
-        const next = this._next;
-        this._next = undefined;
-        if (undefined !== next) {
-          this._request = cache.load(next.categoryIds);
-          if (undefined === this._request) {
-            // All categories loaded.
-            for (const func of next.funcs)
-              func(true);
-          } else {
-            // We need to load the requested categories before invoking the pending functions.
-            this.processCurrent(cache, next);
-          }
-        }
+        this.processNext();
       });
     }
 
-    private pushNext(categoryIds: Id64Arg, func: QueueFunc): void {
-      assert(undefined !== this._current);
-      assert(undefined !== this._request);
+    private processNext(): void {
+      let next;
+      while (undefined !== (next = this._next.shift())) {
+        this._request = next.cache.load(next.categoryIds);
+        if (undefined === this._request) {
+          // All categories loaded. Nested pushes from these callbacks must wait in the queue (see push) - after the
+          // final shift the queue looks idle, and a push that became current mid-loop would be clobbered by the next
+          // iteration overwriting _request and re-entering processCurrent.
+          this._draining = true;
+          try {
+            for (const func of next.funcs)
+              func(true);
+          } finally {
+            this._draining = false;
+          }
+        } else {
+          // We need to load the requested categories before invoking the pending functions.
+          this.processCurrent(next);
+          return;
+        }
+      }
+    }
 
-      if (undefined === this._next) {
-        // We have a request currently in process and none pending.
+    private pushNext(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
+      // Either a request is in flight, or a completion callback is pushing while processNext is draining
+      // already-satisfied pending entries - in both cases this request must wait its turn behind the existing work.
+      assert(undefined !== this._current || 0 < this._next.length || this._draining);
+
+      const last = this._next[this._next.length - 1];
+      if (undefined === last || last.cache !== cache) {
+        // We have a request currently in process and no pending request on the same cache to batch with.
         // We could potentially determine that this request doesn't require any categories that are not already loaded or being loaded by the current request.
         // But we will find that out (synchronously) when current request completes, unless more requests come in. Probably not worth it.
-        this._next = new QueueEntry(Id64.toIdSet(categoryIds, true), func);
+        this._next.push(new QueueEntry(cache, Id64.toIdSet(categoryIds, true), func));
       } else {
-        // We have a request currently in process, and one or more pending. Append this one to the pending.
-        this._next.funcs.push(func);
+        // We have a request currently in process, and the most recently pended request targets the same cache. Append this one to it.
+        last.funcs.push(func);
         for (const categoryId of Id64.iterable(categoryIds))
-          this._next.categoryIds.add(categoryId);
+          last.categoryIds.add(categoryId);
       }
     }
   }

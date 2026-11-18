@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, setOwnProperty } from "@itwin/core-bentley";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECClass, StructClass } from "../Metadata/Class";
@@ -1059,7 +1059,7 @@ export class XmlParser extends AbstractParser<Element> {
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
-        instance[propertyElement.tagName] = value;
+        setOwnProperty(instance, propertyElement.tagName, value);
     }
 
     return instance;
@@ -1129,7 +1129,7 @@ export class XmlParser extends AbstractParser<Element> {
     for (const child of children) {
       const value = this.readPropertyValue(child, structClass);
       if (value !== undefined)
-        structObj[child.tagName] = value;
+        setOwnProperty(structObj, child.tagName, value);
     }
     return structObj;
   }
