@@ -10,7 +10,7 @@ import * as fs from "fs";
 import { dirname } from "path";
 import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbResult, OpenMode } from "@itwin/core-bentley";
+import { DbConflictResolution, DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName, SqliteError } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelNative } from "./internal/NativePlatform";
@@ -188,18 +188,22 @@ export class SQLiteDb {
    * extension - to this SQLiteDb. This is *not* the same on-disk format used for iModel changesets.
    * Unlike `BriefcaseDb.pullChanges`, this does *not* perform any iModel-style changeset relationship validation (e.g. parentId/changesetId)
    * against the current state of the database (raw sqlite changesets have no header) - it simply applies the changes it contains. It also does *not*
-   * support DDL/schema changes - raw sqlite changesets cannot represent them. If applying the changeset
-   * encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
-   * automatically).
+   * support DDL/schema changes - raw sqlite changesets cannot represent them. Conflicts abort by default.
+   * A built-in policy or custom handler can resolve conflicts; unresolved conflicts and other failures throw.
    * @note this method only throws on failure - it does *not* commit or abandon any changes itself. If it
    * throws, some (but not necessarily all) of the changeset's changes may have already been applied to the
    * current transaction. It is the caller's responsibility to call [[saveChanges]] or [[abandonChanges]]
    * as appropriate after catching an error from this method.
    * @param changesetFile the local file name of the changeset to apply.
+   * @param flags Independent apply options. Defaults to [[SQLiteDb.ApplyChangesetFlags.None]].
+   * @param conflictHandler Defaults to [[SQLiteDb.ChangesetConflictPolicy.AbortOnAnyConflict]].
+   * Use [[SQLiteDb.ChangesetConflictPolicy.NoLocalChanges]] for the generic iModel policy without
+   * table-specific rules, or supply a synchronous custom handler. This does not enable any apply flags:
+   * to suppress cascades, also pass [[SQLiteDb.ApplyChangesetFlags.FkNoAction]].
    * @internal
    */
-  public applyChangeset(changesetFile: LocalFileName): void {
-    this[_nativeDb].applyChangeset(changesetFile);
+  public applyChangeset(changesetFile: LocalFileName, flags?: SQLiteDb.ApplyChangesetFlags, conflictHandler?: SQLiteDb.ChangesetConflictPolicy | SQLiteDb.ChangesetConflictHandler): void {
+    this[_nativeDb].applyChangeset(changesetFile, flags, conflictHandler);
   }
 
   /**
@@ -428,6 +432,53 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
 /** @public */
 export namespace SQLiteDb {
+  /** Independent flags for applying a raw SQLite changeset. Combine with bitwise OR.
+   * @internal
+   */
+  export enum ApplyChangesetFlags {
+    /** Apply with no optional flags. */
+    None = 0,
+    /** Apply the inverse of the changeset. */
+    Invert = 1,
+    /** Skip changes that would leave the database unchanged without invoking the conflict handler. */
+    IgnoreNoop = 2,
+    /** Treat all foreign-key actions as NO ACTION, including CASCADE, RESTRICT, SET NULL, and SET DEFAULT. */
+    FkNoAction = 4,
+    /** Report cyclic UNIQUE updates as constraint conflicts instead of retrying them. */
+    NoUpdateLoop = 8,
+  }
+
+  /** Built-in conflict policies, independent of apply flags.
+   * @internal
+   */
+  export enum ChangesetConflictPolicy {
+    /** Abort on any conflict. This is the default. */
+    AbortOnAnyConflict = 0,
+    /** Generic iModel policy with no local changes: skip missing rows and constraint conflicts,
+     * replace data and primary-key insert conflicts, and abort on foreign-key violations.
+     * Indirect data conflicts are replaced without warnings except for sqlite_stat1 conflicts.
+     * Primary-key insert conflicts are replaced with a warning even for indirect changes.
+     * Does not include iModel-specific table rules or disable foreign-key actions.
+     */
+    NoLocalChanges = 1,
+  }
+
+  /** Copied conflict metadata, safe to retain after the callback returns.
+   * Row conflicts include table, operation, column count, and primary-key indices.
+   * Foreign-key conflicts only include their cause and violation count because SQLite provides no associated row.
+   * @internal
+   */
+  export type ChangesetConflictArgs = IModelJsNative.SQLiteChangesetConflictArgs;
+
+  /** A synchronous callback returning Skip, Replace, or Abort. Exceptions abort application and
+   * propagate to the caller, who remains responsible for abandoning any partially applied changes.
+   * Replace is valid only for data and primary-key insert conflicts.
+   * The handler may query this database, but must not modify it (including through prepared
+   * statements), close it, change its transaction, or recursively apply another changeset to it.
+   * @internal
+   */
+  export type ChangesetConflictHandler = (args: ChangesetConflictArgs) => DbConflictResolution;
+
   /** A semver version range.
    * @see https://docs.npmjs.com/cli/v6/using-npm/semver
    */

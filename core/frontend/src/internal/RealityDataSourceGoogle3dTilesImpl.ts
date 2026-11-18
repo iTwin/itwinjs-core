@@ -120,7 +120,8 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     return request(url, "json", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 
@@ -135,10 +136,14 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     // This happens in these tiles at the second .json level, but the URL API will handle that for us.
     const url = new URL(tilePath, this._baseUrl);
 
+    // Never forward the API key or session params to a different origin.
+    if (!this.isSameOrigin(url))
+      return url.toString();
+
     // If tile is a reference to a tileset, iterate over tileset url's search params and store them in this._searchParams so we can pass them down to children
     if (this.getTileContentType(url.toString()) === "tileset" && url.searchParams.size !== 0) {
       for (const [key, value] of url.searchParams.entries()) {
-        this._searchParams?.append(key, value);
+        this._searchParams?.set(key, value);
       }
     }
 
@@ -158,19 +163,26 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     return newUrl.toString();
   }
 
+  /** Returns true if `url` has the same origin as the root tileset. Credentials are only sent to that origin. */
+  private isSameOrigin(url: URL | string): boolean {
+    return new URL(url).origin === this._baseUrl;
+  }
+
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
+    const url = this.getTileUrl(name);
     let authToken;
-    if (this._getAuthToken) {
+    if (this._getAuthToken && this.isSameOrigin(url)) {
       authToken = await this._getAuthToken();
     }
 
-    return request(this.getTileUrl(name), "arraybuffer", authToken ? {
+    return request(url, "arraybuffer", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 
@@ -178,15 +190,17 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
+    const url = this.getTileUrl(name);
     let authToken;
-    if (this._getAuthToken) {
+    if (this._getAuthToken && this.isSameOrigin(url)) {
       authToken = await this._getAuthToken();
     }
 
-    return request(this.getTileUrl(name), "json", authToken ? {
+    return request(url, "json", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 

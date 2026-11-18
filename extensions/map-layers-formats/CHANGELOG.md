@@ -1,6 +1,18 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Wed, 04 Nov 2026 17:36:46 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Nov 2026 16:53:07 GMT and should not be manually modified.
+
+## 5.15.1
+Mon, 09 Nov 2026 16:52:11 GMT
+
+_Version update only_
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:37 GMT
+
+### Updates
+
+- Upgrade google-protobuf to 4.0.3 to fix CVE-2026-89418 (unbounded recursion when decoding PBF responses).
 
 ## 5.14.6
 Wed, 04 Nov 2026 17:35:14 GMT

@@ -4,7 +4,7 @@ This guide covers the path from a local checkout to a pull request. Read the aff
 
 ## Set up the repository
 
-The repository uses [Rush](https://rushjs.io/) to manage its TypeScript packages. Use a Node.js version supported by [`rush.json`](./rush.json). Node.js 24 LTS is recommended.
+The repository uses [Rush](https://rushjs.io/) to manage its TypeScript packages. Use a Node.js version supported by [`rush.json`](./rush.json). Node.js 26 LTS is recommended.
 
 ```sh
 rush install
@@ -140,8 +140,4 @@ Run `rush install` after switching branches or pulling dependency changes. If th
 
 Do not edit versions for internal monorepo dependencies. CI maintains them.
 
-For an external dependency:
-
-1. Update its version range in the owning `package.json`.
-2. Run `rush check`.
-3. Run `rush update`.
+For external dependencies, see the [dependency management guide](./common/config/rush/README-dependencies.md).

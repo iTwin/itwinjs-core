@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Suite } from "mocha";
 import { join } from "path";
-import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, Guid, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps, ViewStoreError } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -420,5 +420,49 @@ describe("ViewStore", function (this: Suite) {
       if (snapshot.isOpen)
         snapshot.close();
     }
+  });
+
+  it("rejects compressed Id sets that exceed the limit", async () => {
+    // 11 characters representing 4,294,967,295 Ids.
+    const hugeIds = "+1*FFFFFFFF";
+    const expectTooManyIds = async (func: () => unknown) => {
+      let error: unknown;
+      try {
+        await func();
+      } catch (err) {
+        error = err;
+      }
+      // Compressed sets are rejected by CompressedId64Set's iterator; array-form Ids and timeline totals are rejected by ViewStore.
+      expect(error instanceof BentleyError ? error.errorNumber === IModelStatus.BadArg : ViewStoreError.isError(error, "invalid-value")).true;
+      expect((error as Error).message).include("exceeds the maximum");
+    };
+
+    // Writes are rejected before any Id is looked up.
+    await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: hugeIds } }));
+
+    // Values written directly to the database are rejected when read.
+    const catId = vs1.addCategorySelectorRow({ name: "huge cat", json: JSON.stringify({ ids: hugeIds }) });
+    const modelId = vs1.addModelSelectorRow({ name: "huge model", json: JSON.stringify({ ids: "+1*80000+1*80000" }) });
+    // Each batch is under the limit, but together they exceed it.
+    const timeline = [{ modelId: "^1", elementTimelines: [{ batchId: 1, elementIds: "+1*80000" }, { batchId: 2, elementIds: "+1*80000" }] }];
+    const timelineId = vs1.addTimelineRow({ name: "huge timeline", json: JSON.stringify(timeline) });
+    try {
+      await expectTooManyIds(() => vs1.getCategorySelectorSync({ id: ViewStore.fromRowId(catId) }));
+      await expectTooManyIds(() => vs1.getModelSelectorSync({ id: ViewStore.fromRowId(modelId) }));
+      await expectTooManyIds(() => vs1.getTimelineSync({ id: ViewStore.fromRowId(timelineId) }));
+      await expectTooManyIds(async () => vs1.addTimeline({ timeline }));
+    } finally {
+      vs1.deleteCategorySelectorSync(catId);
+      vs1.deleteModelSelectorSync(modelId);
+      vs1.deleteTimelineSync(timelineId);
+    }
+
+    // Array-form Ids are rejected before any Id is looked up.
+    const tooManyArrayIds = new Array<string>(CompressedId64Set.maxIdCount + 1).fill("0x1");
+    await expectTooManyIds(async () => vs1.addCategorySelector({ selector: { ids: tooManyArrayIds } }));
+    // An array batch plus a compressed batch can't exceed the limit for a timeline.
+    await expectTooManyIds(async () => vs1.addTimeline({
+      timeline: [{ modelId: "0x10", elementTimelines: [{ batchId: 1, elementIds: tooManyArrayIds.slice(0, 600000) }, { batchId: 2, elementIds: "+1*80000" }] }],
+    }));
   });
 });
