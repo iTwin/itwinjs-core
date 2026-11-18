@@ -5,7 +5,8 @@
 
 const assert = require("node:assert/strict");
 const childProcess = require("node:child_process");
-const { readFileSync } = require("node:fs");
+const fs = require("node:fs");
+const { readFileSync } = fs;
 const path = require("node:path");
 const { test } = require("node:test");
 const { getBuildCacheConfig, runRushBuild } = require("../run-rush-build.js");
@@ -67,6 +68,8 @@ test("scope configuration and credentials to the Rush build child process", (t) 
     RUSH_BUILD_CACHE_OVERRIDE_JSON: "old override",
     RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH: "/old/cache-override.json",
     RUSH_BUILD_CACHE_CREDENTIAL: "do-not-log-this",
+    ITWIN_NATIVE_CACHE_KEY: "inherited-native-key",
+    BUILD_BUILDID: "123",
   });
   assert.equal(runRushBuild("read", ["-v", "--to", "example-project"], env), 0);
   assert.equal(call[0], process.execPath);
@@ -78,6 +81,8 @@ test("scope configuration and credentials to the Rush build child process", (t) 
   assert.equal(buildEnv.RUSH_BUILD_CACHE_ENABLED, undefined);
   assert.equal(buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED, "0");
   assert.equal(buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH, undefined);
+  assert.equal(buildEnv.ITWIN_NATIVE_CACHE_KEY, undefined);
+  assert.equal(env.ITWIN_NATIVE_CACHE_KEY, "inherited-native-key");
   const config = JSON.parse(buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON);
   assert.equal(config.buildCacheEnabled, true);
   assert.equal(config.azureBlobStorageConfiguration.isCacheWriteAllowed, false);
@@ -118,6 +123,71 @@ test("runtime-only native detection never forwards a write-mode credential", (t)
     assert.equal(config.azureBlobStorageConfiguration.isCacheWriteAllowed, false);
     assert.equal(buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED, "0");
     assert.equal(buildEnv.RUSH_BUILD_CACHE_CREDENTIAL, undefined);
+  }
+});
+
+test("scope native cache invalidation to the backend build input", () => {
+  const backend = JSON.parse(readFileSync(path.join(__dirname, "../../../core/backend/config/rush-project.json"), "utf8"));
+  assert.deepEqual(backend.operationSettings.find((operation) => operation.operationName === "build").dependsOnEnvVars, ["ITWIN_NATIVE_CACHE_KEY"]);
+});
+
+test("native reads use a CI-run key without changing the shared namespace", (t) => {
+  let buildEnv;
+  t.mock.method(childProcess, "spawnSync", (_exe, _args, options) => { buildEnv = options.env; return { status: 0 }; });
+  const normal = getBuildCacheConfig("read", {});
+  for (const nativeEnv of [{ ITWIN_NATIVE_PR_VALIDATION: "True" }, { IMODELJS_NATIVE_OVERRIDE: "/tmp/native-under-test" }]) {
+    const keys = [];
+    for (const id of ["123", "124", "123"]) {
+      const env = Object.freeze({ ...nativeEnv, BUILD_BUILDID: id, ITWIN_NATIVE_CACHE_KEY: "inherited-native-key", RUSH_BUILD_CACHE_CREDENTIAL: "reader-token" });
+      runRushBuild("read", [], env);
+      keys.push(buildEnv.ITWIN_NATIVE_CACHE_KEY);
+      assert.equal(typeof buildEnv.ITWIN_NATIVE_CACHE_KEY, "string");
+      assert.ok(buildEnv.ITWIN_NATIVE_CACHE_KEY.length > 0);
+      assert.equal(buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED, "0");
+      assert.equal(buildEnv.RUSH_BUILD_CACHE_CREDENTIAL, "reader-token");
+      assert.equal(JSON.parse(buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON).cacheHashSalt, normal.cacheHashSalt);
+      assert.equal(env.ITWIN_NATIVE_CACHE_KEY, "inherited-native-key");
+    }
+    assert.notEqual(keys[0], keys[1]);
+    assert.equal(keys[0], keys[2]);
+    assert.notEqual(keys[0], "inherited-native-key");
+  }
+});
+
+test("native reads without a CI-run ID use fresh keys", (t) => {
+  const keys = [];
+  t.mock.method(childProcess, "spawnSync", (_exe, _args, options) => { keys.push(options.env.ITWIN_NATIVE_CACHE_KEY); return { status: 0 }; });
+  for (let i = 0; i < 2; i++)
+    runRushBuild("read", [], { ITWIN_NATIVE_PR_VALIDATION: "true" });
+  assert.ok(keys.every((key) => typeof key === "string" && key.length > 0));
+  assert.notEqual(keys[0], keys[1]);
+});
+
+test("native reads fail closed if the checkout lacks scoped invalidation", (t) => {
+  let buildEnv;
+  t.mock.method(childProcess, "spawnSync", (_exe, _args, options) => { buildEnv = options.env; return { status: 0 }; });
+  const read = t.mock.method(fs, "readFileSync");
+  for (const contents of ["{}", "not JSON", JSON.stringify({ operationSettings: [{ operationName: "build", outputFolderNames: ["lib"] }] })]) {
+    read.mock.mockImplementation(() => contents);
+    assert.equal(getBuildCacheConfig("read", {}).buildCacheEnabled, true);
+    assert.equal(getBuildCacheConfig("read", { ITWIN_NATIVE_PR_VALIDATION: "true" }).buildCacheEnabled, false);
+    runRushBuild("read", [], { ITWIN_NATIVE_PR_VALIDATION: "true", RUSH_BUILD_CACHE_CREDENTIAL: "reader-token" });
+    assert.equal(JSON.parse(buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON).buildCacheEnabled, false);
+    assert.equal(buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED, "0");
+    assert.equal(buildEnv.RUSH_BUILD_CACHE_CREDENTIAL, undefined);
+    assert.equal(buildEnv.ITWIN_NATIVE_CACHE_KEY, undefined);
+  }
+  read.mock.mockImplementation(() => { throw new Error("missing backend configuration"); });
+  assert.equal(getBuildCacheConfig("read", { IMODELJS_NATIVE_OVERRIDE: "/tmp/native-under-test" }).buildCacheEnabled, false);
+});
+
+test("disabled native builds discard inherited native cache keys", (t) => {
+  let buildEnv;
+  t.mock.method(childProcess, "spawnSync", (_exe, _args, options) => { buildEnv = options.env; return { status: 0 }; });
+  for (const mode of ["off", "write"]) {
+    runRushBuild(mode, [], { ITWIN_NATIVE_PR_VALIDATION: "true", ITWIN_NATIVE_CACHE_KEY: "old-key", BUILD_BUILDID: "123" });
+    assert.equal(buildEnv.ITWIN_NATIVE_CACHE_KEY, undefined);
+    assert.equal(buildEnv.RUSH_BUILD_CACHE_WRITE_ALLOWED, "0");
   }
 });
 

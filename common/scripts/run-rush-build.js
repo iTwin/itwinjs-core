@@ -5,18 +5,35 @@
 
 // Usage: node common/scripts/run-rush-build.js <off|read|write> [Rush build arguments]
 const childProcess = require("node:child_process");
+const { randomUUID } = require("node:crypto");
+const fs = require("node:fs");
 const path = require("node:path");
 const buildCache = require("../config/rush/build-cache.json");
+const nativeCacheKeyEnv = "ITWIN_NATIVE_CACHE_KEY";
+
+function isNativeBuild(env) {
+  return env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === "true" || !!env.IMODELJS_NATIVE_OVERRIDE;
+}
+
+function supportsNativeCacheKey() {
+  // Older checkouts must not restore backend output compiled against other native declarations.
+  try {
+    const backend = JSON.parse(fs.readFileSync(path.join(__dirname, "../../core/backend/config/rush-project.json"), "utf8"));
+    return backend.operationSettings?.some((operation) => operation.operationName === "build" && operation.dependsOnEnvVars?.includes(nativeCacheKeyEnv)) ?? false;
+  } catch {
+    return false;
+  }
+}
 
 function getBuildCacheConfig(mode, env, nodeVersion = process.versions.node) {
   if (!["off", "read", "write"].includes(mode))
     throw new Error("Cache mode must be off, read, or write.");
 
   // Native test artifacts can replace the published package without changing its version.
-  const nativeBuild = env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === "true" || !!env.IMODELJS_NATIVE_OVERRIDE;
+  const nativeBuild = isNativeBuild(env);
   // A write credential cannot be downgraded after runtime-only native detection.
   // Explicit native readers arrive in read mode with a reader credential.
-  const enabled = mode !== "off" && !(nativeBuild && mode === "write");
+  const enabled = mode !== "off" && (!nativeBuild || (mode === "read" && supportsNativeCacheKey()));
   return {
     ...buildCache,
     buildCacheEnabled: enabled,
@@ -40,6 +57,11 @@ function runRushBuild(mode, args, env = process.env) {
   // Inherited Rush switches must not override the selected mode.
   delete buildEnv.RUSH_BUILD_CACHE_ENABLED;
   delete buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH;
+  delete buildEnv[nativeCacheKeyEnv];
+  if (config.buildCacheEnabled && isNativeBuild(env)) {
+    // Only backend declares this input; Rush propagates it to backend consumers, not unrelated projects.
+    buildEnv[nativeCacheKeyEnv] = `native-${env.BUILD_BUILDID || randomUUID()}`;
+  }
   if (!config.buildCacheEnabled)
     delete buildEnv.RUSH_BUILD_CACHE_CREDENTIAL;
 
