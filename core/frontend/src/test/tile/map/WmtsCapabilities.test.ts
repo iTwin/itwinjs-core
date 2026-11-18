@@ -416,10 +416,22 @@ describe("WmtsCapabilities1", () => {
     const searchParams = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const queryParams: {[key: string]: string} = {};
     searchParams.forEach((value: string, key: string) =>  queryParams[key] = value);
-    await WmtsCapabilities.create(sampleUrl, undefined, true, queryParams);
+    await WmtsCapabilities.create(sampleUrl, { ignoreCache: true, queryParams });
     expect(fetchStub).toHaveBeenCalledOnce();
     const firstCall = fetchStub.mock.calls[0];
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
+  });
+
+  it("caches GetCapabilities responses separately for distinct custom parameters", async () => {
+    const response = await fetch(`/assets/wmts_capabilities/USGSHydroCached_capabilities.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wmts-capabilities-cache";
+
+    await WmtsCapabilities.create(sampleUrl, { queryParams: { apiKey: "first" } });
+    await WmtsCapabilities.create(sampleUrl, { queryParams: { apiKey: "second" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
   });
 
 });

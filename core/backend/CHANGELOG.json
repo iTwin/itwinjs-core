@@ -2,6 +2,84 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.15.1",
+      "tag": "@itwin/core-backend_v5.15.1",
+      "date": "Mon, 09 Nov 2026 16:52:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Expose raw SQLite changeset apply flags, a no-local-changes conflict policy, and custom conflict handlers through SQLiteDb.applyChangeset."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.15.0",
+      "tag": "@itwin/core-backend_v5.15.0",
+      "date": "Thu, 05 Nov 2026 17:47:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Return element/model props with Persisted<T> to convey that it has a valid id"
+          },
+          {
+            "comment": "`EditTxn.deleteElements` is now all-or-nothing: if any element in the expanded delete set is still referenced from outside the set, nothing is deleted and the status is `ConstraintViolation`. `BulkDeleteElementsStatus.PartialSuccess` has been removed. `BulkDeleteElementsResult.failures` reports each blocking element with a `BulkDeleteFailureReason`. Deprecated `skipFKConstraintValidations` (now ignored) and `failedIds`. Successful deletes invalidate instance caches, including surviving elements whose navigation references were cleared."
+          },
+          {
+            "comment": "Text annotation fields can index into a String property holding serialized JSON."
+          },
+          {
+            "comment": "Quantity and coordinate `FieldRun` values in text annotations now render through the iTwin.js quantity formatting pipeline instead of `toString()`, using the property's KindOfQuantity and the schema's presentation format by default. Apps can supply `FormatSet`s per iModel with `ElementDrivesTextAnnotation.registerFieldFormatting` and evaluate fields in memory with `ElementDrivesTextAnnotation.evaluateFields`. `@itwin/core-quantity` is now a peer dependency of this package."
+          },
+          {
+            "comment": "ViewStore.queryViews now validates its query parameters and binds them as SQL parameters."
+          },
+          {
+            "comment": "Preserve unchanged geographic coordinate systems during iModel property updates, safely restore the cached CRS after rollback without reentrant writes or stranded transactions when listeners throw, preserve original scoped edit errors even when rollback logging fails, and retry default GCS workspace loading after failed initial connections."
+          },
+          {
+            "comment": "Add @beta ChangeUnifier, which merges the rows of ChangesetReaders into EC instances in native code with bounded memory."
+          },
+          {
+            "comment": "Add optional iModelId to BlobContainer.MetadataResponse."
+          },
+          {
+            "comment": "Added TxnManager.onPrePushValidation."
+          },
+          {
+            "comment": "NativeApp.deleteBriefcase now only deletes files in the briefcase cache or valid iModels. BriefcaseManager.deleteBriefcaseFiles only deletes associated files named '<briefcase>-*' or '<briefcase>.*'."
+          },
+          {
+            "comment": "Reuse ECSQL column metadata for cached statements in withQueryReader."
+          },
+          {
+            "comment": "Promote RebaseManager abort, resume, dispose, rebase events, setCustomHandler, merge state, and RebaseHandler (including recompute, dispose, and shouldReinstate) from @alpha to @beta. Promote TxnManager.rebaser from @internal to @beta. Promote TxnManager.withIndirectTxnMode, withIndirectTxnModeAsync, getMode, getTxnProps, queryTxns, getLastSavedTxnProps, and TxnMode from @alpha to @beta. Mark RebaseManager.resumeSemantic, onConflict, addConflictHandler, and removeConflictHandler as @internal because they depend on internal types."
+          },
+          {
+            "comment": "Add Relationships.queryInstances and queryInstancesProps to look up many relationships of a class with batched queries."
+          },
+          {
+            "comment": "Bug fix for leader fill color"
+          },
+          {
+            "comment": "Added check against 0 length elbow when wantElbow is true"
+          },
+          {
+            "comment": "Move Sheet and Drawing sub-model class validation into Element.onSubModelInsert and allow domain ISubModeledElement classes to define permitted model classes."
+          },
+          {
+            "comment": "Add a beta API for discovering available Vertical Coordinate Reference Systems."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.14.6",
+      "tag": "@itwin/core-backend_v5.14.6",
+      "date": "Wed, 04 Nov 2026 17:35:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.14.5",
       "tag": "@itwin/core-backend_v5.14.5",
       "date": "Tue, 27 Oct 2026 12:19:48 GMT",

@@ -203,7 +203,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
               } else {
                 Logger.logError(loggerCategory, `Error while loading tile: ${tileResponse.statusText}`);
               }
-              this._hadUnrecoverableError = true;   // Prevent from doing more invalid requests
+              // A response managed by the fetch handler is not classified here: the handler reports failures
+              // by throwing MapLayerAuthenticationFailedError, and must not have the layer given up on.
+              if (!this.isManagedByHandler(tileResponse))
+                this._hadUnrecoverableError = true;   // Prevent from doing more invalid requests
               return undefined;
             }
           }

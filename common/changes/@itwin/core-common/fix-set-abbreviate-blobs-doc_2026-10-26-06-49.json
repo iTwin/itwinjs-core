@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix QueryOptionsBuilder.setAbbreviateBlobs documentation: blobs are not abbreviated by default.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

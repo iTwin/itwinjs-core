@@ -19,6 +19,22 @@ describe("Planar clip mask (#integration #graphics)", () => {
   let imodel: IModelConnection;
   let viewport: ScreenTestViewport;
   let originalModelIds: Id64String[];
+  let restoreMaxTexSizeAllow: (() => void) | undefined;
+
+  /** The planar clip mask texture is always allocated at the render system's maxTexSizeAllow (4096x4096) and rasterized every
+   * frame regardless of viewport size. On software renderers (SwiftShader in CI) that makes a single masked frame take long
+   * enough to trip Electron's ~15s GPU watchdog. The 100x100 viewport needs nowhere near that resolution, so cap it for this
+   * suite only. maxTexSizeAllow also limits other textures, so the original value is restored in `after`.
+   * The WebGL System and its Capabilities are internal to core-frontend, so this reaches them structurally.
+   */
+  function capMaxTexSizeAllow(size: number): () => void {
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Mirrors private field names in core-frontend/webgl-compatibility.
+    const capabilities = (IModelApp.renderSystem as unknown as { _capabilities?: { _maxTexSizeAllow?: number } })._capabilities;
+    const original = capabilities?._maxTexSizeAllow;
+    assert(capabilities !== undefined && typeof original === "number", "Unable to locate the render system's maxTexSizeAllow");
+    capabilities._maxTexSizeAllow = Math.min(original, size);
+    return () => { capabilities._maxTexSizeAllow = original; };
+  }
 
   before(async () => {
     await TestUtility.startFrontend({
@@ -49,6 +65,8 @@ describe("Planar clip mask (#integration #graphics)", () => {
       userAgent: text(navigator.userAgent),
     })}`);
 
+    restoreMaxTexSizeAllow = capMaxTexSizeAllow(512);
+
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
     const view = await imodel.views.load("0x24");
     assert(view.isSpatialView());
@@ -74,6 +92,9 @@ describe("Planar clip mask (#integration #graphics)", () => {
         }
       }
     } finally {
+      restoreMaxTexSizeAllow?.();
+      restoreMaxTexSizeAllow = undefined;
+
       if (imodel)
         await imodel.close();
 

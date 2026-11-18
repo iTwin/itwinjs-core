@@ -21,12 +21,12 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "yargs": "^17.4.0"
+    "yargs": "catalog:build"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "glob": "^13.0.6",
+    "glob": "catalog:build",
     "magic-string": "^1.1.0",
-    "mocha": "^11.1.0"
+    "mocha": "catalog:testing"
   }
 }

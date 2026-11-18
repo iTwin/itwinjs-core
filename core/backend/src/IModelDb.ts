@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DbQueryResponse, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeographicCRS, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
@@ -78,7 +78,7 @@ import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, Schema
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 import { SynchronousChannel } from "./SynchronousChannel";
@@ -1096,9 +1096,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = {
-      execute: async (request: DbQueryRequest) => {
-        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
-      },
+      execute: (request: DbQueryRequest): DbQueryResponse | Promise<DbQueryResponse> => request.usePrimaryConn === true
+        ? this._queryMetadataCache.executeCachedPrimaryQueryRequest(request, (req) => ConcurrentQuery.executePrimaryQueryRequest(this[_nativeDb], req))
+        : this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req)),
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
@@ -1124,13 +1124,8 @@ export abstract class IModelDb extends IModel {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
-    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
-    const release = () => {
-      executor[Symbol.dispose]();
-      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
-    };
+    const executor = new ECSqlRowExecutor(this);
+    const release = () => executor[Symbol.dispose]();
     try {
       const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);
@@ -3173,14 +3168,15 @@ export namespace IModelDb {
     }
 
     /**
-     * Delete multiple elements from the iModel.
+     * Delete multiple elements from the iModel in a single bulk operation. See [[EditTxn.deleteElements]].
      * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-     * @param deleteOptions Options for the delete operation.
-     * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+     * @param deleteOptions Deprecated and ignored; kept for backward compatibility of the signature.
+     * @returns A result object describing the outcome of the operation and the elements that block it (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
      * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
       return this._iModel[_implicitTxn].deleteElements(ids, deleteOptions);
     }

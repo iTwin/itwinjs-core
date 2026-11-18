@@ -953,10 +953,18 @@ export namespace esriPBuffer {
                   break;
                 switch (reader.getFieldNumber()) {
                   case 2:
-                    message.lengths = reader.readPackedUint32();
+                    {
+                      const lengths: number[] = [];
+                      reader.readPackableUint32Into(lengths);
+                      message.lengths = lengths;
+                    }
                     break;
                   case 3:
-                    message.coords = reader.readPackedSint64();
+                    {
+                      const coords: number[] = [];
+                      reader.readPackableSint64Into(coords);
+                      message.coords = coords;
+                    }
                     break;
                   default: reader.skipField();
                 }
@@ -2453,7 +2461,11 @@ export namespace esriPBuffer {
                     reader.readMessage(message.serverGens, () => message.serverGens = FeatureCollectionPBuffer.ServerGens.deserialize(reader));
                     break;
                   case 3:
-                    message.objectIds = reader.readPackedUint64();
+                    {
+                      const objectIds: number[] = [];
+                      reader.readPackableUint64Into(objectIds);
+                      message.objectIds = objectIds;
+                    }
                     break;
                   default: reader.skipField();
                 }

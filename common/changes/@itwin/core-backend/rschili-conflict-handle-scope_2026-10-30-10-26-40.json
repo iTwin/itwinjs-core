@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "reduce changeset conflict handler memory usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

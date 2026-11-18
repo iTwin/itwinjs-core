@@ -2268,8 +2268,7 @@ export interface DbRequest extends BaseReaderOptions {
 
 // @internal (undocumented)
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-    // (undocumented)
-    execute(request: TRequest): Promise<TResponse>;
+    execute(request: TRequest): TResponse | Promise<TResponse>;
 }
 
 // @internal (undocumented)
@@ -2322,7 +2321,13 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
+    // @internal
+    cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
     cpuTime: number;
+    downloadBlocks?: number;
+    downloadBytes?: number;
+    downloadTime?: number;
+    executionTime?: number;
     memLimit: number;
     memUsed: number;
     prepareTime: number;
@@ -2886,6 +2891,8 @@ export abstract class ECSqlReaderBase {
     protected _done: boolean;
     // @internal
     protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal (undocumented)
+    protected getMetaDataInternal(): QueryPropertyMetaData[];
     // @internal
     protected abstract getRowInternal(): any[];
     // @internal (undocumented)
@@ -5239,6 +5246,13 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
+    get queryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set queryParams(value: {
+        [key: string]: string;
+    } | undefined);
+    // @beta @deprecated
     savedQueryParams?: {
         [key: string]: string;
     };
@@ -5250,7 +5264,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };
@@ -8025,6 +8039,10 @@ export interface QueryRowProxy {
 // @public
 export interface QueryStats {
     backendCpuTime: number;
+    backendDownloadBlocks?: number;
+    backendDownloadBytes?: number;
+    backendDownloadTime?: number;
+    backendExecutionTime?: number;
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;

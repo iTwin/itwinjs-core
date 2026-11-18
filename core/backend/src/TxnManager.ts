@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeAsyncEvent, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeAsyncEvent, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array
 } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1156,6 +1156,12 @@ export class TxnManager {
       };
     }
 
+    // Build the metadata only when it gets logged, and right away rather than as a callback: args are only valid during this call.
+    const logInfo = (message: string) => {
+      if (Logger.isEnabled(BackendLoggerCategory.IModelDb, LogLevel.Info))
+        Logger.logInfo(BackendLoggerCategory.IModelDb, message, getChangeMetaData());
+    };
+
     // Default conflict resolution for which custom handler is never called.
     // A local txn that imported a domain replays an insert to `dgn_Domain` for a domain the
     // just-merged changesets already registered. Both rows describe the same domain, so the
@@ -1163,12 +1169,12 @@ export class TxnManager {
     // is benign - an update or delete whose "before" values do not match (`Data`) describes a real
     // divergence and is left to the handlers below.
     if (args.tableName === "dgn_Domain" && args.cause === "Conflict" && args.opcode === "Inserted") {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "dgn_Domain insert conflict during rebase. Keeping the merged row and skipping the local change.", getChangeMetaData());
+      logInfo("dgn_Domain insert conflict during rebase. Keeping the merged row and skipping the local change.");
       return DbConflictResolution.Skip;
     }
 
     if (args.tableName === "sqlite_stat1" && (args.cause === "Conflict" || args.cause === "Data")) {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "sqlite_stat1 conflict during rebase. Keeping the local statistics.", getChangeMetaData());
+      logInfo("sqlite_stat1 conflict during rebase. Keeping the local statistics.");
       return DbConflictResolution.Replace;
     }
 
@@ -1205,7 +1211,7 @@ export class TxnManager {
     }
 
     if (args.cause === "Data" && !args.indirect) {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered. Local change will replace existing.", getChangeMetaData());
+      logInfo("UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered. Local change will replace existing.");
       return DbConflictResolution.Replace;
     }
 
@@ -1218,18 +1224,18 @@ export class TxnManager {
 
     if (args.cause === "ForeignKey") {
       const msg = `Foreign key conflicts in ChangeSet. Aborting rebase.`;
-      Logger.logInfo(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
+      logInfo(msg);
       args.setLastError(msg);
       return DbConflictResolution.Abort;
     }
 
     if (args.cause === "NotFound") {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "PRIMARY KEY not found. Skipping local change.", getChangeMetaData());
+      logInfo("PRIMARY KEY not found. Skipping local change.");
       return DbConflictResolution.Skip;
     }
 
     if (args.cause === "Constraint") {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "Constraint violation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.", getChangeMetaData());
+      logInfo("Constraint violation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.");
       return DbConflictResolution.Skip;
     }
 

@@ -161,7 +161,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         txn.start();
 
         const startTime = performance.now();
-        const deletionResult = txn.deleteElements(ids, { skipFKConstraintValidations: true });
+        const deletionResult = txn.deleteElements(ids);
         const elapsed = performance.now() - startTime;
 
         assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
@@ -222,16 +222,31 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         const txn = new EditTxn(db, "deleteElements perf test");
         txn.start();
 
+        // deleteElements is all-or-nothing: the mixed set is rejected and nothing is deleted. Measure the validation cost of that rejection...
+        const rejectStart = performance.now();
+        const rejected = txn.deleteElements(allIds);
+        const rejectElapsed = performance.now() - rejectStart;
+
+        assert.equal(rejected.status, BulkDeleteElementsStatus.ConstraintViolation, "in-use definition elements must reject the whole call");
+        const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
+        assert.equal(rejected.failures.length, expectedFailedCount, "every in-use and externally-blocked part should be reported");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.equal(rejected.failedIds.size, expectedFailedCount, "failedIds must mirror failures");
+        for (const id of allIds)
+          assert.isDefined(db.elements.tryGetElement(id), `${id} must survive a rejected call`);
+
+        reporter.addEntry("DeleteElementsPerfTest", `deleteElements (rejected, mixed set) for ${count} elements`, "Execution time(ms)", rejectElapsed);
+
+        // ...then delete only the elements the report says are deletable, which is what a caller would do on retry.
+        const deletableIds = unusedPartIds.filter((id) => !externallyBlockedPartIds.has(id));
         const startTime = performance.now();
-        const deletionResult = txn.deleteElements(allIds);
+        const deletionResult = txn.deleteElements(deletableIds);
         const elapsed = performance.now() - startTime;
 
-        assert.equal(deletionResult.status, BulkDeleteElementsStatus.PartialSuccess, "Some in-use definition elements should have been pruned");
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success, "deletable parts should be deleted in one call");
 
         txn.saveChanges();
 
-        const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
-        assert.equal(deletionResult.failedIds.size, expectedFailedCount, "in-use and externally-blocked parts should fail to delete");
         for (const id of unusedPartIds) {
           if (externallyBlockedPartIds.has(id))
             assert.isDefined(db.elements.tryGetElement(id), `externally-blocked part ${id} should be retained`);

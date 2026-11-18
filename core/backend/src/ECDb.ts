@@ -7,7 +7,7 @@
  */
 import { assert, BeEvent, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
 import { serialize } from "node:v8";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -16,7 +16,7 @@ import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { QueryMetadataCache } from "./internal/QueryMetadataCache";
-import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
@@ -547,9 +547,9 @@ export class ECDb implements Disposable {
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
     }
     const executor = {
-      execute: async (request: DbQueryRequest) => {
-        return this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req));
-      },
+      execute: (request: DbQueryRequest): DbQueryResponse | Promise<DbQueryResponse> => request.usePrimaryConn === true
+        ? this._queryMetadataCache.executeCachedPrimaryQueryRequest(request, (req) => ConcurrentQuery.executePrimaryQueryRequest(this[_nativeDb], req))
+        : this._queryMetadataCache.executeCachedQueryRequest(request, async (req) => ConcurrentQuery.executeQueryRequest(this[_nativeDb], req)),
     };
     return new ECSqlReader(executor, ecsql, params, config);
   }
@@ -575,13 +575,8 @@ export class ECDb implements Disposable {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
-    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
-    const release = () => {
-      executor[Symbol.dispose]();
-      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
-    };
+    const executor = new ECSqlRowExecutor(this);
+    const release = () => executor[Symbol.dispose]();
     try {
       const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);

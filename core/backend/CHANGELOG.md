@@ -1,6 +1,41 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 27 Oct 2026 12:20:35 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Nov 2026 16:53:07 GMT and should not be manually modified.
+
+## 5.15.1
+Mon, 09 Nov 2026 16:52:11 GMT
+
+### Updates
+
+- Expose raw SQLite changeset apply flags, a no-local-changes conflict policy, and custom conflict handlers through SQLiteDb.applyChangeset.
+
+## 5.15.0
+Thu, 05 Nov 2026 17:47:36 GMT
+
+### Updates
+
+- Return element/model props with Persisted<T> to convey that it has a valid id
+- `EditTxn.deleteElements` is now all-or-nothing: if any element in the expanded delete set is still referenced from outside the set, nothing is deleted and the status is `ConstraintViolation`. `BulkDeleteElementsStatus.PartialSuccess` has been removed. `BulkDeleteElementsResult.failures` reports each blocking element with a `BulkDeleteFailureReason`. Deprecated `skipFKConstraintValidations` (now ignored) and `failedIds`. Successful deletes invalidate instance caches, including surviving elements whose navigation references were cleared.
+- Text annotation fields can index into a String property holding serialized JSON.
+- Quantity and coordinate `FieldRun` values in text annotations now render through the iTwin.js quantity formatting pipeline instead of `toString()`, using the property's KindOfQuantity and the schema's presentation format by default. Apps can supply `FormatSet`s per iModel with `ElementDrivesTextAnnotation.registerFieldFormatting` and evaluate fields in memory with `ElementDrivesTextAnnotation.evaluateFields`. `@itwin/core-quantity` is now a peer dependency of this package.
+- ViewStore.queryViews now validates its query parameters and binds them as SQL parameters.
+- Preserve unchanged geographic coordinate systems during iModel property updates, safely restore the cached CRS after rollback without reentrant writes or stranded transactions when listeners throw, preserve original scoped edit errors even when rollback logging fails, and retry default GCS workspace loading after failed initial connections.
+- Add @beta ChangeUnifier, which merges the rows of ChangesetReaders into EC instances in native code with bounded memory.
+- Add optional iModelId to BlobContainer.MetadataResponse.
+- Added TxnManager.onPrePushValidation.
+- NativeApp.deleteBriefcase now only deletes files in the briefcase cache or valid iModels. BriefcaseManager.deleteBriefcaseFiles only deletes associated files named '<briefcase>-*' or '<briefcase>.*'.
+- Reuse ECSQL column metadata for cached statements in withQueryReader.
+- Promote RebaseManager abort, resume, dispose, rebase events, setCustomHandler, merge state, and RebaseHandler (including recompute, dispose, and shouldReinstate) from @alpha to @beta. Promote TxnManager.rebaser from @internal to @beta. Promote TxnManager.withIndirectTxnMode, withIndirectTxnModeAsync, getMode, getTxnProps, queryTxns, getLastSavedTxnProps, and TxnMode from @alpha to @beta. Mark RebaseManager.resumeSemantic, onConflict, addConflictHandler, and removeConflictHandler as @internal because they depend on internal types.
+- Add Relationships.queryInstances and queryInstancesProps to look up many relationships of a class with batched queries.
+- Bug fix for leader fill color
+- Added check against 0 length elbow when wantElbow is true
+- Move Sheet and Drawing sub-model class validation into Element.onSubModelInsert and allow domain ISubModeledElement classes to define permitted model classes.
+- Add a beta API for discovering available Vertical Coordinate Reference Systems.
+
+## 5.14.6
+Wed, 04 Nov 2026 17:35:14 GMT
+
+_Version update only_
 
 ## 5.14.5
 Tue, 27 Oct 2026 12:19:48 GMT

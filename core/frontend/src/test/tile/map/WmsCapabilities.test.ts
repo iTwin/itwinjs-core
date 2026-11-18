@@ -86,10 +86,34 @@ describe("WmsCapabilities", () => {
     const params = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const queryParams: {[key: string]: string} = {};
     params.forEach((value: string, key: string) =>  queryParams[key] = value);
-    await WmsCapabilities.create(sampleUrl, undefined, true, queryParams);
+    await WmsCapabilities.create(sampleUrl, { ignoreCache: true, queryParams });
     expect(fetchStub).toHaveBeenCalledTimes(1);
     const firstCall = fetchStub.mock.calls[0];
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMS&${params.toString()}`);
+  });
+
+  it("caches GetCapabilities responses separately for distinct custom parameters", async () => {
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_111.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wms-capabilities-cache";
+
+    await WmsCapabilities.create(sampleUrl, { queryParams: { apiKey: "first" } });
+    await WmsCapabilities.create(sampleUrl, { queryParams: { apiKey: "second" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not serve a cached public document to a credentialed request", async () => {
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_111.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wms-credentialed-cache";
+
+    await WmsCapabilities.create(sampleUrl);   // cached anonymously
+    await WmsCapabilities.create(sampleUrl, { credentials: { user: "user", password: "pwd" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
   });
 
   it("should handle invalid range with -Infinity values", async () => {
@@ -121,38 +145,38 @@ describe("WmsCapabilities", () => {
 
     it("should reject truncated XML without throwing", async () => {
       fakeTextFetch("<WMS_Capabilities><Service><Name>oops");
-      const capabilities = await WmsCapabilities.create("https://fake/truncated", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/truncated", { ignoreCache: true });
       expect(capabilities).toBeUndefined();
     });
 
     it("should degrade gracefully on unparseable XML without throwing", async () => {
       // Mismatched tags are a hard parse error; the document root becomes parsererror.
       fakeTextFetch("<WMS_Capabilities><Service></WMS_Capabilities></Service>");
-      const capabilities = await WmsCapabilities.create("https://fake/malformed", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/malformed", { ignoreCache: true });
       expect(capabilities).toBeUndefined();
     });
 
     it("should reject a non-WMS root element that spoofs Service/Capability children", async () => {
       fakeTextFetch(`<?xml version="1.0"?><html><Service><Name>fake</Name></Service><Capability/></html>`);
-      const capabilities = await WmsCapabilities.create("https://fake/spoof", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/spoof", { ignoreCache: true });
       expect(capabilities).toBeUndefined();
     });
 
     it("should not throw on non-WMS XML", async () => {
       fakeTextFetch(`<?xml version="1.0"?><html><body>Not a WMS server</body></html>`);
-      const capabilities = await WmsCapabilities.create("https://fake/nonwms", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/nonwms", { ignoreCache: true });
       expect(capabilities).toBeUndefined();
     });
 
     it("should reject a capabilities document with no Service or Capability", async () => {
       fakeTextFetch(`<?xml version="1.0"?><WMS_Capabilities xmlns="http://www.opengis.net/wms"></WMS_Capabilities>`);
-      const capabilities = await WmsCapabilities.create("https://fake/empty", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/empty", { ignoreCache: true });
       expect(capabilities).toBeUndefined();
     });
 
     it("should handle missing version and Capability", async () => {
       fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service>`).replace(` version="1.3.0"`, ""));
-      const capabilities = await WmsCapabilities.create("https://fake/noversion", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/noversion", { ignoreCache: true });
       expect(capabilities).toBeDefined();
       expect(capabilities!.version).toBeUndefined();
       expect(capabilities!.isVersion13).toEqual(false);
@@ -164,14 +188,14 @@ describe("WmsCapabilities", () => {
 
     it("should handle unexpected elements and non-string version", async () => {
       fakeTextFetch(wrap130(`<Bogus><Nested/></Bogus><Service><Name>svc</Name></Service>`));
-      const capabilities = await WmsCapabilities.create("https://fake/unexpected", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/unexpected", { ignoreCache: true });
       expect(capabilities).toBeDefined();
       expect(capabilities!.service.name).toEqual("svc");
     });
 
     it("should handle a layer without CRS/SRS", async () => {
       fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service><Capability><Layer><Title>root</Title><Layer><Name>child</Name><Title>child</Title></Layer></Layer></Capability>`));
-      const capabilities = await WmsCapabilities.create("https://fake/nocrs", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/nocrs", { ignoreCache: true });
       expect(capabilities).toBeDefined();
       const crsMap = capabilities!.getSubLayersCrs(["child"]);
       expect(crsMap).toBeDefined();
@@ -184,7 +208,7 @@ describe("WmsCapabilities", () => {
       for (let i = 0; i < depth; i++)
         inner = `<Layer><Name>n${i}</Name><Title>n${i}</Title>${inner}</Layer>`;
       fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service><Capability>${inner}</Capability>`));
-      const capabilities = await WmsCapabilities.create("https://fake/deep", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/deep", { ignoreCache: true });
       expect(capabilities).toBeDefined();
       const subLayers = capabilities!.getSubLayers();
       expect(subLayers).toBeDefined();
@@ -194,7 +218,7 @@ describe("WmsCapabilities", () => {
     it("should not resolve external entities", async () => {
       const payload = `<?xml version="1.0"?><!DOCTYPE WMS_Capabilities [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms"><Service><Name>&xxe;</Name></Service></WMS_Capabilities>`;
       fakeTextFetch(payload);
-      const capabilities = await WmsCapabilities.create("https://fake/xxe", undefined, true);
+      const capabilities = await WmsCapabilities.create("https://fake/xxe", { ignoreCache: true });
       // The browser DOMParser does not resolve external entities; the document is
       // either rejected outright or parsed with an empty entity value.
       if (capabilities !== undefined) {

@@ -37,9 +37,7 @@ schedules:
         - master
 
 pool:
-  # Pinned: @itwin/oidc-signin-tool postinstall uses Playwright <1.61, which fails on Ubuntu 26.04.
-  # Revert to ubuntu-latest once fixed: https://github.com/iTwin/auth-clients/issues/377
-  vmImage: ubuntu-24.04
+  vmImage: ubuntu-latest
 
 jobs:
   - job: CheckPrevCommit
@@ -195,9 +193,9 @@ jobs:
       - checkout: self
 
       - task: UseNode@1
-        displayName: Use Node 24.x
+        displayName: Use Node 26.x
         inputs:
-          version: 24.x
+          version: 26.x
           checkLatest: true
 
       - bash: |
@@ -492,9 +490,9 @@ jobs:
     steps:
       - checkout: self
       - task: UseNode@1
-        displayName: "Use Node 24.x"
+        displayName: "Use Node 26.x"
         inputs:
-          version: 24.x
+          version: 26.x
           checkLatest: true
 
       - bash: |

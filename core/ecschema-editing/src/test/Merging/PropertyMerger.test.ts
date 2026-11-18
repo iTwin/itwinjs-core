@@ -2076,7 +2076,7 @@ describe("Property merger tests", () => {
         });
       });
 
-      it("should return a conflict when a re-mapped property kindOfQuantity persistence is undefined on source", async() => {
+      it("should return a conflict when a re-mapped property kindOfQuantity persistence is undefined on source", async () => {
         sourceSchema = await Schema.fromJson({
           ...sourceJson,
           items: {
@@ -3001,6 +3001,8 @@ describe("Property merger tests", () => {
                     name: "mergedProp",
                     typeName: "TargetSchema.testStruct",
                     type: "StructArrayProperty",
+                    minOccurs: 3,
+                    maxOccurs: 4,
                   }],
                 },
               },
@@ -3027,7 +3029,7 @@ describe("Property merger tests", () => {
         });
       });
 
-      it("should not return a conflict when a re-mapped property kindOfQuantity persistence of a re-mapped class doesn't differ", async() => {
+      it("should not return a conflict when a re-mapped property kindOfQuantity persistence of a re-mapped class doesn't differ", async () => {
         sourceSchema = await Schema.fromJson({
           ...sourceJson,
           references: [
