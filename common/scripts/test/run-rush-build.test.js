@@ -160,7 +160,7 @@ test("prepare Electron and i18n test bundles after cacheable builds", () => {
 });
 
 test("select the writer group and build mode from one CI/ref decision", () => {
-  const pipeline = readFileSync(path.join(__dirname, "../../config/azure-pipelines/jobs/fast-ci.yaml"), "utf8");
+  const pipeline = readFileSync(path.join(__dirname, "../../config/azure-pipelines/jobs/fast-ci.yaml"), "utf8").replace(/\r\n/g, "\n");
   const mode = pipeline.match(/- name: cacheMode\n\s+value: (.+)\n\s+readonly: true/)?.[1];
   assert.ok(mode?.includes("'IndividualCI', 'BatchedCI'"));
   assert.ok(mode.includes("'refs/heads/master'"));
