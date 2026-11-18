@@ -7010,7 +7010,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined, _mapAbove?: MapTileTreeReference | undefined);
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
@@ -7056,6 +7056,7 @@ export class MapTileTreeReference extends TileTreeReference {
     get layerRefHandler(): LayerTileTreeReferenceHandler;
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
+    mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
     // (undocumented)
     get planarClipMaskPriority(): number;
     // (undocumented)
@@ -14027,6 +14028,8 @@ export abstract class Viewport implements Disposable, TileUser {
     // @deprecated
     get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
+    // @internal (undocumented)
+    mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
     mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
