@@ -86,7 +86,7 @@ describe("SchemaSyncDb", () => {
       simulateVersion4Db();
       schemaDb.closeDb();
 
-      expect(() => schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite)).to.throw(SqliteError).with.property("errorId", "incompatible-version");
+      expect(() => schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite)).to.throw().that.satisfies((err: unknown) => SqliteError.isError(err, "incompatible-version"));
     });
   });
 

@@ -1173,7 +1173,7 @@ describe("ITwinLocalization", () => {
 
   describe("missing key logging", () => {
     it("logs a missing key as a single-line warning", async () => {
-      itwinLocalization = new ITwinLocalization({ initOptions: { lng: "en", fallbackLng: false, debug: true } });
+      const itwinLocalization = new ITwinLocalization({ initOptions: { lng: "en", fallbackLng: false, debug: true } });
       await itwinLocalization.initialize([]);
 
       const warnings: string[] = [];
@@ -1182,8 +1182,7 @@ describe("ITwinLocalization", () => {
       Logger.logWarning = (_category, message) => warnings.push(String(message));
       try {
         itwinLocalization.getLocalizedString("random non-existing key");
-        assert.isTrue(warnings.some((w) => w.includes("missingKey") && !w.includes("
-")));
+        assert.isTrue(warnings.some((w) => w.includes("missingKey") && !w.includes("\n")));
       } finally {
         Logger.logWarning = originalLogWarning;
       }

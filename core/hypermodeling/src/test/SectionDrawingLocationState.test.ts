@@ -227,7 +227,7 @@ describe("SectionDrawingLocationState.queryAll", () => {
     const states = await SectionDrawingLocationState.queryAll(iModelWithRows([rawRow]));
     expect(states.length).to.equal(1);
     expect(states[0].placement.origin.x).to.equal(1);
-    expect(states[0].placement.bbox.isNull).to.be.true;
+    expect(states[0].placement.bbox.isAlmostEqual(Range3d.createXYZXYZ(-1, -2, -3, 4, 5, 6))).to.be.true;
   });
 
   it("swallows exceptions from the query and returns an empty array", async () => {
