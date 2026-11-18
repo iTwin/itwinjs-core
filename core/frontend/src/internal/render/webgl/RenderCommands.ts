@@ -641,9 +641,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
     // assert(RenderPass.None === this._forcedRenderPass);
     assert(!this._opaqueOverrides && !this._translucentOverrides);
     assert(undefined === this._curBatch);
+    assert(undefined !== this._stack.top.iModelRef);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
-    const overrides = batch.getOverrides(this.target, this.appearanceProvider ?? this._stack.top);
+    const overrides = batch.getOverrides(this._stack.top.iModelRef.iModel, this.target, this.appearanceProvider ?? this._stack.top);
     if (overrides.allHidden)
       return;
 
@@ -677,8 +678,11 @@ export class RenderCommands implements Iterable<DrawCommands> {
       }
 
       // If we have an active volume classifier then force all batches for the reality data being classified into a special render pass.
+      // Model Ids are only unique within a single iModel, so also require the batch's reference to match the classifier's.
       let savedForcedRenderPass = RenderPass.None;
-      if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.batchModelId === this.target.activeVolumeClassifierModelId) {
+      if (undefined !== this.target.activeVolumeClassifierModelId
+        && batch.featureTable.batchModelId === this.target.activeVolumeClassifierModelId
+        && this._stack.top.iModelRef === this.target.activeVolumeClassifierIModelRef) {
         savedForcedRenderPass = this._forcedRenderPass;
         this._forcedRenderPass = RenderPass.VolumeClassifiedRealityData;
       }

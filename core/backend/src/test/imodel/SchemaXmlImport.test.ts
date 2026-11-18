@@ -87,6 +87,38 @@ describe("Schema XML Import Tests", () => {
     }
   });
 
+  it("querySchemaVersion works after a failed schema import", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile("SchemaXMLImport", "FailedImportClearsCaches.bim");
+    const imodel = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "FailedImportClearsCaches" } });
+    const schemaXml = (version: string, properties: string) => `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="${version}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+        <ECEntityClass typeName="Widget">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          ${properties}
+        </ECEntityClass>
+      </ECSchema>`;
+
+    try {
+      await imodel.importSchemaStrings([schemaXml("01.00.00", `<ECProperty propertyName="Size" typeName="double"/>`)]);
+      // Leaves a prepared statement in the statement cache, which the failed import invalidates
+      assert.equal(imodel.querySchemaVersion("TestSchema"), "1.0.0");
+
+      // Deleting a property requires a major version bump, so this import fails
+      let importFailed = false;
+      try {
+        await imodel.importSchemaStrings([schemaXml("01.00.01", "")]);
+      } catch {
+        importFailed = true;
+      }
+      assert.isTrue(importFailed, "expected the schema import to fail");
+
+      assert.equal(imodel.querySchemaVersion("TestSchema"), "1.0.0");
+    } finally {
+      imodel.close();
+    }
+  });
+
   it.skip("should roundtrip ratio format properties", async () => {
     // Create a separate iModel for this test
     const testFileName = IModelTestUtils.prepareOutputFile("SchemaXMLImport", "RatioFormatRoundtrip.bim");

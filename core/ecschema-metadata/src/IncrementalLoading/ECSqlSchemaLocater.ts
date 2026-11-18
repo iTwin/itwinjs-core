@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@itwin/core-bentley";
+import { getOwnProperty, Logger, setOwnProperty } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemProps, SchemaItemUnitProps, SchemaProps,
@@ -409,13 +409,9 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
         schemaStub = await addSchema(SchemaKey.parseString(`${schemaName}.0.0.0`));
       }
 
-      let items = schemaStub.items;
-      if (!items) {
-        Object.assign(schemaStub, items = { items: {} });
-      }
-
-      const existingItem = items[itemInfo.name] || {};
-      Object.assign(items, { [itemInfo.name]: Object.assign(existingItem, itemInfo) });
+      const items = schemaStub.items ?? ((schemaStub as MutableSchemaProps).items = {});
+      const existingItem = getOwnProperty(items, itemInfo.name) ?? {};
+      setOwnProperty(items, itemInfo.name, Object.assign(existingItem, itemInfo));
     };
 
     const reviver = (_key: string, value: any) => {
@@ -501,7 +497,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
           // have name optional, we need the check here to make the compiler happy.
           throw new Error(`SchemaItem with no name encountered in schema ${schemaKey.name}`);
         }
-        items[schemaItem.name] = schemaItem;
+        setOwnProperty(items, schemaItem.name, schemaItem);
       });
     });
 
