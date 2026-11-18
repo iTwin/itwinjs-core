@@ -28,8 +28,8 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
   private _generation = 0;
-  /** Maps in-flight invoke request ids to their channels. Retains no arguments so large upload buffers are released once sent. */
-  private _pendingInvocations = new Map<number, string>();
+  /** Tracks invoke channels and send completion without retaining arguments or large upload buffers. */
+  private _pendingInvocations = new Map<number, { channel: string, sent: boolean }>();
 
   public constructor(protocol: MobileRpcProtocol) {
     super();
@@ -72,7 +72,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       ? { request: message.request, channel: message.channel }
       : undefined;
     if (invocation)
-      this._pendingInvocations.set(invocation.request, invocation.channel);
+      this._pendingInvocations.set(invocation.request, { channel: invocation.channel, sent: false });
 
     const generation = this._generation;
     try {
@@ -83,7 +83,11 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       if (message.type === IpcWebSocketMessageType.Invoke && (invocation === undefined || !this._pendingInvocations.has(invocation.request)))
         return;
 
-      this._protocol.sendToBackend(encoded);
+      this._protocol.sendToBackend(encoded, undefined, invocation ? () => {
+        const pending = this._pendingInvocations.get(invocation.request);
+        if (pending)
+          pending.sent = true;
+      } : undefined);
     } catch (error) {
       if (invocation)
         this.failInvocation(invocation.channel, invocation.request, error);
@@ -92,11 +96,13 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     }
   }
 
-  public notifyConnectionError(error: Error): void {
+  public notifyConnectionError(error: Error, preserveSent = false): void {
     ++this._generation;
     const pending = Array.from(this._pendingInvocations.entries());
-    for (const [request, channel] of pending)
-      this.failInvocation(channel, request, error);
+    for (const [request, { channel, sent }] of pending) {
+      if (!preserveSent || !sent)
+        this.failInvocation(channel, request, error);
+    }
   }
 
   private failInvocation(channel: string, request: number, error: unknown) {

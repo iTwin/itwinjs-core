@@ -3,14 +3,18 @@ import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
 import * as WebSocket from "ws";
 import { Logger } from "@itwin/core-bentley";
-import { IpcWebSocket, IpcWebSocketMessageType, RpcInterface, RpcManager, RpcMarshaling } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessageType, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment } from "@itwin/core-common";
 import { MobileHost } from "../../backend/MobileHost";
-import { MobileRpcServer } from "../../backend/MobileRpcServer";
+import { MobileRpcServer, setupMobileRpc } from "../../backend/MobileRpcServer";
 import { MobileRpcManager } from "../../common/MobileRpcManager";
 import { MobileRpcProtocol } from "../../common/MobileRpcProtocol";
 
-export async function run(mode: "connected" | "pending" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue" | "interrupted-upload" | "restarted-upload" | "late-replies"): Promise<void> {
+export async function run(mode: "connected" | "pending" | "suspend" | "string" | "binary" | "callback-error" | "throw-error" | "socket-error" | "missing-connection" | "send-queue" | "interrupted-upload" | "restarted-upload" | "late-replies"): Promise<void> {
   MobileHost.reconnect = () => undefined;
+  if (mode === "suspend") {
+    await runSuspend();
+    return;
+  }
   const pending = mode === "pending" ? ["pending response", new Uint8Array([9])] : undefined;
   let server = new MobileRpcServer(pending);
   let client: WebSocket | undefined;
@@ -258,5 +262,60 @@ export async function run(mode: "connected" | "pending" | "string" | "binary" | 
   } finally {
     client?.terminate();
     server[Symbol.dispose]();
+  }
+}
+
+async function runSuspend(): Promise<void> {
+  setupMobileRpc();
+  const { interop } = MobileRpcServer;
+  const protocol = MobileRpcManager.initializeImpl([]).protocol;
+  let client: WebSocket | undefined;
+  try {
+    while (!interop.port)
+      await setImmediate();
+    client = new WebSocket(`ws://127.0.0.1:${interop.port}`, `itwin-rpc.${MobileRpcServer.rpcToken}`);
+    await once(client, "open");
+    let invocations = 0;
+    let invoked = () => {};
+    const invocationReceived = new Promise<void>((resolve) => { invoked = resolve; });
+    let release = () => {};
+    const completed = new Promise<void>((resolve) => { release = resolve; });
+    const ipc = new IpcWebSocketBackend();
+    ipc.handle("itwin.download", async () => {
+      ++invocations;
+      invoked();
+      await completed;
+      return { result: "downloaded" };
+    });
+    client.send(JSON.stringify({
+      operation: { interfaceDefinition: "__ipc__" },
+      parameters: RpcMarshaling.serialize(protocol, [{
+        type: IpcWebSocketMessageType.Invoke, channel: "itwin.download", method: "download", request: 1, data: [], sequence: 0,
+      }]),
+    }));
+    await invocationReceived;
+
+    const closed = once(client, "close");
+    MobileHost.onEnterBackground.raiseEvent();
+    strictEqual((await closed)[0], MobileRpcProtocol.suspendedCloseCode);
+    release();
+    await setImmediate();
+
+    interop.port = 0;
+    MobileHost.onEnterForeground.raiseEvent();
+    while (!interop.port)
+      await setImmediate();
+    client = new WebSocket(`ws://127.0.0.1:${interop.port}`, `itwin-rpc.${MobileRpcServer.rpcToken}`);
+    const received = once(client, "message");
+    await once(client, "open");
+    const fulfillment = JSON.parse(String((await received)[0])) as RpcRequestFulfillment;
+    deepStrictEqual(RpcMarshaling.deserialize(protocol, fulfillment.result), {
+      type: IpcWebSocketMessageType.Response, channel: "itwin.download", response: 1, data: { result: "downloaded" }, sequence: -1,
+    });
+    strictEqual(invocations, 1);
+    process.stdout.write("Connected transfers succeeded.\n");
+  } finally {
+    client?.terminate();
+    MobileHost.onWillTerminate.raiseEvent();
   }
 }

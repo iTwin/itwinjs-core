@@ -5,6 +5,7 @@ describe("MobileRpcServer", () => {
   const titles = {
     "connected": "sends small text and binary responses while connected",
     "pending": "replays queued messages when a client connects",
+    "suspend": "buffers an in-flight IPC reply during suspension and replays it after foregrounding",
     "string": "fails a string response sent after the client disconnects",
     "binary": "fails a binary response sent after the client disconnects",
     "callback-error": "survives asynchronous send errors and closes the failed connection",
@@ -16,7 +17,7 @@ describe("MobileRpcServer", () => {
     "restarted-upload": "discards an interrupted upload when the server is recreated",
     "late-replies": "drops late RPC and IPC replies safely and fails backend-originated IPC sends after disconnect",
   };
-  for (const mode of ["connected", "pending", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection", "send-queue", "interrupted-upload", "restarted-upload", "late-replies"] as const) {
+  for (const mode of ["connected", "pending", "suspend", "string", "binary", "callback-error", "throw-error", "socket-error", "missing-connection", "send-queue", "interrupted-upload", "restarted-upload", "late-replies"] as const) {
     it(titles[mode], function () {
       this.timeout(15000);
       const fixture = require.resolve("./MobileRpcServerTestProcess");

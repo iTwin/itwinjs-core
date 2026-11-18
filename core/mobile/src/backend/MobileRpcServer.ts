@@ -215,13 +215,21 @@ export class MobileRpcServer {
     MobileRpcServer.interop.handler(message, this._connectionId);
   }
 
+  public suspend() {
+    this.dispose(MobileRpcProtocol.suspendedCloseCode);
+  }
+
   public [Symbol.dispose]() {
+    this.dispose();
+  }
+
+  private dispose(closeCode?: number) {
     clearInterval(this._pingTimer);
     this._resetConnection();
     if (this._connection) {
       MobileRpcServer.interop.sendString = () => { };
       MobileRpcServer.interop.sendBinary = () => { };
-      this._connection.close();
+      this._connection.close(closeCode);
     }
 
     this._server.close();
@@ -267,7 +275,7 @@ export function setupMobileRpc() {
     }
 
     retainUvLoop = setInterval(() => { }, 1000);
-    server[Symbol.dispose]();
+    server.suspend();
     usePendingSender();
     server = null;
     (global as any).__iTwinJsRpcReady = false;

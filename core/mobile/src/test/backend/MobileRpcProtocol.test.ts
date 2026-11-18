@@ -424,7 +424,7 @@ describe("MobileRpcProtocol disconnects", () => {
     expect(unwrapIpcInvokeReturn(await result)).to.equal("recovered");
   });
 
-  it("settles IPC invokes from a connection replaced by native reconnection", async () => {
+  it("settles unsent IPC invokes from a connection replaced by native reconnection", async () => {
     socket.open();
     const ipc = new IpcWebSocketFrontend();
     const result = ipc.invoke("itwin.test", "operation") as Promise<IpcInvokeReturn>;
@@ -432,6 +432,96 @@ describe("MobileRpcProtocol disconnects", () => {
     socket = protocol.socket as unknown as TestSocket;
     const value = await result;
     expect(() => unwrapIpcInvokeReturn(value)).to.throw("Mobile RPC socket replaced.");
+  });
+
+  for (const closed of [true, false]) {
+    it(`preserves sent IPC invokes when native reconnects ${closed ? "after" : "before"} the suspension close event`, async () => {
+      socket.open();
+      const ipc = new IpcWebSocketFrontend();
+      const result = ipc.invoke("itwin.test", "download") as Promise<IpcInvokeReturn>;
+      let settled = false;
+      void result.then(() => { settled = true; });
+      await setImmediate();
+      expect(socket.sent).to.have.lengthOf(1);
+      const oldSocket = socket;
+      if (closed) {
+        socket.close();
+        socket.dispatchEvent(Object.assign(new Event("close"), { code: MobileRpcProtocol.suspendedCloseCode }));
+        await setImmediate();
+        expect(settled).to.equal(false);
+        expect(reconnect).to.equal(undefined);
+      }
+
+      (window as any)._imodeljs_rpc_reconnect(12346, token);
+      socket = protocol.socket as unknown as TestSocket;
+      socket.open();
+      oldSocket.dispatchEvent(Object.assign(new Event("close"), { code: MobileRpcProtocol.suspendedCloseCode }));
+      await setImmediate();
+      expect(settled).to.equal(false);
+      expect(socket.sent).to.have.lengthOf(0);
+      socket.dispatchEvent(new MessageEvent("message", { data: JSON.stringify({
+        id: "itwin.test", interfaceName: "__ipc__", status: 0,
+        result: RpcMarshaling.serialize(protocol, {
+          type: IpcWebSocketMessageType.Response, channel: "itwin.test", response: 1, data: { result: "downloaded" }, sequence: -1,
+        }),
+      }) }));
+      expect(unwrapIpcInvokeReturn(await result)).to.equal("downloaded");
+    });
+  }
+
+  for (const state of ["encoding", "queued", "partial"] as const) {
+    it(`rejects ${state} IPC invokes on suspension without replaying them`, async () => {
+      socket.open();
+      let resume = () => {};
+      if (state === "encoding") {
+        const paused = new Promise<void>((resolve) => { resume = resolve; });
+        const serialize = protocol.serialize.bind(protocol);
+        protocol.serialize = async (value) => {
+          await paused;
+          return serialize(value);
+        };
+      } else if (state === "queued") {
+        socket.bufferedAmount = protocol.transferChunkThreshold;
+      } else {
+        socket.send = (chunk) => {
+          socket.sent.push(chunk);
+          if (chunk instanceof Uint8Array)
+            socket.bufferedAmount += chunk.byteLength;
+        };
+      }
+      const ipc = new IpcWebSocketFrontend();
+      const data = state === "partial" ? new Uint8Array(protocol.transferChunkThreshold + 1) : "download";
+      const result = ipc.invoke("itwin.test", "operation", data) as Promise<IpcInvokeReturn>;
+      await setImmediate();
+      expect(socket.sent).to.have.lengthOf(state === "partial" ? 2 : 0);
+      socket.close();
+      socket.dispatchEvent(Object.assign(new Event("close"), { code: MobileRpcProtocol.suspendedCloseCode }));
+      const failedInvoke = await result;
+      expect(() => unwrapIpcInvokeReturn(failedInvoke)).to.throw("Mobile RPC connection suspended.");
+
+      (window as any)._imodeljs_rpc_reconnect(12346, token);
+      socket = protocol.socket as unknown as TestSocket;
+      socket.open();
+      resume();
+      await setImmediate();
+      expect(socket.sent).to.have.lengthOf(0);
+    });
+  }
+
+  it("rejects new IPC invokes during suspension and fails preserved invokes if recovery fails", async () => {
+    socket.open();
+    const ipc = new IpcWebSocketFrontend();
+    const result = ipc.invoke("itwin.test", "download") as Promise<IpcInvokeReturn>;
+    await setImmediate();
+    socket.close();
+    socket.dispatchEvent(Object.assign(new Event("close"), { code: MobileRpcProtocol.suspendedCloseCode }));
+    const suspended = await ipc.invoke("itwin.test", "operation") as IpcInvokeReturn;
+    expect(() => unwrapIpcInvokeReturn(suspended)).to.throw("Mobile RPC connection suspended.");
+    (window as any)._imodeljs_rpc_reconnect(12346, token);
+    socket = protocol.socket as unknown as TestSocket;
+    socket.dispatchEvent(new Event("error"));
+    const value = await result;
+    expect(() => unwrapIpcInvokeReturn(value)).to.throw("Mobile RPC socket error.");
   });
 
   it("preserves IPC invokes whose encoding finishes after automatic reconnection", async () => {
@@ -549,8 +639,8 @@ describe("MobileRpcProtocol disconnects", () => {
     const binary = socket.sent.slice(1) as Uint8Array[];
     expect(binary.map((part) => part.byteLength)).to.deep.equal([4 * 1024 * 1024, 4 * 1024 * 1024, 19]);
     // Pending invocation bookkeeping must not retain the upload buffers while the backend executes the invoke.
-    const pendingInvocations = Reflect.get(IpcWebSocket.transport, "_pendingInvocations") as Map<number, string>;
-    expect(Array.from(pendingInvocations.values())).to.deep.equal(["itwin.test"]);
+    const pendingInvocations = Reflect.get(IpcWebSocket.transport, "_pendingInvocations") as Map<number, { channel: string, sent: boolean }>;
+    expect(Array.from(pendingInvocations.values())).to.deep.equal([{ channel: "itwin.test", sent: true }]);
     const header = JSON.parse(socket.sent[0] as string) as SerializedRpcRequest;
     header.parameters.data = binary;
     const message = RpcMarshaling.deserialize(protocol, header.parameters)[0];

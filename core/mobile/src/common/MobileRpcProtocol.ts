@@ -36,9 +36,10 @@ export interface MobileRpcGateway {
  * @internal
  */
 export class MobileRpcProtocol extends RpcProtocol {
+  public static readonly suspendedCloseCode = 4000;
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
-  private _pending: Array<{ message: MobileRpcChunks, request?: MobileRpcRequest }> = [];
+  private _pending: Array<{ message: MobileRpcChunks, request?: MobileRpcRequest, onSent?: () => void }> = [];
   private _sendIndex = 0;
   private _capacity: number = Number.MAX_SAFE_INTEGER;
   private _sendInterval: number | undefined = undefined;
@@ -50,6 +51,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _port: number = 0;
   private _rpcToken: string = "";
   private _connectionError?: Error;
+  private _suspended = false;
   private _reconnectTimer?: number;
   private _reconnectDelay = 1000;
   private _transport?: MobilePushTransport;
@@ -128,8 +130,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     const requests = reset ? Array.from(RpcRequest.activeRequests.values()).filter((request) => request.protocol === this) : [];
     if (reset) {
       this.reset();
-      this._ipc.notifyConnectionError(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket replaced."));
+      // Native reconnect also resumes deliberately suspended backends, which buffer IPC replies without reissuing invokes.
+      this._ipc.notifyConnectionError(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket replaced."), true);
     }
+    this._suspended = false;
     this._connectionError = undefined;
     const socket = new WebSocket(`ws://127.0.0.1:${port}`, `itwin-rpc.${this._rpcToken}`);
     socket.binaryType = "arraybuffer";
@@ -177,16 +181,23 @@ export class MobileRpcProtocol extends RpcProtocol {
 
       this.failConnection(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket error."));
     });
-    socket.addEventListener("close", (_event) => {
+    socket.addEventListener("close", (event) => {
       if (this.socket !== socket)
         return;
+
+      if (event.code === MobileRpcProtocol.suspendedCloseCode && !this._connectionError) {
+        this._suspended = true;
+        this.reset();
+        this._ipc.notifyConnectionError(new ServerTimeoutError("Mobile RPC connection suspended."), true);
+        return;
+      }
 
       this.failConnection(new IModelError(BentleyStatus.ERROR, "Mobile RPC socket closed."));
     });
   }
 
   private failConnection(error: Error) {
-    if (this._connectionError)
+    if (this._connectionError || this._suspended)
       return;
 
     Logger.logWarning("core-mobile.MobileRpcProtocol", "Mobile RPC socket failed; reconnecting.", { error });
@@ -225,7 +236,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private scheduleSend() {
-    if (!this._pending.length || this._connectionError) {
+    if (!this._pending.length || this._connectionError || this._suspended) {
       return;
     }
 
@@ -237,7 +248,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private trySend() {
-    if (this._connectionError || this.socket.readyState !== WebSocket.OPEN) {
+    if (this._connectionError || this._suspended || this.socket.readyState !== WebSocket.OPEN) {
       return;
     }
 
@@ -245,7 +256,8 @@ export class MobileRpcProtocol extends RpcProtocol {
       if (this.socket.bufferedAmount >= this.transferChunkThreshold)
         break;
 
-      const next = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.").message;
+      const pending = expectDefined(this._pending[0], "Expected pending RPC chunk after queue length check.");
+      const next = pending.message;
       if (this._sendIndex === 0)
         --this._capacity;
       try {
@@ -257,6 +269,7 @@ export class MobileRpcProtocol extends RpcProtocol {
       if (this._sendIndex === next.length) {
         this._pending.shift();
         this._sendIndex = 0;
+        pending.onSent?.();
       }
     }
 
@@ -406,14 +419,17 @@ export class MobileRpcProtocol extends RpcProtocol {
     this._pending = this._pending.filter((pending, index) => pending.request !== request || (index === 0 && this._sendIndex !== 0));
   }
 
-  public sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void {
+  public sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest, onSent?: () => void): void {
+    if (this._suspended)
+      throw new ServerTimeoutError("Mobile RPC connection suspended.");
+
     if (!this._connectionError && (this.socket.readyState === WebSocket.CLOSED || this.socket.readyState === WebSocket.CLOSING)) {
       const error = new ServerTimeoutError("Mobile RPC socket is not open.");
       this.failConnection(error);
       throw error;
     }
 
-    this._pending.push({ message, request });
+    this._pending.push({ message, request, onSent });
     this.scheduleSend();
   }
 
