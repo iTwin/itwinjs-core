@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "Confine electron:// requests to webResourcesPath and add ElectronHostOptions.restrictIpcToFrontendOrigin to restrict IPC to the frontend origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron",
+  "email": "98940208+GytisCepk@users.noreply.github.com"
+}
