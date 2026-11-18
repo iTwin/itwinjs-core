@@ -139,7 +139,7 @@ describe("PerformanceTest: Bulk ElementAspect operations", () => {
       assert.equal(countAspects(db), initialCount);
 
       if (api === "single")
-        time("delete", () => txn.deleteAspect(ids));
+        time("delete", () => ids.forEach((id) => txn.deleteAspect(id)));
       else
         time("delete", () => txn.deleteAspects(ids));
       assert.equal(countAspects(db), initialCount - count);
