@@ -13,32 +13,92 @@ import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
-import { AsyncMethodsOf, BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
+import { pathToFileURL } from "node:url";
+import { AsyncMethodsOf, BeDuration, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager.js";
 import { electronIpcStrings } from "../common/ElectronIpcInterface.js";
+import { ElectronBackendLoggerCategory } from "./ElectronBackendLoggerCategory.js";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
+/** Must match the argument parsed by ElectronPreload.ts, which can't import it because sandboxed preloads can't require local modules. */
+const ipcOriginArgument = "--itwinjs-ipc-origin=";
+
 class ElectronIpc implements IpcSocketBackend {
+  /** Origin-checking wrappers registered with ipcMain, keyed by channel and the listener they wrap. */
+  private _guardedListeners = new Map<string, Map<IpcListener, IpcListener[]>>();
+
+  /** @param trustedOrigin The only origin allowed to use IPC, or `undefined` to accept messages from any page. */
+  public constructor(public readonly trustedOrigin?: string) { }
+
+  private isTrustedSender(evt: any, channel: string): boolean {
+    if (undefined === this.trustedOrigin)
+      return true;
+
+    // senderFrame is null if the frame has navigated away or been destroyed since sending.
+    const origin: string | undefined = evt?.senderFrame?.origin;
+    if (origin === this.trustedOrigin)
+      return true;
+
+    Logger.logWarning(ElectronBackendLoggerCategory.ElectronHost, `Rejected IPC message on channel "${channel}" from untrusted origin "${origin}"`);
+    return false;
+  }
+
   public addListener(
     channel: string,
     listener: (evt: any, ...args: any[]) => void, // There is mismatch between IPC Event and Electron.IpcMainEvent. Defining `evt` as any as a temporary fix
   ): RemoveFunction {
-    ElectronHost.ipcMain.addListener(channel, listener);
-    return () => ElectronHost.ipcMain.removeListener(channel, listener);
+    const guarded = (evt: any, ...args: any[]) => {
+      if (this.isTrustedSender(evt, channel))
+        listener(evt, ...args);
+    };
+
+    let channelListeners = this._guardedListeners.get(channel);
+    if (undefined === channelListeners)
+      this._guardedListeners.set(channel, channelListeners = new Map());
+
+    const wrappers = channelListeners.get(listener) ?? [];
+    wrappers.push(guarded);
+    channelListeners.set(listener, wrappers);
+
+    ElectronHost.ipcMain.addListener(channel, guarded);
+    return () => this.removeListener(channel, listener);
   }
+
   public removeListener(channel: string, listener: IpcListener) {
-    ElectronHost.ipcMain.removeListener(channel, listener);
+    const channelListeners = this._guardedListeners.get(channel);
+    const wrappers = channelListeners?.get(listener);
+    const guarded = wrappers?.pop();
+    if (undefined === channelListeners || undefined === wrappers || undefined === guarded)
+      return;
+
+    if (0 === wrappers.length)
+      channelListeners.delete(listener);
+
+    if (0 === channelListeners.size)
+      this._guardedListeners.delete(channel);
+
+    ElectronHost.ipcMain.removeListener(channel, guarded);
   }
+
   public send(channel: string, ...args: any[]): void {
     const window = ElectronHost.mainWindow ?? ElectronHost.electron.BrowserWindow.getAllWindows()[0];
+    if (undefined !== this.trustedOrigin && window?.webContents.mainFrame.origin !== this.trustedOrigin)
+      return;
+
     window?.webContents.send(channel, ...args);
   }
+
   public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
     ElectronHost.ipcMain.removeHandler(channel); // make sure there's not already a handler registered
-    ElectronHost.ipcMain.handle(channel, listener);
+    ElectronHost.ipcMain.handle(channel, async (evt: any, ...args: any[]) => {
+      if (!this.isTrustedSender(evt, channel))
+        throw new Error(`IPC request on channel "${channel}" was rejected because its sender is not a trusted origin`);
+
+      return listener(evt, ...args);
+    });
     return () => ElectronHost.ipcMain.removeHandler(channel);
   }
 }
@@ -62,6 +122,13 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($backend) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
+  /**
+   * If true, only pages with the same origin as [[frontendURL]] can communicate with the backend over IPC. IPC messages sent from pages with
+   * any other origin are rejected, and pages with any other origin loaded into the main window don't receive the `window.itwinjs` IPC bridge.
+   * [[frontendURL]] must then have a non-`file:` origin, such as the default `electron://frontend` or `http://localhost:3000` for a development server.
+   * @default false
+   */
+  restrictIpcToFrontendOrigin?: boolean;
 }
 
 /** @beta */
@@ -97,7 +164,8 @@ export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
   private static _electron: typeof ElectronModule;
-  private static _electronFrontend = "electron://frontend/";
+  private static _electronFrontendHost = "frontend";
+  private static _electronFrontend = `electron://${this._electronFrontendHost}/`;
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;
   public static appIconPath: string;
@@ -117,26 +185,53 @@ export class ElectronHost {
    * absolute path at build time.
    */
   private static transformElectronUrlToFileUrl(requestedUrl: string): string {
-    // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
-    let assetPath = requestedUrl.substring(this._electronFrontend.length);
+    // Note that the "frontend" host is arbitrary - this is just so we can handle *some* relative URLs...
+    const url = new URL(requestedUrl);
+    if (url.host !== this._electronFrontendHost)
+      throw new Error(`Unsupported host "${url.host}" in "${requestedUrl}"`);
+
+    // Decode each run of escapes separately, so a raw "%" (e.g. "my%20file%.png") doesn't prevent decoding the rest.
+    let assetPath = url.pathname.replace(/(?:%[0-9a-f]{2})+/gi, (escapes) => {
+      try {
+        return decodeURIComponent(escapes);
+      } catch {
+        return escapes; // Not valid UTF-8, so keep it as written.
+      }
+    });
+
+    assetPath = assetPath.replace(/^\/+/, "");
     if (assetPath.length === 0)
       assetPath = "index.html";
-    assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);
+
     // File protocols don't follow symlinks, so we need to resolve this to a real path.
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
-    try {
-      assetPath = fs.realpathSync(assetPath);
-    } catch {
-      // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
-    }
-    if (!assetPath.startsWith(this.webResourcesPath))
+    const realPath = (filePath: string) => {
+      try {
+        return fs.realpathSync(filePath);
+      } catch {
+        return filePath;
+      }
+    };
+
+    const root = realPath(path.resolve(this.webResourcesPath));
+    assetPath = realPath(path.join(root, assetPath));
+    // Unlike a string prefix test, this rejects siblings such as `root-backup`.
+    const relative = path.relative(root, assetPath);
+    if (path.isAbsolute(relative) || relative === ".." || relative.startsWith(`..${path.sep}`))
       throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
-    return `file://${assetPath}`;
+
+    return pathToFileURL(assetPath).href;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
     const webPreferences: WebPreferences = {
       ...options?.webPreferences,
+      ...(this._ipc.trustedOrigin && {
+        additionalArguments: [
+          ...(options?.webPreferences?.additionalArguments ?? []),
+          `${ipcOriginArgument}${this._ipc.trustedOrigin}`,
+        ],
+      }),
 
       // These web preference variables should not be overriden by the ElectronHostWindowOptions
       preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
@@ -237,8 +332,14 @@ export class ElectronHost {
     await app.whenReady();
 
     if (!this._developmentServer) {
-      // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.handle("electron", async (request) => ElectronHost.electron.net.fetch(this.transformElectronUrlToFileUrl(request.url)));
+      // Without webResourcesPath there is nothing to serve. Its root would resolve to the current working directory,
+      // so the handler would serve files from wherever the app was launched.
+      if (this.webResourcesPath) {
+        // handle any "electron://" requests and redirect them to "file://" URLs
+        this.electron.protocol.handle("electron", async (request) => ElectronHost.electron.net.fetch(this.transformElectronUrlToFileUrl(request.url)));
+      } else if (this.frontendURL.toLowerCase().startsWith("electron:")) {
+        Logger.logError(ElectronBackendLoggerCategory.ElectronHost, `frontendURL "${this.frontendURL}" can't be loaded because webResourcesPath is not set, so electron:// requests aren't handled`);
+      }
     }
 
     this._openWindow(windowOptions);
@@ -258,8 +359,34 @@ export class ElectronHost {
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {
+      const eopt = opts?.electronHost;
+      const developmentServer = eopt?.developmentServer ?? false;
+      const frontendPort = eopt?.frontendPort ?? 3000;
+      const webResourcesPath = eopt?.webResourcesPath ?? "";
+      const frontendURL = eopt?.frontendURL ?? (developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
+
+      // Validated before assigning anything, so an invalid frontendURL leaves the host uninitialized.
+      let trustedIpcOrigin: string | undefined;
+      if (eopt?.restrictIpcToFrontendOrigin) {
+        let url: URL | undefined;
+        try {
+          url = new URL(frontendURL);
+        } catch { }
+
+        // Every local file shares the "file://" origin, so it can't restrict IPC to the frontend.
+        if (undefined === url || url.protocol === "file:" || url.host === "")
+          throw new Error(`restrictIpcToFrontendOrigin requires a frontendURL with a non-file, non-opaque origin, but got "${frontendURL}"`);
+
+        // Node reports "null" as the origin of non-special schemes like "electron:", so build it in the form Electron reports for a frame.
+        trustedIpcOrigin = `${url.protocol}//${url.host.toLowerCase()}`;
+      }
+
+      this._developmentServer = developmentServer;
+      this.webResourcesPath = webResourcesPath;
+      this.frontendURL = frontendURL;
+      this.appIconPath = path.join(webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this._electron = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
-      this._ipc = new ElectronIpc();
+      this._ipc = new ElectronIpc(trustedIpcOrigin);
       const app = this.app;
       if (!app.isReady())
         this.electron.protocol.registerSchemesAsPrivileged([{
@@ -270,12 +397,7 @@ export class ElectronHost {
             supportFetchAPI: true,
           },
         }]);
-      const eopt = opts?.electronHost;
-      this._developmentServer = eopt?.developmentServer ?? false;
-      const frontendPort = eopt?.frontendPort ?? 3000;
-      this.webResourcesPath = eopt?.webResourcesPath ?? "";
-      this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
-      this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
+
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
 

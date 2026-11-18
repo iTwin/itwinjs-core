@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add CompressedId64Set.count to count the Ids in a compressed set without decompressing it, and limit decompression to CompressedId64Set.maxIdCount (1,000,000) Ids.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

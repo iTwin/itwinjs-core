@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Limit the number of Ids the backend expands from compressed Id sets in ViewStore render timelines and array-form Ids.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

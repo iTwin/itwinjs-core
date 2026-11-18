@@ -10,11 +10,10 @@ import {
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState, IModelApp, IModelConnection, SpatialViewState, Tile, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
-import { fakeViewState } from "./TileIO.test";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { IModelTile, IModelTileTree } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
@@ -130,8 +129,8 @@ describe("Tile tolerance", () => {
     expect(model).not.toBeUndefined();
     expect(model).toBeInstanceOf(GeometricModelState);
 
-    const view = fakeViewState(imodel);
-    const treeRef = model.createTileTreeReference(view);
+    const view = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+    const treeRef = model.createTileTreeReference(view.iModelRefs.primary);
     const tree = (await treeRef.treeOwner.loadTree())!;
     expect(tree).not.toBeUndefined();
 

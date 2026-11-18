@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "MapFeatureInfoTool identifies features inside polygons with a transparent fill.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats",
+  "email": "165919461+MikeNBentley@users.noreply.github.com"
+}

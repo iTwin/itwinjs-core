@@ -39,5 +39,17 @@ const frontendApi: ITwinElectronApi = {
   },
 };
 
+/** Returns false if [ElectronHostOptions.restrictIpcToFrontendOrigin]($electron) is set and this page's origin differs from the frontend's. */
+function isTrustedOrigin(): boolean {
+  // Must match the argument ElectronHost passes through webPreferences.additionalArguments.
+  const ipcOriginArgument = "--itwinjs-ipc-origin=";
+  const argument = process.argv.find((arg) => arg.startsWith(ipcOriginArgument));
+  if (undefined === argument)
+    return true;
+
+  return argument.substring(ipcOriginArgument.length) === window.location.origin;
+}
+
 // this adds the frontendApi object under the name `window.itwinjs` in the frontend Electron process.
-contextBridge.exposeInMainWorld("itwinjs", frontendApi);
+if (isTrustedOrigin())
+  contextBridge.exposeInMainWorld("itwinjs", frontendApi);

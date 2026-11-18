@@ -21,6 +21,10 @@ describe("PhysicalMaterialSchema", () => {
     }
   });
 
+  after(
+    async () => IModelHost.shutdown()
+  );
+
   function count(iModelDb: IModelDb, classFullName: string): number {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {

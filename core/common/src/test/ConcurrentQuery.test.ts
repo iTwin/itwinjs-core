@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { assert, describe, it } from "vitest";
+import { afterEach, assert, describe, expect, it, vi } from "vitest";
 import { Base64 } from "js-base64";
 import { DbQueryRequest, DbQueryResponse, DbResponseKind, DbResponseStatus, QueryBinder, QueryParamType } from "../ConcurrentQuery";
 import { ECSqlReader } from "../ECSqlReader";
@@ -58,6 +58,260 @@ describe("ECSqlReader cursor hints", () => {
     reader.resetBindings();
     await reader.toArray();
     assert.equal(new Set(ids).size, 3);
+  });
+
+  it("materializes the remaining buffered rows and subsequent pages in order", async () => {
+    const requests: DbQueryRequest[] = [];
+    const reader = new ECSqlReader({
+      execute: (request) => {
+        requests.push(request);
+        return requests.length === 1 ? response(DbResponseStatus.Partial, [[1], [2], [3]]) :
+          response(DbResponseStatus.Done, [[4], [5]]);
+      },
+    }, "SELECT n", undefined, { limit: { count: 5 } });
+    assert.isTrue(await reader.step());
+    assert.deepEqual(reader.current.toArray(), [1]);
+    assert.deepEqual(await reader.toArray(), [[2], [3], [4], [5]]);
+    assert.isFalse(await reader.step());
+    assert.deepEqual(await reader.toArray(), []);
+    assert.deepEqual(requests.map(request => request.limit), [{ offset: 0, count: 5 }, { offset: 3, count: 2 }]);
+    assert.equal(reader.stats.backendRowsReturned, 5);
+  });
+
+  it("retries synchronous empty partial responses before draining pages", async () => {
+    let calls = 0;
+    const reader = new ECSqlReader({
+      execute: () => {
+        ++calls;
+        return calls === 1 ? response(DbResponseStatus.Partial, []) :
+          calls === 2 ? response(DbResponseStatus.Partial, [[1], [2]]) : response(DbResponseStatus.Done, [[3]]);
+      },
+    }, "SELECT n");
+    assert.deepEqual(await reader.toArray(), [[1], [2], [3]]);
+    assert.equal(calls, 3);
+    assert.equal(reader.stats.retryCount, 1);
+    assert.equal(reader.stats.backendRowsReturned, 3);
+  });
+
+  it("keeps calling overridden step methods when materializing rows", async () => {
+    class InstrumentedReader extends ECSqlReader {
+      public calls = 0;
+      public override async step(): Promise<boolean> {
+        ++this.calls;
+        return super.step();
+      }
+    }
+    const reader = new InstrumentedReader({
+      execute: () => response(DbResponseStatus.Done, [[1], [2], [3]]),
+    }, "SELECT n");
+    assert.deepEqual(await reader.toArray(), [[1], [2], [3]]);
+    assert.equal(reader.calls, 4);
+  });
+
+  it("propagates errors returned by retries for immediate and asynchronous executors", async () => {
+    for (const asynchronous of [false, true]) {
+      let calls = 0;
+      const reader = new ECSqlReader({
+        execute: (): DbQueryResponse | Promise<DbQueryResponse> => {
+          const result = ++calls === 1 ? response(DbResponseStatus.Partial, []) :
+            { ...response(DbResponseStatus.Error, []), error: "retry failed" };
+          return asynchronous ? Promise.resolve(result) : result;
+        },
+      }, "SELECT n");
+      await expect(reader.toArray()).rejects.toThrow("retry failed");
+      assert.equal(calls, 2);
+      assert.equal(reader.stats.retryCount, 1);
+    }
+  });
+
+  it("rejects materialization when a later page fails instead of returning partial success", async () => {
+    let calls = 0;
+    const reader = new ECSqlReader({
+      execute: () => ++calls === 1 ? response(DbResponseStatus.Partial, [[1], [2]]) :
+        { ...response(DbResponseStatus.Error, []), error: "later page failed" },
+    }, "SELECT n");
+    await expect(reader.toArray()).rejects.toThrow("later page failed");
+    assert.equal(calls, 2);
+  });
+});
+
+describe("ECSqlReader timing statistics", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function response(status: DbResponseStatus, elapsed: number, rows: number[][] = []): DbQueryResponse {
+    return {
+      kind: DbResponseKind.ECSql, status, data: rows, rowCount: rows.length, meta: [],
+      stats: { cpuTime: elapsed * 1000, totalTime: elapsed, prepareTime: elapsed / 2, timeLimit: 0, memLimit: 0, memUsed: rows.length },
+    };
+  }
+
+  it("counts every retry attempt once without changing non-timing counters", async () => {
+    const responses = [response(DbResponseStatus.Partial, 100), response(DbResponseStatus.Timeout, 0.25), response(DbResponseStatus.Done, 20, [[1]])];
+    const reader = new ECSqlReader({ execute: async () => responses.shift()! }, "SELECT 1");
+    assert.deepEqual(await reader.toArray(), [[1]]);
+    assert.equal(reader.stats.backendTotalTime, 120.25);
+    assert.equal(reader.stats.backendCpuTime, 120250);
+    assert.equal(reader.stats.prepareTime, 60.125);
+    assert.equal(reader.stats.backendRowsReturned, 1);
+    assert.equal(reader.stats.backendMemUsed, 1);
+    assert.equal(reader.stats.retryCount, 2);
+  });
+
+  it("accounts for all attempts before retry exhaustion", async () => {
+    const reader = new ECSqlReader({ execute: async () => response(DbResponseStatus.Partial, 0.125) }, "SELECT 1");
+    await expect(reader.toArray()).rejects.toThrow("query too long");
+    assert.equal(reader.stats.backendTotalTime, 1.25);
+    assert.equal(reader.stats.prepareTime, 0.625);
+    assert.equal(reader.stats.retryCount, 9);
+  });
+
+  it("retains native timings on an initial error or cancellation", async () => {
+    for (const status of [DbResponseStatus.Error, DbResponseStatus.Cancel]) {
+      const rs = response(status, 80);
+      Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 50, executionTime: 30, downloadBlocks: 1, downloadBytes: 4096 });
+      const reader = new ECSqlReader({ execute: async () => rs }, "SELECT 1");
+      try {
+        await reader.toArray();
+        assert.fail("expected query failure");
+      } catch (error) {
+        assert.propertyVal(error, "response", rs);
+      }
+      assert.equal(reader.stats.backendTotalTime, 80);
+      assert.equal(reader.stats.prepareTime, 40);
+      assert.equal(reader.stats.backendDownloadBlocks, 1);
+      assert.equal(reader.stats.backendDownloadBytes, 4096);
+    }
+  });
+
+  it("measures rejected calls monotonically and preserves the original error", async () => {
+    let now = 10;
+    vi.spyOn(performance, "now").mockImplementation(() => now);
+    vi.spyOn(Date, "now").mockReturnValue(-10000);
+    const error = new Error("transport failure");
+    const reader = new ECSqlReader({
+      execute: async () => {
+        now = 17.5;
+        throw error;
+      },
+    }, "SELECT 1");
+    try {
+      await reader.toArray();
+      assert.fail("expected executor rejection");
+    } catch (caught) {
+      assert.strictEqual(caught, error);
+    }
+    assert.equal(reader.stats.totalTime, 7.5);
+    assert.equal(reader.stats.backendTotalTime, 0);
+    assert.equal(reader.stats.backendRowsReturned, 0);
+    assert.notProperty(reader.stats, "backendDownloadTime");
+    assert.notProperty(reader.stats, "backendDownloadBlocks");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
+  });
+
+  it("aggregates cloud waits across queue-only retries and pages", async () => {
+    let attempt = 0;
+    const reader = new ECSqlReader({
+      execute: async () => {
+        if (++attempt === 1) {
+          const queued = response(DbResponseStatus.QueueFull, 1);
+          queued.stats.cloudSqliteTimingState = "notExecuted";
+          return queued;
+        }
+        const measured = response(attempt === 2 ? DbResponseStatus.Partial : DbResponseStatus.Done, 20, [[attempt]]);
+        Object.assign(measured.stats, { cloudSqliteTimingState: "measured", downloadTime: 3.25, executionTime: 6.75, downloadBlocks: 2, downloadBytes: 8192 });
+        return measured;
+      },
+    }, "SELECT 1");
+    assert.deepEqual(await reader.toArray(), [[2], [3]]);
+    assert.equal(reader.stats.backendTotalTime, 41);
+    assert.equal(reader.stats.backendDownloadTime, 6.5);
+    assert.equal(reader.stats.backendExecutionTime, 13.5);
+    assert.equal(reader.stats.backendDownloadBlocks, 4);
+    assert.equal(reader.stats.backendDownloadBytes, 16384);
+    assert.equal(reader.stats.backendRowsReturned, 2);
+    assert.equal(reader.stats.totalTime >= 0, true);
+  });
+
+  it("keeps unavailable cloud measurements absent, rather than producing partial or false-zero totals", async () => {
+    for (const missingState of [undefined, "unavailable"] as const) {
+      let attempt = 0;
+      const reader = new ECSqlReader({
+        execute: async () => {
+          const rs = response(++attempt === 3 ? DbResponseStatus.Done : DbResponseStatus.Partial, 1, [[attempt]]);
+          if (attempt === 2)
+            rs.stats.cloudSqliteTimingState = missingState;
+          else
+            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBytes: 0 });
+          return rs;
+        },
+      }, "SELECT 1");
+      await reader.toArray();
+      assert.notProperty(reader.stats, "backendDownloadTime");
+      assert.notProperty(reader.stats, "backendExecutionTime");
+      assert.notProperty(reader.stats, "backendDownloadBlocks");
+      assert.notProperty(reader.stats, "backendDownloadBytes");
+    }
+  });
+
+  it("does not turn incomplete lifetime measurements into a complete total after reset", async () => {
+    let attempt = 0;
+    const reader = new ECSqlReader({
+      execute: async () => {
+        const rs = response(DbResponseStatus.Done, 1, [[1]]);
+        if (++attempt > 1)
+          Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 1, downloadBlocks: 0, downloadBytes: 0 });
+        return rs;
+      },
+    }, "SELECT 1");
+    await reader.toArray();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    reader.reset();
+    await reader.toArray();
+    assert.equal(reader.stats.backendTotalTime, 2);
+    assert.notProperty(reader.stats, "backendDownloadTime");
+    assert.notProperty(reader.stats, "backendExecutionTime");
+    assert.notProperty(reader.stats, "backendDownloadBlocks");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
+  });
+
+  it("distinguishes measured cache hits from disabled collection and preserves lifetime totals on reset", async () => {
+    for (const measured of [true, false]) {
+      const reader = new ECSqlReader({
+        execute: async () => {
+          const rs = response(DbResponseStatus.Done, 0.25, [[1]]);
+          if (measured)
+            Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0, executionTime: 0.25, downloadBlocks: 0, downloadBytes: 0 });
+          return rs;
+        },
+      }, "SELECT 1");
+      await reader.toArray();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      reader.reset();
+      await reader.toArray();
+      assert.equal(reader.stats.backendTotalTime, 0.5);
+      assert.equal(reader.stats.backendDownloadTime, measured ? 0 : undefined);
+      assert.equal(reader.stats.backendExecutionTime, measured ? 0.5 : undefined);
+      assert.equal(reader.stats.backendDownloadBlocks, measured ? 0 : undefined);
+      assert.equal(reader.stats.backendDownloadBytes, measured ? 0 : undefined);
+    }
+  });
+
+  it("does not present partial block totals when a page has legacy timing-only statistics", async () => {
+    let attempt = 0;
+    const reader = new ECSqlReader({
+      execute: async () => {
+        const rs = response(++attempt === 3 ? DbResponseStatus.Done : DbResponseStatus.Partial, 1, [[attempt]]);
+        Object.assign(rs.stats, { cloudSqliteTimingState: "measured", downloadTime: 0.25, executionTime: 0.75 });
+        if (attempt !== 2)
+          Object.assign(rs.stats, { downloadBlocks: 1, downloadBytes: 4096 });
+        return rs;
+      },
+    }, "SELECT 1");
+    await reader.toArray();
+    assert.equal(reader.stats.backendDownloadTime, 0.75);
+    assert.equal(reader.stats.backendExecutionTime, 2.25);
+    assert.notProperty(reader.stats, "backendDownloadBlocks");
+    assert.notProperty(reader.stats, "backendDownloadBytes");
   });
 });
 
