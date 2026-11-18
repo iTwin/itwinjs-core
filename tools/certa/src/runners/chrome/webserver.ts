@@ -9,14 +9,6 @@ import * as path from "path";
 
 const app = express();
 
-// Enable CORS for all apis
-app.all("/*", (_req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version");
-  next();
-});
-
 // The generated HTML file should be served at the "root" URL (i.e., http://localhost:3000/).
 app.use("/", (req, resp, next) => {
   if (req.path === "/") {
@@ -63,10 +55,12 @@ app.use("*", (req, resp) => {
 });
 
 // Once the server actually starts, we should log and send the actual port back to the parent process
+// Only listen on the loopback interface - the test browser always runs on the same machine.
+const host = "127.0.0.1";
 let port = parseInt(process.env.CERTA_PORT ?? "3000", 10);
 const server = http.createServer(app);
 server.on("listening", async () => {
-  console.log(`Certa web frontend now listening on port ${port}`);
+  console.log(`Certa web frontend now listening on ${host}:${port}`);
   if (undefined !== process.send)
     process.send(port);
 });
@@ -83,9 +77,9 @@ server.on("error", async (e: any) => {
   }
   try {
     numRetries++;
-    port = await detect(port);
+    port = await detect({ port, hostname: host });
     server.close();
-    server.listen(port);
+    server.listen(port, host);
   } catch (error) {
     console.error(error);
     process.exit(1);
@@ -93,4 +87,4 @@ server.on("error", async (e: any) => {
 });
 
 // Run the server...
-server.listen(port);
+server.listen(port, host);
