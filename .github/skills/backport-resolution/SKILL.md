@@ -9,7 +9,7 @@ Resolve merge conflicts in backport PRs from Mergify. Mergify uses **cherry-pick
 
 **This skill covers what is specific to backports.** For the general per-file-type strategies — lock files, API reports, rush change files, source conflicts, modify/delete conflicts, conflict-marker checks, and the review gate — use the `merge-conflict-resolving` skill alongside this one. Where a file-type strategy there says merge both branches' content, the rule below wins on a release branch: **keep the release branch side, and add only the change being backported.**
 
-**Prerequisite:** This skill references the `cve-remediation` skill for understanding `pnpm-config.json` structure (globalOverrides, ignoreCves). Load that skill when resolving conflicts in security-related backports.
+**Prerequisite:** This skill references the `cve-remediation` skill for understanding `pnpm-config.json` overrides and temporary GHSA exceptions in `command-line.json`. Load that skill when resolving conflicts in security-related backports.
 
 ## How Mergify backports work
 
@@ -32,15 +32,15 @@ git merge origin/release/X.X.x  # If syncing with target branch
 
 **File:** `common/config/rush/pnpm-config.json`
 
-This is the **most common conflict file** in security backports. It contains `globalOverrides` (dependency version overrides) and `ignoreCves` (audit exceptions). For detailed structure, see the `cve-remediation` skill.
+This is the **most common conflict file** in security backports. It contains shared dependency ranges in `globalCatalogs` and dependency version overrides in `globalOverrides`. For detailed structure, see the `cve-remediation` skill.
 
 ### Resolution Strategy
 
 **Keep all existing entries from the release branch (HEAD). Add new entries from the incoming change.**
 
-1. Open the file and identify the conflicting sections (usually `globalOverrides` or `ignoreCves`)
-2. Keep every existing override/exception from the release branch
-3. Add the new override/exception being backported from the incoming change
+1. Open the file and identify the conflicting sections (usually `globalCatalogs` or `globalOverrides`)
+2. Keep every existing catalog entry and override from the release branch
+3. Add only the catalog or override change being backported from the incoming change
 4. Fix JSON syntax — especially trailing commas:
    - The last entry in a JSON object must NOT have a trailing comma
    - When adding a new last entry, add a comma to the previously-last entry
@@ -69,6 +69,12 @@ Incoming change adds `serialize-javascript` override:
 After resolving, always run `rush update` to regenerate the lock file.
 
 **Examples:** [PR #9007](https://github.com/iTwin/itwinjs-core/pull/9007), [PR #9041](https://github.com/iTwin/itwinjs-core/pull/9041), [PR #9049](https://github.com/iTwin/itwinjs-core/pull/9049)
+
+### Audit Exception Conflicts
+
+On branches using the pnpm 11 audit flow, temporary GHSA exceptions are in the `audit` command in `common/config/rush/command-line.json`. Keep the release branch's pinned audit pnpm version, existing exceptions, and final High/Critical audit. Add only the exception being backported, following the `cve-remediation` skill's "Audit Exceptions" section, then run `rush audit`.
+
+Inspect the target branch's audit implementation before adapting an exception for an older release branch; do not copy master's audit command without checking compatibility.
 
 ## Package.json Conflicts in Backports
 
