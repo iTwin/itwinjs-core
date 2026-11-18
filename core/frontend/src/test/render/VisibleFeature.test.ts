@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { EmptyLocalization, GeometryClass } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport } from "../../Viewport";
+import { Pixel } from "../../render/Pixel";
+import { IModelDisplayFeature } from "../../IModelDisplayReference";
 import { createBlankConnection } from "../createBlankConnection";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Visible feature query", () => {
   let imodel: IModelConnection;
@@ -55,6 +57,7 @@ describe("Visible feature query", () => {
     try {
       callback(vp);
     } finally {
+      IModelApp.viewManager.dropViewport(vp);
       document.body.removeChild(div);
     }
   }
@@ -75,5 +78,57 @@ describe("Visible feature query", () => {
       test({ source: "tiles" });
       test({ source: "screen" });
     });
+  });
+
+  it("returns features from each displayed iModel", () => {
+    const linkedIModel = createBlankConnection("visible-features-linked");
+    try {
+      testViewport(20, 20, 1, (vp) => {
+        const refs = vp.iModelRefs;
+        if (!refs.isSpatial)
+          throw new Error("Expected a spatial viewport");
+
+        const linkedRef = refs.link({ iModel: linkedIModel });
+        const primaryFeature: IModelDisplayFeature = {
+          elementId: "0x1",
+          modelId: "0x3",
+          subCategoryId: "0x2",
+          geometryClass: GeometryClass.Primary,
+          iModelRef: refs.primary,
+        };
+        const linkedFeature: IModelDisplayFeature = {
+          ...primaryFeature,
+          elementId: "0x4",
+          iModelRef: linkedRef,
+        };
+        const pixels = {
+          getPixel: (x: number) => new Pixel.Data({ feature: x < 10 ? primaryFeature : linkedFeature }),
+        } as Pixel.Buffer;
+
+        const readPixels = vi.spyOn(vp.target, "readPixels").mockImplementation((_rect, _selector, receiver) => receiver(pixels));
+        const tileQuery = vi.spyOn(vp.target, "queryVisibleTileFeatures").mockImplementation((_options, _iModel, callback) => callback([
+          { ...primaryFeature, iModel: imodel },
+          { ...linkedFeature, iModel: linkedIModel },
+        ]));
+
+        const queryIModels = (options: QueryVisibleFeaturesOptions) => {
+          const found = new Set<IModelConnection>();
+          vp.queryVisibleFeatures(options, (features) => {
+            for (const feature of features)
+              found.add(feature.iModel);
+          });
+          return found;
+        };
+
+        expect(queryIModels({ source: "screen" })).toEqual(new Set([imodel, linkedIModel]));
+        expect(queryIModels({ source: "tiles" })).toEqual(new Set([imodel, linkedIModel]));
+
+        readPixels.mockRestore();
+        tileQuery.mockRestore();
+        refs.unlink(linkedRef);
+      });
+    } finally {
+      linkedIModel.closeSync();
+    }
   });
 });

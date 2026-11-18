@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, setOwnProperty } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -390,7 +390,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
       const pkNames = this.getPrimaryKeyColumnNames();
       const pkValues = this.primaryKeyValues;
       pkNames.forEach((v, i) => {
-        out[v] = pkValues[i];
+        setOwnProperty(out, v, pkValues[i]);
       });
     }
     const isNullOrUndefined = (val: SqliteValue) => typeof val === "undefined";
@@ -401,7 +401,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
       if (!args.includeNullColumns && isNullOrUndefined(columnValue))
         continue;
 
-      out[columnName] = columnValue;
+      setOwnProperty(out, columnName, columnValue);
     }
     return out;
   }
