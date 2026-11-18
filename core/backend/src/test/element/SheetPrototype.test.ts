@@ -66,7 +66,7 @@ describe("SheetPrototype", () => {
       const model = db.models.getModel(borderId);
       expect(model).instanceof(DrawingModel);
       expect(model.modeledElement.id).to.equal(borderId);
-      expect(model.modeledElement.relClassName).to.equal("BisCore.DrawingModelBreaksDownSheetBorderPrototype");
+      expect(model.modeledElement.relClassName).to.equal("BisCore:DrawingModelBreaksDownSheetBorderPrototype");
     });
 
     it("inserts a SheetPrototype sub-modeled by a SheetModel and references its border", () => {
