@@ -36,7 +36,7 @@
   "scripts": {
     "build": "rimraf lib && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
     "clean": "rimraf lib",
-    "cover": "npm run -s test:unit && npm run -s test:electron-provider:built",
+    "cover": "npm run -s test",
     "docs": "",
     "lint": "tsc -p tsconfig.eslint.json && eslint \"./src/**/*.{ts,mts}\"",
     "test": "npm run -s test:unit && npm run -s test:electron-provider:built",
