@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode, setOwnProperty
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -3314,7 +3314,7 @@ export namespace IModelDb {
       const row: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(parsedRow)) {
         const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
-        row[ECJsNames.toJsName(ecPropertyName)] = value;
+        setOwnProperty(row, ECJsNames.toJsName(ecPropertyName), value);
       }
 
       const className = row.className;

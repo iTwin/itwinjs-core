@@ -652,6 +652,11 @@ export enum GeoServiceStatus {
 // @public
 export type GetMetaDataFunction = () => object | undefined;
 
+// @internal
+export function getOwnProperty<T>(source: Readonly<{
+    [name: string]: T;
+}>, name: string): T | undefined;
+
 // @public
 export namespace Guid {
     const empty: GuidString;
@@ -1684,6 +1689,11 @@ export enum RpcInterfaceStatus {
     // (undocumented)
     Success = 0
 }
+
+// @internal
+export function setOwnProperty<T>(target: {
+    [name: string]: T;
+}, name: string, value: T): void;
 
 // @public
 export function shallowClone<T>(value: T): T;

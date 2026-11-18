@@ -3,4 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./backend/ElectronBackendLoggerCategory.js";
 export * from "./backend/ElectronHost.js";
