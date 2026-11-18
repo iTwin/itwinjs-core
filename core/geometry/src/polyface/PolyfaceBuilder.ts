@@ -274,12 +274,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         if (this._reversed)
           myFacet.reverse();
         if (this._options.shouldTriangulate) {
-          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2], false);
-          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3], false);
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2]);
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3]);
         } else {
-          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2], false);
+          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2]);
         }
-        this._polyface.terminateFacet();
       }
       faceCounter++;
     }
@@ -999,6 +998,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
             this.addIndexedTriangleParamIndexes(
               paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1),
             );
+          this._polyface.terminateFacet();
         }
         if (distinctIndices(pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i - 1))) {
           this.addIndexedTrianglePointIndexes(
@@ -1012,6 +1012,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
             this.addIndexedTriangleParamIndexes(
               paramA.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1),
             );
+          this._polyface.terminateFacet();
         }
       } else {
         if (pointA.atUncheckedIndex(i - 1) !== pointA.atUncheckedIndex(i) ||
@@ -1031,9 +1032,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
               paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i),
               paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i),
             );
+          this._polyface.terminateFacet();
         }
       }
-      this._polyface.terminateFacet();
     }
   }
   /**

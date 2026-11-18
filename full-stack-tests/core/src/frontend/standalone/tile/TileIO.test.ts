@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString, ModelProps,
+  PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, SpatialViewState, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
@@ -31,7 +32,7 @@ import { ImdlReader, IModelTileContent, IModelTileTree, iModelTileTreeParamsFrom
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-const testCases = [
+const testCases: TileTestData[] = [
   TILE_DATA_1_1,
   TILE_DATA_1_2,
   TILE_DATA_1_3,
@@ -67,16 +68,10 @@ export class FakeREProps implements RelatedElementProps {
   public constructor() { this.id = Id64.invalid; }
 }
 
-export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  return {
-    iModel,
-    is3d: () => true !== options?.is2d,
-    viewFlags: new ViewFlags({
-      renderMode: options?.renderMode ?? RenderMode.SmoothShade,
-      visibleEdges: options?.visibleEdges ?? false,
-    }),
-    displayStyle: {},
-  } as unknown as ViewState;
+export function createViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, animationId?: Id64String }): ViewState {
+  const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+  view.viewFlags = view.viewFlags.with("visibleEdges", options?.visibleEdges ?? false).withRenderMode(RenderMode.SmoothShade);
+  return view;
 }
 
 function delta(a: number, b: number): number {
@@ -578,8 +573,8 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
   // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
-  const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
-  const ref = model.createTileTreeReference(view);
+  const view = createViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
+  const ref = model.createTileTreeReference(view.iModelRefs.primary);
   const owner = ref.treeOwner;
   owner.load();
   await waitUntil(() => {
@@ -730,8 +725,8 @@ describe("mirukuru TileTree", () => {
     await imodel.models.load(modelId);
     const model = imodel.models.getLoaded(modelId) as GeometricModelState;
 
-    const viewState = fakeViewState(imodel);
-    const treeRef = model.createTileTreeReference(viewState);
+    const viewState = createViewState(imodel);
+    const treeRef = model.createTileTreeReference(viewState.iModelRefs.primary);
     const noEdges = treeRef.treeOwner;
 
     viewState.viewFlags = viewState.viewFlags.with("visibleEdges", true);

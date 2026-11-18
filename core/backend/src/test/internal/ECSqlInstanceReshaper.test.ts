@@ -333,6 +333,19 @@ describe("ECSqlInstanceReshaper", () => {
     assert.deepEqual(reshaped.st.p3d, { x: 1, y: 2, z: 3 });
   });
 
+  it("reshapeInstanceRow keeps keys named like Object.prototype members as own properties", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const row = JSON.parse(`{ "__proto__": { "X": 1 }, "Constructor": "c", "St": { "__proto__": "member", "Label": "l" } }`);
+
+    const reshaped = reshapeInstanceRow(row, ecClass, iModel);
+
+    assert.strictEqual(Object.getPrototypeOf(reshaped), Object.prototype);
+    assert.deepEqual(Object.getOwnPropertyDescriptor(reshaped, "__proto__")?.value, { X: 1 });
+    assert.strictEqual(Object.getOwnPropertyDescriptor(reshaped, "constructor")?.value, "c");
+    assert.strictEqual(Object.getPrototypeOf(reshaped.st), Object.prototype);
+    assert.deepEqual(Object.keys(reshaped.st), ["__proto__", "label"]);
+  });
+
   it("reshapeInstanceRow passes through an aliased/computed column with only its key lowercased", () => {
     const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
     const row = iModel.withQueryReader(`SELECT *, 1+1 AS Foo FROM ${schemaAlias}.ReshaperAspect WHERE ECInstanceId=:aspectId`, (reader) => {

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { getOwnProperty } from "@itwin/core-bentley";
 import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
@@ -47,7 +48,7 @@ export namespace XmlSerializationUtils {
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    */
   export async function writeInstanceProperty(propertyClass: Property, instance: any, instanceElement: Element, schemaDoc: Document): Promise<void> {
-    const propertyValue = instance[propertyClass.name];
+    const propertyValue = getOwnProperty<any>(instance, propertyClass.name);
     if (propertyValue === undefined)
       return;
 

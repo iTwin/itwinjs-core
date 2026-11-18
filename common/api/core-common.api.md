@@ -52,6 +52,7 @@ import { Matrix4dProps } from '@itwin/core-geometry';
 import { Mutable } from '@itwin/core-bentley';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
+import { ObservableMap } from '@itwin/core-bentley';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -2268,8 +2269,7 @@ export interface DbRequest extends BaseReaderOptions {
 
 // @internal (undocumented)
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-    // (undocumented)
-    execute(request: TRequest): Promise<TResponse>;
+    execute(request: TRequest): TResponse | Promise<TResponse>;
 }
 
 // @internal (undocumented)
@@ -2322,7 +2322,13 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
+    // @internal
+    cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
     cpuTime: number;
+    downloadBlocks?: number;
+    downloadBytes?: number;
+    downloadTime?: number;
+    executionTime?: number;
     memLimit: number;
     memUsed: number;
     prepareTime: number;
@@ -2462,7 +2468,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
-    get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
+    get planProjectionSettings(): ObservableMap<Id64String, PlanProjectionSettings>;
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     setSunTime(timePoint: number, location: IModel | Cartographic): void;
     get solarShadows(): SolarShadowSettings;
@@ -2573,11 +2579,19 @@ export class DisplayStyleSettings {
     // @beta
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
-    get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
+    get modelAppearanceOverrides(): ObservableMap<Id64String, FeatureAppearance>;
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    // @beta
+    readonly onAfterClipStyleChanged: BeEvent<() => void>;
+    // @beta
+    readonly onAfterHiddenLineSettingsChanged: BeEvent<() => void>;
+    // @beta
+    readonly onAfterTimePointChanged: BeEvent<() => void>;
+    // @beta
+    readonly onAfterViewFlagsChanged: BeEvent<() => void>;
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
@@ -2610,14 +2624,16 @@ export class DisplayStyleSettings {
     readonly onWhiteOnWhiteReversalChanged: BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
+    get planarClipMasks(): ObservableMap<Id64String, PlanarClipMaskSettings>;
+    // @beta
+    get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings>;
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
     get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
     set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
     // @beta
     setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void;
-    get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
+    get subCategoryOverrides(): ObservableMap<Id64String, SubCategoryOverride>;
     // @internal
     synchMapImagery(): void;
     get timePoint(): number | undefined;
@@ -2886,6 +2902,8 @@ export abstract class ECSqlReaderBase {
     protected _done: boolean;
     // @internal
     protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal (undocumented)
+    protected getMetaDataInternal(): QueryPropertyMetaData[];
     // @internal
     protected abstract getRowInternal(): any[];
     // @internal (undocumented)
@@ -3536,6 +3554,11 @@ export class Feature {
     readonly subCategoryId: Id64String;
 }
 
+// @public (undocumented)
+export namespace Feature {
+    export function compare(lhs: FeatureProps, rhs: FeatureProps): number;
+}
+
 // @public
 export class FeatureAppearance {
     protected constructor(props: FeatureAppearanceProps);
@@ -3681,6 +3704,13 @@ export enum FeatureOverrideType {
     AlphaOnly = 1,
     ColorAndAlpha = 2,
     ColorOnly = 0
+}
+
+// @public
+export interface FeatureProps {
+    elementId: Id64String;
+    geometryClass: GeometryClass;
+    subCategoryId: Id64String;
 }
 
 // @public
@@ -6428,19 +6458,14 @@ export interface ModelExtentsProps {
 }
 
 // @public
-export interface ModelFeature {
-    // (undocumented)
-    elementId: Id64String;
-    // (undocumented)
-    geometryClass: GeometryClass;
+export interface ModelFeature extends FeatureProps {
     // (undocumented)
     modelId: Id64String;
-    // (undocumented)
-    subCategoryId: Id64String;
 }
 
 // @public (undocumented)
 export namespace ModelFeature {
+    export function compare(lhs: ModelFeature, rhs: ModelFeature): number;
     export function create(): ModelFeature;
     export function isDefined(feature: ModelFeature): boolean;
     // @alpha (undocumented)
@@ -8032,6 +8057,10 @@ export interface QueryRowProxy {
 // @public
 export interface QueryStats {
     backendCpuTime: number;
+    backendDownloadBlocks?: number;
+    backendDownloadBytes?: number;
+    backendDownloadTime?: number;
+    backendExecutionTime?: number;
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
@@ -11682,6 +11711,8 @@ export class ViewDetails3d extends ViewDetails {
     getJSON(): Readonly<ViewDetails3dProps>;
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
+    // @beta
+    readonly onAfterModelClipGroupsChanged: BeEvent<() => void>;
     readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
