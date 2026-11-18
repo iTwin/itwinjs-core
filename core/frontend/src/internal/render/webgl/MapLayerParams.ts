@@ -35,11 +35,19 @@ const scratchRange2d = Range2d.createNull();
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
 class LayerTextureParam implements Disposable {
-  constructor(public texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
+  /** @param _texture A texture owned by this param (terrain imagery); undefined for projected textures, which belong to their classifier. */
+  constructor(private _texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
+  /** A projected texture is owned by its classifier, which recreates it when its size changes, so look up the current
+   * texture each time rather than retaining one. This is called while binding uniforms, so it must not allocate.
+   */
+  public get texture(): RenderTexture | undefined {
+    return this._projectedTextureOrMatrix instanceof ProjectedTexture ? this._projectedTextureOrMatrix.classifier.classifierTexture : this._texture;
+  }
+
   public [Symbol.dispose](): void {
-    this.texture = dispose(this.texture);
+    this._texture = dispose(this._texture);
   }
 
   /* There are two methods of applying a texture to a reality mesh.  the first member of "params" denotes which
@@ -139,8 +147,9 @@ export class LayerTextureParams implements Disposable {
         matrix.data[9] = terrainTexture.featureId;
         textureParams.push(new LayerTextureParam(terrainTexture.texture, matrix));
       } else {
-        const classifier = texture.classifier;
-        textureParams.push(new LayerTextureParam(classifier.getOrCreateClassifierTexture(), texture));
+        // Ensure the classifier's texture exists now, outside of rendering, as geometry records whether it has textures at construction.
+        texture.classifier.getOrCreateClassifierTexture();
+        textureParams.push(new LayerTextureParam(undefined, texture));
       }
     }
 

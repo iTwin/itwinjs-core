@@ -120,6 +120,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     try {
       let phaseStart = performance.now();
       requestedTiles.start = vp.numRequestedTiles;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels(originalModelIds);
       vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
       vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
@@ -219,6 +220,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
     await expectPixels("models visible", mask, "model");
 
     // If the model is not visible, it makes a hole in the map revealing the background color.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await expectPixels("models invisible", mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
@@ -228,6 +230,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
 
     // Models only contribute to the mask in priority mode if they are visible.
     await expectPixels("priority visible", mask, "model");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await expectPixels("priority invisible", mask, "map", (vp) => vp.changeViewedModels([]));
   });
 
@@ -268,6 +271,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
       getReferences: () => [treeRef],
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     vp.changeViewedModels([]);
   }
 
@@ -294,6 +298,7 @@ describeChrome("Planar clip mask (#integration #graphics)", () => {
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
     }, "model", (vp) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       vp.changeViewedModels([]);
       vp.addTiledGraphicsProvider({
         forEachTileTreeRef: (_, func) => func(treeRef),

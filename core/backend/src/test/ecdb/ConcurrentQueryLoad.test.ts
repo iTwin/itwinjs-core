@@ -1,6 +1,7 @@
 import { Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { DbQueryConfig, ECSqlReader, QueryStats } from "@itwin/core-common";
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { ECDb } from "../../ECDb";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -70,31 +71,31 @@ class LoadSimulator {
     });
     const errorCount = errors.length;
     let backendCpuTime: bigint = BigInt(0);
-    let backendTotalTime: bigint = BigInt(0);
+    let backendTotalTime = 0;
     let backendMemUsed: bigint = BigInt(0);
     let backendRowsReturned: bigint = BigInt(0);
-    let totalTime: bigint = BigInt(0);
+    let totalTime = 0;
     let retryCount: bigint = BigInt(0);
-    let prepareTime: bigint = BigInt(0);
+    let prepareTime = 0;
 
     // Calculate average
     results.forEach((r: ITaskResult) => {
       backendCpuTime += BigInt(r.stats.backendCpuTime);
-      backendTotalTime += BigInt(r.stats.backendTotalTime);
+      backendTotalTime += r.stats.backendTotalTime;
       backendMemUsed += BigInt(r.stats.backendMemUsed);
       backendRowsReturned += BigInt(r.stats.backendRowsReturned);
-      totalTime += BigInt(r.stats.totalTime);
+      totalTime += r.stats.totalTime;
       retryCount += BigInt(r.stats.retryCount);
-      prepareTime += BigInt(r.stats.prepareTime);
+      prepareTime += r.stats.prepareTime;
     });
 
     backendCpuTime /= BigInt(results.length);
-    backendTotalTime /= BigInt(results.length);
+    backendTotalTime /= results.length;
     backendMemUsed /= BigInt(results.length);
     backendRowsReturned /= BigInt(results.length);
-    totalTime /= BigInt(results.length);
+    totalTime /= results.length;
     retryCount /= BigInt(results.length);
-    // prepareTime /= BigInt(results.length);
+    // prepareTime /= results.length;
 
     return {
       result: {
@@ -114,6 +115,46 @@ class LoadSimulator {
 
   }
 }
+describe("ConcurrentQueryLoad statistics", () => {
+  it("preserves fractional timing averages and preparation totals", async () => {
+    const db = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    const sandbox = sinon.createSandbox();
+    try {
+      let queryIndex = 0;
+      const simulator = new LoadSimulator(db, {
+        name: "fractional timings",
+        totalBatches: 1,
+        taskPerBatch: 2,
+        createReader: () => {
+          const reader = db.createQueryReader("SELECT 1");
+          const timing = ++queryIndex === 1 ? 0.25 : 0.5;
+          sandbox.stub(reader, "step").resolves(false);
+          sandbox.stub(reader, "stats").get((): QueryStats => ({
+            backendCpuTime: 10,
+            backendTotalTime: timing,
+            backendMemUsed: 20,
+            backendRowsReturned: 1,
+            totalTime: timing * 2,
+            retryCount: 0,
+            prepareTime: timing,
+          }));
+          return reader;
+        },
+      });
+      const result = await simulator.run();
+      expect(result.errorCount).to.equal(0);
+      expect(result.totalQueries).to.equal(2);
+      expect(result.result.backendTotalTime).to.equal(0.375);
+      expect(result.result.totalTime).to.equal(0.75);
+      expect(result.result.prepareTime).to.equal(0.75);
+      expect(result.result.backendCpuTime).to.equal(10n);
+      expect(result.result.backendRowsReturned).to.equal(1n);
+    } finally {
+      sandbox.restore();
+      db.close();
+    }
+  });
+});
 describe.skip("ConcurrentQueryLoad", () => {
   it("should run", async () => {
     Logger.initializeToConsole();

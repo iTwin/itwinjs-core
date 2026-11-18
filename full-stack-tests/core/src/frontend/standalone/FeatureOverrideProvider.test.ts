@@ -40,8 +40,7 @@ describe("FeatureOverrideProvider", () => {
   it("adds and drops", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
       const expectCount = (count: number) => {
-        const list = (vp as any)._featureOverrideProviders as FeatureOverrideProvider[];
-        expect(list.length).toBe(count);
+        expect([...vp.featureOverrideProviders].length).toBe(count);
       };
 
       const p1 = new Provider();

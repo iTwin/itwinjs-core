@@ -86,6 +86,18 @@ export interface DbRuntimeStats {
   memUsed: number;
   /** In milliseconds */
   prepareTime: number;
+  /** Elapsed wait attributed to successful block downloads for the main Cloud SQLite database, in fractional milliseconds. */
+  downloadTime?: number;
+  /** Active execution elapsed time excluding main-database block waits, in fractional milliseconds. */
+  executionTime?: number;
+  /** Number of successful main-database block acquisitions that waited, including shared downloads but excluding cache hits. */
+  downloadBlocks?: number;
+  /** Bytes of the main-database blocks counted by [[downloadBlocks]]. */
+  downloadBytes?: number;
+  /** Whether this attempt executed and supplied complete Cloud SQLite timings.
+   * @internal
+   */
+  cloudSqliteTimingState?: "notExecuted" | "measured" | "unavailable";
   /** Whether this page resumed an unfinished native statement.
    * @internal
    */
@@ -846,7 +858,8 @@ export class DbQueryError extends BentleyError {
 
 /** @internal */
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-  execute(request: TRequest): Promise<TResponse>;
+  /** Primary-connection execution may return its response immediately; worker execution remains asynchronous. */
+  execute(request: TRequest): TResponse | Promise<TResponse>;
 }
 
 /** @internal */
@@ -867,7 +880,10 @@ export interface DbQueryConfig {
    * has no effect on behavior.
    */
   doNotUsePrimaryConnToPrepare?: boolean;
-  /** After no activity for given time concurrent query will automatically shutdown */
+  /** After no activity for the given time, concurrent query automatically shuts down on read-only databases.
+   * Once the manager has used the primary connection for queries or synchronous statement leases, it remains
+   * alive until explicit shutdown, cache clearing, or database close.
+   */
   autoShutdownWhenIdleForSeconds?: number;
   /** Maximum number of statement cache per worker. Default to 40 */
   statementCacheSizePerWorker?: number;

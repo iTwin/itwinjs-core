@@ -97,7 +97,7 @@ describe("ViewCreator3d", async () => {
 
     expect(Array.from(view.categorySelector.categories)).toEqual(["0x17"]);
     expectVisible(true, true);
-    expect(loadSpy).toHaveBeenCalledTimes(1);
+    expect(loadSpy).toHaveBeenCalledTimes(2);
     loadSpy.mockRestore();
     queryStub.mockRestore();
   });

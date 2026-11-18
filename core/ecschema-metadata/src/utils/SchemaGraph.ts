@@ -48,8 +48,8 @@ export class SchemaGraph {
    * @returns An array describing the cycle if there is a cycle or undefined if no cycles found.
    */
   public detectCycles(): ReferenceCycle[] | undefined {
-    const visited = {};
-    const recStack = {};
+    const visited = new Set<string>();
+    const recStack = new Set<string>();
     const cycles: ReferenceCycle[] = [];
 
     for (const schema of this._schemas) {
@@ -61,28 +61,28 @@ export class SchemaGraph {
     return undefined;
   }
 
-  private detectCycleUtil(schema: SchemaInfo, visited: any, recStack: any, cycles: ReferenceCycle[]): boolean {
+  private detectCycleUtil(schema: SchemaInfo, visited: Set<string>, recStack: Set<string>, cycles: ReferenceCycle[]): boolean {
     let cycleFound = false;
 
-    if (!visited[schema.schemaKey.name]) {
-      visited[schema.schemaKey.name] = true;
-      recStack[schema.schemaKey.name] = true;
+    if (!visited.has(schema.schemaKey.name)) {
+      visited.add(schema.schemaKey.name);
+      recStack.add(schema.schemaKey.name);
 
       for (const refKey of schema.references) {
         const refSchema = this.find(refKey.schemaKey);
         if (undefined === refSchema)
           throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`);
-        if (!visited[refKey.schemaKey.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
+        if (!visited.has(refKey.schemaKey.name) && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
-        } else if (recStack[refKey.schemaKey.name]) {
+        } else if (recStack.has(refKey.schemaKey.name)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
         }
       }
     }
     if (!cycleFound)
-      recStack[schema.schemaKey.name] = false;
+      recStack.delete(schema.schemaKey.name);
 
     return cycleFound;
   }
