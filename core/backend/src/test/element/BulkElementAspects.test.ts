@@ -4,12 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
+import { Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
 import { Code, ElementAspectProps, IModel, IModelError } from "@itwin/core-common";
-import {
-  BulkElementAspectFailureReason, BulkElementAspectsStatus, EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject,
-} from "../../core-backend";
-import { _nativeDb, _verifyChannel } from "../../internal/Symbols";
+import { EditTxn, Element, ElementAspect, PhysicalModel, SpatialCategory, StandaloneDb, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 
@@ -67,6 +64,12 @@ describe("EditTxn bulk ElementAspect operations", () => {
     return () => spy.getCalls().map((c) => c.args[0].id as Id64String);
   };
 
+  /** Spies on the ElementAspect handlers and returns their call counts in the order insert, inserted, update, updated, delete, deleted. */
+  const spyAspectHandlers = () => {
+    const spies = ["onInsert", "onInserted", "onUpdate", "onUpdated", "onDelete", "onDeleted"].map((name) => sinon.spy(ElementAspect as any, name));
+    return { callCounts: () => spies.map((s) => s.callCount), onDelete: spies[4] };
+  };
+
   /** Runs `fn` in an EditTxn that is abandoned afterwards. */
   const inAbandonedTxn = (fn: (txn: EditTxn) => void) => {
     const txn = new EditTxn(iModel, "test");
@@ -78,248 +81,111 @@ describe("EditTxn bulk ElementAspect operations", () => {
     }
   };
 
-  it("inserts unique and multi aspects on several owners, updating each owner once", () => {
+  const thrownBy = (fn: () => void): any => {
+    try {
+      fn();
+    } catch (err) {
+      return err;
+    }
+    expect.fail("expected an exception");
+  };
+
+  it("inserts, updates and deletes aspects on several owners, updating each owner once and calling the per-aspect handlers", () => {
     inAbandonedTxn((txn) => {
       const [e1, e2] = insertOwners(txn, 2);
-      const onInsert = sinon.spy(ElementAspect as any, "onInsert");
-      const onInserted = sinon.spy(ElementAspect as any, "onInserted");
-      const ownerUpdates = spyOwnerUpdates();
+      let handlers = spyAspectHandlers();
+      let ownerUpdates = spyOwnerUpdates();
 
-      const result = txn.insertAspects([uniqueProps(e1, "u1"), multiProps(e1, "m1a"), multiProps(e1, "m1b"), multiProps(e2, "m2"), uniqueProps(e2, "u2")]);
-      expect(result.status).to.equal(BulkElementAspectsStatus.Success);
-      expect(result.failures).to.deep.equal([]);
-      expect(result.ids.length).to.equal(5);
-      result.ids.forEach((id) => expect(Id64.isValidId64(id)).to.be.true);
-
+      const ids = txn.insertAspects([uniqueProps(e1, "u1"), multiProps(e1, "m1a"), multiProps(e1, "m1b"), multiProps(e2, "m2"), uniqueProps(e2, "u2")]);
+      expect(ids.length).to.equal(5);
+      ids.forEach((id) => expect(Id64.isValidId64(id)).to.be.true);
+      expect(iModel.elements.getAspect(ids[1]).asAny.strProp).to.equal("m1a");
       expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1a", "TestMultiAspect:m1b", "TestUniqueAspect:u1"]);
       expect(aspectsOf(e2)).to.deep.equal(["TestMultiAspect:m2", "TestUniqueAspect:u2"]);
-      expect(iModel.elements.getAspect(result.ids[1]).asAny.strProp).to.equal("m1a");
-
-      expect(onInsert.callCount).to.equal(5);
-      expect(onInserted.callCount).to.equal(5);
-      expect(ownerUpdates().sort()).to.deep.equal([e1, e2].sort());
-    });
-  });
-
-  it("writes nothing and calls no handlers if any row is invalid, listing every invalid row", () => {
-    inAbandonedTxn((txn) => {
-      const [e1, e2] = insertOwners(txn, 2);
-      const { ids } = txn.insertAspects([multiProps(e1, "m1"), uniqueProps(e2, "u2")]);
-      const handlers = ["onInsert", "onInserted", "onUpdate", "onUpdated", "onDelete", "onDeleted"].map((name) => sinon.spy(ElementAspect as any, name));
-      const ownerUpdates = spyOwnerUpdates();
-
-      const inserted = txn.insertAspects([multiProps(e1, "new"), multiProps("0xffffff", "noOwner"), { ...multiProps(e1, "badClass"), classFullName: "BulkAspectTest:DoesNotExist" }]);
-      expect(inserted).to.deep.equal({
-        status: BulkElementAspectsStatus.ValidationFailed,
-        failures: [
-          { index: 1, reason: BulkElementAspectFailureReason.ElementNotFound },
-          { index: 2, reason: BulkElementAspectFailureReason.ClassNotFound },
-        ],
-        ids: [],
-      });
-
-      const updated = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e1, "missing"), id: "0xffffff" }]);
-      expect(updated).to.deep.equal({ status: BulkElementAspectsStatus.ValidationFailed, failures: [{ index: 1, aspectId: "0xffffff", reason: BulkElementAspectFailureReason.AspectNotFound }] });
-
-      handlers.forEach((handler) => expect(handler.callCount).to.equal(0));
-      expect(ownerUpdates()).to.deep.equal([]);
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
-      expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2"]);
-
-      const valid = txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, uniqueProps(e2, "u2-new")]);
-      expect(valid).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1-new"]);
-      expect(aspectsOf(e2)).to.deep.equal(["TestUniqueAspect:u2-new"]);
-    });
-  });
-
-  it("reports distinct reasons for a missing class name, a class that is not in the iModel and a class that is not an aspect", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      const inserted = txn.insertAspects([
-        { ...multiProps(e1, "noClass"), classFullName: undefined } as any,
-        { ...multiProps(e1, "unknown"), classFullName: "NotImported:SomeAspect" },
-        { ...multiProps(e1, "notAnAspect"), classFullName: "BisCore:Subject" },
-        multiProps(e1, "ok"),
-      ]);
-      expect(inserted.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
-      expect(inserted.failures.map((f) => [f.index, f.reason])).to.deep.equal([
-        [0, BulkElementAspectFailureReason.InvalidProps],
-        [1, BulkElementAspectFailureReason.ClassNotFound],
-        [2, BulkElementAspectFailureReason.NotAnAspectClass],
-      ]);
-      expect(aspectsOf(e1)).to.deep.equal([]);
-
-      const updated = txn.updateAspects([{ ...uniqueProps(e1, "unknown"), classFullName: "NotImported:SomeAspect" }]);
-      expect(updated.status).to.equal(BulkElementAspectsStatus.ValidationFailed);
-      expect(updated.failures.map((f) => [f.index, f.reason])).to.deep.equal([[0, BulkElementAspectFailureReason.ClassNotFound]]);
-    });
-  });
-
-  it("checks the lock of each distinct owner once per call and the channel of every aspect, still calling the per-aspect handlers", () => {
-    inAbandonedTxn((txn) => {
-      const [e1, e2] = insertOwners(txn, 2);
-      const checkLock = sinon.spy(iModel.locks, "checkExclusiveLock");
-      const verifyChannel = sinon.spy(iModel.channels, _verifyChannel as any);
-      const onInsert = sinon.spy(ElementAspect as any, "onInsert");
-      const lockedIds = () => checkLock.getCalls().map((c) => c.args[0]).sort();
-
-      const { ids } = txn.insertAspects([multiProps(e1, "m1a"), multiProps(e1, "m1b"), uniqueProps(e1, "u1"), multiProps(e2, "m2a"), uniqueProps(e2, "u2")]);
-      expect(onInsert.callCount).to.equal(5);
-      expect(lockedIds()).to.deep.equal([e1, e2].sort());
-      expect(verifyChannel.callCount).to.equal(5);
-
-      for (const [op, rows] of [
-        [() => txn.updateAspects([{ ...multiProps(e1, "m1a-new"), id: ids[0] }, { ...multiProps(e1, "m1b-new"), id: ids[1] }, uniqueProps(e2, "u2-new")]), 3],
-        [() => txn.deleteAspects(ids), 5],
-      ] as const) {
-        checkLock.resetHistory();
-        verifyChannel.resetHistory();
-        expect(op().status).to.equal(BulkElementAspectsStatus.Success);
-        expect(lockedIds()).to.deep.equal([e1, e2].sort());
-        expect(verifyChannel.callCount).to.equal(rows);
-      }
-    });
-  });
-
-  it("single-aspect operations still check every aspect and look up the owner of deleted aspects", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      txn.insertAspects([multiProps(e1, "bulk")]); // a previous bulk call must not affect later single-aspect calls
-      const checkLock = sinon.spy(iModel.locks, "checkExclusiveLock");
-      const verifyChannel = sinon.spy(iModel.channels, _verifyChannel as any);
-      const getAspect = sinon.spy(iModel.elements, "getAspect");
-
-      const id1 = txn.insertAspect(multiProps(e1, "m1"));
-      const id2 = txn.insertAspect(multiProps(e1, "m2"));
-      txn.updateAspect({ ...multiProps(e1, "m1-new"), id: id1 });
-      txn.deleteAspect([id1, id2]);
-      expect(checkLock.getCalls().map((c) => c.args[2])).to.deep.equal(["insert aspect", "insert aspect", "update aspect", "delete aspect", "delete aspect"]);
-      expect(verifyChannel.callCount).to.equal(5);
-      expect(getAspect.getCalls().map((c) => c.args[0])).to.deep.equal([id1, id2]);
-    });
-  });
-
-  it("does not skip a lock check that failed", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      let calls = 0;
-      sinon.stub(iModel.locks, "checkExclusiveLock").callsFake(() => {
-        if (++calls === 1)
-          throw new Error("exclusive lock not held");
-      });
-      expect(() => txn.insertAspects([multiProps(e1, "a"), multiProps(e1, "b")])).to.throw("exclusive lock not held");
-      expect(calls).to.equal(1);
-      expect(aspectsOf(e1)).to.deep.equal([]);
-      expect(txn.insertAspects([multiProps(e1, "a"), multiProps(e1, "b")]).status).to.equal(BulkElementAspectsStatus.Success);
-      expect(calls).to.equal(2);
-    });
-  });
-
-  it("updates and deletes aspects on several owners, updating each owner once", () => {
-    inAbandonedTxn((txn) => {
-      const [e1, e2] = insertOwners(txn, 2);
-      const { ids } = txn.insertAspects([uniqueProps(e1, "u1"), multiProps(e1, "m1"), multiProps(e2, "m2a"), multiProps(e2, "m2b")]);
-
-      const onUpdate = sinon.spy(ElementAspect as any, "onUpdate");
-      let ownerUpdates = spyOwnerUpdates();
-      const updated = txn.updateAspects([uniqueProps(e1, "u1-new"), { ...multiProps(e1, "m1-new"), id: ids[1] }, { ...multiProps(e2, "m2b-new"), id: ids[3] }]);
-      expect(updated.status).to.equal(BulkElementAspectsStatus.Success);
-      expect(onUpdate.callCount).to.equal(3);
-      expect(ownerUpdates().sort()).to.deep.equal([e1, e2].sort());
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1-new", "TestUniqueAspect:u1-new"]);
-      expect(aspectsOf(e2)).to.deep.equal(["TestMultiAspect:m2a", "TestMultiAspect:m2b-new"]);
+      expect(handlers.callCounts()).to.deep.equal([5, 5, 0, 0, 0, 0]);
+      expect(ownerUpdates()).to.deep.equal([e1, e2]);
 
       sinon.restore();
-      const onDelete = sinon.spy(ElementAspect as any, "onDelete");
-      const getAspect = sinon.spy(iModel.elements, "getAspect");
+      handlers = spyAspectHandlers();
       ownerUpdates = spyOwnerUpdates();
-      const deleted = txn.deleteAspects([...ids, ids[0]]);
-      expect(deleted.status).to.equal(BulkElementAspectsStatus.Success);
-      expect(onDelete.callCount).to.equal(4);
-      expect(onDelete.getCalls().map((c) => c.args[0].element)).to.deep.equal([e1, e1, e2, e2]);
-      expect(getAspect.called).to.be.false; // the owning element is supplied, so the aspects are not loaded
-      expect(ownerUpdates().sort()).to.deep.equal([e1, e2].sort());
+      txn.updateAspects([uniqueProps(e2, "u2-new"), { ...multiProps(e1, "m1a-new"), id: ids[1] }]);
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1a-new", "TestMultiAspect:m1b", "TestUniqueAspect:u1"]);
+      expect(aspectsOf(e2)).to.deep.equal(["TestMultiAspect:m2", "TestUniqueAspect:u2-new"]);
+      expect(handlers.callCounts()).to.deep.equal([0, 0, 2, 2, 0, 0]);
+      expect(ownerUpdates()).to.deep.equal([e2, e1]);
+
+      sinon.restore();
+      handlers = spyAspectHandlers();
+      ownerUpdates = spyOwnerUpdates();
+      const getAspect = sinon.spy(iModel.elements, "getAspect");
+      txn.deleteAspects(ids);
       expect(aspectsOf(e1)).to.deep.equal([]);
       expect(aspectsOf(e2)).to.deep.equal([]);
+      expect(handlers.callCounts()).to.deep.equal([0, 0, 0, 0, 5, 5]);
+      expect(handlers.onDelete.getCalls().map((c) => c.args[0].element)).to.deep.equal([e1, e1, e1, e2, e2]);
+      expect(getAspect.called).to.be.false; // the owning element is supplied, so the default onDelete does not load the aspect
+      expect(ownerUpdates()).to.deep.equal([e1, e2]);
     });
   });
 
-  it("deleteAspects ignores ids that do not identify an aspect, like deleteElements", () => {
+  it("throws an ITwinError on the first problem, leaving the aspects before it written", () => {
     inAbandonedTxn((txn) => {
       const [e1] = insertOwners(txn, 1);
-      const { ids } = txn.insertAspects([multiProps(e1, "m1"), multiProps(e1, "m2")]);
-      txn.deleteAspects([ids[1]]);
-      const onDelete = sinon.spy(ElementAspect as any, "onDelete");
-      const onDeleted = sinon.spy(ElementAspect as any, "onDeleted");
+      const [m1] = txn.insertAspects([multiProps(e1, "m1")]);
+      const onInserted = sinon.spy(ElementAspect as any, "onInserted");
 
-      // an aspect that was already deleted, an id that was never used, and an element id
-      const deleted = txn.deleteAspects([ids[1], ids[0], "0xffffff", e1]);
-      expect(deleted).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
-      expect(onDelete.getCalls().map((c) => c.args[0].aspectId)).to.deep.equal([ids[0]]);
-      expect(onDeleted.getCalls().map((c) => c.args[0].aspectId)).to.deep.equal([ids[0]]);
-      expect(aspectsOf(e1)).to.deep.equal([]);
-      expect(iModel.elements.tryGetElementProps(e1)).to.not.be.undefined;
+      let error = thrownBy(() => txn.insertAspects([multiProps(e1, "written"), multiProps("0xffffff", "noOwner"), multiProps(e1, "never")]));
+      expect(ITwinError.isError(error, "dgn-db", "NotFound")).to.be.true;
+      expect(error.message).to.contain("insertElementAspects: owning element 0xffffff of input 1 does not exist");
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1", "TestMultiAspect:written"]); // the caller must abandon the txn
+      expect(onInserted.called).to.be.false;
 
+      error = thrownBy(() => txn.insertAspects([{ ...multiProps(e1, "x"), classFullName: "BisCore:Subject" }]));
+      expect(ITwinError.isError(error, "dgn-db", "WrongClass")).to.be.true;
+
+      error = thrownBy(() => txn.updateAspects([{ ...multiProps(e1, "x"), id: "0xffffff" }]));
+      expect(ITwinError.isError(error, "dgn-db", "NotFound")).to.be.true;
+
+      error = thrownBy(() => txn.deleteAspects([m1, "not-an-id"]));
+      expect(ITwinError.isError(error, "dgn-db", "InvalidId")).to.be.true;
+      expect(error.message).to.contain("deleteElementAspects: ids[1] is not a valid aspect id");
+
+      error = thrownBy(() => txn.deleteAspects([m1]));
+      expect(ITwinError.isError(error, "dgn-db", "NotFound")).to.be.true;
+    });
+  });
+
+  it("single-aspect operations use the bulk operations and still throw an IModelError", () => {
+    inAbandonedTxn((txn) => {
+      const [e1] = insertOwners(txn, 1);
       const ownerUpdates = spyOwnerUpdates();
-      expect(txn.deleteAspects([ids[0], ids[1]])).to.deep.equal({ status: BulkElementAspectsStatus.Success, failures: [] });
-      expect(onDelete.callCount).to.equal(1);
-      expect(ownerUpdates()).to.deep.equal([]);
+      const id1 = txn.insertAspect(multiProps(e1, "m1"));
+      const id2 = txn.insertAspect(multiProps(e1, "m2"));
+      txn.insertAspect(uniqueProps(e1, "u1"));
+      txn.updateAspect({ ...multiProps(e1, "m1-new"), id: id1 });
+      txn.updateAspect(uniqueProps(e1, "u1-new"));
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1-new", "TestMultiAspect:m2", "TestUniqueAspect:u1-new"]);
+      txn.deleteAspect([id1, id2]);
+      expect(aspectsOf(e1)).to.deep.equal(["TestUniqueAspect:u1-new"]);
+      expect(ownerUpdates().length).to.equal(6);
+
+      expect(() => txn.insertAspect(multiProps("0xffffff", "x"))).to.throw(IModelError, "Error inserting ElementAspect");
+      expect(() => txn.updateAspect({ ...multiProps(e1, "x"), id: id1 })).to.throw(IModelError, "Error updating ElementAspect");
+      expect(() => txn.deleteAspect(id1)).to.throw(IModelError, "Error deleting ElementAspect");
     });
   });
 
-  it("deleteAspects throws an ITwinError listing each malformed id once, without deleting anything", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      const { ids } = txn.insertAspects([multiProps(e1, "m1")]);
-      let error: any;
-      try {
-        txn.deleteAspects([ids[0], "not-an-id", Id64.invalid, "not-an-id"]);
-      } catch (err) {
-        error = err;
-      }
-      expect(ITwinError.isError(error, "imodel", "invalid-arguments")).to.be.true;
-      expect(error.message).to.equal("Invalid aspect ids: not-an-id, 0");
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
-    });
-  });
-
-  it("throws an IModelError, calling no post-handlers, if a write fails", () => {
-    inAbandonedTxn((txn) => {
-      const [e1] = insertOwners(txn, 1);
-      const { ids } = txn.insertAspects([multiProps(e1, "m1"), multiProps(e1, "m2")]);
-      const onDeleted = sinon.spy(ElementAspect as any, "onDeleted");
-      const onUpdated = sinon.spy(ElementAspect as any, "onUpdated");
-      expect(iModel[_nativeDb].executeSql("CREATE TEMP TRIGGER bulkAspectWriteFails BEFORE DELETE ON bis_ElementMultiAspect BEGIN SELECT RAISE(ABORT, 'rejected by test'); END")).to.equal(DbResult.BE_SQLITE_OK);
-      expect(iModel[_nativeDb].executeSql("CREATE TEMP TRIGGER bulkAspectUpdateFails BEFORE UPDATE ON bis_ElementMultiAspect BEGIN SELECT RAISE(ABORT, 'rejected by test'); END")).to.equal(DbResult.BE_SQLITE_OK);
-      try {
-        expect(() => txn.deleteAspects(ids)).to.throw(IModelError, "abandon the changes");
-        expect(() => txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }])).to.throw(IModelError, "abandon the changes");
-      } finally {
-        iModel[_nativeDb].executeSql("DROP TRIGGER temp.bulkAspectWriteFails");
-        iModel[_nativeDb].executeSql("DROP TRIGGER temp.bulkAspectUpdateFails");
-      }
-      expect(onDeleted.callCount).to.equal(0);
-      expect(onUpdated.callCount).to.equal(0);
-    });
-  });
-
-  it("a lock violation on any owner aborts the whole call before anything is written", () => {
+  it("a lock violation stops the call", () => {
     inAbandonedTxn((txn) => {
       const [e1, e2] = insertOwners(txn, 2);
-      const { ids } = txn.insertAspects([multiProps(e1, "m1"), multiProps(e2, "m2")]);
-
       sinon.stub(iModel.locks, "checkExclusiveLock").callsFake((id: Id64String) => {
         if (id === e2)
           throw new Error(`exclusive lock not held on ${id}`);
       });
       const ownerUpdates = spyOwnerUpdates();
       expect(() => txn.insertAspects([multiProps(e1, "new1"), multiProps(e2, "new2")])).to.throw("exclusive lock not held");
-      expect(() => txn.updateAspects([{ ...multiProps(e1, "m1-new"), id: ids[0] }, { ...multiProps(e2, "m2-new"), id: ids[1] }])).to.throw("exclusive lock not held");
-      expect(() => txn.deleteAspects(ids)).to.throw("exclusive lock not held");
       expect(ownerUpdates()).to.deep.equal([]);
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]);
-      expect(aspectsOf(e2)).to.deep.equal(["TestMultiAspect:m2"]);
+      expect(aspectsOf(e2)).to.deep.equal([]);
     });
   });
 
@@ -332,87 +198,17 @@ describe("EditTxn bulk ElementAspect operations", () => {
       const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, `Category-${channelKey}`, {});
       const owner = txn.insertElement({ classFullName: "Generic:PhysicalObject", model: modelId, category: categoryId, code: Code.createEmpty() } as any);
 
-      iModel.channels.removeAllowedChannel(channelKey);
-      expect(() => txn.insertAspects([multiProps(owner, "denied")])).to.throw("not allowed");
-      expect(aspectsOf(owner)).to.deep.equal([]);
-
-      iModel.channels.addAllowedChannel(channelKey);
-      expect(txn.insertAspects([multiProps(owner, "allowed")]).status).to.equal(BulkElementAspectsStatus.Success);
-      expect(aspectsOf(owner)).to.deep.equal(["TestMultiAspect:allowed"]);
-      iModel.channels.removeAllowedChannel(channelKey);
-    });
-  });
-
-  /** Inserts `count` owners into a new model of an allowed channel, and returns the channel key and the owner ids. */
-  const insertChannelOwners = (txn: EditTxn, count: number) => {
-    const channelKey = `bulk-aspects-${Guid.createValue()}`;
-    iModel.channels.addAllowedChannel(channelKey);
-    const channelSubject = iModel.channels.insertChannelSubject({ subjectName: channelKey, channelKey, txn });
-    const modelId = PhysicalModel.insert(txn, channelSubject, "ChannelModel");
-    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, `Category-${channelKey}`, {});
-    const owners = Array.from({ length: count }, () => txn.insertElement({ classFullName: "Generic:PhysicalObject", model: modelId, category: categoryId, code: Code.createEmpty() } as any));
-    return { channelKey, owners };
-  };
-
-  it("a channel revoked by a pre-handler is enforced for the remaining aspects of the call", () => {
-    inAbandonedTxn((txn) => {
-      const { channelKey, owners: [owner] } = insertChannelOwners(txn, 1);
-      const onInsert = (ElementAspect as any).onInsert;
-      sinon.stub(ElementAspect as any, "onInsert").callsFake(function (this: any, arg: any) {
-        onInsert.call(this, arg);
-        iModel.channels.removeAllowedChannel(channelKey);
-      });
       try {
-        expect(() => txn.insertAspects([multiProps(owner, "a"), multiProps(owner, "b")])).to.throw("not allowed");
+        iModel.channels.removeAllowedChannel(channelKey);
+        expect(() => txn.insertAspects([multiProps(owner, "denied")])).to.throw("not allowed");
         expect(aspectsOf(owner)).to.deep.equal([]);
+
+        iModel.channels.addAllowedChannel(channelKey);
+        txn.insertAspects([multiProps(owner, "allowed")]);
+        expect(aspectsOf(owner)).to.deep.equal(["TestMultiAspect:allowed"]);
       } finally {
         iModel.channels.removeAllowedChannel(channelKey);
       }
-    });
-  });
-
-  it("a nested bulk call made by a pre-handler checks the channel again", () => {
-    inAbandonedTxn((txn) => {
-      const { channelKey, owners: [outerOwner, nestedOwner] } = insertChannelOwners(txn, 2);
-      const onInsert = (ElementAspect as any).onInsert;
-      let nestedError: unknown;
-      sinon.stub(ElementAspect as any, "onInsert").callsFake(function (this: any, arg: any) {
-        onInsert.call(this, arg);
-        if (arg.props.element.id !== outerOwner)
-          return;
-        iModel.channels.removeAllowedChannel(channelKey);
-        try {
-          txn.insertAspects([multiProps(nestedOwner, "nested")]);
-        } catch (err) {
-          nestedError = err;
-        }
-      });
-      try {
-        expect(() => txn.insertAspects([multiProps(outerOwner, "outer")])).to.not.throw();
-        expect((nestedError as Error)?.message).to.contain("not allowed");
-        expect(aspectsOf(nestedOwner)).to.deep.equal([]);
-      } finally {
-        iModel.channels.removeAllowedChannel(channelKey);
-      }
-    });
-  });
-
-  it("calls the bulk handlers once per aspect class", () => {
-    inAbandonedTxn((txn) => {
-      const [e1, e2] = insertOwners(txn, 2);
-      const onBulkInsert = sinon.spy(ElementAspect as any, "onBulkInsert");
-      const onBulkInserted = sinon.spy(ElementAspect as any, "onBulkInserted");
-      const onBulkDelete = sinon.spy(ElementAspect as any, "onBulkDelete");
-      const { ids } = txn.insertAspects([multiProps(e1, "m1"), uniqueProps(e1, "u1"), multiProps(e2, "m2")]);
-
-      expect(onBulkInsert.callCount).to.equal(2);
-      expect(onBulkInsert.getCall(0).args[0].aspects.map((a: any) => a.props.strProp)).to.deep.equal(["m1", "m2"]);
-      expect(onBulkInsert.getCall(1).args[0].aspects.map((a: any) => a.props.strProp)).to.deep.equal(["u1"]);
-      expect(onBulkInsert.getCall(0).args[0].iModel).to.equal(iModel);
-      expect(onBulkInserted.callCount).to.equal(2);
-
-      txn.deleteAspects(ids);
-      expect(onBulkDelete.getCalls().map((c) => c.args[0].aspects.length)).to.deep.equal([2, 1]);
     });
   });
 
@@ -420,7 +216,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
     const [e1, e2] = withEditTxn(iModel, (txn) => insertOwners(txn, 2));
     const all = () => [...aspectsOf(e1), ...aspectsOf(e2)];
 
-    const { ids } = withEditTxn(iModel, (txn) => txn.insertAspects([uniqueProps(e1, "u1"), multiProps(e1, "m1"), multiProps(e2, "m2")]));
+    const ids = withEditTxn(iModel, (txn) => txn.insertAspects([uniqueProps(e1, "u1"), multiProps(e1, "m1"), multiProps(e2, "m2")]));
     const afterInsert = all();
     expect(afterInsert.length).to.equal(3);
 

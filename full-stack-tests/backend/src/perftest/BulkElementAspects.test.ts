@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { DbResult, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkElementAspectsStatus, ChannelControl, EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { ChannelControl, EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { Reporter } from "@itwin/perf-tools";
@@ -126,11 +126,7 @@ describe("PerformanceTest: Bulk ElementAspect operations", () => {
       if (api === "single") {
         time("insert", () => { ids = insertProps.map((props) => txn.insertAspect(props)); });
       } else {
-        time("insert", () => {
-          const result = txn.insertAspects(insertProps);
-          assert.equal(result.status, BulkElementAspectsStatus.Success);
-          ids = result.ids;
-        });
+        time("insert", () => { ids = txn.insertAspects(insertProps); });
       }
       const initialCount = countAspects(db);
       assert.isAtLeast(initialCount, count);
@@ -139,13 +135,13 @@ describe("PerformanceTest: Bulk ElementAspect operations", () => {
       if (api === "single")
         time("update", () => updateProps.forEach((props) => txn.updateAspect(props)));
       else
-        time("update", () => assert.equal(txn.updateAspects(updateProps).status, BulkElementAspectsStatus.Success));
+        time("update", () => txn.updateAspects(updateProps));
       assert.equal(countAspects(db), initialCount);
 
       if (api === "single")
         time("delete", () => txn.deleteAspect(ids));
       else
-        time("delete", () => assert.equal(txn.deleteAspects(ids).status, BulkElementAspectsStatus.Success));
+        time("delete", () => txn.deleteAspects(ids));
       assert.equal(countAspects(db), initialCount - count);
 
       txn.saveChanges();
