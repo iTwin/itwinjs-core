@@ -33,6 +33,11 @@ export class ElectronApp {
 export type ElectronAppOpts = NativeAppOpts;
 
 // @beta
+export enum ElectronBackendLoggerCategory {
+    ElectronHost = "core-electron.ElectronHost"
+}
+
+// @beta
 export class ElectronHost {
     // (undocumented)
     static get app(): Electron.App;
@@ -64,6 +69,7 @@ export interface ElectronHostOptions {
     frontendURL?: string;
     iconName?: string;
     ipcHandlers?: (typeof IpcHandler)[];
+    restrictIpcToFrontendOrigin?: boolean;
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
 }
