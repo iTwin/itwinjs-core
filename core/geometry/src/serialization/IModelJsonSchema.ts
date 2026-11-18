@@ -953,7 +953,8 @@ export namespace IModelJson {
 
     /** parse polyface aux data content to PolyfaceAuxData instance */
     public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
-
+      if (2 === numPerFace)
+        return undefined;
       if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
         return undefined;
 
@@ -983,6 +984,8 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
+        if (2 === numPerFace)
+          return undefined;
 
         // default value is true!!
         polyface.twoSided = this.parseBooleanProperty(data, "twoSided", true) ?? true;

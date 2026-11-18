@@ -663,6 +663,12 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, mesh.colorCount, "mesh has 4 colors");
       ck.testExactNumber(2, mesh.facetCount, "mesh has 2 facets");
     }
+
+    const invalidProps = structuredClone(props);
+    invalidProps.numPerFace = 2;
+    const invalidParsed = IModelJson.Reader.parse({ indexedMesh: invalidProps });
+    ck.testUndefined(invalidParsed, "invalid mesh with numPerFace = 2 should not parse");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 });
