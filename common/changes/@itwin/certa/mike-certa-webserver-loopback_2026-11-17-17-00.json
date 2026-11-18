@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Chrome test web server now listens only on the loopback interface and no longer sends wildcard CORS headers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
