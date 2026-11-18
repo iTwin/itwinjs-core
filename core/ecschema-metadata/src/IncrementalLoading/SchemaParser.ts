@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { setOwnProperty } from "@itwin/core-bentley";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps, SchemaProps } from "../Deserialization/JsonProps";
 import { parseSchemaItemType, SchemaItemType } from "../ECObjects";
@@ -77,7 +78,7 @@ export class SchemaParser {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
       const props = await this.parseItem(itemProps, schemaName, schemaInfos);
-      items[props.name] = props;
+      setOwnProperty(items, props.name, props);
       delete (props as any).name;
     }
 
