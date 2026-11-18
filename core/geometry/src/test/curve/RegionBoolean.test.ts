@@ -2323,6 +2323,47 @@ describe("RegionBooleanNearTangentArcs", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "ClosedCurveFaceAtVertex");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("ClosedBSplineTouchingCircleAtStart", () => {
+    // A closed B-spline and a unit circle outside it that touches it at the B-spline start point, which is also the circle
+    // start point. Each curve is a single edge of the graph, from the touch point back to it, so each disk is a face with
+    // one edge. These faces must not be dropped.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const poles = [Point3d.create(2, 0), Point3d.create(0, 2), Point3d.create(-2, 0), Point3d.create(0, -2)];
+    const bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, 3)!;
+    const start = bspline.fractionToPointAndDerivative(0);
+    const outward = Vector3d.create(start.direction.y, -start.direction.x).normalize()!;
+    const center = start.origin.plusScaled(outward, 1);
+    const startAngle = Angle.createAtan2(start.origin.y - center.y, start.origin.x - center.x);
+    const circle = Arc3d.createXY(center, 1, AngleSweep.createStartSweepDegrees(startAngle.degrees, 360));
+    const regionA = Loop.create(bspline);
+    const regionB = Loop.create(circle);
+    const areaA = RegionOps.computeXYArea(regionA)!;
+    const areaB = RegionOps.computeXYArea(regionB)!;
+    ck.testCoordinate(6.65625, areaA, "B-spline area");
+    ck.testCoordinate(Math.PI, areaB, "circle area");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB]);
+    const expectedAreas: Array<[RegionBinaryOpType, number]> = [
+      [RegionBinaryOpType.Union, areaA + areaB],
+      [RegionBinaryOpType.Parity, areaA + areaB],
+      [RegionBinaryOpType.Intersection, 0],
+      [RegionBinaryOpType.AMinusB, areaA],
+      [RegionBinaryOpType.BMinusA, areaB],
+    ];
+    let y0 = 0;
+    for (const [op, expectedArea] of expectedAreas) {
+      const result = RegionOps.regionBooleanXY(regionA, regionB, op);
+      const message = `op=${RegionBinaryOpType[op]}`;
+      if (expectedArea === 0) {
+        ck.testCoordinate(0, result ? RegionOps.computeXYArea(result) ?? 0 : 0, message);
+      } else if (ck.testDefined(result, message) && result) {
+        ck.testCoordinate(expectedArea, RegionOps.computeXYArea(result)!, message);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 10, y0 += 6);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "ClosedBSplineTouchingCircleAtStart");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearFullArcsInLoopsOpenBeyondTolerance", () => {
     // A is the union of a pinched loop (a large circle and a small circle inside it, tangent at the start of both) and a
     // second loop around the small circle, so A is the large disk. B is a circle. The small circle arcs sweep 359.99999594
