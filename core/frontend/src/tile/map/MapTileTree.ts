@@ -1017,8 +1017,8 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   private getFeatureInfoLayers(hit: HitDetail): FeatureInfoLayers | undefined {
-    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
-    if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d || undefined === hit.tileId)
+    const tree = this.treeOwner.tileTree;
+    if (!(tree instanceof MapTileTree) || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d || undefined === hit.tileId)
       return undefined;
 
     // Identical layers share a tree; the topmost drawn one owns the pixel.
@@ -1036,7 +1036,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   private getQueryableLayersAbove(position: number): MapLayerOnMap[] {
     const layers: MapLayerOnMap[] = [];
-    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
+    const tree = this.treeOwner.tileTree;
     const layerTrees = this._layerRefHandler.layerTrees;
     for (let i = layerTrees.length - 1; i > position; i--) {
       const layer = layerTrees[i];
@@ -1050,7 +1050,8 @@ export class MapTileTreeReference extends TileTreeReference {
 
       // A layer out of its zoom range across the whole view draws nothing to query.
       const imageryTreeId = layer.treeOwner.tileTree?.id;
-      if (undefined === imageryTreeId || tree?.getImageryTreeState(imageryTreeId)?.getScaleRangeVisibility() !== MapTileTreeScaleRangeVisibility.Hidden)
+      const visibility = tree instanceof MapTileTree && undefined !== imageryTreeId ? tree.getImageryTreeState(imageryTreeId)?.getScaleRangeVisibility() : undefined;
+      if (MapTileTreeScaleRangeVisibility.Hidden !== visibility)
         layers.push({ map: this, layer });
     }
 
@@ -1058,8 +1059,8 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   private getImageryTilesAt(hit: HitDetail, layer: MapLayerTileTreeReference, carto: Cartographic): ImageryMapTile[] {
-    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
-    if (undefined === tree)
+    const tree = this.treeOwner.tileTree;
+    if (!(tree instanceof MapTileTree))
       return [];
 
     // hit.tileId is the picked map's tile; the overlay loads its own tiles and may still draw a parent of it, so use the nearest tile with imagery.
