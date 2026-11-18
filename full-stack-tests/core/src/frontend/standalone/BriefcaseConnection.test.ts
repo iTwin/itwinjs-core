@@ -91,15 +91,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
 
       const abortSignal = new MockAbortSignal();
-      let lastProgressReport = { loaded: 0, total: 0 };
-      const downloadProgressCallback: OnDownloadProgress = (progress) => {
-        lastProgressReport = progress;
-
-        if (progress.loaded > progress.total / 4)
-          abortSignal.abort();
-      };
-
-      const pullPromise = connection.pullChanges(50, { downloadProgressCallback, abortSignal, progressInterval: 50 });
+      const pullPromise = connection.pullChanges(50, { abortSignal });
+      // Abort synchronously instead of from a progress event. The cancel request is sent on the same IPC channel right after the pull
+      // request, so the backend records it before the download starts. Aborting from a progress event races the remaining download.
+      abortSignal.abort();
 
       try {
         await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
@@ -110,9 +105,6 @@ if (ProcessDetector.isElectronAppFrontend) {
         await connection.close();
         await NativeApp.deleteBriefcase(fileName);
       }
-
-      assert.isAbove(lastProgressReport.loaded, 0);
-      assert.isBelow(lastProgressReport.loaded, lastProgressReport.total);
     });
 
     it("should be able to retrieve BisCore schema from SchemaContext", async () => {

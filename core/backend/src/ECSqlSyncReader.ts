@@ -6,12 +6,13 @@
  * @module ECSQL
  */
 import {
-  DbValueFormat,
+  Base64EncodedString,
   ECSqlReaderBase,
   IModelError,
+  PropertyMetaDataMap,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat, QueryRowProxy,
 } from "@itwin/core-common";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor, SyncReaderRowFlags } from "./ECSqlRowExecutor";
 import { DbResult } from "@itwin/core-bentley";
 
 /** @beta */
@@ -21,8 +22,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
  * Execute ECSQL statements synchronously and read the results one row at a time.
  *
  * This is the synchronous counterpart of [[ECSqlReader]] from `@itwin/core-common`.
- * It uses [[ECSqlRowExecutor]] directly — each call to [[step]] fetches exactly one row
- * with no internal caching, paging, or offset tracking.
+ * It uses [[ECSqlRowExecutor]] directly, with read-ahead batches on read-only dbs and live stepping on writable dbs.
  *
  * The query results are returned one row at a time. The format of the row is dictated by the
  * `rowFormat` specified in the `options` parameter of the constructed ECSqlSyncReader object.
@@ -40,8 +40,7 @@ export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "
 export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator<QueryRowProxy> {
   private _currentRow: any;
   private _options: SynchronousQueryOptions;
-  /** Cached native row-adaptor options — built once and reused for every row. */
-  private _cachedRowOptions: any;
+  private _ownsMetadata = false;
 
   /**
    * @internal
@@ -58,23 +57,35 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     }
 
     this._options = resolvedOptions;
-    const serializedParam = param ? param.serialize() : new QueryBinder().serialize();
 
-    // Prepare the statement and bind parameters once — avoids per-row ensureStatementReady overhead.
-    const args = Object.keys(serializedParam).length > 0 ? serializedParam : undefined;
-    this._executor.prepareAndBind(this.query, args);
-
-    // Build and cache the native row-adaptor options — reused for every step call.
+    // Row options are passed to native code once, as flags, and used for every row.
+    let rowFlags = SyncReaderRowFlags.DoNotConvertClassIdsToClassNamesWhenAliased;
+    if (this._options.abbreviateBlobs)
+      rowFlags |= SyncReaderRowFlags.AbbreviateBlobs;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
-    this._cachedRowOptions = {
-      abbreviateBlobs: this._options.abbreviateBlobs ?? false,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      classIdsToClassNames: this._options.convertClassIdsToClassNames ?? false,
-      useJsName: valueFormat === DbValueFormat.JsNames,
-      doNotConvertClassIdsToClassNamesWhenAliased: true,
-    };
+    if (this._options.convertClassIdsToClassNames)
+      rowFlags |= SyncReaderRowFlags.ClassIdsToClassNames;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    if (this._options.rowFormat === QueryRowFormat.UseJsPropertyNames)
+      rowFlags |= SyncReaderRowFlags.UseJsName;
+
+    this._executor.prepareAndBind(this.query, param ? ECSqlSyncReader.flattenArgs(param) : undefined, rowFlags);
     this._currentRow = undefined;
+  }
+
+  /** Flatten the bindings of `param` into `[key, type, value, ...]` triples, the form read by native code without
+   * per-property lookups. Entries lacking a type or value are skipped, as the object form skipped them.
+   * @internal
+   */
+  private static flattenArgs(param: QueryBinder): any[] | undefined {
+    const serialized = param.serialize() as Record<string, { type?: number, value?: any } | undefined>;
+    let args: any[] | undefined;
+    for (const key of Object.keys(serialized)) {
+      const arg = serialized[key];
+      if (typeof arg === "object" && arg !== null && "type" in arg && "value" in arg)
+        (args ??= []).push(key, arg.type, arg.value);
+    }
+    return args;
   }
 
   /**
@@ -90,8 +101,8 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    * Reads a single row from the executor. Returns the row data or `undefined` when the
    * result set is exhausted.
    *
-   * Uses the fast-path `stepNextRow` method on the executor, which calls `stmt.step()`
-   * and `stmt.toRow()` directly — no intermediate request/response objects are allocated per row.
+   * Uses the fast-path `stepNextRow` method on the executor, which serves rows from a read-ahead buffer filled by
+   * native code in batches — no intermediate request/response objects are allocated per row.
    * @internal
    */
   private readRow(): any {
@@ -101,10 +112,30 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
 
     // Fetch metadata once on the first call.
     if (this._props.length === 0) {
-      this._props = this._executor.fetchMetadata(this._cachedRowOptions);
+      this._props = this._executor.fetchMetadata();
+      this._ownsMetadata = false;
     }
 
     return this.stepWithRetry();
+  }
+
+  /**
+   * Native rows parsed from JSON hold `null` for null cells and base64 strings for blobs. Convert them in place to
+   * `undefined` and `Uint8Array`, matching rows whose cells were created directly.
+   * @internal
+   */
+  private static normalizeRow(row: any[]): void {
+    for (let i = 0; i < row.length; ++i) {
+      const val = row[i];
+      if (val === null) {
+        row[i] = undefined;
+      } else if (typeof val === "string") {
+        if (Base64EncodedString.hasPrefix(val))
+          row[i] = Base64EncodedString.toUint8Array(val);
+      } else if (typeof val === "object" && !(val instanceof Uint8Array)) {
+        ECSqlSyncReader.replaceBase64WithUint8Array(val);
+      }
+    }
   }
 
   /**
@@ -113,9 +144,9 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    * @internal
    */
   private stepWithRetry(): any {
-    const result = this._executor.stepNextRow(this._cachedRowOptions);
+    const result = this._executor.stepNextRow();
     if (result) {
-      ECSqlSyncReader.replaceBase64WithUint8Array(result);
+      ECSqlSyncReader.normalizeRow(result);
       return result;
     }
     return undefined; // undefined (done) → undefined
@@ -133,7 +164,19 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
    */
   public getMetaData(): QueryPropertyMetaData[] {
     if (this._props.length === 0) {
-      this._props = this._executor.fetchMetadata(this._cachedRowOptions);
+      this._props = this._executor.fetchMetadata();
+      this._ownsMetadata = false;
+    }
+    return this.getMetaDataInternal();
+  }
+
+  /** Copy shared metadata only when it leaves the reader, including through the row proxy.
+   * @internal
+   */
+  protected override getMetaDataInternal(): QueryPropertyMetaData[] {
+    if (!this._ownsMetadata) {
+      this._props = new PropertyMetaDataMap(this._props.properties.map((property) => ({ ...property })));
+      this._ownsMetadata = true;
     }
     return this._props.properties;
   }
@@ -141,8 +184,8 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
   /**
    * Step to the next row of the query result.
    *
-   * Each call executes exactly one step on the underlying statement — there is no
-   * internal row caching or offset tracking.
+   * On a writable db each step reads the next row from the underlying statement, so changes made inside the callback
+   * are visible to later steps. On a read-only db rows are read ahead in small, growing batches.
    *
    * @returns `true` if a row can be read from `current`.<br/>
    *          `false` if there are no more rows; i.e., all rows have been stepped through already.
