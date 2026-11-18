@@ -48,6 +48,7 @@ function getBuildCacheConfig(mode, env, nodeVersion = process.versions.node) {
 
 function runRushBuild(mode, args, env = process.env) {
   const config = getBuildCacheConfig(mode, env);
+  const nativeBuild = isNativeBuild(env);
   const buildEnv = {
     ...env,
     RUSH_BUILD_CACHE_OVERRIDE_JSON: JSON.stringify(config),
@@ -58,14 +59,16 @@ function runRushBuild(mode, args, env = process.env) {
   delete buildEnv.RUSH_BUILD_CACHE_ENABLED;
   delete buildEnv.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH;
   delete buildEnv[nativeCacheKeyEnv];
-  if (config.buildCacheEnabled && isNativeBuild(env)) {
+  if (config.buildCacheEnabled && nativeBuild) {
     // Only backend declares this input; Rush propagates it to backend consumers, not unrelated projects.
     buildEnv[nativeCacheKeyEnv] = `native-${env.BUILD_BUILDID || randomUUID()}`;
   }
   if (!config.buildCacheEnabled)
     delete buildEnv.RUSH_BUILD_CACHE_CREDENTIAL;
 
-  const result = childProcess.spawnSync(process.execPath, [path.join(__dirname, "install-run-rush.js"), "build", ...args], {
+  // Disabling archive caching does not invalidate Rush's legacy incremental records.
+  const command = nativeBuild && !config.buildCacheEnabled ? "rebuild" : "build";
+  const result = childProcess.spawnSync(process.execPath, [path.join(__dirname, "install-run-rush.js"), command, ...args], {
     env: buildEnv,
     stdio: "inherit",
   });
