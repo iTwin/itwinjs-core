@@ -5,9 +5,11 @@
 
 import { expect } from "chai";
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { IModel, IModelError, SheetProps } from "@itwin/core-common";
+import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { Code, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, SheetProps, SubCategoryAppearance } from "@itwin/core-common";
 import { withEditTxn } from "../../EditTxn";
-import { Sheet, SheetBorderPrototype, SheetPrototype } from "../../Element";
+import { DrawingCategory } from "../../Category";
+import { DrawingGraphic, GeometryPart, Sheet, SheetBorderPrototype, SheetPrototype } from "../../Element";
 import { SnapshotDb } from "../../IModelDb";
 import { DocumentListModel, DrawingModel, SheetModel } from "../../Model";
 import { SheetHasSheetPrototype, SheetPrototypeHasSheetBorderPrototype } from "../../NavigationRelationship";
@@ -188,6 +190,41 @@ describe("SheetPrototype", () => {
       expect(used.size).to.equal(0);
       expect(db.elements.tryGetElementProps(protoId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(borderId)).to.be.undefined;
+    });
+
+    it("deleteDefinitionElements deletes a part used only by graphics in a deleted border's sub-model", () => {
+      const { protoId, borderId, partId, graphicId } = withEditTxn(db, (txn) => {
+        const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
+        const categoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "BorderCategory", new SubCategoryAppearance());
+        const partBuilder = new GeometryStreamBuilder();
+        partBuilder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(1, 0, 0)));
+        const partProps: GeometryPartProps = {
+          classFullName: GeometryPart.classFullName,
+          model: IModel.dictionaryId,
+          code: GeometryPart.createCode(db, IModel.dictionaryId, "BorderPart"),
+          geom: partBuilder.geometryStream,
+        };
+        const part = txn.insertElement(partProps);
+        const graphicBuilder = new GeometryStreamBuilder();
+        graphicBuilder.appendGeometryPart2d(part);
+        const graphicProps: GeometricElement2dProps = {
+          classFullName: DrawingGraphic.classFullName,
+          model: border,
+          category: categoryId,
+          code: Code.createEmpty(),
+          placement: { origin: Point2d.createZero(), angle: 0 },
+          geom: graphicBuilder.geometryStream,
+        };
+        return { protoId: proto, borderId: border, partId: part, graphicId: txn.insertElement(graphicProps) };
+      });
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([protoId, borderId, partId]));
+      expect(used.size).to.equal(0);
+      expect(db.elements.tryGetElementProps(protoId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(borderId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(graphicId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(partId)).to.be.undefined;
     });
 
     it("deleteDefinitionElements keeps a border referenced by a surviving prototype", () => {

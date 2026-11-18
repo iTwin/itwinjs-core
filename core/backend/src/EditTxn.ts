@@ -580,7 +580,7 @@ export class EditTxn {
   }
 
   /** Delete definition elements from the iModel when they are not referenced.
-   * Definitions referenced only by other definitions deleted in the same call are also deleted.
+   * Requested definitions that become unused because other requested definitions were deleted are also deleted.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
    * @throws EditTxnError if this EditTxn is not active.
@@ -588,60 +588,46 @@ export class EditTxn {
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
     this.verifyWriteable();
-    const usageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
-    if (!usageInfo)
-      throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
+    let candidateIds = definitionElementIds;
+    while (true) {
+      const usageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(candidateIds);
+      if (!usageInfo)
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
 
-    const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
-    const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-      ids?.forEach((id) => {
-        if (!used.has(id))
-          this.deleteElement(id);
-      });
-    };
-
-    try {
-      this.iModel[_nativeDb].beginPurgeOperation();
-      deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
-      deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
-      deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
-      deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
-      deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.textureIds, usedIdSet);
-      deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
-      deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
-      deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
-      deleteIfUnused(usageInfo.otherDefinitionElementIds, usedIdSet);
-    } finally {
-      this.iModel[_nativeDb].endPurgeOperation();
-    }
-    // Recheck definitions that might have become unused due to deletions above.
-    const recheckCandidateIds: Id64Array = [...(usageInfo.otherDefinitionElementIds ?? [])];
-    if (usageInfo.viewDefinitionIds)
-      recheckCandidateIds.push(...(usageInfo.displayStyleIds ?? []), ...(usageInfo.categorySelectorIds ?? []), ...(usageInfo.modelSelectorIds ?? []));
-
-    const recheckIds = recheckCandidateIds.filter((id) => usedIdSet.has(id));
-    if (recheckIds.length > 0) {
-      const recheckUsageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(recheckIds);
-      if (recheckUsageInfo) {
-        const usedRecheckIdSet: Id64Set = recheckUsageInfo.usedIds ? Id64.toIdSet(recheckUsageInfo.usedIds) : new Set<Id64String>();
-        try {
-          this.iModel[_nativeDb].beginPurgeOperation();
-          deleteIfUnused(recheckIds, usedRecheckIdSet);
-        } finally {
-          this.iModel[_nativeDb].endPurgeOperation();
-        }
-
-        recheckIds.forEach((id) => {
-          if (!usedRecheckIdSet.has(id))
-            usedIdSet.delete(id);
+      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      let numDeleted = 0;
+      const deleteIfUnused = (ids: Id64Array | undefined): void => {
+        ids?.forEach((id) => {
+          if (!usedIdSet.has(id)) {
+            this.deleteElement(id);
+            ++numDeleted;
+          }
         });
-      }
-    }
+      };
 
-    return usedIdSet;
+      try {
+        this.iModel[_nativeDb].beginPurgeOperation();
+        deleteIfUnused(usageInfo.spatialCategoryIds);
+        deleteIfUnused(usageInfo.drawingCategoryIds);
+        deleteIfUnused(usageInfo.viewDefinitionIds);
+        deleteIfUnused(usageInfo.geometryPartIds);
+        deleteIfUnused(usageInfo.lineStyleIds);
+        deleteIfUnused(usageInfo.renderMaterialIds);
+        deleteIfUnused(usageInfo.subCategoryIds);
+        deleteIfUnused(usageInfo.textureIds);
+        deleteIfUnused(usageInfo.displayStyleIds);
+        deleteIfUnused(usageInfo.categorySelectorIds);
+        deleteIfUnused(usageInfo.modelSelectorIds);
+        deleteIfUnused(usageInfo.otherDefinitionElementIds);
+      } finally {
+        this.iModel[_nativeDb].endPurgeOperation();
+      }
+
+      if (0 === numDeleted || 0 === usedIdSet.size)
+        return usedIdSet;
+
+      candidateIds = [...usedIdSet];
+    }
   }
 
   /** Insert a new model into the iModel.
