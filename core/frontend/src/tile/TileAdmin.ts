@@ -348,10 +348,14 @@ export class TileAdmin {
   }
 
   /** Runs `retry` the next time the browser goes back online, so that a tile or tile tree that failed to load while offline can be loaded again.
-   * The retry is dropped if `iModel` is closed first.
+   * The retry is dropped if `iModel` is closed first, and ignored if `iModel` is already closed.
    * @internal
    */
   public retryWhenOnline(iModel: IModelConnection, retry: () => void): void {
+    // A request can still fail after its iModel closed; registering it would keep the closed iModel alive until reconnect.
+    if (iModel.tiles.isDisposed)
+      return;
+
     let retries = this._retriesWhenOnline.get(iModel);
     if (undefined === retries)
       this._retriesWhenOnline.set(iModel, retries = []);

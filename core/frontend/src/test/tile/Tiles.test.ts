@@ -218,6 +218,16 @@ describe("Tiles", () => {
     expect(retryForOpen).toHaveBeenCalledOnce();
   });
 
+  it("ignores retries for an iModel that is already closed", async () => {
+    const closedIModel = createBlankConnection("closed");
+    await closedIModel.close();
+
+    const retryForClosed = vi.fn();
+    IModelApp.tileAdmin.retryWhenOnline(closedIModel, retryForClosed);
+    window.dispatchEvent(new Event("online"));
+    expect(retryForClosed).not.toHaveBeenCalled();
+  });
+
   it("resetTileTreeOwner should remove the tiletree", async () => {
 
     const contentSize = 100;
