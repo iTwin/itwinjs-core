@@ -280,11 +280,13 @@ export class MobileRpcProtocol extends RpcProtocol {
     // (undocumented)
     readonly requestType: typeof MobileRpcRequest;
     // (undocumented)
-    sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest): void;
+    sendToBackend(message: MobileRpcChunks, request?: MobileRpcRequest, onSent?: () => void): void;
     // (undocumented)
     sendToFrontend(message: MobileRpcChunks, connection?: number): void;
     // (undocumented)
     socket: WebSocket;
+    // (undocumented)
+    static readonly suspendedCloseCode = 4000;
 }
 
 // @internal (undocumented)
