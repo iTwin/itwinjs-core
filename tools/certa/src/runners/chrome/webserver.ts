@@ -77,7 +77,7 @@ server.on("error", async (e: any) => {
   }
   try {
     numRetries++;
-    port = await detect(port);
+    port = await detect({ port, hostname: host });
     server.close();
     server.listen(port, host);
   } catch (error) {
