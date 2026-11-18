@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-i18n",
-      "comment": "",
+      "comment": "Log missing translation keys as single-line warnings.",
       "type": "none"
     }
   ],

@@ -347,6 +347,9 @@ describe("Logger", () => {
 
     callLoggerConfigLevels({ defaultLevel: "INFO" }, false);
     callLoggerConfigLevels({ categoryLevels: [{ category: "c1", logLevel: "wArNiNg" }] }, false);
+    callLoggerConfigLevels({ defaultLevel: "debug" }, false);
+    callLoggerConfigLevels({ defaultLevel: "None" }, false);
+    callLoggerConfigLevels({ defaultLevel: "1" }, true);
     callLoggerConfigLevels({ categoryLevels: { stuff: 0 } }, true);
     callLoggerConfigLevels({ xcategoryLevels: [{ category: "c1", logLevel: "Error" }] }, true);
     callLoggerConfigLevels({ categoryLevels: [{ xcategory: "c1", logLevel: "Error" }] }, true);
