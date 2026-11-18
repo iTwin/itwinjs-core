@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { setOwnProperty } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
@@ -759,7 +760,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
-        schemaJson.items[schemaItem.name] = schemaItem.toJSON(false, true);
+        setOwnProperty(schemaJson.items, schemaItem.name, schemaItem.toJSON(false, true));
       });
     }
     return schemaJson as SchemaProps;

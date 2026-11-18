@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix PolyfaceBuilder.addTransformedRangeMesh producing 6-vertex facets instead of triangles when StrokeOptions.shouldTriangulate is set.",
+      "type": "none",
+      "packageName": "@itwin/core-geometry"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "54706661+rowmanempire@users.noreply.github.com"
+}

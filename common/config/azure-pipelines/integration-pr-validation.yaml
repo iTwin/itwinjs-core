@@ -4,7 +4,7 @@
 # All other versions are run on `master` and `release/*` branches.
 #
 # Core graphics tests run in a separate blocking job, parallel to the remaining suites.
-# Move the graphics job's pool to a GPU/Mac lane for #2355 once pool access policy is settled.
+# Hosted Ubuntu renders with SwiftShader, which PlanarClipMask logs on every run.
 #
 # Note: Currently a subset of all integration tests
 

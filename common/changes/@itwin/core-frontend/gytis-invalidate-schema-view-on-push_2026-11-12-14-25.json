@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "`BriefcaseConnection.pushChanges` now invalidates the cached schema view if the incoming changes merged before pushing changed schemas, like `pullChanges` does.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
