@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode, setOwnProperty
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -1630,6 +1630,8 @@ export abstract class IModelDb extends IModel {
           try {
             nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
           } catch (err: any) {
+            // A failed native import clears the ECDb cache, which invalidates our cached statements.
+            this.clearCaches();
             if (SchemaSync.requiresUpgrade(err))
               throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
 
@@ -1672,6 +1674,8 @@ export abstract class IModelDb extends IModel {
       try {
         nativeImportOp(schemas, nativeImportOptions);
       } catch (err: any) {
+        // A failed native import clears the ECDb cache, which invalidates our cached statements.
+        this.clearCaches();
         throw new IModelError(err.errorNumber, err.message);
       }
     }
@@ -3310,7 +3314,7 @@ export namespace IModelDb {
       const row: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(parsedRow)) {
         const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
-        row[ECJsNames.toJsName(ecPropertyName)] = value;
+        setOwnProperty(row, ECJsNames.toJsName(ecPropertyName), value);
       }
 
       const className = row.className;
@@ -4623,6 +4627,8 @@ export class BriefcaseDb extends IModelDb {
           schemaSyncDbUri: syncAccess.getUri(),
         });
       } catch (err: any) {
+        // A failed native import clears the ECDb cache, which invalidates our cached statements.
+        this.clearCaches();
         this.abandonSchemaChanges();
         throw new IModelError(err.errorNumber, err.message);
       }

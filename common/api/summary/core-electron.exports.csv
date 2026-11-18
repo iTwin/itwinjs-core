@@ -4,6 +4,7 @@ beta;type;DialogModuleMethod
 deprecated;type;DialogModuleMethod
 beta;class;ElectronApp
 beta;type;ElectronAppOpts
+beta;enum;ElectronBackendLoggerCategory
 beta;class;ElectronHost
 beta;interface;ElectronHostOptions
 beta;interface;ElectronHostOpts

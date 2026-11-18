@@ -22,6 +22,8 @@ async function openMockedConnection(): Promise<BriefcaseConnection> {
     openBriefcase: vi.fn().mockResolvedValue(fakeBriefcaseProps),
     pullChanges: vi.fn().mockResolvedValue({ index: 5, id: "cs-0005" }),
     cancelPullChangesRequest: vi.fn(),
+    pushChanges: vi.fn().mockResolvedValue({ index: 6, id: "cs-0006" }),
+    cancelPushChangesRequest: vi.fn(),
     closeIModel: vi.fn().mockResolvedValue(undefined),
   } as any);
   return BriefcaseConnection.openFile({ fileName: "test.bim" });
@@ -126,5 +128,20 @@ describe("SchemaView frontend cache invalidation", () => {
 
     expect(view.isOutdated).toBe(false);
     expect(await (manager as any)._viewPromise).toBe(view);
+  });
+
+  it("pushChanges checks for schema changes once the push completes", async () => {
+    const conn = await openMockedConnection();
+    let resolvePush!: (changeset: { index: number, id: string }) => void;
+    vi.mocked(IpcApp.appFunctionIpc.pushChanges).mockReturnValue(new Promise((resolve) => resolvePush = resolve));
+    const invalidate = vi.spyOn(conn as any, "invalidateSchemaViewIfChanged").mockResolvedValue(undefined);
+
+    const push = conn.pushChanges("test");
+    await Promise.resolve();
+    expect(invalidate).not.toHaveBeenCalled();
+
+    resolvePush({ index: 6, id: "cs-0006" });
+    expect(await push).toEqual({ index: 6, id: "cs-0006" });
+    expect(invalidate).toHaveBeenCalledOnce();
   });
 });

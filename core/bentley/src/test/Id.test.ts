@@ -18,6 +18,16 @@ class Uint64Id {
 }
 
 describe("Ids", () => {
+  it("should iterate readonly collections and arbitrary iterables of Id64s", () => {
+    const ids: ReadonlyArray<Id64String> = ["0x1", "0x2"];
+    const set: ReadonlySet<Id64String> = new Set(ids);
+    expect([...Id64.iterable(ids)]).to.deep.equal(ids);
+    expect([...Id64.iterable(set)]).to.deep.equal(ids);
+    expect([...Id64.iterable(set.values())]).to.deep.equal(ids);
+    expect([...Id64.iterable("0x123")]).to.deep.equal(["0x123"]);
+    expect([...Id64.iterable([])]).to.deep.equal([]);
+  });
+
   it("Id64 should construct properly", () => {
     const id1 = Id64.fromJSON("0x123");
     assert.isTrue(Id64.isValidId64(id1), "good");
@@ -628,6 +638,24 @@ describe("CompressedId64Set", () => {
     roundTrip(["0x1", "0x10000000001"], "+1+10000000000");
 
     roundTrip(["0x4000000023a", "0xe00000001c9"], "+4000000023A+9FFFFFFFF8F");
+
+    // 8-digit increments followed by another run, and 9-digit increments.
+    roundTrip(["0x10000000", "0x10000001"], "+10000000+1");
+    roundTrip(["0x10000000", "0x20000000"], "+10000000*2");
+    roundTrip(["0x100000000"], "+100000000");
+    roundTrip(["0x1", "0x100000001"], "+1+100000000");
+    roundTrip(["0x100000000", "0x200000000"], "+100000000*2");
+
+    // Increments of every length, at the end of the string or followed by "+" or "*".
+    for (let nDigits = 1; nDigits <= 16; nDigits++) {
+      const zeros = "0".repeat(Math.max(0, nDigits - 2));
+      const hex = 1 === nDigits ? "1" : `1${zeros}1`;
+      const plusTwo = 1 === nDigits ? "3" : `1${zeros}3`;
+      const timesTwo = 1 === nDigits ? "2" : `2${zeros}2`;
+      roundTrip([`0x${hex}`], `+${hex}`);
+      roundTrip([`0x${hex}`, `0x${plusTwo}`], `+${hex}+2`);
+      roundTrip([`0x${hex}`, `0x${timesTwo}`], `+${hex}*2`);
+    }
 
     expect(CompressedId64Set.compressArray([])).to.equal("");
     expect(CompressedId64Set.compressArray(["0"])).to.equal("");
