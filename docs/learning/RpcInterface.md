@@ -220,12 +220,12 @@ It is this simple because the server should be concerned *only* with serving its
 
 ### Authorize Requests
 
-Permission to access an iModel is decided by the [iModels API](https://developer.bentley.com/apis/imodels-v2/). The RpcInterface implementations supplied by iTwin.js, such as `IModelReadRpcInterface` and `IModelTileRpcInterface`, do not check it on every request, and an iModel opened by a backend process may be shared between its callers.
+The RpcInterface implementations supplied by iTwin.js, such as `IModelReadRpcInterface` and `IModelTileRpcInterface`, do not check on every request whether the caller is permitted to access the iModel, and an iModel opened by a backend process may be shared between its callers. For an iModel hosted on the iTwin Platform, that permission is decided by the [iModels API](https://developer.bentley.com/apis/imodels-v2/).
 
 A backend that can be reached by more than one user must therefore authorize every request *before* forwarding it to the RPC protocol. This can be done in the Web server itself or in the routing infrastructure in front of it. For each request:
 
 - Authenticate the caller and verify that the caller is permitted to access the iModel that the request is addressed to. For an iModel hosted on the iTwin Platform, call [Get iModel Permissions](https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-permissions/) with the caller's access token and require `imodels_webview` before serving read-only requests. The result may be cached for a short time for each caller.
-- When the request's [IModelRpcProps]($common) has a `key`, verify that it identifies that same iModel. The backend finds the iModel by `key`, which the client supplies and which is not always derived from the request URL. In backend middleware, compare `IModelDb.tryFindByKey(key)?.iModelId` with the iModel the caller was authorized for.
+- When the request's [IModelRpcProps]($common) has a `key`, check it in backend middleware: reject the request if `IModelDb.tryFindByKey(key)` returns an iModel with a different `iModelId` than the one the caller was authorized for. The backend finds the iModel by `key`, which the client supplies in the request body or in the URL's `parameters` query value. A `key` that matches no open iModel must be let through, so that the client can reopen the iModel.
 
 > Note: `IModelJsExpressServer` from `@itwin/express-server` does not perform either check.
 

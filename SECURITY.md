@@ -23,4 +23,4 @@ For more information, please read Bentley's [responsible disclosure](https://www
 
 ## Access Control in iTwin.js Backends
 
-iTwin.js is a library. Permission to access an iModel is decided by the [iModels API](https://developer.bentley.com/apis/imodels-v2/), and a backend built with iTwin.js does not check it on every request. The application or its deployment environment is responsible for verifying each request against the iModels API before it reaches the backend's RPC interfaces. See [Authorize Requests](./docs/learning/RpcInterface.md#authorize-requests).
+iTwin.js is a library. A backend built with iTwin.js does not check on every request whether the caller is permitted to access an iModel. The application or its deployment environment is responsible for authorizing each request before it reaches the backend's RPC interfaces. See [Authorize Requests](./docs/learning/RpcInterface.md#authorize-requests).
