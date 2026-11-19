@@ -1,4 +1,4 @@
-import { AnyPropertyProps, AnySchemaItemProps, ClassProps, RelationshipClassProps, Schema, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyPropertyProps, AnySchemaItemProps, ClassProps, RelationshipClassProps, Schema, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { expect, use } from "chai";
 import { TestContext } from "./TestContext";
 import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLocater";
@@ -151,6 +151,24 @@ describe("ECSql query tests", function () {
 
     const actualSchema = await Schema.fromJson(actualSchemaProps!, env.schemaContext);
     expect(actualSchema.toJSON()).to.deep.equal(expectedSchema?.toJSON());
+  });
+
+  it("Schema query preserves nested JSON arrays and objects in a single query", async function () {
+    class SingleQuerySchemaLocater extends IModelIncrementalSchemaLocater {
+      public override async getSchemaJson(schemaKey: SchemaKey, context: SchemaContext) {
+        return super.getSchemaJson(schemaKey, context);
+      }
+    }
+
+    const testSchemaKey = new SchemaKey("SchemaTest", 1, 0, 0);
+    await using env = await createTestContext();
+    const expectedSchema = await env.importAssetSchema(testSchemaKey);
+    const locater = new SingleQuerySchemaLocater(env.iModel, { useMultipleQueries: false });
+    const actualSchemaProps = await locater.getSchemaJson(testSchemaKey, env.schemaContext);
+    expect(actualSchemaProps).to.not.be.undefined;
+
+    const actualSchema = await Schema.fromJson(actualSchemaProps!, env.schemaContext);
+    expect(actualSchema.toJSON()).to.deep.equal(expectedSchema.toJSON());
   });
 
   it("Property query, props parsed successfully", async function () {
