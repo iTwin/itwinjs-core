@@ -608,11 +608,16 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       numPoles = Math.floor(numPoles / 3); // blocked as xyz
     if (numPoles < order)
       return undefined;
+
+    // validate knots
     const numKnots = knotArray.length;
-    const skipFirstAndLast = (numPoles + order === numKnots); // classic over-clamped input knots
-    if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern knots
+    const skipFirstAndLast = (numPoles + order === numKnots);   // classic
+    if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern
       return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
+    if (!knots.isValid)
+      return undefined;
+
     const curve = new BSplineCurve3d(numPoles, order, knots);
     let i = 0;
     if (poleArray instanceof Float64Array) {
