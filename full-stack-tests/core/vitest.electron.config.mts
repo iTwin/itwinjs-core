@@ -41,38 +41,6 @@ export default defineConfig({
         replacement: require.resolve("path-browserify"),
       },
       {
-        find: /^@itwin\/core-frontend\/lib\/cjs\/internal\/render\/MockRender(?:\.js)?$/,
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredMockRender.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/internal/webgl",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredWebgl.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredPrimitiveBuilder.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredIModelTileTree.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredDynamicIModelTile.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/internal/tile/ThreeDTileFormatInterpreter",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredThreeDTileFormatInterpreter.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredParseImdlDocument.mjs"),
-      },
-      {
-        find: "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams",
-        replacement: path.resolve(packageRoot, "src/frontend/DeferredSurfaceParams.mjs"),
-      },
-      {
         find: /^@itwin\/core-frontend\/lib\/cjs\//,
         replacement: `${path.resolve(packageRoot, "../../core/frontend/lib/esm")}/`,
       },
