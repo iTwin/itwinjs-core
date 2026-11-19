@@ -89,6 +89,17 @@ export class KnotVector {
   public get numSpans() {
     return this.rightKnotIndex - this.leftKnotIndex;
   }
+  /** Verify that the knot values are valid. */
+  public get isValid(): boolean {
+    if (this.numSpans <= 0)
+      return false; // not enough exterior knots
+    if (this.rightKnot - this.leftKnot <= 0)
+      return false; // trivial knot range
+    for (let i = 1; i < this.knots.length; i++)
+      if (this.knots[i] < this.knots[i - 1])
+        return false; // knots must be non-decreasing
+    return true;
+  }
   /**
    * Private constructor.
    * * If `knots` is a number array or Float64Array, then its values are copied to the instance array.
