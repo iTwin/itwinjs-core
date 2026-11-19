@@ -3215,26 +3215,30 @@ describe("Viewport", () => {
 
   describe("expandFrustumDepth", () => {
     class RangeGraphic extends Graphic {
+      public disposed = false;
+
       public constructor(private readonly _range: Range3d) {
         super();
       }
 
       public addCommands() { }
-      public get isDisposed() { return true; }
+      public get isDisposed() { return this.disposed; }
       public get isPickable() { return false; }
-      public dispose() { }
+      public dispose() { this.disposed = true; }
       public collectStatistics() { }
       public override unionRange(range: Range3d) {
         range.extendRange(this._range);
       }
     }
 
-    function makeDecorator(range: Range3d, expand: boolean): Decorator {
+    function makeDecorator(range: Range3d, expand: boolean, createdGraphics?: RangeGraphic[]): Decorator {
       return {
         useCachedDecorations: true as const,
         expandFrustumDepth: expand ? true as const : undefined,
         decorate: (context: DecorateContext) => {
-          context.addDecoration(GraphicType.WorldDecoration, new RangeGraphic(range));
+          const graphic = new RangeGraphic(range);
+          createdGraphics?.push(graphic);
+          context.addDecoration(GraphicType.WorldDecoration, graphic);
         },
       };
     }
@@ -3270,10 +3274,20 @@ describe("Viewport", () => {
     const decorationRange = new Range3d(0.25, 0.25, 2000, 0.75, 0.75, 3000);
 
     it("expands the frustum depth to include cached decorations and restores it when the decorator is dropped", () => {
-      const dec = makeDecorator(decorationRange, true);
+      const createdGraphics: RangeGraphic[] = [];
+      const dec = makeDecorator(decorationRange, true, createdGraphics);
       testDecorator(dec, (vp, baseline) => {
-        vp.renderFrame(); // creates and caches the decoration, detects the new range, and invalidates the controller.
-        vp.renderFrame(); // recomputes the frustum, including the decoration's range.
+        vp.renderFrame(); // creates and caches the decoration, detects the new range, and marks the frustum for recomputation.
+
+        // The graphics drawn by this frame must not be disposed of before the frame completes - the frustum recomputation (and the resulting
+        // scene invalidation that disposes of the cached decorations) must be deferred to the next frame.
+        expect(createdGraphics.length).toBe(1);
+        expect(createdGraphics[0].disposed).toBe(false);
+
+        vp.renderFrame(); // recomputes the frustum, including the decoration's range, and recreates the decoration.
+        expect(createdGraphics.length).toBe(2);
+        expect(createdGraphics[0].disposed).toBe(true);
+        expect(createdGraphics[1].disposed).toBe(false);
 
         expect(vp.viewingSpace.decorationDepthRange.isAlmostEqual(decorationRange)).toBe(true);
         const expanded = frustumZRange(vp);

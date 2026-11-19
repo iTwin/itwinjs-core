@@ -2947,8 +2947,14 @@ export abstract class Viewport implements Disposable, TileUser {
         }
       }
 
-      if (!decorationDepthRange.isAlmostEqual(this.viewingSpace.decorationDepthRange))
-        this.invalidateController();
+      if (!decorationDepthRange.isAlmostEqual(this.viewingSpace.decorationDepthRange)) {
+        // Recompute the frustum on the next frame. Note: invalidateController must not be called here - it would immediately invalidate the
+        // scene, disposing of the cached decoration graphics just submitted to the target before they are drawn at the end of this frame.
+        // The next frame's setupFromView invalidates the scene after the frustum is recomputed, so the decorations are recreated before
+        // they are drawn.
+        this._controllerValid = this._analysisFractionValid = false;
+        IModelApp.requestNextAnimation();
+      }
     }
 
     let requestNextAnimation = false;
