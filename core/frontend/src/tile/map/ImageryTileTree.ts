@@ -55,6 +55,13 @@ export class ImageryMapTile extends RealityTile {
     this.setIsReady();
   }
 
+  /** Imagery is fetched from map servers, so a load that failed while offline is worth retrying.
+   * @internal
+   */
+  public override get retriesLoadWhenOnline(): boolean {
+    return true;
+  }
+
   /** @internal */
   public override setNotFound(): void {
     super.setNotFound();

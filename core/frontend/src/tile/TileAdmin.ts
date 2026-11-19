@@ -184,7 +184,9 @@ export class TileAdmin {
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
   private readonly _cloudStorage?: FrontendStorage;
-  private readonly _retriesWhenOnline = new Map<IModelConnection, Array<() => void>>();
+  private readonly _retriesWhenOnline = new Map<IModelConnection, Map<object, Array<() => void>>>();
+  private _reconnectCount = 0;
+  private _isShutDown = false;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -330,7 +332,7 @@ export class TileAdmin {
     ];
 
     if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-      const onOnline = () => this.retryFailuresWhileOffline();
+      const onOnline = () => this.onOnline();
       window.addEventListener("online", onOnline);
       removals.push(() => window.removeEventListener("online", onOnline));
     }
@@ -347,31 +349,59 @@ export class TileAdmin {
     return typeof navigator !== "undefined" && false === navigator.onLine;
   }
 
-  /** Runs `retry` the next time the browser goes back online, so that a tile or tile tree that failed to load while offline can be loaded again.
-   * The retry is dropped if `iModel` is closed first, and ignored if `iModel` is already closed.
+  /** The number of times the browser has gone back online since this TileAdmin was created.
+   * Read it when a load starts and compare it when the load fails, to detect a load that was pending while the browser reconnected.
    * @internal
    */
-  public retryWhenOnline(iModel: IModelConnection, retry: () => void): void {
-    // A request can still fail after its iModel closed; registering it would keep the closed iModel alive until reconnect.
-    if (iModel.tiles.isDisposed)
+  public get reconnectCount(): number {
+    return this._reconnectCount;
+  }
+
+  /** Runs `retry` the next time the browser goes back online, so that a tile or tile tree that failed to load while offline can be loaded again.
+   * Registrations are grouped by `owner` (a tile tree or tile tree owner) so that [[releaseRetriesWhenOnline]] can drop them when the owner is disposed.
+   * They are also dropped when `iModel` closes, and ignored if `iModel` is already closed or this TileAdmin has shut down.
+   * @internal
+   */
+  public retryWhenOnline(iModel: IModelConnection, owner: object, retry: () => void): void {
+    // A load can still fail after its iModel closed or after shutdown; nothing would release the registration then.
+    if (this._isShutDown || iModel.tiles.isDisposed)
       return;
 
-    let retries = this._retriesWhenOnline.get(iModel);
+    let retriesByOwner = this._retriesWhenOnline.get(iModel);
+    if (undefined === retriesByOwner)
+      this._retriesWhenOnline.set(iModel, retriesByOwner = new Map());
+
+    let retries = retriesByOwner.get(owner);
     if (undefined === retries)
-      this._retriesWhenOnline.set(iModel, retries = []);
+      retriesByOwner.set(owner, retries = []);
 
     retries.push(retry);
   }
 
-  private retryFailuresWhileOffline(): void {
+  /** Drops the retries registered by [[retryWhenOnline]] for `owner`, e.g. because it was disposed.
+   * @internal
+   */
+  public releaseRetriesWhenOnline(iModel: IModelConnection, owner: object): void {
+    const retriesByOwner = this._retriesWhenOnline.get(iModel);
+    if (undefined === retriesByOwner)
+      return;
+
+    retriesByOwner.delete(owner);
+    if (0 === retriesByOwner.size)
+      this._retriesWhenOnline.delete(iModel);
+  }
+
+  private onOnline(): void {
+    ++this._reconnectCount;
     if (0 === this._retriesWhenOnline.size)
       return;
 
-    const retries = [...this._retriesWhenOnline.values()];
+    const retriesByIModel = [...this._retriesWhenOnline.values()];
     this._retriesWhenOnline.clear();
-    for (const retriesForIModel of retries)
-      for (const retry of retriesForIModel)
-        retry();
+    for (const retriesByOwner of retriesByIModel)
+      for (const retries of retriesByOwner.values())
+        for (const retry of retries)
+          retry();
 
     this.invalidateAllScenes();
   }
@@ -629,6 +659,7 @@ export class TileAdmin {
 
   /** @internal */
   public onShutDown(): void {
+    this._isShutDown = true;
     if (this._cleanup) {
       this._cleanup();
       this._cleanup = undefined;

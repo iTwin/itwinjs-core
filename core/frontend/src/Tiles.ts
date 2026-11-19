@@ -40,6 +40,10 @@ class TreeOwner implements TileTreeOwner {
   }
 
   public [Symbol.dispose](): void {
+    IModelApp.tileAdmin.releaseRetriesWhenOnline(this._iModel, this);
+    if (this._tileTree)
+      IModelApp.tileAdmin.releaseRetriesWhenOnline(this._iModel, this._tileTree);
+
     this._tileTree = dispose(this._tileTree);
     this._loadStatus = TileTreeLoadStatus.NotLoaded;
   }
@@ -49,22 +53,30 @@ class TreeOwner implements TileTreeOwner {
       return;
 
     this._loadStatus = TileTreeLoadStatus.Loading;
+    const tileAdmin = IModelApp.tileAdmin;
+    const reconnectCountAtStart = tileAdmin.reconnectCount;
     let tree: TileTree | undefined;
     let newStatus: TileTreeLoadStatus;
+    let supplierFailed = false;
     try {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
     } catch (err: any) {
-      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
+      supplierFailed = !(err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout);
+      newStatus = supplierFailed ? TileTreeLoadStatus.NotFound : TileTreeLoadStatus.NotLoaded;
     }
 
     if (TileTreeLoadStatus.Loading === this._loadStatus) {
+      // The browser reconnected while the supplier was loading, so load the tree once more.
+      if (supplierFailed && !tileAdmin.isOffline && tileAdmin.reconnectCount !== reconnectCountAtStart)
+        newStatus = TileTreeLoadStatus.NotLoaded;
+
       this._tileTree = tree;
       this._loadStatus = newStatus;
-      if (TileTreeLoadStatus.NotFound === newStatus && IModelApp.tileAdmin.isOffline)
-        IModelApp.tileAdmin.retryWhenOnline(this._iModel, () => this.resetNotFound());
+      if (supplierFailed && tileAdmin.isOffline)
+        tileAdmin.retryWhenOnline(this._iModel, this, () => this.resetNotFound());
 
-      IModelApp.tileAdmin.onTileTreeLoad.raiseEvent(this);
+      tileAdmin.onTileTreeLoad.raiseEvent(this);
     }
   }
 
@@ -72,7 +84,6 @@ class TreeOwner implements TileTreeOwner {
     if (TileTreeLoadStatus.NotFound !== this._loadStatus)
       return;
 
-    this._tileTree = dispose(this._tileTree);
     this._loadStatus = TileTreeLoadStatus.NotLoaded;
   }
 }

@@ -206,6 +206,14 @@ export abstract class Tile {
     this._state = TileState.NotFound;
   }
 
+  /** True if a failure to load this tile's content because the browser is offline should be retried once it is back online.
+   * Otherwise a failed tile stays "not found", as [[TileRequestChannel.onNoContent]] documents.
+   * @internal
+   */
+  public get retriesLoadWhenOnline(): boolean {
+    return false;
+  }
+
   /** Makes a tile that failed to load eligible to be requested again.
    * @internal
    */

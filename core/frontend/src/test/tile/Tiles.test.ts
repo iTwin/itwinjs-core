@@ -209,8 +209,8 @@ describe("Tiles", () => {
     const closedIModel = createBlankConnection("closed");
     const retryForClosed = vi.fn();
     const retryForOpen = vi.fn();
-    IModelApp.tileAdmin.retryWhenOnline(closedIModel, retryForClosed);
-    IModelApp.tileAdmin.retryWhenOnline(imodel, retryForOpen);
+    IModelApp.tileAdmin.retryWhenOnline(closedIModel, {}, retryForClosed);
+    IModelApp.tileAdmin.retryWhenOnline(imodel, {}, retryForOpen);
 
     await closedIModel.close();
     window.dispatchEvent(new Event("online"));
@@ -223,9 +223,112 @@ describe("Tiles", () => {
     await closedIModel.close();
 
     const retryForClosed = vi.fn();
-    IModelApp.tileAdmin.retryWhenOnline(closedIModel, retryForClosed);
+    IModelApp.tileAdmin.retryWhenOnline(closedIModel, {}, retryForClosed);
     window.dispatchEvent(new Event("online"));
     expect(retryForClosed).not.toHaveBeenCalled();
+  });
+
+  it("does not reload a tile tree that the supplier returned while offline", async () => {
+    const emptyTree = new TestTree(100, imodel);
+    vi.spyOn(emptyTree.rootTile, "contentRange", "get").mockReturnValue(Range3d.createNull());
+    const owner = imodel.tiles.getTileTreeOwner(emptyTree, supplier);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      await owner.loadTree();
+      expect(owner.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      expect(owner.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+      expect(emptyTree.isDisposed).toBe(false);
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
+  it("reloads a tile tree once more if the browser reconnected while it was loading", async () => {
+    let rejectLoad!: (error: Error) => void;
+    const deferredSupplier: TileTreeSupplier = {
+      compareTileTreeIds: (lhs: TestTree, rhs: TestTree) => lhs.treeId - rhs.treeId,
+      createTileTree: async () => new Promise<TileTree | undefined>((_resolve, reject) => rejectLoad = reject),
+    };
+
+    const owner = imodel.tiles.getTileTreeOwner(new TestTree(100, imodel), deferredSupplier);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      const loading = owner.loadTree();
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      rejectLoad(new Error("Failed to fetch"));
+      await loading;
+      expect(owner.loadStatus).toEqual(TileTreeLoadStatus.NotLoaded);
+
+      const reloading = owner.loadTree();
+      rejectLoad(new Error("Failed to fetch"));
+      await reloading;
+      expect(owner.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
+  it("releases the retries of tile tree owners that are reset before the browser is back online", async () => {
+    const failingSupplier: TileTreeSupplier = {
+      compareTileTreeIds: (lhs: TestTree, rhs: TestTree) => lhs.treeId - rhs.treeId,
+      createTileTree: async () => {
+        throw new Error("Failed to fetch");
+      },
+    };
+
+    const failedTreeId = new TestTree(100, imodel);
+    const failedOwner = imodel.tiles.getTileTreeOwner(failedTreeId, failingSupplier);
+    const loadedTree = new TestTree(100, imodel);
+    const loadedOwner = imodel.tiles.getTileTreeOwner(loadedTree, supplier);
+    const retryForTile = vi.fn();
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      await failedOwner.loadTree();
+      await loadedOwner.loadTree();
+      // As registered by a map tile of the loaded tree that failed while offline.
+      IModelApp.tileAdmin.retryWhenOnline(imodel, loadedTree, retryForTile);
+      expect((IModelApp.tileAdmin as any)._retriesWhenOnline.get(imodel).size).toEqual(2);
+
+      imodel.tiles.resetTileTreeOwner(failedTreeId, failingSupplier);
+      imodel.tiles.resetTileTreeOwner(loadedTree, supplier);
+      expect((IModelApp.tileAdmin as any)._retriesWhenOnline.size).toEqual(0);
+
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      expect(retryForTile).not.toHaveBeenCalled();
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
+  it("ignores tile tree failures that arrive after the tile admin shut down", async () => {
+    let rejectLoad!: (error: Error) => void;
+    const deferredSupplier: TileTreeSupplier = {
+      compareTileTreeIds: (lhs: TestTree, rhs: TestTree) => lhs.treeId - rhs.treeId,
+      createTileTree: async () => new Promise<TileTree | undefined>((_resolve, reject) => rejectLoad = reject),
+    };
+
+    const owner = imodel.tiles.getTileTreeOwner(new TestTree(100, imodel), deferredSupplier);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      const loading = owner.loadTree();
+      const tileAdmin = IModelApp.tileAdmin;
+      await MockRender.App.shutdown();
+      rejectLoad(new Error("Failed to fetch"));
+      await loading;
+      expect(owner.loadStatus).toEqual(TileTreeLoadStatus.NotFound);
+      expect((tileAdmin as any)._retriesWhenOnline.size).toEqual(0);
+    } finally {
+      onLine.mockRestore();
+    }
   });
 
   it("resetTileTreeOwner should remove the tiletree", async () => {

@@ -6890,6 +6890,8 @@ export class MapTile extends RealityTile {
     // @internal (undocumented)
     protected _renderGeometry?: RenderTerrainGeometry;
     // @internal
+    get retriesLoadWhenOnline(): boolean;
+    // @internal
     selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: TerrainTileContent): void;
@@ -11521,6 +11523,8 @@ export abstract class Tile {
     abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
     // @internal
     resetNotFound(): void;
+    // @internal
+    get retriesLoadWhenOnline(): boolean;
     setContent(content: TileContent): void;
     // (undocumented)
     protected setGraphic(graphic: RenderGraphic | undefined): void;
@@ -11667,7 +11671,11 @@ export class TileAdmin {
     // @internal
     purgeUnusedTreesForIModel(iModel: IModelConnection): void;
     queryVersionInfo(): Promise<Readonly<TileVersionInfo>>;
+    // @internal
+    get reconnectCount(): number;
     registerUser(user: TileUser): void;
+    // @internal
+    releaseRetriesWhenOnline(iModel: IModelConnection, owner: object): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -11680,7 +11688,7 @@ export class TileAdmin {
     requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
     resetStatistics(): void;
     // @internal
-    retryWhenOnline(iModel: IModelConnection, retry: () => void): void;
+    retryWhenOnline(iModel: IModelConnection, owner: object, retry: () => void): void;
     // @alpha
     get selectedLoadedTiles(): Iterable<Tile>;
     get statistics(): TileAdmin.Statistics;
