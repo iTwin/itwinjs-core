@@ -3206,9 +3206,11 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
     deleteSpecialElements(): void;
     // (undocumented)
-    protected shouldExploreModel(_model: Model): boolean;
+    protected shouldExploreModel(model: Model): boolean;
     // (undocumented)
     protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    protected shouldVisitModel(model: Model): boolean;
     // (undocumented)
     protected _special: SpecialElements;
     // (undocumented)

@@ -8,7 +8,7 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, QueryBinder, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
@@ -605,6 +605,12 @@ export class EditTxn {
         });
       };
 
+      // Definitions with sub-models must be deleted together with their sub-model contents.
+      // DefinitionModel sub-models are excluded so that their definitions are not deleted wholesale.
+      const otherIds = usageInfo.otherDefinitionElementIds?.filter((id) => !usedIdSet.has(id)) ?? [];
+      const subModeledIds = otherIds.filter((id) => this.iModel.withQueryReader(
+        "SELECT 1 FROM bis.Model WHERE ECInstanceId=? AND ECClassId IS NOT (bis.DefinitionModel)", (reader) => reader.step(), new QueryBinder().bindId(1, id)));
+
       try {
         this.iModel[_nativeDb].beginPurgeOperation();
         deleteIfUnused(usageInfo.spatialCategoryIds);
@@ -618,9 +624,19 @@ export class EditTxn {
         deleteIfUnused(usageInfo.displayStyleIds);
         deleteIfUnused(usageInfo.categorySelectorIds);
         deleteIfUnused(usageInfo.modelSelectorIds);
-        deleteIfUnused(usageInfo.otherDefinitionElementIds);
+        deleteIfUnused(otherIds.filter((id) => !subModeledIds.includes(id)));
       } finally {
         this.iModel[_nativeDb].endPurgeOperation();
+      }
+
+      for (const id of subModeledIds) {
+        const result = this.deleteElements([id]);
+        if (BulkDeleteElementsStatus.Success === result.status)
+          ++numDeleted;
+        else if (BulkDeleteElementsStatus.ConstraintViolation === result.status)
+          usedIdSet.add(id); // something in its sub-model is still referenced from outside
+        else
+          throw new IModelError(IModelStatus.BadRequest, `Error deleting definition element ${id} and its sub-model`);
       }
 
       if (0 === numDeleted || 0 === usedIdSet.size)
