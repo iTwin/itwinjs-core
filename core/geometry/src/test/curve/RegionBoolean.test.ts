@@ -2338,17 +2338,23 @@ describe("RegionBooleanNearTangentArcs", () => {
     const circle = Arc3d.createXY(center, 1, AngleSweep.createStartSweepDegrees(startAngle.degrees, 360));
     const regionA = Loop.create(bspline);
     const regionB = Loop.create(circle);
+    // The exact B-spline area is 20/3: the square with vertices at the midpoints of the control polygon edges, plus 4
+    // parabolic segments of area 2/3. computeXYArea strokes the B-spline, so areas with the B-spline are compared with a
+    // tolerance. A lost disk would be an error of at least pi, far above the tolerance.
+    const exactAreaA = 20 / 3;
+    const exactAreaB = Math.PI;
+    const areaTolerance = 0.02;
     const areaA = RegionOps.computeXYArea(regionA)!;
     const areaB = RegionOps.computeXYArea(regionB)!;
-    ck.testCoordinate(6.65625, areaA, "B-spline area");
-    ck.testCoordinate(Math.PI, areaB, "circle area");
+    ck.testTrue(Math.abs(areaA - exactAreaA) < areaTolerance, "B-spline area", areaA);
+    ck.testCoordinate(exactAreaB, areaB, "circle area");
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [regionA, regionB]);
     const expectedAreas: Array<[RegionBinaryOpType, number]> = [
-      [RegionBinaryOpType.Union, areaA + areaB],
-      [RegionBinaryOpType.Parity, areaA + areaB],
+      [RegionBinaryOpType.Union, exactAreaA + exactAreaB],
+      [RegionBinaryOpType.Parity, exactAreaA + exactAreaB],
       [RegionBinaryOpType.Intersection, 0],
-      [RegionBinaryOpType.AMinusB, areaA],
-      [RegionBinaryOpType.BMinusA, areaB],
+      [RegionBinaryOpType.AMinusB, exactAreaA],
+      [RegionBinaryOpType.BMinusA, exactAreaB],
     ];
     let y0 = 0;
     for (const [op, expectedArea] of expectedAreas) {
@@ -2357,7 +2363,8 @@ describe("RegionBooleanNearTangentArcs", () => {
       if (expectedArea === 0) {
         ck.testCoordinate(0, result ? RegionOps.computeXYArea(result) ?? 0 : 0, message);
       } else if (ck.testDefined(result, message) && result) {
-        ck.testCoordinate(expectedArea, RegionOps.computeXYArea(result)!, message);
+        const area = RegionOps.computeXYArea(result);
+        ck.testTrue(area !== undefined && Math.abs(area - expectedArea) < areaTolerance, message, area, expectedArea);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 10, y0 += 6);
       }
     }
