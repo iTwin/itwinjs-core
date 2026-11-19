@@ -263,8 +263,9 @@ export class ECSchemaToTs {
       outputString += `${this.convertDescriptionToTsComment(ecEnum.description)}\n`;
 
     outputString += `export const enum ${ecEnum.name} {\n`;
-    for (const ecEnumerator of ecEnum.enumerators) {
-      outputString += `  ${this.getEnumeratorMemberName(ecEnum, ecEnumerator)}`;
+    const memberNames = this.getEnumeratorMemberNames(ecEnum);
+    ecEnum.enumerators.forEach((ecEnumerator, index) => {
+      outputString += `  ${memberNames[index]}`;
       if (ecEnum.isInt) {
         if (typeof ecEnumerator.value !== "number" || !Number.isFinite(ecEnumerator.value))
           throw new Error(`Enumerator ${ecEnum.fullName}.${ecEnumerator.name} has an invalid integer value.`);
@@ -273,7 +274,7 @@ export class ECSchemaToTs {
         outputString += ` = ${this.toTsStringLiteral(String(ecEnumerator.value))}`;
       }
       outputString += ",\n";
-    }
+    });
 
     outputString += "}\n\n";
     return outputString;
@@ -506,6 +507,22 @@ export class ECSchemaToTs {
     }
 
     return ecEnumerator.name;
+  }
+
+  /**
+   * Get the typescript enum member names for all enumerators of an enumeration. If the preferred names (see getEnumeratorMemberName)
+   * collide, for example when a display label matches another enumerator's name, the enumerator names are used for every member
+   * instead. Enumerator names are unique within an enumeration, so the result never contains duplicates.
+   * @param ecEnum Schema enumeration to get the typescript enum member names for
+   */
+  private getEnumeratorMemberNames(ecEnum: Enumeration): string[] {
+    const preferredNames = ecEnum.enumerators.map((ecEnumerator) => this.getEnumeratorMemberName(ecEnum, ecEnumerator));
+    if (new Set(preferredNames).size === preferredNames.length)
+      return preferredNames;
+
+    // eslint-disable-next-line no-console
+    console.log(`Display labels of enumeration ${ecEnum.fullName} produce duplicate member names. The enumerator names will be used instead.`);
+    return ecEnum.enumerators.map((ecEnumerator) => ecEnumerator.name);
   }
 
   /**

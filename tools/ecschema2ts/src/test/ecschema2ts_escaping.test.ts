@@ -26,8 +26,12 @@ function expectSafeTypescript(source: string, expectedEnumNames: string[] = []):
   const enumNames: string[] = [];
   for (const statement of sourceFile.statements) {
     expect(allowedStatementKinds.has(statement.kind), `Unexpected ${ts.SyntaxKind[statement.kind]} in:\n${source}`).to.be.true;
-    if (ts.isEnumDeclaration(statement))
+    if (ts.isEnumDeclaration(statement)) {
       enumNames.push(statement.name.text);
+      // Duplicate enum members are a semantic error that transpileModule does not report.
+      const memberNames = statement.members.map((member) => member.name.getText(sourceFile));
+      expect(new Set(memberNames).size, `Duplicate members in enum ${statement.name.text}: ${memberNames.join(", ")}`).to.equal(memberNames.length);
+    }
   }
 
   expect(enumNames).to.deep.equal(expectedEnumNames);
@@ -111,6 +115,51 @@ describe("ecschema2ts escapes schema metadata", () => {
         Valid_Label$4 = 4,
       }`);
     expectSafeTypescript(result.elemTsString, ["TestEnum"]);
+  });
+
+  it("uses the enumerator names for every member when display labels and fallback names collide", () => {
+    const result = convertXml(`<?xml version="1.0" encoding="utf-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEnumeration typeName="LabelMatchesFallback" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="First" value="1" displayLabel="Second"/>
+          <ECEnumerator name="Second" value="2"/>
+        </ECEnumeration>
+        <ECEnumeration typeName="FallbackMatchesLabel" backingTypeName="string" isStrict="true">
+          <ECEnumerator name="Alpha" value="a" displayLabel="Not an identifier"/>
+          <ECEnumerator name="Beta" value="b" displayLabel="Alpha"/>
+        </ECEnumeration>
+        <ECEnumeration typeName="DuplicateLabels" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="One" value="1" displayLabel="Same"/>
+          <ECEnumerator name="Two" value="2" displayLabel="Same"/>
+        </ECEnumeration>
+        <ECEnumeration typeName="NoCollision" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="One" value="1" displayLabel="Uno"/>
+          <ECEnumerator name="Two" value="2"/>
+        </ECEnumeration>
+      </ECSchema>`);
+
+    expect(result.elemTsString).to.have.string(utils.dedent`
+      export const enum LabelMatchesFallback {
+        First = 1,
+        Second = 2,
+      }`);
+    expect(result.elemTsString).to.have.string(utils.dedent`
+      export const enum FallbackMatchesLabel {
+        Alpha = "a",
+        Beta = "b",
+      }`);
+    expect(result.elemTsString).to.have.string(utils.dedent`
+      export const enum DuplicateLabels {
+        One = 1,
+        Two = 2,
+      }`);
+    // Enumerations without a collision keep their display labels.
+    expect(result.elemTsString).to.have.string(utils.dedent`
+      export const enum NoCollision {
+        Uno = 1,
+        Two = 2,
+      }`);
+    expectSafeTypescript(result.elemTsString, ["LabelMatchesFallback", "FallbackMatchesLabel", "DuplicateLabels", "NoCollision"]);
   });
 
   it("escapes descriptions, labels and values from JSON schemas", () => {
