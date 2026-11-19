@@ -396,27 +396,20 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-/** Annotations whose fields are currently being re-evaluated, per EditTxn. Writing re-evaluated fields back calls
- * `Element.update`, whose `onUpdated` handler synchronously re-evaluates the same annotation's fields again
- * through the same txn. That nested pass is redundant, and never terminates if a field's value changes as a
- * consequence of updating the annotation, so it is skipped. Element Ids are only unique within an iModel, so
- * the set is scoped to the txn rather than shared across every open iModel.
+/** Annotations whose fields are currently being re-evaluated. Writing re-evaluated fields back calls
+ * `Element.update`, whose `onUpdated` handler synchronously re-evaluates the same annotation's fields again.
+ * That nested pass is redundant, and never terminates if a field's value changes as a consequence of
+ * updating the annotation, so it is skipped.
  */
-const annotationsBeingUpdated = new WeakMap<EditTxn, Set<Id64String>>();
+const annotationsBeingUpdated = new Set<Id64String>();
 
 function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
-  let inProgress = annotationsBeingUpdated.get(txn);
-  if (inProgress?.has(annotationId)) {
+  if (annotationsBeingUpdated.has(annotationId)) {
     return;
   }
 
-  if (!inProgress) {
-    inProgress = new Set<Id64String>();
-    annotationsBeingUpdated.set(txn, inProgress);
-  }
-
   const iModel = txn.iModel;
-  inProgress.add(annotationId);
+  annotationsBeingUpdated.add(annotationId);
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
@@ -436,7 +429,7 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);
   } finally {
-    inProgress.delete(annotationId);
+    annotationsBeingUpdated.delete(annotationId);
   }
 }
 
