@@ -88,6 +88,27 @@ describe("IModelApp", () => {
   });
   afterAll(async () => TestApp.shutdown());
 
+  it("displays exception details as literal text with line breaks", async () => {
+    const openMessageBox = vi.spyOn(IModelApp.notifications, "openMessageBox");
+    const originalOptions = ToolAdmin.exceptionOptions;
+    ToolAdmin.exceptionOptions = { ...originalOptions, log: false, launchDebugger: false };
+    try {
+      const firstLine = "Unexpected <em>value</em>";
+      const lastLine = "Expected &lt;value&gt;";
+      await ToolAdmin.exceptionHandler({ stack: `${firstLine}\n\n${lastLine}` });
+
+      expect(openMessageBox).toHaveBeenCalledTimes(1);
+      const message = openMessageBox.mock.calls[0][1];
+      expect(message).toBeInstanceOf(HTMLElement);
+      const details = typeof message === "string" ? undefined : message.querySelector("h4");
+      expect(details?.textContent).toBe(firstLine + lastLine);
+      expect(Array.from(details?.children ?? [], (child) => child.tagName)).toEqual(["BR", "BR", "BR"]);
+    } finally {
+      ToolAdmin.exceptionOptions = originalOptions;
+      openMessageBox.mockRestore();
+    }
+  });
+
   it("TestApp should override correctly", async () => {
     expect(IModelApp.accuDraw).toBeInstanceOf(TestAccuDraw);
     expect(IModelApp.toolAdmin.idleTool).toBeInstanceOf(TestIdleTool);
