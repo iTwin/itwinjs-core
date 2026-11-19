@@ -38,6 +38,7 @@ const tsBentleyModules: { [index: string]: TsBentleyModule } = {
 
 /**
  * @beta
+ * @deprecated The @itwin/ecschema2ts package is deprecated and will be removed from iTwin.js in a future release.
  */
 export class ECSchemaToTs {
   private _tsBentleyModuleNames: Set<string>;

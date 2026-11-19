@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema2ts",
-      "comment": "Encode schema descriptions, enumerator labels and string values when generating TypeScript.",
+      "comment": "Encode schema descriptions, enumerator labels and string values when generating TypeScript. Deprecate @itwin/ecschema2ts; it will be removed from iTwin.js in a future release.",
       "type": "none"
     }
   ],
