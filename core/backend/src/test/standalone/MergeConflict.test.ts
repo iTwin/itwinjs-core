@@ -25,6 +25,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
+import { IModelNative } from "../../internal/NativePlatform";
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 
@@ -57,12 +58,23 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
 
 describe("Merge conflict & locking", () => { 
   let iTwinId: GuidString;
+  const briefcases: BriefcaseDb[] = [];
 
   before(() => {
+    // Conflict assertions require distinct LastMod values, even for saves within one millisecond.
+    IModelNative.platform.enableMonotoneClock(true);
     HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
-  after(() => HubMock.shutdown());
+  afterEach(() => {
+    for (const briefcase of briefcases)
+      briefcase.close();
+    briefcases.length = 0;
+  });
+  after(() => {
+    HubMock.shutdown();
+    IModelNative.platform.enableMonotoneClock(false);
+  });
 
   it("pull/merge causing update conflict - dirty read/modify (with no lock)", async () => {
     /**
@@ -83,10 +95,13 @@ describe("Merge conflict & locking", () => {
 
     // to reproduce the issue we will disable locks altogether.
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b1);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b2);
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b3);
     const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
     const b2Txn = new EditTxn(b2, "merge conflict");
@@ -221,9 +236,6 @@ describe("Merge conflict & locking", () => {
     (b3.elements.getAspect(aspectId1) as ExternalSourceAspect).identifier = "test identifier (modified by b2)";
     (b1.elements.getAspect(aspectId1) as ExternalSourceAspect).identifier = "test identifier (modified by b2)";
 
-    b1.close();
-    b2.close();
-    b3.close();
   });
   it("pull/merge causing update conflict - update causing local changes (with no lock)", async () => {
     /**
@@ -244,10 +256,13 @@ describe("Merge conflict & locking", () => {
 
     // to reproduce the issue we will disable locks altogether.
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b1);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b2);
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    briefcases.push(b3);
     const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
     const b2Txn = new EditTxn(b2, "merge conflict");
@@ -371,9 +386,6 @@ describe("Merge conflict & locking", () => {
     expect(() => b2.elements.getAspect(aspectId1)).throws(`ElementAspect not found ${aspectId1}`);
     expect(() => b3.elements.getAspect(aspectId1)).throws(`ElementAspect not found ${aspectId1}`);
 
-    b1.close();
-    b2.close();
-    b3.close();
   });
 
   it("aspect insert, update & delete requires exclusive lock", async () => {
@@ -389,10 +401,13 @@ describe("Merge conflict & locking", () => {
     assert.isNotEmpty(rwIModelId);
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId });
+    briefcases.push(b1);
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
+    briefcases.push(b2);
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
+    briefcases.push(b3);
     const b1Txn = new EditTxn(b1, "merge conflict");
     b1Txn.start();
     const b2Txn = new EditTxn(b2, "merge conflict");
@@ -482,8 +497,5 @@ describe("Merge conflict & locking", () => {
     await b3.pullChanges();
     expect(onChangesetConflictStub.callCount).eq(0, "native conflict handler should not be called BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
-    b1.close();
-    b2.close();
-    b3.close();
   });
 });

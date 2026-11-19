@@ -22,13 +22,16 @@ parameters:
       - graphics
       - node-compat
 
-  # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
-  # Node-version contribution, so lanes that exist to prove a specific Node version
-  # can build the packages must pass 0 to avoid restoring output built under a
-  # different Node version.
+  # Shared caller input: native and compatibility lanes use 0 for fresh builds.
   - name: rushBuildCacheEnabled
     type: number
     default: 1
+  - name: cacheMode
+    type: string
+    default: "read"
+    values:
+      - "off"
+      - "read"
 
 steps:
   - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
@@ -49,21 +52,27 @@ steps:
     displayName: rush install
 
   # Build every package needed by the integration test suites in a single Rush
-  # invocation. Each frontend test package (and @itwin/core-electron) already runs
-  # webpack:test as part of its normal build script, but cached bundles must be
-  # rebundled below to embed this job's integration-test environment variables.
+  # invocation. Keep rebundling with this job's environment even after a restore;
+  # secret-bearing Core bundles are excluded from caching altogether.
   #
-  # The build cache is READ-ONLY here (RUSH_BUILD_CACHE_WRITE_ALLOWED: 0): these
+  # Static job variables also allow cache-off requests from callers of older templates.
+  # The shared build cache is read-only here: these
   # pipelines can be queued manually against arbitrary refs, so they must never
   # publish to the shared cache. Cache entries are written only by trusted
   # master/release CI builds (see core-build.yaml).
   - ${{ if eq(parameters.coreFullStackTests, 'graphics') }}:
-      - script: node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
+      - ${{ if or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'), eq(variables['RUSH_BUILD_CACHE_ENABLED'], '0')) }}:
+          script: node common/scripts/install-run-rush.js build -v --to core-full-stack-tests
+        ${{ else }}:
+          script: node common/scripts/run-rush-build.js read -v --to core-full-stack-tests
         displayName: "Rush build"
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
-          RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+          ${{ if or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'), eq(variables['RUSH_BUILD_CACHE_ENABLED'], '0')) }}:
+            RUSH_BUILD_CACHE_ENABLED: 0
+            RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+            RUSH_BUILD_CACHE_CREDENTIAL: ""
+          ${{ else }}:
+            RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
 
       - script: npm run -s --if-present webpack:test
         workingDirectory: full-stack-tests/core
@@ -71,7 +80,7 @@ steps:
 
   - ${{ if ne(parameters.coreFullStackTests, 'graphics') }}:
       - script: >
-          node ./common/scripts/install-run-rush build -v
+          node common/scripts/${{ iif(or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'), eq(variables['RUSH_BUILD_CACHE_ENABLED'], '0')), 'install-run-rush.js build', 'run-rush-build.js read') }} -v
           --to backend-integration-tests
           --to core-full-stack-tests
           --to @itwin/ecschema-rpcinterface-tests
@@ -79,9 +88,12 @@ steps:
           --to rpcinterface-full-stack-tests
         displayName: "Rush build"
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
-          RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+          ${{ if or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'), eq(variables['RUSH_BUILD_CACHE_ENABLED'], '0')) }}:
+            RUSH_BUILD_CACHE_ENABLED: 0
+            RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
+            RUSH_BUILD_CACHE_CREDENTIAL: ""
+          ${{ else }}:
+            RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
 
       - script: node ./common/scripts/install-run-rush webpack:test -v
         displayName: "Rebundle integration tests with current environment"

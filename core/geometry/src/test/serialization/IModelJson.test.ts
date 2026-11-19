@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineSurface3d, UVSelect } from "../../bspline/BSplineSurface";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -400,6 +400,46 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, surf.knots[UVSelect.uDirection].knots.length, "surface has 4 u knots");
       ck.testExactNumber(4, surf.knots[UVSelect.vDirection].knots.length, "surface has 4 v knots");
     }
+
+    let invalidProps = structuredClone(props);
+    invalidProps.orderU = 10000;
+    let invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with overly large order");
+
+    invalidProps = structuredClone(props);
+    invalidProps.orderV = 1;
+    invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with overly small order");
+
+    invalidProps = structuredClone(props);
+    invalidProps.uKnots = [0, 0, 0, 1]; // trivial knot range
+    invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with trivial knot range");
+
+    invalidProps = structuredClone(props);
+    invalidProps.uKnots = [0, 0, 0.5, 1, 1]; // too many knots
+    invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with too many knots");
+
+    invalidProps = structuredClone(props);
+    invalidProps.vKnots = [0, 0, 1]; // too few knots
+    invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with too few knots");
+
+    invalidProps = structuredClone(props);
+    invalidProps.vKnots = [1, 1, 0, 0]; // decreasing knots
+    invalidSurface = IModelJson.Reader.parse({ bsurf: invalidProps });
+    ck.testUndefined(invalidSurface, "expect parse failure for surface with decreasing knots");
+
+    const validProps = structuredClone(props);
+    validProps.vKnots = [0, 0, 0, 1, 1, 1]; // classic knots (valid)
+    const validSurface = IModelJson.Reader.parse({ bsurf: validProps });
+    if (ck.testTrue(validSurface instanceof BSplineSurface3d, "expect parse success for surface with classic knots")) {
+      const surf = validSurface as BSplineSurface3d;
+      ck.testExactNumber(4, surf.knots[UVSelect.uDirection].knots.length, "surface has 4 u knots");
+      ck.testExactNumber(4, surf.knots[UVSelect.vDirection].knots.length, "surface has 4 v knots");
+    }
+
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -420,6 +460,45 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, bcurve.order, "curve has order 4");
       ck.testExactNumber(6, bcurve.knotsRef.length, "curve has 6 knots");
     }
+
+    let invalidProps = structuredClone(props);
+    invalidProps.order = 10000;
+    let invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with overly large order");
+
+    invalidProps = structuredClone(props);
+    invalidProps.order = 1;
+    invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with overly small order");
+
+    invalidProps = structuredClone(props);
+    invalidProps.knots = [0, 0, 0, 0, 1, 1]; // trivial knot range
+    invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with trivial knot range");
+
+    invalidProps = structuredClone(props);
+    invalidProps.knots = [0, 0, 0, 0.5, 1, 1, 1]; // too many knots
+    invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with too many knots");
+
+    invalidProps = structuredClone(props);
+    invalidProps.knots = [0, 0, 0, 1, 1]; // too few knots
+    invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with too few knots");
+
+    invalidProps = structuredClone(props);
+    invalidProps.knots = [1, 1, 1, 0, 0, 0]; // decreasing knots
+    invalidCurve = IModelJson.Reader.parse({ bcurve: invalidProps });
+    ck.testUndefined(invalidCurve, "expect parse failure for curve with decreasing knots");
+
+    const validProps = structuredClone(props);
+    validProps.knots = [0, 0, 0, 0, 1, 1, 1, 1]; // classic knots (valid)
+    const validCurve = IModelJson.Reader.parse({ bcurve: validProps });
+    if (ck.testTrue(validCurve instanceof BSplineCurve3d, "expect parse success for curve with classic knots")) {
+      const bcurve = validCurve as BSplineCurve3d;
+      ck.testExactNumber(6, bcurve.knotsRef.length, "curve has 6 knots");
+    }
+
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -584,6 +663,12 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(4, mesh.colorCount, "mesh has 4 colors");
       ck.testExactNumber(2, mesh.facetCount, "mesh has 2 facets");
     }
+
+    const invalidProps = structuredClone(props);
+    invalidProps.numPerFace = 2;
+    const invalidParsed = IModelJson.Reader.parse({ indexedMesh: invalidProps });
+    ck.testUndefined(invalidParsed, "invalid mesh with numPerFace = 2 should not parse");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 });

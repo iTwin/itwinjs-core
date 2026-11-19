@@ -901,7 +901,7 @@ export namespace IModelJson {
       let dim: number;
       if (data !== undefined
         && data.hasOwnProperty("knots") && Array.isArray(data.knots)
-        && data.hasOwnProperty("order") && Number.isFinite(data.order)
+        && data.hasOwnProperty("order") && Number.isSafeInteger(data.order)
         && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0])
         && (dim = data.points[0].length) >= 3 && dim <= 4
       ) {
@@ -953,7 +953,8 @@ export namespace IModelJson {
 
     /** parse polyface aux data content to PolyfaceAuxData instance */
     public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
-
+      if (2 === numPerFace)
+        return undefined;
       if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
         return undefined;
 
@@ -983,13 +984,15 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
+        if (2 === numPerFace)
+          return undefined;
 
         // default value is true!!
         polyface.twoSided = this.parseBooleanProperty(data, "twoSided", true) ?? true;
 
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
-          if (Number.isFinite(q)) {
+          if (Number.isSafeInteger(q)) {
             polyface.expectedClosure = q;
           }
         }
@@ -1070,8 +1073,8 @@ export namespace IModelJson {
       if (data !== undefined
         && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
         && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
-        && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
-        && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
+        && data.hasOwnProperty("orderU") && Number.isSafeInteger(data.orderU)
+        && data.hasOwnProperty("orderV") && Number.isSafeInteger(data.orderV)
         && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])
         && (dim = data.points[0][0].length) >= 3 && dim <= 4
       ) {
