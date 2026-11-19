@@ -10,7 +10,7 @@ import { IModelApp } from "../IModelApp";
 import { MeasureLocationTool } from "../tools/MeasureTool";
 
 class TestLocationTool extends MeasureLocationTool {
-  public getTooltip(point: Point3d) { return this.getMarkerToolTip(point); }
+  public async getTooltip(point: Point3d) { return this.getMarkerToolTip(point); }
 }
 
 beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
