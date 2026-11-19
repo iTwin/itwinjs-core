@@ -17,7 +17,7 @@ trigger:
       - release/1*
 
 variables:
-  - group: Rush Build Cache SAS Token
+  - group: Rush Build Cache Reader SAS Token
 
 pr:
   drafts: false
