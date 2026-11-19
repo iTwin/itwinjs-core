@@ -20,3 +20,7 @@ We ask that:
 - For the purposes of this policy, you are not authorized to access user data or company data, including (but not limited to) personally identifiable information and data relating to an identified or identifiable natural person.
 
 For more information, please read Bentley's [responsible disclosure](https://www.bentley.com/responsible_disclosure.pdf) guidelines.
+
+## Access Control in iTwin.js Backends
+
+iTwin.js is a library. Permission to access an iModel is decided by the [iModels API](https://developer.bentley.com/apis/imodels-v2/), and a backend built with iTwin.js does not check it on every request. The application or its deployment environment is responsible for verifying each request against the iModels API before it reaches the backend's RPC interfaces. See [Authorize Requests](./docs/learning/RpcInterface.md#authorize-requests).
