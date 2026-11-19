@@ -411,4 +411,23 @@ describe("BSplineSurface", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "BSplineSurface3dHCoverage");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("facets the surface with PolyfaceBuilder", () => {
+    const ck = new Checker();
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
+
+    const json = fs.readFileSync("./src/test/data/BSplineSurface/civil_pipe.imjs", "utf8");
+    const surface = IModelJson.Reader.parse(JSON.parse(json));
+    if (ck.testDefined(surface)) {
+      if (surface instanceof BSplineSurface3d || surface instanceof BSplineSurface3dH) {
+        const builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(surface);
+
+        const pf = builder.claimPolyface(false);
+        ck.testTrue(pf.facetCount > 0);
+        ck.testTrue(pf.pointCount > 0);
+      }
+    }
+  });
 });
