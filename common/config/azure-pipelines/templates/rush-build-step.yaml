@@ -1,0 +1,50 @@
+parameters:
+  - name: cacheMode
+    type: string
+    values: ["off", "read", "write"]
+  - name: args
+    type: string
+  - name: workingDir
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+  - name: env
+    type: object
+    default: {}
+
+steps:
+  # The template can be newer than the checkout, so this bootstrap cannot be a checkout script.
+  - script: >
+      node -e "
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const cp = require('node:child_process');
+      const env = { ...process.env };
+      let [mode, ...args] = process.argv.slice(1);
+      if (env.RUSH_BUILD_CACHE_ENABLED === '0' || env.ITWIN_NATIVE_CACHE_MODE === 'off') mode = 'off';
+      const native = env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === 'true' || !!env.IMODELJS_NATIVE_OVERRIDE;
+      try {
+      const file = path.resolve('common/scripts/run-rush-build.js');
+      const runner = mode !== 'off' && (!native || mode === 'read') && fs.existsSync(file) ? require(file) : undefined;
+      if (runner && (!native || runner.nativeCacheKeyEnv === 'ITWIN_NATIVE_CACHE_KEY')) {
+      process.exitCode = runner.runRushBuild(mode, args, env);
+      } else {
+      delete env.RUSH_BUILD_CACHE_CREDENTIAL;
+      delete env.RUSH_BUILD_CACHE_OVERRIDE_JSON;
+      delete env.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH;
+      delete env.ITWIN_NATIVE_CACHE_KEY;
+      env.RUSH_BUILD_CACHE_ENABLED = '0';
+      env.RUSH_BUILD_CACHE_WRITE_ALLOWED = '0';
+      const result = cp.spawnSync(process.execPath, [path.resolve('common/scripts/install-run-rush.js'), native ? 'rebuild' : 'build', ...args], { env, stdio: 'inherit' });
+      if (result.error) console.error('Unable to start Rush build.');
+      process.exitCode = result.status ?? 1;
+      }
+      } catch {
+      console.error('Unable to run Rush build.');
+      process.exitCode = 1;
+      }
+      " -- ${{ parameters.cacheMode }} ${{ parameters.args }}
+    displayName: rush build
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ${{ iif(eq(parameters.cacheMode, 'write'), '$(RushBuildCacheWriteSAS)', iif(eq(parameters.cacheMode, 'read'), '$(RushBuildCacheReadSAS)', '')) }}

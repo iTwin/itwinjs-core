@@ -89,4 +89,5 @@ if (require.main === module) {
   }
 }
 
-module.exports = { getBuildCacheConfig, runRushBuild };
+// Capability handshake for newer templates executing older linked checkouts.
+module.exports = { getBuildCacheConfig, runRushBuild, nativeCacheKeyEnv };

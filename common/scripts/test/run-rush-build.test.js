@@ -261,16 +261,18 @@ test("select the writer group and build mode from one CI/ref decision", () => {
 });
 
 test("configure only build processes, not later test/docs operations", () => {
-  for (const file of ["templates/core-build.yaml", "templates/integration-test-steps.yaml", "jobs/docs-build.yaml"]) {
+  for (const file of ["templates/core-build.yaml", "templates/integration-test-steps.yaml"]) {
     const yaml = readFileSync(path.join(__dirname, "../../config/azure-pipelines", file), "utf8");
-    assert.ok(yaml.includes("node common/scripts/run-rush-build.js "), file);
-    assert.ok(yaml.includes("RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)"), file);
-    for (const match of yaml.matchAll(/^\s+RUSH_BUILD_CACHE_(?:ENABLED|WRITE_ALLOWED): ([^\r\n]+)$/gm))
-      assert.equal(match[1], "0", `${file}: shared template may only force caching off`);
-    assert.ok(!yaml.includes("RushBuildCacheEnabled"), file);
-    if (file !== "templates/core-build.yaml")
-      assert.ok(!yaml.includes("RushBuildCacheWriteSAS"), file);
+    assert.ok(yaml.includes("template: rush-build-step.yaml"), file);
+    assert.ok(!yaml.includes("task.setvariable variable=RUSH_BUILD_CACHE"), file);
+    assert.ok(!yaml.includes("RushBuildCacheWriteSAS"), file);
   }
+  const docs = readFileSync(path.join(__dirname, "../../config/azure-pipelines/jobs/docs-build.yaml"), "utf8");
+  assert.ok(docs.includes("node common/scripts/run-rush-build.js read "));
+  const step = readFileSync(path.join(__dirname, "../../config/azure-pipelines/templates/rush-build-step.yaml"), "utf8");
+  assert.ok(step.includes("'$(RushBuildCacheWriteSAS)'"));
+  assert.ok(step.includes("'$(RushBuildCacheReadSAS)'"));
+  assert.ok(!step.includes("task.setvariable"));
 });
 
 test("retain the native-validation signal for shared-template callers", () => {
@@ -278,10 +280,9 @@ test("retain the native-validation signal for shared-template callers", () => {
   assert.match(yaml, /name: nativePrVal\s+type: boolean\s+default: false/);
   assert.match(yaml, /\$\{\{ if parameters\.nativePrVal \}\}:\s+ITWIN_NATIVE_PR_VALIDATION: "true"/);
   assert.ok(yaml.includes("or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'))"));
-  assert.ok(yaml.includes("script: node common/scripts/install-run-rush.js build -v -p max"));
-  assert.ok(yaml.includes("run-rush-build.js ${{ iif(parameters.nativePrVal, 'read', parameters.cacheMode) }}"));
-  assert.match(yaml, /\$\{\{ elseif eq\(parameters\.cacheMode, 'write'\) \}\}:\s+RUSH_BUILD_CACHE_CREDENTIAL: \$\(RushBuildCacheWriteSAS\)/);
-  assert.match(yaml, /\$\{\{ elseif or\(parameters\.nativePrVal, eq\(parameters\.cacheMode, 'read'\)\) \}\}:\s+RUSH_BUILD_CACHE_CREDENTIAL: \$\(RushBuildCacheReadSAS\)/);
+  assert.ok(yaml.includes("'off', iif(parameters.nativePrVal, 'read', parameters.cacheMode)"));
+  assert.ok(yaml.includes("args: -v -p max"));
+  assert.ok(yaml.includes("workingDir: ${{ parameters.workingDir }}"));
 });
 
 for (const [name, template, parameters] of [
@@ -300,9 +301,8 @@ for (const [name, template, parameters] of [
 
 test("share integration targets between cached and uncached builds", () => {
   const yaml = readFileSync(path.join(__dirname, "../../config/azure-pipelines/templates/integration-test-steps.yaml"), "utf8");
-  const commands = [...yaml.matchAll(/^      - script: >\r?\n((?:          [^\r\n]*\r?\n)+)/gm)].map((match) => match[1]);
-  const shared = commands.find((command) => command.includes("'install-run-rush.js build'") && command.includes("'run-rush-build.js read'"));
-  assert.ok(shared, "cache mode should select only the launcher, not a separate target list");
+  const shared = yaml.match(/args: >\r?\n((?: {12}[^\r\n]*\r?\n)+)/)?.[1];
+  assert.ok(shared, "cached and uncached modes must use the same target list");
   assert.deepEqual([...shared.matchAll(/--to (\S+)/g)].map((match) => match[1]), [
     "backend-integration-tests",
     "core-full-stack-tests",
@@ -312,18 +312,12 @@ test("share integration targets between cached and uncached builds", () => {
   ]);
 });
 
-for (const [template, condition, buildCount] of [
-  ["templates/core-build.yaml", "or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'))", 1],
-  ["templates/integration-test-steps.yaml", "or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'), eq(variables['RUSH_BUILD_CACHE_ENABLED'], '0'))", 2],
-]) {
-  test(`${template} can build an older checkout without the new wrapper`, () => {
+for (const [template, buildCount] of [["templates/core-build.yaml", 1], ["templates/integration-test-steps.yaml", 2]]) {
+  test(`${template} delegates old-checkout handling to the runtime bridge`, () => {
     const yaml = readFileSync(path.join(__dirname, "../../config/azure-pipelines", template), "utf8");
-    const escaped = condition.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const stableBuild = new RegExp(`\\$\\{\\{ if ${escaped} \\}\\}:\\s+script: (?:>\\s+)?node common/scripts/install-run-rush\\.js build\\b`, "g");
-    const disabledCache = new RegExp(`\\$\\{\\{ if ${escaped} \\}\\}:\\s+RUSH_BUILD_CACHE_ENABLED: 0\\s+RUSH_BUILD_CACHE_WRITE_ALLOWED: 0\\s+RUSH_BUILD_CACHE_CREDENTIAL: ""`, "g");
-    const sharedPrefix = `node common/scripts/\${{ iif(${condition}, 'install-run-rush.js build', 'run-rush-build.js read') }}`;
-    assert.equal([...yaml.matchAll(stableBuild)].length + yaml.split(sharedPrefix).length - 1, buildCount);
-    assert.equal([...yaml.matchAll(disabledCache)].length, buildCount);
+    assert.equal(yaml.split("template: rush-build-step.yaml").length - 1, buildCount);
+    assert.equal(yaml.split("or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off'))").length - 1, buildCount);
+    assert.ok(!yaml.includes("variables['RUSH_BUILD_CACHE_ENABLED']"), "job cache controls are runtime values");
   });
 }
 
