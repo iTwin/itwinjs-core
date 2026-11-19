@@ -3386,6 +3386,7 @@ export class KnotVector {
     grevilleKnot(knotIndex: number): number;
     isAlmostEqual(other: KnotVector): boolean;
     isIndexOfRealSpan(spanIndex: number): boolean;
+    get isValid(): boolean;
     get knotLength01(): number;
     knots: Float64Array;
     knotToLeftKnotIndex(u: number): number;
