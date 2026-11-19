@@ -10,7 +10,7 @@ pr: none
 variables:
   - group: iModel.js non-secret config variables
   - group: iModel.js Integration Test Users
-  - group: Rush Build Cache SAS Token
+  - group: Rush Build Cache Reader SAS Token
 
 jobs:
   - job: Node_26_x

@@ -70,12 +70,11 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
+      - script: node common/scripts/run-rush-build.js read --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
         env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: 1
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - script: node common/scripts/install-run-rush.js docs
