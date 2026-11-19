@@ -92,6 +92,20 @@ export interface ViewportDecorator {
    */
   readonly useCachedDecorations?: true;
 
+  /** Override to expand the depth of the viewport's frustum to encompass this decorator's cached decorations.
+   * In 3d views, the viewport automatically adjusts the front and back planes of its frustum to encompass the viewed geometry - the project extents,
+   * the ground plane, and the contents of the viewed models and any [[TiledGraphicsProvider]]s. Decorations are not included, so any portion of a
+   * decoration outside of that volume is clipped by the front and back planes.
+   * If `expandFrustumDepth` is `true`, the world-coordinate bounding boxes of this decorator's cached decoration graphics of type [[GraphicType.Scene]],
+   * [[GraphicType.WorldDecoration]], and [[GraphicType.WorldOverlay]] are also included when computing the front and back planes, and the frustum is
+   * recomputed whenever those cached decorations change. Only the depth of the frustum is affected - the sides of the viewing volume never change.
+   * Has no effect unless [[useCachedDecorations]] is also `true`.
+   * @note The decorator's decorations must not be derived from the viewport's frustum - otherwise, each change to the frustum can produce decorations with
+   * a different range, in turn causing the frustum to be recomputed again, endlessly.
+   * @beta
+   */
+  readonly expandFrustumDepth?: true;
+
   /** Implement this method to add [[Decorations]] into the supplied DecorateContext.
    * @see [[useCachedDecorations]] to avoid unnecessarily recreating decorations.
    */
@@ -2919,6 +2933,22 @@ export abstract class Viewport implements Disposable, TileUser {
       this._decorationsValid = true;
       isRedrawNeeded = true;
       this._frameStatsCollector.endTime("decorationsTime");
+
+      // Snapshot the ranges of the cached decorations that expand the frustum depth - the decorations cache is cleared whenever the scene is
+      // invalidated, but the snapshot must remain available for the next frustum computation.
+      // If the ranges differ from those used to compute the current frustum, recompute it.
+      this._frustumDecorationDepthRanges.length = 0;
+      const decorationDepthRange = Range3d.createNull();
+      for (const range of this.decorationDepthRanges) {
+        if (!range.isNull) {
+          const clone = range.clone();
+          this._frustumDecorationDepthRanges.push(clone);
+          decorationDepthRange.extendRange(clone);
+        }
+      }
+
+      if (!decorationDepthRange.isAlmostEqual(this.viewingSpace.decorationDepthRange))
+        this.invalidateController();
     }
 
     let requestNextAnimation = false;
@@ -2983,6 +3013,27 @@ export abstract class Viewport implements Disposable, TileUser {
    * This base implementation produces no graphics.
    */
   protected addDecorations(_decorations: Decorations): void { }
+
+  /** For each decorator for which [[ViewportDecorator.expandFrustumDepth]] is `true`, the union of the world-coordinate bounding boxes of its cached
+   * decoration graphics, to be included when computing the depth of the viewport's frustum.
+   * This base implementation produces no ranges.
+   * @internal
+   */
+  public get decorationDepthRanges(): Iterable<Readonly<Range3d>> {
+    return [];
+  }
+
+  /** A snapshot of [[decorationDepthRanges]] captured the last time this viewport's decorations were created, so that it remains available to
+   * [[ViewingSpace]] when the frustum is recomputed - the decorations cache itself is cleared whenever the scene is invalidated.
+   */
+  private readonly _frustumDecorationDepthRanges: Range3d[] = [];
+
+  /** The decoration ranges to be included when computing the depth of this viewport's frustum.
+   * @internal
+   */
+  public get frustumDecorationDepthRanges(): ReadonlyArray<Readonly<Range3d>> {
+    return this._frustumDecorationDepthRanges;
+  }
 
   /** Capture selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
@@ -3825,6 +3876,11 @@ export class ScreenViewport extends Viewport {
     } finally {
       this._decorationCache.prohibitRemoval = false;
     }
+  }
+
+  /** @internal */
+  public override get decorationDepthRanges(): Iterable<Readonly<Range3d>> {
+    return this._decorationCache.depthRanges;
   }
 
   /** Change the cursor for this Viewport */

@@ -12,6 +12,7 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
     - [Planar clip mask and classifier textures are sized to the viewport](#planar-clip-mask-and-classifier-textures-are-sized-to-the-viewport)
     - [Map feature info inside polygons with a transparent fill](#map-feature-info-inside-polygons-with-a-transparent-fill)
+    - [Decorations can expand the frustum depth](#decorations-can-expand-the-frustum-depth)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
@@ -130,6 +131,12 @@ The off-screen texture used to render planar clip masks and [spatial classifiers
 [Viewport.getMapFeatureInfo]($frontend) and [MapFeatureInfoTool]($map-layers-formats) now find a feature inside a polygon with a transparent fill (such as a state or parcel boundary), not only on its outline. A click inside such a polygon picks what is drawn below it, so the visible map layers drawn above it that support feature info are now queried too, and the topmost one that returns a feature wins. If none does, the result is unchanged. Hover tooltips still describe only the layer that owns the pixel.
 
 As a result, a layer with a transparent fill takes precedence over a layer below it that also supports feature info. [MapFeatureInfoTool]($map-layers-formats) also runs its query on the base map below such a layer, and reports no features when nothing is found.
+
+### Decorations can expand the frustum depth
+
+In 3d views, the viewport automatically adjusts the front and back planes of its frustum to encompass the viewed geometry - the project extents, the ground plane, and the contents of the viewed models and any [TiledGraphicsProvider]($frontend)s - but not decorations. Any portion of a decoration outside of that volume is clipped by the front and back planes, and whether it displays can vary with the camera position.
+
+A [ViewportDecorator]($frontend) that enables [ViewportDecorator.useCachedDecorations]($frontend) can now also opt in to the new beta [ViewportDecorator.expandFrustumDepth]($frontend). When enabled, the world-coordinate bounding boxes of the decorator's cached decoration graphics of type [GraphicType.Scene]($frontend), [GraphicType.WorldDecoration]($frontend), and [GraphicType.WorldOverlay]($frontend) are included when the front and back planes are computed, and the frustum is recomputed whenever those cached decorations change, so the decorations are never clipped by those planes. Only the depth of the frustum is affected - the sides of the viewing volume never change, and decorations entirely outside of them are ignored. The decorations must not be derived from the viewport's frustum, as each change to the frustum could then produce decorations with a different range, causing the frustum to be recomputed endlessly.
 
 ## Backend
 

@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import { RenderGraphicOwner } from "./render/RenderGraphic";
 import { ViewportDecorator } from "./Viewport";
 import { CanvasDecoration } from "./render/CanvasDecoration";
@@ -24,6 +25,11 @@ function disposeCachedDecorations(decorations: CachedDecoration[]): void {
       dec.graphicOwner.disposeGraphic();
 }
 
+/** Returns true if graphics of the specified type are defined in [[CoordSystem.World]] coordinates. */
+function isWorldGraphicType(type: GraphicType): boolean {
+  return GraphicType.Scene === type || GraphicType.WorldDecoration === type || GraphicType.WorldOverlay === type;
+}
+
 /** A cache of decorations previously produced by a [[ViewportDecorator]] for which `useCachedDecorations` is `true`.
  * The decorations are preserved until either:
  *  - The associated [[Viewport]]'s scene is invalidated; or
@@ -33,6 +39,7 @@ function disposeCachedDecorations(decorations: CachedDecoration[]): void {
  */
 export class DecorationsCache {
   private readonly _cache = new Map<ViewportDecorator, CachedDecoration[]>();
+  private readonly _depthRanges = new Map<ViewportDecorator, Range3d>();
   /** If true, attempts to remove entries from the cache will silently fail. This is set while a [[ScreenViewport]] is producing decorations
    * to prevent poorly-written decorators from invalidating the cache while it is being populated by, e.g., calling [[Viewport.invalidateScene]].
    */
@@ -59,6 +66,21 @@ export class DecorationsCache {
       this._cache.set(decorator, decorations = []);
 
     decorations.push(decoration);
+
+    if (decorator.expandFrustumDepth && "graphic" === decoration.type && isWorldGraphicType(decoration.graphicType)) {
+      let range = this._depthRanges.get(decorator);
+      if (!range)
+        this._depthRanges.set(decorator, range = Range3d.createNull());
+
+      decoration.graphicOwner.unionRange(range);
+    }
+  }
+
+  /** For each decorator for which [[ViewportDecorator.expandFrustumDepth]] is `true`, the union of the world-coordinate bounding boxes of its cached
+   * decoration graphics of world-coordinate [[GraphicType]]s.
+   */
+  public get depthRanges(): Iterable<Readonly<Range3d>> {
+    return this._depthRanges.values();
   }
 
   /** Delete the decorator and all of its decorations, disposing of the decorations' graphics. */
@@ -67,6 +89,7 @@ export class DecorationsCache {
       return;
 
     assert(true === decorator.useCachedDecorations);
+    this._depthRanges.delete(decorator);
     const decs = this._cache.get(decorator);
     if (decs) {
       disposeCachedDecorations(decs);
@@ -83,5 +106,6 @@ export class DecorationsCache {
       disposeCachedDecorations(decorations);
 
     this._cache.clear();
+    this._depthRanges.clear();
   }
 }

@@ -25,6 +25,7 @@ import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { ToggleFrustumDepthDecorationTool } from "./FrustumDepthDecoration";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransformsTool } from "./DisplayTransform";
 import { ApplyModelClipTool } from "./ModelClipTools";
@@ -415,6 +416,7 @@ export class DisplayTestApp {
       TerrainDrapeTool,
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
+      ToggleFrustumDepthDecorationTool,
       LinkIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,

@@ -130,6 +130,9 @@
     "ToggleAspectRatioSkewDecorator": {
       "keyin": "dta aspect skew decorator"
     },
+    "ToggleFrustumDepthDecoration": {
+      "keyin": "dta frustum depth decorator"
+    },
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },

@@ -5,7 +5,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeEvent, CompressedId64Set, Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { ClipVector, Point2d, Point3d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point2d, Point3d, Range1d, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
   AnalysisStyle, Cartographic, ClipStyle, Code, ColorDef, ContourDisplay, ContourGroup, EmptyLocalization, Feature, FeatureAppearance, FrustumPlanes, GeometryClass, HiddenLine, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings, ModelClipGroup, ModelClipGroups, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
@@ -27,7 +27,7 @@ import { DecorateContext, SceneContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { Branch } from "../internal/render/webgl/Graphic";
+import { Branch, Graphic } from "../internal/render/webgl/Graphic";
 import { Target } from "../internal/render/webgl/Target";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
@@ -3210,6 +3210,108 @@ describe("Viewport", () => {
       test(true, () => vp.displayStyle.settings.dropExcludedElements("0x456"));
       test(true, () => vp.displayStyle.settings.clearExcludedElements());
       test(true, () => vp.displayStyle.settings.clearExcludedElements());
+    });
+  });
+
+  describe("expandFrustumDepth", () => {
+    class RangeGraphic extends Graphic {
+      public constructor(private readonly _range: Range3d) {
+        super();
+      }
+
+      public addCommands() { }
+      public get isDisposed() { return true; }
+      public get isPickable() { return false; }
+      public dispose() { }
+      public collectStatistics() { }
+      public override unionRange(range: Range3d) {
+        range.extendRange(this._range);
+      }
+    }
+
+    function makeDecorator(range: Range3d, expand: boolean): Decorator {
+      return {
+        useCachedDecorations: true as const,
+        expandFrustumDepth: expand ? true as const : undefined,
+        decorate: (context: DecorateContext) => {
+          context.addDecoration(GraphicType.WorldDecoration, new RangeGraphic(range));
+        },
+      };
+    }
+
+    function frustumZRange(vp: Viewport): Range1d {
+      const range = Range1d.createNull();
+      for (const point of vp.getFrustum().points)
+        range.extendX(point.z);
+
+      return range;
+    }
+
+    function testDecorator(decorator: Decorator, test: (vp: ScreenViewport, baseline: Range1d) => void): void {
+      const vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      try {
+        vp.renderFrame();
+        const baseline = frustumZRange(vp);
+        expect(baseline.high).toBeLessThan(1000);
+
+        IModelApp.viewManager.addDecorator(decorator);
+        try {
+          test(vp, baseline);
+        } finally {
+          IModelApp.viewManager.dropDecorator(decorator);
+        }
+      } finally {
+        IModelApp.viewManager.dropViewport(vp);
+      }
+    }
+
+    // The viewport is a 1x1 pixel top view of the volume [(0,0,0), (1,1,1)]; the blank connection's project extents span [-1000,-1000,-100] to [1000,1000,100].
+    const decorationRange = new Range3d(0.25, 0.25, 2000, 0.75, 0.75, 3000);
+
+    it("expands the frustum depth to include cached decorations and restores it when the decorator is dropped", () => {
+      const dec = makeDecorator(decorationRange, true);
+      testDecorator(dec, (vp, baseline) => {
+        vp.renderFrame(); // creates and caches the decoration, detects the new range, and invalidates the controller.
+        vp.renderFrame(); // recomputes the frustum, including the decoration's range.
+
+        expect(vp.viewingSpace.decorationDepthRange.isAlmostEqual(decorationRange)).toBe(true);
+        const expanded = frustumZRange(vp);
+        expect(expanded.high).toBeGreaterThan(2999);
+
+        // The frustum converges - subsequent frames do not change it.
+        vp.renderFrame();
+        expect(frustumZRange(vp).isAlmostEqual(expanded)).toBe(true);
+
+        // Dropping the decorator restores the frustum.
+        IModelApp.viewManager.dropDecorator(dec);
+        vp.renderFrame();
+        vp.renderFrame();
+        expect(vp.viewingSpace.decorationDepthRange.isNull).toBe(true);
+        expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
+      });
+    });
+
+    it("has no effect if expandFrustumDepth is not enabled", () => {
+      testDecorator(makeDecorator(decorationRange, false), (vp, baseline) => {
+        vp.renderFrame();
+        vp.renderFrame();
+
+        expect(vp.viewingSpace.decorationDepthRange.isNull).toBe(true);
+        expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
+      });
+    });
+
+    it("ignores decorations entirely outside the frustum", () => {
+      const outsideRange = new Range3d(10000, 10000, 2000, 10001, 10001, 3000);
+      testDecorator(makeDecorator(outsideRange, true), (vp, baseline) => {
+        vp.renderFrame();
+        vp.renderFrame();
+
+        // The range is recorded, but being strongly outside the frustum's side planes it does not affect the depth.
+        expect(vp.viewingSpace.decorationDepthRange.isAlmostEqual(outsideRange)).toBe(true);
+        expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
+      });
     });
   });
 });

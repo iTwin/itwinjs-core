@@ -2605,6 +2605,7 @@ export class DecorationsCache {
     add(decorator: ViewportDecorator, decoration: CachedDecoration): void;
     clear(): void;
     delete(decorator: ViewportDecorator): void;
+    get depthRanges(): Iterable<Readonly<Range3d>>;
     get(decorator: ViewportDecorator): CachedDecoration[] | undefined;
     prohibitRemoval: boolean;
     get size(): number;
@@ -10014,6 +10015,8 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @internal (undocumented)
+    get decorationDepthRanges(): Iterable<Readonly<Range3d>>;
     // @internal
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
@@ -13506,6 +13509,8 @@ export class ViewingSpace {
     // (undocumented)
     calcNpcToView(): Map4d;
     static createFromViewport(vp: Viewport): ViewingSpace | undefined;
+    // @internal
+    readonly decorationDepthRange: Range3d;
     readonly eyePoint: Point3d | undefined;
     // @internal (undocumented)
     fromViewOrientation(from: XYZ, to?: XYZ): void;
@@ -13914,6 +13919,8 @@ export abstract class Viewport implements Disposable, TileUser {
     cssPixelsToDevicePixels(cssPixels: number): number;
     get debugBoundingBoxes(): TileBoundingBoxes;
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
+    // @internal
+    get decorationDepthRanges(): Iterable<Readonly<Range3d>>;
     protected _decorationsValid: boolean;
     // @internal
     protected detachFromView(): void;
@@ -13957,6 +13964,8 @@ export abstract class Viewport implements Disposable, TileUser {
     fromViewOrientation(from: XYZ, to?: XYZ): void;
     // @internal (undocumented)
     get frustFraction(): number;
+    // @internal
+    get frustumDecorationDepthRanges(): ReadonlyArray<Readonly<Range3d>>;
     // (undocumented)
     getAuxCoordOrigin(result?: Point3d): Point3d;
     // (undocumented)
@@ -14214,6 +14223,8 @@ export abstract class Viewport implements Disposable, TileUser {
 // @public
 export interface ViewportDecorator {
     decorate(context: DecorateContext): void;
+    // @beta
+    readonly expandFrustumDepth?: true;
     readonly useCachedDecorations?: true;
 }
 

@@ -143,6 +143,15 @@ export class ViewingSpace {
   /** Compute the bounding box of this viewing space in [[CoordSystem.World]] coordinates, including the extents of any [[TiledGraphicsProvider]]s registered with the [[Viewport]]. */
   public readonly getViewedExtents: () => AxisAlignedBox3d;
 
+  /** The union of the [[Viewport]]'s cached decoration ranges consumed by [[adjustZPlanes]] when this viewing space was created, for decorators
+   * for which [[ViewportDecorator.expandFrustumDepth]] is `true`. Used to detect when the frustum must be recomputed because those decorations changed.
+   * @internal
+   */
+  public readonly decorationDepthRange = Range3d.createNull();
+
+  /** The individual per-decorator ranges unioned into [[decorationDepthRange]]. */
+  private readonly _decorationDepthRanges: Range3d[] = [];
+
   /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
@@ -210,6 +219,20 @@ export class ViewingSpace {
       const corners = extents.corners();
       for (const corner of corners)
         depthRange.extendX(viewZ.dotProduct(corner));
+    }
+
+    // Include the cached decorations of decorators that opted in to expanding the frustum depth, ignoring any that are entirely outside the frustum.
+    // The ranges are never null - the Viewport excludes null ranges when capturing them.
+    if (this._decorationDepthRanges.length > 0) {
+      const viewZ = this.rotation.getRow(2);
+      for (const decorationRange of this._decorationDepthRanges) {
+        const corners = decorationRange.corners();
+        if (ClipPlaneContainment.StronglyOutside === clipPlanes.classifyPointContainment(corners, false))
+          continue;
+
+        for (const corner of corners)
+          depthRange.extendX(viewZ.dotProduct(corner));
+      }
     }
 
     if (depthRange.isNull)
@@ -287,6 +310,14 @@ export class ViewingSpace {
 
       return extents;
     };
+
+    for (const range of vp.frustumDecorationDepthRanges) {
+      if (!range.isNull) {
+        const clone = range.clone();
+        this._decorationDepthRanges.push(clone);
+        this.decorationDepthRange.extendRange(clone);
+      }
+    }
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
