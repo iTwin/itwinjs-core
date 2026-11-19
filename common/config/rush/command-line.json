@@ -6,10 +6,7 @@
       "commandKind": "global",
       "summary": "Runs pnpm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
-      // Temporary picomatch exception for build/test tooling; no patched release is published.
-      // Remove after installing >=4.0.8: https://github.com/advisories/GHSA-fc5q-39xc-vjpf
-      // --ignore only saves the exception; the second audit still checks for other high/critical advisories.
-      "shellCommand": "npx -y pnpm@11.13.0 audit --ignore GHSA-fc5q-39xc-vjpf --dir common/temp && npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
     },
     {
       "name": "fix-copyrights",

@@ -182,7 +182,7 @@ class ECDbMap {
           END
         ),
         'properties',
-        (
+        JSON((
           SELECT
             JSON_GROUP_ARRAY(JSON(propJson))
           FROM
@@ -218,7 +218,7 @@ class ECDbMap {
                   ),
                   'extendedTypeName', ExtendedTypeName,
                   'navigationRelationship',
-                  (
+                  JSON((
                     SELECT
                       JSON_OBJECT(
                         'classId', format('0x%x', nc.Id),
@@ -228,9 +228,9 @@ class ECDbMap {
                       JOIN ec_Schema ns ON ns.Id = nc.SchemaId
                     WHERE
                       nc.Id = pt.NavigationRelationshipClassId
-                  ),
+                  )),
                   'structClass',
-                  (
+                  JSON((
                     SELECT
                       JSON_OBJECT(
                         'classId', format('0x%x', nc.Id),
@@ -240,8 +240,8 @@ class ECDbMap {
                       JOIN ec_Schema ns ON ns.Id = nc.SchemaId
                     WHERE
                       nc.Id = pt.StructClassId
-                  ),
-                  'dateTimeInfo', (
+                  )),
+                  'dateTimeInfo', JSON((
                       SELECT
                       JSON_OBJECT (
                         'dateTimeKind', (
@@ -269,9 +269,9 @@ class ECDbMap {
                       AND [cl].[Name] = 'DateTimeInfo'
                       AND [sc].[Name] = 'CoreCustomAttributes'
                       AND [ca].[ContainerId] = [pt].[Id]
-                  ),
+                  )),
                   'columns',
-                  (
+                  JSON((
                     SELECT
                       JSON_GROUP_ARRAY(JSON(columnJson))
                     FROM
@@ -311,7 +311,7 @@ class ECDbMap {
                         WHERE
                           [pp0].[RootPropertyId] = pt.Id AND pm0.ClassId = cs.Id
                       )
-                  )
+                  ))
                 ) propJson
               FROM [ec_PropertyMap] [pm]
                 JOIN [ec_PropertyPath] [pp] ON [pp].[Id] = [pm].[PropertyPathId]
@@ -321,7 +321,7 @@ class ECDbMap {
               GROUP BY
                 pt.Id
             )
-        )
+        ))
       ) classDef
     FROM [ec_Class] [cs]
       JOIN [ec_ClassMap] [cm] ON [cm].[ClassId] = [cs].[Id]
