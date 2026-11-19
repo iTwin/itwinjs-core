@@ -231,14 +231,14 @@ test("exclude environment-dependent app and full-stack builds from shared cachin
 });
 
 test("prepare Electron and i18n test bundles after cacheable builds", () => {
-  for (const [folder, webpackOutput, commands] of [
-    ["core/electron", "lib/cjs/test/frontend/webpack", ["test:integration:frontend"]],
-    ["core/i18n", "lib/cjs/test/webpack", ["test:chrome", "test:debug"]],
+  for (const [folder, buildCommands, commands] of [
+    ["core/electron", ["build:cjs", "build:esm", "copy:test-assets"], ["test:integration:frontend"]],
+    ["core/i18n", ["build:cjs", "build:esm"], ["test:chrome", "test:debug"]],
   ]) {
     const projectPath = path.join(__dirname, "../../..", folder);
     const { scripts } = JSON.parse(readFileSync(path.join(projectPath, "package.json"), "utf8"));
-    assert.ok(scripts.build.startsWith(`rimraf -g ${webpackOutput} && `), folder);
-    assert.ok(!scripts.build.includes("test:prepare"), folder);
+    assert.equal(scripts.build, ["clean", ...buildCommands].map((command) => `npm run -s ${command}`).join(" && "), folder);
+    assert.match(scripts.clean, /^rimraf -g lib(?:\s|$)/, folder);
     assert.ok(scripts["test:prepare"].startsWith("webpack --config "), folder);
     assert.ok(!Object.hasOwn(scripts, "webpack:test"), folder);
     for (const command of commands)
