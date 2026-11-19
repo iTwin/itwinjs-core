@@ -13510,7 +13510,7 @@ export class ViewingSpace {
     calcNpcToView(): Map4d;
     static createFromViewport(vp: Viewport): ViewingSpace | undefined;
     // @internal
-    readonly decorationDepthRange: Range3d;
+    get decorationDepthRanges(): ReadonlyArray<Readonly<Range3d>>;
     readonly eyePoint: Point3d | undefined;
     // @internal (undocumented)
     fromViewOrientation(from: XYZ, to?: XYZ): void;

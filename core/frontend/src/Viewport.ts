@@ -2936,18 +2936,17 @@ export abstract class Viewport implements Disposable, TileUser {
 
       // Snapshot the ranges of the cached decorations that expand the frustum depth - the decorations cache is cleared whenever the scene is
       // invalidated, but the snapshot must remain available for the next frustum computation.
-      // If the ranges differ from those used to compute the current frustum, recompute it.
       this._frustumDecorationDepthRanges.length = 0;
-      const decorationDepthRange = Range3d.createNull();
-      for (const range of this.decorationDepthRanges) {
-        if (!range.isNull) {
-          const clone = range.clone();
-          this._frustumDecorationDepthRanges.push(clone);
-          decorationDepthRange.extendRange(clone);
-        }
-      }
+      for (const range of this.decorationDepthRanges)
+        if (!range.isNull)
+          this._frustumDecorationDepthRanges.push(range.clone());
 
-      if (!decorationDepthRange.isAlmostEqual(this.viewingSpace.decorationDepthRange)) {
+      // Compare each decorator's range individually against those used to compute the current frustum - adjustZPlanes filters them
+      // individually against the frustum's side planes, so a change that does not alter their combined bounding box can still change
+      // the computed depth planes.
+      const consumed = this.viewingSpace.decorationDepthRanges;
+      const current = this._frustumDecorationDepthRanges;
+      if (current.length !== consumed.length || current.some((range, i) => !range.isAlmostEqual(consumed[i]))) {
         // Recompute the frustum on the next frame. Note: invalidateController must not be called here - it would immediately invalidate the
         // scene, disposing of the cached decoration graphics just submitted to the target before they are drawn at the end of this frame.
         // The next frame's setupFromView invalidates the scene after the frustum is recomputed, so the decorations are recreated before

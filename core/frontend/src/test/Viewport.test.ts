@@ -3289,7 +3289,8 @@ describe("Viewport", () => {
         expect(createdGraphics[0].disposed).toBe(true);
         expect(createdGraphics[1].disposed).toBe(false);
 
-        expect(vp.viewingSpace.decorationDepthRange.isAlmostEqual(decorationRange)).toBe(true);
+        expect(vp.viewingSpace.decorationDepthRanges.length).toBe(1);
+        expect(vp.viewingSpace.decorationDepthRanges[0].isAlmostEqual(decorationRange)).toBe(true);
         const expanded = frustumZRange(vp);
         expect(expanded.high).toBeGreaterThan(2999);
 
@@ -3301,7 +3302,7 @@ describe("Viewport", () => {
         IModelApp.viewManager.dropDecorator(dec);
         vp.renderFrame();
         vp.renderFrame();
-        expect(vp.viewingSpace.decorationDepthRange.isNull).toBe(true);
+        expect(vp.viewingSpace.decorationDepthRanges.length).toBe(0);
         expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
       });
     });
@@ -3311,7 +3312,7 @@ describe("Viewport", () => {
         vp.renderFrame();
         vp.renderFrame();
 
-        expect(vp.viewingSpace.decorationDepthRange.isNull).toBe(true);
+        expect(vp.viewingSpace.decorationDepthRanges.length).toBe(0);
         expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
       });
     });
@@ -3323,8 +3324,36 @@ describe("Viewport", () => {
         vp.renderFrame();
 
         // The range is recorded, but being strongly outside the frustum's side planes it does not affect the depth.
-        expect(vp.viewingSpace.decorationDepthRange.isAlmostEqual(outsideRange)).toBe(true);
+        expect(vp.viewingSpace.decorationDepthRanges.length).toBe(1);
+        expect(vp.viewingSpace.decorationDepthRanges[0].isAlmostEqual(outsideRange)).toBe(true);
         expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
+      });
+    });
+
+    it("detects a new range contained within the combined bounding box of other decorators' ranges", () => {
+      // Two decorators entirely outside the frustum's side planes, whose combined bounding box contains `decorationRange`.
+      const left = makeDecorator(new Range3d(-10001, -1, 2000, -10000, 2, 3000), true);
+      const right = makeDecorator(new Range3d(10000, -1, 2000, 10001, 2, 3000), true);
+      testDecorator(left, (vp, baseline) => {
+        IModelApp.viewManager.addDecorator(right);
+        const dec = makeDecorator(decorationRange, true);
+        try {
+          vp.renderFrame();
+          vp.renderFrame();
+
+          // Both ranges lie outside the side planes, so the depth planes are unaffected.
+          expect(frustumZRange(vp).isAlmostEqual(baseline)).toBe(true);
+
+          // Add an on-screen decorator whose range lies within the combined bounding box of the other two - it must still be
+          // detected and expand the frustum depth.
+          IModelApp.viewManager.addDecorator(dec);
+          vp.renderFrame();
+          vp.renderFrame();
+          expect(frustumZRange(vp).high).toBeGreaterThan(2999);
+        } finally {
+          IModelApp.viewManager.dropDecorator(dec);
+          IModelApp.viewManager.dropDecorator(right);
+        }
       });
     });
   });

@@ -143,14 +143,18 @@ export class ViewingSpace {
   /** Compute the bounding box of this viewing space in [[CoordSystem.World]] coordinates, including the extents of any [[TiledGraphicsProvider]]s registered with the [[Viewport]]. */
   public readonly getViewedExtents: () => AxisAlignedBox3d;
 
-  /** The union of the [[Viewport]]'s cached decoration ranges consumed by [[adjustZPlanes]] when this viewing space was created, for decorators
-   * for which [[ViewportDecorator.expandFrustumDepth]] is `true`. Used to detect when the frustum must be recomputed because those decorations changed.
+  /** The [[Viewport]]'s cached decoration ranges consumed by [[adjustZPlanes]] when this viewing space was created, for decorators
+   * for which [[ViewportDecorator.expandFrustumDepth]] is `true`. */
+  private readonly _decorationDepthRanges: Range3d[] = [];
+
+  /** The decoration ranges consumed by [[adjustZPlanes]] when this viewing space was created. The [[Viewport]] compares each of them against the
+   * current cached decoration ranges to detect when the frustum must be recomputed because those decorations changed - they must be compared
+   * individually because [[adjustZPlanes]] also filters them individually against the frustum's side planes.
    * @internal
    */
-  public readonly decorationDepthRange = Range3d.createNull();
-
-  /** The individual per-decorator ranges unioned into [[decorationDepthRange]]. */
-  private readonly _decorationDepthRanges: Range3d[] = [];
+  public get decorationDepthRanges(): ReadonlyArray<Readonly<Range3d>> {
+    return this._decorationDepthRanges;
+  }
 
   /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
@@ -311,13 +315,9 @@ export class ViewingSpace {
       return extents;
     };
 
-    for (const range of vp.frustumDecorationDepthRanges) {
-      if (!range.isNull) {
-        const clone = range.clone();
-        this._decorationDepthRanges.push(clone);
-        this.decorationDepthRange.extendRange(clone);
-      }
-    }
+    // Copy the ranges verbatim - the Viewport's change detection compares them element-wise against its current snapshot.
+    for (const range of vp.frustumDecorationDepthRanges)
+      this._decorationDepthRanges.push(range.clone());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
