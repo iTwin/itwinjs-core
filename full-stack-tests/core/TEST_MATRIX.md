@@ -14,20 +14,13 @@ Normal commands exclude `#integration` and `#performance`. Integration and perfo
 
 ## Chrome-only suite decisions
 
-The following suites are Chrome-only because running them in Electron too would mostly retest the same frontend code. They do cross the RPC and IPC transport, but the Electron path they would add is already covered by the suites that still run in Electron and by `full-stack-tests/rpc`. The map suites compare pixels, which both runtimes render with the same Chromium WebGL. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
+Only the three map suites are Chrome-only. They compare rendered pixels, which both runtimes produce with the same Chromium WebGL, so running them in Electron as well would repeat expensive graphics tests without exercising a different renderer. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
 
-- `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering.
-- `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering.
+- `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering. Needs `TEST_BING_MAPS_KEY` and `TEST_MAPBOX_KEY`.
+- `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering. Needs the same map keys.
 - `src/frontend/map/PlanarClipMask.test.ts` — pixel assertions over planar clip-mask rendering.
-- `src/frontend/standalone/BlankConnection.test.ts` — blank-connection API and mock viewport behavior.
-- `src/frontend/standalone/Categories.test.ts` — category/subcategory RPC behavior.
-- `src/frontend/standalone/CodeSpecs.test.ts` — CodeSpec RPC behavior.
-- `src/frontend/standalone/ECSqlAst.test.ts` — ECSQL parser/AST behavior.
-- `src/frontend/standalone/Elements.test.ts` — element and placement RPC behavior.
-- `src/frontend/standalone/ModelState.test.ts` — model-state loading and serialization behavior.
-- `src/frontend/standalone/SchemaLocator.test.ts` — schema RPC locator behavior.
-- `src/frontend/standalone/SubCategoriesCache.test.ts` — subcategory cache behavior.
-- `src/frontend/standalone/ViewState.test.ts` — ViewState and ViewState2d behavior.
+
+Both Vitest configs pass `IMJS_*` and `TEST_*` variables to the renderer. Running these suites in Electron only needs them removed from the Electron project's `exclude` list and their `describeChrome` guard dropped.
 
 No test logic was removed. The Electron run retains the Electron-specific, IPC, tile, and renderer coverage listed below.
 
@@ -79,7 +72,7 @@ The `isMobileAppFrontend` guards in `BriefcaseTxns`, `EditTool`, `GraphicalEditi
 
 ## Remaining normal suites
 
-The 44 files not listed in the exception sections are currently shared by Chrome and Electron. Existing skipped tests remain unchanged, including the four parser skips in `ECSqlAst`, the skipped `GraphicalEditingScope` test, and the flaky skipped `RenderTarget` test.
+The 53 files not listed in the exception sections are currently shared by Chrome and Electron. Existing skipped tests remain unchanged, including the four parser skips in `ECSqlAst`, the skipped `GraphicalEditingScope` test, and the flaky skipped `RenderTarget` test.
 
 ## Runner requirements
 

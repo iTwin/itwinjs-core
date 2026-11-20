@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "vitest";
-import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -11,8 +11,7 @@ import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseC
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
-const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
-describeChrome("SubCategoriesCache", () => {
+describe("SubCategoriesCache", () => {
   // test.bim:
   //  3d views:
   //    view:           34
