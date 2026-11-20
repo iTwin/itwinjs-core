@@ -16,16 +16,17 @@ import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRen
 import type { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, type RenderOrder } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { ElectronApp } from "@itwin/core-electron/renderer";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 
-// RenderOrder is a const enum and therefore has no runtime ESM export. Keep the test's
-// existing assertion value without changing the production package's internal export.
-const linearRenderOrder = 5;
+// RenderOrder is a const enum with no runtime export, and Vitest compiles each file separately, so it
+// cannot inline RenderOrder.Linear from a value import. The type keeps this value tied to the enum: if
+// RenderOrder.Linear ever changes, this line stops compiling.
+const linearRenderOrder: RenderOrder.Linear = 5;
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
