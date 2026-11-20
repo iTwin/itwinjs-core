@@ -20,7 +20,9 @@ export interface IModelJsExpressServerConfig {
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
  * @note This server is not designed to be a hardened, secure endpoint on the public internet.
  *       It is intended to participate in a private HTTP exchange with a public-facing routing and provisioning infrastructure
- *       that should be supplied by the application's deployment environment.
+ *       that should be supplied by the application's deployment environment. This server also does not check whether a caller
+ *       is permitted to access the iModel named in a request; that infrastructure, or the application's own middleware, must do so.
+ *       See [Authorize Requests]($docs/learning/RpcInterface.md#authorize-requests).
  * @public
  */
 export class IModelJsExpressServer {
