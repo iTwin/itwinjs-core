@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it, vi } from "vitest";
 import {
   type FrameRoutingEvent,
+  type FrameRoutingFrame,
   type FrameRoutingIpcMain,
   type FrameRoutingWebContents,
   installElectronFrameRouting,
@@ -13,14 +14,24 @@ import {
 
 class FakeWebContents implements FrameRoutingWebContents {
   public readonly sent: unknown[][] = [];
-  public readonly sentToFrames: Array<[number, string, unknown[]]> = [];
+
+  public send(channel: string, ...args: unknown[]): void {
+    this.sent.push([channel, ...args]);
+  }
+}
+
+class FakeFrame implements FrameRoutingFrame {
+  public readonly sent: unknown[][] = [];
+  public destroyed = false;
+  public detached = false;
 
   public send(channel: string, ...args: unknown[]): void {
     this.sent.push([channel, ...args]);
   }
 
-  public sendToFrame(frameId: number, channel: string, ...args: unknown[]): void {
-    this.sentToFrames.push([frameId, channel, args]);
+  // eslint-disable-next-line @itwin/prefer-get -- mirrors Electron's WebFrameMain.isDestroyed().
+  public isDestroyed(): boolean {
+    return this.destroyed;
   }
 }
 
@@ -52,7 +63,7 @@ class FakeIpcMain implements FrameRoutingIpcMain {
   }
 }
 
-const eventFrom = (sender: FrameRoutingWebContents, frameId: number): FrameRoutingEvent => ({ sender, frameId });
+const eventFrom = (sender: FrameRoutingWebContents, senderFrame: FrameRoutingFrame | null): FrameRoutingEvent => ({ sender, senderFrame });
 
 describe("Electron Vitest frame routing", () => {
   it("does nothing when ipcMain is not available", () => {
@@ -65,20 +76,19 @@ describe("Electron Vitest frame routing", () => {
     const windowContents = new FakeWebContents();
     installElectronFrameRouting(ipcMain, () => [windowContents]);
 
-    ipcMain.emit("itwin.rpc.objects", eventFrom(requestSender, 7));
+    const firstFrame = new FakeFrame();
+    ipcMain.emit("itwin.rpc.objects", eventFrom(requestSender, firstFrame));
     requestSender.send("response", 1);
     windowContents.send("notification", 2);
 
-    expect(requestSender.sentToFrames).toEqual([[7, "response", [1]]]);
-    expect(windowContents.sentToFrames).toEqual([[7, "notification", [2]]]);
+    expect(firstFrame.sent).toEqual([["response", 1], ["notification", 2]]);
+    expect(requestSender.sent).toEqual([]);
+    expect(windowContents.sent).toEqual([]);
 
-    const secondRequestSender = new FakeWebContents();
-    ipcMain.emit("itwin.rpc.data", eventFrom(secondRequestSender, 11));
+    const secondFrame = new FakeFrame();
+    ipcMain.emit("itwin.rpc.data", eventFrom(new FakeWebContents(), secondFrame));
     windowContents.send("notification", 3);
-    expect(windowContents.sentToFrames).toEqual([
-      [7, "notification", [2]],
-      [11, "notification", [3]],
-    ]);
+    expect(secondFrame.sent).toEqual([["notification", 3]]);
   });
 
   it("captures the frame for handlers registered after installation", async () => {
@@ -89,24 +99,56 @@ describe("Electron Vitest frame routing", () => {
 
     const handler = vi.fn(() => "result");
     ipcMain.handle("application", handler);
-    await expect(ipcMain.invoke("application", eventFrom(requestSender, 13), "argument")).resolves.toBe("result");
+    const frame = new FakeFrame();
+    const event = eventFrom(requestSender, frame);
+    await expect(ipcMain.invoke("application", event, "argument")).resolves.toBe("result");
 
-    expect(handler).toHaveBeenCalledWith(eventFrom(requestSender, 13), "argument");
+    expect(handler).toHaveBeenCalledWith(event, "argument");
     windowContents.send("notification");
-    expect(windowContents.sentToFrames).toEqual([[13, "notification", []]]);
+    expect(frame.sent).toEqual([["notification"]]);
   });
 
-  it("preserves the original send when no frame-aware send is available", () => {
+  it("prefers a sender's own live frame over the latest frame from another sender", () => {
     const ipcMain = new FakeIpcMain();
-    const windowContents = new class implements FrameRoutingWebContents {
-      public readonly sent: unknown[][] = [];
-      public send(channel: string, ...args: unknown[]): void {
-        this.sent.push([channel, ...args]);
-      }
-    }();
+    installElectronFrameRouting(ipcMain, () => []);
+
+    const firstSender = new FakeWebContents();
+    const firstFrame = new FakeFrame();
+    ipcMain.emit("itwin.rpc.objects", eventFrom(firstSender, firstFrame));
+    const secondFrame = new FakeFrame();
+    ipcMain.emit("itwin.rpc.objects", eventFrom(new FakeWebContents(), secondFrame));
+
+    firstSender.send("response");
+    expect(firstFrame.sent).toEqual([["response"]]);
+    expect(secondFrame.sent).toEqual([]);
+  });
+
+  it.each([
+    { state: "destroyed", end: (frame: FakeFrame) => frame.destroyed = true },
+    { state: "detached", end: (frame: FakeFrame) => frame.detached = true },
+  ])("falls back to the original send once the tester frame is $state", ({ end }) => {
+    const ipcMain = new FakeIpcMain();
+    const requestSender = new FakeWebContents();
+    const windowContents = new FakeWebContents();
     installElectronFrameRouting(ipcMain, () => [windowContents]);
 
-    ipcMain.emit("itwin.rpc.objects", eventFrom(new FakeWebContents(), 17));
+    const frame = new FakeFrame();
+    ipcMain.emit("itwin.rpc.objects", eventFrom(requestSender, frame));
+    end(frame);
+    requestSender.send("response");
+    windowContents.send("notification");
+
+    expect(frame.sent).toEqual([]);
+    expect(requestSender.sent).toEqual([["response"]]);
+    expect(windowContents.sent).toEqual([["notification"]]);
+  });
+
+  it("does not record a frame when the event has none", () => {
+    const ipcMain = new FakeIpcMain();
+    const windowContents = new FakeWebContents();
+    installElectronFrameRouting(ipcMain, () => [windowContents]);
+
+    ipcMain.emit("itwin.rpc.objects", eventFrom(new FakeWebContents(), null));
     windowContents.send("notification", true);
 
     expect(windowContents.sent).toEqual([["notification", true]]);
