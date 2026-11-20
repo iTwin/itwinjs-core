@@ -230,6 +230,20 @@ describe("Markup sanitizing", () => {
     assert.deepEqual(xssCalls, []);
   });
 
+  it("drops content beside the svg root", () => {
+    const link = `<a href="https://example.com">link</a>`;
+    const markup = createMarkup(`stray text${link}<font color="red">font</font><p>paragraph</p>
+      <svg xmlns="http://www.w3.org/2000/svg" class="markup-container" viewBox="0 0 200 200">
+        <g class="markup-svg"><rect width="10" height="10"></rect><p>breakout ${link}</p></g>
+      </svg>${link}`);
+
+    assert.isDefined(markup.svgMarkup);
+    assert.equal(markup.markupDiv.childNodes.length, 1);
+    assert.strictEqual(markup.markupDiv.firstChild, markup.svgContainer!.node);
+    assert.equal(markup.markupDiv.textContent!.trim(), "");
+    assert.isNotNull(markup.svgMarkup!.node.querySelector("rect"));
+  });
+
   it("keeps only same-document references on use elements", () => {
     const uses = [
       `<use id="sameDoc" href="#shape" x="20"></use>`,
