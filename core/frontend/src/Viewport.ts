@@ -2941,6 +2941,11 @@ export abstract class Viewport implements Disposable, TileUser {
         if (!range.isNull)
           this._frustumDecorationDepthRanges.push(range.clone());
 
+      // Sort the snapshot so that the comparison below is insensitive to the order in which the decorators produced their decorations - e.g.,
+      // invalidating one decorator's cached decorations reorders the cache, which must not register as a change.
+      this._frustumDecorationDepthRanges.sort((a, b) =>
+        a.low.x - b.low.x || a.low.y - b.low.y || a.low.z - b.low.z || a.high.x - b.high.x || a.high.y - b.high.y || a.high.z - b.high.z);
+
       // Compare each decorator's range individually against those used to compute the current frustum - adjustZPlanes filters them
       // individually against the frustum's side planes, so a change that does not alter their combined bounding box can still change
       // the computed depth planes.

@@ -3356,5 +3356,29 @@ describe("Viewport", () => {
         }
       });
     });
+
+    it("does not recompute the frustum when invalidating one decorator's unchanged cached decorations reorders the cache", () => {
+      const rangeB = new Range3d(0.25, 0.25, 4000, 0.75, 0.75, 5000);
+      const decA = makeDecorator(decorationRange, true);
+      const decB = makeDecorator(rangeB, true);
+      testDecorator(decA, (vp) => {
+        IModelApp.viewManager.addDecorator(decB);
+        try {
+          vp.renderFrame();
+          vp.renderFrame();
+          const expanded = frustumZRange(vp);
+          expect(expanded.high).toBeGreaterThan(4999);
+
+          // Recreating decA's decorations re-inserts its unchanged range at the end of the decorations cache. That must not
+          // register as a change requiring the frustum to be recomputed.
+          vp.invalidateCachedDecorations(decA);
+          vp.renderFrame();
+          expect((vp as any)._controllerValid).toBe(true);
+          expect(frustumZRange(vp).isAlmostEqual(expanded)).toBe(true);
+        } finally {
+          IModelApp.viewManager.dropDecorator(decB);
+        }
+      });
+    });
   });
 });
