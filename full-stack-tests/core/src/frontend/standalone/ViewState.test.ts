@@ -13,12 +13,11 @@ import {
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { Mutable } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
-describeChrome("ViewState", () => {
+describe("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
@@ -567,7 +566,7 @@ describeChrome("ViewState", () => {
   });
 });
 
-describeChrome("ViewState2d", () => {
+describe("ViewState2d", () => {
   let imodel: IModelConnection;
 
   beforeAll(async () => {

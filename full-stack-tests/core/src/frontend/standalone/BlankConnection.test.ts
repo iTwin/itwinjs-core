@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "vitest";
-import { Guid, GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
 import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
@@ -18,8 +18,7 @@ function createViewDiv() {
   return div;
 }
 
-const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
-describeChrome("Blank Connection", () => {
+describe("Blank Connection", () => {
   let blankConnection: BlankConnection;
   const viewDiv = createViewDiv();
   const iTwinId: GuidString = Guid.createValue();
