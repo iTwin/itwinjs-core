@@ -48,11 +48,13 @@ Each method first validates every input and calls the per-aspect `onInsert`, `on
 
 ## Handlers
 
-The handlers are called in the same order as when the single-aspect methods are called, except that each owning element is updated once:
+The handlers are called in three passes over the whole call:
 
 1. For each aspect, in input order, the per-aspect `onInsert`, `onUpdate` or `onDelete` handler is called.
 2. Each owning element is updated once, in the order in which it first appears in the input. This calls its `onUpdate` and `onUpdated` handlers and its parent's `onChildUpdate` and `onChildUpdated` handlers. The element's aspects are written after its `onUpdated` handler is called, in input order.
 3. For each aspect, in input order, the per-aspect `onInserted`, `onUpdated` or `onDeleted` handler is called.
+
+As with the single-aspect methods, an owning element's `onUpdated` handler is called before its aspects are written. Unlike a sequence of single-aspect calls, no aspect of the call is written while the `onInsert`, `onUpdate` or `onDelete` handlers run, so a handler that queries the iModel does not see the changes of the other aspects in the same call. All aspects of the call are written before the first `onInserted`, `onUpdated` or `onDeleted` handler is called.
 
 `onDelete` and `onDeleted` receive the owning element in `arg.element`.
 
