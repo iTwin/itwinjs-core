@@ -169,8 +169,11 @@ export class Logger {
     this.onLogLevelChanged.raiseEvent();
   }
 
-  /** Interpret a string as the name of a LogLevel */
-  public static parseLogLevel(str: string): LogLevel {
+  /** Interpret a string as the name of a LogLevel.
+   * The comparison is case-insensitive, so "info", "INFO", and "Info" all return [[LogLevel.Info]].
+   * Returns `undefined` if the string does not match any known log level.
+   */
+  public static parseLogLevel(str: string): LogLevel | undefined {
     switch (str.toUpperCase()) {
       case "EXCEPTION": return LogLevel.Error;
       case "FATAL": return LogLevel.Error;
@@ -179,25 +182,30 @@ export class Logger {
       case "INFO": return LogLevel.Info;
       case "TRACE": return LogLevel.Trace;
       case "DEBUG": return LogLevel.Trace;
+      case "NONE": return LogLevel.None;
     }
-    return LogLevel.None;
+    return undefined;
   }
 
   /** Set the log level for multiple categories at once. Also see [[validateProps]] */
   public static configureLevels(cfg: LoggerLevelsConfig) {
     Logger.validateProps(cfg);
     if (cfg.defaultLevel !== undefined) {
-      this.setLevelDefault(Logger.parseLogLevel(cfg.defaultLevel));
+      const level = Logger.parseLogLevel(cfg.defaultLevel);
+      if (level !== undefined)
+        this.setLevelDefault(level);
     }
     if (cfg.categoryLevels !== undefined) {
       for (const cl of cfg.categoryLevels) {
-        this.setLevel(cl.category, Logger.parseLogLevel(cl.logLevel));
+        const level = Logger.parseLogLevel(cl.logLevel);
+        if (level !== undefined)
+          this.setLevel(cl.category, level);
       }
     }
   }
 
   private static isLogLevel(v: string) {
-    return LogLevel.hasOwnProperty(v);
+    return Logger.parseLogLevel(v) !== undefined;
   }
 
   /** Check that the specified object is a valid LoggerLevelsConfig. This is useful when reading a config from a .json file. */
@@ -419,4 +427,3 @@ export class PerfLogger implements Disposable {
     this[Symbol.dispose]();
   }
 }
-
