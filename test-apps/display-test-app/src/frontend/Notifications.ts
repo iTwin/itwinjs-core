@@ -70,7 +70,7 @@ export class Notifications extends NotificationManager {
     // set up the message
     const span = IModelApp.makeHTMLElement("span", { parent: dialog, className: "notification-messageboxtext" });
     if (typeof message === "string")
-      span.innerHTML = message;
+      span.textContent = message;
     else
       span.appendChild(message);
 
