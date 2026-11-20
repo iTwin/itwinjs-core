@@ -51,7 +51,10 @@ function createConfig(shouldInstrument) {
         url: false,
       },
       alias: {
-        "supports-color$": "supports-color/browser.js"
+        "supports-color$": "supports-color/browser.js",
+        // Static imports of this entry select core-electron's CJS build and TestUtility's import() selects its ESM build.
+        // Pin both to CJS so the bundle has one ElectronApp, and startup and shutdown share its state.
+        "@itwin/core-electron/renderer$": require.resolve("@itwin/core-electron/renderer"),
       }
     },
     module: {
