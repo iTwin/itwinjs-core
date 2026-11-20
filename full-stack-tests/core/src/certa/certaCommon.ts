@@ -24,7 +24,8 @@ export async function executeBackendCallback(name: string, ...args: unknown[]): 
   if (vitestCallback)
     return vitestCallback(name, ...args);
 
-  const certaCallbackModule = await import("@itwin/certa/lib/utils/CallbackUtils") as unknown as {
+  // Name the .js file: in the Certa Webpack bundle, the extensionless import() resolved to CallbackUtils.d.ts.
+  const certaCallbackModule = await import("@itwin/certa/lib/utils/CallbackUtils.js") as unknown as {
     executeBackendCallback?: (name: string, ...args: any[]) => Promise<unknown>;
     default?: { executeBackendCallback?: (name: string, ...args: any[]) => Promise<unknown> };
   };
