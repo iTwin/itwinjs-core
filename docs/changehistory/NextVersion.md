@@ -138,6 +138,8 @@ As a result, a layer with a transparent fill takes precedence over a layer below
 
 Markup created with the built-in markup tools is not affected. If you supply SVG from another source, such as custom symbols, check that it still displays correctly. Content removed from a restored markup is also missing from the SVG that [MarkupApp.stop]($markup) returns.
 
+Sanitizing is a basic safeguard against script execution, not a guarantee that the SVG is safe. For example, embedded stylesheets and references to external resources are kept. Your application remains responsible for supplying markup and symbols only from sources it trusts.
+
 ## Backend
 
 ### Bulk Element Deletion API changes

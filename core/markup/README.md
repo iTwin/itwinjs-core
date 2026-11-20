@@ -14,6 +14,8 @@ Sanitizing removes content that can run script, such as `script` elements, event
 
 Markup created with the built-in markup tools is not affected.
 
+Sanitizing is a basic safeguard against script execution, not a guarantee that the SVG is safe. For example, embedded stylesheets and references to external resources are kept. The application remains responsible for supplying markup and symbols only from sources it trusts.
+
 ## Documentation
 
 See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
