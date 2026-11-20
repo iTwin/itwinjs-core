@@ -119,34 +119,38 @@ describe("PerformanceTest: Bulk ElementAspect operations", () => {
     };
 
     const txn = new EditTxn(db, `${api} aspect perf test`);
-    txn.start();
     try {
-      let ids: Id64Array = [];
-      const insertProps = indices.map((i) => aspectProps(kind, ownerIds, aspectsPerOwner, i, "1"));
-      if (api === "single") {
-        time("insert", () => { ids = insertProps.map((props) => txn.insertAspect(props)); });
-      } else {
-        time("insert", () => { ids = txn.insertAspects(insertProps); });
+      txn.start();
+      try {
+        let ids: Id64Array = [];
+        const insertProps = indices.map((i) => aspectProps(kind, ownerIds, aspectsPerOwner, i, "1"));
+        if (api === "single") {
+          time("insert", () => { ids = insertProps.map((props) => txn.insertAspect(props)); });
+        } else {
+          time("insert", () => { ids = txn.insertAspects(insertProps); });
+        }
+        const initialCount = countAspects(db);
+        assert.isAtLeast(initialCount, count);
+
+        const updateProps = indices.map((i) => aspectProps(kind, ownerIds, aspectsPerOwner, i, "2", ids[i]));
+        if (api === "single")
+          time("update", () => updateProps.forEach((props) => txn.updateAspect(props)));
+        else
+          time("update", () => txn.updateAspects(updateProps));
+        assert.equal(countAspects(db), initialCount);
+
+        if (api === "single")
+          time("delete", () => ids.forEach((id) => txn.deleteAspect(id)));
+        else
+          time("delete", () => txn.deleteAspects(ids));
+        assert.equal(countAspects(db), initialCount - count);
+
+        txn.end("save");
+      } finally {
+        if (txn.isActive)
+          txn.end("abandon");
       }
-      const initialCount = countAspects(db);
-      assert.isAtLeast(initialCount, count);
-
-      const updateProps = indices.map((i) => aspectProps(kind, ownerIds, aspectsPerOwner, i, "2", ids[i]));
-      if (api === "single")
-        time("update", () => updateProps.forEach((props) => txn.updateAspect(props)));
-      else
-        time("update", () => txn.updateAspects(updateProps));
-      assert.equal(countAspects(db), initialCount);
-
-      if (api === "single")
-        time("delete", () => ids.forEach((id) => txn.deleteAspect(id)));
-      else
-        time("delete", () => txn.deleteAspects(ids));
-      assert.equal(countAspects(db), initialCount - count);
-
-      txn.saveChanges();
     } finally {
-      txn.end();
       close();
     }
     return times;

@@ -584,6 +584,7 @@ export class EditTxn {
    * @returns The id of each inserted aspect, in input order.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] on the first aspect that cannot be inserted. Nothing is written when the input is invalid, but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
+   * @throws Any exception thrown by an aspect or element handler, unchanged. The caller must then also abandon the changes with [[abandonChanges]].
    * @beta
    */
   public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): Id64String[] {
@@ -600,6 +601,7 @@ export class EditTxn {
    * @param options.incremental If true, only the properties in the props are changed. Defaults to false.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] on the first aspect that cannot be updated. Nothing is written when the input is invalid, but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
+   * @throws Any exception thrown by an aspect or element handler, unchanged. The caller must then also abandon the changes with [[abandonChanges]].
    * @beta
    */
   public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, options?: { incremental?: boolean }): void {
@@ -613,6 +615,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] on the first id that does not identify an existing aspect, including an id that appears twice. Nothing is deleted when an id is invalid,
    * but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
+   * @throws Any exception thrown by an aspect or element handler, unchanged. The caller must then also abandon the changes with [[abandonChanges]].
    * @beta
    */
   public deleteAspects(ids: Id64Array): void {

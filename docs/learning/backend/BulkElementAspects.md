@@ -44,14 +44,14 @@ txn.deleteAspects([ids[0]]);
 
 ## Errors
 
-Each method first validates every input and calls the per-aspect `onInsert`, `onUpdate` or `onDelete` handler, in input order, and throws an [ITwinError]($bentley) on the first problem, for example an invalid id, a class that is not an aspect class, a missing owning element or aspect, or a handler that throws. Nothing is written when one of these problems is found, but the handlers before it have already run, so **abandon the txn** with [EditTxn.abandonChanges]($backend) when one of these methods throws. An error while writing, for example a SQLite error, can also leave some aspects written.
+Each method first validates every input and calls the per-aspect `onInsert`, `onUpdate` or `onDelete` handler, in input order, and throws on the first problem. For example, it throws an [ITwinError]($bentley) for an invalid id, a class that is not an aspect class, or a missing owning element or aspect. An exception thrown by a handler is propagated unchanged, so it may not be an [ITwinError]($bentley). Nothing is written when one of these problems is found, but the handlers before it have already run, so **abandon the txn** with [EditTxn.abandonChanges]($backend) when one of these methods throws anything. An error while writing, for example a SQLite error or an aspect to update or delete that a handler deleted, can also leave some aspects written.
 
 ## Handlers
 
 The handlers are called in three passes over the whole call:
 
 1. For each aspect, in input order, the per-aspect `onInsert`, `onUpdate` or `onDelete` handler is called.
-2. Each owning element is updated once, in the order in which it first appears in the input. This calls its `onUpdate` and `onUpdated` handlers and its parent's `onChildUpdate` and `onChildUpdated` handlers. The element's aspects are written after its `onUpdated` handler is called, in input order.
+2. Each owning element is updated once, in the order in which it first appears in the input. Its `onUpdated` handler is called, then its aspects are written in input order, then its parent's `onChildUpdated` handler is called. As with the single-aspect methods, the element's `onUpdate` handler and its parent's `onChildUpdate` handler are not called.
 3. For each aspect, in input order, the per-aspect `onInserted`, `onUpdated` or `onDeleted` handler is called.
 
 As with the single-aspect methods, an owning element's `onUpdated` handler is called before its aspects are written. Unlike a sequence of single-aspect calls, no aspect of the call is written while the `onInsert`, `onUpdate` or `onDelete` handlers run, so a handler that queries the iModel does not see the changes of the other aspects in the same call. All aspects of the call are written before the first `onInserted`, `onUpdated` or `onDeleted` handler is called.
