@@ -21,7 +21,8 @@ if (existsSync(envFile)) {
 }
 
 const rendererEnv = Object.fromEntries(Object.entries(process.env)
-  .filter(([key, value]) => key.startsWith("IMJS_") && value !== undefined)
+  // IMJS_* configures the tests; TEST_* carries keys such as the map API keys, which Chrome runs also receive.
+  .filter(([key, value]) => (key.startsWith("IMJS_") || key.startsWith("TEST_")) && value !== undefined)
   .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]));
 const isDebug = process.env.VITEST_CORE_DEBUG === "1";
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
