@@ -2894,7 +2894,9 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
-    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): void;
+    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, options?: {
+        incremental?: boolean;
+    }): void;
     updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;

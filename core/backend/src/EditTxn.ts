@@ -553,7 +553,7 @@ export class EditTxn {
   public updateAspect(aspectProps: ElementAspectProps): void {
     this.verifyWriteable();
     try {
-      this.iModel[_nativeDb].updateElementAspects([aspectProps]);
+      this.iModel[_nativeDb].updateElementAspects([aspectProps], true);
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
       error.cause = err;
@@ -583,7 +583,7 @@ export class EditTxn {
    * @param aspectProps The properties of the new aspects.
    * @returns The id of each inserted aspect, in input order.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[ITwinError]] on the first aspect that cannot be inserted. The aspects before it may already be inserted, so the caller must abandon the changes with [[abandonChanges]].
+   * @throws [[ITwinError]] on the first aspect that cannot be inserted. Nothing is written when the input is invalid, but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
    * @beta
    */
   public insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): Id64String[] {
@@ -593,22 +593,26 @@ export class EditTxn {
 
   /** Update many existing aspects in the iModel.
    * The aspects are updated in order, and each owning element is updated once, no matter how many of its aspects are updated.
-   * @param aspectProps The properties of the aspects to update, as for [[updateAspect]].
+   * By default, unlike [[updateAspect]], each props must contain all the properties of the aspect, as returned by [[ElementAspect.toJSON]]:
+   * every property that is not in the props is set to undefined. Set `options.incremental` to keep the stored value of each property that is not in the props, like [[updateAspect]] does.
+   * Incremental updates are slower because each aspect is read before it is written.
+   * @param aspectProps The properties of the aspects to update. A multi aspect is identified by its `id`, and a unique aspect by its `element` and `classFullName`.
+   * @param options.incremental If true, only the properties in the props are changed. Defaults to false.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[ITwinError]] on the first aspect that cannot be updated. The aspects before it may already be updated, so the caller must abandon the changes with [[abandonChanges]].
+   * @throws [[ITwinError]] on the first aspect that cannot be updated. Nothing is written when the input is invalid, but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
    * @beta
    */
-  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>): void {
+  public updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, options?: { incremental?: boolean }): void {
     this.verifyWriteable();
-    this.iModel[_nativeDb].updateElementAspects(aspectProps);
+    this.iModel[_nativeDb].updateElementAspects(aspectProps, options?.incremental ?? false);
   }
 
   /** Delete many aspects from the iModel.
    * The aspects are deleted in order, and each owning element is updated once, no matter how many of its aspects are deleted.
    * @param ids The ids of the aspects to delete.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[ITwinError]] on the first id that does not identify an existing aspect, including an id that appears twice. The aspects before it may already be deleted,
-   * so the caller must abandon the changes with [[abandonChanges]].
+   * @throws [[ITwinError]] on the first id that does not identify an existing aspect, including an id that appears twice. Nothing is deleted when an id is invalid,
+   * but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
    * @beta
    */
   public deleteAspects(ids: Id64Array): void {

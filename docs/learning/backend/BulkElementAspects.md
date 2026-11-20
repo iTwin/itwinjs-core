@@ -6,6 +6,17 @@ They are faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAs
 
 These methods are `@beta`.
 
+## Choosing a method
+
+Prefer the bulk methods, even for a single aspect. A call with one aspect costs the same as the matching single-aspect method, and a call with many aspects is faster. The single-aspect methods remain for compatibility; the main other difference is that they throw an [IModelError]($common) instead of an [ITwinError]($bentley).
+
+For `updateAspects`, choose the mode by what the caller has at hand:
+
+- **The complete aspect is available**, for example an [ElementAspect]($backend) that was just loaded or a props object that was just built from all its properties: use the default mode and pass the complete props, for example from [ElementAspect.toJSON]($backend). This is the fastest mode because no stored aspect is read.
+- **Only the changed properties are available**: pass `{ incremental: true }`. Each aspect is read before it is written, so this mode is slower than the default, but it is cheaper than loading each aspect yourself to build the complete props. It behaves like [EditTxn.updateAspect]($backend).
+
+Never pass partial props in the default mode: every property that is not in the props is set to undefined.
+
 ## Basic usage
 
 ```typescript
@@ -28,16 +39,20 @@ txn.deleteAspects([ids[0]]);
 ```
 
 - `insertAspects` replaces an existing [ElementUniqueAspect]($backend) of the same class, or of a subclass, on the same element. If the same element and class appear more than once in a call, the last one wins.
-- `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`. `classFullName` may name a base class of the aspect's class. Only the properties in the props are changed.
+- `updateAspects` finds an [ElementMultiAspect]($backend) by `id`, and an [ElementUniqueAspect]($backend) by `element` and `classFullName`. `classFullName` may name a base class of the aspect's class. Unlike [EditTxn.updateAspect]($backend), by default it replaces all the properties of the aspect: pass the complete props, for example from [ElementAspect.toJSON]($backend), because every property that is not in the props is set to undefined. This avoids reading each stored aspect. To change only some properties, pass `{ incremental: true }`: the properties that are not in the props then keep their stored values, at the cost of reading each aspect first.
 - `deleteAspects` deletes each id in turn.
 
 ## Errors
 
-Each method processes its input in order and throws an [ITwinError]($bentley) on the first problem, for example an invalid id, a class that is not an aspect class, a missing owning element or aspect, or a handler that throws. The aspects before the problem stay written, so **abandon the txn** with [EditTxn.abandonChanges]($backend) when one of these methods throws.
+Each method first validates every input and calls the per-aspect `onInsert`, `onUpdate` or `onDelete` handler, in input order, and throws an [ITwinError]($bentley) on the first problem, for example an invalid id, a class that is not an aspect class, a missing owning element or aspect, or a handler that throws. Nothing is written when one of these problems is found, but the handlers before it have already run, so **abandon the txn** with [EditTxn.abandonChanges]($backend) when one of these methods throws. An error while writing, for example a SQLite error, can also leave some aspects written.
 
 ## Handlers
 
-For each aspect, in input order, the per-aspect handler (`onInsert`, `onUpdate` or `onDelete`) is called and then the aspect is written. Once every aspect is written, each owning element is updated once, which calls its `onUpdated` handler and its parent's `onChildUpdate` and `onChildUpdated` handlers. Finally the per-aspect `onInserted`, `onUpdated` or `onDeleted` handlers are called, in input order.
+The handlers are called in the same order as when the single-aspect methods are called, except that each owning element is updated once:
+
+1. For each aspect, in input order, the per-aspect `onInsert`, `onUpdate` or `onDelete` handler is called.
+2. Each owning element is updated once, in the order in which it first appears in the input. This calls its `onUpdate` and `onUpdated` handlers and its parent's `onChildUpdate` and `onChildUpdated` handlers. The element's aspects are written after its `onUpdated` handler is called, in input order.
+3. For each aspect, in input order, the per-aspect `onInserted`, `onUpdated` or `onDeleted` handler is called.
 
 `onDelete` and `onDeleted` receive the owning element in `arg.element`.
 

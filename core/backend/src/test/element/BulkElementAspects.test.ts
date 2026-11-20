@@ -128,7 +128,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
     });
   });
 
-  it("throws an ITwinError on the first problem, leaving the aspects before it written", () => {
+  it("throws an ITwinError on the first problem, before writing any aspect", () => {
     inAbandonedTxn((txn) => {
       const [e1] = insertOwners(txn, 1);
       const [m1] = txn.insertAspects([multiProps(e1, "m1")]);
@@ -137,7 +137,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
       let error = thrownBy(() => txn.insertAspects([multiProps(e1, "written"), multiProps("0xffffff", "noOwner"), multiProps(e1, "never")]));
       expect(ITwinError.isError(error, "dgn-db", "NotFound")).to.be.true;
       expect(error.message).to.contain("insertElementAspects: owning element 0xffffff of input 1 does not exist");
-      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1", "TestMultiAspect:written"]); // the caller must abandon the txn
+      expect(aspectsOf(e1)).to.deep.equal(["TestMultiAspect:m1"]); // the pre-handlers ran, so the caller must still abandon the txn
       expect(onInserted.called).to.be.false;
 
       error = thrownBy(() => txn.insertAspects([{ ...multiProps(e1, "x"), classFullName: "BisCore:Subject" }]));
@@ -150,7 +150,7 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(ITwinError.isError(error, "dgn-db", "InvalidId")).to.be.true;
       expect(error.message).to.contain("deleteElementAspects: ids[1] is not a valid aspect id");
 
-      error = thrownBy(() => txn.deleteAspects([m1]));
+      error = thrownBy(() => txn.deleteAspects([m1, m1]));
       expect(ITwinError.isError(error, "dgn-db", "NotFound")).to.be.true;
     });
   });
@@ -172,6 +172,23 @@ describe("EditTxn bulk ElementAspect operations", () => {
       expect(() => txn.insertAspect(multiProps("0xffffff", "x"))).to.throw(IModelError, "Error inserting ElementAspect");
       expect(() => txn.updateAspect({ ...multiProps(e1, "x"), id: id1 })).to.throw(IModelError, "Error updating ElementAspect");
       expect(() => txn.deleteAspect(id1)).to.throw(IModelError, "Error deleting ElementAspect");
+    });
+  });
+
+  it("updateAspects sets the properties that are not in the props to undefined unless incremental is set", () => {
+    inAbandonedTxn((txn) => {
+      const [e1] = insertOwners(txn, 1);
+      const props: TestAspectProps[] = [{ ...multiProps(e1, "m1"), intProp: 1 }, { ...multiProps(e1, "m2"), intProp: 2 }, { ...multiProps(e1, "m3"), intProp: 3 }];
+      const [m1, m2, m3] = txn.insertAspects(props);
+      txn.updateAspect({ ...multiProps(e1, "m1-new"), id: m1 });
+      txn.updateAspects([{ ...multiProps(e1, "m2-new"), id: m2 }]);
+      txn.updateAspects([{ ...multiProps(e1, "m3-new"), id: m3 }], { incremental: true });
+      expect(iModel.elements.getAspect(m1).asAny).to.deep.include({ strProp: "m1-new", intProp: 1 });
+      expect(iModel.elements.getAspect(m3).asAny).to.deep.include({ strProp: "m3-new", intProp: 3 });
+      const updated = iModel.elements.getAspect(m2);
+      expect(updated.asAny.strProp).to.equal("m2-new");
+      expect(updated.asAny.intProp).to.be.undefined;
+      expect(updated.element.id).to.equal(e1);
     });
   });
 
