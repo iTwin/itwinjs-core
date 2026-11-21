@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Preserve display subclass hooks and appearance accessors, refresh category overrides after concurrent loads, retain explicit model-load requests across visibility changes, and cancel unlinked category work. Avoid scene rebuilds for legacy visibility methods, cache mixed pixel exclusions, and release shared selector listeners. Document visibility ownership, provider lifetime, and removed beta APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

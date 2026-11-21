@@ -82,9 +82,9 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   }
 
   protected override getSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    // Supply the owning display reference's visibility and appearance rules; the view's own symbology pertains to its
-    // primary reference. The model-visibility provider supplied by [[getAppearanceProvider]] supplements these overrides.
-    return this._args.iModelRef.getSymbologyOverrides();
+    // Primary branches inherit the target's overrides so appearance changes don't require rebuilding the scene.
+    const ref = this._args.iModelRef;
+    return ref === ref.parent.primary ? undefined : ref.getSymbologyOverrides();
   }
 
   protected override getClipVolume(): RenderClipVolume | undefined {

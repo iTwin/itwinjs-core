@@ -11,7 +11,7 @@ import { FeatureAppearance, FeatureOverrides, SubCategoryOverride } from "@itwin
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import { IModelDisplayReference } from "../IModelDisplayReference";
-import { _excludedElements, _scheduleScriptReference } from "../common/internal/Symbols";
+import { _backingView, _excludedElements, _scheduleScriptReference } from "../common/internal/Symbols";
 
 // cspell:ignore subcat subcats
 
@@ -95,32 +95,20 @@ export namespace FeatureSymbology {
      */
     public initFromView(view: ViewState): void {
       this._initFromView(view);
-      this._initSubCategoryOverrides(view.displayStyle.settings.subCategoryOverrides);
+      this._initSubCategoryOverrides((id) => view.getSubCategoryOverride(id));
     }
 
     /** Initialize these Overrides based on a specific viewport.
      * @internal
      */
     public initFromViewport(viewport: Viewport): void {
-      // Set the initial always/never-drawn sets. Later, initFromView can add more elements to them.
-      const ref = viewport.primaryIModelRef;
-      if (0 < ref.neverDrawnElements.size)
-        this.setNeverDrawnSet(ref.neverDrawnElements);
-
-      if (0 < ref.alwaysDrawnElements.size)
-        this.setAlwaysDrawnSet(ref.alwaysDrawnElements, ref.isAlwaysDrawnExclusive);
-
-      this._initFromView(viewport.view);
-
-      viewport.addFeatureOverrides(this);
-      ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
-
-      // This will include any per-model subcategory visibility overrides added above.
-      this._initSubCategoryOverrides(viewport.view.displayStyle.settings.subCategoryOverrides);
+      this.initFromIModelDisplayReference(viewport.primaryIModelRef);
     }
 
     /** @internal */
     public initFromIModelDisplayReference(ref: IModelDisplayReference): void {
+      const primaryView = ref === ref.parent.primary ? ref.parent[_backingView] : undefined;
+      const getSubCategoryOverride = (id: Id64String) => primaryView ? primaryView.getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();
 
@@ -152,8 +140,7 @@ export namespace FeatureSymbology {
           if (!app)
             continue; // not loaded
 
-          const ovr = ref.subCategoryOverrides.get(subCategoryId);
-          const invisible = ovr?.invisible ?? app.invisible;
+          const invisible = primaryView ? !primaryView.isSubCategoryVisible(subCategoryId) : (getSubCategoryOverride(subCategoryId)?.invisible ?? app.invisible);
           if (invisible)
             continue;
 
@@ -167,21 +154,29 @@ export namespace FeatureSymbology {
       for (const [modelId, appearance] of ref.modelAppearanceOverrides)
         this.override({ modelId, appearance, onConflict: "skip" });
 
+      if (ref === ref.parent.primary) {
+        ref.parent[_backingView].displayStyle.forEachRealityModel((realityModel) => {
+          if (realityModel.appearanceOverrides && realityModel.modelId)
+            this.override({ modelId: realityModel.modelId, appearance: realityModel.appearanceOverrides });
+        });
+      }
+
       const script = ref[_scheduleScriptReference]?.script;
       if (script)
         script.addSymbologyOverrides(this, ref.parent.timePoint ?? 0);
+
+      // Apply plan-projection transparency before providers, preserving their ability to override it.
+      if (ref.isSpatial())
+        for (const [modelId, projSettings] of ref.planProjectionSettings)
+          if (undefined !== projSettings.transparency)
+            this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
 
       for (const provider of ref.featureOverrideProviders)
         provider.addFeatureOverrides(this, ref);
 
       ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
-      this._initSubCategoryOverrides(ref.subCategoryOverrides);
-
-      if (ref.isSpatial())
-        for (const [modelId, projSettings] of ref.planProjectionSettings)
-          if (undefined !== projSettings.transparency)
-            this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
+      this._initSubCategoryOverrides(getSubCategoryOverride);
     }
 
     private _initFromView(view: ViewState): void {
@@ -241,10 +236,10 @@ export namespace FeatureSymbology {
       }
     }
 
-    private _initSubCategoryOverrides(overrides: Map<Id64String, SubCategoryOverride>): void {
+    private _initSubCategoryOverrides(getOverride: (id: Id64String) => SubCategoryOverride | undefined): void {
       const addOverride = (idLo: number, idHi: number) => {
         const subCategoryId = Id64.fromUint32Pair(idLo, idHi);
-        const ovr = overrides.get(subCategoryId);
+        const ovr = getOverride(subCategoryId);
         if (undefined !== ovr) {
           const app = FeatureAppearance.fromSubCategoryOverride(ovr);
           if (app.overridesSymbology)

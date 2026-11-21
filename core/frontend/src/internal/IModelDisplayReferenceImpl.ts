@@ -10,6 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
+import { _backingView } from "../common/internal/Symbols";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
@@ -98,7 +99,8 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
   if (!app)
     return false; // category not enabled or not loaded
 
-  const curOvr = ref.subCategoryOverrides.get(id);
+  const primaryView = ref === ref.parent.primary ? ref.parent[_backingView] : undefined;
+  const curOvr = primaryView ? primaryView.getSubCategoryOverride(id) : ref.subCategoryOverrides.get(id);
   const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
   if (isAlreadyVisible === visible)
     return false;
@@ -106,7 +108,14 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
   // Preserve existing overrides - just flip the visibility flag.
   const json = undefined !== curOvr ? curOvr.toJSON() : {};
   json.invisible = !visible;
-  ref.subCategoryOverrides.set(id, SubCategoryOverride.fromJSON(json));
+  const ovr = SubCategoryOverride.fromJSON(json);
+  if (primaryView) {
+    primaryView.displayStyle.overrideSubCategory(id, ovr);
+    // A custom setter may store overrides outside the observable settings map.
+    ref.invalidateSymbologyOverrides();
+  } else {
+    ref.subCategoryOverrides.set(id, ovr);
+  }
   return true;
 }
 
@@ -119,21 +128,73 @@ export function getSubCategoryAppearance(ref: IModelDisplayReference, id: Id64St
   return ovr?.override(app) ?? app;
 }
 
-export async function loadViewedCategories(ref: IModelDisplayReference): Promise<void> {
-  const promise = ref.iModel.subcategories.load(ref.viewedCategories)?.promise;
-  const anyLoaded = undefined !== promise && (await promise);
-  if (anyLoaded) {
-    ref.invalidateSymbologyOverrides();
-    ref.onViewedCategoriesLoaded.raiseEvent();
-  }
+const scheduledCategoryLoads = new WeakSet<IModelDisplayReference>();
+const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, { promise: Promise<void>, explicitIds: Set<Id64String> }>();
+const pendingModelLoads = new WeakMap<SpatialIModelDisplayReference, Promise<void>>();
+
+export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void {
+  if (scheduledCategoryLoads.has(ref))
+    return;
+
+  scheduledCategoryLoads.add(ref);
+  // Coalesce selector notifications and wait behind changeCategoryDisplay's own queued request.
+  queueMicrotask(() => {
+    if (!scheduledCategoryLoads.delete(ref))
+      return; // Unlinked before the microtask ran.
+
+    ref.parent.subcategories.push(ref.iModel.subcategories, ref.viewedCategories, (anyLoaded) => {
+      // A concurrent category-info load can populate the cache before this queued request starts.
+      ref.invalidateSymbologyOverrides();
+      if (anyLoaded)
+        ref.onViewedCategoriesLoaded.raiseEvent();
+    });
+  });
 }
 
-export async function loadViewedModels(ref: SpatialIModelDisplayReference): Promise<void> {
-  await ref.iModel.models.load(ref.viewedModels);
-  ref.onViewedModelsLoaded.raiseEvent();
+export function cancelViewedCategoriesLoad(ref: IModelDisplayReference): void {
+  scheduledCategoryLoads.delete(ref);
+  ref.parent.subcategories.cancel(ref.iModel.subcategories);
+}
+
+// Return the shared promise itself, including its rejection handler for fire-and-forget selector listeners.
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, modelIds?: Iterable<Id64String>): Promise<void> {
+  const scheduled = scheduledModelLoads.get(ref);
+  if (scheduled) {
+    for (const id of modelIds ?? [])
+      scheduled.explicitIds.add(id);
+    return scheduled.promise;
+  }
+
+  const explicitIds = new Set(modelIds);
+  const previous = pendingModelLoads.get(ref);
+  const load = (async () => {
+    // Defer synchronous bursts, and serialize later bursts behind the current request so loaded Ids aren't re-requested.
+    await previous?.catch(() => {});
+    scheduledModelLoads.delete(ref);
+    // Explicit requests must finish even if their models are hidden before this batch is dispatched.
+    const ids = new Set(ref.viewedModels);
+    for (const id of explicitIds)
+      ids.add(id);
+    await ref.iModel.models.load(ids);
+    ref.onViewedModelsLoaded.raiseEvent();
+  })();
+
+  scheduledModelLoads.set(ref, { promise: load, explicitIds });
+  pendingModelLoads.set(ref, load);
+  const complete = () => {
+    if (pendingModelLoads.get(ref) === load)
+      pendingModelLoads.delete(ref);
+  };
+  void load.then(complete, complete);
+  return load;
 }
 
 export function isLoadingComplete(iModelRef: IModelDisplayReference): boolean {
+  if (scheduledCategoryLoads.has(iModelRef) || !iModelRef.parent.subcategories.isEmpty
+    || (iModelRef.isSpatial() && pendingModelLoads.has(iModelRef)))
+    return false;
+
   for (const ttRef of iModelRef.tileTreeRefs)
     if (!ttRef.isLoadingComplete)
       return false;
@@ -165,9 +226,6 @@ export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference,
   if (!unloaded)
     return;
 
-  // Notify when the load completes so tile-tree references refresh and the scene is invalidated - as
-  // Viewport.addViewedModels did. Note the set mutation above raises no event when retrying a failed load (the Ids
-  // are already present), so this direct load may be the only one in flight.
-  await ref.iModel.models.load(unloaded);
-  ref.onViewedModelsLoaded.raiseEvent();
+  // Reuse the selector listener's load. Also schedule on retries, when the Ids are already in the selector.
+  await scheduleViewedModelsLoad(ref, unloaded);
 }

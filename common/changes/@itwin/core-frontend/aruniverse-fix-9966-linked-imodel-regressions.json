@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Coalesce category and model metadata requests and avoid rebuilding primary scenes for appearance-only changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

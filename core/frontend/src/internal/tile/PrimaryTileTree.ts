@@ -210,7 +210,9 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
-    return this.iModelRef.getSymbologyOverrides();
+    // Viewport installs primaryRef.getSymbologyOverrides() on the target.
+    // Primary branches inherit that snapshot; storing one here would require scene rebuilds for appearance changes.
+    return this.iModelRef === this.iModelRef.parent.primary ? undefined : this.iModelRef.getSymbologyOverrides();
   }
 
   protected override getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {

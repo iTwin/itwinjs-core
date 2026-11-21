@@ -150,9 +150,8 @@ describe("BatchedSpatialTileTreeReferences", () => {
       expect(linkedFit.isAlmostEqual(expectedLinkedFit)).to.be.true;
       expect(linkedFit.isAlmostEqual(modelExtents)).to.be.false;
 
-      // Symbology: each batched reference must supply its owning display reference's visibility and appearance rules,
-      // not inherit the view's. Give the references different viewed categories (with pre-populated subcategory
-      // caches) and different default appearances.
+      // Primary branches inherit the target's overrides; linked branches supply their own. Give the references
+      // different viewed categories (with pre-populated subcategory caches) and different default appearances.
       primaryIModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
       linkedIModel.subcategories.add("0x20", "0x21", new SubCategoryAppearance(), true);
       view.iModelRefs.primary.viewedCategories.add("0x10");
@@ -162,17 +161,18 @@ describe("BatchedSpatialTileTreeReferences", () => {
 
       const getSymbology = (ref: BatchedTileTreeReference): FeatureSymbology.Overrides | undefined =>
         (ref as unknown as { getSymbologyOverrides(): FeatureSymbology.Overrides | undefined }).getSymbologyOverrides();
-      const primarySymbology = getSymbology(primaryBatchedRef);
+      expect(getSymbology(primaryBatchedRef)).to.be.undefined;
+      const primarySymbology = view.iModelRefs.primary.getSymbologyOverrides();
       const linkedSymbology = getSymbology(linkedBatchedRef);
       expect(primarySymbology).not.to.be.undefined;
       expect(linkedSymbology).not.to.be.undefined;
 
-      expect(primarySymbology!.isSubCategoryIdVisible("0x11")).to.be.true;
-      expect(primarySymbology!.isSubCategoryIdVisible("0x21")).to.be.false;
+      expect(primarySymbology.isSubCategoryIdVisible("0x11")).to.be.true;
+      expect(primarySymbology.isSubCategoryIdVisible("0x21")).to.be.false;
       expect(linkedSymbology!.isSubCategoryIdVisible("0x21")).to.be.true;
       expect(linkedSymbology!.isSubCategoryIdVisible("0x11")).to.be.false;
 
-      expect(primarySymbology!.defaultOverrides).to.equal(FeatureAppearance.defaults);
+      expect(primarySymbology.defaultOverrides).to.equal(FeatureAppearance.defaults);
       expect(linkedSymbology!.defaultOverrides).to.equal(linkedAppearance);
 
       // Changing the linked reference's viewed models after the batched tileset has loaded must refresh the batched

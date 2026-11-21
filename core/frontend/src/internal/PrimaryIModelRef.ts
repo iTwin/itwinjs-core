@@ -21,14 +21,13 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import type { DisplayStyleState } from "../DisplayStyleState";
-import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, isLoadingComplete, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly [_implementationProhibited] = undefined;
 
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
-  #symbologyOverrides?: FeatureSymbology.Overrides;
   #removeSubCategoryChangesListener?: () => void;
 
   // The view's display style and category selector can be replaced wholesale. Listeners registered on those objects (or
@@ -38,11 +37,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   #boundStyleSettings: DisplayStyleSettings;
   readonly #styleListenerRemovals: VoidFunction[] = [];
   readonly #styleListenerBinders: Array<(settings: DisplayStyleSettings) => VoidFunction[]> = [];
-  #boundViewedCategories: ObservableSet<Id64String>;
-  #removeViewedCategoriesListener: VoidFunction;
+  #boundViewedCategories?: ObservableSet<Id64String>;
+  #removeViewedCategoriesListener?: VoidFunction;
   readonly #viewedCategoriesChanged = () => {
     this.invalidateSymbologyOverrides();
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   };
 
   protected readonly _ovrs: IModelDisplayOverrides;
@@ -108,8 +107,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     view.onDisplayStyleChanged.addListener((newStyle) => this.#displayStyleReplaced(newStyle));
 
-    this.#boundViewedCategories = view.categorySelector.observableCategories;
-    this.#removeViewedCategoriesListener = this.#boundViewedCategories.onChanged.addListener(this.#viewedCategoriesChanged);
     view.onViewedCategoriesChanged.addListener(() => this.#syncViewedCategoriesBinding());
 
     ovrs.onViewFlagsChanged.addListener(updateViewFlags);
@@ -177,12 +174,17 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     this.invalidateSymbologyOverrides();
   }
 
+  protected get _isAttachedToViewport(): boolean { return this.#attached; }
+
   #syncViewedCategoriesBinding(): void {
+    if (!this.#attached)
+      return;
+
     const current = this._view.categorySelector.observableCategories;
     if (current === this.#boundViewedCategories)
       return;
 
-    this.#removeViewedCategoriesListener();
+    this.#removeViewedCategoriesListener?.();
     this.#boundViewedCategories = current;
     this.#removeViewedCategoriesListener = current.onChanged.addListener(this.#viewedCategoriesChanged);
     this.#viewedCategoriesChanged();
@@ -267,10 +269,12 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     // detached, with the listeners that would invalidate and reload removed. Mirror the old Viewport.attachToView, which
     // unconditionally refreshed subcategories and rebuilt the symbology overrides on every attach.
     this.invalidateSymbologyOverrides();
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
   public [_detachFromViewport](): void {
     this.#attached = false;
+    this.#removeViewedCategoriesListener?.();
+    this.#removeViewedCategoriesListener = this.#boundViewedCategories = undefined;
     // The style's settings may outlive this view, and must not retain it through these listeners.
     this.#unbindStyleListeners();
     this.#removeSubCategoryChangesListener?.();
@@ -278,18 +282,15 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public getSymbologyOverrides(): FeatureSymbology.Overrides {
-    if (!this.#symbologyOverrides) {
-      this.#symbologyOverrides = new FeatureSymbology.Overrides();
-      this.#symbologyOverrides.initFromIModelDisplayReference(this);
-    }
-
-    return this.#symbologyOverrides;
+    // Viewport requests a fresh snapshot when overrides are dirty; the target owns that snapshot.
+    const overrides = new FeatureSymbology.Overrides();
+    overrides.initFromIModelDisplayReference(this);
+    return overrides;
   }
 
   public readonly onSymbologyOverridesInvalidated = new BeEvent<() => void>();
 
   public invalidateSymbologyOverrides(): void {
-    this.#symbologyOverrides = undefined;
     this.onSymbologyOverridesInvalidated.raiseEvent();
   }
 
@@ -298,7 +299,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public isSubCategoryVisible(id: Id64String): boolean {
-    return isSubCategoryVisible(this, id);
+    return this._view.isSubCategoryVisible(id);
   }
 
   public changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean {
@@ -306,7 +307,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
-    return getSubCategoryAppearance(this, id);
+    const appearance = this.iModel.subcategories.getSubCategoryAppearance(id);
+    if (!appearance)
+      return SubCategoryAppearance.defaults;
+
+    return this._view.getSubCategoryOverride(id)?.override(appearance) ?? appearance;
   }
 }
 
@@ -328,7 +333,7 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -375,7 +380,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   #boundViewedModels?: ObservableSet<Id64String>;
   #removeViewedModelsListener?: VoidFunction;
   readonly #viewedModelsChanged = () => {
-    void loadViewedModels(this);
+    void scheduleViewedModelsLoad(this);
   };
 
   public constructor(refs: SpatialIModelDisplayReferences) {
@@ -406,11 +411,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       return removals;
     });
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
 
-    void loadViewedModels(this);
-    this.#boundViewedModels = this.viewedModels;
-    this.#removeViewedModelsListener = this.#boundViewedModels.onChanged.addListener(this.#viewedModelsChanged);
+    void scheduleViewedModelsLoad(this);
     this._view.onViewedModelsChanged.addListener(() => this.#syncViewedModelsBinding());
   }
 
@@ -421,6 +424,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   }
 
   #syncViewedModelsBinding(): void {
+    if (!this._isAttachedToViewport)
+      return;
+
     const current = this.viewedModels;
     if (current === this.#boundViewedModels)
       return;
@@ -493,6 +499,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public override[_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
     super[_detachFromViewport]();
+    this.#removeViewedModelsListener?.();
+    this.#removeViewedModelsListener = this.#boundViewedModels = undefined;
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
@@ -530,7 +538,7 @@ class GenericPrimaryIModelRef extends PrimaryIModelRef {
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    void loadViewedCategories(this);
+    scheduleViewedCategoriesLoad(this);
   }
 
   public override get tileTreeRefs(): Iterable<TileTreeReference> {

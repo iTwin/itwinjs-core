@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Honor custom display-style setters when changing primary subcategory visibility and reuse temporary override arguments during large emphasis updates.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

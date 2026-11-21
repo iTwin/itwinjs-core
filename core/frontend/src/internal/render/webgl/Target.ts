@@ -804,48 +804,53 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     let result: Pixel.Buffer | undefined;
 
-    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
-      let updatedExclusions = false;
-      if (excludedElements) {
-        const swap = this._swapPickExclusions;
-        swap.clear();
-        for (const [id, iModelRef] of excludedElements) {
-          let ids = swap.get(iModelRef);
-          if (!ids)
-            swap.set(iModelRef, ids = new Id64.Uint32Set());
+    try {
+      this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+        let updatedExclusions = false;
+        if (excludedElements) {
+          const swap = this._swapPickExclusions;
+          swap.clear();
+          for (const [id, ref] of excludedElements) {
+            let ids = swap.get(ref);
+            if (!ids)
+              swap.set(ref, ids = new Id64.Uint32Set());
 
-          ids.addId(id);
-        }
+            ids.addId(id);
+          }
 
-        let equal = this._currPickExclusions.size === swap.size;
-        if (equal) {
-          for (const [iModelRef, ids] of this._currPickExclusions) {
-            if (!swap.get(iModelRef)?.equals(ids)) {
-              equal = false;
-              break;
+          let equal = this._currPickExclusions.size === swap.size;
+          if (equal) {
+            for (const [iModelRef, ids] of this._currPickExclusions) {
+              if (!swap.get(iModelRef)?.equals(ids)) {
+                equal = false;
+                break;
+              }
             }
+          }
+
+          if (!equal) {
+            this._swapPickExclusions = this._currPickExclusions;
+            this._currPickExclusions = swap;
+            updatedExclusions = true;
+            desync(this.pickExclusionsSyncTarget);
           }
         }
 
-        if (!equal) {
-          this._swapPickExclusions = this._currPickExclusions;
-          this._currPickExclusions = swap;
-          updatedExclusions = true;
-          desync(this.pickExclusionsSyncTarget);
+        this._drawNonLocatable = !excludeNonLocatable;
+        try {
+          result = this.readPixelsFromFbo(rect, selector);
+        } finally {
+          this._drawNonLocatable = true;
+          if (updatedExclusions) {
+            this._currPickExclusions.clear();
+            desync(this.pickExclusionsSyncTarget);
+          }
         }
-      }
-
-      this._drawNonLocatable = !excludeNonLocatable;
-      result = this.readPixelsFromFbo(rect, selector);
-      this._drawNonLocatable = true;
-
-      if (updatedExclusions) {
-        this._currPickExclusions.clear();
-        desync(this.pickExclusionsSyncTarget);
-      }
-    });
-
-    this.disposeOrReuseReadPixelResources(resources);
+      });
+    } finally {
+      this._swapPickExclusions.clear();
+      this.disposeOrReuseReadPixelResources(resources);
+    }
 
     receiver(result);
 

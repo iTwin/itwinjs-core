@@ -401,6 +401,22 @@ export namespace SubCategoriesCache {
         this.pushNext(cache, categoryIds, func);
     }
 
+    /** Cancel all queued and in-flight work for one cache, allowing other caches to proceed.
+     * @internal
+     */
+    public cancel(cache: SubCategoriesCache): void {
+      this._next = this._next.filter((entry) => entry.cache !== cache);
+      if (this._current?.cache !== cache)
+        return;
+
+      this._request?.cancel();
+      // A canceled RPC may never settle; its promise must not retain the discarded reference's callbacks.
+      this._current.funcs.length = 0;
+      this._request = undefined;
+      this._current = undefined;
+      this.processNext();
+    }
+
     /** Cancel all requests and empty the queue. */
     public [Symbol.dispose](): void {
       if (undefined !== this._request) {
@@ -440,14 +456,16 @@ export namespace SubCategoriesCache {
 
       this._current = entry;
       this._request.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (this._disposed)
+        if (this._disposed || this._current !== entry)
           return;
 
         // Invoke all the functions which were awaiting this set of IModelConnection.Categories.
-        assert(undefined !== this._current);
         if (completed)
-          for (const func of this._current.funcs)
+          for (const func of entry.funcs) {
             func(true);
+            if (this._current !== entry)
+              return; // A callback canceled this entry and may have started another request.
+          }
 
         this._request = undefined;
         this._current = undefined;
