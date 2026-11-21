@@ -149,7 +149,7 @@ export class EditTextTool extends MarkupTool {
     const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
     style.zIndex = (parentZ + 200).toString();
 
-    editor.innerHTML = text.getMarkup(); // start with existing text
+    editor.value = text.getMarkup(); // start with existing text
     this.editor.focus(); // give the editor focus
 
     // if we're started from the place text tool, select the entire current value, otherwise place the cursor at the end.
