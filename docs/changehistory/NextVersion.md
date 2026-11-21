@@ -14,6 +14,7 @@ publish: false
     - [Map feature info inside polygons with a transparent fill](#map-feature-info-inside-polygons-with-a-transparent-fill)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
+    - [Extended ECSQL casting](#extended-ecsql-casting)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
     - [SQLite 3.54.1](#sqlite-3541)
@@ -26,6 +27,8 @@ publish: false
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
+  - [Breaking changes](#breaking-changes)
+    - [Changed CAST results](#changed-cast-results)
 
 ## Frontend
 
@@ -159,6 +162,21 @@ If you relied on the previous best-effort behavior, inspect `failures` and, for 
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
 
+### Extended ECSQL casting
+
+ECSQL casts support more target types and conversions.
+
+- PostgreSQL-style postfix casts: `SELECT ECInstanceId::TEXT FROM bis.Element`.
+- Parameter casts, which give the parameter its binding type: `?::INTEGER` or `CAST(:p AS INTEGER)`.
+- Id targets (`Id`, `ClassId`, `SourceId`, `SourceClassId`, `TargetId`, `TargetClassId`, `NavId`, `NavRelClassId`) that tag an integer or id text as an id, and `ClassName`, which converts a class id to `Schema:Class`.
+- `TEXT` conversions of points, structs, arrays and navigation properties to JSON. Also `Json`, `Guid`, Boolean, DateTime, Binary and geometry conversions, e.g. `FederationGuid::TEXT` and `'{"X":1,"Y":2}'::Point2d`.
+
+Unknown target types and unsupported conversions fail when the statement is prepared. Invalid input to the new conversions (Id, `ClassName`, `Json`, `Guid`, points, Boolean, DateTime and strict enumerations) returns `NULL`. Numeric and Binary targets keep SQLite's conversion rules.
+
+See [CAST](../learning/ECSqlReference/CAST.md#extended-casting) for conversion rules and examples.
+
+The ECSQL version was bumped to `2.1.0.0`.
+
 ### CompressedId64Set size limit
 
 For security reasons, a single [CompressedId64Set]($bentley) can now represent at most [CompressedId64Set.maxIdCount]($bentley) (1,000,000) Ids. Decompressing a larger set throws a [BentleyError]($bentley) with [IModelStatus.BadArg]($bentley), in both the frontend and the backend. Split larger sets into multiple smaller ones, and use the new [CompressedId64Set.count]($bentley) to check a set's size without decompressing it.
@@ -218,3 +236,25 @@ Viewport-level APIs for model and category display overrides, viewed models, and
 ### Graphic branch iModel attribution
 
 The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
+
+## Breaking changes
+
+### Changed CAST results
+
+Existing `CAST(...)` expressions now use the extended rules, which changes these results:
+
+| Cast | Before | Now |
+| --- | --- | --- |
+| Boolean to `TEXT` | `1` or `0` | `true` or `false` |
+| DateTime to `TEXT` | Julian day number | ISO-8601 string |
+| Binary to `TEXT` | Raw bytes | Base64 string |
+| Guid to `TEXT` | Raw bytes | GUID string |
+| IGeometry to `TEXT` | Raw bytes | iModel JSON string |
+| Id to `TEXT` | Decimal | Hexadecimal |
+| `NULL` to `BOOLEAN` | `false` | `NULL` |
+| Text to `BOOLEAN` | `true` for text such as `'false'` and `'abc'` | `'false'` is `false`, `'abc'` is `NULL` |
+| Text to `DATETIME` | Leading number of the text, e.g. `2020` for `'2020-01-02'` | Parsed ISO-8601 date and time |
+| Any value to `DATE` | Time of day kept | Time of day removed |
+| Any value to a strict enumeration | Converted to the enumeration's integer or string type | `NULL` if the value isn't an enumerator |
+
+Update consumers that parse those text results. For numeric Boolean or Julian day results, cast to `INTEGER` or `DOUBLE` respectively instead of `TEXT`. For decimal Id text using SQLite's signed integer representation, cast through `LONG`: `ECInstanceId::LONG::TEXT`. Converting Id text back to a number changes too: `ECInstanceId::TEXT::LONG` now returns `0`, because text-to-`LONG` keeps SQLite's rules. Use `ECInstanceId::LONG`, or `::Id` to parse Id text. For raw binary data, select the Binary value directly. Use `IFNULL(CAST(x AS BOOLEAN), FALSE)` where `NULL` must still become `false`. Validate strict enumeration inputs before casting if the application requires invalid values to be reported.
