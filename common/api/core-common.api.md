@@ -9722,6 +9722,12 @@ export interface SessionProps {
 }
 
 // @beta
+export interface SheetBorderPrototypeProps extends DefinitionElementProps {
+    height?: number;
+    width?: number;
+}
+
+// @beta @deprecated
 export interface SheetBorderTemplateProps extends ElementProps {
     // (undocumented)
     height?: number;
@@ -9769,9 +9775,19 @@ export interface SheetProps extends ElementProps {
     height?: number;
     // (undocumented)
     scale?: number;
-    // (undocumented)
+    // @beta
+    sheetPrototype?: RelatedElementProps;
+    // @deprecated
     sheetTemplate?: Id64String;
     // (undocumented)
+    width?: number;
+}
+
+// @beta
+export interface SheetPrototypeProps extends DefinitionElementProps {
+    border?: RelatedElementProps;
+    height?: number;
+    scale?: number;
     width?: number;
 }
 
@@ -9780,7 +9796,7 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
     sheet?: RelatedElementProps;
 }
 
-// @beta
+// @beta @deprecated
 export interface SheetTemplateProps extends ElementProps {
     // (undocumented)
     border?: Id64String;

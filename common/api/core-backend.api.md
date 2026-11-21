@@ -257,12 +257,14 @@ import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
 import type { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
+import { SheetBorderPrototypeProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
 import { SheetIndexReferenceProps } from '@itwin/core-common';
 import { SheetInformation } from '@itwin/core-common';
 import { SheetInformationAspectProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
+import { SheetPrototypeProps } from '@itwin/core-common';
 import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
 import { SnapRequestProps } from '@itwin/core-common';
@@ -2474,6 +2476,13 @@ export class DrawingModel extends GraphicalModel2d {
     static get className(): string;
 }
 
+// @beta
+export class DrawingModelBreaksDownSheetBorderPrototype extends RelatedElement {
+    constructor(sheetBorderPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public @preview
 export class DrawingViewDefinition extends ViewDefinition2d {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
@@ -3197,9 +3206,11 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
     deleteSpecialElements(): void;
     // (undocumented)
-    protected shouldExploreModel(_model: Model): boolean;
+    protected shouldExploreModel(model: Model): boolean;
     // (undocumented)
     protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    protected shouldVisitModel(model: Model): boolean;
     // (undocumented)
     protected _special: SpecialElements;
     // (undocumented)
@@ -6836,13 +6847,37 @@ export class Sheet extends Document_2 {
     height: number;
     // (undocumented)
     scale?: number;
-    // (undocumented)
+    // @beta
+    sheetPrototype?: RelatedElement;
+    // @deprecated
     sheetTemplate?: Id64String;
     // (undocumented)
     width: number;
 }
 
-// @public @preview
+// @beta
+export class SheetBorderPrototype extends DefinitionElement {
+    protected constructor(props: SheetBorderPrototypeProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
+    // (undocumented)
+    static get className(): string;
+    static create(args: SheetBorderPrototypeCreateArgs): SheetBorderPrototype;
+    height?: number;
+    static insert(txn: EditTxn, args: Omit<SheetBorderPrototypeCreateArgs, "iModel">): Id64String;
+    width?: number;
+}
+
+// @beta
+export interface SheetBorderPrototypeCreateArgs {
+    code?: Code;
+    definitionModelId: Id64String;
+    height?: number;
+    iModel: IModelDb;
+    isPrivate?: boolean;
+    width?: number;
+}
+
+// @public @deprecated @preview
 export class SheetBorderTemplate extends Document_2 {
     protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -6851,6 +6886,13 @@ export class SheetBorderTemplate extends Document_2 {
     height?: number;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export class SheetHasSheetPrototype extends RelatedElement {
+    constructor(sheetPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6979,8 +7021,50 @@ export class SheetModel extends GraphicalModel2d {
 }
 
 // @beta
+export class SheetModelBreaksDownSheetPrototype extends RelatedElement {
+    constructor(sheetPrototypeId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
 export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
     constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class SheetPrototype extends DefinitionElement {
+    protected constructor(props: SheetPrototypeProps, iModel: IModelDb);
+    protected static get allowedSubModelClasses(): Array<EntityClassType<Model>>;
+    border?: RelatedElement;
+    // (undocumented)
+    static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(args: SheetPrototypeCreateArgs): SheetPrototype;
+    height?: number;
+    static insert(txn: EditTxn, args: Omit<SheetPrototypeCreateArgs, "iModel">): Id64String;
+    scale?: number;
+    width?: number;
+}
+
+// @beta
+export interface SheetPrototypeCreateArgs {
+    borderId?: Id64String;
+    code?: Code;
+    definitionModelId: Id64String;
+    height?: number;
+    iModel: IModelDb;
+    isPrivate?: boolean;
+    scale?: number;
+    width?: number;
+}
+
+// @beta
+export class SheetPrototypeHasSheetBorderPrototype extends RelatedElement {
+    constructor(sheetBorderPrototypeId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
@@ -7015,7 +7099,7 @@ export class SheetReferenceRefersToSheet extends RelatedElement {
     static classFullName: string;
 }
 
-// @public @preview
+// @public @deprecated @preview
 export class SheetTemplate extends Document_2 {
     protected constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)

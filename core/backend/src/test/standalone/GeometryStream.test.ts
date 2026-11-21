@@ -583,15 +583,16 @@ describe("GeometryStream", () => {
     createGeometricElem3dUsingArrowHeadNoStrokePattern();
   });
 
-  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree fails", async () => {
-    const mySubject = Subject.insert(txnForCurrentTest(imodel), IModel.rootSubjectId, "My Subject - fails");
-    const myDefModel = DefinitionModel.insert(txnForCurrentTest(imodel), mySubject, "My Definitions - fails");
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 1 pass", async () => {
+    const mySubject = Subject.insert(txnForCurrentTest(imodel), IModel.rootSubjectId, "My Subject - single pass");
+    const myDefModel = DefinitionModel.insert(txnForCurrentTest(imodel), mySubject, "My Definitions - single pass");
     const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txnForCurrentTest(imodel), Code.createEmpty(), false, mySubject)[0];
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
+    // deleteDefinitionElements re-checks remaining definitions after each purge, so the part freed by deleting the line style is removed in the same pass.
     deleteElementTree(txnForCurrentTest(imodel), mySubject, 1);
-    expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
+    expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 2 passes", async () => {

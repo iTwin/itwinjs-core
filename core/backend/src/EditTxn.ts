@@ -8,7 +8,7 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, Logger, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, QueryBinder, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
@@ -580,6 +580,7 @@ export class EditTxn {
   }
 
   /** Delete definition elements from the iModel when they are not referenced.
+   * Requested definitions that become unused because other requested definitions were deleted are also deleted.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
    * @throws EditTxnError if this EditTxn is not active.
@@ -587,71 +588,62 @@ export class EditTxn {
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
     this.verifyWriteable();
-    const usageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
-    if (!usageInfo)
-      throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
+    let candidateIds = definitionElementIds;
+    while (true) {
+      const usageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(candidateIds);
+      if (!usageInfo)
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
 
-    const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
-    const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-      ids?.forEach((id) => {
-        if (!used.has(id))
-          this.deleteElement(id);
-      });
-    };
-
-    try {
-      this.iModel[_nativeDb].beginPurgeOperation();
-      deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
-      deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
-      deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
-      deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
-      deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
-      deleteIfUnused(usageInfo.textureIds, usedIdSet);
-      deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
-      deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
-      deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
-      if (usageInfo.otherDefinitionElementIds)
-        this.deleteElement(usageInfo.otherDefinitionElementIds);
-    } finally {
-      this.iModel[_nativeDb].endPurgeOperation();
-    }
-
-    if (usageInfo.viewDefinitionIds) {
-      // Recheck view-related definitions after deleting view definitions that may have been their last reference.
-      let viewRelatedIds: Id64Array = [];
-      if (usageInfo.displayStyleIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
-
-      if (usageInfo.categorySelectorIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
-
-      if (usageInfo.modelSelectorIds)
-        viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
-
-      if (viewRelatedIds.length > 0) {
-        const viewRelatedUsageInfo = this.iModel[_nativeDb].queryDefinitionElementUsage(viewRelatedIds);
-        if (viewRelatedUsageInfo) {
-          const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
-          try {
-            this.iModel[_nativeDb].beginPurgeOperation();
-            deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
-            deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
-            deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
-          } finally {
-            this.iModel[_nativeDb].endPurgeOperation();
+      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      let numDeleted = 0;
+      const deleteIfUnused = (ids: Id64Array | undefined): void => {
+        ids?.forEach((id) => {
+          if (!usedIdSet.has(id)) {
+            this.deleteElement(id);
+            ++numDeleted;
           }
+        });
+      };
 
-          viewRelatedIds.forEach((id) => {
-            if (!usedViewRelatedIdSet.has(id))
-              usedIdSet.delete(id);
-          });
-        }
+      // Definitions with sub-models must be deleted together with their sub-model contents.
+      // DefinitionModel sub-models are excluded so that their definitions are not deleted wholesale.
+      const otherIds = usageInfo.otherDefinitionElementIds?.filter((id) => !usedIdSet.has(id)) ?? [];
+      const subModeledIds = otherIds.filter((id) => this.iModel.withQueryReader(
+        "SELECT 1 FROM bis.Model WHERE ECInstanceId=? AND ECClassId IS NOT (bis.DefinitionModel)", (reader) => reader.step(), new QueryBinder().bindId(1, id)));
+
+      try {
+        this.iModel[_nativeDb].beginPurgeOperation();
+        deleteIfUnused(usageInfo.spatialCategoryIds);
+        deleteIfUnused(usageInfo.drawingCategoryIds);
+        deleteIfUnused(usageInfo.viewDefinitionIds);
+        deleteIfUnused(usageInfo.geometryPartIds);
+        deleteIfUnused(usageInfo.lineStyleIds);
+        deleteIfUnused(usageInfo.renderMaterialIds);
+        deleteIfUnused(usageInfo.subCategoryIds);
+        deleteIfUnused(usageInfo.textureIds);
+        deleteIfUnused(usageInfo.displayStyleIds);
+        deleteIfUnused(usageInfo.categorySelectorIds);
+        deleteIfUnused(usageInfo.modelSelectorIds);
+        deleteIfUnused(otherIds.filter((id) => !subModeledIds.includes(id)));
+      } finally {
+        this.iModel[_nativeDb].endPurgeOperation();
       }
-    }
 
-    return usedIdSet;
+      for (const id of subModeledIds) {
+        const result = this.deleteElements([id]);
+        if (BulkDeleteElementsStatus.Success === result.status)
+          ++numDeleted;
+        else if (BulkDeleteElementsStatus.ConstraintViolation === result.status)
+          usedIdSet.add(id); // something in its sub-model is still referenced from outside
+        else
+          throw new IModelError(IModelStatus.BadRequest, `Error deleting definition element ${id} and its sub-model`);
+      }
+
+      if (0 === numDeleted || 0 === usedIdSet.size)
+        return usedIdSet;
+
+      candidateIds = [...usedIdSet];
+    }
   }
 
   /** Insert a new model into the iModel.
