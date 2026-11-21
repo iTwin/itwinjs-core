@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb, SnapshotDb, StandaloneDb } from "../../IModelDb";
-import { Logger } from "@itwin/core-bentley";
+import { IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../internal/HubMock";
 import { _hubAccess } from "../../internal/Symbols";
@@ -18,6 +18,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import * as path from "path";
 import { IModelJsFs } from "../../IModelJsFs";
 import { withEditTxn } from "../../EditTxn";
+import { expectIModelError, getIModelError } from "../imodel/IModelTestFixtures";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -88,7 +89,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     });
     sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDbAsync").resolves(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
@@ -136,7 +137,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     });
     const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDbAsync").resolves(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
@@ -207,5 +208,66 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     snapshot.close();
     expect(nowStub.called).to.be.false;
     nowStub.restore();
+  });
+});
+
+describe("IModelDb.openDgnDbAsync", () => {
+  afterEach(() => sinon.restore());
+
+  it("opens read-only and reserves its key until the open completes", async () => {
+    const fileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const key = "openDgnDbAsync-test-key";
+    const opening = IModelDb.openDgnDbAsync({ path: fileName, key });
+
+    // while the open is pending, other opens with the same key are rejected
+    expectIModelError(IModelStatus.AlreadyOpen, await getIModelError(IModelDb.openDgnDbAsync({ path: fileName, key })));
+    expect(() => IModelDb.openDgnDb({ path: fileName, key }, OpenMode.Readonly)).to.throw("already in use");
+
+    const nativeDb = await opening;
+    expect(nativeDb.isOpen()).to.be.true;
+    expect(nativeDb.isReadonly()).to.be.true;
+    nativeDb.closeFile();
+
+    // the key is released once the open completes
+    const reopened = await IModelDb.openDgnDbAsync({ path: fileName, key });
+    reopened.closeFile();
+  });
+
+  it("reports failures the same way as openDgnDb and releases the key", async () => {
+    const fileName = path.join(KnownTestLocations.outputDir, "openDgnDbAsync-does-not-exist.bim");
+    const key = "openDgnDbAsync-missing-key";
+    let syncError: any;
+    try {
+      IModelDb.openDgnDb({ path: fileName, key }, OpenMode.Readonly);
+    } catch (err) {
+      syncError = err;
+    }
+    const asyncError = await getIModelError(IModelDb.openDgnDbAsync({ path: fileName, key }));
+    expect(asyncError).to.not.be.undefined;
+    expect(asyncError?.errorNumber).to.equal(syncError.errorNumber);
+    expect(asyncError?.message).to.equal(syncError.message);
+    expect(asyncError?.message).to.contain(fileName);
+
+    // the key was released, so a retry fails for the same reason rather than with AlreadyOpen
+    expect((await getIModelError(IModelDb.openDgnDbAsync({ path: fileName, key })))?.errorNumber).to.equal(syncError.errorNumber);
+  });
+
+  it("is used to open checkpoints, so the open does not block the JavaScript thread", async () => {
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ dbName: "fakeDb", container: { accessToken: "sas" } as any }));
+    const syncOpen = sinon.stub(SnapshotDb, "openDgnDb");
+    const fileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const asyncOpen = sinon.stub(SnapshotDb, "openDgnDbAsync").callsFake(async () => IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly));
+    sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
+
+    const changeset = { id: "fakeChangeSetId", index: 10 };
+    const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: "token", iTwinId: "fakeITwinId", iModelId: "fakeIModelId", changeset });
+    try {
+      expect(asyncOpen.calledOnce).to.be.true;
+      expect(asyncOpen.firstCall.args[0].path).to.equal("fakeDb");
+      expect(asyncOpen.firstCall.args[0].key).to.equal(CheckpointManager.getKey({ iTwinId: "fakeITwinId", iModelId: "fakeIModelId", changeset }));
+      expect(syncOpen.called).to.be.false;
+    } finally {
+      checkpoint.close();
+    }
   });
 });

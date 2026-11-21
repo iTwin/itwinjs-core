@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Open V2 checkpoints without blocking the JavaScript thread.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
