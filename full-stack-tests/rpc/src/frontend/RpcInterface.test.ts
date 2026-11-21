@@ -17,13 +17,17 @@ import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
   TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Electron runs this file under Vitest, which has no runtime this.skip(), so skip Electron-only exclusions
+// when registering the test. Both Mocha and Vitest report it.skip as skipped.
+const itUnlessElectron = ProcessDetector.isElectronAppFrontend ? it.skip : it;
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -480,14 +484,12 @@ describe("RpcInterface", () => {
       assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
-  it("should set cache-control headers when applicable", async function () {
-    if (currentEnvironment === "websocket") {
+  // Cache-control headers are not applicable to Electron apps.
+  itUnlessElectron("should set cache-control headers when applicable", async function () {
+    // Only Certa (Mocha) runs the WebSocket environment, so its runtime skip is available here.
+    if (currentEnvironment === "websocket")
       return this.skip();
-    }
 
-    // Cache-control headers are not applicable to electron apps.
-    if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
-      return this.skip();
     const input = "test";
     let response: any;
     TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {

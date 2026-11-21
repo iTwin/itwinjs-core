@@ -3161,6 +3161,9 @@ importers:
       '@itwin/eslint-plugin':
         specifier: catalog:linting
         version: 6.1.1(eslint@9.39.5)(typescript@5.6.3)
+      '@itwin/vitest-browser-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-browser-bridge
       '@types/chai':
         specifier: catalog:testing
         version: 4.3.1
@@ -3176,6 +3179,9 @@ importers:
       '@types/semver':
         specifier: catalog:utilities
         version: 7.3.10
+      '@vitest/browser':
+        specifier: catalog:testing
+        version: 4.1.11(vite@6.4.4(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1))(vitest@4.1.11)
       assert:
         specifier: catalog:bundling
         version: 2.1.0
@@ -3209,6 +3215,9 @@ importers:
       typescript:
         specifier: catalog:build
         version: 5.6.3
+      vitest:
+        specifier: catalog:testing
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.1)
       webpack:
         specifier: catalog:bundling
         version: 5.111.1(webpack-cli@5.1.4)
