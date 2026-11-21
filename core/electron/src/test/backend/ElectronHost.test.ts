@@ -9,7 +9,7 @@ import * as http from "node:http";
 import type { AddressInfo } from "node:net";
 import * as os from "node:os";
 import * as path from "path";
-import { assert } from "chai";
+import { ok as assert, deepEqual, equal, notEqual } from "node:assert/strict";
 import { IModelHost, IpcHandler, IpcHost, NativeHost } from "@itwin/core-backend";
 import { BeDuration, Logger, LogLevel } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
@@ -290,11 +290,11 @@ async function testElectronProtocolContainment() {
       }
     };
 
-    assert.equal(await fetchText("electron://frontend/index.html"), "inside webResourcesPath");
-    assert.equal(await fetchText("electron://frontend/"), "inside webResourcesPath");
-    assert.equal(await fetchText("electron://frontend/100%.png"), "raw percent");
-    assert.equal(await fetchText("electron://frontend/100%25.png"), "raw percent");
-    assert.equal(await fetchText("electron://frontend/my%20file%.png"), "mixed percent");
+    equal(await fetchText("electron://frontend/index.html"), "inside webResourcesPath");
+    equal(await fetchText("electron://frontend/"), "inside webResourcesPath");
+    equal(await fetchText("electron://frontend/100%.png"), "raw percent");
+    equal(await fetchText("electron://frontend/100%25.png"), "raw percent");
+    equal(await fetchText("electron://frontend/my%20file%.png"), "mixed percent");
 
     const escapes = [
       "electron://frontend.../frontend-owned.html",
@@ -304,9 +304,9 @@ async function testElectronProtocolContainment() {
       "electron://frontend/..%5Cfrontend-backup%5Csecret.txt",
     ];
     for (const url of escapes)
-      assert.notEqual(await fetchText(url), secret, url);
+      notEqual(await fetchText(url), secret, url);
 
-    assert.isUndefined(await fetchText("electron://other/index.html"));
+    equal(await fetchText("electron://other/index.html"), undefined);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
@@ -318,12 +318,12 @@ async function testNoElectronProtocolWithoutWebResourcesPath() {
   Logger.initialize((category, message) => errors.push(`${category}: ${message}`));
   Logger.setLevel(ElectronBackendLoggerCategory.ElectronHost, LogLevel.Error);
   await ElectronHost.openMainWindow();
-  assert.isFalse(ElectronHost.electron.protocol.isProtocolHandled("electron"));
+  equal(ElectronHost.electron.protocol.isProtocolHandled("electron"), false);
 
   // The default frontendURL uses electron://, so the app is told why its window stays blank.
-  assert.lengthOf(errors, 1);
-  assert.include(errors[0], ElectronBackendLoggerCategory.ElectronHost);
-  assert.include(errors[0], "webResourcesPath");
+  equal(errors.length, 1);
+  assert(errors[0].includes(ElectronBackendLoggerCategory.ElectronHost));
+  assert(errors[0].includes("webResourcesPath"));
 }
 
 async function testRestrictIpcToInvalidFrontendOrigin() {
@@ -335,8 +335,8 @@ async function testRestrictIpcToInvalidFrontendOrigin() {
       error = err as Error;
     }
 
-    assert.include(error?.message, "restrictIpcToFrontendOrigin", frontendURL);
-    assert.include(error?.message, frontendURL);
+    assert(error?.message.includes("restrictIpcToFrontendOrigin"), frontendURL);
+    assert(error?.message.includes(frontendURL));
     assertElectronHostNotInitialized();
   }
 }
@@ -376,21 +376,21 @@ async function testRestrictIpcToFrontendOrigin() {
 
     // Pages with the origin of frontendURL can use IPC.
     const removeListener = IpcHost.addListener(sendChannel, onSend);
-    assert.deepEqual(await window.webContents.executeJavaScript(sendThenPing(1)), { result: "pong" });
-    assert.equal(OriginTestHandler.calls, 1);
-    assert.deepEqual(received, [1]);
+    deepEqual(await window.webContents.executeJavaScript(sendThenPing(1)), { result: "pong" });
+    equal(OriginTestHandler.calls, 1);
+    deepEqual(received, [1]);
 
     // Removing a listener unregisters its origin-checking wrapper.
     removeListener();
-    assert.equal(ElectronHost.ipcMain.listenerCount(`itwin.${sendChannel}`), 0);
-    assert.deepEqual(await window.webContents.executeJavaScript(sendThenPing(2)), { result: "pong" });
-    assert.equal(OriginTestHandler.calls, 2);
-    assert.deepEqual(received, [1]);
+    equal(ElectronHost.ipcMain.listenerCount(`itwin.${sendChannel}`), 0);
+    deepEqual(await window.webContents.executeJavaScript(sendThenPing(2)), { result: "pong" });
+    equal(OriginTestHandler.calls, 2);
+    deepEqual(received, [1]);
     IpcHost.addListener(sendChannel, onSend);
 
     // A page from another origin loaded into the main window doesn't receive the IPC bridge.
     await window.loadURL(untrustedUrl);
-    assert.equal(await window.webContents.executeJavaScript("typeof window.itwinjs"), "undefined");
+    equal(await window.webContents.executeJavaScript("typeof window.itwinjs"), "undefined");
 
     // Even if a page from another origin obtains the bridge, the backend rejects its messages.
     const otherWindow = new ElectronHost.electron.BrowserWindow({
@@ -399,7 +399,7 @@ async function testRestrictIpcToFrontendOrigin() {
     });
     try {
       await otherWindow.loadURL(untrustedUrl);
-      assert.equal(await otherWindow.webContents.executeJavaScript("typeof window.itwinjs"), "object");
+      equal(await otherWindow.webContents.executeJavaScript("typeof window.itwinjs"), "object");
 
       let rejected = false;
       try {
@@ -408,9 +408,9 @@ async function testRestrictIpcToFrontendOrigin() {
         rejected = true;
       }
 
-      assert.isTrue(rejected);
-      assert.equal(OriginTestHandler.calls, 2);
-      assert.deepEqual(received, [1]);
+      equal(rejected, true);
+      equal(OriginTestHandler.calls, 2);
+      deepEqual(received, [1]);
     } finally {
       otherWindow.destroy();
     }
@@ -436,7 +436,7 @@ async function testRestrictIpcPushToFrontendOrigin() {
     // The frontend in the main window receives pushes.
     await mainWindow.webContents.executeJavaScript(listenForPush);
     IpcHost.send("electron-test/push", 1);
-    assert.equal(await mainWindow.webContents.executeJavaScript(pushedOrTimeout), 1);
+    equal(await mainWindow.webContents.executeJavaScript(pushedOrTimeout), 1);
 
     // Without a main window, pushes fall back to another window. A page from another origin there doesn't receive them, even if it holds the bridge.
     // The other window is left open: closing every window quits the app on Windows and Linux.
@@ -450,10 +450,10 @@ async function testRestrictIpcPushToFrontendOrigin() {
       mainWindow.once("closed", () => resolve(undefined));
       mainWindow.close();
     });
-    assert.isUndefined(ElectronHost.mainWindow);
+    equal(ElectronHost.mainWindow, undefined);
 
     IpcHost.send("electron-test/push", 2);
-    assert.equal(await otherWindow.webContents.executeJavaScript(pushedOrTimeout), "not received");
+    equal(await otherWindow.webContents.executeJavaScript(pushedOrTimeout), "not received");
   } finally {
     server.close();
   }

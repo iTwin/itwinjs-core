@@ -12,11 +12,14 @@ Import the renderer API from `@itwin/core-electron/renderer` and the main-proces
 
 ## Building and testing
 
-Build the package and its dependencies from the repository root with `rush build --to @itwin/core-electron`. The build compiles the libraries and copies static test assets, but does not webpack frontend tests.
+Build the package and its dependencies from the repository root with `rush build --to @itwin/core-electron`. The build compiles the libraries and copies static test assets.
 
-From this package directory, run `rushx test:integration` or `rushx test:integration:frontend`. The frontend test command runs `test:prepare` to bundle the tests with the current environment before starting Electron. To prepare the bundle without running tests, use `rushx test:prepare`.
+From this package directory, run `rushx test:integration`, which runs both Vitest suites against the built output:
 
-Bundle paths are unchanged. Each build clears previous frontend webpack output before compilation so an earlier test run cannot contaminate the build cache. Run test preparation after building.
+- `rushx test:integration:backend` runs each backend test in its own Electron main process.
+- `rushx test:integration:frontend` runs the frontend tests in a real Electron window through the `@itwin/vitest-browser-bridge` provider, with this package's `ElectronPreload`.
+
+Test runs write JUnit results under `lib/test`, and `lib` is the build's cached output, so each build first clears `lib`. That keeps results from an earlier test run out of the build cache. Run the tests after building.
 
 ## Documentation
 

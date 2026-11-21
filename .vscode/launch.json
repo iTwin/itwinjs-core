@@ -1133,19 +1133,21 @@
       "cwd": "${workspaceFolder}/core/electron/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:frontend",
-        "--",
-        "--debug"
+      "program": "${workspaceFolder}/core/electron/node_modules/vitest/vitest.mjs",
+      "args": [
+        "--watch", // Keep the renderer available for attachment and test reruns.
+        "--config", "vitest.frontend.config.mts",
+        "--no-browser.headless",
+        "--test-timeout=0",
+        "--hook-timeout=0"
       ],
       "outFiles": [
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
+        "${workspaceFolder}/tools/vitest-browser-bridge/lib/**/*.js"
       ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/electron/src/test/frontend/utils/certa.json
+      "console": "integratedTerminal",
+      "env": { "VITEST_ELECTRON_DEBUG": "1" },
+      "autoAttachChildProcesses": true,
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] Electron Frontend Tests"
       ]
@@ -1157,11 +1159,12 @@
       },
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/electron/src/test/frontend/utils/certa.json
+      "port": 9223, // Matches remoteDebuggingPort in core/electron/vitest.frontend.config.mts.
       "timeout": 60000,
+      "webRoot": "${workspaceFolder}/core/electron",
       "outFiles": [
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
+        "${workspaceFolder}/tools/vitest-browser-bridge/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] Electron Frontend Tests"
@@ -1186,10 +1189,12 @@
       "cwd": "${workspaceFolder}/core/electron/",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/core/electron/node_modules/vitest/vitest.mjs",
       "args": [
-        "--config",
-        "src/test/backend/.mocharc.json"
+        "run",
+        "--config", "vitest.backend.config.mts",
+        "--test-timeout=0",
+        "--hook-timeout=0"
       ],
       "env": {
         "NODE_ENV": "development"
