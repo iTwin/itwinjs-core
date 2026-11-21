@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel } from "@itwin/core-frontend";
@@ -14,7 +14,7 @@ const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : d
 describeChrome("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
@@ -37,7 +37,7 @@ describeChrome("Plan projections (#integration)", () => {
     mirukuru = await TestSnapshotConnection.openFile("planprojection.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await mirukuru.close();
     await TestUtility.shutdownFrontend();
   });
@@ -47,8 +47,8 @@ describeChrome("Plan projections (#integration)", () => {
     const modelId = "0x17";
     await mirukuru.models.load(modelId);
     const model = mirukuru.models.getLoaded(modelId) as GeometricModel3dState;
-    expect(model).not.to.be.undefined;
-    expect(model.isPlanProjection).to.be.true;
+    expect(model).not.toBeUndefined();
+    expect(model.isPlanProjection).toBe(true);
 
     interface Test extends PlanProjectionSettingsProps {
       expectMap: boolean;
@@ -92,13 +92,13 @@ describeChrome("Plan projections (#integration)", () => {
         // the rectangle if the test expects it to based on the plan projection and map settings.
         const expectPixel = (x: number, y: number, expectMap: boolean) => {
           const color = vp.readColor(x, y);
-          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).to.be.false;
-          expect(color.equalsColorDef(ColorDef.white)).not.to.equal(expectMap);
+          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).toBe(false);
+          expect(color.equalsColorDef(ColorDef.white)).not.toBe(expectMap);
 
           const pixel = vp.readPixel(x, y, true);
-          expect(pixel.type).to.equal(Pixel.GeometryType.Surface);
-          expect(pixel.modelId).not.to.be.undefined;
-          expect(Id64.isTransient(pixel.modelId!)).to.equal(expectMap);
+          expect(pixel.type).toBe(Pixel.GeometryType.Surface);
+          expect(pixel.modelId).not.toBeUndefined();
+          expect(Id64.isTransient(pixel.modelId!)).toBe(expectMap);
         };
 
         expectPixel(50, 50, test.expectMap);

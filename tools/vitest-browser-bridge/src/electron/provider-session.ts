@@ -106,7 +106,12 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
     if (isSessionShutdownMessage(message))
       finish(0);
   };
-  const onWindowClosed = () => finish(exitCode);
+  const onWindowClosed = () => {
+    if (settled)
+      return;
+    console.error(`[vitest-browser-bridge:${environment.sessionId}] provider window closed unexpectedly.`);
+    finish(1);
+  };
   const onRenderGone = (_event: Electron.Event, details: Electron.RenderProcessGoneDetails) => {
     console.error(`[vitest-browser-bridge:${environment.sessionId}] renderer exited: ${details.reason}`);
     finish(1);

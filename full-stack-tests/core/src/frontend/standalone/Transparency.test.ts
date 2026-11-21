@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
@@ -90,12 +90,12 @@ describe("Transparency", async () => {
   let imodel: TestSnapshotConnection;
   let decorator: TransparencyDecorator;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -114,8 +114,8 @@ describe("Transparency", async () => {
   async function test(setup: (vp: TestViewport) => void, verify: (vp: TestViewport) => void): Promise<void> {
     decorator.reset();
     await testOnScreenViewport("0x24", imodel, 100, 100, async (viewport) => {
-      expect(viewport.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
-      expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
+      expect(viewport.viewFlags.renderMode).toBe(RenderMode.SmoothShade);
+      expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).toBe(true);
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       viewport.changeViewedModels([]);
@@ -140,7 +140,7 @@ describe("Transparency", async () => {
   }
 
   function expectComponent(actual: number, expected: number): void {
-    expect(Math.abs(actual - expected)).lessThan(2);
+    expect(Math.abs(actual - expected)).toBeLessThan(2);
   }
 
   function expectColor(vp: TestViewport, color: ColorDef): void {
@@ -149,7 +149,7 @@ describe("Transparency", async () => {
 
   function expectColors(vp: TestViewport, expectedColors: ColorDef[]): void {
     const actualColors = vp.readUniqueColors();
-    expect(actualColors.length).to.equal(expectedColors.length);
+    expect(actualColors.length).toBe(expectedColors.length);
     for (let i = 0; i < actualColors.length; i++) {
       const actual = actualColors.array[i];
       const expected = expectedColors[i].colors;
@@ -238,7 +238,7 @@ describe("Transparency", async () => {
       image: { source: img, transparency },
     });
 
-    expect(texture).not.to.be.undefined;
+    expect(texture).not.toBeUndefined();
     return texture!;
   }
 
@@ -250,7 +250,7 @@ describe("Transparency", async () => {
       textureMapping: texture ? { texture, weight: textureWeight } : undefined,
     });
 
-    expect(material).not.to.be.undefined;
+    expect(material).not.toBeUndefined();
     return material!;
   }
 

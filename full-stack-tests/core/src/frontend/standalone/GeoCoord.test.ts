@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { BriefcaseConnection, GeoConverter, IModelConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { executeBackendCallback, verticalCrsChangesCallbackName } from "../../certa/certaCommon";
 
 // spell-checker: disable
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("Vertical CRS frontend changeset refresh", () => {
-    before(async () => TestUtility.startFrontend());
-    after(async () => TestUtility.shutdownFrontend());
+    beforeAll(async () => TestUtility.startFrontend());
+    afterAll(async () => TestUtility.shutdownFrontend());
 
     it("refreshes CRS identity and cached conversions after pull, reversal, and replay without reopening", async () => {
+      const { executeVerticalCrsChanges } = await import("../testCallbacks.mjs");
       let connection: BriefcaseConnection | undefined;
       try {
-        const fixture = JSON.parse(await executeBackendCallback(verticalCrsChangesCallbackName, "setup")) as { fileName: string, index: number };
+        const fixture = JSON.parse(await executeVerticalCrsChanges("setup")) as { fileName: string, index: number };
         connection = await BriefcaseConnection.openFile({ fileName: fixture.fileName, readonly: true });
         const converter = connection.geoServices.getConverter({
           horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" },
@@ -32,32 +32,32 @@ if (ProcessDetector.isElectronAppFrontend) {
           for (let index = 0; index < points.length; ++index) {
             const result = response.geoCoords[index];
             const actual = Point3d.fromJSON(result.p);
-            expect(result.s).to.equal(GeoCoordStatus.Success);
-            expect(actual.x).to.be.closeTo(points[index].x, 1e-8);
-            expect(actual.y).to.be.closeTo(points[index].y, 1e-8);
-            expect(actual.z).to.be.closeTo(named ? 38.29672604417625 : 0, 0.01);
+            expect(result.s).toBe(GeoCoordStatus.Success);
+            expect(Math.abs(actual.x - points[index].x)).toBeLessThanOrEqual(1e-8);
+            expect(Math.abs(actual.y - points[index].y)).toBeLessThanOrEqual(1e-8);
+            expect(Math.abs(actual.z - (named ? 38.29672604417625 : 0))).toBeLessThanOrEqual(0.01);
           }
           return response;
         };
 
-        expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).to.equal("EGM96 height");
+        expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).toBe("EGM96 height");
         await verifyConversion([point], true);
-        expect((await verifyConversion([point], true)).fromCache).to.equal(1);
-        const updated = JSON.parse(await executeBackendCallback(verticalCrsChangesCallbackName, "update")) as { index: number };
+        expect((await verifyConversion([point], true)).fromCache).toBe(1);
+        const updated = JSON.parse(await executeVerticalCrsChanges("update")) as { index: number };
         let offset = 0;
         for (const [index, named] of [[updated.index, false], [fixture.index, true], [updated.index, false]] as const) {
           await connection.pullChanges(index);
-          expect(connection.changeset.index).to.equal(index);
-          expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).to.equal(named ? "EGM96 height" : "WGS84");
-          expect((await verifyConversion([{ ...point, x: point.x + ++offset * 0.000001 }], named)).fromCache).to.equal(0);
-          expect((await verifyConversion([point], named)).fromCache).to.equal(0);
-          expect((await verifyConversion([point], named)).fromCache).to.equal(1);
+          expect(connection.changeset.index).toBe(index);
+          expect(connection.geographicCoordinateSystem?.verticalCRS?.crsName).toBe(named ? "EGM96 height" : "WGS84");
+          expect((await verifyConversion([{ ...point, x: point.x + ++offset * 0.000001 }], named)).fromCache).toBe(0);
+          expect((await verifyConversion([point], named)).fromCache).toBe(0);
+          expect((await verifyConversion([point], named)).fromCache).toBe(1);
         }
       } finally {
         try {
           await connection?.close();
         } finally {
-          await executeBackendCallback(verticalCrsChangesCallbackName, "cleanup");
+          await executeVerticalCrsChanges("cleanup");
         }
       }
     });
@@ -73,7 +73,7 @@ describe("GeoCoord", () => {
   let wgs84Response: IModelCoordinatesResponseProps;
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     iModel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
@@ -87,7 +87,7 @@ describe("GeoCoord", () => {
     sameDatumConverter = iModel.geoServices.getConverter()!;
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -101,36 +101,36 @@ describe("GeoCoord", () => {
     wgs84Response = await wgs84Converter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
-    expect(wgs84Response.fromCache === 0).to.be.true;
+    expect(wgs84Response.fromCache === 0).toBe(true);
 
     // shouldn't have any failures.
     for (const result of wgs84Response.iModelCoords) {
-      expect(GeoCoordStatus.Success === result.s);
+      expect(GeoCoordStatus.Success === result.s).toBe(true);
     }
 
     const tokyoResponse = await tokyoConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
-    expect(tokyoResponse.fromCache === 0).to.be.true;
+    expect(tokyoResponse.fromCache === 0).toBe(true);
 
     for (const result of tokyoResponse.iModelCoords) {
-      expect(GeoCoordStatus.Success === result.s).to.be.true;
+      expect(GeoCoordStatus.Success === result.s).toBe(true);
     }
 
     // we expect the iModelCoord results from treating the geoCoords as WGS84 lat/longs to be different from what we get treating them as NAD27 lat/longs.
     for (let iPoint: number = 0; iPoint < wgs84Response.iModelCoords.length; ++iPoint) {
       const wgs84Point = Point3d.fromJSON(wgs84Response.iModelCoords[iPoint].p);
       const tokyoPoint = Point3d.fromJSON(tokyoResponse.iModelCoords[iPoint].p);
-      expect(wgs84Point.isAlmostEqual(tokyoPoint)).to.be.false;
+      expect(wgs84Point.isAlmostEqual(tokyoPoint)).toBe(false);
     }
 
     const sameDatumResponse = await sameDatumConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
-    expect(sameDatumResponse.fromCache === 0).to.be.true;
+    expect(sameDatumResponse.fromCache === 0).toBe(true);
 
     for (const result of sameDatumResponse.iModelCoords) {
-      expect(GeoCoordStatus.Success === result.s).to.be.true;
+      expect(GeoCoordStatus.Success === result.s).toBe(true);
     }
   });
 
@@ -144,18 +144,18 @@ describe("GeoCoord", () => {
     const wgs84Response2 = await wgs84Converter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // they should all come from the cache.
-    expect(wgs84Response2.fromCache === 50).to.be.true;
+    expect(wgs84Response2.fromCache === 50).toBe(true);
 
     // expect ok status for each.
     for (const result of wgs84Response.iModelCoords) {
-      expect(GeoCoordStatus.Success === result.s).to.be.true;
+      expect(GeoCoordStatus.Success === result.s).toBe(true);
     }
 
     // expect equal answers for all of them.
     for (let iPoint: number = 0; iPoint < wgs84Response.iModelCoords.length; ++iPoint) {
       const wgs84Point = Point3d.fromJSON(wgs84Response.iModelCoords[iPoint].p);
       const wgs84Point2 = Point3d.fromJSON(wgs84Response2.iModelCoords[iPoint].p);
-      expect(wgs84Point.isAlmostEqual(wgs84Point2)).to.be.true;
+      expect(wgs84Point.isAlmostEqual(wgs84Point2)).toBe(true);
     }
 
     // now try the round trip to make sure they are close.
@@ -167,14 +167,14 @@ describe("GeoCoord", () => {
     wgs84GeoCoordsResponse = await wgs84Converter.getGeoCoordinatesFromIModelCoordinates(wgs84IModelPoints);
 
     for (const result of wgs84GeoCoordsResponse.geoCoords) {
-      expect(GeoCoordStatus.Success === result.s).to.be.true;
+      expect(GeoCoordStatus.Success === result.s).toBe(true);
     }
 
     // round-tripped result should be close to original point for each of the three datum responses.
     for (let iPoint: number = 0; iPoint < testPoints.length; ++iPoint) {
       const thisPoint = Point3d.fromJSON(testPoints[iPoint]);
       const thatPoint = Point3d.fromJSON(wgs84GeoCoordsResponse.geoCoords[iPoint].p);
-      expect(thisPoint.isAlmostEqual(thatPoint)).to.be.true;
+      expect(thisPoint.isAlmostEqual(thatPoint)).toBe(true);
     }
   });
 
@@ -188,13 +188,13 @@ describe("GeoCoord", () => {
     const first10Response = await wgs84Converter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // expect half from cache.
-    expect(first10Response.fromCache === 5).to.be.true;
+    expect(first10Response.fromCache === 5).toBe(true);
 
     // the longitude values are increasing, so we expect the x values to increase.
     for (let iPoint = 0; iPoint < (testPoints.length - 1); iPoint++) {
       const firstPoint = Point3d.fromJSON(first10Response.iModelCoords[iPoint].p);
       const secondPoint = Point3d.fromJSON(first10Response.iModelCoords[iPoint + 1].p);
-      expect(firstPoint.x < secondPoint.x).to.be.true;
+      expect(firstPoint.x < secondPoint.x).toBe(true);
     }
   });
 
@@ -214,7 +214,7 @@ describe("GeoCoord", () => {
     }
 
     const mixedResponse = await wgs84Converter.getGeoCoordinatesFromIModelCoordinates(testPoints);
-    expect(mixedResponse.fromCache === 10).to.be.true;
+    expect(mixedResponse.fromCache === 10).toBe(true);
   });
 
   it("should get proper result from Geographic CRS conversion", async () => {
@@ -241,13 +241,13 @@ describe("GeoCoord", () => {
     const testPoint: XYZProps[] = [];
     testPoint.push({x: 170370.718, y: 11572.405, z: 0.0});
 
-    expect(japanConverter !== undefined).to.be.true;
+    expect(japanConverter !== undefined).toBe(true);
     const response = await japanConverter!.getGeoCoordinatesFromIModelCoordinates(testPoint);
 
     const expectedPt = Point3d.fromJSON({x: 282707.7064282134, y: -3640811.0118976748, z: -73.01288342685298});
     const outPt = Point3d.fromJSON(response.geoCoords[0].p);
 
-    expect(Geometry.isSamePoint3dXY(expectedPt, outPt, 0.001)).to.be.true;
-    expect(response.geoCoords[0].s === 0);
+    expect(Geometry.isSamePoint3dXY(expectedPt, outPt, 0.001)).toBe(true);
+    expect(response.geoCoords[0].s === 0).toBe(true);
   });
 });

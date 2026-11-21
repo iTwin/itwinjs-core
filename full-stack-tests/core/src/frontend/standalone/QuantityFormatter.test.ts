@@ -6,14 +6,14 @@ import { IModelConnection, QuantityFormatter } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { assert } from "chai";
+import { expect } from "vitest";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("QuantityFormatter", () => {
   let context = new SchemaContext();
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
     const schemaLocater = new ECSchemaRpcLocater(imodel);
@@ -21,7 +21,7 @@ describe("QuantityFormatter", () => {
     context.addLocater(schemaLocater);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (undefined !== imodel)
       await imodel.close();
 
@@ -32,6 +32,6 @@ describe("QuantityFormatter", () => {
     const quantityFormatter = new QuantityFormatter();
     await quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
     const spec = quantityFormatter.findFormatterSpecByQuantityType("QuantityTypeEnumValue-1");
-    assert(spec !== undefined);
+    expect(spec !== undefined).toBeTruthy();
   });
 });
