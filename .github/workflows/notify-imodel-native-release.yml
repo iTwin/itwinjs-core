@@ -17,6 +17,7 @@ on:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
+    environment: admin-approval
 
     permissions: {}
 
