@@ -27,6 +27,7 @@ export class TileRequest {
    */
   public users: ReadonlyTileUserSet;
   private _state: TileRequest.State;
+  private _reconnectCountAtDispatch = 0;
   /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower priority value takes precedence over one with a higher value. */
   public priority = 0;
 
@@ -83,6 +84,7 @@ export class TileRequest {
 
     assert(this._state === TileRequest.State.Queued);
     this._state = TileRequest.State.Dispatched;
+    this._reconnectCountAtDispatch = IModelApp.tileAdmin.reconnectCount;
     let response;
     let gotResponse = false;
     try {
@@ -148,8 +150,24 @@ export class TileRequest {
   private setFailed() {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
-    this.tile.setNotFound();
     this.channel.recordFailure();
+
+    const tile = this.tile;
+    const tileAdmin = IModelApp.tileAdmin;
+    if (!tile.retriesLoadWhenOnline) {
+      tile.setNotFound();
+      return;
+    }
+
+    if (tileAdmin.isOffline) {
+      // Retrying immediately would fail again and redraw in a loop, so wait until the network is back.
+      tile.setNotFound();
+      tileAdmin.retryWhenOnline(tile.tree.iModel, tile.tree, () => tile.resetNotFound());
+    } else if (tileAdmin.reconnectCount === this._reconnectCountAtDispatch) {
+      tile.setNotFound();
+    }
+
+    // Otherwise the browser reconnected while this request was pending, so leave the tile to be requested once more.
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */

@@ -86,6 +86,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       if (tileTree.tileTree !== undefined) {
         clearMapLayers(tileTree.tileTree, this.backgroundMap);
         clearMapLayers(tileTree.tileTree, this.overlayMap);
+        clearMapLayers(tileTree.tileTree, this.backgroundDrapeMap);
       }
     }));
   }

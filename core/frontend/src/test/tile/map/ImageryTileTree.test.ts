@@ -175,5 +175,32 @@ describe("ImageryTileTree", () => {
       expect(mockArgs.markChildrenLoading).toHaveBeenCalled();
       expect(drapeTiles).toHaveLength(0);
     });
+
+    it("keeps a leaf that failed while offline selected until it is retried", async () => {
+      const { tree, root } = await createTreeAndRoot();
+      const failedOnline = createChild(root, tree, 1, 0, 0, true);
+      const failedOffline = createChild(root, tree, 1, 1, 0, true);
+      for (const tile of [failedOnline, failedOffline])
+        vi.spyOn(tile as any, "loadChildren").mockReturnValue(TileTreeLoadStatus.Loaded);
+      const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+      failedOnline.setNotFound();
+      onLine.mockReturnValue(false);
+      failedOffline.setNotFound();
+
+      const select = (tile: ImageryMapTile) => {
+        const drapeTiles: ImageryMapTile[] = [];
+        const highResTiles: ImageryMapTile[] = [];
+        const args = { markChildrenLoading: vi.fn() } as unknown as TileDrawArgs;
+        tile.selectCartoDrapeTiles(drapeTiles, highResTiles, tile.rectangle, 0, args);
+        return [...drapeTiles, ...highResTiles];
+      };
+
+      expect(select(failedOnline)).toEqual([]);
+      expect(select(failedOffline)).toEqual([failedOffline]);
+
+      failedOffline.resetNotFound();
+      expect(failedOffline.isNotFound).toBe(false);
+      expect(select(failedOffline)).toEqual([failedOffline]);
+    });
   });
 });

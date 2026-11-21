@@ -47,6 +47,7 @@ function createMapTile(args: {
   cornerRays?: Ray3d[];
   range?: Range3d;
   maximumSize?: number;
+  parent?: MapTile;
 }): MapTile {
   const mapTree = {
     isContentUnbounded: true,
@@ -58,6 +59,7 @@ function createMapTile(args: {
       contentId: "0_0_0",
       range: args.range ?? new Range3d(0, 0, 0, 100, 100, 100),
       maximumSize: args.maximumSize ?? 512,
+      parent: args.parent,
     },
     mapTree,
     new QuadId(3, 0, 0),
@@ -69,6 +71,20 @@ function createMapTile(args: {
 }
 
 describe("MapTile", () => {
+  it("keeps the siblings of a tile that failed while offline, so it can be retried", () => {
+    const parent = createMapTile({ patch: createEllipsoidPatch() });
+    const child = createMapTile({ patch: createEllipsoidPatch(), parent });
+    const setLeaf = vi.spyOn(parent, "setLeaf");
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    child.setNotFound();
+    expect(setLeaf).not.toHaveBeenCalled();
+
+    onLine.mockReturnValue(true);
+    child.setNotFound();
+    expect(setLeaf).toHaveBeenCalledOnce();
+  });
+
   it("uses _cornerRays origins for non-planar getSizeProjectionCorners", () => {
     const cornerRays = [
       Ray3d.create(Point3d.create(1, 2, 3), Vector3d.unitX()),
