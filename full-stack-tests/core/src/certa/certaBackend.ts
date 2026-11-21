@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { registerBackendCallback as registerVitestBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
+import { registerBackendCallback as registerCertaBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { getTokenCallbackName, verticalCrsChangesCallbackName } from "./certaCommon";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { AccessToken, assert } from "@itwin/core-bentley";
 import { BriefcaseDb, BriefcaseManager, IModelHost, withEditTxn } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { GeographicCRS } from "@itwin/core-common";
-import { TestUtility } from "../frontend/TestUtility";
+import { TestUtility as OidcTestUtility } from "@itwin/oidc-signin-tool";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
 
 export function exposeBackendCallbacks(){
+  const registerBackendCallback = process.env.VITEST_CORE_RUNNER === "vitest" ? registerVitestBackendCallback : registerCertaBackendCallback;
   let verticalWriter: BriefcaseDb | undefined;
   let verticalReaderFile: string | undefined;
   let savedAuthorizationClient = IModelHost.authorizationClient;
@@ -79,11 +81,11 @@ export function exposeBackendCallbacks(){
   });
 
   registerBackendCallback(getTokenCallbackName, async (user: any): Promise<AccessToken> => {
-    const accessToken = await TestUtility.getAccessToken(user, {
+    const accessToken = await OidcTestUtility.getAuthorizationClient(user, {
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
-    });
+    }).getAccessToken();
     (IModelHost.authorizationClient as ElectronMainAuthorization as any).setAccessToken(accessToken);
     return accessToken;
   });
