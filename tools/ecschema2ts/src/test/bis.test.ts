@@ -60,10 +60,10 @@ export const enum CustomHandledPropertyStatementType {
   None = 0,
   Select = 1,
   Insert = 2,
-  ReadOnly = Select|Insert = 3,
+  CustomHandledPropertyStatementType3 = 3,
   Update = 4,
-  InsertUpdate = Insert | Update = 6,
-  All = Select | Insert | Update = 7,
+  CustomHandledPropertyStatementType6 = 6,
+  CustomHandledPropertyStatementType7 = 7,
 }
 
 export class DerivedElement extends Element implements DerivedElementProps {
@@ -133,10 +133,10 @@ export const enum CustomHandledPropertyStatementType {
   None = 0,
   Select = 1,
   Insert = 2,
-  ReadOnly = Select|Insert = 3,
+  CustomHandledPropertyStatementType3 = 3,
   Update = 4,
-  InsertUpdate = Insert | Update = 6,
-  All = Select | Insert | Update = 7,
+  CustomHandledPropertyStatementType6 = 6,
+  CustomHandledPropertyStatementType7 = 7,
 }
 
 export class DerivedElement extends Element {
@@ -218,10 +218,10 @@ export const enum CustomHandledPropertyStatementType {
   None = 0,
   Select = 1,
   Insert = 2,
-  ReadOnly = Select|Insert = 3,
+  CustomHandledPropertyStatementType3 = 3,
   Update = 4,
-  InsertUpdate = Insert | Update = 6,
-  All = Select | Insert | Update = 7,
+  CustomHandledPropertyStatementType6 = 6,
+  CustomHandledPropertyStatementType7 = 7,
 }
 
 export abstract class InformationContentElement extends Element {

@@ -6,5 +6,11 @@ module.exports = [
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
+  {
+    files: ["src/test/**/*"],
+    rules: {
+      "@typescript-eslint/no-deprecated": "off"
+    }
+  },
   ...eslintBaseConfig
 ];
