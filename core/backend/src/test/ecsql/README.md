@@ -176,7 +176,7 @@ Check ECDbMarkdownTestGenerator.ts, it can be called like this:
 For this we use OpenCppCoverage, install the tool from <https://github.com/OpenCppCoverage/OpenCppCoverage>
 Then build the native addon (debug build is preferred).
 Link the native addon into you itwinjs-core directory ( iModelJsNodeAddon\linknativeplatform.bat )
-Build the tests ( npm run build in core/backend )
+Build the tests ( `rushx build` in core/backend )
 This is the command to run from the core/backend working dir to generate coverage:
 
 > OpenCppCoverage --sources (pathToNative)\src\imodel-native\iModelCore\ECDb\* --modules iTwin\* --cover_children --export_type html:lib/coverage -- "C:\Program Files\nodejs\npm.cmd" run test
