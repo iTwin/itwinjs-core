@@ -107,6 +107,12 @@ export interface AllIntersectionsAmongPrimitivesXYOptions {
    * [[CoincidentGeometryQuery.reportBackwardWrappedArcOverlaps]]). Default `true`.
    */
   reportBackwardWrappedArcOverlaps?: boolean;
+  /**
+   * The region of a curve, used by the near-tangent snap to find corners of a region (see
+   * [[CurveCurveIntersectXY.snapNearTangentIntersectionsToEndpoints]]). Curves with the same region (compared with
+   * `===`) are treated as curves of one region. Default: all curves are treated as one region.
+   */
+  regionOf?: (curve: CurvePrimitive) => unknown;
 }
 /**
  * Results of [[CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY]].
@@ -141,6 +147,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _worldToLocalPerspective: Matrix4d | undefined;
   private _worldToLocalAffine: Transform | undefined;
   private _coincidentGeometryContext: CoincidentGeometryQuery;
+  private _regionOf?: (curve: CurvePrimitive) => unknown;
   private static _workPointA0H = Point4d.create();
   private static _workPointA1H = Point4d.create();
   private static _workPointB0H = Point4d.create();
@@ -823,16 +830,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     return false;
   }
+  /** The region of `curve` as given by [[AllIntersectionsAmongPrimitivesXYOptions.regionOf]], or undefined. */
+  private regionOf(curve: CurvePrimitive): unknown {
+    return this._regionOf ? this._regionOf(curve) : undefined;
+  }
   /**
    * Whether `point` is within `tol` of an endpoint of `otherArc` where another curve of the same region as `otherArc`
    * starts or ends and leaves at an angle to `otherArc` (sine of the angle above [[_tangentSineTolerance]]), that is,
    * whether `point` is a corner of that region, as where an arc of a loop is followed by a chord, and no curve
    * coincident with `otherArc` passes through `point`.
-   * * Curves of the same region have the same `parent` (set by region booleans to the region group member). Curves
-   * without `parent` are treated as one region, e.g. if [[allIntersectionsAmongPrimitivesXY]] is called with curves that
-   * do not come from region booleans. Then a curve of another shape can make a corner too, which only keeps more intersections where they were
-   * computed. Other curves, e.g. the bridge segments that region booleans add to connect loops, are not part of the
-   * corner.
+   * * The region of a curve is given by [[AllIntersectionsAmongPrimitivesXYOptions.regionOf]]. Region booleans give the
+   * region group member that is the `parent` of the curve, and undefined for a curve whose `parent` is not a region group
+   * member. Without `regionOf`, all curves are treated as one region. Then a curve of another shape can make a corner
+   * too, which only keeps more intersections where they were computed. Curves of another region, e.g. the bridge
+   * segments that region booleans add to connect loops, are not part of the corner.
    * * Moving an intersection of `arc` with `otherArc` to such a corner makes it a vertex where `arc` and `otherArc` (and
    * the curves coincident with it, which end there too) leave in nearly the same direction, next to the curve that
    * leaves the corner, and the order of the edges at that vertex was found to be unreliable. If a coincident curve passes
@@ -865,7 +876,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const otherTangent = otherArc.fractionToPointAndDerivative(otherFraction, CurveCurveIntersectXY._workRayB).direction;
     for (const pair of pairs) {
       const partner = pair.detailA.curve === otherArc ? pair.detailB.curve : pair.detailA.curve;
-      if (!partner || partner === otherArc || partner === arc || partner.parent !== otherArc.parent || pair.detailA.isInterval())
+      if (!partner || partner === otherArc || partner === arc || this.regionOf(partner) !== this.regionOf(otherArc) || pair.detailA.isInterval())
         continue;
       let partnerFraction: number;
       if (partner.startPoint(CurveCurveIntersectXY._workPointBB0).distanceXY(point) <= tol)
@@ -924,6 +935,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         curveA.dispatchToGeometryHandler(handler);
       }
     }
+    handler._regionOf = options?.regionOf;
     const unsnappedPairs = options?.keepUnsnappedPairs ? [] : undefined;
     const numMoved = options?.snapNearTangent ? handler.snapNearTangentIntersectionsToEndpoints(unsnappedPairs) : 0;
     return {

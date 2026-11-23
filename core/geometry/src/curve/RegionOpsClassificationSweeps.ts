@@ -554,7 +554,10 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // does not have closed member boundaries (e.g., because of another gap within tolerance, or a loop that is not closed
     // within tolerance), rebuild it without these changes, so that such input is handled as before them. The snap only
     // moves intersections, so the intersections are computed again only if a wrapped overlap was reported.
-    const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, { snapNearTangent: true, keepUnsnappedPairs: true });
+    const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, {
+      snapNearTangent: true, keepUnsnappedPairs: true,
+      regionOf: (curve: CurvePrimitive) => curve.parent instanceof RegionGroupMember ? curve.parent : undefined,
+    });
     let graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections.pairs, mergeTolerance);
     if (!RegionBooleanContext.isGraphConsistentWithMembers(graph)) {
       const pairs = intersections.numBackwardWrappedArcOverlaps > 0

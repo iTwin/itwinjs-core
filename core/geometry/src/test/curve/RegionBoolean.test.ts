@@ -16,6 +16,7 @@ import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { CurveCurveIntersectXY } from "../../curve/internalContexts/CurveCurveIntersectXY";
 import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -1958,6 +1959,35 @@ describe("RegionBooleanNearTangentArcs", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangentSnapNotToCornerOfOtherRegion");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("NearTangentSnapRegionsFromRegionGroupMembersOnly", () => {
+    // The near-tangent snap finds corners of a region among the curves of that region. Region booleans identify the
+    // region of a curve by its parent, which they set to a region group member. A parent of another type does not
+    // identify a region: curves with such parents are treated as one region, as curves without parent. With the inputs
+    // of NearTangentSnapNotToCornerOfOtherRegion, the chord of A then makes a corner, and the near-tangent intersection
+    // of the fillet of B with the arc of A is not moved there.
+    const ck = new Checker();
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/nearTangentSnapCorner.imjs", "utf8"))) as AnyRegion[];
+    const curves: CurvePrimitive[] = [];
+    for (const region of inputs)
+      RegionOps.collectCurvePrimitives(region, curves, true, true);
+    const intersections = (parents: unknown[]) => {
+      curves.forEach((curve, i) => curve.parent = parents[i]);
+      const pairs = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, Geometry.smallMetricDistance, { snapNearTangent: true }).pairs;
+      curves.forEach((curve) => curve.parent = undefined);
+      return pairs;
+    };
+    const unsnapped = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, Geometry.smallMetricDistance).pairs;
+    const withoutParents = intersections([]);
+    const withOtherParents = intersections(curves.map(() => ({})));
+    const samePoints = (pairsA: CurveLocationDetailPair[], pairsB: CurveLocationDetailPair[]) => pairsA.length === pairsB.length
+      && pairsA.every((pair, i) => pair.detailA.point.isAlmostEqual(pairsB[i].detailA.point) && pair.detailB.point.isAlmostEqual(pairsB[i].detailB.point));
+    ck.testTrue(samePoints(unsnapped, withoutParents), "without parents, no intersection is moved to the corner");
+    ck.testTrue(samePoints(withoutParents, withOtherParents), "parents that are not region group members do not change the snap");
+    // if each curve is its own region, the chord does not make a corner of the arc, and the intersection is moved
+    const ownRegions = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, Geometry.smallMetricDistance, { snapNearTangent: true, regionOf: (curve) => curve }).pairs;
+    ck.testFalse(samePoints(unsnapped, ownRegions), "with each curve in its own region, the intersection is moved");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("NearTangentSnapNextToTangentFillet", () => {
