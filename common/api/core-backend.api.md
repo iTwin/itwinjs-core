@@ -6877,7 +6877,7 @@ export interface SheetBorderPrototypeCreateArgs {
     width?: number;
 }
 
-// @public @deprecated @preview
+// @public @deprecated
 export class SheetBorderTemplate extends Document_2 {
     protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -7099,7 +7099,7 @@ export class SheetReferenceRefersToSheet extends RelatedElement {
     static classFullName: string;
 }
 
-// @public @deprecated @preview
+// @public @deprecated
 export class SheetTemplate extends Document_2 {
     protected constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)

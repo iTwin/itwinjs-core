@@ -1564,8 +1564,8 @@ export class SectionDrawing extends Drawing {
 }
 
 /** The template for a SheetBorder
- * @public @preview
- * @deprecated in 5.15 - might be removed in next major version. Use [[SheetBorderPrototype]] instead.
+ * @public
+ * @deprecated Use [[SheetBorderPrototype]] instead.
  */
 export class SheetBorderTemplate extends Document {
   public static override get className(): string { return "SheetBorderTemplate"; }
@@ -1580,8 +1580,8 @@ export class SheetBorderTemplate extends Document {
 }
 
 /** The template for a [[Sheet]]
- * @public @preview
- * @deprecated in 5.15 - might be removed in next major version. Use [[SheetPrototype]] instead.
+ * @public
+ * @deprecated Use [[SheetPrototype]] instead.
  */
 export class SheetTemplate extends Document {
   public static override get className(): string { return "SheetTemplate"; }
@@ -1613,10 +1613,11 @@ export class Sheet extends Document {
   public width: number;
   public scale?: number;
   /** The [[SheetTemplate]] this sheet was created from, if any.
-   * @deprecated in 5.15 - might be removed in next major version. Use [[Sheet.sheetPrototype]] instead.
+   * @deprecated Use [[Sheet.sheetPrototype]] instead.
    */
   public sheetTemplate?: Id64String;
   /** The [[SheetPrototype]] this sheet was created from, if any.
+   * Takes precedence over the legacy [[Sheet.sheetTemplate]] if both are set.
    * @beta
    */
   public sheetPrototype?: RelatedElement;
