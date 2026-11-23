@@ -7,9 +7,11 @@ import * as sinon from "sinon";
 import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { TestUtils } from "../TestUtils";
 import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
 import { createFieldFormatting, ResolvedFieldValue } from "../../internal/annotations/fieldSpecs";
-import { Id64, Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { Id64, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -1093,6 +1095,70 @@ describe("Field evaluation", () => {
         expectText("zyx", targetId);
       });
       expectText(FieldRun.invalidContentIndicator, targetId);
+    });
+
+    describe("field whose value changes as a consequence of updating its own annotation", () => {
+      /** Returns an annotation (not yet written) with a field that reads back its own persisted `cachedContent`
+       * and prepends a marker, so each re-evaluation produces a new value.
+       */
+      function createSelfDependentAnnotation(): TextAnnotation3d {
+        const block = TextBlock.create();
+        block.appendRun(TextRun.create({ styleOverrides: { font: { name: "Karla" } }, content: "Previous: " }));
+        const annotationId = insertAnnotationElement(block);
+
+        const annotation = imodel.elements.getElement<TextAnnotation3d>(annotationId);
+        const anno = annotation.getAnnotation()!;
+        anno.textBlock.appendRun(FieldRun.create({
+          styleOverrides: { font: { name: "Karla" } },
+          cachedContent: "seed",
+          propertyHost: { schemaName: "BisCore", className: "TextAnnotation3d", elementId: annotationId },
+          propertyPath: { propertyName: "TextAnnotationData", jsonAccessors: ["data", "textBlock", "children", 0, "children", 1, "cachedContent"] },
+          formatOptions: { prefix: "*" },
+        }));
+        annotation.setAnnotation(anno);
+        return annotation;
+      }
+
+      // The field's self-referencing ElementDrivesTextAnnotation makes saveChanges fail with "EDE: Cycle detected", which is a separate problem.
+      function withAbandonedTxn(fn: (txn: EditTxn) => void): void {
+        const txn = new EditTxn(imodel, "self-dependent field");
+        txn.start();
+        try {
+          fn(txn);
+        } finally {
+          txn.end("abandon");
+        }
+      }
+
+      it("does not recursively re-evaluate fields", () => {
+        const annotation = createSelfDependentAnnotation();
+        const logError = sinon.stub(Logger, "logError");
+        const onUpdated = sinon.spy(TextAnnotation3d, "onUpdated");
+        try {
+          withAbandonedTxn((txn) => annotation.update(txn));
+        } finally {
+          logError.restore();
+          onUpdated.restore();
+        }
+
+        expect(logError.getCalls().filter((call) => call.args[1] instanceof RangeError)).to.be.empty;
+        // Once for the update itself, once more when its fields are re-evaluated.
+        expect(onUpdated.callCount).to.equal(2);
+      });
+
+      it("does not throw when the logger serializes synchronously", () => {
+        const annotation = createSelfDependentAnnotation();
+        const lines: string[] = [];
+        Logger.initialize((loggerCategory, message, metaData) => lines.push(JSON.stringify({ loggerCategory, message, ...Logger.getMetaData(metaData) })));
+        Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Error);
+        try {
+          expect(() => withAbandonedTxn((txn) => annotation.update(txn))).not.to.throw();
+        } finally {
+          TestUtils.setupLogging();
+        }
+
+        expect(lines.filter((line) => line.includes("Maximum call stack size exceeded"))).to.be.empty;
+      });
     });
 
     describe("remapFields", () => {
