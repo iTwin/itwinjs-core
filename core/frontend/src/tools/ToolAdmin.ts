@@ -432,15 +432,20 @@ export class ToolAdmin {
     if (!opts.alertBox)
       return;
 
-    let out = `<h2>${IModelApp.localization.getLocalizedString("iModelJs:Errors.ReloadPage")}</h2>`;
+    const div = document.createElement("div");
+    const heading = document.createElement("h2");
+    heading.textContent = IModelApp.localization.getLocalizedString("iModelJs:Errors.ReloadPage");
+    div.appendChild(heading);
     if (opts.details) {
-      out += `<h3>${IModelApp.localization.getLocalizedString("iModelJs:Errors.Details")}</h3><h4>`;
-      msg.split("\n").forEach((line) => out += `${line}<br>`);
-      out += "</h4>";
+      const detailsHeading = document.createElement("h3");
+      detailsHeading.textContent = IModelApp.localization.getLocalizedString("iModelJs:Errors.Details");
+      const details = document.createElement("h4");
+      for (const line of msg.split("\n"))
+        details.append(line, document.createElement("br"));
+
+      div.append(detailsHeading, details);
     }
 
-    const div = document.createElement("div");
-    div.innerHTML = out;
     return IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical);
   }
 
