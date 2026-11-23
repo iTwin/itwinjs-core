@@ -279,12 +279,12 @@ export interface ECSchemaToTsFileWriter {
  * Concrete class to write ecschema2ts result to file
  */
 export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
-  private _ecschema2ts: ECSchemaToTs;
+  private _ecschema2ts: ECSchemaToTs; // eslint-disable-line @typescript-eslint/no-deprecated
   private _deserializer: SchemaDeserializer;
   private _outdir: string;
 
   public constructor(outdir: string) {
-    this._ecschema2ts = new ECSchemaToTs();
+    this._ecschema2ts = new ECSchemaToTs(); // eslint-disable-line @typescript-eslint/no-deprecated
     this._deserializer = new SchemaDeserializer();
     this._outdir = outdir;
   }

@@ -23,6 +23,8 @@ program.option("-o, --output <required>", "Directory to put the out typescript f
 program.option("-r, --references <optional>", "A comma-separated list of reference schema paths", commaSeparatedList);
 program.parse(process.argv);
 
+console.warn(chalk.yellow("WARNING: @itwin/ecschema2ts is deprecated and will be removed from iTwin.js in a future release."));
+
 if (process.argv.length === 0)
   program.help();
 

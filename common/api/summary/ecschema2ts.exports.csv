@@ -1,3 +1,4 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 beta;class;ECSchemaToTs
+deprecated;class;ECSchemaToTs
