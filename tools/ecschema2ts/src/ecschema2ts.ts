@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass,
+  AnyEnumerator, ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass,
 } from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
   moduleName: string;
   resolvedConflictName: string;
 }
+
+const lineTerminatorRegex = /\r\n|[\r\n\u2028\u2029]/g;
+const identifierRegex = /^[\p{ID_Start}$_][\p{ID_Continue}$\u200C\u200D]*$/u;
 
 const customHandledPropertyCA: string = "BisCore.CustomHandledProperty";
 const elementECClassName: string = "BisCore.Element";
@@ -35,6 +38,7 @@ const tsBentleyModules: { [index: string]: TsBentleyModule } = {
 
 /**
  * @beta
+ * @deprecated The @itwin/ecschema2ts package is deprecated and will be removed from iTwin.js in a future release.
  */
 export class ECSchemaToTs {
   private _tsBentleyModuleNames: Set<string>;
@@ -259,14 +263,18 @@ export class ECSchemaToTs {
       outputString += `${this.convertDescriptionToTsComment(ecEnum.description)}\n`;
 
     outputString += `export const enum ${ecEnum.name} {\n`;
-    for (const ecEnumerator of ecEnum.enumerators) {
-      outputString += `  ${ecEnumerator.label}`;
-      if (ecEnum.isInt)
+    const memberNames = this.getEnumeratorMemberNames(ecEnum);
+    ecEnum.enumerators.forEach((ecEnumerator, index) => {
+      outputString += `  ${memberNames[index]}`;
+      if (ecEnum.isInt) {
+        if (typeof ecEnumerator.value !== "number" || !Number.isFinite(ecEnumerator.value))
+          throw new Error(`Enumerator ${ecEnum.fullName}.${ecEnumerator.name} has an invalid integer value.`);
         outputString += ` = ${ecEnumerator.value}`;
-      else if (ecEnum.isString)
-        outputString += ` = "${ecEnumerator.value}"`;
+      } else if (ecEnum.isString) {
+        outputString += ` = ${this.toTsStringLiteral(String(ecEnumerator.value))}`;
+      }
       outputString += ",\n";
-    }
+    });
 
     outputString += "}\n\n";
     return outputString;
@@ -435,6 +443,7 @@ export class ECSchemaToTs {
    * @param description Schema description to be converted to typescript comment
    */
   private convertDescriptionToTsComment(description: string) {
+    description = this.escapeComment(description);
     let outputString: string = "/**\n";
 
     let wordCount: number = 0;
@@ -462,6 +471,58 @@ export class ECSchemaToTs {
 
     outputString += " */";
     return outputString;
+  }
+
+  /**
+   * Make schema text safe to embed inside a typescript block comment by removing line terminators and
+   * preventing the comment from being closed early.
+   * @param text Schema text to be embedded in a typescript comment
+   */
+  private escapeComment(text: string): string {
+    return text.replace(lineTerminatorRegex, " ").replace(/\*\//g, "*\\/");
+  }
+
+  /**
+   * Convert schema text to a double-quoted typescript string literal
+   * @param value Schema text to be converted to a typescript string literal
+   */
+  private toTsStringLiteral(value: string): string {
+    return JSON.stringify(value).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+  }
+
+  /**
+   * Get the typescript enum member name for an enumerator. The display label is used if it is a valid identifier,
+   * otherwise the enumerator name (always a valid ECName) is used.
+   * @param ecEnum Schema enumeration that owns the enumerator
+   * @param ecEnumerator Schema enumerator to be converted to a typescript enum member
+   */
+  private getEnumeratorMemberName(ecEnum: Enumeration, ecEnumerator: AnyEnumerator): string {
+    const label = ecEnumerator.label;
+    if (undefined !== label && identifierRegex.test(label))
+      return label;
+
+    if (undefined !== label) {
+      // eslint-disable-next-line no-console
+      console.log(`Display label of enumerator ${ecEnum.fullName}.${ecEnumerator.name} is not a valid identifier. The enumerator name will be used instead.`);
+    }
+
+    return ecEnumerator.name;
+  }
+
+  /**
+   * Get the typescript enum member names for all enumerators of an enumeration. If the preferred names (see getEnumeratorMemberName)
+   * collide, for example when a display label matches another enumerator's name, the enumerator names are used for every member
+   * instead. Enumerator names are unique within an enumeration, so the result never contains duplicates.
+   * @param ecEnum Schema enumeration to get the typescript enum member names for
+   */
+  private getEnumeratorMemberNames(ecEnum: Enumeration): string[] {
+    const preferredNames = ecEnum.enumerators.map((ecEnumerator) => this.getEnumeratorMemberName(ecEnum, ecEnumerator));
+    if (new Set(preferredNames).size === preferredNames.length)
+      return preferredNames;
+
+    // eslint-disable-next-line no-console
+    console.log(`Display labels of enumeration ${ecEnum.fullName} produce duplicate member names. The enumerator names will be used instead.`);
+    return ecEnum.enumerators.map((ecEnumerator) => ecEnumerator.name);
   }
 
   /**
