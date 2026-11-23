@@ -59,7 +59,7 @@ PRAGMA ecsql_ver
 
 | ecsql_ver |
 | --------- |
-| 2.0.4.2   |
+| 2.1.0.0   |
 
 ## `PRAGMA sqlite_sql`
 
