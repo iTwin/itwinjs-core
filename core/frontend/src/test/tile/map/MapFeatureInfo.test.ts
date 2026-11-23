@@ -38,6 +38,9 @@ class TestProvider extends MapLayerImageryProvider {
     featureInfos.push({ layerName: this._settings.name, subLayerInfos: [{ subLayerName: this._settings.name, features }] });
   }
   public override async getToolTip(strings: string[]) {
+    const markup = this._properties.tooltipMarkup;
+    if (typeof markup === "string")
+      strings.push(markup);
     if (this._properties.feature)
       strings.push(`feature of ${this._settings.name}`);
   }
@@ -183,6 +186,21 @@ describe("Map feature info", { timeout: 60000 }, () => {
         expect.stringMatching(/^MapLayers\.Latitude: /),
         expect.stringMatching(/^MapLayers\.Longitude: /),
       ]);
+    });
+  });
+
+  it("preserves formatted map tooltip content without inserting unsupported markup", async () => {
+    await testBlankViewportAsync(async (vp) => {
+      const tooltipMarkup = '<h3>Feature info</h3><table style="color: red"><tr><th>Parcel</th><td><strong>42</strong></td></tr></table><svg><title>Not tooltip HTML</title></svg>';
+      const hit = await pickMap(vp, { backgroundBase: layer("Base", { tooltipMarkup }) });
+      const tooltip = await vp.getToolTip(hit);
+      if (!(tooltip instanceof HTMLElement))
+        throw new Error("Expected an HTML map tooltip");
+
+      expect(tooltip.querySelector("h3")?.textContent).toBe("Feature info");
+      expect(tooltip.querySelector("th")?.textContent).toBe("Parcel");
+      expect(tooltip.querySelector("td strong")?.textContent).toBe("42");
+      expect(tooltip.querySelector("[style], svg")).toBeNull();
     });
   });
 
