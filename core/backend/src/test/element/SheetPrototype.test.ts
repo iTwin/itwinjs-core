@@ -7,9 +7,10 @@ import { expect } from "chai";
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
 import { Code, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, SheetProps, SubCategoryAppearance } from "@itwin/core-common";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import { DrawingCategory } from "../../Category";
 import { DrawingGraphic, GeometryPart, Sheet, SheetBorderPrototype, SheetPrototype } from "../../Element";
+import { ElementTreeDeleter } from "../../ElementTreeWalker";
 import { SnapshotDb } from "../../IModelDb";
 import { DocumentListModel, DrawingModel, SheetModel } from "../../Model";
 import { SheetHasSheetPrototype, SheetPrototypeHasSheetBorderPrototype } from "../../NavigationRelationship";
@@ -36,6 +37,7 @@ describe("SheetPrototype", () => {
   describe("with BisCore >= 01.00.27", () => {
     let db: SnapshotDb;
     let documentListModelId: Id64String;
+    let drawingCategoryId: Id64String;
 
     const testSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestSheetProto" alias="tsp" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -52,27 +54,50 @@ describe("SheetPrototype", () => {
       db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("SheetPrototype", "NewBisCore.bim"), { rootSubject: { name: "SheetPrototype" } });
       await db.importSchemaStrings([testSchemaXml]);
       documentListModelId = withEditTxn(db, (txn) => DocumentListModel.insert(txn, IModel.rootSubjectId, "DocumentList"));
+      drawingCategoryId = withEditTxn(db, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "PrototypeContent", new SubCategoryAppearance()));
     });
 
     after(() => db.close());
 
-    it("inserts a SheetBorderPrototype sub-modeled by a DrawingModel", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, height: 0.297, width: 0.42 }));
-      expect(Id64.isValidId64(borderId)).to.be.true;
+    const insertGraphic = (txn: EditTxn, modelId: Id64String, partId?: Id64String): Id64String => {
+      const builder = new GeometryStreamBuilder();
+      if (partId)
+        builder.appendGeometryPart2d(partId);
+      else
+        builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(1, 0, 0)));
 
+      const props: GeometricElement2dProps = {
+        classFullName: DrawingGraphic.classFullName,
+        model: modelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        placement: { origin: Point2d.createZero(), angle: 0 },
+        geom: builder.geometryStream,
+      };
+      return txn.insertElement(props);
+    };
+
+    const insertSheet = (txn: EditTxn, prototypeId: Id64String, name: string): Id64String => {
+      const sheetProps: SheetProps = {
+        classFullName: Sheet.classFullName,
+        model: documentListModelId,
+        code: Sheet.createCode(db, documentListModelId, name),
+        sheetPrototype: new SheetHasSheetPrototype(prototypeId),
+      };
+      return txn.insertElement(sheetProps);
+    };
+
+    it("inserts a SheetPrototype and SheetBorderPrototype with their sub-models", () => {
+      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, height: 0.297, width: 0.42 }));
       const border = db.elements.getElement<SheetBorderPrototype>(borderId);
       expect(border).instanceof(SheetBorderPrototype);
       expect(border.height).to.equal(0.297);
       expect(border.width).to.equal(0.42);
 
-      const model = db.models.getModel(borderId);
-      expect(model).instanceof(DrawingModel);
-      expect(model.modeledElement.id).to.equal(borderId);
-      expect(model.modeledElement.relClassName).to.equal("BisCore:DrawingModelBreaksDownSheetBorderPrototype");
-    });
+      const borderModel = db.models.getModel(borderId);
+      expect(borderModel).instanceof(DrawingModel);
+      expect(borderModel.modeledElement.relClassName).to.equal("BisCore:DrawingModelBreaksDownSheetBorderPrototype");
 
-    it("inserts a SheetPrototype sub-modeled by a SheetModel and references its border", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, height: 0.297, width: 0.42 }));
       const prototypeId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, {
         definitionModelId: IModel.dictionaryId,
         scale: 50,
@@ -94,7 +119,7 @@ describe("SheetPrototype", () => {
       const model = db.models.getModel(prototypeId);
       expect(model).instanceof(SheetModel);
       expect(model.modeledElement.id).to.equal(prototypeId);
-      expect(model.modeledElement.relClassName).to.equal("BisCore.SheetModelBreaksDownSheetPrototype");
+      expect(model.modeledElement.relClassName).to.equal("BisCore:SheetModelBreaksDownSheetPrototype");
     });
 
     it("records the prototype a Sheet was created from", () => {
@@ -117,41 +142,25 @@ describe("SheetPrototype", () => {
       expect((sheet.toJSON() as SheetProps).sheetPrototype?.id).to.equal(prototypeId);
     });
 
-    it("rejects a SheetPrototype sub-modeled by a DrawingModel", () => {
-      const prototypeId = withEditTxn(db, (txn) => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
+    it("enforces the sub-model class of prototypes and borders, allowing subclasses", () => {
+      const { prototypeId, borderId } = withEditTxn(db, (txn) => ({
+        prototypeId: SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn),
+        borderId: SheetBorderPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn),
+      }));
+
       withEditTxn(db, (txn) => {
         expect(() => txn.insertModel({ classFullName: DrawingModel.classFullName, modeledElement: { id: prototypeId } }))
           .to.throw(IModelError).with.property("errorNumber", IModelStatus.WrongModel);
-      });
-    });
-
-    it("rejects a SheetBorderPrototype sub-modeled by a SheetModel", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
-      withEditTxn(db, (txn) => {
         expect(() => txn.insertModel({ classFullName: SheetModel.classFullName, modeledElement: { id: borderId } }))
           .to.throw(IModelError).with.property("errorNumber", IModelStatus.WrongModel);
       });
-    });
 
-    it("accepts a SheetPrototype sub-modeled by a SheetModel subclass", () => {
-      const prototypeId = withEditTxn(db, (txn) => SheetPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
-      const modelId = withEditTxn(db, (txn) => txn.insertModel({ classFullName: "TestSheetProto:TestSheetModel", modeledElement: { id: prototypeId }, isTemplate: true }));
-      expect(modelId).to.equal(prototypeId);
-      expect(db.models.getModel(modelId).classFullName).to.equal("TestSheetProto:TestSheetModel");
-    });
-
-    it("accepts a SheetBorderPrototype sub-modeled by a DrawingModel subclass", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.create({ iModel: db, definitionModelId: IModel.dictionaryId }).insert(txn));
-      const modelId = withEditTxn(db, (txn) => txn.insertModel({ classFullName: "TestSheetProto:TestDrawingModel", modeledElement: { id: borderId }, isTemplate: true }));
-      expect(modelId).to.equal(borderId);
-      expect(db.models.getModel(modelId).classFullName).to.equal("TestSheetProto:TestDrawingModel");
-    });
-
-    it("rejects a SheetPrototype sub-model whose modeled element does not exist", () => {
       withEditTxn(db, (txn) => {
-        expect(() => txn.insertModel({ classFullName: SheetModel.classFullName, modeledElement: { id: "0x123456789" } }))
-          .to.throw(IModelError);
+        txn.insertModel({ classFullName: "TestSheetProto:TestSheetModel", modeledElement: { id: prototypeId }, isTemplate: true });
+        txn.insertModel({ classFullName: "TestSheetProto:TestDrawingModel", modeledElement: { id: borderId }, isTemplate: true });
       });
+      expect(db.models.getModel(prototypeId).classFullName).to.equal("TestSheetProto:TestSheetModel");
+      expect(db.models.getModel(borderId).classFullName).to.equal("TestSheetProto:TestDrawingModel");
     });
 
     it("rejects creating a SheetPrototype whose borderId is not a SheetBorderPrototype", () => {
@@ -162,41 +171,26 @@ describe("SheetPrototype", () => {
         .to.throw("is not a SheetBorderPrototype");
     });
 
-    it("deleteDefinitionElements keeps referenced prototypes and deletes unused ones", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
-      const usedProtoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
-      const unusedProtoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
-      const sheetProps: SheetProps = {
-        classFullName: Sheet.classFullName,
-        model: documentListModelId,
-        code: Sheet.createCode(db, documentListModelId, "Sheet using prototype"),
-        sheetPrototype: new SheetHasSheetPrototype(usedProtoId),
-      };
-      withEditTxn(db, (txn) => txn.insertElement(sheetProps));
+    it("deleteDefinitionElements keeps prototypes used by sheets and borders used by prototypes, and deletes unused ones", () => {
+      const { borderId, usedProtoId, unusedProtoId } = withEditTxn(db, (txn) => {
+        const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const usedProto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
+        insertSheet(txn, usedProto, "Sheet using prototype");
+        return { borderId: border, usedProtoId: usedProto, unusedProtoId: SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }) };
+      });
 
-      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([usedProtoId, unusedProtoId]));
-      expect(used.has(usedProtoId)).to.be.true;
-      expect(used.has(unusedProtoId)).to.be.false;
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([usedProtoId, unusedProtoId, borderId]));
+      expect([...used].sort()).to.deep.equal([borderId, usedProtoId].sort());
       expect(db.elements.tryGetElementProps(usedProtoId)).not.to.be.undefined;
-      expect(db.elements.tryGetElementProps(unusedProtoId)).to.be.undefined;
-      expect(db.models.tryGetModel(unusedProtoId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(borderId)).not.to.be.undefined;
-    });
-
-    it("deleteDefinitionElements deletes a prototype together with its only border", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
-      const protoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
-      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([protoId, borderId]));
-      expect(used.size).to.equal(0);
-      expect(db.elements.tryGetElementProps(protoId)).to.be.undefined;
-      expect(db.elements.tryGetElementProps(borderId)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(unusedProtoId)).to.be.undefined;
+      expect(db.models.tryGetModelProps(unusedProtoId)).to.be.undefined;
     });
 
     it("deleteDefinitionElements deletes a part used only by graphics in a deleted border's sub-model", () => {
       const { protoId, borderId, partId, graphicId } = withEditTxn(db, (txn) => {
         const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
         const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
-        const categoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "BorderCategory", new SubCategoryAppearance());
         const partBuilder = new GeometryStreamBuilder();
         partBuilder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(1, 0, 0)));
         const partProps: GeometryPartProps = {
@@ -206,34 +200,65 @@ describe("SheetPrototype", () => {
           geom: partBuilder.geometryStream,
         };
         const part = txn.insertElement(partProps);
-        const graphicBuilder = new GeometryStreamBuilder();
-        graphicBuilder.appendGeometryPart2d(part);
-        const graphicProps: GeometricElement2dProps = {
-          classFullName: DrawingGraphic.classFullName,
-          model: border,
-          category: categoryId,
-          code: Code.createEmpty(),
-          placement: { origin: Point2d.createZero(), angle: 0 },
-          geom: graphicBuilder.geometryStream,
-        };
-        return { protoId: proto, borderId: border, partId: part, graphicId: txn.insertElement(graphicProps) };
+        return { protoId: proto, borderId: border, partId: part, graphicId: insertGraphic(txn, border, part) };
       });
 
       const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([protoId, borderId, partId]));
       expect(used.size).to.equal(0);
       expect(db.elements.tryGetElementProps(protoId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(borderId)).to.be.undefined;
+      expect(db.models.tryGetModelProps(borderId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(graphicId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(partId)).to.be.undefined;
     });
 
-    it("deleteDefinitionElements keeps a border referenced by a surviving prototype", () => {
-      const borderId = withEditTxn(db, (txn) => SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }));
-      const protoId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId }));
-      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([borderId]));
-      expect(used.has(borderId)).to.be.true;
-      expect(db.elements.tryGetElementProps(borderId)).not.to.be.undefined;
-      expect(db.elements.tryGetElementProps(protoId)).not.to.be.undefined;
+    it("ElementTreeDeleter preserves the populated sub-models of prototypes and borders that are still in use", () => {
+      const { protoId, borderId, protoGraphicId, borderGraphicId, sheetId } = withEditTxn(db, (txn) => {
+        const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
+        return {
+          protoId: proto,
+          borderId: border,
+          protoGraphicId: insertGraphic(txn, proto),
+          borderGraphicId: insertGraphic(txn, border),
+          sheetId: insertSheet(txn, proto, "Sheet using populated prototype"),
+        };
+      });
+
+      withEditTxn(db, (txn) => {
+        const deleter = new ElementTreeDeleter(txn);
+        deleter.deleteNormalElements(protoId);
+        deleter.deleteNormalElements(borderId);
+        deleter.deleteSpecialElements();
+      });
+
+      for (const id of [protoId, borderId]) {
+        expect(db.elements.tryGetElementProps(id)).not.to.be.undefined;
+        expect(db.models.tryGetModelProps(id)).not.to.be.undefined;
+      }
+      expect(db.elements.tryGetElementProps(protoGraphicId)).not.to.be.undefined;
+      expect(db.elements.tryGetElementProps(borderGraphicId)).not.to.be.undefined;
+      expect(db.elements.getElement<Sheet>(sheetId).sheetPrototype?.id).to.equal(protoId);
+    });
+
+    it("deleteElementTree deletes an unused prototype and border together with their populated sub-models", () => {
+      const { protoId, borderId, protoGraphicId, borderGraphicId } = withEditTxn(db, (txn) => {
+        const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
+        return { protoId: proto, borderId: border, protoGraphicId: insertGraphic(txn, proto), borderGraphicId: insertGraphic(txn, border) };
+      });
+
+      withEditTxn(db, (txn) => {
+        const deleter = new ElementTreeDeleter(txn);
+        deleter.deleteNormalElements(protoId);
+        deleter.deleteNormalElements(borderId);
+        deleter.deleteSpecialElements();
+      });
+
+      for (const id of [protoId, borderId, protoGraphicId, borderGraphicId])
+        expect(db.elements.tryGetElementProps(id)).to.be.undefined;
+      expect(db.models.tryGetModelProps(protoId)).to.be.undefined;
+      expect(db.models.tryGetModelProps(borderId)).to.be.undefined;
     });
   });
 });
