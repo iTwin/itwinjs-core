@@ -13,6 +13,7 @@ import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveL
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { CurveCurveIntersectXY } from "../../curve/internalContexts/CurveCurveIntersectXY";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -2991,9 +2992,9 @@ describe("CurveCurveIntersectXY", () => {
     const createCircle = (r: number) => Arc3d.createXY(Point3d.createZero(), r, AngleSweep.createStartEndDegrees(0, 360));
     const sharedArc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndDegrees(-172.8192442185, 125.659087693 - 360));
     // fillet fractions of the intersections of the fillet and the halves of the circle, among all the given curves
-    const filletFractions = (curves: CurvePrimitive[]): number[] => {
+    const filletFractions = (curves: CurvePrimitive[], snapNearTangent = true): number[] => {
       const fractions: number[] = [];
-      for (const pair of CurveCurve.allIntersectionsAmongPrimitivesXY(curves)) {
+      for (const pair of CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, Geometry.smallMetricDistance, { snapNearTangent }).pairs) {
         const filletDetail = pair.detailA.curve === fillet ? pair.detailA : pair.detailB.curve === fillet ? pair.detailB : undefined;
         const otherDetail = filletDetail === pair.detailA ? pair.detailB : pair.detailA;
         if (filletDetail && otherDetail.curve !== sharedArc) {
@@ -3011,6 +3012,14 @@ describe("CurveCurveIntersectXY", () => {
       let fractions = filletFractions(reverse ? curves.reverse() : curves);
       if (ck.testExactNumber(1, fractions.length, "the circle and the fillet have one intersection"))
         ck.testExactNumber(0, fractions[0], "with the shared arc, the intersection is at the fillet's start");
+      // the public API does not move intersections
+      fractions = filletFractions(curves, false);
+      if (ck.testExactNumber(1, fractions.length, "the circle and the fillet have one intersection without the snap"))
+        ck.testTrue(fractions[0] > 1.0e-6, "without the snap, the crossing is kept");
+      const publicPairs = CurveCurve.allIntersectionsAmongPrimitivesXY(curves);
+      const unsnappedPairs = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, Geometry.smallMetricDistance).pairs;
+      if (ck.testExactNumber(unsnappedPairs.length, publicPairs.length, "the public API returns the unsnapped intersections"))
+        publicPairs.forEach((pair, i) => ck.testPoint3d(unsnappedPairs[i].detailA.point, pair.detailA.point, "same intersection"));
       // the circle has no vertex there: the crossing is kept
       fractions = filletFractions(reverse ? [fillet, ...halves] : [...halves, fillet]);
       if (ck.testExactNumber(1, fractions.length, "the circle and the fillet have one intersection"))
@@ -3037,7 +3046,7 @@ describe("CurveCurveIntersectXY", () => {
     for (const [offset, startDegrees, sweepDegrees] of [[5.0e-6, 80, 45], [1.0e-5, 85, 65], [3.0e-6, 60, 40]]) {
       const arc = Arc3d.createXY(Point3d.create(offset, 0), 10, AngleSweep.createStartSweepDegrees(startDegrees, sweepDegrees));
       const chord = LineSegment3d.create(arc.endPoint(), arc.startPoint());
-      const pairs = CurveCurve.allIntersectionsAmongPrimitivesXY([circle, arc, chord]).filter(
+      const pairs = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY([circle, arc, chord], Geometry.smallMetricDistance, { snapNearTangent: true }).pairs.filter(
         (pair) => (pair.detailA.curve === circle && pair.detailB.curve === arc) || (pair.detailA.curve === arc && pair.detailB.curve === circle),
       );
       // the circle and the arc also meet within tolerance at the arc's start

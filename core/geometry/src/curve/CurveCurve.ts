@@ -106,18 +106,13 @@ export class CurveCurve {
   }
   /**
    * Return xy intersections of input curves.
-   * * An isolated intersection of two arcs that are tangent to within `tolerance` near an endpoint of one of them may be
-   * moved to that endpoint, if a coincident overlap of the other arc with a third arc ends there. This keeps a near-tangent
-   * crossing a short distance from a shared vertex from leaving a sliver face in a planar subdivision of the curves.
-   * Curves of one region are recognized by their common `parent`, as set by region booleans. Curves without `parent` are
-   * treated as curves of one region.
    * @param primitives input curves to intersect
    * @param tolerance optional distance tolerance for coincidence
    */
   public static allIntersectionsAmongPrimitivesXY(
     primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    return CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(primitives, tolerance, { snapNearTangent: true }).pairs;
+    return CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(primitives, tolerance).pairs;
   }
   /**
    * Return at least one XY close approach between 2 curves.

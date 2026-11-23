@@ -829,8 +829,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * whether `point` is a corner of that region, as where an arc of a loop is followed by a chord, and no curve
    * coincident with `otherArc` passes through `point`.
    * * Curves of the same region have the same `parent` (set by region booleans to the region group member). Curves
-   * without `parent` are treated as one region, e.g. if [[CurveCurve.allIntersectionsAmongPrimitivesXY]] is called
-   * directly. Then a curve of another shape can make a corner too, which only keeps more intersections where they were
+   * without `parent` are treated as one region, e.g. if [[allIntersectionsAmongPrimitivesXY]] is called with curves that
+   * do not come from region booleans. Then a curve of another shape can make a corner too, which only keeps more intersections where they were
    * computed. Other curves, e.g. the bridge segments that region booleans add to connect loops, are not part of the
    * corner.
    * * Moving an intersection of `arc` with `otherArc` to such a corner makes it a vertex where `arc` and `otherArc` (and
