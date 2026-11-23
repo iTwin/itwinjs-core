@@ -18,6 +18,7 @@ import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
+import { sanitizeTooltipHtml } from "../../internal/TooltipHtml";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
@@ -1021,6 +1022,29 @@ export class MapTileTreeReference extends TileTreeReference {
         }
       }
     }
+<<<<<<< HEAD
+=======
+
+    return info;
+  }
+
+  private async getLayerToolTip(layer: MapLayerTileTreeReference, hit: HitDetail, carto: Cartographic): Promise<string[]> {
+    const tiles = this.getImageryTilesAt(hit, layer, carto);
+    if (0 === tiles.length)
+      return [];
+
+    // The layer name is plain text even when providers supply formatted markup.
+    const strings = [`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${escapeHtml(layer.layerSettings.name)}`];
+    for (const tile of tiles) {
+      try {
+        await tile.imageryTree.imageryLoader.getToolTip(strings, tile.quadId, carto, tile.imageryTree);
+      } catch {
+        // Skip a failed tile.
+      }
+    }
+
+    return strings;
+>>>>>>> d56debd (More tooltip updates (#10013))
   }
 
   public override canSupplyToolTip(hit: HitDetail): boolean {
@@ -1060,7 +1084,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    div.appendChild(sanitizeTooltipHtml(strings.join("<br>")));
     return div;
   }
 

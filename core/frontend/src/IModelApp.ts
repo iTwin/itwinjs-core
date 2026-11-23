@@ -36,6 +36,7 @@ import { NotificationManager } from "./NotificationManager";
 import { FormatsProviderManager, QuantityFormatter, QuantityTypeFormatsProvider } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./internal/render/webgl/System";
+import { sanitizeTooltipHtml } from "./internal/TooltipHtml";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
@@ -857,14 +858,14 @@ export class IModelApp {
   }
 
   /** Format the tooltip strings returned by [[IModelConnection.getToolTipMessage]].
-   * @note Each string is interpreted as HTML. Any untrusted content must be HTML-escaped or sanitized before calling this method.
+   * @note The localized strings are sanitized as HTML before rendering. HTML-escape any values that should display as literal text.
    * @alpha
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
     msg.forEach((line) => out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`);
     const div = document.createElement("div");
-    div.innerHTML = out;
+    div.appendChild(sanitizeTooltipHtml(out));
     return div;
   }
 

@@ -793,6 +793,9 @@ importers:
       '@loaders.gl/draco':
         specifier: ^4.4.5
         version: 4.5.2(@loaders.gl/core@4.5.2)
+      dompurify:
+        specifier: ^3.4.17
+        version: 3.4.17
       fuse.js:
         specifier: ^3.3.0
         version: 3.6.1
