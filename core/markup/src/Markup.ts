@@ -452,8 +452,11 @@ export class Markup {
       this.markupDiv.innerHTML = sanitizeSvg(markupData.svg); // make it a child of the markupDiv
       this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
       this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
-      if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
+      if (!this.svgContainer || !this.svgMarkup) { // if either isn't present, its not a valid markup
+        // It would be appropriate to throw here, however this may break existing users
+        Logger.logWarning(`${FrontendLoggerCategory.Package}.markup`, "Supplied markup svg is not a valid markup");
         return;
+      }
       removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
       this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the supplied markup.
     } else {

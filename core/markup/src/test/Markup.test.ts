@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeButtonEvent, ScreenViewport } from "@itwin/core-frontend";
+import { BentleyError, Logger, LogLevel } from "@itwin/core-bentley";
+import { BeButtonEvent, FrontendLoggerCategory, ScreenViewport } from "@itwin/core-frontend";
 import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { Element, G, Matrix, Svg, SVG, Text } from "@svgdotjs/svg.js";
-import { sanitizeSvg } from "../internal/SanitizeSvg";
+import { sanitizeSvg, sanitizeSvgContent } from "../internal/SanitizeSvg";
 import { Markup, MarkupApp } from "../Markup";
 import { LineTool, SymbolTool } from "../RedlineTool";
 import { initSvgExt } from "../SvgJsExt";
@@ -194,12 +195,22 @@ describe("Markup sanitizing", () => {
     }
   };
 
+  const warnings: Array<{ category: string, message: string, elements?: string[], attributes?: string[] }> = [];
+  const removedElements = () => warnings.flatMap((warning) => warning.elements ?? []);
+  const removedAttributes = () => warnings.flatMap((warning) => warning.attributes ?? []);
+
   before(() => (window as any).markupXss = (where: string) => xssCalls.push(where));
+  beforeEach(() => {
+    Logger.initialize(undefined, (category, message, metaData) => warnings.push({ category, message, ...BentleyError.getMetaData(metaData) }));
+    Logger.setLevelDefault(LogLevel.Warning);
+  });
   afterEach(() => {
     markups.forEach((markup) => markup.destroy());
     markups.length = 0;
     MarkupApp.markup = undefined;
     xssCalls.length = 0;
+    warnings.length = 0;
+    Logger.initialize();
   });
   after(() => delete (window as any).markupXss);
 
@@ -226,8 +237,20 @@ describe("Markup sanitizing", () => {
     assert.isNotNull(markupG.querySelector("rect"));
     assert.equal(markupG.querySelectorAll("a > circle").length, 2);
 
+    const removed = [...removedElements(), ...removedAttributes()];
+    assert.includeMembers(removedElements(), ["img", "script", "foreignObject", "set"]);
+    assert.includeMembers(removedAttributes(), ["onload", "onclick", "onmouseover", "href", "xlink:href"]);
+    assert.isFalse(removed.some((item) => item.includes("markupXss")), "the log must not include removed values");
+    assert.equal(warnings[0].category, `${FrontendLoggerCategory.Package}.markup`);
+
     await waitForHandlers();
     assert.deepEqual(xssCalls, []);
+  });
+
+  it("logs a warning when the markup is not valid", () => {
+    const markup = createMarkup(`<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>`);
+    assert.notExists(markup.svgMarkup);
+    assert.deepEqual(warnings.map((warning) => warning.message), ["Supplied markup svg is not a valid markup"]);
   });
 
   it("drops content beside the svg root", () => {
@@ -242,6 +265,7 @@ describe("Markup sanitizing", () => {
     assert.strictEqual(markup.markupDiv.firstChild, markup.svgContainer!.node);
     assert.equal(markup.markupDiv.textContent!.trim(), "");
     assert.isNotNull(markup.svgMarkup!.node.querySelector("rect"));
+    assert.includeMembers(removedElements(), ["#text", "a", "font", "p"]);
   });
 
   it("keeps only same-document references on use elements", () => {
@@ -270,6 +294,8 @@ describe("Markup sanitizing", () => {
       ["relativeXlink", null, null],
       ["dataUrl", null, null],
     ]);
+    assert.deepEqual(removedElements(), []);
+    assert.deepEqual(removedAttributes(), ["xlink:href", "href", "href", "href", "xlink:href", "href"]);
 
     // the kept reference still draws the shape
     assert.equal((markup.svgMarkup!.node.querySelector("#sameDoc") as SVGGraphicsElement).getBBox().width, 10);
@@ -318,6 +344,7 @@ describe("Markup sanitizing", () => {
     markup.destroy(); // Markup finds its svg elements with global selectors, so only one may exist at a time.
     const restored = createMarkup(saved);
     assert.isDefined(restored.svgMarkup);
+    assert.deepEqual(warnings, [], "valid markup should not log removals");
     assert.equal(saveMarkup(restored), expected);
     const restoredText = restored.svgMarkup!.findOne(`.${MarkupApp.textClass}`) as Text;
     assert.equal(restoredText.getMarkup(), "a < b & c\n<i>second</i> line");
@@ -355,6 +382,18 @@ describe("Markup sanitizing", () => {
 
     await waitForHandlers();
     assert.deepEqual(xssCalls, []);
+  });
+
+  it("does not log removals for valid symbols", () => {
+    const symbol = `<?xml version="1.0" encoding="UTF-8"?>
+      <!-- Generator: an SVG editor -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="#ea0000" d="M0,0 L10,10"></path></svg>`;
+    assert.include(sanitizeSvgContent(symbol), "<path");
+    assert.include(sanitizeSvgContent(`<rect width="5" height="5"></rect>`), "<rect");
+    assert.deepEqual(warnings, []);
+
+    sanitizeSvgContent(`<rect width="5" height="5"></rect></svg><img src="x:">`);
+    assert.include(removedElements(), "img");
   });
 
   it("text editor starts with the literal text", () => {
