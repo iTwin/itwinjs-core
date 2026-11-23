@@ -620,9 +620,8 @@ export abstract class MapLayerImageryProvider {
         this.checkCredentialedRedirect(url, response);
       let text = await response.text();
       if (text) {
-        // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
-        // deliberately contain markup; text from origins not trusted for credentials is escaped.
-        // fetch follows redirects transparently, so the text may come from a different origin than requested.
+        // Use the final response URL so redirects to origins disallowed by the credential policy
+        // are displayed as literal text. The renderer sanitizes any markup that remains.
         if (!this.isCredentialsSharingAllowed(response.url || url))
           text = escapeHtml(text);
         strings.push(text);
