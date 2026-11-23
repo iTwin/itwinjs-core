@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { Code, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, SheetProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, SheetProps, SubCategoryAppearance, SubjectProps } from "@itwin/core-common";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import { DrawingCategory } from "../../Category";
-import { DrawingGraphic, GeometryPart, Sheet, SheetBorderPrototype, SheetPrototype } from "../../Element";
+import { DrawingGraphic, GeometryPart, Sheet, SheetBorderPrototype, SheetPrototype, Subject } from "../../Element";
 import { ElementTreeDeleter } from "../../ElementTreeWalker";
 import { SnapshotDb } from "../../IModelDb";
 import { DocumentListModel, DrawingModel, SheetModel } from "../../Model";
@@ -38,6 +38,7 @@ describe("SheetPrototype", () => {
     let db: SnapshotDb;
     let documentListModelId: Id64String;
     let drawingCategoryId: Id64String;
+    let scopeSpecId: Id64String;
 
     const testSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestSheetProto" alias="tsp" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -55,11 +56,12 @@ describe("SheetPrototype", () => {
       await db.importSchemaStrings([testSchemaXml]);
       documentListModelId = withEditTxn(db, (txn) => DocumentListModel.insert(txn, IModel.rootSubjectId, "DocumentList"));
       drawingCategoryId = withEditTxn(db, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "PrototypeContent", new SubCategoryAppearance()));
+      scopeSpecId = withEditTxn(db, (txn) => db.codeSpecs.insert(txn, "SheetPrototypeScopeSpec", CodeScopeSpec.Type.RelatedElement));
     });
 
     after(() => db.close());
 
-    const insertGraphic = (txn: EditTxn, modelId: Id64String, partId?: Id64String): Id64String => {
+    const insertGraphic = (txn: EditTxn, modelId: Id64String, partId?: Id64String, code = Code.createEmpty()): Id64String => {
       const builder = new GeometryStreamBuilder();
       if (partId)
         builder.appendGeometryPart2d(partId);
@@ -70,7 +72,7 @@ describe("SheetPrototype", () => {
         classFullName: DrawingGraphic.classFullName,
         model: modelId,
         category: drawingCategoryId,
-        code: Code.createEmpty(),
+        code,
         placement: { origin: Point2d.createZero(), angle: 0 },
         geom: builder.geometryStream,
       };
@@ -210,6 +212,67 @@ describe("SheetPrototype", () => {
       expect(db.models.tryGetModelProps(borderId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(graphicId)).to.be.undefined;
       expect(db.elements.tryGetElementProps(partId)).to.be.undefined;
+    });
+
+    // Inserts unused prototypes whose sub-model graphics use each other as code scope.
+    const insertCrossScopedPrototypes = (txn: EditTxn, name: string) => {
+      const protoA = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+      const protoB = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+      const graphicA = insertGraphic(txn, protoA);
+      const graphicB = insertGraphic(txn, protoB, undefined, new Code({ spec: scopeSpecId, scope: graphicA, value: `${name}B` }));
+      txn.updateElement({ ...db.elements.getElementProps(graphicA), code: new Code({ spec: scopeSpecId, scope: graphicB, value: `${name}A` }) });
+      return { protoA, protoB, graphicA, graphicB };
+    };
+
+    it("deleteDefinitionElements deletes unused prototypes whose sub-models reference each other", () => {
+      const ids = withEditTxn(db, (txn) => insertCrossScopedPrototypes(txn, "Mutual"));
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([ids.protoA, ids.protoB]));
+      expect(used.size).to.equal(0);
+      for (const id of [ids.protoA, ids.protoB, ids.graphicA, ids.graphicB])
+        expect(db.elements.tryGetElementProps(id)).to.be.undefined;
+    });
+
+    // Inserts a Subject outside any prototype sub-model that uses `scopeId` as its code scope.
+    const insertScopedSubject = (txn: EditTxn, scopeId: Id64String, value: string): Id64String => {
+      const subjectProps: SubjectProps = {
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsSubjects" },
+        code: new Code({ spec: scopeSpecId, scope: scopeId, value }),
+      };
+      return txn.insertElement(subjectProps);
+    };
+
+    it("deleteDefinitionElements keeps only the prototype whose sub-model content is referenced from outside", () => {
+      const { ids, protoC, graphicC } = withEditTxn(db, (txn) => {
+        const pair = insertCrossScopedPrototypes(txn, "Mixed");
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const graphic = insertGraphic(txn, proto);
+        insertScopedSubject(txn, graphic, "ExternalReference");
+        return { ids: pair, protoC: proto, graphicC: graphic };
+      });
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([ids.protoA, ids.protoB, protoC]));
+      expect([...used]).to.deep.equal([protoC]);
+      for (const id of [ids.protoA, ids.protoB, ids.graphicA, ids.graphicB])
+        expect(db.elements.tryGetElementProps(id)).to.be.undefined;
+      expect(db.elements.tryGetElementProps(protoC)).not.to.be.undefined;
+      expect(db.elements.tryGetElementProps(graphicC)).not.to.be.undefined;
+    });
+
+    it("deleteDefinitionElements keeps a prototype with several sub-model elements referenced from outside", () => {
+      const { protoId, graphicIds } = withEditTxn(db, (txn) => {
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const graphics = [insertGraphic(txn, proto), insertGraphic(txn, proto)];
+        graphics.forEach((graphic, i) => insertScopedSubject(txn, graphic, `MultipleReferences${i}`));
+        return { protoId: proto, graphicIds: graphics };
+      });
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([protoId]));
+      expect([...used]).to.deep.equal([protoId]);
+      for (const id of [protoId, ...graphicIds])
+        expect(db.elements.tryGetElementProps(id)).not.to.be.undefined;
     });
 
     it("ElementTreeDeleter preserves the populated sub-models of prototypes and borders that are still in use", () => {

@@ -582,9 +582,10 @@ export class EditTxn {
   /** Delete definition elements from the iModel when they are not referenced.
    * Requested definitions that become unused because other requested definitions were deleted are also deleted.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
-   * @returns The set of definition elements that were still in use and therefore not deleted.
+  * @returns The set of definition elements that were not deleted because they are still in use, or because they or their
+   * sub-model contents cannot be deleted.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws IModelError if usage queries fail.
+   * @throws IModelError if usage queries or deletion fail.
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
     this.verifyWriteable();
@@ -608,8 +609,9 @@ export class EditTxn {
       // Definitions with sub-models must be deleted together with their sub-model contents.
       // DefinitionModel sub-models are excluded so that their definitions are not deleted wholesale.
       const otherIds = usageInfo.otherDefinitionElementIds?.filter((id) => !usedIdSet.has(id)) ?? [];
-      const subModeledIds = otherIds.filter((id) => this.iModel.withQueryReader(
-        "SELECT 1 FROM bis.Model WHERE ECInstanceId=? AND ECClassId IS NOT (bis.DefinitionModel)", (reader) => reader.step(), new QueryBinder().bindId(1, id)));
+      const subModeledIds = new Set<Id64String>(0 === otherIds.length ? [] : this.iModel.withQueryReader(
+        "SELECT ECInstanceId FROM bis.Model WHERE InVirtualSet(?, ECInstanceId) AND ECClassId IS NOT (bis.DefinitionModel)",
+        (reader) => reader.toArray().map((row) => row[0]), new QueryBinder().bindIdSet(1, otherIds)));
 
       try {
         this.iModel[_nativeDb].beginPurgeOperation();
@@ -624,19 +626,29 @@ export class EditTxn {
         deleteIfUnused(usageInfo.displayStyleIds);
         deleteIfUnused(usageInfo.categorySelectorIds);
         deleteIfUnused(usageInfo.modelSelectorIds);
-        deleteIfUnused(otherIds.filter((id) => !subModeledIds.includes(id)));
+        deleteIfUnused(otherIds.filter((id) => !subModeledIds.has(id)));
       } finally {
         this.iModel[_nativeDb].endPurgeOperation();
       }
 
-      for (const id of subModeledIds) {
-        const result = this.deleteElements([id]);
-        if (BulkDeleteElementsStatus.Success === result.status)
-          ++numDeleted;
-        else if (BulkDeleteElementsStatus.ConstraintViolation === result.status)
-          usedIdSet.add(id); // something in its sub-model is still referenced from outside
-        else
-          throw new IModelError(IModelStatus.BadRequest, `Error deleting definition element ${id} and its sub-model`);
+      while (subModeledIds.size > 0) {
+        const result = this.deleteElements([...subModeledIds]);
+        if (BulkDeleteElementsStatus.Success === result.status) {
+          numDeleted += subModeledIds.size;
+          break;
+        }
+        if (BulkDeleteElementsStatus.ConstraintViolation !== result.status)
+          throw new IModelError(IModelStatus.BadRequest, `Error deleting definition elements and their sub-models: unexpected status ${BulkDeleteElementsStatus[result.status]}`);
+
+        // Resolve every owner before changing the set; several blocking elements may belong to the same definition.
+        const blockedIds = new Set(result.failures.map((failure) => this.findOwner(failure.elementId, subModeledIds)));
+        if (0 === blockedIds.size)
+          throw new IModelError(IModelStatus.BadRequest, "Error deleting definition elements and their sub-models: constraint violation reported without failures");
+
+        for (const id of blockedIds) {
+          subModeledIds.delete(id);
+          usedIdSet.add(id);
+        }
       }
 
       if (0 === numDeleted || 0 === usedIdSet.size)
@@ -644,6 +656,22 @@ export class EditTxn {
 
       candidateIds = [...usedIdSet];
     }
+  }
+
+  /** Find the member of `ownerIds` that is, or that owns, an element by walking up its parents and modeled elements. */
+  private findOwner(elementId: Id64String, ownerIds: Id64Set): Id64String {
+    let id: Id64String | undefined = elementId;
+    while (undefined !== id && !ownerIds.has(id)) {
+      const childId: Id64String = id;
+      id = this.iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE Id=?", (stmt) => {
+        stmt.bindId(1, childId);
+        const ownerId = DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueId(0) ?? stmt.getValueId(1) : undefined;
+        return ownerId === childId ? undefined : ownerId;
+      });
+    }
+    if (undefined === id)
+      throw new IModelError(IModelStatus.NotFound, `Element ${elementId} is not owned by any of the definition elements being deleted`);
+    return id;
   }
 
   /** Insert a new model into the iModel.
