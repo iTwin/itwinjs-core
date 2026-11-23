@@ -18,6 +18,7 @@ import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
+import { sanitizeTooltipHtml } from "../../internal/TooltipHtml";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
@@ -1093,7 +1094,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (0 === tiles.length)
       return [];
 
-    // Escaped: getToolTip uses innerHTML because providers may supply markup.
+    // The layer name is plain text even when providers supply formatted markup.
     const strings = [`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${escapeHtml(layer.layerSettings.name)}`];
     for (const tile of tiles) {
       try {
@@ -1131,7 +1132,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    div.appendChild(sanitizeTooltipHtml(strings.join("<br>")));
     return div;
   }
 

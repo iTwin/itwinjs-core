@@ -88,6 +88,21 @@ describe("IModelApp", () => {
   });
   afterAll(async () => TestApp.shutdown());
 
+  it("sanitizes element tooltips after localization and preserves formatting and escaped labels", () => {
+    const localized = vi.spyOn(IModelApp.localization, "getLocalizedKeys")
+      .mockReturnValueOnce('<strong style="color: red">Element</strong>: &lt;em&gt;label&lt;/em&gt;')
+      .mockReturnValueOnce("Model: Example");
+    try {
+      const tooltip = IModelApp.formatElementToolTip(["elementLabel", "modelLabel"]);
+      expect(tooltip.querySelector("strong")?.textContent).toBe("Element");
+      expect(tooltip.querySelector("[style], em")).toBeNull();
+      expect(tooltip.textContent).toBe("Element: <em>label</em>Model: Example");
+      expect(tooltip.querySelectorAll("br")).toHaveLength(2);
+    } finally {
+      localized.mockRestore();
+    }
+  });
+
   it("displays exception details as literal text with line breaks", async () => {
     const openMessageBox = vi.spyOn(IModelApp.notifications, "openMessageBox");
     const originalOptions = ToolAdmin.exceptionOptions;
