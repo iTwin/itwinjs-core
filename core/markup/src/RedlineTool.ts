@@ -17,6 +17,7 @@ import {
 import { G, Marker, Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
+import { sanitizeSvgContent } from "./internal/SanitizeSvg";
 
 /** Base class for tools that place new Markup elements
  * @public
@@ -453,7 +454,8 @@ export class SketchTool extends RedlineTool {
   }
 }
 
-/** Tool for placing SVG symbols on a Markup
+/** Tool for placing SVG symbols on a Markup.
+ * The symbol data is sanitized before it is added to the markup, the same way as [[MarkupSvgData.svg]].
  * @public
  */
 export class SymbolTool extends RedlineTool {
@@ -486,7 +488,7 @@ export class SymbolTool extends RedlineTool {
     if ((width < 10 || height < 10) && (isDynamics || this._points.length !== this._minPoints))
       return;
     if (undefined === this._symbol) {
-      const symbol = svgMarkup.group().svg(this._symbolData); // creating group instead of using symbol because of inability to flash/hilite multi-color symbol instance...
+      const symbol = svgMarkup.group().svg(sanitizeSvgContent(this._symbolData)); // creating group instead of using symbol because of inability to flash/hilite multi-color symbol instance...
       if (0 === symbol.children().length) {
         symbol.remove();
         this._symbolData = undefined;

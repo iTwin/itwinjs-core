@@ -1,5 +1,7 @@
 ﻿# ecschema2ts
 
+> **Deprecated:** `@itwin/ecschema2ts` is deprecated and will be removed from iTwin.js in a future release.
+
 ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml file and outputs a valid Typescript module that uses iTwin.js.
 
 ## Quick Overview

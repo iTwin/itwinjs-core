@@ -129,20 +129,19 @@ export class SectionMarkerCluster extends Marker {
     this.labelFont = "bold 14px sans-serif";
 
     const maxLen = 10;
-    let title = "";
+    const div = document.createElement("div");
     cluster.markers.forEach((marker, index: number) => {
       if (index < maxLen) {
-        if (title !== "")
-          title += "<br>";
-        title += marker.description;
+        if (div.hasChildNodes())
+          div.append(document.createElement("br"));
+        if (marker.description)
+          div.append(marker.description);
       }
     });
 
     if (cluster.markers.length > maxLen)
-      title += "<br>...";
+      div.append(document.createElement("br"), "...");
 
-    const div = document.createElement("div");
-    div.innerHTML = title;
     this.title = div;
     if (image)
       this.setImage(image);
