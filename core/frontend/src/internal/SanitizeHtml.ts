@@ -5,10 +5,10 @@
 
 import DOMPurify from "dompurify";
 
-/** Allows HTML formatting in tooltips, but not CSS or non-HTML markup.
+/** Sanitizes formatted HTML, excluding inline CSS and non-HTML markup.
  * @internal
  */
-export function sanitizeTooltipHtml(html: string): DocumentFragment {
+export function sanitizeHtml(html: string): DocumentFragment {
   return DOMPurify.sanitize(html, {
     /* eslint-disable @typescript-eslint/naming-convention -- DOMPurify defines these option names. */
     USE_PROFILES: { html: true },

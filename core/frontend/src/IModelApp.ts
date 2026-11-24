@@ -36,7 +36,7 @@ import { NotificationManager } from "./NotificationManager";
 import { FormatsProviderManager, QuantityFormatter, QuantityTypeFormatsProvider } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./internal/render/webgl/System";
-import { sanitizeTooltipHtml } from "./internal/TooltipHtml";
+import { sanitizeHtml } from "./internal/SanitizeHtml";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
@@ -710,7 +710,7 @@ export class IModelApp {
     className?: string;
     /** The Id for the new HTMLElement */
     id?: string;
-    /** innerHTML for the new HTMLElement */
+    /** Raw HTML for the new element. Supply only trusted markup; this helper does not sanitize it. Use `innerText` for plain text. */
     innerHTML?: string;
     /** innerText for the new HTMLElement */
     innerText?: string;
@@ -792,21 +792,21 @@ export class IModelApp {
    */
   public static makeLogoCard(
     opts: {
-      /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
+      /** String headings are sanitized as HTML and wrapped in an `<h2>`. Supply a trusted `HTMLElement` for markup the sanitizer does not allow. */
       heading: string | HTMLElement;
       /** The URL or HTMLImageElement for the icon on this logo card. */
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
-      /** A *notice* string to be shown on the logo card. May include HTML.
-       * @note Never pass untrusted (e.g., server-provided) text here — string notices are parsed as HTML. Use [[noticeLines]] instead.
+      /** String notices are sanitized as HTML. Supply a trusted `HTMLElement` for markup the sanitizer does not allow.
+       * @note Use [[noticeLines]] for server-provided text that should be displayed literally.
        */
       notice?: string | HTMLElement;
       /** Lines composing the *notice* shown on the logo card, separated by line breaks and styled like [[notice]].
        * Strings are rendered as plain text — never parsed as HTML — making this the safe choice for untrusted
        * (e.g., server-provided) content such as copyright attributions; supply an `HTMLElement` for a line requiring markup.
        * This option is intended for any caller — including applications and map-layer format extensions — that needs to
-       * display text it does not fully control; prefer it over [[notice]] unless you require raw HTML for your own trusted content.
+       * display text it does not fully control; prefer it over [[notice]] when no HTML parsing is needed.
        * Ignored if [[notice]] is defined.
        */
       noticeLines?: Array<string | HTMLElement>;
@@ -824,16 +824,18 @@ export class IModelApp {
     }
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
-      if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
-      else
+      if (typeof opts.heading === "string") {
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, className: "logo-card-header" }).appendChild(sanitizeHtml(opts.heading));
+      } else {
         noticeCell.appendChild(opts.heading);
+      }
     }
     if (undefined !== opts.notice) {
-      if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: logoCardNoticeClassName });
-      else
+      if (typeof opts.notice === "string") {
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, className: logoCardNoticeClassName }).appendChild(sanitizeHtml(opts.notice));
+      } else {
         noticeCell.appendChild(opts.notice);
+      }
     } else if (undefined !== opts.noticeLines) {
       // A <p> cannot legally contain flow content, so use a <div> when a line is an element.
       const containerTag = opts.noticeLines.some((line) => typeof line !== "string") ? "div" : "p";
@@ -867,7 +869,7 @@ export class IModelApp {
     let out = "";
     msg.forEach((line) => out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`);
     const div = document.createElement("div");
-    div.appendChild(sanitizeTooltipHtml(out));
+    div.appendChild(sanitizeHtml(out));
     return div;
   }
 
