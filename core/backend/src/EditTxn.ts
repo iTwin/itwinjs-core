@@ -546,7 +546,7 @@ export class EditTxn {
   }
 
   /** Update an existing aspect in the iModel.
-   * @param aspectProps The properties of the aspect to update.
+   * @param aspectProps The properties of the aspect to update. The `id` of a multi aspect must be a well-formed [[Id64String]].
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if update fails.
    */
@@ -562,7 +562,7 @@ export class EditTxn {
   }
 
   /** Delete one or more aspects from the iModel.
-   * @param aspectInstanceIds The Ids of the aspects to delete.
+   * @param aspectInstanceIds The well-formed Ids of the aspects to delete.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws IModelError if deletion fails.
    */
@@ -597,7 +597,7 @@ export class EditTxn {
    * By default, unlike [[updateAspect]], each props must contain all the properties of the aspect, as returned by [[ElementAspect.toJSON]]:
    * every property that is not in the props is set to undefined. Set `options.incremental` to keep the stored value of each property that is not in the props, like [[updateAspect]] does.
    * Incremental updates are slower because each aspect is read before it is written.
-   * @param aspectProps The properties of the aspects to update. A multi aspect is identified by its `id`, and a unique aspect by its `element` and `classFullName`.
+   * @param aspectProps The properties of the aspects to update. A multi aspect is identified by its well-formed `id`, and a unique aspect by its `element` and `classFullName`.
    * @param options.incremental If true, only the properties in the props are changed. Defaults to false.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] on the first aspect that cannot be updated. Nothing is written when the input is invalid, but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].
@@ -611,7 +611,7 @@ export class EditTxn {
 
   /** Delete many aspects from the iModel.
    * The aspects are deleted in order, and each owning element is updated once, no matter how many of its aspects are deleted.
-   * @param ids The ids of the aspects to delete.
+   * @param ids The well-formed ids of the aspects to delete.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] on the first id that does not identify an existing aspect, including an id that appears twice. Nothing is deleted when an id is invalid,
    * but the handlers of the aspects before it have run, so the caller must abandon the changes with [[abandonChanges]].

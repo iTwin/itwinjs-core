@@ -166,6 +166,7 @@ The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($back
 
 Each bulk method validates its input and calls the per-aspect `onInsert`, `onUpdate` or `onDelete` handlers before it writes anything, and throws on the first problem: an [ITwinError]($bentley) for invalid input, or the unchanged exception of a handler. The handlers before the problem have already run, so the caller must call [EditTxn.abandonChanges]($backend) when one of these methods throws anything. Unlike [EditTxn.updateAspect]($backend), `updateAspects` by default requires the complete props of each aspect: every property that is not in the props is set to undefined. Pass `{ incremental: true }` to keep the stored values of the properties that are not in the props, like `updateAspect` does.
 
+Aspect ids passed to the bulk methods, and to [EditTxn.updateAspect]($backend) and [EditTxn.deleteAspect]($backend), must now be well-formed [Id64String]($bentley)s, such as `"0x1a"`. Ids with leading zeros, uppercase digits or a decimal value were previously accepted by `updateAspect` and `deleteAspect`, and are now rejected. Use [Id64.fromString]($bentley) to normalize them.
 Prefer the bulk methods even for a single aspect: a call with one aspect costs the same as the matching single-aspect method. For `updateAspects`, use the default mode when the complete aspect is available, and `{ incremental: true }` when only the changed properties are.
 
 ```ts
