@@ -1990,6 +1990,45 @@ describe("RegionBooleanNearTangentArcs", () => {
     ck.testFalse(samePoints(unsnapped, ownRegions), "with each curve in its own region, the intersection is moved");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("ConstructLoopsWithoutWrappedArcOverlaps", () => {
+    // A is a circle split into two arcs, and B shares an arc of the circle that wraps backward across the start of one
+    // of them. Where the shared arc ends, a small arc of B starts and crosses the circle within 4.0e-4 of that end.
+    // The public methods neither report the wrapped part of the overlap nor snap near-tangent intersections, so the
+    // loops of A and B are found as on the main branch. Reporting the wrapped part without the snap leaves out the
+    // loop of A.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const fileName = "./src/test/data/curve/constructLoopsWrappedArcOverlap.imjs";
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(fileName, "utf8"))) as AnyRegion[];
+    if (ck.testExactNumber(2, inputs.length, "two regions")) {
+      const expectedArea = RegionOps.computeXYArea(inputs[0])! + RegionOps.computeXYArea(inputs[1])!;
+      const curves: CurvePrimitive[] = [];
+      for (const region of inputs)
+        RegionOps.collectCurvePrimitives(region, curves, true, true);
+      const tolerance = 1.0e-6;
+      const numIntervals = (pairs: CurveLocationDetailPair[]) => pairs.filter((p) => p.detailA.isInterval()).length;
+      const publicPairs = CurveCurve.allIntersectionsAmongPrimitivesXY(curves, tolerance);
+      const options = { reportBackwardWrappedArcOverlaps: true };
+      const wrapped = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(curves, tolerance, options);
+      ck.testExactNumber(1, wrapped.numBackwardWrappedArcOverlaps, "the input has a wrapped arc overlap");
+      ck.testExactNumber(numIntervals(wrapped.pairs) - 1, numIntervals(publicPairs), "the public method omits it");
+      for (const operands of [inputs, [inputs[1], inputs[0]]]) {
+        let area = 0;
+        let numLoops = 0;
+        for (const loops of RegionOps.constructAllXYRegionLoops(operands, tolerance)) {
+          for (const loop of loops.positiveAreaLoops) {
+            area += RegionOps.computeXYArea(loop)!;
+            numLoops++;
+          }
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.positiveAreaLoops);
+        }
+        ck.testTrue(numLoops >= 2, "the loops of both regions are found");
+        ck.testCoordinateWithToleranceFactor(expectedArea, area, 1.0e4, "the positive area loops cover both regions");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "ConstructLoopsWithoutWrappedArcOverlaps");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("NearTangentSnapNextToTangentFillet", () => {
     // A is the unit circle. B shares a short arc of the circle. At the end of the shared arc, the fillet of B dips into
     // the circle by 5.0e-7, so its near-tangent intersection with the circle is moved onto the end of the shared arc,

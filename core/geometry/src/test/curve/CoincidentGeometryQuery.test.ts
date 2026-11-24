@@ -154,9 +154,12 @@ describe("CoincidentGeometryQuery", () => {
 
   it("ArcArcOverlapAcrossStartOfArc", () => {
     // arcB lies within the full circle arcA, and may straddle the start/end of arcA. In that case, the overlap is reported
-    // in two pieces, regardless of the direction of arcB's sweep.
+    // in two pieces, regardless of the direction of arcB's sweep. The piece that wraps backward across the start of
+    // arcA is reported only if requested, as region booleans do.
     const ck = new Checker();
     const context = CoincidentGeometryQuery.create();
+    ck.testFalse(context.reportBackwardWrappedArcOverlaps, "wrapped overlaps are not reported by default");
+    context.reportBackwardWrappedArcOverlaps = true;
     const center = Point3d.create(1, 2, 0);
     const radius = 3;
     for (const sweepStartDegrees of [-180, -178, 0, 45]) {

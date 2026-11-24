@@ -555,7 +555,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // within tolerance), rebuild it without these changes, so that such input is handled as before them. The snap only
     // moves intersections, so the intersections are computed again only if a wrapped overlap was reported.
     const intersections = CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance, {
-      snapNearTangent: true, keepUnsnappedPairs: true,
+      snapNearTangent: true, keepUnsnappedPairs: true, reportBackwardWrappedArcOverlaps: true,
       regionOf: (curve: CurvePrimitive) => curve.parent instanceof RegionGroupMember ? curve.parent : undefined,
     });
     let graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections.pairs, mergeTolerance);

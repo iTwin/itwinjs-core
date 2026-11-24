@@ -34,9 +34,10 @@ export class CoincidentGeometryQuery {
   }
   /**
    * Whether [[coincidentArcIntersectionXY]] reports the part of an overlap that wraps across the start of arcA when arcB
-   * sweeps backward across it. Default value is `true`.
+   * sweeps backward across it. Default value is `false`, which keeps the results of the public intersection methods.
+   * * Region booleans turn this on (see [[AllIntersectionsAmongPrimitivesXYOptions.reportBackwardWrappedArcOverlaps]]).
    */
-  public reportBackwardWrappedArcOverlaps = true;
+  public reportBackwardWrappedArcOverlaps = false;
   /** Number of such parts reported by [[coincidentArcIntersectionXY]] since this instance was created. */
   public get numBackwardWrappedArcOverlaps(): number {
     return this._numBackwardWrappedArcOverlaps;

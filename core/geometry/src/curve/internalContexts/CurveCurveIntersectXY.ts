@@ -104,7 +104,10 @@ export interface AllIntersectionsAmongPrimitivesXYOptions {
   keepUnsnappedPairs?: boolean;
   /**
    * Whether coincident arcs report the part of an overlap that wraps backward across the start of an arc (see
-   * [[CoincidentGeometryQuery.reportBackwardWrappedArcOverlaps]]). Default `true`.
+   * [[CoincidentGeometryQuery.reportBackwardWrappedArcOverlaps]]). Default `false`.
+   * * Only region booleans turn this on, together with the near-tangent snap. Without the snap, a reported wrapped
+   * overlap can end next to a near-tangent crossing of the overlapped arcs, and the order of the edges at that vertex
+   * is then unreliable (e.g., in [[RegionOps.constructAllXYRegionLoops]]).
    */
   reportBackwardWrappedArcOverlaps?: boolean;
   /**
@@ -927,7 +930,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     primitives: CurvePrimitive[], tolerance: number, options?: AllIntersectionsAmongPrimitivesXYOptions,
   ): AllIntersectionsAmongPrimitivesXY {
     const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
-    handler._coincidentGeometryContext.reportBackwardWrappedArcOverlaps = options?.reportBackwardWrappedArcOverlaps ?? true;
+    handler._coincidentGeometryContext.reportBackwardWrappedArcOverlaps = options?.reportBackwardWrappedArcOverlaps ?? false;
     for (let i = 0; i < primitives.length; i++) {
       const curveA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {
