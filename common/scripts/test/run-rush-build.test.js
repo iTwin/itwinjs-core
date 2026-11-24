@@ -272,7 +272,7 @@ test("configure only build processes, not later test/docs operations", () => {
   const step = readFileSync(path.join(__dirname, "../../config/azure-pipelines/templates/rush-build-step.yaml"), "utf8");
   assert.ok(step.includes("'$(RushBuildCacheWriteSAS)'"));
   assert.ok(step.includes("'$(RushBuildCacheReadSAS)'"));
-  assert.ok(!step.includes("task.setvariable"));
+  assert.ok(!step.includes("task.setvariable variable=RUSH_BUILD_CACHE"));
 });
 
 test("retain the native-validation signal for shared-template callers", () => {

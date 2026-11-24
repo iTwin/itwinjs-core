@@ -12,39 +12,40 @@ parameters:
     default: {}
 
 steps:
-  # The template can be newer than the checkout, so this bootstrap cannot be a checkout script.
+  # Probe inline because a linked checkout may predate the wrapper.
   - script: >
       node -e "
-      const fs = require('node:fs');
-      const path = require('node:path');
-      const cp = require('node:child_process');
-      const env = { ...process.env };
-      let [mode, ...args] = process.argv.slice(1);
-      if (env.RUSH_BUILD_CACHE_ENABLED === '0') mode = 'off';
-      const native = env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === 'true' || !!env.IMODELJS_NATIVE_OVERRIDE;
-      try {
-      const file = path.resolve('common/scripts/run-rush-build.js');
-      const runner = mode !== 'off' && (!native || mode === 'read') && fs.existsSync(file) ? require(file) : undefined;
-      if (runner && (!native || runner.nativeCacheKeyEnv === 'ITWIN_NATIVE_CACHE_KEY')) {
-      process.exitCode = runner.runRushBuild(mode, args, env);
-      } else {
-      delete env.RUSH_BUILD_CACHE_CREDENTIAL;
-      delete env.RUSH_BUILD_CACHE_OVERRIDE_JSON;
-      delete env.RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH;
-      delete env.ITWIN_NATIVE_CACHE_KEY;
-      env.RUSH_BUILD_CACHE_ENABLED = '0';
-      env.RUSH_BUILD_CACHE_WRITE_ALLOWED = '0';
-      const result = cp.spawnSync(process.execPath, [path.resolve('common/scripts/install-run-rush.js'), native ? 'rebuild' : 'build', ...args], { env, stdio: 'inherit' });
-      if (result.error) console.error('Unable to start Rush build.');
-      process.exitCode = result.status ?? 1;
-      }
-      } catch {
-      console.error('Unable to run Rush build.');
-      process.exitCode = 1;
-      }
-      " -- ${{ parameters.cacheMode }} ${{ parameters.args }}
+      const { ITWIN_NATIVE_PR_VALIDATION, IMODELJS_NATIVE_OVERRIDE, RUSH_BUILD_CACHE_ENABLED } = process.env;
+      const native = ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === 'true' || !!IMODELJS_NATIVE_OVERRIDE;
+      const mode = process.argv[1];
+      const file = './common/scripts/run-rush-build.js';
+      const cached = mode !== 'off' && RUSH_BUILD_CACHE_ENABLED !== '0' && (!native || mode === 'read')
+      && require('node:fs').existsSync(file) && (!native || require(file).nativeCacheKeyEnv === 'ITWIN_NATIVE_CACHE_KEY');
+      console.log('##vso[task.setvariable variable=ITWIN_RUSH_BUILD_COMMAND]' + (cached ? 'cached' : native ? 'rebuild' : 'build'));
+      " -- ${{ parameters.cacheMode }}
+    displayName: Select Rush build path
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ""
+
+  - script: node common/scripts/run-rush-build.js ${{ parameters.cacheMode }} ${{ parameters.args }}
     displayName: rush build
+    condition: and(succeeded(), eq(variables['ITWIN_RUSH_BUILD_COMMAND'], 'cached'))
     workingDirectory: ${{ parameters.workingDir }}
     env:
       ${{ insert }}: ${{ parameters.env }}
       RUSH_BUILD_CACHE_CREDENTIAL: ${{ iif(eq(parameters.cacheMode, 'write'), '$(RushBuildCacheWriteSAS)', iif(eq(parameters.cacheMode, 'read'), '$(RushBuildCacheReadSAS)', '')) }}
+
+  - script: node common/scripts/install-run-rush.js $(ITWIN_RUSH_BUILD_COMMAND) ${{ parameters.args }}
+    displayName: rush build (cache off)
+    condition: and(succeeded(), in(variables['ITWIN_RUSH_BUILD_COMMAND'], 'build', 'rebuild'))
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ""
+      RUSH_BUILD_CACHE_ENABLED: "0"
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: "0"
+      RUSH_BUILD_CACHE_OVERRIDE_JSON: ""
+      RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH: ""
+      ITWIN_NATIVE_CACHE_KEY: ""
