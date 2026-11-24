@@ -12,6 +12,7 @@ publish: false
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
     - [Planar clip mask and classifier textures are sized to the viewport](#planar-clip-mask-and-classifier-textures-are-sized-to-the-viewport)
     - [Map feature info inside polygons with a transparent fill](#map-feature-info-inside-polygons-with-a-transparent-fill)
+    - [Markup SVG data is sanitized](#markup-svg-data-is-sanitized)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
@@ -26,6 +27,7 @@ publish: false
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
+    - [@itwin/ecschema2ts](#itwinecschema2ts)
 
 ## Frontend
 
@@ -131,6 +133,14 @@ The off-screen texture used to render planar clip masks and [spatial classifiers
 
 As a result, a layer with a transparent fill takes precedence over a layer below it that also supports feature info. [MapFeatureInfoTool]($map-layers-formats) also runs its query on the base map below such a layer, and reports no features when nothing is found.
 
+### Markup SVG data is sanitized
+
+[MarkupApp.start]($markup) and [SymbolTool]($markup) now sanitize the SVG they are given before adding it to the document. Scripts, event handler attributes, `javascript:` links, and `foreignObject`, `animate`, `set` and non-SVG elements are removed. `use` elements keep working only when they reference content in the same document, such as `href="#id"`.
+
+Markup created with the built-in markup tools is not affected. If you supply SVG from another source, such as custom symbols, check that it still displays correctly. Content removed from a restored markup is also missing from the SVG that [MarkupApp.stop]($markup) returns.
+
+Sanitizing is a basic safeguard against script execution, not a guarantee that the SVG is safe. For example, embedded stylesheets and references to external resources are kept. Your application remains responsible for supplying markup and symbols only from sources it trusts.
+
 ## Backend
 
 ### Bulk Element Deletion API changes
@@ -218,3 +228,7 @@ Viewport-level APIs for model and category display overrides, viewed models, and
 ### Graphic branch iModel attribution
 
 The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
+
+### @itwin/ecschema2ts
+
+The `@itwin/ecschema2ts` package, including its `ecschema2ts` command-line tool and the `ECSchemaToTs` class, is deprecated and will be removed from iTwin.js in a future release.
