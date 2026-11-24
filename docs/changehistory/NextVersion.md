@@ -15,6 +15,7 @@ publish: false
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
+    - [Notification when local changes are discarded](#notification-when-local-changes-are-discarded)
   - [Electron](#electron)
     - [Restricting IPC to the frontend origin](#restricting-ipc-to-the-frontend-origin)
     - [`electron://` requests are confined to `webResourcesPath`](#electron-requests-are-confined-to-webresourcespath)
@@ -162,6 +163,16 @@ Set [IModelHostOptions.collectCloudSqliteStats]($backend) to `true` to have asyn
 Existing `reader.stats` timings now count every retry attempt and failed request, and can be fractional, so reported totals may increase.
 
 See [Query timing statistics](../learning/backend/ExecutingECSQL.md#query-timing-statistics) for details.
+
+### Notification when local changes are discarded
+
+The new [TxnManager.onChangesDiscarded]($backend) event *(beta)* is raised after [BriefcaseDb.discardChanges]($backend) permanently discards all of a briefcase's local (unpushed) changes. Applications that keep their own local data tied to those changes can use it to clean that data up. The event receives the parent changeset the briefcase was reverted to. Frontend applications receive the same notification through [BriefcaseTxns.onChangesDiscarded]($frontend).
+
+```ts
+briefcase.txns.onChangesDiscarded.addListener((parentChangeset) => {
+  deleteUnpushedLocalResults(briefcase, parentChangeset);
+});
+```
 
 ## Electron
 
