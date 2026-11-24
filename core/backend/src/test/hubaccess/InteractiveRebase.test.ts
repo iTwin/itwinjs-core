@@ -1346,43 +1346,6 @@ describe("InteractiveRebase", () => {
     // acceptOurs and acceptTheirs are disallowed.
     chai.expect(() => conflict.acceptOurs()).to.throw();
     chai.expect(() => conflict.acceptTheirs()).to.throw();
-
-    // The deleted element can be replaced with another one.
-    const newId = interactive.editTxn.insertElement({
-      classFullName: "irt:SomeGraphicalElement",
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      foo: "New Parent!",
-      somePoint: new Point2d(1.23, 4.56),
-    } as SomeGraphicalElementProps);
-
-    conflict.replaceDeletedInstance(newId);
-
-    // The DeletionEffect will be undone.
-    const childAfterReplace = briefcase2.elements.tryGetElementProps(childId);
-    chai.expect(childAfterReplace).to.not.be.undefined;
-    chai.expect(childAfterReplace?.parent?.id).to.equal(newId);
-
-    // The DeletionEffect is not removed, and it can be used to replace again.
-    chai.expect(conflict.deletionEffects).to.have.length(1);
-    chai.expect(conflict.deletionEffects[0].affectedId).to.equal(childId);
-    chai.expect(conflict.deletionEffects[0].resolved).to.be.true;
-
-    const differentId = interactive.editTxn.insertElement({
-      classFullName: "irt:SomeGraphicalElement",
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      foo: "Different",
-      somePoint: new Point2d(1.23, 4.56),
-    } as SomeGraphicalElementProps);
-
-    conflict.replaceDeletedInstance(differentId);
-
-    const childAfterDifferentReplace = briefcase2.elements.tryGetElementProps(childId);
-    chai.expect(childAfterDifferentReplace).to.not.be.undefined;
-    chai.expect(childAfterDifferentReplace?.parent?.id).to.equal(differentId);
   });
 
   it("DeletionEffect - cascade to an element that was reparented to a deleted element", async () => {
@@ -1483,21 +1446,6 @@ describe("InteractiveRebase", () => {
     // The element should still exist, and still be referenced.
     chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.not.be.undefined;
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(referencingElementId).code.scope).to.equal(codeScopeId);
-
-    // We can replace the reference to the deleted CodeScope element with a new one,
-    // at which point the element will be deleted.
-    const newCodeScopeId = interactive.editTxn.insertElement({
-      classFullName: "irt:SomeGraphicalElement",
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      foo: "New Scope",
-      somePoint: new Point2d(5.0, 6.0),
-    } as SomeGraphicalElementProps);
-    conflict.replaceDeletedInstance(newCodeScopeId);
-
-    chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.be.undefined;
-    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(referencingElementId).code.scope).to.equal(newCodeScopeId);
   });
 
   it("BrokenRelationship - preserves the previous value when an update to a non-nullable navigation property is invalid", async () => {
@@ -3536,7 +3484,7 @@ describe("InteractiveRebase", () => {
       chai.expect(briefcase2.elements.tryGetElementProps(typeId)).to.be.undefined;
     });
 
-    it("defers our cascaded aspect delete until a blocked deletion is unblocked", async () => {
+    it("reports a blocked deletion", async () => {
       const [codeSpecId, codeScopeId] = await withEditTxn(briefcase1, async (txn) => {
         const spec = briefcase1.codeSpecs.insert(txn, "LiftedBlockedCodeScopeDelete", CodeScopeSpec.Type.RelatedElement);
         const scope = txn.insertElement({
@@ -3576,21 +3524,6 @@ describe("InteractiveRebase", () => {
       chai.expect(conflict.deletionEffects[0].affectedId).to.equal(referencingElementId);
       chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.not.be.undefined;
       chai.expect(getUniqueAspect(briefcase2, codeScopeId).aspectValue).to.equal("Initial");
-
-      const newCodeScopeId = interactive.editTxn.insertElement({
-        classFullName: "irt:SomeGraphicalElement",
-        model: drawingModelId,
-        category: drawingCategoryId,
-        code: Code.createEmpty(),
-        foo: "New Scope",
-        somePoint: new Point2d(5.0, 6.0),
-      } as SomeGraphicalElementProps);
-      conflict.replaceDeletedInstance(newCodeScopeId);
-
-      chai.expect(briefcase2.elements.tryGetElementProps(codeScopeId)).to.be.undefined;
-      chai.expect(briefcase2.elements.getAspects(codeScopeId, uniqueAspectClassFullName)).to.be.empty;
-      chai.expect(briefcase2.elements.getAspects(newCodeScopeId, uniqueAspectClassFullName)).to.be.empty;
-      chai.expect(conflict.deletionEffects.filter((effect) => effect.action === "cascade")).to.be.empty;
     });
   });
 });
@@ -3639,37 +3572,6 @@ describe("InteractiveRebase deletion replay", () => {
 
   after(async () => {
     HubMock.shutdown();
-  });
-
-  it("replaceDeletedInstance does nothing", async () => {
-    const parentId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Parent"));
-    await briefcase1.pushChanges({ description: "Insert parent" });
-    await briefcase2.pullChanges();
-
-    const childId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Child", parentId));
-    await briefcase1.pushChanges({ description: "Insert child" });
-    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(parentId));
-
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-    chai.expect(interactive.nextGroup()).to.be.true;
-
-    chai.expect(interactive.conflicts).to.have.length(1);
-    const conflict = interactive.conflicts[0];
-    chai.expect(conflict.deletionEffects).to.have.length(1);
-    chai.expect(conflict.deletionEffects[0].action).to.equal("cascade");
-
-    const newParentId = insertGraphic(interactive.editTxn, "New Parent");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    conflict.replaceDeletedInstance(newParentId);
-
-    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
-    chai.expect(briefcase2.elements.tryGetElementProps(parentId)).to.be.undefined;
-    chai.expect(briefcase2.elements.tryGetElementProps(newParentId)).to.not.be.undefined;
-    chai.expect(interactive.conflicts).to.have.length(1);
-    chai.expect(conflict.deletionEffects).to.have.length(1);
-    chai.expect(conflict.deletionEffects[0].resolved).to.be.false;
   });
 
   it("reports an effect reachable from two of our deletions exactly once, on the deletion that applied it", async () => {

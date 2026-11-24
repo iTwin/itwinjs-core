@@ -204,12 +204,6 @@ export interface RebaseConflict {
   acceptTheirs(properties?: string[]): void;
 
   /**
-   * Does nothing. Deleted instances are no longer replaced or restored by rebase.
-   * @deprecated Edit the iModel through editTxn instead.
-   */
-  replaceDeletedInstance(newId: Id64String): void;
-
-  /**
    * Supplies values for an entire UNIQUE constraint, in `uniqueConstraintProperties` order.
    * A failed constraint write stages the values without applying automatic substitutions. A skipped Insert
    * is retried using all staged resolutions; success also retries changes waiting on that instance.
@@ -1760,12 +1754,6 @@ export class InteractiveRebase {
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
-  /** Does nothing; rebase no longer replaces deleted instances.
-   * @internal
-   */
-  public replaceDeletedInstance(_conflict: RebaseConflict, _newId: Id64String): void {
-  }
-
   private navigationTargetExists(relationship: SchemaView.RelationshipClass, direction: StrengthDirection, id: Id64String): boolean {
     const constraint = direction === StrengthDirection.Backward ? relationship.source : relationship.target;
     if (constraint === undefined)
@@ -2794,11 +2782,6 @@ class RebaseConflictImpl implements RebaseConflict {
 
   public acceptTheirs(properties?: string[]): void {
     applyResolution(this._rebase, this, "theirs", properties);
-  }
-
-  /** @deprecated Edit the iModel through editTxn instead. */
-  public replaceDeletedInstance(newId: Id64String): void {
-    this._rebase.replaceDeletedInstance(this, newId);
   }
 
   public resolveUniqueConstraintViolation(violation: UniqueConstraintViolation, values: any[]): void {
