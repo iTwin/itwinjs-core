@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "5.16.0-dev.15",
+  "version": "5.16.0-dev.19",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -40,7 +40,8 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@svgdotjs/svg.js": "3.0.16"
+    "@svgdotjs/svg.js": "3.0.16",
+    "dompurify": "^3.4.17"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",

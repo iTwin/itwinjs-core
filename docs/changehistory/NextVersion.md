@@ -11,11 +11,14 @@ publish: false
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
     - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
     - [Planar clip mask and classifier textures are sized to the viewport](#planar-clip-mask-and-classifier-textures-are-sized-to-the-viewport)
+    - [Map feature info inside polygons with a transparent fill](#map-feature-info-inside-polygons-with-a-transparent-fill)
+    - [Markup SVG data is sanitized](#markup-svg-data-is-sanitized)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
     - [Notification when local changes are discarded](#notification-when-local-changes-are-discarded)
+    - [SQLite 3.54.1](#sqlite-3541)
   - [Electron](#electron)
     - [Restricting IPC to the frontend origin](#restricting-ipc-to-the-frontend-origin)
     - [`electron://` requests are confined to `webResourcesPath`](#electron-requests-are-confined-to-webresourcespath)
@@ -25,6 +28,7 @@ publish: false
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
+    - [@itwin/ecschema2ts](#itwinecschema2ts)
 
 ## Frontend
 
@@ -124,6 +128,20 @@ This per-layer example intentionally supports only same-origin requests. Cross-o
 
 The off-screen texture used to render planar clip masks and [spatial classifiers]($docs/learning/display/Classification.md) was always allocated at the maximum supported size (up to 4096x4096 texels), so every frame paid for rasterizing it regardless of the viewport size. It is now sized to four times the viewport's larger dimension (rounded up to a multiple of 256 and still capped at the maximum), which preserves the texel density the fixed-size texture provided to a 1024-pixel viewport. Viewports larger than 960 device pixels in either dimension still use the maximum size and are unaffected. Smaller viewports use less GPU memory: for a 416-pixel viewport, a classifier's textures drop from 320 MiB to 61 MiB. Smaller viewports also spend less time rasterizing masks on software renderers: with SwiftShader, masked frames in a 100x100 viewport rendered in tens of milliseconds instead of about 2 seconds. No measurable frame-time difference was observed on a hardware GPU.
 
+### Map feature info inside polygons with a transparent fill
+
+[Viewport.getMapFeatureInfo]($frontend) and [MapFeatureInfoTool]($map-layers-formats) now find a feature inside a polygon with a transparent fill (such as a state or parcel boundary), not only on its outline. A click inside such a polygon picks what is drawn below it, so the visible map layers drawn above it that support feature info are now queried too, and the topmost one that returns a feature wins. If none does, the result is unchanged. Hover tooltips still describe only the layer that owns the pixel.
+
+As a result, a layer with a transparent fill takes precedence over a layer below it that also supports feature info. [MapFeatureInfoTool]($map-layers-formats) also runs its query on the base map below such a layer, and reports no features when nothing is found.
+
+### Markup SVG data is sanitized
+
+[MarkupApp.start]($markup) and [SymbolTool]($markup) now sanitize the SVG they are given before adding it to the document. Scripts, event handler attributes, `javascript:` links, and `foreignObject`, `animate`, `set` and non-SVG elements are removed. `use` elements keep working only when they reference content in the same document, such as `href="#id"`.
+
+Markup created with the built-in markup tools is not affected. If you supply SVG from another source, such as custom symbols, check that it still displays correctly. Content removed from a restored markup is also missing from the SVG that [MarkupApp.stop]($markup) returns.
+
+Sanitizing is a basic safeguard against script execution, not a guarantee that the SVG is safe. For example, embedded stylesheets and references to external resources are kept. Your application remains responsible for supplying markup and symbols only from sources it trusts.
+
 ## Backend
 
 ### Bulk Element Deletion API changes
@@ -174,6 +192,12 @@ briefcase.txns.onChangesDiscarded.addListener((parentChangeset) => {
 });
 ```
 
+### SQLite 3.54.1
+
+The native platform now uses [SQLite 3.54.1](https://sqlite.org/releaselog/3_54_1.html). This version deliberately clears SQLite value subtypes when values cross a scalar-subquery boundary. Consequently, a JSON-valued scalar subquery embedded directly in another JSON expression is now treated as text. For example, `json_object('items', (SELECT json_group_array(1)))` produces `{"items":"[1]"}` instead of `{"items":[1]}`.
+
+iTwin.js queries have been updated for this behavior. Applications with raw SQLite or ECSQL queries that embed JSON-valued scalar subqueries should restore the JSON subtype explicitly by wrapping the complete subquery with `json(...)`, for example `json_object('items', json((SELECT json_group_array(1))))`.
+
 ## Electron
 
 ### Restricting IPC to the frontend origin
@@ -215,3 +239,7 @@ Viewport-level APIs for model and category display overrides, viewed models, and
 ### Graphic branch iModel attribution
 
 The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
+
+### @itwin/ecschema2ts
+
+The `@itwin/ecschema2ts` package, including its `ecschema2ts` command-line tool and the `ECSchemaToTs` class, is deprecated and will be removed from iTwin.js in a future release.

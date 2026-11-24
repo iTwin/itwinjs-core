@@ -25,11 +25,13 @@ import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./Proj
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);
 }
-function translateMessageBold(key: string) {
-  return `<b>${translateMessage(key)}:</b> `;
+function translateCoreMeasure(key: string) {
+  return CoreTools.translate(`Measure.Labels.${key}`);
 }
-function translateCoreMeasureBold(key: string) {
-  return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
+function appendMeasurement(toolTip: HTMLElement, labelText: string, value: string): void {
+  const label = document.createElement("b");
+  label.textContent = `${labelText}:`;
+  toolTip.append(label, ` ${value}`, document.createElement("br"));
 }
 
 function clearViewClip(vp: ScreenViewport): boolean {
@@ -337,10 +339,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const quantityFormatter = IModelApp.quantityFormatter;
     const toolTip = document.createElement("div");
-    let toolTipHtml = "";
 
     if (hit.sourceId === this._monumentId) {
-      toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
+      toolTip.append(translateMessage("ModifyGeolocation"), document.createElement("br"));
       if (!this._monumentPoint)
         this._monumentPoint = this.getMonumentPoint()
 
@@ -350,7 +351,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
         const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
         const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-        toolTipHtml += `${translateCoreMeasureBold("Coordinate") + formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
+        appendMeasurement(toolTip, translateCoreMeasure("Coordinate"), `${formattedPointX}, ${formattedPointY}, ${formattedPointZ}`);
       }
 
       const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
@@ -359,39 +360,39 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
         const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-        const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
-        const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
-        toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
-        toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
+        const latDir = translateCoreMeasure(cartographic.latitude < 0 ? "S" : "N");
+        const longDir = translateCoreMeasure(cartographic.longitude < 0 ? "W" : "E");
+        appendMeasurement(toolTip, translateCoreMeasure("LatLong"), `${formattedLat}${latDir}, ${formattedLong}${longDir}`);
+        appendMeasurement(toolTip, translateCoreMeasure("Altitude"), formattedHeight);
       }
 
     } else if (hit.sourceId === this._northId) {
-      toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
+      toolTip.append(translateMessage("ModifyNorthDirection"), document.createElement("br"));
 
       const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
         const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
-        toolTipHtml += `${translateMessageBold("Angle") + formattedAngle}<br>`;
+        appendMeasurement(toolTip, translateMessage("Angle"), formattedAngle);
       }
 
     } else if (hit.sourceId === this._clipId) {
       const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
-      toolTipHtml += `${translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents")}<br>`;
+      toolTip.append(translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents"), document.createElement("br"));
 
       const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
       if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
         const formattedLength = quantityFormatter.formatQuantity(this._clipRange.xLength(), distanceFormatterSpec);
         const formattedWidth = quantityFormatter.formatQuantity(this._clipRange.yLength(), distanceFormatterSpec);
         const formattedHeight = quantityFormatter.formatQuantity(this._clipRange.zLength(), distanceFormatterSpec);
-        toolTipHtml += `${translateMessageBold("Length") + formattedLength}<br>`;
-        toolTipHtml += `${translateMessageBold("Width") + formattedWidth}<br>`;
-        toolTipHtml += `${translateMessageBold("Height") + formattedHeight}<br>`;
+        appendMeasurement(toolTip, translateMessage("Length"), formattedLength);
+        appendMeasurement(toolTip, translateMessage("Width"), formattedWidth);
+        appendMeasurement(toolTip, translateMessage("Height"), formattedHeight);
       }
 
     } else {
       const arrowIndex = this._controlIds.indexOf(hit.sourceId);
       if (-1 !== arrowIndex) {
-        toolTipHtml += `${translateMessage("ModifyProjectExtents")}<br>`;
+        toolTip.append(translateMessage("ModifyProjectExtents"), document.createElement("br"));
 
         const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
@@ -422,22 +423,21 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
               const heightPt = ("zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high);
               const cartographic = this.iModel.spatialToCartographicFromEcef(heightPt);
               const formattedAltitude = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-              toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedAltitude}<br>`;
+              appendMeasurement(toolTip, translateCoreMeasure("Altitude"), formattedAltitude);
             }
           }
 
           const formattedLength = quantityFormatter.formatQuantity(arrowLength, distanceFormatterSpec);
-          toolTipHtml += `${translateMessageBold(arrowLabel) + formattedLength}<br>`;
+          appendMeasurement(toolTip, translateMessage(arrowLabel), formattedLength);
 
           if (0.0 !== arrowLengthMax) {
             const formattedMaxLength = quantityFormatter.formatQuantity(arrowLengthMax, distanceFormatterSpec);
-            toolTipHtml += `${translateMessageBold("MaxExtent") + formattedMaxLength}<br>`;
+            appendMeasurement(toolTip, translateMessage("MaxExtent"), formattedMaxLength);
           }
         }
       }
     }
 
-    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 

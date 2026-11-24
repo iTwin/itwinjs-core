@@ -6,7 +6,7 @@
 
 import { Schema } from '@itwin/ecschema-metadata';
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class ECSchemaToTs {
     constructor();
     convertSchemaToTs(schema: Schema): {
@@ -14,8 +14,7 @@ export class ECSchemaToTs {
         elemTsString: string;
         propsTsString: string;
     };
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 
