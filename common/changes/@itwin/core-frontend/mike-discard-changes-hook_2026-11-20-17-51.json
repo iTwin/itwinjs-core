@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add BriefcaseTxns.onChangesDiscarded, raised after the backend discards all of a briefcase's local changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

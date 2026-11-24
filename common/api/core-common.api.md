@@ -11465,6 +11465,8 @@ export interface TxnNotifications {
     // (undocumented)
     notifyChangesApplied: () => void;
     // (undocumented)
+    notifyChangesDiscarded: (parentChangeSetId: ChangesetIndexAndId) => void;
+    // (undocumented)
     notifyCommit: () => void;
     // (undocumented)
     notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
