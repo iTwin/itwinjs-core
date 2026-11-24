@@ -336,7 +336,9 @@ describe("Markup sanitizing", () => {
     // The sanitizer trims attribute values, and svg.js writes path data with a trailing space.
     const trimmed = saved.replace(/ d="([^"]*?)\s+"/g, ' d="$1"');
     assert.notEqual(trimmed, saved);
-    assert.equal(sanitizeSvg(saved), trimmed);
+    const sanitized = sanitizeSvg(saved);
+    assert.lengthOf(sanitized.childNodes, 1);
+    assert.equal(sanitized.firstElementChild?.outerHTML, trimmed);
 
     // Restoring a markup re-creates the drop shadow filter at the end of <defs>.
     const filter = trimmed.match(/<filter.*<\/filter>/)![0];
