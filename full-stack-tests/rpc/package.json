@@ -5,18 +5,17 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run -s webpack:test",
+    "build": "tsc 1>&2",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json coverage",
     "cover": "npm -s test",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "",
-    "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
-    "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
-    "test:chrome-websocket": "certa -r chrome -b ./lib/backend/websocket.js",
-    "test:electron": "vitest run --config vitest.electron.config.mts",
-    "test:direct": "certa -r node -b ./lib/backend/direct.js",
-    "webpack:test": "webpack --config webpack.config.js 1>&2"
+    "test": "npm run -s test:unit && npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
+    "test:unit": "vitest run --config vitest.node.config.mts",
+    "test:chrome": "cross-env VITEST_RPC_ENVIRONMENT=http vitest run --config vitest.browser.config.mts",
+    "test:chrome-websocket": "cross-env VITEST_RPC_ENVIRONMENT=websocket vitest run --config vitest.browser.config.mts",
+    "test:electron": "vitest run --config vitest.electron.config.mts"
   },
   "repository": {},
   "dependencies": {
@@ -32,28 +31,22 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
     "@itwin/vitest-browser-bridge": "workspace:*",
     "@types/chai": "catalog:testing",
     "@types/express": "catalog:runtime",
-    "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/semver": "catalog:utilities",
     "@vitest/browser": "catalog:testing",
+    "@vitest/browser-playwright": "catalog:testing",
     "assert": "catalog:bundling",
     "buffer": "catalog:bundling",
-    "browserify-zlib": "catalog:bundling",
     "chai": "catalog:testing",
+    "cross-env": "catalog:build",
     "eslint": "catalog:linting",
-    "glob": "catalog:build",
-    "null-loader": "catalog:bundling",
+    "playwright": "catalog:testing",
     "rimraf": "catalog:build",
-    "source-map-loader": "catalog:bundling",
-    "stream-browserify": "catalog:bundling",
     "typescript": "catalog:build",
-    "vitest": "catalog:testing",
-    "webpack": "catalog:bundling",
-    "webpack-cli": "catalog:bundling"
+    "vitest": "catalog:testing"
   }
 }
