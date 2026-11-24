@@ -9,10 +9,11 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, CodeScopeSpec, ElementAspectProps, ElementProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
-import { BriefcaseDb, ChannelControl, DocumentListModel, Drawing, DrawingCategory, DrawingModel, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
+import { Code, CodeScopeSpec, ElementAspectProps, ElementProps, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { BriefcaseDb, ChannelControl, DocumentListModel, Drawing, DrawingCategory, DrawingModel, EditTxn, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import type { RebaseConflict } from "../../InteractiveRebase";
 import { InteractiveRebaseError } from "../../InteractiveRebase";
+import { _nativeDb } from "../../internal/Symbols";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
@@ -3590,6 +3591,721 @@ describe("InteractiveRebase", () => {
       chai.expect(briefcase2.elements.getAspects(codeScopeId, uniqueAspectClassFullName)).to.be.empty;
       chai.expect(briefcase2.elements.getAspects(newCodeScopeId, uniqueAspectClassFullName)).to.be.empty;
       chai.expect(conflict.deletionEffects.filter((effect) => effect.action === "cascade")).to.be.empty;
+    });
+  });
+});
+
+describe("InteractiveRebase deletion replay", () => {
+  let iModelId: GuidString;
+  let briefcase1: BriefcaseDb;
+  let briefcase2: BriefcaseDb;
+  let initialChangesetIndex: number;
+  let drawingModelId: Id64String;
+  let drawingCategoryId: Id64String;
+
+  const insertGraphic = (txn: EditTxn, userLabel: string, parentId?: Id64String) => txn.insertElement({
+    classFullName: "BisCore:DrawingGraphic",
+    model: drawingModelId,
+    category: drawingCategoryId,
+    code: Code.createEmpty(),
+    userLabel,
+    parent: parentId === undefined ? undefined : new ElementOwnsChildElements(parentId),
+  } as GeometricElement2dProps);
+
+  before(async () => {
+    HubMock.startup("InteractiveRebaseDeletionReplay", KnownTestLocations.outputDir);
+    iModelId = await HubMock.createNewIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject", noLocks: true });
+    briefcase1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    briefcase1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await withEditTxn(briefcase1, async (txn) => {
+      drawingModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true)[1];
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "DeletionReplayCategory", new SubCategoryAppearance());
+    });
+    await briefcase1.pushChanges({ description: "Initial" });
+    briefcase2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+    briefcase2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    initialChangesetIndex = briefcase1.changeset.index!;
+  });
+
+  beforeEach(async () => {
+    for (const briefcase of [briefcase1, briefcase2]) {
+      if (briefcase.txns.rebaser.isRebasing)
+        await briefcase.txns.rebaser.abort();
+      await briefcase.discardChanges();
+      await briefcase.pullChanges({ toIndex: initialChangesetIndex });
+    }
+    HubMock.findLocalHub(iModelId).truncateToChangeset(initialChangesetIndex);
+  });
+
+  after(async () => {
+    HubMock.shutdown();
+  });
+
+  it("replaceDeletedInstance does nothing", async () => {
+    const parentId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Parent"));
+    await briefcase1.pushChanges({ description: "Insert parent" });
+    await briefcase2.pullChanges();
+
+    const childId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Child", parentId));
+    await briefcase1.pushChanges({ description: "Insert child" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(parentId));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(interactive.conflicts).to.have.length(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].action).to.equal("cascade");
+
+    const newParentId = insertGraphic(interactive.editTxn, "New Parent");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    conflict.replaceDeletedInstance(newParentId);
+
+    chai.expect(briefcase2.elements.tryGetElementProps(childId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(parentId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(newParentId)).to.not.be.undefined;
+    chai.expect(interactive.conflicts).to.have.length(1);
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].resolved).to.be.false;
+  });
+
+  it("reports an effect reachable from two of our deletions exactly once, on the deletion that applied it", async () => {
+    const [listId, drawingId] = await withEditTxn(briefcase1, async (txn) => {
+      const list = DocumentListModel.insert(txn, IModel.rootSubjectId, "DeletionReplayDocuments");
+      const drawing = txn.insertElement({
+        classFullName: Drawing.classFullName,
+        model: list,
+        code: Drawing.createCode(txn.iModel, list, "DeletionReplayDrawing"),
+      });
+      return [list, drawing];
+    });
+    await briefcase1.pushChanges({ description: "Create unmodeled drawing" });
+    await briefcase2.pullChanges();
+
+    // The sub-model is owned by both the drawing (ModeledElement) and the list model (ParentModel).
+    const subModelId = await withEditTxn(briefcase1, async (txn) =>
+      txn.insertModel(txn.iModel.models.createModel({ classFullName: DrawingModel.classFullName, modeledElement: { id: drawingId } }).toJSON()));
+    await briefcase1.pushChanges({ description: "Sub-model the drawing" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(drawingId);
+      txn.deleteModel(listId);
+      txn.deleteElement(listId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
+    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.be.undefined;
+
+    const reports = interactive.conflicts.flatMap((candidate) => candidate.deletionEffects
+      .filter((candidateEffect) => candidateEffect.affectedId === subModelId && candidateEffect.affectedClassFullName === DrawingModel.classFullName)
+      .map((candidateEffect) => ({ conflict: candidate, effect: candidateEffect })));
+    chai.expect(reports).to.have.length(1);
+    const [{ conflict, effect }] = reports;
+    chai.expect(effect.action).to.equal("cascade");
+    chai.expect(effect.references.some((reference) => reference.targetInstanceKey === conflict.instanceKey)).to.be.true;
+  });
+
+  it("records no conflict for our deletion whose target our own earlier deletion cascaded", async () => {
+    const [firstId, secondId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "First"), insertGraphic(txn, "Second")]);
+    await briefcase1.pushChanges({ description: "Insert elements" });
+    await briefcase2.pullChanges();
+
+    // Upstream makes the second element a child of the first, so deleting the first cascades to it.
+    await withEditTxn(briefcase1, async (txn) => txn.updateElement({ id: secondId, parent: { id: firstId, relClassName: ElementOwnsChildElements.classFullName } }));
+    await briefcase1.pushChanges({ description: "Reparent second" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(firstId);
+      txn.deleteElement(secondId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(firstId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(secondId)).to.be.undefined;
+    chai.expect(interactive.conflicts).to.have.length(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(firstId);
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    chai.expect(conflict.deletionEffects[0].action).to.equal("cascade");
+    chai.expect(conflict.deletionEffects[0].affectedId).to.equal(secondId);
+  });
+
+  // A graphic whose code is scoped by `scopeId`; its required CodeScope reference blocks the scope's deletion.
+  const insertScopedGraphic = (txn: EditTxn, codeSpecId: Id64String, scopeId: Id64String, value: string, parentId?: Id64String) => txn.insertElement({
+    classFullName: "BisCore:DrawingGraphic",
+    model: drawingModelId,
+    category: drawingCategoryId,
+    code: new Code({ spec: codeSpecId, scope: scopeId, value }),
+    userLabel: value,
+    parent: parentId === undefined ? undefined : new ElementOwnsChildElements(parentId),
+  } as GeometricElement2dProps);
+
+  const insertCodeSpec = (txn: EditTxn, name: string) => briefcase1.codeSpecs.insert(txn, name, CodeScopeSpec.Type.RelatedElement);
+
+  const allDeletionEffects = (interactive: { conflicts: ReadonlyArray<RebaseConflict> }) => interactive.conflicts.flatMap((conflict) => conflict.deletionEffects);
+
+  it("applies our deletion whose blocker our unrelated deletion's cascade removes", async () => {
+    // A is inserted first so that, unplanned, its deletion would replay before P's.
+    const [codeSpecId, aId, pId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertCodeSpec(txn, "PlannedUnrelatedBlocker"), insertGraphic(txn, "A"), insertGraphic(txn, "P")]);
+    await briefcase1.pushChanges({ description: "Insert A and P" });
+    await briefcase2.pullChanges();
+
+    const xId = await withEditTxn(briefcase1, async (txn) => insertScopedGraphic(txn, codeSpecId, aId, "X", pId));
+    await briefcase1.pushChanges({ description: "Insert X under P, scoped by A" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(aId);
+      txn.deleteElement(pId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [aId, pId, xId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    const effects = allDeletionEffects(interactive);
+    chai.expect(effects.filter((effect) => effect.action === "blocks-deletion")).to.be.empty;
+    chai.expect(effects).to.have.length(1);
+    chai.expect(effects[0].action).to.equal("cascade");
+    chai.expect(effects[0].affectedId).to.equal(xId);
+  });
+
+  it("applies a chain of our deletions that each remove the next one's blocker", async () => {
+    const [codeSpecId, aId, pId, qId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertCodeSpec(txn, "PlannedChainBlocker"), insertGraphic(txn, "A"), insertGraphic(txn, "P"), insertGraphic(txn, "Q")]);
+    await briefcase1.pushChanges({ description: "Insert A, P, and Q" });
+    await briefcase2.pullChanges();
+
+    const [xId, yId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertScopedGraphic(txn, codeSpecId, aId, "X", pId), insertScopedGraphic(txn, codeSpecId, pId, "Y", qId)]);
+    await briefcase1.pushChanges({ description: "Insert X under P scoped by A, and Y under Q scoped by P" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(aId);
+      txn.deleteElement(pId);
+      txn.deleteElement(qId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [aId, pId, qId, xId, yId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    const effects = allDeletionEffects(interactive);
+    chai.expect(effects.filter((effect) => effect.action === "blocks-deletion")).to.be.empty;
+    chai.expect(effects.map((effect) => effect.affectedId)).to.have.members([xId, yId]);
+  });
+
+  it("applies two of our deletions that each remove the other's blocker together", async () => {
+    const [codeSpecId, aId, pId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertCodeSpec(txn, "PlannedCycleBlocker"), insertGraphic(txn, "A"), insertGraphic(txn, "P")]);
+    await briefcase1.pushChanges({ description: "Insert A and P" });
+    await briefcase2.pullChanges();
+
+    const [xId, yId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertScopedGraphic(txn, codeSpecId, aId, "X", pId), insertScopedGraphic(txn, codeSpecId, pId, "Y", aId)]);
+    await briefcase1.pushChanges({ description: "Insert X under P scoped by A, and Y under A scoped by P" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(aId);
+      txn.deleteElement(pId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [aId, pId, xId, yId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    const effects = allDeletionEffects(interactive);
+    chai.expect(effects.filter((effect) => effect.action === "blocks-deletion")).to.be.empty;
+    chai.expect(effects.map((effect) => effect.affectedId)).to.have.members([xId, yId]);
+    for (const conflict of interactive.conflicts) {
+      for (const effect of conflict.deletionEffects)
+        chai.expect(effect.references.some((reference) => reference.targetId === conflict.id)).to.be.true;
+    }
+  });
+
+  it("applies our deletions of an element and its parent when an upstream child of the parent references the element", async () => {
+    const [codeSpecId, pId] = await withEditTxn(briefcase1, async (txn) => [insertCodeSpec(txn, "PlannedOverlapBlocker"), insertGraphic(txn, "P")]);
+    const aId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "A", pId));
+    await briefcase1.pushChanges({ description: "Insert P and its child A" });
+    await briefcase2.pullChanges();
+
+    const xId = await withEditTxn(briefcase1, async (txn) => insertScopedGraphic(txn, codeSpecId, aId, "X", pId));
+    await briefcase1.pushChanges({ description: "Insert X under P, scoped by A" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(aId);
+      txn.deleteElement(pId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [aId, pId, xId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    const effects = allDeletionEffects(interactive);
+    chai.expect(effects.filter((effect) => effect.action === "blocks-deletion")).to.be.empty;
+    chai.expect(effects).to.have.length(1);
+    chai.expect(effects[0].action).to.equal("cascade");
+    chai.expect(effects[0].affectedId).to.equal(xId);
+  });
+
+  it("blocks our deletions that no local deletion can unblock, and still applies an independent one", async () => {
+    const [codeSpecId, bId, cId, eId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertCodeSpec(txn, "PlannedInfeasibleBlocker"), insertGraphic(txn, "B"), insertGraphic(txn, "C"), insertGraphic(txn, "E")]);
+    await briefcase1.pushChanges({ description: "Insert B, C, and E" });
+    await briefcase2.pullChanges();
+
+    // Z blocks B from outside every deletion set; W blocks C, and only B's deletion would remove W.
+    const [zId, wId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertScopedGraphic(txn, codeSpecId, bId, "Z"), insertScopedGraphic(txn, codeSpecId, cId, "W", bId)]);
+    await briefcase1.pushChanges({ description: "Insert blockers" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(bId);
+      txn.deleteElement(cId);
+      txn.deleteElement(eId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [bId, cId, zId, wId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.not.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(eId)).to.be.undefined;
+
+    const blockersOf = (id: Id64String) => interactive.conflicts.find((conflict) => conflict.id === id)?.deletionEffects
+      .filter((effect) => effect.action === "blocks-deletion").map((effect) => effect.affectedId);
+    chai.expect(blockersOf(bId)).to.deep.equal([zId]);
+    chai.expect(blockersOf(cId)).to.deep.equal([wId]);
+    chai.expect(interactive.conflicts.find((conflict) => conflict.id === eId)).to.be.undefined;
+  });
+
+  it("does not count a reference our Update moves away as blocking our deletion", async () => {
+    // P is inserted first so that, unplanned, its deletion would replay before A's.
+    const [codeSpecId, pId, aId, sId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertCodeSpec(txn, "PlannedMovedReference"), insertGraphic(txn, "P"), insertGraphic(txn, "A"), insertGraphic(txn, "S")]);
+    const yId = await withEditTxn(briefcase1, async (txn) => insertScopedGraphic(txn, codeSpecId, aId, "Y"));
+    await briefcase1.pushChanges({ description: "Insert P, A, S, and Y scoped by A" });
+    await briefcase2.pullChanges();
+
+    const xId = await withEditTxn(briefcase1, async (txn) => insertScopedGraphic(txn, codeSpecId, pId, "X", aId));
+    await briefcase1.pushChanges({ description: "Insert X under A, scoped by P" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({ id: yId, code: new Code({ spec: codeSpecId, scope: sId, value: "Y" }) });
+      txn.deleteElement(pId);
+      txn.deleteElement(aId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [pId, aId, xId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    chai.expect(briefcase2.elements.getElementProps(yId).code.scope).to.equal(sId);
+    chai.expect(allDeletionEffects(interactive).filter((effect) => effect.action === "blocks-deletion")).to.be.empty;
+  });
+
+  // Upstream inserts X and Y under P, each scoping the other's code (CodeScope has an SQL foreign key), while we delete P.
+  const deleteParentOfForeignKeyCycle = async (name: string) => {
+    const [codeSpecId, pId] = await withEditTxn(briefcase1, async (txn) => [insertCodeSpec(txn, name), insertGraphic(txn, "P")]);
+    await briefcase1.pushChanges({ description: "Insert P" });
+    await briefcase2.pullChanges();
+
+    const [xId, yId] = await withEditTxn(briefcase1, async (txn) => {
+      const x = insertScopedGraphic(txn, codeSpecId, pId, "X", pId);
+      const y = insertScopedGraphic(txn, codeSpecId, x, "Y", pId);
+      txn.updateElement({ id: x, code: new Code({ spec: codeSpecId, scope: y, value: "X" }) });
+      return [x, y];
+    });
+    await briefcase1.pushChanges({ description: "Insert X and Y under P, scoping each other's code" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(pId));
+    return { pId, xId, yId };
+  };
+
+  interface DeferringNativeDb { deleteInstancesDeferringForeignKeys?: unknown }
+  const withDeferringOverride = async <T>(override: unknown, operation: () => Promise<T>): Promise<T> => {
+    const nativeDb = briefcase2[_nativeDb] as unknown as DeferringNativeDb;
+    // The prototype's method is read-only, so shadow it with an own property.
+    Object.defineProperty(nativeDb, "deleteInstancesDeferringForeignKeys", { value: override, configurable: true });
+    try {
+      return await operation();
+    } finally {
+      delete nativeDb.deleteInstancesDeferringForeignKeys;
+    }
+  };
+
+  it("deletes a cycle of foreign key references among the members of our deletion set together", async () => {
+    const { pId, xId, yId } = await deleteParentOfForeignKeyCycle("ForeignKeyCycleApplied");
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [pId, xId, yId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    chai.expect(interactive.conflicts).to.have.length(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(pId);
+    chai.expect(conflict.deletionEffects.map((effect) => effect.action)).to.deep.equal(["cascade", "cascade"]);
+    chai.expect(conflict.deletionEffects.map((effect) => effect.affectedId)).to.have.members([xId, yId]);
+  });
+
+  it("throws when a cycle of foreign key references fails its deferred foreign key check", async () => {
+    await deleteParentOfForeignKeyCycle("ForeignKeyCycleViolation");
+    await withDeferringOverride(() => ({ status: "violation" }), async () => {
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(() => interactive.nextGroup()).to.throw(/cycle of foreign key references.*violation/);
+    });
+  });
+
+  it("deletes members that reference each other without a cycle referencers first", async () => {
+    const [codeSpecId, pId] = await withEditTxn(briefcase1, async (txn) => [insertCodeSpec(txn, "ForeignKeyChain"), insertGraphic(txn, "P")]);
+    await briefcase1.pushChanges({ description: "Insert P" });
+    await briefcase2.pullChanges();
+
+    // X is inserted before the Y that references it, so deleting them in insertion order would violate CodeScope's foreign key.
+    const [xId, yId] = await withEditTxn(briefcase1, async (txn) => {
+      const x = insertScopedGraphic(txn, codeSpecId, pId, "X", pId);
+      return [x, insertScopedGraphic(txn, codeSpecId, x, "Y", pId)];
+    });
+    await briefcase1.pushChanges({ description: "Insert X under P and Y under P scoped by X" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(pId));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    for (const id of [pId, xId, yId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    chai.expect(interactive.conflicts).to.have.length(1);
+    chai.expect(interactive.conflicts[0].deletionEffects.map((effect) => effect.affectedId)).to.have.members([xId, yId]);
+  });
+
+  // We delete D and then its parent A, whose deletion cascades (indirectly) to its other child C, and then insert B
+  // reusing one of C's identity values. D's deletion must precede A's, so A's deletion is ordered after B's insert
+  // unless B's insert is ordered after the deletion that frees C's identity value.
+  const replayInsertReusingCascadedChildIdentity = async (insertReuser: (txn: EditTxn, cProps: ElementProps) => Id64String) => {
+    const [codeSpecId, aId] = await withEditTxn(briefcase1, async (txn) => [insertCodeSpec(txn, "LiftedIdentity"), insertGraphic(txn, "A")]);
+    const [cId, dId] = await withEditTxn(briefcase1, async (txn) =>
+      [insertScopedGraphic(txn, codeSpecId, IModel.rootSubjectId, "Reused", aId), insertGraphic(txn, "D", aId)]);
+    await briefcase1.pushChanges({ description: "Insert A and its children C and D" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Unrelated"));
+    await briefcase1.pushChanges({ description: "Insert unrelated element" });
+    const cProps = briefcase2.elements.getElementProps(cId);
+    const bId = await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(dId);
+      txn.deleteElement(aId);
+      return insertReuser(txn, cProps);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return undefined;
+    chai.expect(interactive.nextGroup()).to.be.true;
+    for (const id of [aId, cId, dId])
+      chai.expect(briefcase2.elements.tryGetElementProps(id)).to.be.undefined;
+    chai.expect(interactive.conflicts.filter((conflict) => conflict.id === bId)).to.be.empty;
+    return { cProps, bProps: briefcase2.elements.getElementProps(bId) };
+  };
+
+  it("replays our insert that reuses the code of a child our deletion cascaded after that deletion", async () => {
+    const result = await replayInsertReusingCascadedChildIdentity((txn, cProps) => insertScopedGraphic(txn, cProps.code.spec, cProps.code.scope, cProps.code.value!));
+    chai.expect(result?.bProps.code).to.deep.equal(result?.cProps.code);
+  });
+
+  it("replays our insert that reuses the federationGuid of a child our deletion cascaded after that deletion", async () => {
+    const result = await replayInsertReusingCascadedChildIdentity((txn, cProps) => txn.insertElement({
+      classFullName: "BisCore:DrawingGraphic",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      federationGuid: cProps.federationGuid,
+    } as GeometricElement2dProps));
+    chai.expect(result?.cProps.federationGuid).to.not.be.undefined;
+    chai.expect(result?.bProps.federationGuid).to.equal(result?.cProps.federationGuid);
+  });
+
+  const groupsMembersClassFullName = "BisCore:ElementGroupsMembers";
+  const insertGroupsMembers = (txn: EditTxn, sourceId: Id64String, targetId: Id64String) =>
+    txn.insertRelationship({ classFullName: groupsMembersClassFullName, sourceId, targetId });
+  const linkTableRelationshipExists = (id: Id64String) => briefcase2.withQueryReader(
+    "SELECT 1 FROM BisCore.ElementRefersToElements WHERE ECInstanceId = ?", (reader) => reader.step(), new QueryBinder().bindId(1, id));
+
+  // Upstream relates A to X through a link-table relationship; we delete A, as the relationship's source or target.
+  const replayDeletionOfLinkTableEndpoint = async (aIsSource: boolean) => {
+    const [aId, xId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "X")]);
+    await briefcase1.pushChanges({ description: "Insert A and X" });
+    await briefcase2.pullChanges();
+
+    // Upstream also updates A: inserting a link-table row raises no foreign key conflict, so this forces a rebase.
+    const relId = await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id: aId, userLabel: "A updated" });
+      return aIsSource ? insertGroupsMembers(txn, aId, xId) : insertGroupsMembers(txn, xId, aId);
+    });
+    await briefcase1.pushChanges({ description: "Relate A and X" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(aId));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(aId)).to.be.undefined;
+    chai.expect(briefcase2.elements.tryGetElementProps(xId)).to.not.be.undefined;
+    chai.expect(linkTableRelationshipExists(relId)).to.be.false;
+    chai.expect(interactive.conflicts).to.have.length(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(aId);
+    chai.expect(conflict.deletionEffects).to.have.length(1);
+    const effect = conflict.deletionEffects[0];
+    chai.expect(effect.action).to.equal("cascade");
+    chai.expect(effect.affectedId).to.equal(relId);
+    chai.expect(effect.affectedClassFullName).to.equal(groupsMembersClassFullName);
+    chai.expect(effect.references.map((reference) => reference.targetInstanceKey)).to.deep.equal([conflict.instanceKey]);
+    if (effect.action !== "cascade")
+      return;
+    chai.expect(effect.affectedInstanceKey).to.not.equal(conflict.instanceKey);
+    chai.expect(effect.deletedInstance).to.include({ id: relId, classFullName: groupsMembersClassFullName, sourceId: aIsSource ? aId : xId, targetId: aIsSource ? xId : aId });
+  };
+
+  it("cascades our deletion to an upstream link-table relationship whose source is the deleted element", async () => {
+    await replayDeletionOfLinkTableEndpoint(true);
+  });
+
+  it("cascades our deletion to an upstream link-table relationship whose target is the deleted element", async () => {
+    await replayDeletionOfLinkTableEndpoint(false);
+  });
+
+  // Deleting an element removes its ElementRefersToElements rows as direct changes, not indirect ones, so our
+  // deletion of the existing relationship replays as its own Delete, which must precede our deletion of A.
+  it("reports only the upstream link-table relationship when our deletion also removed an existing one", async () => {
+    const [aId, xId, yId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "X"), insertGraphic(txn, "Y")]);
+    const existingRelId = await withEditTxn(briefcase1, async (txn) => insertGroupsMembers(txn, aId, yId));
+    await briefcase1.pushChanges({ description: "Insert A, X, and Y, and relate A to Y" });
+    await briefcase2.pullChanges();
+
+    const upstreamRelId = await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id: aId, userLabel: "A updated" });
+      return insertGroupsMembers(txn, xId, aId);
+    });
+    await briefcase1.pushChanges({ description: "Relate X to A" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(aId));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(briefcase2.elements.tryGetElementProps(aId)).to.be.undefined;
+    chai.expect(linkTableRelationshipExists(existingRelId)).to.be.false;
+    chai.expect(linkTableRelationshipExists(upstreamRelId)).to.be.false;
+    const effects = allDeletionEffects(interactive);
+    chai.expect(effects).to.have.length(1);
+    chai.expect(effects[0].action).to.equal("cascade");
+    chai.expect(effects[0].affectedId).to.equal(upstreamRelId);
+  });
+
+  const danglingLinkTableRelationships = () => briefcase2.withQueryReader(
+    `SELECT ECInstanceId FROM BisCore.ElementRefersToElements
+     WHERE SourceECInstanceId NOT IN (SELECT ECInstanceId FROM BisCore.Element) OR TargetECInstanceId NOT IN (SELECT ECInstanceId FROM BisCore.Element)`,
+    (reader) => {
+      const ids: Id64String[] = [];
+      for (const row of reader)
+        ids.push(row[0] as Id64String);
+      return ids;
+    });
+
+  // Gap: an upstream link-table insert raises no conflict, so the pull fast-forwards past InteractiveRebase and nothing removes the row.
+  it("known gap: leaves no link-table relationship referencing our deleted element after a fast-forward pull", async () => {
+    const [aId, xId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "X")]);
+    await briefcase1.pushChanges({ description: "Insert A and X" });
+    await briefcase2.pullChanges();
+
+    const relId = await withEditTxn(briefcase1, async (txn) => insertGroupsMembers(txn, xId, aId));
+    await briefcase1.pushChanges({ description: "Relate X to A" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(aId));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    while (interactive !== undefined && !interactive.isComplete)
+      interactive.nextGroup();
+
+    chai.expect(briefcase2.elements.tryGetElementProps(aId)).to.be.undefined;
+    chai.expect(danglingLinkTableRelationships()).to.not.include(relId);
+  });
+
+  // Gap: the captured original of our relationship Delete lacks sourceClassName/targetClassName, which the current read includes, so it always looks changed.
+  it("known gap: records no conflict for our deletion of an existing link-table relationship upstream left unchanged", async () => {
+    const [aId, yId, bId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "Y"), insertGraphic(txn, "B")]);
+    const relId = await withEditTxn(briefcase1, async (txn) => insertGroupsMembers(txn, aId, yId));
+    await briefcase1.pushChanges({ description: "Insert A, Y, and B, and relate A to Y" });
+    await briefcase2.pullChanges();
+
+    // Both sides update B, which forces a rebase without touching the relationship.
+    await withEditTxn(briefcase1, async (txn) => txn.updateElement({ id: bId, userLabel: "B theirs" }));
+    await briefcase1.pushChanges({ description: "Update B" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteRelationship(briefcase2.relationships.getInstanceProps(groupsMembersClassFullName, relId));
+      txn.updateElement({ id: bId, userLabel: "B ours" });
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    chai.expect(interactive.nextGroup()).to.be.true;
+
+    chai.expect(linkTableRelationshipExists(relId)).to.be.false;
+    chai.expect(interactive.conflicts.filter((conflict) => conflict.id === relId)).to.be.empty;
+  });
+
+  const insertScopedType = (txn: EditTxn, codeSpecId: Id64String, scopeId: Id64String, value: string, parentId?: Id64String) => txn.insertElement({
+    classFullName: GenericGraphicalType2d.classFullName,
+    model: IModel.dictionaryId,
+    code: new Code({ spec: codeSpecId, scope: scopeId, value }),
+    parent: parentId === undefined ? undefined : new ElementOwnsChildElements(parentId),
+  });
+
+  // Gap: JavaScript has no savepoint, so a failed deferred foreign key check cannot undo the set-null and member deletions applied before it.
+  it("known gap: leaves the iModel unchanged when a cycle of foreign key references fails its deferred foreign key check", async () => {
+    const [codeSpecId, pId] = await withEditTxn(briefcase1, async (txn) => {
+      const spec = insertCodeSpec(txn, "ForeignKeyCyclePartialWrites");
+      return [spec, insertScopedType(txn, spec, IModel.dictionaryId, "P")];
+    });
+    await briefcase1.pushChanges({ description: "Insert type P" });
+    await briefcase2.pullChanges();
+
+    // X and Y scope each other's code; Z, scoped by X, is deleted before them; W's type definition is set null.
+    const [xId, yId, zId, wId] = await withEditTxn(briefcase1, async (txn) => {
+      const x = insertScopedType(txn, codeSpecId, pId, "X", pId);
+      const y = insertScopedType(txn, codeSpecId, x, "Y", pId);
+      txn.updateElement({ id: x, code: new Code({ spec: codeSpecId, scope: y, value: "X" }) });
+      const z = insertScopedType(txn, codeSpecId, x, "Z", pId);
+      const w = txn.insertElement({
+        classFullName: "BisCore:DrawingGraphic",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        typeDefinition: { id: z, relClassName: "BisCore:GraphicalElement2dIsOfType" },
+      } as GeometricElement2dProps);
+      return [x, y, z, w];
+    });
+    await briefcase1.pushChanges({ description: "Insert X, Y, and Z under P, and W of type Z" });
+    await withEditTxn(briefcase2, async (txn) => txn.deleteElement(pId));
+
+    await withDeferringOverride(() => ({ status: "violation" }), async () => {
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      try {
+        interactive.nextGroup();
+      } catch {
+        // Whether or not the deletion throws, it must not have applied any of its writes.
+      }
+
+      briefcase2.clearCaches();
+      const state = {
+        deletedMembers: [pId, xId, yId, zId].filter((id) => briefcase2.elements.tryGetElementProps(id) === undefined),
+        wTypeDefinition: briefcase2.elements.getElementProps<GeometricElement2dProps>(wId).typeDefinition?.id,
+      };
+      chai.expect(state).to.deep.equal({ deletedMembers: [], wTypeDefinition: zId });
+    });
+  });
+
+  describe("with an aspect class that has a unique property", () => {
+    const keyAspectClassFullName = "LiftedIdentityTest:KeyAspect";
+    const insertKeyAspect = (txn: EditTxn, elementId: Id64String, key: string) => txn.insertAspect({
+      classFullName: keyAspectClassFullName,
+      element: { id: elementId, relClassName: "BisCore.ElementOwnsMultiAspects" },
+      key,
+    } as ElementAspectProps);
+    const getKeys = (elementId: Id64String) =>
+      briefcase2.elements.getAspects(elementId, keyAspectClassFullName).map((aspect) => (aspect.toJSON() as ElementAspectProps & { key: string }).key);
+
+    before(async () => {
+      for (const briefcase of [briefcase1, briefcase2]) {
+        if (briefcase.txns.rebaser.isRebasing)
+          await briefcase.txns.rebaser.abort();
+        await briefcase.discardChanges();
+        await briefcase.pullChanges({ toIndex: initialChangesetIndex });
+      }
+      HubMock.findLocalHub(iModelId).truncateToChangeset(initialChangesetIndex);
+
+      await withEditTxn(briefcase1, async (txn) => txn.iModel.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="LiftedIdentityTest" alias="lit" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECSchemaReference name="ECDbMap" version="02.00.00" alias="ecdbmap"/>
+          <ECEntityClass typeName="KeyAspect">
+            <BaseClass>bis:ElementMultiAspect</BaseClass>
+            <ECCustomAttributes>
+              <DbIndexList xmlns="ECDbMap.02.00.00">
+                <Indexes>
+                  <DbIndex>
+                    <Name>uix_lit_KeyAspect_Key</Name>
+                    <IsUnique>True</IsUnique>
+                    <Properties><string>Key</string></Properties>
+                  </DbIndex>
+                </Indexes>
+              </DbIndexList>
+            </ECCustomAttributes>
+            <ECProperty propertyName="Key" typeName="string"/>
+          </ECEntityClass>
+        </ECSchema>`]));
+      await briefcase1.pushChanges({ description: "Import LiftedIdentityTest schema" });
+      await briefcase2.pullChanges();
+      initialChangesetIndex = briefcase1.changeset.index!;
+    });
+
+    it("replays our insert that reuses the unique value of an aspect our deletion cascaded after that deletion", async () => {
+      // As above, D's deletion must precede A's, so without an edge the aspect insert replays before A's deletion.
+      const [aId, eId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "E")]);
+      const dId = await withEditTxn(briefcase1, async (txn) => {
+        insertKeyAspect(txn, aId, "Reused");
+        return insertGraphic(txn, "D", aId);
+      });
+      await briefcase1.pushChanges({ description: "Insert A with an aspect and a child D, and E" });
+      await briefcase2.pullChanges();
+
+      await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "Unrelated"));
+      await briefcase1.pushChanges({ description: "Insert unrelated element" });
+      await withEditTxn(briefcase2, async (txn) => {
+        txn.deleteElement(dId);
+        txn.deleteElement(aId);
+        insertKeyAspect(txn, eId, "Reused");
+      });
+
+      using interactive = await briefcase2.pullChangesInteractive();
+      chai.expect(interactive).to.not.be.undefined;
+      if (!interactive) return;
+      chai.expect(interactive.nextGroup()).to.be.true;
+
+      chai.expect(briefcase2.elements.tryGetElementProps(aId)).to.be.undefined;
+      chai.expect(getKeys(eId)).to.deep.equal(["Reused"]);
+      chai.expect(interactive.conflicts).to.be.empty;
     });
   });
 });

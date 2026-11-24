@@ -13,7 +13,7 @@ import { ECJsNames, IModelError, QueryBinder, TxnProps } from "@itwin/core-commo
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { _activeTxn, _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef, RebaseOwnerKind } from "./internal/RebaseInstanceStore";
+import { RebaseIdentityValue, RebaseInstanceChange, RebaseInstanceMetadata, RebaseInstanceOperation, RebaseInstanceStore, RebaseNavigationRef, rebaseOwnerKey, RebaseOwnerKind } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 import { Entity } from "./Entity";
 import { ClassRegistry } from "./ClassRegistry";
@@ -204,17 +204,8 @@ export interface RebaseConflict {
   acceptTheirs(properties?: string[]): void;
 
   /**
-   * Redirects references to our deleted instance to an existing instance.
-   *
-   * The replacement must satisfy every affected relationship's constraint classes. Validation completes
-   * before any changes are made. Cascaded instances are restored with their original ids once all their
-   * referenced deletion-set members have been replaced or restored. Other references can remain pending
-   * until another deletion conflict is replaced. A blocked deletion is retried after references are redirected.
-   *
-   * Synthetic updates and inserts can report new constraint conflicts on the affected instances.
-   * @param newId The existing replacement instance's id.
-   * @throws InteractiveRebaseError with key `"invalid-replacement"` if the replacement is missing or incompatible.
-   * @throws InteractiveRebaseError with key `"not-deletion-conflict"` if this is not our deletion.
+   * Does nothing. Deleted instances are no longer replaced or restored by rebase.
+   * @deprecated Edit the iModel through editTxn instead.
    */
   replaceDeletedInstance(newId: Id64String): void;
 
@@ -301,7 +292,7 @@ export interface DeletionEffectDetails {
   readonly affectedId: Id64String;
   readonly affectedClassFullName: string;
   readonly references: ReadonlyArray<DeletionEffectReference>;
-  /** Whether replacement or restoration has resolved this effect, not merely whether it was applied. */
+  /** Always false. Rebase no longer replaces or restores deleted instances. */
   readonly resolved: boolean;
   /** @deprecated Use `references` instead. The first reference's relationship, retained until test refactoring. */
   readonly relationshipClass: SchemaView.RelationshipClass;
@@ -454,6 +445,10 @@ interface ReplayEdge {
    * non-nullable navigation-property requirement.
    */
   deferrable?: DeferredWrite;
+  /** Set on an edge between two planned deletions (see [[InteractiveRebase.planDeletions]]). [[breakCycle]] never
+   * forces a node through such an edge, because no deletion can be deferred.
+   */
+  deletion?: true;
 }
 
 /** A node in the per-Txn dependency graph built by [[InteractiveRebase.buildDependencyForest]].
@@ -473,16 +468,25 @@ interface DependencyNode {
    * needs to load this node's `old`/`new` snapshot (see [[getChange]]) just to compute its own edges. */
   identityValues?: RebaseIdentityValue[];
   navigationRefs?: RebaseNavigationRef[];
+  /** Set only on a combined node that replays a cycle of planned deletions together (see
+   * [[InteractiveRebase.mergeDeletionCycles]]): the Delete nodes it replaces, in stable input order.
+   */
+  deletions?: DependencyNode[];
 }
 
 interface DeletionNavigationProperty {
   referencingClassFullName: string;
+  /** The navigation property's EC name, or `SourceECInstanceId`/`TargetECInstanceId` for a link-table relationship. */
   navigationProperty: string;
   navigationPropertyJsName: string;
+  /** The ECSQL expression for the referenced id on `referencingClassFullName`. */
+  referenceIdExpression: string;
   relationshipClass: SchemaView.RelationshipClass;
   direction: StrengthDirection;
   owned: boolean;
   nullable: boolean;
+  /** Whether the referencing column has an SQL foreign key, so that the reference constrains the order of deletion. */
+  foreignKey: boolean;
 }
 
 interface DeletionInstanceKey {
@@ -496,12 +500,32 @@ interface DeletionSetInstance extends DeletionInstanceKey {
   references: { property: DeletionNavigationProperty, target: DeletionInstanceKey }[];
 }
 
-interface DeletionSet {
-  /** Owned members precede their owners. Includes the primary instance. */
+interface DeletionSetMembers {
+  /** The deleted instances whose ownership closures form the set, in stable input order. */
+  targets: DeletionSetInstance[];
+  /** Each member precedes the members it references through an SQL foreign key, except within a cycle of such references. Includes the targets. */
   instances: DeletionSetInstance[];
+  /** {@link instances} grouped into deletion steps: each cycle of SQL foreign key references is one step, deleted together. */
+  steps: DeletionSetInstance[][];
+  /** Maps each member's instance key to the first target whose own deletion set contains it. */
+  roots: Map<string, DeletionSetInstance>;
+  /** Every instance that references a member, keyed by instance key, including members and targets. */
+  affected: Map<string, DeletionSetInstance>;
+}
+
+interface DeletionSet extends Omit<DeletionSetMembers, "affected"> {
   effects: (SetNullDeletionEffectImpl | CascadeDeletionEffectImpl | BlockingDeletionEffectImpl)[];
   /** Affected instances whose captured indirect change replaces an effect; SET NULLs precede cascades, which follow `instances` order. */
   lifts: DeletionSetInstance[];
+}
+
+/** A local deletion's deletion set, computed against the iModel before replay to plan its order. */
+interface PlannedDeletion {
+  node: DependencyNode;
+  /** Instance keys of the members of the deletion set. */
+  members: string[];
+  /** Instance keys of the instances outside the set that reference a member non-nullably. */
+  blockers: string[];
 }
 
 export class InteractiveRebase {
@@ -524,13 +548,15 @@ export class InteractiveRebase {
   /** Captured nodes that reference each provider through a navigation property, keyed by provider instance key. */
   private _referenceDependents = new Map<string, DependencyNode[]>();
 
-  /** All navigation properties indexed by the classes they can reference, independently of database FKs. */
+  /** All navigation properties indexed by the classes they can reference, independently of database FKs. Also
+   * indexes the source and target of each root link-table relationship class, which own their relationship instances.
+   */
   private _deletionReferencesByTargetClass = new Map<string, DeletionNavigationProperty[]>();
+  /** Every relationship class mapped to a link table, including derived classes. */
+  private _linkTableRelationshipClasses = new Set<string>();
 
-  private _deletionInstances = new Map<Id64String, DeletionInstanceKey[]>();
-  private _deletionEffects: DeletionSet["effects"] = [];
-  private _blockedDeletes = new Map<string, DeletionSet>();
-  private _replacementIds = new Map<string, Id64String>();
+  /** Instances deleted by this group's replay of our deletions, including cascades. */
+  private _deletedInstanceKeys = new Set<string>();
   /** Instances whose captured indirect change has already been replayed, so it is never replayed twice. */
   private _liftedInstanceKeys = new Set<string>();
 
@@ -557,35 +583,102 @@ export class InteractiveRebase {
 
   private buildDeletionReferenceIndex(): void {
     const classes = [...this._schemaView.getSchemas()].flatMap((schema) => [...schema.getClasses()]);
+    const addReferences = (constraint: SchemaView.RelConstraint | undefined, reference: DeletionNavigationProperty): void => {
+      if (constraint === undefined)
+        return;
+      for (const targetClass of classes) {
+        if (!satisfiesConstraint(constraint, targetClass))
+          continue;
+        let references = this._deletionReferencesByTargetClass.get(targetClass.fullName);
+        if (references === undefined)
+          this._deletionReferencesByTargetClass.set(targetClass.fullName, references = []);
+        references.push(reference);
+      }
+    };
+
+    const nativeDb = this._db[_nativeDb];
+    const foreignKeyColumns = this.queryForeignKeyPropertyMaps();
+    const hasForeignKey = (schemaClass: SchemaView.Class, accessString: string) => foreignKeyColumns.has(`${schemaClass.ecInstanceId}:${accessString.toLowerCase()}`);
     for (const schemaClass of classes) {
+      if (schemaClass.isRelationship() && nativeDb.isLinkTableRelationship(schemaClass.fullName) === true) {
+        this._linkTableRelationshipClasses.add(schemaClass.fullName);
+        // A root's polymorphic query finds the instances of every derived class, which shares its mapping.
+        const baseClass = schemaClass.baseClass;
+        if (baseClass !== undefined && nativeDb.isLinkTableRelationship(baseClass.fullName) === true)
+          continue;
+        // Each endpoint owns the instances that reference it, so that they cascade rather than block.
+        for (const { constraint, direction, column, jsName } of linkTableEnds(schemaClass)) {
+          addReferences(constraint, {
+            referencingClassFullName: schemaClass.fullName,
+            navigationProperty: column,
+            navigationPropertyJsName: jsName,
+            referenceIdExpression: column,
+            relationshipClass: schemaClass,
+            direction,
+            owned: true,
+            nullable: false,
+            foreignKey: hasForeignKey(schemaClass, column),
+          });
+        }
+        continue;
+      }
+
       for (const property of schemaClass.getOwnProperties()) {
         if (!property.isNavigation())
           continue;
         const relationship = property.relationshipClass;
         const constraint = property.direction === StrengthDirection.Backward ? relationship.source : relationship.target;
-        if (constraint === undefined)
-          continue;
-        const constraintClasses = constraint.constraintClasses.length > 0 ? constraint.constraintClasses
-          : constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint];
-        for (const targetClass of classes) {
-          if (!constraintClasses.some((constraintClass) => targetClass.fullName === constraintClass.fullName || (constraint.polymorphic && targetClass.is(constraintClass))))
-            continue;
-
-          let references = this._deletionReferencesByTargetClass.get(targetClass.fullName);
-          if (references === undefined)
-            this._deletionReferencesByTargetClass.set(targetClass.fullName, references = []);
-          references.push({
-            referencingClassFullName: schemaClass.fullName,
-            navigationProperty: property.name,
-            navigationPropertyJsName: ECJsNames.toJsName(property.name),
-            relationshipClass: relationship,
-            direction: property.direction,
-            owned: relationship.strength === StrengthType.Embedding && property.direction !== relationship.strengthDirection,
-            nullable: constraint.multiplicityLower === 0,
-          });
-        }
+        addReferences(constraint, {
+          referencingClassFullName: schemaClass.fullName,
+          navigationProperty: property.name,
+          navigationPropertyJsName: ECJsNames.toJsName(property.name),
+          referenceIdExpression: `[${property.name}].[Id]`,
+          relationshipClass: relationship,
+          direction: property.direction,
+          owned: relationship.strength === StrengthType.Embedding && property.direction !== relationship.strengthDirection,
+          nullable: constraint !== undefined && constraint.multiplicityLower === 0,
+          foreignKey: hasForeignKey(schemaClass, `${property.name}.Id`),
+        });
       }
     }
+  }
+
+  /** The property maps whose column has an SQL foreign key, each keyed by `${classId}:${lowercase access string}`. */
+  private queryForeignKeyPropertyMaps(): Set<string> {
+    return this._db.withPreparedSqliteStatement(
+      `SELECT pm.ClassId, pp.AccessString FROM ec_PropertyMap pm
+       JOIN ec_PropertyPath pp ON pp.Id = pm.PropertyPathId
+       JOIN ec_Column c ON c.Id = pm.ColumnId
+       JOIN ec_Table t ON t.Id = c.TableId
+       WHERE EXISTS (SELECT 1 FROM pragma_foreign_key_list(t.Name) fk WHERE fk."from" = c.Name COLLATE NOCASE)`,
+      (stmt) => {
+        const result = new Set<string>();
+        while (stmt.step() === DbResult.BE_SQLITE_ROW)
+          result.add(`${stmt.getValueInteger(0)}:${stmt.getValueString(1).toLowerCase()}`);
+        return result;
+      },
+    );
+  }
+
+  /** The endpoints a captured link-table relationship Delete originally referenced, so that [[orderNodes]] replays it
+   * before our deletions of those endpoints, which would otherwise cascade to it and report that as a new effect.
+   */
+  private getLinkTableNavigationRefs(meta: RebaseInstanceMetadata): RebaseNavigationRef[] | undefined {
+    if (meta.operation !== "Delete" || !this._linkTableRelationshipClasses.has(meta.classFullName))
+      return undefined;
+    const relationship = this._schemaView.findClass(meta.classFullName);
+    const old = this._store?.get(meta.instanceKey)?.old;
+    if (relationship === undefined || !relationship.isRelationship() || old === undefined)
+      return undefined;
+    return linkTableEnds(relationship).map(({ constraint, jsName }) => {
+      const oldId = old[jsName];
+      return {
+        jsName,
+        nullable: false,
+        targetKind: constraintOwnerKind(constraint),
+        oldId: typeof oldId === "string" && Id64.isValidId64(oldId) ? oldId : undefined,
+      };
+    });
   }
 
   /** Uses raw EC property names for classes outside the registered Entity hierarchies, such as CodeSpec.
@@ -898,10 +991,7 @@ export class InteractiveRebase {
    * Replay is ordered by [[orderNodes]]'s topological sort over the directly captured changes.
    */
   private reinstateDataTxn(txnProps: TxnProps): void {
-    this._deletionInstances.clear();
-    this._deletionEffects = [];
-    this._blockedDeletes.clear();
-    this._replacementIds.clear();
+    this._deletedInstanceKeys.clear();
     this._liftedInstanceKeys.clear();
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
       throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
@@ -913,8 +1003,6 @@ export class InteractiveRebase {
     this.buildDependencyForest(this._store);
     this.replayNodes();
     this.applyDeferredCorrections();
-    for (const effect of this._deletionEffects)
-      effect.addReferences({ ...effect.entry, references: this.getEffectDeletionReferences(effect) });
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
@@ -943,13 +1031,22 @@ export class InteractiveRebase {
 
   /** Builds the current group's dependency graph from directly captured changes. Indirect changes are
    * shared with the automatic semantic-rebase path, so they are excluded here rather than at capture time.
+   * Instead, the identity values freed by an indirect Delete are attributed to the direct Delete nodes that
+   * originally cascaded to it (see [[attributeIndirectlyFreedIdentityValues]]).
    */
   private buildDependencyForest(store: RebaseInstanceStore): void {
     this._store = store;
     this._dependencyNodesByInstanceKey.clear();
+    const deletionsByOwnerKey = new Map<string, RebaseInstanceMetadata>();
+    const indirectDeletions: RebaseInstanceMetadata[] = [];
     for (const meta of store.allMetadata()) {
-      if (meta.isIndirect)
+      if (meta.operation === "Delete" && meta.ownerKind !== undefined)
+        deletionsByOwnerKey.set(rebaseOwnerKey(meta.ownerKind, meta.id), meta);
+      if (meta.isIndirect) {
+        if (meta.operation === "Delete" && meta.identityValues?.some((identity) => identity.old !== undefined))
+          indirectDeletions.push(meta);
         continue;
+      }
       const node: DependencyNode = {
         instanceKey: meta.instanceKey,
         id: meta.id,
@@ -957,9 +1054,39 @@ export class InteractiveRebase {
         operation: meta.operation,
         ownerKind: meta.ownerKind,
         identityValues: meta.identityValues,
-        navigationRefs: meta.navigationRefs,
+        navigationRefs: meta.navigationRefs ?? this.getLinkTableNavigationRefs(meta),
       };
       this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
+    }
+    this.attributeIndirectlyFreedIdentityValues(indirectDeletions, deletionsByOwnerKey);
+  }
+
+  /** Attributes the identity values freed by each indirect Delete to the nearest direct Delete along each of its
+   * captured owner chains, i.e. a deletion whose original cascade removed it, so that [[orderNodes]] replays that
+   * deletion before any node claiming those values. When the deletion is replayed, it lifts the indirect Delete
+   * (see [[liftIndirectChanges]]) or, if blocked, leaves the value in place, so the claim must wait in either case.
+   */
+  private attributeIndirectlyFreedIdentityValues(indirectDeletions: RebaseInstanceMetadata[], deletionsByOwnerKey: Map<string, RebaseInstanceMetadata>): void {
+    for (const indirect of indirectDeletions) {
+      const freed = indirect.identityValues!.filter((identity) => identity.old !== undefined).map((identity) => ({ ...identity, new: undefined }));
+      const visited = new Set<string>();
+      const pending = [...indirect.owners];
+      while (pending.length > 0) {
+        const owner = pending.pop()!;
+        const ownerKey = rebaseOwnerKey(owner.kind, owner.id);
+        if (visited.has(ownerKey))
+          continue;
+        visited.add(ownerKey);
+        const deletion = deletionsByOwnerKey.get(ownerKey);
+        if (deletion === undefined)
+          continue;
+        if (deletion.isIndirect) {
+          pending.push(...deletion.owners);
+          continue;
+        }
+        const node = this._dependencyNodesByInstanceKey.get(deletion.instanceKey)!;
+        node.identityValues = [...(node.identityValues ?? []), ...freed];
+      }
     }
   }
 
@@ -980,7 +1107,9 @@ export class InteractiveRebase {
    *
    * - An identity-value edge: any node that frees up a `federationGuid` or `code` (by deleting the
    *   instance, or updating it away) must be replayed before any other node that claims that same value
-   *   (by inserting it, or updating into it), or the claim would collide with the not-yet-removed row.
+   *   (by inserting it, or updating into it), or the claim would collide with the not-yet-removed row. A direct
+   *   Delete also frees the values of the indirect Deletes it originally cascaded to (see
+   *   [[attributeIndirectlyFreedIdentityValues]]).
    * - A navigation-property existence edge: any node that starts existing as a result of this replay (an
    *   Insert) must be replayed before any other node whose write references it by a navigation property
    *   (Parent, TypeDefinition, an aspect's owning Element property, etc. - the same navigation-property
@@ -1012,6 +1141,10 @@ export class InteractiveRebase {
    * proceeds anyway, falling through to the existing (already safe) FOREIGNKEY-conflict path - a cycle
    * of non-nullable references could never have been created in the first place, so this is not a bug to
    * chase.
+   *
+   * Planned deletion edges (see [[planDeletions]]) order local deletions whose blockers other local deletions
+   * remove; cycles among deletions are merged into combined nodes (see [[mergeDeletionCycles]]) rather than
+   * broken.
    */
   private orderNodes(nodes: DependencyNode[]): DependencyNode[] {
     this._pendingSubstitutions = new Map();
@@ -1118,6 +1251,16 @@ export class InteractiveRebase {
       }
     }
 
+    const { feasible, edges: deletionEdges } = this.planDeletions(nodes);
+    edges.push(...deletionEdges);
+    const merged = this.mergeDeletionCycles(nodes, edges, feasible, inputIndex);
+    return this.sortNodes(merged.nodes, merged.edges, inputIndex);
+  }
+
+  /** Topologically sorts `nodes` by `edges` using Kahn's algorithm, breaking ties by stable input order and
+   * stalls with [[breakCycle]].
+   */
+  private sortNodes(nodes: DependencyNode[], edges: ReplayEdge[], inputIndex: Map<DependencyNode, number>): DependencyNode[] {
     // Kahn's algorithm, breaking ties (including nodes with no edges at all) by stable input order.
     const mustFollow = new Map<DependencyNode, DependencyNode[]>();
     const incomingEdges = new Map<DependencyNode, ReplayEdge[]>();
@@ -1167,18 +1310,140 @@ export class InteractiveRebase {
     return ordered;
   }
 
+  /** Plans the group's local deletions against the current iModel, returning the feasible deletions and
+   * the edges that order each before the deletions whose blockers it removes.
+   *
+   * A deletion is feasible if every blocker of its deletion set is a member of some feasible deletion's set.
+   * The largest feasible set is found by propagation: a deletion is ruled out once one of its blockers is
+   * covered by no remaining deletion, and each ruled-out deletion uncovers its members, which in turn rule
+   * out the deletions they block. Each deletion is ruled out at most once.
+   */
+  private planDeletions(nodes: DependencyNode[]): { feasible: Set<DependencyNode>, edges: ReplayEdge[] } {
+    const planned: PlannedDeletion[] = [];
+    for (const node of nodes) {
+      if (node.operation !== "Delete")
+        continue;
+      const theirs = this.tryReadCurrentInstance(node.id, node.classFullName);
+      if (theirs === undefined)
+        continue;
+      const { roots, affected } = this.collectDeletionSet([{ instanceKey: node.instanceKey, id: node.id, classFullName: node.classFullName, theirs, references: [] }]);
+      const blockers: string[] = [];
+      for (const entry of affected.values()) {
+        if (!roots.has(entry.instanceKey) && entry.references.some((reference) => !reference.property.nullable && !this.isReferenceMovedAway(entry, reference)))
+          blockers.push(entry.instanceKey);
+      }
+      planned.push({ node, members: [...roots.keys()], blockers });
+    }
+
+    const containing = new Map<string, PlannedDeletion[]>();
+    const blockedBy = new Map<string, PlannedDeletion[]>();
+    const addTo = (map: Map<string, PlannedDeletion[]>, instanceKey: string, deletion: PlannedDeletion): void => {
+      const entries = map.get(instanceKey);
+      if (entries === undefined)
+        map.set(instanceKey, [deletion]);
+      else
+        entries.push(deletion);
+    };
+    for (const deletion of planned) {
+      deletion.members.forEach((member) => addTo(containing, member, deletion));
+      deletion.blockers.forEach((blocker) => addTo(blockedBy, blocker, deletion));
+    }
+
+    const coverCount = new Map<string, number>([...containing].map(([instanceKey, deletions]) => [instanceKey, deletions.length]));
+    const feasible = new Set(planned);
+    const ruledOut: PlannedDeletion[] = [];
+    const ruleOut = (deletion: PlannedDeletion): void => {
+      if (feasible.delete(deletion))
+        ruledOut.push(deletion);
+    };
+    for (const deletion of planned) {
+      if (deletion.blockers.some((blocker) => !coverCount.has(blocker)))
+        ruleOut(deletion);
+    }
+    while (ruledOut.length > 0) {
+      for (const member of ruledOut.pop()!.members) {
+        const count = coverCount.get(member)! - 1;
+        coverCount.set(member, count);
+        if (count === 0)
+          blockedBy.get(member)?.forEach(ruleOut);
+      }
+    }
+
+    const edges: ReplayEdge[] = [];
+    for (const deletion of feasible) {
+      const predecessors = new Set<PlannedDeletion>();
+      for (const blocker of deletion.blockers) {
+        for (const remover of containing.get(blocker)!) {
+          if (feasible.has(remover))
+            predecessors.add(remover);
+        }
+      }
+      for (const predecessor of predecessors)
+        edges.push({ from: predecessor.node, to: deletion.node, deletion: true });
+    }
+    return { feasible: new Set([...feasible].map((deletion) => deletion.node)), edges };
+  }
+
+  /** Whether `entry` has a captured Update that changes `reference` away from its target. Such an Update is
+   * replayed before the target's deletion, so the reference does not block that deletion.
+   */
+  private isReferenceMovedAway(entry: DeletionSetInstance, reference: DeletionSetInstance["references"][number]): boolean {
+    const node = this._dependencyNodesByInstanceKey.get(entry.instanceKey);
+    return node?.operation === "Update" && node.navigationRefs?.some((ref) =>
+      ref.jsName === reference.property.navigationPropertyJsName && ref.oldId === reference.target.id && ref.newId !== reference.target.id) === true;
+  }
+
+  /** Replaces each cycle of feasible deletions with a combined node that replays them together, so that
+   * [[breakCycle]] never has to force a deletion through. The cycles are found among the planned deletion
+   * edges and the existing edges between Delete nodes; the combined node inherits its members' other edges.
+   */
+  private mergeDeletionCycles(nodes: DependencyNode[], edges: ReplayEdge[], feasible: Set<DependencyNode>, inputIndex: Map<DependencyNode, number>): { nodes: DependencyNode[], edges: ReplayEdge[] } {
+    const successors = new Map<DependencyNode, DependencyNode[]>();
+    for (const edge of edges) {
+      if (!feasible.has(edge.from) || !feasible.has(edge.to))
+        continue;
+      let followers = successors.get(edge.from);
+      if (followers === undefined)
+        successors.set(edge.from, followers = []);
+      followers.push(edge.to);
+    }
+
+    const combinedByMember = new Map<DependencyNode, DependencyNode>();
+    for (const component of stronglyConnectedComponents([...feasible], successors)) {
+      if (component.length < 2)
+        continue;
+      component.sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
+      const combined: DependencyNode = { ...component[0], deletions: component };
+      inputIndex.set(combined, inputIndex.get(component[0])!);
+      component.forEach((member) => combinedByMember.set(member, combined));
+    }
+    if (combinedByMember.size === 0)
+      return { nodes, edges };
+
+    return {
+      nodes: nodes.flatMap((node) => {
+        const combined = combinedByMember.get(node);
+        return combined === undefined ? [node] : combined.deletions![0] === node ? [combined] : [];
+      }),
+      edges: edges
+        .map((edge) => ({ ...edge, from: combinedByMember.get(edge.from) ?? edge.from, to: combinedByMember.get(edge.to) ?? edge.to }))
+        .filter((edge) => edge.from !== edge.to),
+    };
+  }
+
   /** Forces one node out of a stalled (self-contained cycle of) `remaining` nodes through, deferring
    * whichever of its own claimed/required properties are the reason it's stalled - see [[orderNodes]]'s
    * cycle-breaking design and [[applyDeferredCorrections]]. Prefers (in stable input order) a node that
    * has at least one deferrable incoming edge, so the cycle is actually broken open rather than merely
    * papered over; if none exists (every stalled edge is either a non-deferrable navigation requirement
-   * or a Delete waiting on a free), the first node in stable order is forced through unresolved instead,
-   * leaving its write to fall through to the existing conflict-recording path if it genuinely fails.
+   * or a Delete waiting on a free), the first node in stable order that is not waiting on a planned deletion
+   * edge is forced through unresolved instead, leaving its write to fall through to the existing
+   * conflict-recording path if it genuinely fails.
    */
   private breakCycle(remaining: Set<DependencyNode>, incomingEdges: Map<DependencyNode, ReplayEdge[]>, inputIndex: Map<DependencyNode, number>): DependencyNode {
     const stalled = [...remaining].sort((a, b) => inputIndex.get(a)! - inputIndex.get(b)!);
 
-    let chosen = stalled[0];
+    let chosen: DependencyNode | undefined;
     let deferrableIncoming: { deferrable: DeferredWrite }[] = [];
     for (const node of stalled) {
       const incoming = (incomingEdges.get(node) ?? [])
@@ -1189,6 +1454,9 @@ export class InteractiveRebase {
         break;
       }
     }
+    // Planned deletion edges are acyclic once [[mergeDeletionCycles]] has run, so some stalled node never waits on one.
+    chosen ??= stalled.find((node) => !(incomingEdges.get(node) ?? []).some((edge) => edge.deletion && remaining.has(edge.from)));
+    assert(chosen !== undefined, "A stalled cycle must not consist only of planned deletion edges.");
 
     for (const { deferrable } of deferrableIncoming) {
       let substitutions = this._pendingSubstitutions.get(chosen.instanceKey);
@@ -1257,6 +1525,13 @@ export class InteractiveRebase {
 
   /** Applies a single node's change in the order computed by [[orderNodes]]. */
   private applyNode(node: DependencyNode): void {
+    if (node.deletions !== undefined) {
+      this.applyInteractiveDeletes(node.deletions.map((deletion) => {
+        const { $meta: _oldMeta, ...oldProps } = this.getChange(deletion).old!;
+        return { instanceKey: deletion.instanceKey, oldProps };
+      }));
+      return;
+    }
     const change = this.getChange(node);
     this.applyInteractiveInstanceChange(change);
   }
@@ -1275,7 +1550,7 @@ export class InteractiveRebase {
       }
     } else if (change.old) {
       const { $meta: _oldMeta, ...oldProps } = change.old;
-      this.applyInteractiveDelete(change.instanceKey, oldProps);
+      this.applyInteractiveDeletes([{ instanceKey: change.instanceKey, oldProps }]);
     }
   }
 
@@ -1308,70 +1583,56 @@ export class InteractiveRebase {
     }
   }
 
-  private applyInteractiveDelete(instanceKey: string, oldProps: RebaseConflictProperties): void {
-    this.rememberDeletedInstance({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName });
-    // An earlier cascade may have removed this Delete's dependents before its live set is computed.
-    const pendingEffects = this._deletionEffects.filter((effect) => effect.action === "cascade" && effect.affectedInstanceKey !== instanceKey
-      && this.getEffectDeletionReferences(effect).some((reference) => reference.target.instanceKey === instanceKey));
-    // Read before replay so the conflict retains their values even after our delete succeeds.
-    const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
-    if (theirs === undefined) {
-      const conflict = RebaseConflictImpl.recordBothDeleted(this, this._conflicts, instanceKey, oldProps);
-      conflict.deletionEffects.push(...pendingEffects);
-      return;
-    }
-
-    let deletionSet = this.computeDeletionSet({ instanceKey, id: oldProps.id, classFullName: oldProps.classFullName, theirs, references: [] });
-    if (!deletionSet.effects.some((effect) => effect.action === "blocks-deletion"))
-      deletionSet = this.liftIndirectChanges(deletionSet);
-    if (deletionSet.effects.length > 0 || pendingEffects.length > 0 || computeChangedProperties(oldProps, theirs).length > 0) {
-      const conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs);
-      this.recordDeletionSet(conflict, deletionSet);
-      for (const effect of pendingEffects)
-        if (!conflict.deletionEffects.some((existing) => existing.affectedInstanceKey === effect.affectedInstanceKey))
-          conflict.deletionEffects.push(effect);
-    }
-
-    if (deletionSet.effects.some((effect) => effect.action === "blocks-deletion")) {
-      this._blockedDeletes.set(instanceKey, deletionSet);
-      return;
-    }
-
-    this.applyDeletionSet(deletionSet);
-  }
-
-  private recordDeletionSet(conflict: RebaseConflictImpl, deletionSet: DeletionSet): void {
-    for (const instance of deletionSet.instances)
-      this.rememberDeletedInstance(instance);
-    for (const effect of deletionSet.effects) {
-      const existing = conflict.deletionEffects.find((candidate) => candidate.affectedInstanceKey === effect.affectedInstanceKey && candidate.action === effect.action && !candidate.resolved);
-      if (existing instanceof DeletionEffectImpl) {
-        existing.addReferences(effect.entry);
+  /** Replays our deletion of one instance, or of several together that form a cycle of planned deletions
+   * (see [[mergeDeletionCycles]]), against their union deletion set recomputed from the current iModel.
+   */
+  private applyInteractiveDeletes(deletions: { instanceKey: string, oldProps: RebaseConflictProperties }[]): void {
+    const present: { oldProps: RebaseConflictProperties, target: DeletionSetInstance }[] = [];
+    for (const { instanceKey, oldProps } of deletions) {
+      // Read before replay so the conflict retains their values even after our delete succeeds.
+      const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
+      if (theirs === undefined) {
+        // If an earlier deletion in this group removed it, that deletion reports the effects.
+        if (!this._deletedInstanceKeys.has(instanceKey))
+          RebaseConflictImpl.recordBothDeleted(this, this._conflicts, instanceKey, oldProps);
         continue;
       }
-      this._deletionEffects.push(effect);
-      conflict.deletionEffects.push(effect);
+      present.push({ oldProps, target: { instanceKey, id: oldProps.id, classFullName: oldProps.classFullName, theirs, references: [] } });
     }
+    if (present.length === 0)
+      return;
+
+    let deletionSet = this.computeDeletionSet(present.map(({ target }) => target));
+    const blocked = deletionSet.effects.some((effect) => effect.action === "blocks-deletion");
+    if (!blocked)
+      deletionSet = this.liftIndirectChanges(deletionSet);
+    const effectsByTarget = attributeDeletionEffects(deletionSet);
+    for (const { oldProps, target } of present) {
+      const effects = effectsByTarget.get(target.instanceKey) ?? [];
+      // Every member of a blocked combined deletion is left in place, even one the blockers are not attributed to.
+      if (effects.length > 0 || blocked || computeChangedProperties(oldProps, target.theirs).length > 0) {
+        const conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, target.instanceKey, oldProps, target.theirs);
+        conflict.deletionEffects.push(...effects);
+      }
+    }
+
+    if (!blocked)
+      this.applyDeletionSet(deletionSet);
   }
 
-  private rememberDeletedInstance(instance: DeletionInstanceKey): void {
-    let instances = this._deletionInstances.get(instance.id);
-    if (instances === undefined)
-      this._deletionInstances.set(instance.id, instances = []);
-    if (!instances.some((candidate) => candidate.instanceKey === instance.instanceKey))
-      instances.push({ instanceKey: instance.instanceKey, id: instance.id, classFullName: instance.classFullName });
-  }
-
-  private computeDeletionSet(target: DeletionSetInstance): DeletionSet {
-    const members = new Map<string, DeletionSetInstance>([[target.instanceKey, target]]);
-    const affected = new Map<string, DeletionSetInstance>([[target.instanceKey, target]]);
+  /** Finds the members of the union of the targets' deletion sets and every instance that references them. */
+  private collectDeletionSet(targets: DeletionSetInstance[]): DeletionSetMembers {
+    const targetCopies = targets.map((target): DeletionSetInstance => ({ ...target, references: [] }));
+    const affected = new Map<string, DeletionSetInstance>(targetCopies.map((target) => [target.instanceKey, target]));
+    const roots = new Map<string, DeletionSetInstance>();
     const instances: DeletionSetInstance[] = [];
-    const visit = (member: DeletionSetInstance): void => {
+    const visit = (member: DeletionSetInstance, root: DeletionSetInstance): void => {
+      roots.set(member.instanceKey, root);
       for (const property of this._deletionReferencesByTargetClass.get(member.classFullName) ?? []) {
         const rows = this._db.withQueryReader(
           `SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c')
            FROM ${property.referencingClassFullName}
-           WHERE [${property.navigationProperty}].[Id] = ?`,
+           WHERE ${property.referenceIdExpression} = ?`,
           (reader) => {
             const result: { id: Id64String, instanceKey: string, classFullName: string }[] = [];
             for (const row of reader) {
@@ -1392,23 +1653,30 @@ export class InteractiveRebase {
           }
           if (!entry.references.some((reference) => reference.property.navigationPropertyJsName === property.navigationPropertyJsName && reference.target.instanceKey === member.instanceKey))
             entry.references.push({ property, target: member });
-          if (property.owned && !members.has(entry.instanceKey)) {
-            members.set(entry.instanceKey, entry);
-            visit(entry);
-          }
+          if (property.owned && !roots.has(entry.instanceKey))
+            visit(entry, root);
         }
       }
       instances.push(member);
     };
-    visit(target);
+    for (const target of targetCopies) {
+      if (!roots.has(target.instanceKey))
+        visit(target, target);
+    }
+    const steps = orderReferencersFirst(instances);
+    return { targets: targetCopies, instances: steps.flat(), steps, roots, affected };
+  }
 
+  private computeDeletionSet(targets: DeletionSetInstance[]): DeletionSet {
+    const { affected, ...members } = this.collectDeletionSet(targets);
+    const targetKeys = new Set(targets.map((target) => target.instanceKey));
     const effects: DeletionSet["effects"] = [];
     const lifts: DeletionSetInstance[] = [];
     const liftedCascades = new Set<string>();
     for (const entry of affected.values()) {
-      if (entry.instanceKey === target.instanceKey)
+      if (targetKeys.has(entry.instanceKey))
         continue;
-      const action = members.has(entry.instanceKey) ? "cascade"
+      const action = members.roots.has(entry.instanceKey) ? "cascade"
         : entry.references.some((reference) => !reference.property.nullable) ? "blocks-deletion" : "set-null";
       if (action !== "blocks-deletion" && this.isLiftable(entry, action)) {
         if (action === "cascade")
@@ -1420,8 +1688,8 @@ export class InteractiveRebase {
       effects.push(action === "cascade" ? new CascadeDeletionEffectImpl(this, entry)
         : action === "blocks-deletion" ? new BlockingDeletionEffectImpl(this, entry) : new SetNullDeletionEffectImpl(this, entry));
     }
-    lifts.push(...instances.filter((instance) => liftedCascades.has(instance.instanceKey)));
-    return { instances, effects, lifts };
+    lifts.push(...members.instances.filter((instance) => liftedCascades.has(instance.instanceKey)));
+    return { ...members, effects, lifts };
   }
 
   /** Whether our original change made the same referential action on `entry` through an indirect change. */
@@ -1433,8 +1701,9 @@ export class InteractiveRebase {
       return false;
     if (action === "cascade")
       return meta.operation === "Delete";
-    return meta.operation === "Update" && entry.references.some(({ property, target }) => meta.navigationRefs?.some((ref) =>
-      ref.jsName === property.navigationPropertyJsName && ref.oldId === target.id && ref.newId === undefined) === true);
+    // Novelty depends only on the affected instance, not on which deletion's member it referenced.
+    return meta.operation === "Update" && entry.references.every(({ property }) => meta.navigationRefs?.some((ref) =>
+      ref.jsName === property.navigationPropertyJsName && ref.oldId !== undefined && ref.newId === undefined) === true);
   }
 
   /** Replays the captured indirect changes that replace effects of an unblocked deletion, returning the set that remains. */
@@ -1454,8 +1723,7 @@ export class InteractiveRebase {
     }
     if (!lifted)
       return deletionSet;
-    const target = deletionSet.instances[deletionSet.instances.length - 1];
-    return this.computeDeletionSet({ ...target, references: [] });
+    return this.computeDeletionSet(deletionSet.targets);
   }
 
   private applyDeletionSet(deletionSet: DeletionSet): void {
@@ -1472,53 +1740,30 @@ export class InteractiveRebase {
       if (result === false || typeof result === "object" && !result.updated)
         throw new IModelError(IModelStatus.BadRequest, `Failed to clear references on ${effect.affectedClassFullName} ${effect.affectedId}`);
     }
-    for (const instance of deletionSet.instances) {
-      const result = nativeDb.deleteInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true });
-      if (result === false || typeof result === "object" && !result.deleted)
-        throw new IModelError(IModelStatus.BadRequest, `Failed to delete ${instance.classFullName} ${instance.id}`);
+    for (const step of deletionSet.steps) {
+      if (step.length === 1) {
+        const [instance] = step;
+        const result = nativeDb.deleteInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true });
+        if (result === false || typeof result === "object" && !result.deleted)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete ${instance.classFullName} ${instance.id}`);
+      } else {
+        // A failed foreign key check means a reference was missed or the iModel already violated a foreign key; JavaScript
+        // has no savepoint to undo this node's earlier writes, so they cannot be rolled back here.
+        const { status } = nativeDb.deleteInstancesDeferringForeignKeys(
+          step.map((instance) => ({ id: instance.id, classFullName: instance.classFullName })), { useJsNames: true });
+        if (status !== "deleted")
+          throw new IModelError(IModelStatus.ForeignKeyConstraint, `Failed to delete a cycle of foreign key references among ${step.map((instance) => `${instance.classFullName} ${instance.id}`).join(", ")}: ${status}`);
+      }
+      for (const instance of step)
+        this._deletedInstanceKeys.add(instance.instanceKey);
     }
     this._db.clearCaches({ instanceCachesOnly: true });
   }
 
-  /** @internal */
-  public replaceDeletedInstance(conflict: RebaseConflict, newId: Id64String): void {
-    if (this.currentGroup === undefined || !this._conflicts.includes(conflict) || conflict.original === undefined || conflict.ours !== undefined
-      || !this._deletionInstances.get(conflict.id)?.some((instance) => instance.instanceKey === conflict.instanceKey))
-      InteractiveRebaseError.throwError("not-deletion-conflict", "Only our deletion in the current group can be replaced");
-    if (!Id64.isValidId64(newId))
-      InteractiveRebaseError.throwError("invalid-replacement", `Invalid replacement id ${newId}`);
-
-    const blockedSets = [...this._blockedDeletes].map(([instanceKey, previous]) => {
-      const target = previous.instances[previous.instances.length - 1];
-      const current = this.tryReadCurrentInstance(target.id, target.classFullName);
-      return { instanceKey, set: current === undefined ? previous : this.computeDeletionSet({ ...target, theirs: current, references: [] }) };
-    });
-    const effects = [...this._deletionEffects, ...blockedSets.flatMap(({ set }) => set.effects)];
-    const references = effects.flatMap((effect) => this.getEffectDeletionReferences(effect))
-      .filter((reference) => reference.target.instanceKey === conflict.instanceKey);
-    for (const { property } of references) {
-      if (!this.navigationTargetExists(property.relationshipClass, property.direction, newId))
-        InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} does not satisfy ${property.relationshipClass.fullName}`);
-    }
-    if (references.length === 0 && this.tryReadCurrentInstance(newId, conflict.classFullName) === undefined)
-      InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} does not exist in ${conflict.classFullName}`);
-    for (const instance of blockedSets.flatMap(({ set }) => set.instances)) {
-      const canReference = references.some(({ property }) => (this._deletionReferencesByTargetClass.get(instance.classFullName) ?? [])
-        .some((candidate) => candidate.relationshipClass.fullName === property.relationshipClass.fullName && candidate.direction === property.direction));
-      if (instance.id === newId && (canReference || references.length === 0 && instance.classFullName === conflict.classFullName)
-        && this.tryReadCurrentInstance(newId, instance.classFullName) !== undefined)
-        InteractiveRebaseError.throwError("invalid-replacement", `Replacement ${newId} is itself pending deletion`);
-    }
-
-    for (const { instanceKey, set } of blockedSets) {
-      const deletionConflict = this._conflicts.find((candidate) => candidate.instanceKey === instanceKey);
-      assert(deletionConflict instanceof RebaseConflictImpl);
-      this.recordDeletionSet(deletionConflict, set);
-      this._blockedDeletes.set(instanceKey, set);
-    }
-    this._replacementIds.set(conflict.instanceKey, newId);
-    this.applyDeletionReplacements();
-    this._db.clearCaches({ instanceCachesOnly: true });
+  /** Does nothing; rebase no longer replaces deleted instances.
+   * @internal
+   */
+  public replaceDeletedInstance(_conflict: RebaseConflict, _newId: Id64String): void {
   }
 
   private navigationTargetExists(relationship: SchemaView.RelationshipClass, direction: StrengthDirection, id: Id64String): boolean {
@@ -1531,126 +1776,6 @@ export class InteractiveRebase {
       `SELECT 1 FROM ${constraint.polymorphic ? "" : "ONLY "}${schemaClass.fullName} WHERE ECInstanceId = ? LIMIT 1`,
       (reader) => reader.step(), new QueryBinder().bindId(1, id),
     ));
-  }
-
-  private isPendingDeletion(instanceKey: string): boolean {
-    return [...this._blockedDeletes.values()].some((set) => set.instances.some((instance) => instance.instanceKey === instanceKey));
-  }
-
-  private getEffectDeletionReferences(effect: DeletionEffectImpl): DeletionSetInstance["references"] {
-    const references = [...effect.entry.references];
-    const schemaClass = this._schemaView.findClass(effect.affectedClassFullName);
-    assert(schemaClass !== undefined);
-    // A later Delete may remove another provider after this instance has already cascaded.
-    // Discover those dependencies from the retained snapshot, not from the now-missing row.
-    for (const navigation of schemaClass.getProperties()) {
-      if (!navigation.isNavigation())
-        continue;
-      const jsName = ECJsNames.toJsName(navigation.name);
-      const value = getPropertyValue(effect.entry.theirs, jsName);
-      const id = typeof value === "string" ? value : value?.id;
-      if (typeof id !== "string")
-        continue;
-      for (const target of this._deletionInstances.get(id) ?? []) {
-        const property = this._deletionReferencesByTargetClass.get(target.classFullName)?.find((candidate) =>
-          candidate.navigationPropertyJsName === jsName && candidate.relationshipClass.fullName === navigation.relationshipClass.fullName
-          && candidate.direction === navigation.direction && schemaClass.is(candidate.referencingClassFullName));
-        if (property !== undefined && !references.some((reference) => reference.property.navigationPropertyJsName === jsName && reference.target.instanceKey === target.instanceKey))
-          references.push({ property, target });
-      }
-    }
-    return references;
-  }
-
-  private replacementTargetId(target: DeletionInstanceKey): Id64String | undefined {
-    const replacement = this._replacementIds.get(target.instanceKey);
-    if (replacement !== undefined)
-      return replacement;
-    return !this.isPendingDeletion(target.instanceKey) && this.tryReadCurrentInstance(target.id, target.classFullName) !== undefined ? target.id : undefined;
-  }
-
-  private applyDeletionReplacements(): void {
-    const attempted = new Map<DeletionEffectImpl, string>();
-    let progress: boolean;
-    do {
-      progress = false;
-      for (const effect of this._deletionEffects) {
-        effect.addReferences({ ...effect.entry, references: this.getEffectDeletionReferences(effect) });
-        if (this._dependencyNodesByInstanceKey.get(effect.affectedInstanceKey)?.operation === "Delete")
-          continue;
-        const references = effect.entry.references;
-        const current = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
-        const props = { ...(current ?? effect.entry.theirs) };
-        const available = references.map((reference) => ({ ...reference, id: this.replacementTargetId(reference.target) }));
-        const ready = available.every((reference) => reference.id !== undefined);
-        for (const { property, id } of available) {
-          if (id === undefined)
-            continue;
-          const value = getPropertyValue(effect.entry.theirs, property.navigationPropertyJsName);
-          setPropertyValue(props, property.navigationPropertyJsName, typeof value === "string" ? id : { ...value, id });
-        }
-
-        const signature = JSON.stringify([current !== undefined, available.map((reference) => reference.id)]);
-        if (attempted.get(effect) !== signature) {
-          if (current === undefined) {
-            if (effect.action !== "cascade" || !ready || !this.allNavigationTargetsExist(props))
-              continue;
-            attempted.set(effect, signature);
-            this.applyInteractiveInsert(effect.affectedInstanceKey, props);
-            progress = true;
-          } else {
-            const changes = computeChangedProperties(current, props);
-            if (changes.length > 0) {
-              attempted.set(effect, signature);
-              this.applyInteractiveUpdate(effect.affectedInstanceKey, current, props, changes);
-              progress = true;
-            }
-          }
-        }
-        const applied = this.tryReadCurrentInstance(effect.affectedId, effect.affectedClassFullName);
-        effect.resolved = ready && applied !== undefined && available.every(({ property, id }) => {
-          const value = getPropertyValue(applied, property.navigationPropertyJsName);
-          return (typeof value === "string" ? value : value?.id) === id;
-        });
-      }
-
-      for (const [instanceKey, previous] of this._blockedDeletes) {
-        const target = previous.instances[previous.instances.length - 1];
-        const current = this.tryReadCurrentInstance(target.id, target.classFullName);
-        if (current === undefined) {
-          this._blockedDeletes.delete(instanceKey);
-          progress = true;
-          continue;
-        }
-        let deletionSet = this.computeDeletionSet({ ...target, theirs: current, references: [] });
-        if (!deletionSet.effects.some((effect) => effect.action === "blocks-deletion"))
-          deletionSet = this.liftIndirectChanges(deletionSet);
-        const conflict = this._conflicts.find((candidate) => candidate.instanceKey === instanceKey);
-        assert(conflict instanceof RebaseConflictImpl);
-        this.recordDeletionSet(conflict, deletionSet);
-        if (deletionSet.effects.some((effect) => effect.action === "blocks-deletion")) {
-          this._blockedDeletes.set(instanceKey, deletionSet);
-          continue;
-        }
-        this.applyDeletionSet(deletionSet);
-        this._blockedDeletes.delete(instanceKey);
-        progress = true;
-      }
-    } while (progress);
-  }
-
-  private allNavigationTargetsExist(props: RebaseConflictProperties): boolean {
-    const schemaClass = this._schemaView.findClass(props.classFullName);
-    assert(schemaClass !== undefined);
-    for (const property of schemaClass.getProperties()) {
-      if (!property.isNavigation())
-        continue;
-      const value = getPropertyValue(props, ECJsNames.toJsName(property.name));
-      const id = typeof value === "string" ? value : value?.id;
-      if (id !== undefined && !this.navigationTargetExists(property.relationshipClass, property.direction, id))
-        return false;
-    }
-    return true;
   }
 
   private applyInteractiveInsert(instanceKey: string, newProps: RebaseConflictProperties): void {
@@ -2043,6 +2168,152 @@ export class InteractiveRebase {
   }
 }
 
+/** Whether instances of `schemaClass` can be referenced through `constraint`. */
+function satisfiesConstraint(constraint: SchemaView.RelConstraint, schemaClass: SchemaView.Class): boolean {
+  const constraintClasses = constraint.constraintClasses.length > 0 ? constraint.constraintClasses
+    : constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint];
+  return constraintClasses.some((constraintClass) => schemaClass.fullName === constraintClass.fullName || (constraint.polymorphic && schemaClass.is(constraintClass)));
+}
+
+/** Whether `constraint` references Elements or Models, when all of its classes agree. */
+function constraintOwnerKind(constraint: SchemaView.RelConstraint | undefined): RebaseOwnerKind | undefined {
+  const constraintClasses = constraint === undefined ? [] : constraint.constraintClasses.length > 0 ? constraint.constraintClasses
+    : constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint];
+  for (const kind of ["element", "model"] as const) {
+    const baseClass = kind === "element" ? "BisCore:Element" : "BisCore:Model";
+    if (constraintClasses.length > 0 && constraintClasses.every((constraintClass) => constraintClass.is(baseClass)))
+      return kind;
+  }
+  return undefined;
+}
+
+/** The source and target ends of a link-table relationship class. */
+function linkTableEnds(relationship: SchemaView.RelationshipClass) {
+  return [
+    { constraint: relationship.source, direction: StrengthDirection.Backward, column: "SourceECInstanceId", jsName: "sourceId" },
+    { constraint: relationship.target, direction: StrengthDirection.Forward, column: "TargetECInstanceId", jsName: "targetId" },
+  ];
+}
+
+/** Orders the members of a deletion set so that each is deleted before the members it references through an SQL
+ * foreign key, keeping their relative order otherwise, and groups them into deletion steps. Each cycle of such
+ * references among members is a single step, which must be deleted with foreign key checks deferred; every other
+ * step has one member. References without an SQL foreign key do not constrain the order.
+ */
+function orderReferencersFirst(members: DeletionSetInstance[]): DeletionSetInstance[][] {
+  const memberKeys = new Set(members.map((member) => member.instanceKey));
+  const foreignKeyTargets = new Map(members.map((member) => [member.instanceKey, member.references
+    .filter(({ property, target }) => property.foreignKey && memberKeys.has(target.instanceKey))
+    .map(({ target }) => target.instanceKey)]));
+  const position = new Map(members.map((member, i) => [member.instanceKey, i]));
+  const componentOf = new Map<string, DeletionSetInstance[]>();
+  for (const keys of stronglyConnectedComponents([...memberKeys], foreignKeyTargets)) {
+    keys.sort((a, b) => position.get(a)! - position.get(b)!);
+    const component = keys.map((key) => members[position.get(key)!]);
+    for (const key of keys)
+      componentOf.set(key, component);
+  }
+
+  const referencers = new Map<string, DeletionSetInstance[]>();
+  for (const member of members) {
+    for (const targetKey of foreignKeyTargets.get(member.instanceKey)!) {
+      const entries = referencers.get(targetKey);
+      if (entries === undefined)
+        referencers.set(targetKey, [member]);
+      else if (!entries.includes(member))
+        entries.push(member);
+    }
+  }
+  const ordered: DeletionSetInstance[][] = [];
+  const visited = new Set<DeletionSetInstance[]>();
+  const visit = (member: DeletionSetInstance): void => {
+    const component = componentOf.get(member.instanceKey)!;
+    if (visited.has(component))
+      return;
+    visited.add(component);
+    for (const componentMember of component)
+      referencers.get(componentMember.instanceKey)?.forEach(visit);
+    ordered.push(component);
+  };
+  members.forEach(visit);
+  return ordered;
+}
+
+/** Groups the effects of a deletion set by the target whose conflict reports each. An effect is attributed to
+ * the first target, in stable input order, whose own deletion set contains an instance the affected instance
+ * references.
+ */
+function attributeDeletionEffects(deletionSet: DeletionSet): Map<string, DeletionSet["effects"]> {
+  const order = new Map(deletionSet.targets.map((target, i) => [target.instanceKey, i]));
+  const effectsByTarget = new Map<string, DeletionSet["effects"]>();
+  for (const effect of deletionSet.effects) {
+    let attributed: string | undefined;
+    for (const reference of effect.references) {
+      const root = deletionSet.roots.get(reference.targetInstanceKey)!.instanceKey;
+      if (attributed === undefined || order.get(root)! < order.get(attributed)!)
+        attributed = root;
+    }
+    assert(attributed !== undefined, "A deletion effect must reference a member of the deletion set.");
+    const effects = effectsByTarget.get(attributed);
+    if (effects === undefined)
+      effectsByTarget.set(attributed, [effect]);
+    else
+      effects.push(effect);
+  }
+  return effectsByTarget;
+}
+
+/** Finds the strongly connected components of a directed graph with Tarjan's algorithm, iteratively so that
+ * long chains cannot overflow the call stack.
+ */
+function stronglyConnectedComponents<T>(vertices: T[], successors: Map<T, T[]>): T[][] {
+  const index = new Map<T, number>();
+  const lowLink = new Map<T, number>();
+  const stack: T[] = [];
+  const onStack = new Set<T>();
+  const components: T[][] = [];
+  const work: { vertex: T, next: number }[] = [];
+  const open = (vertex: T): void => {
+    index.set(vertex, index.size);
+    lowLink.set(vertex, index.get(vertex)!);
+    stack.push(vertex);
+    onStack.add(vertex);
+    work.push({ vertex, next: 0 });
+  };
+  for (const root of vertices) {
+    if (index.has(root))
+      continue;
+    open(root);
+    while (work.length > 0) {
+      const frame = work[work.length - 1];
+      const next = successors.get(frame.vertex)?.[frame.next++];
+      if (next !== undefined) {
+        if (!index.has(next))
+          open(next);
+        else if (onStack.has(next))
+          lowLink.set(frame.vertex, Math.min(lowLink.get(frame.vertex)!, index.get(next)!));
+        continue;
+      }
+      work.pop();
+      if (work.length > 0) {
+        const parent = work[work.length - 1].vertex;
+        lowLink.set(parent, Math.min(lowLink.get(parent)!, lowLink.get(frame.vertex)!));
+      }
+      if (lowLink.get(frame.vertex) === index.get(frame.vertex)) {
+        const component: T[] = [];
+        let member: T;
+        do {
+          member = stack.pop()!;
+          onStack.delete(member);
+          component.push(member);
+        } while (member !== frame.vertex);
+        components.push(component);
+      }
+    }
+  }
+  return components;
+}
+
 /** Computes which properties differ between two snapshots, excluding identity properties. */
 function computeChangedProperties(baseline: RebaseConflictProperties, compare: RebaseConflictProperties): string[] {
   const valuesDiffer = (a: any, b: any): boolean => {
@@ -2187,7 +2458,7 @@ abstract class DeletionEffectImpl implements DeletionEffectDetails {
   public readonly affectedId: Id64String;
   public readonly affectedClassFullName: string;
   public readonly references: DeletionEffectReference[];
-  public resolved = false;
+  public readonly resolved = false;
 
   public constructor(protected readonly _rebase: InteractiveRebase, public readonly entry: DeletionSetInstance) {
     this.affectedInstanceKey = entry.instanceKey;
@@ -2200,23 +2471,6 @@ abstract class DeletionEffectImpl implements DeletionEffectDetails {
       targetId: target.id,
       targetInstanceKey: target.instanceKey,
     }));
-  }
-
-  public addReferences(entry: DeletionSetInstance): void {
-    const classDef = this._rebase.getConflictClass(this.affectedClassFullName);
-    for (const reference of entry.references) {
-      if (this.entry.references.some((existing) => existing.property.navigationPropertyJsName === reference.property.navigationPropertyJsName && existing.target.instanceKey === reference.target.instanceKey))
-        continue;
-      this.entry.references.push(reference);
-      this.references.push({
-        navigationProperty: classDef.toPropsAccessString(reference.property.navigationPropertyJsName),
-        relationshipClass: reference.property.relationshipClass,
-        targetId: reference.target.id,
-        targetInstanceKey: reference.target.instanceKey,
-      });
-      this.entry.theirs = { ...this.entry.theirs };
-      setPropertyValue(this.entry.theirs, reference.property.navigationPropertyJsName, getPropertyValue(entry.theirs, reference.property.navigationPropertyJsName));
-    }
   }
 
   /** @deprecated Use `references` instead. */
@@ -2542,6 +2796,7 @@ class RebaseConflictImpl implements RebaseConflict {
     applyResolution(this._rebase, this, "theirs", properties);
   }
 
+  /** @deprecated Edit the iModel through editTxn instead. */
   public replaceDeletedInstance(newId: Id64String): void {
     this._rebase.replaceDeletedInstance(this, newId);
   }
