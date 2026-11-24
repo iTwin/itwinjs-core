@@ -1198,14 +1198,19 @@ describe("TxnManager", () => {
         const events = listen();
         const parent = { ...imodel.changeset };
         const abandonLocks = sinon.spy(imodel.locks, "abandonAllLocks");
+        // Capture state inside the listener and assert afterward: BeEvent swallows exceptions thrown by listeners.
+        let hadLocalChanges: boolean | undefined;
+        let locksReleased = false;
         imodel.txns.onChangesDiscarded.addListener(() => {
-          // The event is raised after the local changes are gone and the locks have been released.
-          expect(imodel.txns.hasLocalChanges).to.be.false;
-          expect(abandonLocks.calledOnce).to.be.true;
+          hadLocalChanges = imodel.txns.hasLocalChanges;
+          locksReleased = abandonLocks.calledOnce;
         });
 
         await imodel.discardChanges();
 
+        // The event is raised after the local changes are gone and the locks have been released.
+        expect(hadLocalChanges).to.be.false;
+        expect(locksReleased).to.be.true;
         expect(events).to.have.lengthOf(1);
         expect(events[0].id).to.equal(parent.id);
         expect(events[0].index).to.equal(parent.index);
