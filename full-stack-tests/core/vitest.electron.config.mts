@@ -81,6 +81,8 @@ export default defineConfig({
     },
   },
   server: {
+    // Avoid Electron's resource failures when revalidating cached modules across tester iframes.
+    headers: { "Cache-Control": "no-store" },
     fs: {
       allow: [path.resolve(packageRoot, "../.."), path.resolve(packageRoot, "../../core/electron")],
     },
@@ -90,7 +92,9 @@ export default defineConfig({
     // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
     include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
     exclude: [
+      // Chrome's HTTP server health check does not apply to the in-process Electron backend.
       "**/Backend.test.ts",
+      // Run expensive pixel assertions in Chrome rather than repeat them in Electron.
       "**/map/BackgroundMap.test.ts",
       "**/map/PlanProjection.test.ts",
       "**/map/PlanarClipMask.test.ts",
