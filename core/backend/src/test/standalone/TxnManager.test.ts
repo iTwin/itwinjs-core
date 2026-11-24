@@ -1227,6 +1227,21 @@ describe("TxnManager", () => {
         expect(abandonLocks.called).to.be.false;
       });
 
+      it("is raised and sent to the frontend even if releasing locks fails, and the failure is rethrown", async () => {
+        const elId = withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const events = listen();
+        const notifyTxns = sinon.spy(IpcHost, "notifyTxns");
+        const lockError = new Error("lock release failed");
+        sinon.stub(imodel.locks, "abandonAllLocks").rejects(lockError);
+
+        await expect(imodel.discardChanges()).to.eventually.be.rejected.and.equal(lockError);
+
+        // The local changes were discarded before the lock release failed.
+        expect(imodel.elements.tryGetElement(elId)).to.be.undefined;
+        expect(events).to.have.lengthOf(1);
+        expect(notifyTxns.getCalls().filter((call) => call.args[1] === "notifyChangesDiscarded")).to.have.lengthOf(1);
+      });
+
       it("is not raised if discardChanges fails before discarding the changes", async () => {
         const elId = withEditTxn(imodel, (txn) => txn.insertElement(props));
         const events = listen();
