@@ -14,7 +14,7 @@
     "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:chrome-websocket": "certa -r chrome -b ./lib/backend/websocket.js",
-    "test:electron": "certa -r electron -b ./lib/backend/electron.js",
+    "test:electron": "vitest run --config vitest.electron.config.mts",
     "test:direct": "certa -r node -b ./lib/backend/direct.js",
     "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
@@ -34,11 +34,13 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "catalog:linting",
+    "@itwin/vitest-browser-bridge": "workspace:*",
     "@types/chai": "catalog:testing",
     "@types/express": "catalog:runtime",
     "@types/mocha": "catalog:testing",
     "@types/node": "catalog:build",
     "@types/semver": "catalog:utilities",
+    "@vitest/browser": "catalog:testing",
     "assert": "catalog:bundling",
     "buffer": "catalog:bundling",
     "browserify-zlib": "catalog:bundling",
@@ -50,6 +52,7 @@
     "source-map-loader": "catalog:bundling",
     "stream-browserify": "catalog:bundling",
     "typescript": "catalog:build",
+    "vitest": "catalog:testing",
     "webpack": "catalog:bundling",
     "webpack-cli": "catalog:bundling"
   }
