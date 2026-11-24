@@ -134,9 +134,9 @@ class IncidentMarker extends Marker {
     this.title = `Severity: ${severity}<br>Id: ${id}`; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
 
-    // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
+    // Use a DOM element to demonstrate custom marker content; `this.label` also supports plain text.
     this.htmlElement = document.createElement("div");
-    this.htmlElement.innerHTML = id.toString(); // just put the id of the incident as text
+    this.htmlElement.textContent = id.toString();
   }
 
   public override addMarker(context: DecorateContext) {
