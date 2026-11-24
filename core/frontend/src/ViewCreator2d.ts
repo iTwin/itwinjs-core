@@ -14,7 +14,7 @@ Additional options (such as background color) can be passed during view creation
 
 import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, QueryBinder, QueryRowFormat, SheetProps,
+  CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, QueryRowFormat, SheetProps,
   ViewDefinition2dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -237,19 +237,14 @@ export class ViewCreator2d {
    * @param props input ViewStateProps.
    */
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
-    let width = 0;
-    let height = 0;
-    for await (const row of this._imodel.createQueryReader(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-      width = row.Width as number;
-      height = row.Height as number;
-      break;
-    }
+    // A SheetModel shares its Id with the element it sub-models: a Sheet or a SheetPrototype, both of which record the sheet size.
+    const [modeledElement] = await this._imodel.elements.getProps(modelId) as Array<Partial<SheetProps>>;
     const sheetProps: SheetProps = {
       model: modelId,
       code: { spec: "", scope: "" },
       classFullName: "DrawingSheetModel",
-      height,
-      width,
+      height: modeledElement?.height ?? 0,
+      width: modeledElement?.width ?? 0,
     };
 
     props.sheetAttachments = await this._getSheetAttachments(modelId);
