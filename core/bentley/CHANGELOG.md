@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Mon, 09 Nov 2026 16:53:07 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Nov 2026 18:01:14 GMT and should not be manually modified.
+
+## 5.15.2
+Tue, 24 Nov 2026 18:00:26 GMT
+
+### Updates
+
+- Add CompressedId64Set.count to count the Ids in a compressed set without decompressing it, and limit decompression to CompressedId64Set.maxIdCount (1,000,000) Ids.
 
 ## 5.15.1
 Mon, 09 Nov 2026 16:52:11 GMT
