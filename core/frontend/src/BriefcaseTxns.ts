@@ -119,7 +119,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** Event raised after all of the briefcase's local changes are discarded.
-   * @see [[BriefcaseConnection.discardChanges]].
+   * @see [BriefcaseDb.discardChanges]($backend).
    * @beta
    */
   public readonly onChangesDiscarded = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
