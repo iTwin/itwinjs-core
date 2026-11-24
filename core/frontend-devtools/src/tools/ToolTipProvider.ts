@@ -21,17 +21,15 @@ class DebugToolTipProvider implements ToolTipProvider {
     await tooltipPromise;
 
     const keys = ["sourceId", "modelId", "subCategoryId", "tileId", "geometryClass"] satisfies Array<keyof HitDetail>;
-    let html = "";
+    const div = document.createElement("div");
     for (const key of keys) {
       const value = hit[key];
       if (undefined === value)
         continue;
 
-      html = `${html + key}: ${value.toString()}<br>`;
+      div.append(`${key}: ${value}`, document.createElement("br"));
     }
 
-    const div = document.createElement("div");
-    div.innerHTML = html;
     return div;
   }
 
