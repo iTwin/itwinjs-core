@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BatchType, Cartographic, FeatureAppearance, FeatureAppearanceSource, GeometryClass, SubCategoryAppearance } from "@itwin/core-common";
-import { BlankConnection, FeatureSymbology, IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeReference } from "@itwin/core-frontend";
+import { BlankConnection, IModelApp, IModelConnection, OffScreenViewport, SceneContext, SpatialTileTreeReferences, SpatialViewState, TileTreeReference, ViewRect } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 import { Id64 } from "@itwin/core-bentley";
 import { expect } from "chai";
@@ -159,11 +159,17 @@ describe("BatchedSpatialTileTreeReferences", () => {
       const linkedAppearance = FeatureAppearance.fromJSON({ transparency: 0.5 });
       linkedRef.overrides.defaultFeatureAppearance = linkedAppearance;
 
-      const getSymbology = (ref: BatchedTileTreeReference): FeatureSymbology.Overrides | undefined =>
-        (ref as unknown as { getSymbologyOverrides(): FeatureSymbology.Overrides | undefined }).getSymbologyOverrides();
-      expect(getSymbology(primaryBatchedRef)).to.be.undefined;
+      using viewport = OffScreenViewport.create({ view, viewRect: new ViewRect(0, 0, 32, 32) });
+      const context = new SceneContext(viewport);
+      expect(primaryBatchedRef.createDrawArgs(context)!.symbologyOverrides).to.be.undefined;
+      using otherViewport = OffScreenViewport.create({ view: view.clone(), viewRect: viewport.viewRect });
+      const otherContext = new SceneContext(otherViewport);
+      const otherOverrides = primaryBatchedRef.createDrawArgs(otherContext)!.symbologyOverrides!;
+      expect(otherOverrides.isSubCategoryIdVisible("0x11")).to.be.true;
+      expect(primaryBatchedRef.createDrawArgs(otherContext)!.symbologyOverrides).to.equal(otherOverrides);
+      expect(primaryBatchedRef.createDrawArgs(new SceneContext(otherViewport))!.symbologyOverrides).not.to.equal(otherOverrides);
       const primarySymbology = view.iModelRefs.primary.getSymbologyOverrides();
-      const linkedSymbology = getSymbology(linkedBatchedRef);
+      const linkedSymbology = linkedBatchedRef.createDrawArgs(context)!.symbologyOverrides;
       expect(primarySymbology).not.to.be.undefined;
       expect(linkedSymbology).not.to.be.undefined;
 

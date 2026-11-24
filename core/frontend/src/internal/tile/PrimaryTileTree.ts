@@ -33,6 +33,7 @@ import { composeSourcePlacement } from "./RealityModelTileTree";
 import { _backingView, _getModelClip, _scheduleScriptReference } from "../../common/internal/Symbols";
 import { IModelDisplayReference, SpatialIModelDisplayReference } from "../../IModelDisplayReference";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
+import { getTileSymbologyOverrides } from "../IModelDisplayReferenceImpl";
 
 interface PrimaryTreeId {
   treeId: PrimaryTileTreeId;
@@ -209,10 +210,9 @@ class PrimaryTreeReference extends TileTreeReference {
     return this._viewFlagOverrides;
   }
 
-  protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
-    // Viewport installs primaryRef.getSymbologyOverrides() on the target.
-    // Primary branches inherit that snapshot; storing one here would require scene rebuilds for appearance changes.
-    return this.iModelRef === this.iModelRef.parent.primary ? undefined : this.iModelRef.getSymbologyOverrides();
+  protected override getSymbologyOverrides(_tree: TileTree, context?: SceneContext): FeatureSymbology.Overrides | undefined {
+    // Only the drawing viewport's own primary can inherit its target snapshot without a scene rebuild.
+    return getTileSymbologyOverrides(this.iModelRef, context);
   }
 
   protected override getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {

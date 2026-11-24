@@ -1016,16 +1016,16 @@ export namespace IModelConnection {
 
     /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
     public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
-      try {
-        for (const props of modelProps) {
+      for (const props of modelProps) {
+        try {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined !== ctor && undefined !== props.id && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
+        } catch {
+          // A class lookup or constructor can fail for one model without invalidating its batch mates.
         }
-      } catch {
-        // ignore error, we had nothing to do.
       }
     }
 

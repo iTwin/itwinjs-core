@@ -166,7 +166,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       viewFlagOverrides: this.getViewFlagOverrides(tree),
       clipVolume: this.getClipVolume(tree),
       parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive,
-      symbologyOverrides: this.getSymbologyOverrides(tree),
+      symbologyOverrides: this.getSymbologyOverrides(tree, context),
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
       animationTransformNodeId: this.getAnimationTransformNodeId(tree),
@@ -219,7 +219,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Return overrides that *replace* any defined for the view. */
-  protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+  protected getSymbologyOverrides(_tree: TileTree, _context?: SceneContext): FeatureSymbology.Overrides | undefined {
     return undefined;
   }
 

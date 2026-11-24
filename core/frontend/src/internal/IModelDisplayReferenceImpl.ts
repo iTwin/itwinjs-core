@@ -10,6 +10,9 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
+import type { ViewState } from "../ViewState";
+import type { SceneContext } from "../ViewContext";
+import type { FeatureSymbology } from "../render/FeatureSymbology";
 import { _backingView } from "../common/internal/Symbols";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
@@ -46,6 +49,17 @@ export function computeIModelRefDisplayTransform(ref: IModelDisplayReference, mo
   return world;
 }
 
+// The explicit operation, selector refresh and stale-cache listener can all observe the same publication.
+const notifiedCategoryVersions = new WeakMap<IModelDisplayReference, number>();
+function notifyCategoriesLoaded(ref: IModelDisplayReference, ids: Iterable<Id64String>): void {
+  const cache = ref.iModel.subcategories;
+  if (unlinked.has(ref) || !cache.loadedSince(ids, notifiedCategoryVersions.get(ref) ?? 0))
+    return;
+  notifiedCategoryVersions.set(ref, cache.loadVersion);
+  ref.invalidateSymbologyOverrides();
+  ref.onViewedCategoriesLoaded.raiseEvent();
+}
+
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
   // args.categories may be a one-shot iterable (e.g., a generator) - materialize it exactly once.
   const categories = Id64.toIdSet(args.categories);
@@ -67,19 +81,24 @@ export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeC
     ref.viewedCategories.addAll(categories);
   }
 
+  if (unlinked.has(ref))
+    return; // A synchronous selector listener can unlink this reference during addAll.
+
   ref.parent.subcategories.push(ref.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
     if (args.enableAllSubCategories) {
       for (const catId of categories) {
         const subCatIds = ref.iModel.subcategories.getSubCategories(catId);
         if (subCatIds)
           for (const subCatId of subCatIds)
-        ref.changeSubCategoryDisplay(subCatId, true);
+            ref.changeSubCategoryDisplay(subCatId, true);
       }
     }
 
-    if (anySubCategoriesLoaded)
+    if (anySubCategoriesLoaded) {
       ref.viewedCategories.onChanged.raiseEvent();
-  });
+      notifyCategoriesLoaded(ref, categories);
+    }
+  }, { owner: ref.guid, retainOnRetry: args.enableAllSubCategories });
 }
 
 export function isSubCategoryVisible(ref: IModelDisplayReference, id: Id64String): boolean {
@@ -94,6 +113,33 @@ export function isSubCategoryVisible(ref: IModelDisplayReference, id: Id64String
   return !ovr.invisible;
 }
 
+function differentOverrides(before?: SubCategoryOverride, after?: SubCategoryOverride): boolean {
+  return before !== after && !(before && after && before.equals(after));
+}
+
+/** Notify all attached views sharing a custom style, even when its setter uses non-observable storage. */
+export function updateSubCategoryOverride(view: ViewState, id: Id64String, override?: SubCategoryOverride): void {
+  const style = view.displayStyle;
+  const before = style.getSubCategoryOverride(id);
+  const beforeView = view.getSubCategoryOverride(id);
+  const event = style.settings.onSubCategoryOverridesChanged;
+  let notified = false;
+  const remove = event.addListener((changed) => { notified ||= changed === id; });
+  try {
+    if (override)
+      style.overrideSubCategory(id, override);
+    else
+      style.dropSubCategoryOverride(id);
+  } finally {
+    remove();
+  }
+  if (!notified) {
+    const after = style.getSubCategoryOverride(id);
+    if (differentOverrides(before, after) || differentOverrides(beforeView, view.getSubCategoryOverride(id)))
+      event.raiseEvent(id, after);
+  }
+}
+
 export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64String, visible: boolean): boolean {
   const app = ref.iModel.subcategories.getSubCategoryAppearance(id);
   if (!app)
@@ -106,16 +152,16 @@ export function changeSubCategoryDisplay(ref: IModelDisplayReference, id: Id64St
     return false;
 
   // Preserve existing overrides - just flip the visibility flag.
-  const json = undefined !== curOvr ? curOvr.toJSON() : {};
+  const stored = primaryView ? primaryView.displayStyle.getSubCategoryOverride(id) : curOvr;
+  const json = stored?.toJSON() ?? {};
   json.invisible = !visible;
   const ovr = SubCategoryOverride.fromJSON(json);
   if (primaryView) {
-    primaryView.displayStyle.overrideSubCategory(id, ovr);
-    // A custom setter may store overrides outside the observable settings map.
-    ref.invalidateSymbologyOverrides();
-  } else {
-    ref.subCategoryOverrides.set(id, ovr);
+    updateSubCategoryOverride(primaryView, id, ovr);
+    return ref.isSubCategoryVisible(id) === visible;
   }
+
+  ref.subCategoryOverrides.set(id, ovr);
   return true;
 }
 
@@ -128,32 +174,73 @@ export function getSubCategoryAppearance(ref: IModelDisplayReference, id: Id64St
   return ovr?.override(app) ?? app;
 }
 
-const scheduledCategoryLoads = new WeakSet<IModelDisplayReference>();
-const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, { promise: Promise<void>, explicitIds: Set<Id64String> }>();
+// Scene selection fixes one snapshot per external primary, not one snapshot per tile tree or across frames.
+const externalPrimarySnapshots = new WeakMap<SceneContext, Map<IModelDisplayReference, FeatureSymbology.Overrides>>();
+
+/** Overrides to install on a tile branch, or undefined to inherit the drawing viewport's primary snapshot.
+ * @internal
+ */
+export function getTileSymbologyOverrides(ref: IModelDisplayReference, context?: SceneContext): FeatureSymbology.Overrides | undefined {
+  if (ref === context?.viewport.primaryIModelRef)
+    return undefined;
+  if (!context || ref !== ref.parent.primary)
+    return ref.getSymbologyOverrides(); // Linked references already maintain their own snapshots.
+
+  let snapshots = externalPrimarySnapshots.get(context);
+  if (!snapshots)
+    externalPrimarySnapshots.set(context, snapshots = new Map());
+
+  let overrides = snapshots.get(ref);
+  if (!overrides)
+    snapshots.set(ref, overrides = ref.getSymbologyOverrides());
+
+  return overrides;
+}
+
+const unlinked = new WeakSet<IModelDisplayReference>();
+const scheduledCategoryLoads = new WeakMap<IModelDisplayReference, number>();
+const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, { promise: Promise<void>, explicitIds: Set<Id64String>, includeViewed: boolean }>();
 const pendingModelLoads = new WeakMap<SpatialIModelDisplayReference, Promise<void>>();
 
 export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void {
-  if (scheduledCategoryLoads.has(ref))
+  if (unlinked.has(ref) || scheduledCategoryLoads.has(ref))
     return;
 
-  scheduledCategoryLoads.add(ref);
+  const cache = ref.iModel.subcategories;
+  const version = cache.loadVersion;
+  scheduledCategoryLoads.set(ref, version);
   // Coalesce selector notifications and wait behind changeCategoryDisplay's own queued request.
   queueMicrotask(() => {
-    if (!scheduledCategoryLoads.delete(ref))
-      return; // Unlinked before the microtask ran.
+    if (scheduledCategoryLoads.get(ref) !== version)
+      return; // Canceled or superseded before the microtask ran.
+    scheduledCategoryLoads.delete(ref);
 
-    ref.parent.subcategories.push(ref.iModel.subcategories, ref.viewedCategories, (anyLoaded) => {
-      // A concurrent category-info load can populate the cache before this queued request starts.
-      ref.invalidateSymbologyOverrides();
-      if (anyLoaded)
-        ref.onViewedCategoriesLoaded.raiseEvent();
-    });
+    const missing = cache.getMissing(ref.viewedCategories);
+    if (missing) {
+      ref.parent.subcategories.push(cache, missing, (anyLoaded) => {
+        if (anyLoaded)
+          notifyCategoriesLoaded(ref, missing);
+        else
+          ref.invalidateSymbologyOverrides();
+      }, { owner: ref.guid });
+    }
+    // Publish independently loaded categories even if the remaining request fails. Register it before notifying listeners.
+    if (cache.loadedSince(ref.viewedCategories, version))
+      notifyCategoriesLoaded(ref, ref.viewedCategories);
   });
 }
 
-export function cancelViewedCategoriesLoad(ref: IModelDisplayReference): void {
+export function cancelSelectorRefresh(ref: IModelDisplayReference): void {
   scheduledCategoryLoads.delete(ref);
-  ref.parent.subcategories.cancel(ref.iModel.subcategories);
+  const batch = ref.isSpatial() ? scheduledModelLoads.get(ref) : undefined;
+  if (batch)
+    batch.includeViewed = false; // Do not cancel IDs promised to explicit addAndLoad callers.
+}
+
+export function unlinkDisplayReference(ref: IModelDisplayReference): void {
+  unlinked.add(ref);
+  cancelSelectorRefresh(ref);
+  ref.parent.subcategories.cancel(ref.guid);
 }
 
 // Return the shared promise itself, including its rejection handler for fire-and-forget selector listeners.
@@ -161,6 +248,7 @@ export function cancelViewedCategoriesLoad(ref: IModelDisplayReference): void {
 export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, modelIds?: Iterable<Id64String>): Promise<void> {
   const scheduled = scheduledModelLoads.get(ref);
   if (scheduled) {
+    scheduled.includeViewed ||= !modelIds && !unlinked.has(ref);
     for (const id of modelIds ?? [])
       scheduled.explicitIds.add(id);
     return scheduled.promise;
@@ -171,16 +259,21 @@ export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, mod
   const load = (async () => {
     // Defer synchronous bursts, and serialize later bursts behind the current request so loaded Ids aren't re-requested.
     await previous?.catch(() => {});
+    const includeViewed = scheduledModelLoads.get(ref)?.includeViewed;
     scheduledModelLoads.delete(ref);
+    if (!includeViewed && !explicitIds.size)
+      return;
+
     // Explicit requests must finish even if their models are hidden before this batch is dispatched.
-    const ids = new Set(ref.viewedModels);
+    const ids = new Set(includeViewed ? ref.viewedModels : undefined);
     for (const id of explicitIds)
       ids.add(id);
     await ref.iModel.models.load(ids);
     ref.onViewedModelsLoaded.raiseEvent();
   })();
 
-  scheduledModelLoads.set(ref, { promise: load, explicitIds });
+  const batch = { promise: load, explicitIds, includeViewed: !modelIds && !unlinked.has(ref) };
+  scheduledModelLoads.set(ref, batch);
   pendingModelLoads.set(ref, load);
   const complete = () => {
     if (pendingModelLoads.get(ref) === load)
@@ -191,7 +284,9 @@ export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, mod
 }
 
 export function isLoadingComplete(iModelRef: IModelDisplayReference): boolean {
-  if (scheduledCategoryLoads.has(iModelRef) || !iModelRef.parent.subcategories.isEmpty
+  const cache = iModelRef.iModel.subcategories;
+  const scheduledAt = scheduledCategoryLoads.get(iModelRef);
+  if ((scheduledAt !== undefined && (cache.loadedSince(iModelRef.viewedCategories, scheduledAt) || cache.getMissing(iModelRef.viewedCategories))) || iModelRef.parent.subcategories.hasPending(iModelRef.guid)
     || (iModelRef.isSpatial() && pendingModelLoads.has(iModelRef)))
     return false;
 
@@ -211,10 +306,9 @@ export function listenForSubCategoryChanges(ref: IModelDisplayReference): () => 
     ref.parent.subcategories.push(ref.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
       if (anySubCategoriesLoaded) {
         // Cached symbology overrides bake in subcategory visibility and priority - rebuild them from the reloaded cache.
-        ref.invalidateSymbologyOverrides();
-        ref.onViewedCategoriesLoaded.raiseEvent();
+        notifyCategoriesLoaded(ref, categoryIds);
       }
-    });
+    }, { owner: ref.guid });
   });
 }
 

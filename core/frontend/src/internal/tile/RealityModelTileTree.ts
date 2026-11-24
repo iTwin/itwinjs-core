@@ -37,6 +37,7 @@ import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetU
 import { ScreenViewport } from "../../Viewport";
 import { IModelDisplayReference } from "../../IModelDisplayReference";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
+import { getTileSymbologyOverrides } from "../IModelDisplayReferenceImpl";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -688,9 +689,8 @@ export namespace RealityModelTileTree {
     }
 
     /** Primary and context reality models inherit the viewport's overrides; linked models supply their own. */
-    protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
-      return this._source instanceof DisplayStyleState || this._source === this._source.parent.primary
-        ? undefined : this._source.getSymbologyOverrides();
+    protected override getSymbologyOverrides(_tree: TileTree, context?: SceneContext): FeatureSymbology.Overrides | undefined {
+      return this._source instanceof DisplayStyleState ? undefined : getTileSymbologyOverrides(this._source, context);
     }
 
     public override unionFitRange(union: Range3d): void {

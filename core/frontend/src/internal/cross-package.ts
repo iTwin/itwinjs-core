@@ -57,6 +57,7 @@ export {
 } from "../tile/internal";
 export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
 export { _backingView, _getModelClip } from "../common/internal/Symbols";
+export { getTileSymbologyOverrides } from "./IModelDisplayReferenceImpl";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
 // Remove once CommonJS is dropped.

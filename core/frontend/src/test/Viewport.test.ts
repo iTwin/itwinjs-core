@@ -18,6 +18,7 @@ import { IModelDisplayReference } from "../IModelDisplayReference";
 import { CategorySelectorState } from "../CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState } from "../DisplayStyleState";
 import { DrawingViewState } from "../DrawingViewState";
+import { SheetViewState } from "../SheetViewState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import type { IModelConnection } from "../IModelConnection";
@@ -42,6 +43,7 @@ import type { SpatialClassifiersState } from "../SpatialClassifiersState";
 import { computeSectionCutForIModelCoords, createPrimaryTileTreeReference } from "../internal/tile/PrimaryTileTree";
 import { computeIModelRefDisplayTransform } from "../internal/IModelDisplayReferenceImpl";
 import { EntityChanges, TxnEntityChanges } from "../TxnEntityChanges";
+import { createViewAttachmentRenderer } from "../internal/ViewAttachmentRenderer";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -972,7 +974,7 @@ describe("Viewport", () => {
         // The primary reference's placement is the identity; it inherits the target's overrides.
         const primaryReality = makeRealityRef(refs.primary);
         expectPlacement(primaryReality, false);
-        expect((primaryReality as any).getSymbologyOverrides(stubTree)).toBeUndefined();
+        expect((primaryReality as any).getSymbologyOverrides(stubTree, new SceneContext(viewport))).toBeUndefined();
 
         // A context reality model (owned by the display style) is not placed and inherits the viewport's overrides.
         const contextReality = makeRealityRef(viewport.view.displayStyle);
@@ -1990,6 +1992,155 @@ describe("Viewport", () => {
     });
   });
 
+  it("selects newly ready provider graphics before completing a managed viewport wait", async () => {
+    using vp = openBlankViewport();
+    IModelApp.viewManager.addViewport(vp);
+    let ready = false;
+    const select = vi.fn();
+    try {
+      vp.addTiledGraphicsProvider({
+        isLoadingComplete: () => ready,
+        forEachTileTreeRef: () => {},
+        addToScene: () => { if (ready) select(); },
+      });
+      await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));
+      vp.renderFrame();
+      const complete = vp.waitForSceneCompletion();
+      ready = true;
+      // A redraw of the old scene does not select the provider's newly available tiles.
+      vp.requestRedraw();
+      vp.renderFrame();
+      await complete;
+      expect(select).toHaveBeenCalled();
+    } finally {
+      IModelApp.viewManager.dropViewport(vp);
+    }
+  });
+
+  it("finishes waiting when a managed viewport closes during a primary metadata load", async () => {
+    using vp = openBlankViewport();
+    IModelApp.viewManager.addViewport(vp);
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => { finish = resolve; });
+    try {
+      await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));
+      vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await pending; return []; });
+      vp.primaryIModelRef.viewedCategories.add("0x123");
+      const complete = vp.waitForSceneCompletion();
+      IModelApp.viewManager.dropViewport(vp);
+      await complete;
+      expect(vp.isDisposed).toBe(true);
+    } finally {
+      finish();
+    }
+  });
+
+  for (const managed of [true, false]) {
+    it(`waits for category work registered after a selector event (${managed ? "managed" : "unmanaged"})`, async () => {
+      using vp = openBlankViewport();
+      if (managed)
+        IModelApp.viewManager.addViewport(vp);
+      let finish!: () => void;
+      const gate = new Promise<void>((resolve) => { finish = resolve; });
+      try {
+        await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+        vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+        vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await gate; return []; });
+        let completed = false;
+        let waiting: Promise<void> | undefined;
+        vp.view.onViewedCategoriesChanged.addOnce(() => { waiting = vp.waitForSceneCompletion().then(() => { completed = true; }); });
+        vp.primaryIModelRef.viewedCategories.add("0x123");
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        expect(waiting).toBeDefined();
+        expect(completed).toBe(false);
+        finish();
+        await waiting;
+        expect(vp.areAllTileTreesLoaded).toBe(true);
+      } finally {
+        finish();
+        if (managed)
+          IModelApp.viewManager.dropViewport(vp);
+      }
+    });
+  }
+
+  it.each([false, true])("wakes a stationary sheet after a raster attachment's category query settles (nested section: %s)", async (nested) => {
+    const model = createBlankConnection();
+    const props = { model: "0x1", code: Code.createEmpty().toJSON() };
+    const categories = () => new CategorySelectorState({ ...props, id: "0x2", classFullName: CategorySelectorState.classFullName, categories: ["0x10"] }, model);
+    const style = () => new DisplayStyle2dState({ ...props, id: "0x3", classFullName: DisplayStyle2dState.classFullName }, model);
+    const viewProps = { ...props, categorySelectorId: "0x2", displayStyleId: "0x3", origin: { x: 0, y: 0 }, delta: { x: 1, y: 1 }, angle: 0 };
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => { finish = resolve; });
+    try {
+      model.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+      const drawing = new DrawingViewState({ ...viewProps, id: "0x51", classFullName: DrawingViewState.classFullName, baseModelId: "0x44" }, model, categories(), style(), Range3d.createNull(), nested ? { spatialView: "0x53", displaySpatialView: true } : undefined);
+      if (nested) {
+        const spatial = SpatialViewState.createBlank(model, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+        vi.spyOn(model.views, "convertViewStatePropsToViewState").mockResolvedValueOnce(spatial);
+        // eslint-disable-next-line @typescript-eslint/dot-notation -- Hydrate the nested spatial view without a backend.
+        await drawing["postload"]({ spatialViewProps: spatial.toProps() });
+      }
+      const sheet = new SheetViewState({ ...viewProps, id: "0x52", classFullName: SheetViewState.classFullName, baseModelId: "0x45" }, model, categories(), style(), { ...props, classFullName: "BisCore:Sheet", width: 1, height: 1, scale: 1 }, ["0x22"]);
+      vi.spyOn(model.views, "convertViewStatePropsToViewState").mockResolvedValue(drawing);
+      // eslint-disable-next-line @typescript-eslint/dot-notation -- Supply the protected hydration response without a backend.
+      await sheet["postload"]({ sheetViewViews: [drawing.toProps()], sheetViewAttachmentProps: [{
+        ...props, classFullName: "BisCore:ViewAttachment", category: "0x10", id: "0x22", view: { id: drawing.id },
+        placement: { origin: { x: 0, y: 0 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } }, jsonProperties: { displayOptions: { drawAsRaster: true, preserveBackground: true } },
+      }] });
+      using parent = OffScreenViewport.create({ view: sheet, viewRect: new ViewRect(0, 0, 32, 32) });
+      const [child] = sheet.secondaryViewports;
+      await vi.waitFor(() => expect(parent.areAllTileTreesLoaded).toBe(true));
+      vi.spyOn(model, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(model, "querySubCategories").mockImplementation(async () => { await gate; return []; });
+      const capture = vi.spyOn(child, "readImageBuffer");
+      const source = nested ? [...child.view.secondaryViewports][0] : child;
+      source.primaryIModelRef.viewedCategories.add("0x123");
+      parent.renderFrame();
+      expect(parent.sceneValid).toBe(true);
+      expect(capture).not.toHaveBeenCalled();
+      finish();
+      await vi.waitFor(() => expect(parent.sceneValid).toBe(false));
+      parent.renderFrame();
+      expect(capture).toHaveBeenCalledOnce();
+      expect([...sheet.secondaryViewports]).toHaveLength(0);
+    } finally {
+      finish();
+      model.closeSync();
+    }
+  });
+
+  it("rasterizes a warm drawing after metadata completes without a new scene selection", async () => {
+    using vp = openBlankViewport();
+    const props = { model: "0x1", code: Code.createEmpty().toJSON() };
+    const categories = new CategorySelectorState({ ...props, id: "0x2", classFullName: CategorySelectorState.classFullName, categories: ["0x10"] }, vp.iModel);
+    const style = new DisplayStyle2dState({ ...props, id: "0x3", classFullName: DisplayStyle2dState.classFullName }, vp.iModel);
+    vp.iModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+    vp.primaryIModelRef.viewedCategories.add("0x10");
+    const drawing = new DrawingViewState({ ...props, id: "0x5", classFullName: DrawingViewState.classFullName, baseModelId: "0x4", categorySelectorId: categories.id, displayStyleId: style.id, origin: { x: 0, y: 0 }, delta: { x: 1, y: 1 }, angle: 0 }, vp.iModel, categories, style, Range3d.createNull());
+    using raster = createViewAttachmentRenderer({ view: drawing, sheetModelId: "0x124", backgroundColor: ColorDef.black, props: {
+      ...props, classFullName: "BisCore:ViewAttachment", category: "0x10", id: "0x22", view: { id: drawing.id },
+      placement: { origin: { x: 0, y: 0 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
+      jsonProperties: { displayOptions: { drawAsRaster: true, preserveBackground: true } },
+    } });
+    const secondary = raster.viewport!;
+    vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+    vi.spyOn(vp.iModel, "querySubCategories").mockResolvedValue([]);
+    secondary.primaryIModelRef.viewedCategories.add("0x12");
+    const capture = vi.spyOn(secondary, "readImageBuffer");
+    const select = vi.spyOn(secondary.view, "createScene");
+    const context = new SceneContext(vp);
+    raster.addToScene(context);
+    expect(capture).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(secondary.areAllTileTreesLoaded).toBe(true));
+    raster.addToScene(context);
+    expect(capture).toHaveBeenCalledOnce();
+    expect(context.graphics.length).toBeGreaterThan(0);
+    expect(select).toHaveBeenCalledOnce();
+    expect(raster.viewport).toBeUndefined();
+  });
+
   describe("generic iModelRefs default", () => {
     it("supplies a working primary-only default for direct ViewState3d subclasses", () => {
       const iModel = createBlankConnection();
@@ -2046,7 +2197,12 @@ describe("Viewport", () => {
         // Display state derives from the view's display style, and symbology overrides can be built.
         expect(primary.subCategoryOverrides).toBe(displayStyle.settings.subCategoryOverrides);
         expect(primary.activeViewFlags).toEqual(view.viewFlags);
-        expect(primary.getSymbologyOverrides()).toBeDefined();
+        view.getDisplayStyle3d().settings.setPlanProjectionSettings("0x123", PlanProjectionSettings.fromJSON({ transparency: 0.5 }));
+        expect(primary.getSymbologyOverrides().getModelOverridesById("0x123")?.transparency).toBe(0.5);
+        treeRefs.length = 0;
+        using vp = OffScreenViewport.create({ view, viewRect: new ViewRect(0, 0, 32, 32) });
+        vp.renderFrame();
+        expect((vp.target as Target).currentFeatureSymbologyOverrides.getModelOverridesById("0x123")?.transparency).toBe(0.5);
       } finally {
         iModel.closeSync();
       }
@@ -2489,7 +2645,7 @@ describe("Viewport", () => {
       await vi.waitFor(() => expect(primary.isLoadingComplete).toBe(true));
       const model = new GeometricModel3dState({ id: "0x123", classFullName: "BisCore:PhysicalModel", modeledElement: { id: "0x123" } }, vp.iModel);
       const treeRef = createPrimaryTileTreeReference(primary, model);
-      const treeOverrides = (treeRef as unknown as { getSymbologyOverrides(): FeatureSymbology.Overrides | undefined }).getSymbologyOverrides();
+      const treeOverrides = (treeRef as any).getSymbologyOverrides(undefined, new SceneContext(vp)) as FeatureSymbology.Overrides | undefined;
       const points = [new Point3d(0.1, 0.1, 0.5), new Point3d(0.9, 0.1, 0.5), new Point3d(0.9, 0.9, 0.5), new Point3d(0.1, 0.9, 0.5), new Point3d(0.1, 0.1, 0.5)];
       vp.npcToWorldArray(points);
       const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, pickable: { id: "0xa" }, computeChordTolerance: () => 0 });
@@ -2867,9 +3023,36 @@ describe("Viewport", () => {
           expect(() => vp.readPixels({ excludedElements: exclusions, receiver: () => {} })).toThrow("pixel read failed");
           expect(target.getPickExclusions(primary)).toBeUndefined();
           expect(target.getPickExclusions(attachment)).toBeUndefined();
+          expect(target.renderSystem.frameBufferStack.isEmpty).toBe(true);
+          const resources = vi.spyOn(target as any, "createOrReuseReadPixelResources");
+          const gl = target.renderSystem.context;
+          const outer = gl.createFramebuffer();
+          gl.bindFramebuffer(gl.FRAMEBUFFER, outer);
+          try {
+            function* badIds() { yield "0xa"; throw new Error("bad IDs"); }
+            expect(() => vp.readPixels({ excludedElements: badIds(), receiver: () => {} })).toThrow("bad IDs");
+            expect(resources).not.toHaveBeenCalled();
+            expect(gl.getParameter(gl.FRAMEBUFFER_BINDING)).toBe(outer);
+          } finally {
+            resources.mockRestore();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.deleteFramebuffer(outer);
+          }
+          function* nestedIds() {
+            yield "0xa";
+            vp.readPixels({ receiver: () => {} });
+            yield "0xb";
+          }
+          read.mockImplementationOnce(() => undefined).mockImplementationOnce(() => {
+            expect(target.getPickExclusions(primary)?.hasId("0xa")).toBe(true);
+            expect(target.getPickExclusions(primary)?.hasId("0xb")).toBe(true);
+            return undefined;
+          });
+          vp.readPixels({ excludedElements: nestedIds(), receiver: () => {} });
         } finally {
           read.mockRestore();
         }
+        vp.readPixels(vp.viewRect, Pixel.Selector.Feature, (pixels) => expect(pixels).toBeDefined());
       });
     });
 

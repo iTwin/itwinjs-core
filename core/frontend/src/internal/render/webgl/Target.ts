@@ -101,8 +101,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
-  private _currPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
-  private _swapPickExclusions = new Map<IModelDisplayReference, Id64.Uint32Set>();
+  private _currPickExclusions?: Map<IModelDisplayReference, Id64.Uint32Set>;
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashedElem?: FlashedElem;
@@ -190,7 +189,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
-  public getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined { return this._currPickExclusions.get(iModelRef); }
+  public getPickExclusions(iModelRef: IModelDisplayReference): Id64.Uint32Set | undefined { return this._currPickExclusions?.get(iModelRef); }
 
   public get flashedElem(): FlashedElem | undefined { return this._flashedElem; }
   public get flashIntensity(): number { return this._flashIntensity; }
@@ -781,6 +780,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<readonly [Id64String, IModelDisplayReference]>): void {
+    // Application iterators can throw or perform their own pick. Finish them before touching GL or target state.
+    let exclusions: Map<IModelDisplayReference, Id64.Uint32Set> | undefined;
+    if (excludedElements) {
+      for (const [id, ref] of excludedElements) {
+        exclusions ??= new Map();
+        let ids = exclusions.get(ref);
+        if (!ids)
+          exclusions.set(ref, ids = new Id64.Uint32Set());
+        ids.addId(id);
+      }
+    }
     if (!this.assignDC())
       return;
 
@@ -806,49 +816,22 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     try {
       this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
-        let updatedExclusions = false;
-        if (excludedElements) {
-          const swap = this._swapPickExclusions;
-          swap.clear();
-          for (const [id, ref] of excludedElements) {
-            let ids = swap.get(ref);
-            if (!ids)
-              swap.set(ref, ids = new Id64.Uint32Set());
-
-            ids.addId(id);
-          }
-
-          let equal = this._currPickExclusions.size === swap.size;
-          if (equal) {
-            for (const [iModelRef, ids] of this._currPickExclusions) {
-              if (!swap.get(iModelRef)?.equals(ids)) {
-                equal = false;
-                break;
-              }
-            }
-          }
-
-          if (!equal) {
-            this._swapPickExclusions = this._currPickExclusions;
-            this._currPickExclusions = swap;
-            updatedExclusions = true;
-            desync(this.pickExclusionsSyncTarget);
-          }
-        }
-
+        const previous = this._currPickExclusions;
+        const previousDrawNonLocatable = this._drawNonLocatable;
+        this._currPickExclusions = exclusions;
+        if (previous !== exclusions)
+          desync(this.pickExclusionsSyncTarget);
         this._drawNonLocatable = !excludeNonLocatable;
         try {
           result = this.readPixelsFromFbo(rect, selector);
         } finally {
-          this._drawNonLocatable = true;
-          if (updatedExclusions) {
-            this._currPickExclusions.clear();
+          this._drawNonLocatable = previousDrawNonLocatable;
+          this._currPickExclusions = previous;
+          if (previous !== exclusions)
             desync(this.pickExclusionsSyncTarget);
-          }
         }
       });
     } finally {
-      this._swapPickExclusions.clear();
       this.disposeOrReuseReadPixelResources(resources);
     }
 

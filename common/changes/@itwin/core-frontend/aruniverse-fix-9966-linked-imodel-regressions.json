@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Coalesce category and model metadata requests and avoid rebuilding primary scenes for appearance-only changes.",
+      "comment": "Coalesce category and model metadata loads, stop waiting for discarded views, and preserve raster attachments and reference-specific symbology without rebuilding ordinary primary scenes for appearance changes.",
       "type": "none"
     }
   ],

@@ -23,7 +23,7 @@ import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
 import type { DisplayStyleState } from "../DisplayStyleState";
-import { addAndLoadViewedModels, cancelViewedCategoriesLoad, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
 
 class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   public readonly [_implementationProhibited] = undefined;
@@ -113,6 +113,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: args.iModel,
       queue: refs.subcategories,
+      owner: this.guid,
     });
 
     this.perModelCategoryVisibility.onChanged.addListener(() => {
@@ -231,7 +232,6 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   }
 
   #dispose(): void {
-    cancelViewedCategoriesLoad(this);
     this.#removeSubCategoryChangesListener?.();
     this.#removeSubCategoryChangesListener = undefined;
     this.#planarClipMaskStates.clear();

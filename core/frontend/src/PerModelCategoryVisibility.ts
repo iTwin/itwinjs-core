@@ -100,6 +100,7 @@ export namespace PerModelCategoryVisibility {
     iModel: IModelConnection;
     /** ###TODO see if we can get rid of this. */
     queue: SubCategoriesCache.Queue;
+    owner?: string;
   }
 
   /** Create a standalone set of overrides associated with the specified viewport's iModel.
@@ -128,12 +129,14 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
   private readonly _set = new Set<WriteableOverrideEntry>();
   private readonly _iModel: IModelConnection;
   private readonly _queue: SubCategoriesCache.Queue;
+  private readonly _owner?: string;
 
   public readonly onChanged = new BeEvent<() => void>();
 
   public constructor(args: PerModelCategoryVisibility.CreateOverridesArgs) {
     this._iModel = args.iModel;
     this._queue = args.queue;
+    this._owner = args.owner;
   }
 
   public [Symbol.iterator](): Iterator<PerModelCategoryVisibility.OverrideEntry> {
@@ -224,10 +227,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
         anyChanged = true;
     }
     if (anyChanged) {
-      this.onChanged.raiseEvent();
-      if (catIdsToLoad.length !== 0) {
-        this._queue.push(iModelToUse.subcategories, catIdsToLoad, () => this.onChanged.raiseEvent());
-      }
+      this.notifyChanged(iModelToUse, catIdsToLoad);
     }
   }
 
@@ -239,14 +239,15 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
         changed = true;
     }
 
-    if (changed) {
-      this.onChanged.raiseEvent();
+    if (changed)
+      this.notifyChanged(this._iModel, override !== PerModelCategoryVisibility.Override.None ? categoryIds : []);
+  }
 
-      if (override !== PerModelCategoryVisibility.Override.None) {
-        // Ensure subcategories loaded.
-        this._queue.push(this._iModel.subcategories, categoryIds, () => this.onChanged.raiseEvent());
-      }
-    }
+  private notifyChanged(iModel: IModelConnection, categoryIds: Id64Arg): void {
+    // Queue before notifying: a listener may unlink this reference and cancel its outstanding work.
+    if (Id64.sizeOf(categoryIds) > 0)
+      this._queue.push(iModel.subcategories, categoryIds, (loaded) => { if (loaded) this.onChanged.raiseEvent(); }, { owner: this._owner });
+    this.onChanged.raiseEvent();
   }
 
   public clearOverrides(modelIds?: Id64Arg): void {

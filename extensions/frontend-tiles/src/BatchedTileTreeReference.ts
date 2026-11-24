@@ -9,7 +9,7 @@ import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, type MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  DisclosedTileTreeSet, FeatureSymbology, formatAnimationBranchId,
+  DisclosedTileTreeSet, FeatureSymbology, formatAnimationBranchId, getTileSymbologyOverrides,
   IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, SpatialIModelDisplayReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
@@ -81,10 +81,8 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     return this;
   }
 
-  protected override getSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    // Primary branches inherit the target's overrides so appearance changes don't require rebuilding the scene.
-    const ref = this._args.iModelRef;
-    return ref === ref.parent.primary ? undefined : ref.getSymbologyOverrides();
+  protected override getSymbologyOverrides(_tree: TileTree, context?: SceneContext): FeatureSymbology.Overrides | undefined {
+    return getTileSymbologyOverrides(this._args.iModelRef, context);
   }
 
   protected override getClipVolume(): RenderClipVolume | undefined {

@@ -326,6 +326,7 @@ export class DrawingViewState extends ViewState2d {
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachmentInfo: SectionAttachmentInfo;
   private _attachment?: SectionAttachment;
+  private readonly _removeAttachmentListeners: VoidFunction[] = [];
 
   /** Strictly for testing. @internal */
   public get sectionDrawingProps(): SectionDrawingViewProps | undefined {
@@ -363,10 +364,19 @@ export class DrawingViewState extends ViewState2d {
     super.attachToViewport(args);
     assert(undefined === this._attachment);
     this._attachment = this._attachmentInfo.createAttachment(args.drawingToSheetTransform);
+    const child = this._attachment?.viewport;
+    if (child) {
+      // The drawing embeds the child's graphics and symbology snapshot. Wake it even when its camera is stationary.
+      const wake = () => { if (args.sceneValid) args.invalidateScene(); };
+      this._removeAttachmentListeners.push(child.onSceneInvalidated.addListener(wake), child.primaryIModelRef.onSymbologyOverridesInvalidated.addListener(wake), child.iModelRefs.subcategories.onDrained.addListener(wake));
+    }
   }
 
   /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
+    for (const remove of this._removeAttachmentListeners)
+      remove();
+    this._removeAttachmentListeners.length = 0;
     super.detachFromViewport();
     this._attachment = dispose(this._attachment);
   }

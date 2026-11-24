@@ -21,7 +21,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import type { DisplayStyleState } from "../DisplayStyleState";
-import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, isLoadingComplete, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, cancelSelectorRefresh, changeCategoryDisplay, changeSubCategoryDisplay, isLoadingComplete, listenForSubCategoryChanges, scheduleViewedCategoriesLoad, scheduleViewedModelsLoad } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly [_implementationProhibited] = undefined;
@@ -80,6 +80,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: view.iModel,
       queue: refs.subcategories,
+      owner: this.guid,
     });
 
     this.perModelCategoryVisibility.onChanged.addListener(() => {
@@ -273,6 +274,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
   public [_detachFromViewport](): void {
     this.#attached = false;
+    cancelSelectorRefresh(this);
     this.#removeViewedCategoriesListener?.();
     this.#removeViewedCategoriesListener = this.#boundViewedCategories = undefined;
     // The style's settings may outlive this view, and must not retain it through these listeners.

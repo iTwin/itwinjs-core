@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
-import { FeatureAppearance, FeatureOverrides, SubCategoryOverride } from "@itwin/core-common";
+import { FeatureAppearance, FeatureOverrides, PlanProjectionSettings, SubCategoryOverride } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import { IModelDisplayReference } from "../IModelDisplayReference";
@@ -161,15 +161,13 @@ export namespace FeatureSymbology {
         });
       }
 
-      const script = ref[_scheduleScriptReference]?.script;
+      const script = primaryView ? primaryView.displayStyle.scheduleScript : ref[_scheduleScriptReference]?.script;
       if (script)
         script.addSymbologyOverrides(this, ref.parent.timePoint ?? 0);
 
-      // Apply plan-projection transparency before providers, preserving their ability to override it.
-      if (ref.isSpatial())
-        for (const [modelId, projSettings] of ref.planProjectionSettings)
-          if (undefined !== projSettings.transparency)
-            this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
+      // Viewport providers can override the primary style; linked references historically apply projections last.
+      if (primaryView?.is3d())
+        this.applyPlanProjectionSettings(ref.isSpatial() ? ref.planProjectionSettings : primaryView.getDisplayStyle3d().settings.planProjectionSettings);
 
       for (const provider of ref.featureOverrideProviders)
         provider.addFeatureOverrides(this, ref);
@@ -177,6 +175,8 @@ export namespace FeatureSymbology {
       ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
       this._initSubCategoryOverrides(getSubCategoryOverride);
+      if (!primaryView && ref.isSpatial())
+        this.applyPlanProjectionSettings(ref.planProjectionSettings);
     }
 
     private _initFromView(view: ViewState): void {
@@ -223,14 +223,12 @@ export namespace FeatureSymbology {
       if (script)
         script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
-      if (!view.is3d())
-        return;
+      if (view.is3d())
+        this.applyPlanProjectionSettings(view.getDisplayStyle3d().settings.planProjectionSettings);
+    }
 
-      const planProjectionSettings = view.getDisplayStyle3d().settings.planProjectionSettings;
-      if (undefined === planProjectionSettings)
-        return;
-
-      for (const [modelId, projSettings] of planProjectionSettings) {
+    private applyPlanProjectionSettings(settings: Iterable<[Id64String, PlanProjectionSettings]>): void {
+      for (const [modelId, projSettings] of settings) {
         if (undefined !== projSettings.transparency)
           this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
       }

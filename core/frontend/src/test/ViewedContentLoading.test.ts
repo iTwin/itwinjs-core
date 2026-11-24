@@ -5,8 +5,9 @@
 /* eslint-disable @typescript-eslint/no-deprecated -- Exercise the viewport APIs that exhibited the regressions. */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { CompressedId64Set, Id64 } from "@itwin/core-bentley";
-import { EmptyLocalization } from "@itwin/core-common";
+import { EmptyLocalization, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { openBlankViewport } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 
@@ -24,6 +25,132 @@ describe("Viewed content loading", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
   afterEach(() => vi.restoreAllMocks());
+
+  it("does not cancel a replacement reference linked by an earlier unlink listener", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(other, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+      other.subcategories.add("0x200", "0x201", new SubCategoryAppearance({ invisible: true }), true);
+      const remove = refs.onUnlinked.addListener(() => {
+        const next = refs.link({ iModel: other });
+        next.changeCategoryDisplay({ categories: ["0x200"], display: true, enableAllSubCategories: true });
+      });
+      const old = refs.link({ iModel: other, viewedCategories: ["0x100"] });
+      await Promise.resolve();
+      refs.unlink(old);
+      remove();
+      const [replacement] = refs.linked;
+      await vi.waitFor(() => expect(replacement.isLoadingComplete).toBe(true));
+      expect(replacement.isSubCategoryVisible("0x201")).toBe(true);
+      refs.unlink(replacement);
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
+
+  it("does not submit orphan work after a synchronous selector listener unlinks its reference", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const other = createBlankConnection();
+    try {
+      const ref = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+      vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
+      const query = vi.spyOn(other, "querySubCategories").mockResolvedValue([]);
+      ref.viewedCategories.onBatchAdded.addOnce(() => refs.unlink(ref));
+      ref.changeCategoryDisplay({ categories: ["0x100"], display: true });
+      await Promise.resolve();
+      expect(query).not.toHaveBeenCalled();
+      expect(refs.primary.isLoadingComplete).toBe(true);
+    } finally {
+      other.closeSync();
+    }
+  });
+
+  it("cancels a per-model category load when its change listener unlinks the owner", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      const ref = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+      vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(other, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+      ref.perModelCategoryVisibility.onChanged.addOnce(() => refs.unlink(ref));
+      ref.perModelCategoryVisibility.setOverride("0x11", "0x12", PerModelCategoryVisibility.Override.Show);
+      expect(refs.subcategories.isEmpty).toBe(true);
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
+
+  it("cancels a reference's per-model work even when the deprecated overload uses another cache", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      const linked = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+      await linked.perModelCategoryVisibility.setOverrides([{ modelId: "0x11", categoryIds: ["0x12"], visOverride: PerModelCategoryVisibility.Override.Show }], vp.iModel);
+      expect(refs.primary.isLoadingComplete).toBe(true);
+      expect(linked.isLoadingComplete).toBe(false);
+      refs.unlink(linked);
+      expect(refs.subcategories.isEmpty).toBe(true);
+      expect(vp.areAllTileTreesLoaded).toBe(true);
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
+
+  it("does not report another connection's load as pending or newly loaded", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      const ref = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+      other.subcategories.add("0x200", "0x201", new SubCategoryAppearance(), true);
+      vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+      refs.primary.viewedCategories.add("0x100");
+      await Promise.resolve();
+      expect(refs.primary.isLoadingComplete).toBe(false);
+      expect(ref.isLoadingComplete).toBe(true);
+      const loaded = vi.fn();
+      ref.onViewedCategoriesLoaded.addListener(loaded);
+      ref.viewedCategories.add("0x200");
+      await Promise.resolve();
+      gate.resolve();
+      await vi.waitFor(() => expect(refs.subcategories.isEmpty).toBe(true));
+      expect(loaded).not.toHaveBeenCalled();
+      refs.unlink(ref);
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
 
   for (const phase of ["scheduled", "in flight", "queued"] as const) {
     it(`does not wait for an unlinked reference's ${phase} category work`, async () => {
@@ -62,6 +189,63 @@ describe("Viewed content loading", () => {
       }
     });
   }
+
+  it("does not report an explicit category twice after unrelated data is published to its cache", async () => {
+    using vp = openBlankViewport();
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      const refs = vp.iModelRefs;
+      if (!refs.isSpatial)
+        throw new Error("Expected spatial references");
+      const linked = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(vp.iModel, "querySubCategories").mockResolvedValue([]);
+      const blocked = vi.spyOn(other, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+      const loaded = vi.fn();
+      refs.primary.onViewedCategoriesLoaded.addListener(loaded);
+      refs.primary.changeCategoryDisplay({ categories: "0x10", display: true });
+      linked.changeCategoryDisplay({ categories: "0x20", display: true });
+      await vi.waitFor(() => expect(blocked).toHaveBeenCalledOnce());
+      expect(loaded).toHaveBeenCalledOnce();
+      await vp.iModel.categories.getCategoryInfo(["0x30"]);
+      gate.resolve();
+      await vi.waitFor(() => expect(refs.subcategories.isEmpty).toBe(true));
+      expect(loaded).toHaveBeenCalledOnce();
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
+
+  it("replays an explicit category operation on a covering retry beyond a noncovering batch", async () => {
+    using vp = openBlankViewport();
+    const other = createBlankConnection();
+    const gate = deferred();
+    try {
+      const refs = vp.iModelRefs;
+      if (!refs.isSpatial)
+        throw new Error("Expected spatial references");
+      const linked = refs.link({ iModel: other });
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
+      const query = vi.spyOn(vp.iModel, "querySubCategories").mockImplementationOnce(async () => { await gate.promise; throw new Error("query failed"); })
+        .mockImplementation(async (ids) => [...CompressedId64Set.iterable(ids)].map((id) => ({ id: id === "0x10" ? "0x11" : "0x21", parentId: id, appearance: { invisible: true } })));
+      refs.primary.changeCategoryDisplay({ categories: ["0x10"], display: true, enableAllSubCategories: true });
+      refs.primary.changeCategoryDisplay({ categories: ["0x20"], display: true });
+      linked.changeCategoryDisplay({ categories: ["0x30"], display: true });
+      await Promise.resolve();
+      gate.resolve();
+      await vi.waitFor(() => expect(refs.subcategories.isEmpty).toBe(true));
+      expect(query.mock.calls.map(([ids]) => [...CompressedId64Set.iterable(ids)])).toEqual([["0x10"], ["0x20"], ["0x10"]]);
+      expect(refs.primary.isSubCategoryVisible("0x11")).toBe(true);
+    } finally {
+      gate.resolve();
+      other.closeSync();
+    }
+  });
 
   for (const linked of [false, true]) {
     describe(linked ? "linked reference" : "primary reference", () => {
@@ -122,7 +306,82 @@ describe("Viewed content loading", () => {
         }
       }
 
-      it("refreshes overrides when a concurrent category-info load wins the deferred load", async () => {
+      it("applies enableAllSubCategories when a queued retry loads the metadata", async () => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          vi.spyOn(ref.iModel, "isClosed", "get").mockReturnValue(false);
+          const query = vi.spyOn(ref.iModel, "querySubCategories").mockRejectedValueOnce(new Error("query failed")).mockResolvedValue([{ id: "0xac", parentId: "0xab", appearance: { invisible: true } }]);
+          ref.changeCategoryDisplay({ categories: ["0xab"], display: true, enableAllSubCategories: true });
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          expect(query).toHaveBeenCalledTimes(2);
+          expect(ref.iModel.subcategories.getSubCategoryAppearance("0xac")?.invisible).toBe(true);
+          expect(ref.isSubCategoryVisible("0xac")).toBe(true);
+        } finally {
+          other.closeSync();
+        }
+      });
+
+      it.each([true, false])("bounds retries for an explicit operation coalesced behind another category (retry succeeds: %s)", async (succeeds) => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        const gate = deferred();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          vi.spyOn(ref.iModel, "isClosed", "get").mockReturnValue(false);
+          const query = vi.spyOn(ref.iModel, "querySubCategories").mockImplementationOnce(async () => { await gate.promise; return []; })
+            .mockRejectedValueOnce(new Error("first B load failed"));
+          if (succeeds)
+            query.mockResolvedValue([{ parentId: "0x20", id: "0x21", appearance: { invisible: true } }]);
+          else
+            query.mockRejectedValue(new Error("unavailable"));
+          ref.perModelCategoryVisibility.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.Show);
+          const published: boolean[] = [];
+          ref.onViewedCategoriesLoaded.addListener(() => published.push(ref.isSubCategoryVisible("0x21")));
+          ref.changeCategoryDisplay({ categories: ["0x20"], display: true, enableAllSubCategories: true });
+          await Promise.resolve();
+          gate.resolve();
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          expect(ref.isSubCategoryVisible("0x21")).toBe(succeeds);
+          expect(published.filter((visible) => visible)).toHaveLength(succeeds ? 1 : 0);
+          expect(query.mock.calls.map(([ids]) => [...CompressedId64Set.iterable(ids)])).toEqual([["0x10"], ["0x20"], ["0x20"]]);
+        } finally {
+          gate.resolve();
+          other.closeSync();
+        }
+      });
+
+      it("loads a valid explicitly requested model even if an earlier model's class lookup fails", async () => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          const query = vi.spyOn(ref.iModel.models, "getProps").mockResolvedValue(["0x31", "0x32"].map((id) => ({ id, classFullName: id === "0x31" ? "Test:Unknown" : "BisCore:PhysicalModel", modeledElement: { id } })));
+          vi.spyOn(ref.iModel, "findClassFor").mockRejectedValueOnce(new Error("class lookup failed"));
+          ref.viewedModels.add("0x31");
+          await ref.addAndLoadViewedModels(["0x32"]);
+          expect(query).toHaveBeenCalledOnce();
+          expect(ref.iModel.models.getLoaded("0x31")).toBeUndefined();
+          expect(ref.iModel.models.getLoaded("0x32")).toBeDefined();
+        } finally {
+          other.closeSync();
+        }
+      });
+
+      it.each([false, true])("publishes concurrent category info even if another selected category fails (%s)", async (otherFails) => {
         using vp = openBlankViewport();
         const other = createBlankConnection();
         try {
@@ -133,11 +392,15 @@ describe("Viewed content loading", () => {
           await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
           vp.renderFrame();
           vi.spyOn(ref.iModel, "isClosed", "get").mockReturnValue(false);
-          const query = vi.spyOn(ref.iModel, "querySubCategories").mockResolvedValue([{ parentId: "0xabc", id: "0xabd", appearance: {} }]);
+          const query = vi.spyOn(ref.iModel, "querySubCategories").mockResolvedValueOnce([{ parentId: "0xabc", id: "0xabd", appearance: {} }]).mockRejectedValue(new Error("other category unavailable"));
           const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+          const loaded = vi.fn();
+          ref.onViewedCategoriesLoaded.addListener(loaded);
           const info = ref.iModel.categories.getCategoryInfo(["0xabc"]);
           await Promise.resolve();
           ref.viewedCategories.add("0xabc");
+          if (otherFails)
+            ref.viewedCategories.add("0xace");
           const before = ref.getSymbologyOverrides();
           vp.renderFrame();
           expect(before.isSubCategoryIdVisible("0xabd")).toBe(false);
@@ -147,7 +410,8 @@ describe("Viewed content loading", () => {
           expect(ref.getSymbologyOverrides().isSubCategoryIdVisible("0xabd")).toBe(true);
           if (!linked)
             expect(applied.mock.calls.at(-1)?.[0].isSubCategoryIdVisible("0xabd")).toBe(true);
-          expect(query).toHaveBeenCalledOnce();
+          expect(query).toHaveBeenCalledTimes(otherFails ? 2 : 1);
+          expect(loaded).toHaveBeenCalledOnce();
         } finally {
           other.closeSync();
         }

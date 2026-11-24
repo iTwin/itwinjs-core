@@ -490,6 +490,44 @@ describe("SubCategoriesCache", () => {
     queue[Symbol.dispose]();
   });
 
+  it("retries multiple coalesced explicit operations only once during a persistent failure", async () => {
+    const gate = createDeferred<SubCategoryResultRow[]>();
+    const query = vi.fn().mockReturnValueOnce(gate.promise).mockRejectedValue(new Error("unavailable"));
+    const cache = new SubCategoriesCache({ isClosed: false, querySubCategories: query } as unknown as IModelConnection);
+    using queue = new SubCategoriesCache.Queue();
+    queue.push(cache, "0x1", () => {});
+    const applied = vi.fn();
+    for (const id of ["0x2", "0x2", "0x3", "0x4", "0x4"])
+      queue.push(cache, id, applied, { retainOnRetry: true });
+    gate.resolve([]);
+    await waitForPromises();
+    expect(queue.isEmpty).toBe(true);
+    expect(applied).not.toHaveBeenCalled();
+    expect(query.mock.calls.map(([ids]) => [...CompressedId64Set.iterable(ids)])).toEqual([["0x1"], ["0x2", "0x3", "0x4"], ["0x2", "0x3", "0x4"]]);
+  });
+
+  it("keeps malformed categories retryable without blocking other categories in the same or later requests", async () => {
+    const rows = [
+      { parentId: "0x1", id: "0x11", appearance: "{}" }, { parentId: "0x1", id: "0x12", appearance: "{" },
+      { parentId: "0x2", id: "0x21", appearance: "{}" },
+    ];
+    const query = vi.fn().mockResolvedValueOnce(rows).mockResolvedValueOnce([{ parentId: "0x3", id: "0x31", appearance: {} }]).mockResolvedValueOnce(rows.slice(0, 1));
+    const cache = new SubCategoriesCache({ isClosed: false, querySubCategories: query } as unknown as IModelConnection);
+    using queue = new SubCategoriesCache.Queue();
+    const partial = vi.fn(), valid = vi.fn();
+    queue.push(cache, ["0x1", "0x2"], partial);
+    queue.push(cache, "0x3", valid);
+    await waitForPromises();
+    expect(queue.isEmpty).toBe(true);
+    expect(cache.getSubCategories("0x1")).toBeUndefined();
+    expect(cache.getSubCategoryAppearance("0x11")).toBeUndefined();
+    expect(cache.getSubCategories("0x2")?.has("0x21")).toBe(true);
+    expect(partial).toHaveBeenCalledExactlyOnceWith(true);
+    expect(valid).toHaveBeenCalledExactlyOnceWith(true);
+    expect(await cache.load("0x1")?.promise).toBe(true);
+    expect(cache.getSubCategories("0x1")?.has("0x11")).toBe(true);
+  });
+
   it("loads overlapping delayed queue requests from two connections through their own caches", async () => {
     const primaryResult = createDeferred<SubCategoryResultRow[]>();
     const linkedResult = createDeferred<SubCategoryResultRow[]>();
@@ -599,6 +637,44 @@ describe("SubCategoriesCache", () => {
     expect(queue.isEmpty).toBe(true);
   });
 
+  it("reports loads only to callbacks whose IDs needed data in a coalesced request", async () => {
+    const gate = createDeferred<SubCategoryResultRow[]>();
+    const query = vi.fn().mockReturnValueOnce(gate.promise).mockResolvedValue([]);
+    const cache = new SubCategoriesCache({ isClosed: false, querySubCategories: query } as unknown as IModelConnection);
+    cache.add("0x2", "0x20", new SubCategoryAppearance(), true);
+    using queue = new SubCategoriesCache.Queue();
+    const cached = vi.fn();
+    const missing = vi.fn();
+    const overlapping = vi.fn();
+    queue.push(cache, "0x1", () => {});
+    const ids = ["0x2"];
+    queue.push(cache, ids, cached);
+    ids[0] = "0x3"; // The queued callback still belongs to 0x2.
+    queue.push(cache, "0x3", missing);
+    queue.push(cache, ["0x2", "0x3"], overlapping);
+    gate.resolve([]);
+    await waitForPromises();
+    expect(query).toHaveBeenCalledTimes(2);
+    expect(cached).toHaveBeenCalledExactlyOnceWith(false);
+    expect(missing).toHaveBeenCalledExactlyOnceWith(true);
+    expect(overlapping).toHaveBeenCalledExactlyOnceWith(true);
+  });
+
+  it("reports a previously cached ID if it is invalidated and fetched before callback dispatch", async () => {
+    const gate = createDeferred<SubCategoryResultRow[]>();
+    const query = vi.fn().mockReturnValueOnce(gate.promise).mockResolvedValue([]);
+    const cache = new SubCategoriesCache({ isClosed: false, querySubCategories: query } as unknown as IModelConnection);
+    cache.add("0x2", "0x20", new SubCategoryAppearance(), true);
+    using queue = new SubCategoriesCache.Queue();
+    const refreshed = vi.fn();
+    queue.push(cache, "0x1", () => {});
+    queue.push(cache, "0x2", refreshed);
+    cache.clear();
+    gate.resolve([]);
+    await waitForPromises();
+    expect(refreshed).toHaveBeenCalledExactlyOnceWith(true);
+  });
+
   it("preserves ordering across pending queue requests on alternating caches", async () => {
     const firstResult = createDeferred<SubCategoryResultRow[]>();
     const primaryQuery = vi.fn()
@@ -661,10 +737,26 @@ describe("SubCategoriesCache", () => {
     await waitForPromises();
 
     // The nested push must wait its turn behind the already-pending second entry.
-    expect(order).toEqual(["current", "first", "second", "nested:true"]);
+    expect(order).toEqual(["current", "first", "second", "nested:false"]);
     expect(queue.isEmpty).toBe(true);
 
     queue[Symbol.dispose]();
+  });
+
+  it("stops a cached entry's remaining callbacks when the first cancels its cache", async () => {
+    const result = createDeferred<SubCategoryResultRow[]>();
+    const first = new SubCategoriesCache({ isClosed: false, querySubCategories: async () => result.promise } as unknown as IModelConnection);
+    const cached = new SubCategoriesCache({ isClosed: false } as IModelConnection);
+    cached.add("0x2", "0x21", new SubCategoryAppearance(), true);
+    using queue = new SubCategoriesCache.Queue();
+    const late = vi.fn();
+    queue.push(first, "0x1", () => {});
+    queue.push(cached, "0x2", () => queue.cancel(cached));
+    queue.push(cached, "0x2", late);
+    result.resolve([]);
+    await waitForPromises();
+    expect(late).not.toHaveBeenCalled();
+    expect(queue.isEmpty).toBe(true);
   });
 
   it("queues uncached requests pushed from the final already-loaded entry's callbacks", async () => {
