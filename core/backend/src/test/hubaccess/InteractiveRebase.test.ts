@@ -1586,7 +1586,8 @@ describe("InteractiveRebase", () => {
     chai.expect(deletionEffect.references.length).to.equal(1);
     chai.expect(deletionEffect.references[0].targetId).to.equal(theirScopeId);
 
-    // Resolving the broken relationship allows the scope deletion to proceed.
+    // Resolving the broken relationship allows the scope deletion to proceed,
+    // but it is not automatic.
     const newScopeId = interactive.editTxn.insertElement({
       classFullName: "irt:SomeGraphicalElement",
       model: drawingModelId,
@@ -1597,8 +1598,11 @@ describe("InteractiveRebase", () => {
     } as SomeGraphicalElementProps);
     updateConflict.resolveBrokenRelationship(brokenRelationship, newScopeId);
 
-    // TODO: this is failing. Resolving the broken relationship doesn't actually trigger
-    // the deletion to proceed. Should it?
+    // The scope still exists.
+    chai.expect(briefcase2.elements.tryGetElementProps(theirScopeId)).not.to.be.undefined;
+
+    // But we can delete it now.
+    interactive.editTxn.deleteElement(theirScopeId);
     chai.expect(briefcase2.elements.tryGetElementProps(theirScopeId)).to.be.undefined;
   });
 
@@ -2859,7 +2863,7 @@ describe("InteractiveRebase", () => {
     chai.expect(() => conflict.acceptOurs()).to.throw();
   });
 
-  it("restores an upstream-inserted dependent only once all of its deleted owners are replaced", async () => {
+  it("DeletionEffect - cascade reported only on deletion of the first owner", async () => {
     const [listId, drawingId] = await withEditTxn(briefcase1, async (txn) => {
       const list = DocumentListModel.insert(txn, IModel.rootSubjectId, "LimitationDocuments");
       const drawing = txn.insertElement({
@@ -2907,51 +2911,16 @@ describe("InteractiveRebase", () => {
     chai.expect(drawingElementDeletionEffect.affectedId).to.equal(drawingModelId);
     chai.expect(drawingElementDeletionEffect.affectedClassFullName).to.equal(DrawingModel.classFullName);
     chai.expect(drawingElementDeletionEffect.action).to.equal("cascade");
-    chai.expect(drawingElementDeletionEffect.references.length).to.equal(2);
+    chai.expect(drawingElementDeletionEffect.references.length).to.equal(1);
     chai.expect(drawingElementDeletionEffect.references[0].navigationProperty).to.equal("modeledElement");
-    chai.expect(drawingElementDeletionEffect.references[1].navigationProperty).to.equal("parentModel");
 
+    // The document list model conflict should not have a deletion effect for the drawing model because it was already
+    // cascade deleted along with the drawing element.
     // There should also be a DeletionEffect on the document list model, referring to the same affected DrawingModel.
     const documentListModelConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName === DocumentListModel.classFullName);
     chai.expect(documentListModelConflict).to.not.be.undefined;
     if (!documentListModelConflict) return;
-    chai.expect(documentListModelConflict.deletionEffects.length).to.equal(1);
-    const documentListModelDeletionEffect = documentListModelConflict.deletionEffects[0];
-    chai.expect(documentListModelDeletionEffect.affectedId).to.equal(drawingModelId);
-    chai.expect(documentListModelDeletionEffect.affectedClassFullName).to.equal(DrawingModel.classFullName);
-    chai.expect(documentListModelDeletionEffect.action).to.equal("cascade");
-    chai.expect(documentListModelDeletionEffect.references.length).to.equal(2);
-    chai.expect(documentListModelDeletionEffect.references[0].navigationProperty).to.equal("modeledElement");
-    chai.expect(documentListModelDeletionEffect.references[1].navigationProperty).to.equal("parentModel");
-
-    chai.expect(documentListModelDeletionEffect).to.equal(drawingElementDeletionEffect);
-
-    // Once _both_ instances are replaced, the drawing model and element should be created again.
-    // TODO
-    // chai.expect(briefcase2.models.tryGetModelProps(drawingModelId)).to.be.undefined;
-    // documentListModelConflict.replaceDeletedInstance();
-
-
-    /*const listModelConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName === "BisCore:DocumentListModel");
-    const listElementConflict = interactive.conflicts.find((conflict) => conflict.id === listId && conflict.classFullName !== "BisCore:DocumentListModel");
-    const drawingConflict = interactive.conflicts.find((conflict) => conflict.id === drawingId && conflict.classFullName === Drawing.classFullName);
-    chai.expect(listModelConflict).to.not.be.undefined;
-    chai.expect(listElementConflict).to.not.be.undefined;
-    chai.expect(drawingConflict).to.not.be.undefined;
-    if (!listModelConflict || !listElementConflict || !drawingConflict) return;
-
-    // Keep our deletion of the drawing, but restore the document list model (via its partition's closure).
-    drawingConflict.acceptOurs();
-    chai.expect(() => listElementConflict.acceptTheirs()).to.not.throw();
-    chai.expect(() => listModelConflict.acceptTheirs()).to.not.throw();
-    chai.expect(briefcase2.models.tryGetModelProps(listId)).to.not.be.undefined;
-    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.be.undefined;
-    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.be.undefined;
-
-    // Restoring the drawing too means both of the sub-model's owners exist again, so it comes back.
-    drawingConflict.acceptTheirs();
-    chai.expect(briefcase2.elements.tryGetElementProps(drawingId)).to.not.be.undefined;
-    chai.expect(briefcase2.models.tryGetModelProps(drawingId)).to.not.be.undefined;*/
+    chai.expect(documentListModelConflict.deletionEffects.length).to.equal(0);
   });
 
   it("restores a multi-owner dependent after re-deleting its owners starting with the parent model", async () => {
