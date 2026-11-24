@@ -2,21 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { registerBackendCallback as registerVitestBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
-import { registerBackendCallback as registerCertaBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { getTokenCallbackName, verticalCrsChangesCallbackName } from "./certaCommon";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
+import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
 import { AccessToken, assert } from "@itwin/core-bentley";
 import { BriefcaseDb, BriefcaseManager, IModelHost, withEditTxn } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { GeographicCRS } from "@itwin/core-common";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { TestUtility as OidcTestUtility } from "@itwin/oidc-signin-tool";
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { getTokenCallbackName, verticalCrsChangesCallbackName } from "../common/testCallbacks";
 
-// A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
+/** Lets the Electron test backend inject the token it signed in with; `setAccessToken` is protected in the base class. */
+export class TestElectronMainAuthorization extends ElectronMainAuthorization {
+  public override setAccessToken(token: AccessToken): void {
+    super.setAccessToken(token);
+  }
+}
 
-export function exposeBackendCallbacks(){
-  const registerBackendCallback = process.env.VITEST_CORE_RUNNER === "vitest" ? registerVitestBackendCallback : registerCertaBackendCallback;
+/** Register backend callbacks used by both the Chromium and Electron test runners.
+ * @param electronAuth The Electron backend's authorization client, which serves tokens to the renderer; omit for Chrome.
+ */
+export function exposeBackendCallbacks(electronAuth?: TestElectronMainAuthorization) {
   let verticalWriter: BriefcaseDb | undefined;
   let verticalReaderFile: string | undefined;
   let savedAuthorizationClient = IModelHost.authorizationClient;
@@ -80,13 +86,17 @@ export function exposeBackendCallbacks(){
     return JSON.stringify({ index: verticalWriter.changeset.index });
   });
 
-  registerBackendCallback(getTokenCallbackName, async (user: any): Promise<AccessToken> => {
-    const accessToken = await OidcTestUtility.getAuthorizationClient(user, {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
-    }).getAccessToken();
-    (IModelHost.authorizationClient as ElectronMainAuthorization as any).setAccessToken(accessToken);
+  registerBackendCallback(getTokenCallbackName, async (user: TestUserCredentials): Promise<AccessToken> => {
+    const accessToken = electronAuth
+      ? await OidcTestUtility.getAuthorizationClient(user, {
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
+      }).getAccessToken()
+      : await OidcTestUtility.getAccessToken(user);
+
+    electronAuth?.setAccessToken(accessToken);
+
     return accessToken;
   });
 }

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { expect } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { ElementAgenda, IModelApp, IModelConnection, ModifyElementSource, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -11,11 +11,11 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Tools", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -23,36 +23,36 @@ describe("Tools", () => {
   it("ElementAgenda tests", () => {
     const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const agenda = new ElementAgenda(imodel);
-    assert.equal(agenda.iModel, imodel);
-    assert.equal(agenda.count, 0);
+    expect(agenda.iModel).toBe(imodel);
+    expect(agenda.count).toBe(0);
     agenda.add(ids[0]);
-    assert.equal(agenda.length, 1, "add with Id64");
+    expect(agenda.length, "add with Id64").toBe(1);
     agenda.add([ids[0], ids[1]]);
     agenda.setSource(ModifyElementSource.Selected);
-    assert.equal(agenda.length, 2, "add with array");
-    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource selected");
+    expect(agenda.length, "add with array").toBe(2);
+    expect(agenda.getSource(), "setSource selected").toBe(ModifyElementSource.Selected);
     const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     agenda.add(idsSet);
     agenda.setSource(ModifyElementSource.Selected);
-    assert.equal(agenda.length, 4, "add with IdSet");
-    ids.forEach((id) => assert.isTrue(agenda.has(id)));
-    assert.isFalse(agenda.has("0x11"), "should not find");
-    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "setSource group");
-    assert.equal(imodel.hilited.elements.size, 4, "hilite");
+    expect(agenda.length, "add with IdSet").toBe(4);
+    ids.forEach((id) => expect(agenda.has(id)).toBe(true));
+    expect(agenda.has("0x11")).toBe(false);
+    expect(agenda.getSource(), "setSource group").toBe(ModifyElementSource.Selected);
+    expect(imodel.hilited.elements.size, "hilite").toBe(4);
     agenda.remove(ids[0]);
-    assert.equal(imodel.hilited.elements.size, 3, "remove unhilites");
-    assert.equal(agenda.length, 3, "remove");
+    expect(imodel.hilited.elements.size, "remove unhilites").toBe(3);
+    expect(agenda.length, "remove").toBe(3);
     agenda.popGroup();
-    assert.equal(imodel.hilited.elements.size, 1, "popGroup unhilites");
-    assert.equal(agenda.length, 1, "popGroup");
-    assert.equal(agenda.getSource(), ModifyElementSource.Selected, "popGroup pops source");
+    expect(imodel.hilited.elements.size, "popGroup unhilites").toBe(1);
+    expect(agenda.length, "popGroup").toBe(1);
+    expect(agenda.getSource(), "popGroup pops source").toBe(ModifyElementSource.Selected);
     agenda.invert(idsSet);
-    assert.equal(agenda.length, 3, "invert");
-    assert.equal(imodel.hilited.elements.size, 3, "invert unhilites");
-    assert.isTrue(agenda.find(ids[0]), "agenda find");
+    expect(agenda.length, "invert").toBe(3);
+    expect(imodel.hilited.elements.size, "invert unhilites").toBe(3);
+    expect(agenda.find(ids[0])).toBe(true);
     agenda.clear();
-    assert.isTrue(agenda.isEmpty, "clear works");
-    assert.equal(imodel.hilited.elements.size, 0, "clear unhilites");
+    expect(agenda.isEmpty).toBe(true);
+    expect(imodel.hilited.elements.size, "clear unhilites").toBe(0);
   });
 
   // new test demonstrating primitive tool install serialization
@@ -94,19 +94,19 @@ describe("Tools", () => {
     const fast = new FastTool();
 
     const [res1, res2] = await Promise.all([slow.run(), fast.run()]);
-    assert.isTrue(res1);
-    assert.isTrue(res2);
+    expect(res1).toBe(true);
+    expect(res2).toBe(true);
     // Ensure events show serialized start/done pairs (no interleaving)
     for (let i = 0; i < events.length; i += 2) {
-      assert(events[i].startsWith("start "));
-      assert(events[i + 1].startsWith("done "));
-      assert.equal(events[i].slice(6), events[i + 1].slice(5)); // same tool name
+      expect(events[i].startsWith("start ")).toBeTruthy();
+      expect(events[i + 1].startsWith("done ")).toBeTruthy();
+      expect(events[i].slice(6)).toBe(events[i + 1].slice(5)); // same tool name
     }
     // final active primitive must match last start event
     const lastStart = events.filter((e) => e.startsWith("start ")).pop();
     if (lastStart) {
       const toolName = lastStart.slice(6);
-      assert.strictEqual(toolAdmin.primitiveTool?.constructor.name, toolName);
+      expect(toolAdmin.primitiveTool?.constructor.name).toBe(toolName);
     }
   });
 
@@ -156,10 +156,10 @@ describe("Tools", () => {
     // but the new tool must not become active until cleanup has finished.
     const idxCleanupEnd = order.indexOf("cleanup slow end");
     const idxStartedFast = order.indexOf("started fast");
-    assert(idxCleanupEnd >= 0);
-    assert(idxStartedFast >= 0);
-    assert(idxStartedFast > idxCleanupEnd, `fast started at ${idxStartedFast} before cleanup end ${idxCleanupEnd}`);
+    expect(idxCleanupEnd >= 0).toBeTruthy();
+    expect(idxStartedFast >= 0).toBeTruthy();
+    expect(idxStartedFast > idxCleanupEnd).toBeTruthy();
     // active primitive should correspond to last installed tool in sequence
-    assert.strictEqual(toolAdmin.primitiveTool, fastTool);
+    expect(toolAdmin.primitiveTool).toBe(fastTool);
   });
 });

@@ -2,26 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as sinonChai from "sinon-chai";
-import { afterEach, beforeAll, beforeEach } from "vitest";
-import { setBackendCallbackInvoker } from "../certa/certaCommon";
+import { afterEach, beforeEach } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
+import { backendOriginFor } from "@itwin/vitest-browser-bridge/ports";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
-import "./testHooks";
-import { installChaiAssertions, resolveChaiPlugin } from "./testAssertions";
-
-beforeAll(async () => {
-  const { invokeBackendCallback } = await import("@itwin/vitest-browser-bridge/callbacks/browser");
-  setBackendCallbackInvoker(invokeBackendCallback);
-});
-
-chai.use(resolveChaiPlugin(chaiAsPromised));
-chai.use(resolveChaiPlugin(sinonChai));
-installChaiAssertions();
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
@@ -29,7 +15,7 @@ RpcConfiguration.disableRoutingValidation = true;
 if (!ProcessDetector.isElectronAppFrontend) {
   const params: BentleyCloudRpcParams = {
     info: { title: "full-stack-test", version: "v1.0" },
-    pathPrefix: `http://${window.location.hostname}:${Number(window.location.port) + 2000}`,
+    pathPrefix: backendOriginFor(window.location),
   };
   BentleyCloudRpcManager.initializeClient(params, rpcInterfaces);
 }

@@ -74,7 +74,7 @@ steps:
           ${{ else }}:
             RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheReadSAS)
 
-      - script: npm run -s webpack:test
+      - script: npm run -s --if-present webpack:test
         workingDirectory: full-stack-tests/core
         displayName: "Rebundle integration tests with current environment"
 
