@@ -5,15 +5,17 @@
 
 import { expect } from "chai";
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, SheetProps, SubCategoryAppearance, SubjectProps } from "@itwin/core-common";
+import { LineSegment3d, Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, GeometryStreamBuilder, IModel, IModelError, QueryBinder, SheetProps, SubCategoryAppearance, SubjectProps, ViewAttachmentProps } from "@itwin/core-common";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import { DrawingCategory } from "../../Category";
+import { DisplayStyle2d } from "../../DisplayStyle";
 import { DrawingGraphic, GeometryPart, Sheet, SheetBorderPrototype, SheetPrototype, Subject } from "../../Element";
 import { ElementTreeDeleter } from "../../ElementTreeWalker";
 import { SnapshotDb } from "../../IModelDb";
 import { DocumentListModel, DrawingModel, SheetModel } from "../../Model";
 import { SheetHasSheetPrototype, SheetPrototypeHasSheetBorderPrototype } from "../../NavigationRelationship";
+import { CategorySelector, DrawingViewDefinition, ViewAttachment } from "../../ViewDefinition";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SheetPrototype", () => {
@@ -79,14 +81,15 @@ describe("SheetPrototype", () => {
       return txn.insertElement(props);
     };
 
+    const sheetProps = (name: string, links?: Pick<SheetProps, "sheetPrototype" | "sheetTemplate">): SheetProps => ({
+      classFullName: Sheet.classFullName,
+      model: documentListModelId,
+      code: Sheet.createCode(db, documentListModelId, name),
+      ...links,
+    });
+
     const insertSheet = (txn: EditTxn, prototypeId: Id64String, name: string): Id64String => {
-      const sheetProps: SheetProps = {
-        classFullName: Sheet.classFullName,
-        model: documentListModelId,
-        code: Sheet.createCode(db, documentListModelId, name),
-        sheetPrototype: new SheetHasSheetPrototype(prototypeId),
-      };
-      return txn.insertElement(sheetProps);
+      return txn.insertElement(sheetProps(name, { sheetPrototype: new SheetHasSheetPrototype(prototypeId) }));
     };
 
     it("inserts a SheetPrototype and SheetBorderPrototype with their sub-models", () => {
@@ -126,15 +129,11 @@ describe("SheetPrototype", () => {
 
     it("records the prototype a Sheet was created from", () => {
       const prototypeId = withEditTxn(db, (txn) => SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, height: 0.297, width: 0.42 }));
-      const sheetProps: SheetProps = {
-        classFullName: Sheet.classFullName,
-        model: documentListModelId,
-        code: Sheet.createCode(db, documentListModelId, "Sheet from prototype"),
+      const sheetId = withEditTxn(db, (txn) => txn.insertElement({
+        ...sheetProps("Sheet from prototype", { sheetPrototype: new SheetHasSheetPrototype(prototypeId) }),
         height: 0.297,
         width: 0.42,
-        sheetPrototype: new SheetHasSheetPrototype(prototypeId),
-      };
-      const sheetId = withEditTxn(db, (txn) => txn.insertElement(sheetProps));
+      } as SheetProps));
 
       const sheet = db.elements.getElement<Sheet>(sheetId);
       expect(sheet).instanceof(Sheet);
@@ -142,6 +141,24 @@ describe("SheetPrototype", () => {
       expect(sheet.sheetPrototype?.relClassName?.replace(".", ":")).to.equal(SheetHasSheetPrototype.classFullName);
       expect(sheet.getReferenceIds().has(`e${prototypeId}`)).to.be.true;
       expect((sheet.toJSON() as SheetProps).sheetPrototype?.id).to.equal(prototypeId);
+    });
+
+    it("records a sheetPrototype on a legacy Sheet that already has a sheetTemplate", () => {
+      const { protoId, templateId, sheetId } = withEditTxn(db, (txn) => {
+        const template = txn.insertElement({ classFullName: "BisCore:SheetTemplate", model: IModel.dictionaryId, code: Code.createEmpty() });
+        // Legacy sheets hold the template as a navigation property.
+        const sheet = txn.insertElement({ ...sheetProps("Legacy sheet"), sheetTemplate: { id: template } } as unknown as SheetProps);
+        return { protoId: SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId }), templateId: template, sheetId: sheet };
+      });
+      const queryLinks = () => db.withQueryReader("SELECT SheetTemplate.Id, SheetPrototype.Id FROM bis.Sheet WHERE ECInstanceId=?", (reader) => {
+        reader.step();
+        return [reader.current[0], reader.current[1]];
+      }, new QueryBinder().bindId(1, sheetId));
+      expect(queryLinks()).to.deep.equal([templateId, undefined]);
+
+      const props = db.elements.getElementProps<SheetProps>(sheetId);
+      withEditTxn(db, (txn) => txn.updateElement({ ...props, sheetPrototype: new SheetHasSheetPrototype(protoId) }));
+      expect(queryLinks()).to.deep.equal([templateId, protoId]);
     });
 
     it("enforces the sub-model class of prototypes and borders, allowing subclasses", () => {
@@ -273,6 +290,30 @@ describe("SheetPrototype", () => {
       expect([...used]).to.deep.equal([protoId]);
       for (const id of [protoId, ...graphicIds])
         expect(db.elements.tryGetElementProps(id)).not.to.be.undefined;
+    });
+
+    it("deleteDefinitionElements deletes a prototype and border linked by a view of the border attached to the prototype's sheet model", () => {
+      const ids = withEditTxn(db, (txn) => {
+        const border = SheetBorderPrototype.insert(txn, { definitionModelId: IModel.dictionaryId });
+        const proto = SheetPrototype.insert(txn, { definitionModelId: IModel.dictionaryId, borderId: border });
+        const categorySelector = CategorySelector.insert(txn, IModel.dictionaryId, "BorderViewCategories", [drawingCategoryId]);
+        const displayStyle = DisplayStyle2d.insert(txn, IModel.dictionaryId, "BorderViewStyle");
+        const view = DrawingViewDefinition.insert(txn, IModel.dictionaryId, "BorderView", border, categorySelector, displayStyle, Range2d.createXYXY(0, 0, 1, 1));
+        const attachmentProps: ViewAttachmentProps = {
+          classFullName: ViewAttachment.classFullName,
+          model: proto,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          placement: { origin: Point2d.createZero(), angle: 0 },
+          view: { id: view },
+        };
+        return { proto, border, categorySelector, displayStyle, view, attachment: txn.insertElement(attachmentProps), graphic: insertGraphic(txn, border) };
+      });
+
+      const used = withEditTxn(db, (txn) => txn.deleteDefinitionElements([ids.proto, ids.border, ids.view, ids.categorySelector, ids.displayStyle]));
+      expect([...used]).to.deep.equal([]);
+      for (const id of Object.values(ids))
+        expect(db.elements.tryGetElementProps(id)).to.be.undefined;
     });
 
     it("ElementTreeDeleter preserves the populated sub-models of prototypes and borders that are still in use", () => {

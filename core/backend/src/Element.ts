@@ -1617,7 +1617,7 @@ export class Sheet extends Document {
    */
   public sheetTemplate?: Id64String;
   /** The [[SheetPrototype]] this sheet was created from, if any.
-   * Takes precedence over the legacy [[Sheet.sheetTemplate]] if both are set.
+   * A legacy Sheet may also have a [[Sheet.sheetTemplate]]; the sheetPrototype takes precedence, and new Sheets should set only the sheetPrototype.
    * @beta
    */
   public sheetPrototype?: RelatedElement;

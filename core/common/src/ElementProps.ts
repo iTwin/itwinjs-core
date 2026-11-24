@@ -348,7 +348,7 @@ export interface SheetProps extends ElementProps {
    */
   sheetTemplate?: Id64String;
   /** The [SheetPrototype]($backend) this sheet was created from, if any.
-   * Takes precedence over the legacy [[SheetProps.sheetTemplate]] if both are set.
+   * A legacy Sheet may also have a [[SheetProps.sheetTemplate]]; the sheetPrototype takes precedence.
    * @beta
    */
   sheetPrototype?: RelatedElementProps;
