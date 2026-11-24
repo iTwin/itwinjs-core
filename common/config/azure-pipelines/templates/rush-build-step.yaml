@@ -20,7 +20,7 @@ steps:
       const cp = require('node:child_process');
       const env = { ...process.env };
       let [mode, ...args] = process.argv.slice(1);
-      if (env.RUSH_BUILD_CACHE_ENABLED === '0' || env.ITWIN_NATIVE_CACHE_MODE === 'off') mode = 'off';
+      if (env.RUSH_BUILD_CACHE_ENABLED === '0') mode = 'off';
       const native = env.ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === 'true' || !!env.IMODELJS_NATIVE_OVERRIDE;
       try {
       const file = path.resolve('common/scripts/run-rush-build.js');

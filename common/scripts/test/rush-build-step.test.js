@@ -87,12 +87,6 @@ test("runtime cache-off wins even when template expansion selected read/write", 
   }
 });
 
-test("native preflight can force a compatible cache-off fallback", () => {
-  const result = run("read", { ITWIN_NATIVE_PR_VALIDATION: "true", ITWIN_NATIVE_CACHE_MODE: "off" });
-  assert.equal(result.calls[0].runner, undefined);
-  assert.equal(result.calls[0].args[1], "rebuild");
-});
-
 test("old native checkouts rebuild without cache instead of loading an absent/unsafe runner", () => {
   for (const options of [{ missing: true }, { legacy: true }]) {
     const result = run("read", { IMODELJS_NATIVE_OVERRIDE: "/candidate", RUSH_BUILD_CACHE_CREDENTIAL: "reader" }, options);
