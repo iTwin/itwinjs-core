@@ -109,7 +109,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
   /** Event raised after changes are pulled and merged into the briefcase.
-   * @see [[BriefcaseConnection.pullAndMergeChanges]].
+   * @see [[BriefcaseConnection.pullChanges]].
    */
   public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
@@ -117,6 +117,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * @see [[BriefcaseConnection.pushChanges]].
    */
   public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /** Event raised after all of the briefcase's local changes are discarded.
+   * @see [[BriefcaseConnection.discardChanges]].
+   * @beta
+   */
+  public readonly onChangesDiscarded = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -199,6 +205,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
       this.onApplyIncomingChangesEnd.clear();
       this.onBeforeUndoRedo.clear();
       this.onChangesApplied.clear();
+      this.onChangesDiscarded.clear();
       this.onChangesPulled.clear();
       this.onChangesPushed.clear();
       this.onCommit.clear();
@@ -430,6 +437,11 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** @internal */
   public notifyPushedChanges(parentChangeset: ChangesetIndexAndId) {
     this.onChangesPushed.raiseEvent(parentChangeset);
+  }
+
+  /** @internal */
+  public notifyChangesDiscarded(parentChangeset: ChangesetIndexAndId) {
+    this.onChangesDiscarded.raiseEvent(parentChangeset);
   }
 
   /** @internal */

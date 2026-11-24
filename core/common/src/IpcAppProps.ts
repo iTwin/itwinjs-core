@@ -134,6 +134,7 @@ export interface TxnNotifications {
   notifyAfterUndoRedo: (isUndo: boolean) => void;
   notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
   notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+  notifyChangesDiscarded: (parentChangeSetId: ChangesetIndexAndId) => void;
 
   notifyIModelNameChanged: (name: string) => void;
   notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
