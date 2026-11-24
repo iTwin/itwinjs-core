@@ -28,7 +28,7 @@ loadEnv(path.join(__dirname, ".env"));
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
-    entry: globSync(path.resolve(__dirname, "lib/**/*.test.js"), {
+    entry: globSync(path.resolve(__dirname, "lib/frontend/**/*.test.js"), {
       windowsPathsNoEscape: true,
     }),
     output: {
@@ -51,7 +51,10 @@ function createConfig(shouldInstrument) {
         url: false,
       },
       alias: {
-        "supports-color$": "supports-color/browser.js"
+        "supports-color$": "supports-color/browser.js",
+        // Static imports of this entry select core-electron's CJS build and TestUtility's import() selects its ESM build.
+        // Pin both to CJS so the bundle has one ElectronApp, and startup and shutdown share its state.
+        "@itwin/core-electron/renderer$": require.resolve("@itwin/core-electron/renderer"),
       }
     },
     module: {
