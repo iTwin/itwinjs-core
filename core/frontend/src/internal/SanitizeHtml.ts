@@ -4,12 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import DOMPurify from "dompurify";
+import { expectNotNull } from "@itwin/core-bentley";
+
+let purifier: typeof DOMPurify | undefined;
 
 /** Sanitizes formatted HTML, excluding inline CSS and non-HTML markup.
  * @internal
  */
 export function sanitizeHtml(html: string): DocumentFragment {
-  return DOMPurify.sanitize(html, {
+  // The DOM may be installed after this module loads, as in Node-based tests.
+  purifier ??= DOMPurify(expectNotNull(document.defaultView));
+  return purifier.sanitize(html, {
     /* eslint-disable @typescript-eslint/naming-convention -- DOMPurify defines these option names. */
     USE_PROFILES: { html: true },
     FORBID_TAGS: ["style"],
