@@ -12,6 +12,7 @@ import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
+import { sanitizeSvg } from "./internal/SanitizeSvg";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
@@ -31,7 +32,10 @@ export interface WidthAndHeight {
 export interface MarkupSvgData {
   /** The size of the image, in pixels. This also indicates the aspect ratio of the SVG data. */
   rect: WidthAndHeight;
-  /** a string holding the svg data for the markup. Will be undefined if [[MarkupApp.stop]] is called without an active Markup */
+  /** a string holding the svg data for the markup. Will be undefined if [[MarkupApp.stop]] is called without an active Markup.
+   * @note When passed to [[MarkupApp.start]], the string is sanitized before it is added to the document: scripts, event handler attributes,
+   * `foreignObject` and other non-SVG elements, and `javascript:` URLs are removed. `use` elements keep only references to content in the same document, such as `href="#id"`.
+   */
   svg?: string;
 }
 
@@ -209,7 +213,9 @@ export class MarkupApp {
   /** @internal */
   public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
 
-  /** Start a markup session */
+  /** Start a markup session.
+   * @param markupData Optional existing markup to continue editing, typically saved from a previous call to [[MarkupApp.stop]]. Its SVG data is sanitized; see [[MarkupSvgData.svg]].
+   */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
     if (this.markup)
       return; // a markup session is already active.
@@ -443,11 +449,14 @@ export class Markup {
 
     // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
-      this.markupDiv.innerHTML = markupData.svg; // make it a child of the markupDiv
+      this.markupDiv.innerHTML = sanitizeSvg(markupData.svg); // make it a child of the markupDiv
       this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
       this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
-      if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
+      if (!this.svgContainer || !this.svgMarkup) { // if either isn't present, its not a valid markup
+        // It would be appropriate to throw here, however this may break existing users
+        Logger.logWarning(`${FrontendLoggerCategory.Package}.markup`, "Supplied markup svg is not a valid markup");
         return;
+      }
       removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
       this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the supplied markup.
     } else {
