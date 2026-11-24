@@ -702,7 +702,9 @@ export class IModelApp {
     };
   }
 
-  /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText. */
+  /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText.
+   * @note `innerHTML` is not sanitized. Pass only trusted markup; use `innerText` for plain text.
+   */
   public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
     /** The parent for the new HTMLElement */
     parent?: HTMLElement;
@@ -710,7 +712,9 @@ export class IModelApp {
     className?: string;
     /** The Id for the new HTMLElement */
     id?: string;
-    /** Raw HTML for the new element. Supply only trusted markup; this helper does not sanitize it. Use `innerText` for plain text. */
+    /** Raw HTML for the new element. Supply only trusted markup; this helper does not sanitize it.
+     * @deprecated Use `innerText` for plain text or append DOM nodes for formatted content.
+     */
     innerHTML?: string;
     /** innerText for the new HTMLElement */
     innerText?: string;
@@ -721,8 +725,10 @@ export class IModelApp {
         el.className = opt.className;
       if (undefined !== opt.id)
         el.id = opt.id;
-      if (undefined !== opt.innerHTML)
-        el.innerHTML = opt.innerHTML;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- Preserve support for existing callers.
+      const { innerHTML } = opt;
+      if (undefined !== innerHTML)
+        el.innerHTML = innerHTML;
       if (undefined !== opt.innerText)
         el.innerText = opt.innerText;
       if (undefined !== opt.parent)
