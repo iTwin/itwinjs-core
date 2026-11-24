@@ -76,7 +76,7 @@ describe("Map layer attribution XSS hardening", () => {
     await provider.getToolTip(strings, {} as any, {} as any, {} as any);
 
     expect(strings).toHaveLength(1);
-    // Emulate MapLayerTileTreeReference.getToolTip, which joins the strings into innerHTML.
+    // Parse the provider's output without the renderer's sanitizer to verify the escaping on its own.
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     expect(div.querySelector("img")).toBeNull();
