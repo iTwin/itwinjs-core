@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 09 Nov 2026 16:52:11 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Nov 2026 18:00:26 GMT and should not be manually modified.
+
+## 5.15.2
+Tue, 24 Nov 2026 18:00:26 GMT
+
+### Updates
+
+- Limit the number of Ids the backend expands from compressed Id sets in ViewStore render timelines and array-form Ids.
+- Fix a stack overflow when a text annotation field's value changes as a consequence of updating the annotation.
 
 ## 5.15.1
 Mon, 09 Nov 2026 16:52:11 GMT
