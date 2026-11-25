@@ -8,6 +8,7 @@ import { CompressedId64Set, Id64 } from "@itwin/core-bentley";
 import { EmptyLocalization, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
+import { SpatialViewState } from "../SpatialViewState";
 import { openBlankViewport } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 
@@ -25,6 +26,27 @@ describe("Viewed content loading", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
   afterEach(() => vi.restoreAllMocks());
+
+  it.each([false, true])("loads initially selected content for an in-memory primary reference (attached: %s)", async (attach) => {
+    using vp = openBlankViewport();
+    const db = vp.iModel;
+    const props = vp.view.toProps();
+    props.categorySelectorProps.categories = ["0x10"];
+    props.modelSelectorProps!.models = ["0x20"];
+    vi.spyOn(db, "isClosed", "get").mockReturnValue(false);
+    const categories = vi.spyOn(db, "querySubCategories").mockResolvedValue([{ parentId: "0x10", id: "0x11", appearance: {} }]);
+    const models = vi.spyOn(db.models, "getProps").mockResolvedValue([{ id: "0x20", classFullName: "BisCore:PhysicalModel", modeledElement: { id: "0x20" } }]);
+    const view = SpatialViewState.createFromProps(props, db);
+    if (attach)
+      vp.changeView(view);
+    const ref = view.iModelRefs.primary;
+    await vi.waitFor(() => {
+      expect(ref.isSubCategoryVisible("0x11")).toBe(true);
+      expect(db.models.getLoaded("0x20")).toBeDefined();
+    });
+    expect(categories).toHaveBeenCalledOnce();
+    expect(models).toHaveBeenCalledOnce();
+  });
 
   it("does not cancel a replacement reference linked by an earlier unlink listener", async () => {
     using vp = openBlankViewport();
@@ -499,6 +521,60 @@ describe("Viewed content loading", () => {
           }
         });
       }
+
+      it.each([false, true])("finishes disjoint model requests without refetching overlapping IDs (first model hidden: %s)", async (hideFirst) => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        const first = deferred();
+        const second = deferred();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          const requested: string[][] = [];
+          vi.spyOn(ref.iModel.models, "getProps").mockImplementation(async (ids) => {
+            const batch = [...Id64.iterable(ids)];
+            requested.push(batch);
+            await (batch.includes("0x30") ? first : second).promise;
+            return batch.map((id) => ({ id, classFullName: "BisCore:Model", modeledElement: { id } }));
+          });
+          const load = async (ids: string[]) => linked ? ref.addAndLoadViewedModels(ids) : vp.addViewedModels(ids);
+          const loaded = vi.fn();
+          ref.onViewedModelsLoaded.addListener(loaded);
+          const loadA = load(["0x30"]);
+          await vi.waitFor(() => expect(requested).toEqual([["0x30"]]));
+          if (hideFirst)
+            ref.viewedModels.delete("0x30");
+          const bothReady = vi.fn();
+          const loadBoth = hideFirst ? undefined : load(["0x30", "0x31"]).then(bothReady);
+          const expectBothRequests = () => expect(requested).toEqual([["0x30"], ["0x31"]]);
+          if (loadBoth)
+            await vi.waitFor(expectBothRequests); // The mixed request must dispatch B independently of A.
+          const bReady = vi.fn();
+          const loadB = load(["0x31"]).then(bReady);
+          await vi.waitFor(expectBothRequests);
+          second.resolve();
+          await vi.waitFor(() => expect(bReady).toHaveBeenCalledOnce());
+          expect(loaded).toHaveBeenCalledOnce();
+          expect(ref.iModel.models.getLoaded("0x31")).toBeDefined();
+          expect(ref.iModel.models.getLoaded("0x30")).toBeUndefined();
+          expect(bothReady).not.toHaveBeenCalled();
+          expect(ref.isLoadingComplete).toBe(false);
+          first.resolve();
+          await Promise.all([loadA, loadB, loadBoth]);
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          expect(loaded).toHaveBeenCalledTimes(2);
+          expect(bothReady).toHaveBeenCalledTimes(hideFirst ? 0 : 1);
+          expect(ref.iModel.models.getLoaded("0x30")).toBeDefined();
+          expect(requested).toEqual([["0x30"], ["0x31"]]);
+        } finally {
+          first.resolve();
+          second.resolve();
+          other.closeSync();
+        }
+      });
 
       it("serializes additions made while a model request is in flight", async () => {
         using vp = openBlankViewport();
