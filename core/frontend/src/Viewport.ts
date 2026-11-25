@@ -8,7 +8,6 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
-  ObservableSet,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -1708,7 +1707,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
-  public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
+  public get neverDrawn(): Id64Set | undefined {
+    const ids = this.primaryIModelRef.neverDrawnElements;
+    return 0 < ids.size ? ids : undefined;
+  }
 
   /** Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
@@ -1716,7 +1718,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]].
    */
-  public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
+  public get alwaysDrawn(): Id64Set | undefined {
+    const ids = this.primaryIModelRef.alwaysDrawnElements;
+    return 0 < ids.size ? ids : undefined;
+  }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]

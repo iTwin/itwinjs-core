@@ -325,9 +325,25 @@ describe("Legacy display compatibility", () => {
     expect(provider.getAlwaysDrawnElements(second)).toBeUndefined();
     expect(provider.toJSON(second).neverDrawn).toBeUndefined();
     expect(provider.toJSON(second).alwaysDrawn).toBeUndefined();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the documented legacy getter behavior.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Legacy getters return undefined when empty.
+    expect(second.neverDrawn).toBeUndefined();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Legacy getters return undefined when empty.
+    expect(second.alwaysDrawn).toBeUndefined();
+
+    // Verify 5.15.2 subclass override compatibility (Id64Set | undefined) and non-empty return.
+    class LegacySubclassViewport extends OffScreenViewport {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verifies subclass override compatibility.
+      public override get neverDrawn(): Set<string> | undefined { return super.neverDrawn; }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verifies subclass override compatibility.
+      public override get alwaysDrawn(): Set<string> | undefined { return super.alwaysDrawn; }
+    }
+    const checkSubclass: typeof LegacySubclassViewport = LegacySubclassViewport;
+    expect(checkSubclass).toBeDefined();
+    ref.neverDrawnElements.add("0x3");
+    ref.alwaysDrawnElements.add("0x4");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Non-empty sets return the primary reference's sets.
     expect(second.neverDrawn).toBe(ref.neverDrawnElements);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the documented legacy getter behavior.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Non-empty sets return the primary reference's sets.
     expect(second.alwaysDrawn).toBe(ref.alwaysDrawnElements);
   });
 
