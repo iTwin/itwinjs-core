@@ -12,6 +12,7 @@ import { DisplayStyle3dState } from "../DisplayStyleState";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { ViewRect } from "../common/ViewRect";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { createBlankConnection } from "./createBlankConnection";
 import { openBlankViewport } from "./openBlankViewport";
 
 // The legacy subclass contract remains supported even though new code can use reference-specific providers.
@@ -180,6 +181,50 @@ describe("Legacy display compatibility", () => {
     const overrides = new FeatureSymbology.Overrides();
     provider.addFeatureOverrides(overrides, vp);
     expect(overrides.getElementOverridesById("0x123")?.transparency).toBe(0.9);
+  });
+
+  it("invalidates once per visibility edit and still invalidates when updateIdSet returns an empty set", () => {
+    using vp = openBlankViewport();
+    const ref = vp.primaryIModelRef;
+    const invalidated = vi.fn();
+    ref.onSymbologyOverridesInvalidated.addListener(invalidated);
+
+    class EmptySetProvider extends EmphasizeElements {
+      public override updateIdSet() { return new Set<string>(); }
+    }
+    const emptyProvider = new EmptySetProvider();
+    expect(emptyProvider.setNeverDrawnElements(["0x1"], vp)).toBe(true);
+    expect(invalidated).toHaveBeenCalledTimes(1);
+    expect(emptyProvider.setAlwaysDrawnElements(["0x1"], vp, false)).toBe(true);
+    expect(invalidated).toHaveBeenCalledTimes(2);
+
+    invalidated.mockClear();
+    const provider = new EmphasizeElements();
+    expect(provider.hideElements(["0x1"], vp)).toBe(true);
+    expect(invalidated).toHaveBeenCalledTimes(1);
+    expect(provider.clearHiddenElements(vp)).toBe(true);
+    expect(invalidated).toHaveBeenCalledTimes(2);
+
+    // Selected-element operations on EmphasizeIModelElements still target the supplied reference.
+    const other = createBlankConnection();
+    try {
+      const refs = vp.iModelRefs;
+      if (!refs.isSpatial)
+        throw new Error("Expected spatial references");
+      const linked = refs.link({ iModel: other });
+      const primaryEmph = EmphasizeIModelElements.getOrCreate(ref);
+      const linkedInvalidated = vi.fn();
+      linked.onSymbologyOverridesInvalidated.addListener(linkedInvalidated);
+      other.selectionSet.add("0x99");
+      expect(primaryEmph.isolateSelectedElements(linked)).toBe(true);
+      expect(linked.alwaysDrawnElements.has("0x99")).toBe(true);
+      expect(linked.isAlwaysDrawnExclusive).toBe(true);
+      expect(ref.alwaysDrawnElements.has("0x99")).toBe(false);
+      expect(linkedInvalidated).toHaveBeenCalled();
+      refs.unlink(linked);
+    } finally {
+      other.closeSync();
+    }
   });
 
   it("reuses override arguments across large emphasis and color sets", () => {
