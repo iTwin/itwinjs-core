@@ -298,7 +298,7 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
 }
 
 /** Open an image specified as a data URL in a new window or tab. Works around differences between browsers and Electron.
- * @param url The base64-encoded image URL.
+ * @param url The base64-encoded image data URL, used directly as the image source.
  * @param title An optional title to apply to the new window.
  * @beta
  */
@@ -308,7 +308,9 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
     return;
 
   const div = win.document.createElement("div");
-  div.innerHTML = `<img src='${url}'/>`;
+  const img = win.document.createElement("img");
+  img.src = url;
+  div.append(img);
   win.document.body.append(div);
   if (undefined !== title)
     win.document.title = title;

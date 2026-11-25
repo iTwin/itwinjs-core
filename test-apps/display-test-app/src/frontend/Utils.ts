@@ -12,7 +12,7 @@ export function showStatus(string1: string, string2?: string) {
     outString = outString.concat(" ", string2);
   const showstatus = document.getElementById("showstatus");
   if (showstatus)
-    showstatus.innerHTML = outString;
+    showstatus.textContent = outString;
 }
 
 export function showError(string1: HTMLElement | string, string2?: string) {

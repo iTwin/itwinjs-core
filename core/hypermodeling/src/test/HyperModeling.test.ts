@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EmptyLocalization, SectionType } from "@itwin/core-common";
-import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
+import { EmptyLocalization, IModelReadRpcInterface, SectionType } from "@itwin/core-common";
+import { BeButtonEvent, IModelApp, IModelConnection, ParseAndRunResult } from "@itwin/core-frontend";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
+import { SectionDrawingLocationState } from "../SectionDrawingLocationState";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
+import { SectionMarker } from "../SectionMarkers";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
 describe("Package initialization", () => {
@@ -36,6 +38,45 @@ describe("Package initialization", () => {
     await HyperModeling.initialize();
     const tool = IModelApp.tools.find("HyperModeling.Marker.Config");
     expect(tool).not.to.be.undefined;
+  });
+
+  it("sanitizes the tooltip loaded when hovering a section marker", async () => {
+    await HyperModeling.initialize();
+    const iModel = { routingContext: { token: {} }, getRpcProps: () => ({}) } as IModelConnection;
+    const marker = new SectionMarker(new SectionDrawingLocationState({
+      sectionType: SectionType.Section,
+      drawingToSpatialTransform: "{}",
+      spatialViewId: "0x1",
+      sectionLocationId: "0x2",
+      sectionLocationModelId: "0x3",
+      sectionViewId: "0x4",
+      categoryId: "0x5",
+      userLabel: "Section",
+    }, iModel));
+    let requestedId: string | undefined;
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Saved only to restore the original property.
+    const getClient = IModelReadRpcInterface.getClientForRouting;
+    IModelReadRpcInterface.getClientForRouting = () => ({
+      getToolTipMessage: async (_props, id) => {
+        requestedId = id;
+        return ['<strong style="color: red">Section</strong>: &lt;em&gt;label&lt;/em&gt;'];
+      },
+    } satisfies Pick<IModelReadRpcInterface, "getToolTipMessage"> as IModelReadRpcInterface);
+
+    try {
+      marker.onMouseEnter(new BeButtonEvent());
+      await Promise.resolve();
+      expect(requestedId).to.equal(marker.state.id);
+      const tooltip = marker.title;
+      if (!(tooltip instanceof HTMLElement))
+        throw new Error("Expected an HTML section marker tooltip");
+
+      expect(tooltip.querySelector("strong")?.textContent).to.equal("Section");
+      expect(tooltip.textContent).to.equal("Section: <em>label</em>");
+      expect(tooltip.querySelector("[style], em")).to.be.null;
+    } finally {
+      IModelReadRpcInterface.getClientForRouting = getClient;
+    }
   });
 });
 
