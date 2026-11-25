@@ -412,12 +412,55 @@ export namespace SubCategoriesCache {
     protected _next: QueueEntry[] = [];
     protected _request?: SubCategoriesRequest;
     protected _disposed = false;
+    private readonly _selectors = new Map<SubCategoriesCache, Queue>();
     /** All previously pending category requests have settled, including failed requests. @internal */
     public readonly onDrained = new BeEvent<() => void>();
 
     /** Whether work for this connection is queued or in flight. @internal */
     public hasPending(owner: Owner): boolean {
-      return this._current?.owner === owner || this._next.some((entry) => entry.owner === owner);
+      return this._current?.owner === owner || this._next.some((entry) => entry.owner === owner) || undefined !== this.selectorForOwner(owner);
+    }
+
+    private selectorForOwner(owner: Owner): Queue | undefined {
+      for (const queue of this._selectors.values())
+        if (queue.hasPending(owner))
+          return queue;
+      return undefined;
+    }
+
+    /** Load a selector's metadata independently unless an earlier ordered operation uses its cache or owner. @internal */
+    public pushSelector(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, owner: Owner): void {
+      if (this._disposed)
+        return;
+      const conflicts = (entry: QueueEntry) => entry.cache === cache || entry.owner === owner;
+      const existing = this._selectors.get(cache);
+      const ownerQueue = this.selectorForOwner(owner);
+      if ((ownerQueue && ownerQueue !== existing) || (this._current && conflicts(this._current)) || this._next.some(conflicts)) {
+        this.push(cache, categoryIds, func, { owner });
+        return;
+      }
+
+      if (existing) {
+        existing.push(cache, categoryIds, func, { owner });
+        return;
+      }
+
+      const queue = new Queue();
+      const release = (notifyDrained: boolean) => {
+        if (this._selectors.get(cache) !== queue)
+          return;
+        this._selectors.delete(cache);
+        if (!this._current && (notifyDrained || this._next.length))
+          this.processNext();
+      };
+      this._selectors.set(cache, queue);
+      queue.onDrained.addOnce(() => release(true));
+      try {
+        queue.push(cache, categoryIds, func, { owner });
+      } finally {
+        if (queue.isEmpty)
+          release(false); // A synchronous hit raises no drain event, but its callback can queue ordered work.
+      }
     }
 
     /** Push a request onto the queue. The requested categories will be loaded through the supplied cache if necessary, and then
@@ -429,7 +472,7 @@ export namespace SubCategoriesCache {
         return;
       const owner = options?.owner ?? cache;
       const version = cache.loadVersion;
-      const start = this.isEmpty;
+      const start = !this._current && !this._next.length && !this._selectors.has(cache) && !this.selectorForOwner(owner);
       if (start) {
         this._request = cache.load(categoryIds);
         if (!this._request) {
@@ -457,8 +500,12 @@ export namespace SubCategoriesCache {
      */
     public cancel(owner: Owner): void {
       this._next = this._next.filter((entry) => entry.owner !== owner);
-      if (this._current?.owner !== owner)
+      this.selectorForOwner(owner)?.cancel(owner);
+      if (this._current?.owner !== owner) {
+        if (!this._current && this._next.length)
+          this.processNext();
         return;
+      }
 
       this._current.funcs.length = 0;
       if (!this._request)
@@ -472,6 +519,11 @@ export namespace SubCategoriesCache {
 
     /** Cancel all requests and empty the queue. */
     public [Symbol.dispose](): void {
+      for (const queue of this._selectors.values()) {
+        queue.onDrained.clear();
+        queue[Symbol.dispose]();
+      }
+      this._selectors.clear();
       if (this._current)
         this._current.funcs.length = 0;
       if (undefined !== this._request) {
@@ -485,7 +537,7 @@ export namespace SubCategoriesCache {
     }
 
     public get isEmpty(): boolean {
-      return undefined === this._current && 0 === this._next.length;
+      return !this._current && !this._next.length && !this._selectors.size;
     }
 
     private processCurrent(entry: QueueEntry): void {
@@ -545,7 +597,10 @@ export namespace SubCategoriesCache {
 
     private processNext(): void {
       let next;
-      while (undefined !== (next = this._next.shift())) {
+      while (undefined !== (next = this._next[0])) {
+        if (this._selectors.has(next.cache) || this.selectorForOwner(next.owner))
+          return;
+        this._next.shift();
         this._request = next.cache.load(next.categoryIds);
         if (undefined === this._request) {
           // Keep the entry visible to nested pushes and cancellation until its callbacks finish.
@@ -562,7 +617,7 @@ export namespace SubCategoriesCache {
           return;
         }
       }
-      if (!this._disposed)
+      if (!this._disposed && this.isEmpty)
         this.onDrained.raiseEvent();
     }
   }

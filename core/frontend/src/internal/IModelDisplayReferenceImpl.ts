@@ -219,12 +219,12 @@ export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void 
 
     const missing = cache.getMissing(ref.viewedCategories);
     if (missing) {
-      ref.parent.subcategories.push(cache, missing, (anyLoaded) => {
+      ref.parent.subcategories.pushSelector(cache, missing, (anyLoaded) => {
         if (anyLoaded)
           notifyCategoriesLoaded(ref, missing);
         else
           ref.invalidateSymbologyOverrides();
-      }, { owner: ref.guid });
+      }, ref.guid);
     }
     // Publish independently loaded categories even if the remaining request fails. Register it before notifying listeners.
     if (cache.loadedSince(ref.viewedCategories, version))

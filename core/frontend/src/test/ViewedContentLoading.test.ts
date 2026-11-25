@@ -230,6 +230,38 @@ describe("Viewed content loading", () => {
     }
   });
 
+  it("does not leave category work submitted by an unlink listener ahead of the replacement", async () => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const db = createBlankConnection();
+    const gate = deferred();
+    try {
+      vi.spyOn(db, "isClosed", "get").mockReturnValue(false);
+      vi.spyOn(db, "querySubCategories").mockImplementation(async (ids) => {
+        if ([...CompressedId64Set.iterable(ids)].includes("0x10")) {
+          await gate.promise;
+          return [{ parentId: "0x10", id: "0x11", appearance: {} }];
+        }
+        return [{ parentId: "0x20", id: "0x21", appearance: {} }];
+      });
+      refs.onUnlinked.addOnce((removed) => removed.perModelCategoryVisibility.setOverride("0x2", "0x10", PerModelCategoryVisibility.Override.Show));
+      const old = refs.link({ iModel: db });
+      await vi.waitFor(() => expect(old.isLoadingComplete).toBe(true));
+      refs.unlink(old);
+      const replacement = refs.link({ iModel: db, viewedCategories: ["0x20"] });
+      await vi.waitFor(() => expect(replacement.isSubCategoryVisible("0x21")).toBe(true));
+      expect(refs.subcategories.isEmpty).toBe(true);
+      gate.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(db.subcategories.getSubCategories("0x10")).toBeUndefined();
+    } finally {
+      gate.resolve();
+      db.closeSync();
+    }
+  });
+
   it("does not submit orphan work after a synchronous selector listener unlinks its reference", async () => {
     using vp = openBlankViewport();
     const refs = vp.iModelRefs;
@@ -296,6 +328,58 @@ describe("Viewed content loading", () => {
     }
   });
 
+  it.each([false, true])("loads independent category selectors while another connection is stalled (explicit blocker: %s)", async (explicit) => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const stalledDb = createBlankConnection();
+    const otherDb = createBlankConnection();
+    const gate = deferred();
+    try {
+      const stalled = refs.link({ iModel: stalledDb });
+      const other = refs.link({ iModel: otherDb });
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      const category = "0x10";
+      for (const db of [vp.iModel, stalledDb, otherDb])
+        vi.spyOn(db, "isClosed", "get").mockReturnValue(false);
+      const held = vi.spyOn(stalledDb, "querySubCategories").mockImplementation(async () => {
+        await gate.promise;
+        return [{ parentId: category, id: "0x11", appearance: { invisible: true } }];
+      });
+      const primaryQuery = vi.spyOn(vp.iModel, "querySubCategories").mockResolvedValue([{ parentId: category, id: "0x12", appearance: {} }]);
+      const otherQuery = vi.spyOn(otherDb, "querySubCategories").mockResolvedValue([{ parentId: category, id: "0x13", appearance: {} }]);
+      const drained = vi.fn();
+      refs.subcategories.onDrained.addListener(drained);
+      if (explicit)
+        stalled.changeCategoryDisplay({ categories: category, display: true });
+      else
+        stalled.viewedCategories.add(category);
+      await vi.waitFor(() => expect(held).toHaveBeenCalledOnce());
+      stalled.changeCategoryDisplay({ categories: category, display: true, enableAllSubCategories: true });
+      refs.primary.viewedCategories.add(category);
+      other.viewedCategories.add(category);
+      await vi.waitFor(() => {
+        expect(refs.primary.isLoadingComplete && other.isLoadingComplete).toBe(true);
+        expect(refs.primary.isSubCategoryVisible("0x12")).toBe(true);
+        expect(other.isSubCategoryVisible("0x13")).toBe(true);
+      });
+      expect(stalled.isLoadingComplete).toBe(false);
+      expect(refs.subcategories.isEmpty).toBe(false);
+      expect(drained).not.toHaveBeenCalled();
+      gate.resolve();
+      await vi.waitFor(() => expect(drained).toHaveBeenCalledOnce());
+      expect(stalled.isSubCategoryVisible("0x11")).toBe(true);
+      expect(refs.subcategories.isEmpty).toBe(true);
+      for (const query of [held, primaryQuery, otherQuery])
+        expect(query).toHaveBeenCalledOnce();
+    } finally {
+      gate.resolve();
+      stalledDb.closeSync();
+      otherDb.closeSync();
+    }
+  });
+
   it("does not report another connection's load as pending or newly loaded", async () => {
     using vp = openBlankViewport();
     const refs = vp.iModelRefs;
@@ -339,12 +423,13 @@ describe("Viewed content loading", () => {
           throw new Error("Expected spatial references");
         await vi.waitFor(() => expect(refs.primary.isLoadingComplete).toBe(true));
         vi.spyOn(other, "isClosed", "get").mockReturnValue(false);
-        const query = vi.spyOn(other, "querySubCategories").mockImplementation(async () => { await gate.promise; return []; });
+        const query = vi.spyOn(other, "querySubCategories").mockImplementation(async (ids) => {
+          await ([...CompressedId64Set.iterable(ids)].includes("0x111") ? primaryGate : gate).promise;
+          return [];
+        });
         if (phase === "queued") {
-          vi.spyOn(vp.iModel, "isClosed", "get").mockReturnValue(false);
-          vi.spyOn(vp.iModel, "querySubCategories").mockImplementation(async () => { await primaryGate.promise; return []; });
-          refs.primary.viewedCategories.add("0x111");
-          await Promise.resolve();
+          // An ordered operation on the same cache blocks the selector; a different connection no longer does.
+          await refs.primary.perModelCategoryVisibility.setOverrides([{ modelId: "0x1", categoryIds: ["0x111"], visOverride: PerModelCategoryVisibility.Override.Show }], other);
         }
         const ref = refs.link({ iModel: other, viewedCategories: ["0xabc"] });
         if (phase !== "scheduled")
@@ -356,7 +441,7 @@ describe("Viewed content loading", () => {
         expect([...refs.linked]).toHaveLength(0);
         expect(vp.areAllTileTreesLoaded).toBe(true);
         expect(refs.subcategories.isEmpty).toBe(true);
-        expect(query).toHaveBeenCalledTimes(phase === "in flight" ? 1 : 0);
+        expect(query.mock.calls.filter(([ids]) => [...CompressedId64Set.iterable(ids)].includes("0xabc"))).toHaveLength(phase === "in flight" ? 1 : 0);
       } finally {
         primaryGate.resolve();
         gate.resolve();

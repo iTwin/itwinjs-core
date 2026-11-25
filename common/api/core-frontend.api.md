@@ -10949,6 +10949,7 @@ export namespace SubCategoriesCache {
             owner?: Owner;
             retainOnRetry?: boolean;
         }): void;
+        pushSelector(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, owner: Owner): void;
         // (undocumented)
         protected _request?: SubCategoriesRequest;
     }

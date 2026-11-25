@@ -193,9 +193,14 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
       if (removeIModel)
         this.#iModels.delete(refToRemove.iModel);
 
-      // A listener can immediately relink the same connection. Never cancel its replacement's work.
       unlinkDisplayReference(refToRemove);
-      this.onUnlinked.raiseEvent(refToRemove);
+      try {
+        this.onUnlinked.raiseEvent(refToRemove);
+      } finally {
+        // An unlink listener can submit more work for the removed reference or relink a replacement on the same connection.
+        if (this.subcategories.hasPending(refToRemove.guid))
+          this.subcategories.cancel(refToRemove.guid);
+      }
 
       // The periodic purge only reclaims tile trees of iModels currently associated with a TileUser - once unlinked from
       // every view, nothing else would free this iModel's unused trees while the connection remains open.
