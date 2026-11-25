@@ -38,6 +38,8 @@ export interface OnAspectPropsArg extends OnAspectArg {
 export interface OnAspectIdArg extends OnAspectArg {
   /** The Id of the aspect affected by this event */
   aspectId: Id64String;
+  /** The Id of the element that owns the aspect. */
+  element?: Id64String;
 }
 
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
@@ -103,8 +105,8 @@ export class ElementAspect extends Entity {
   protected static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
     iModel.channels[_verifyChannel](arg.model);
-    const { element } = iModel.elements.getAspect(aspectId);
-    iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
+    const elementId = arg.element ?? iModel.elements.getAspect(aspectId).element.id;
+    iModel.locks.checkExclusiveLock(elementId, "element", "delete aspect");
   }
 
   /** Called after an ElementAspect was deleted.

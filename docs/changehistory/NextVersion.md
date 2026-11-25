@@ -15,6 +15,7 @@ publish: false
     - [Markup SVG data is sanitized](#markup-svg-data-is-sanitized)
   - [Backend](#backend)
     - [Bulk Element Deletion API changes](#bulk-element-deletion-api-changes)
+    - [Bulk ElementAspect operations](#bulk-elementaspect-operations)
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
     - [SQLite 3.54.1](#sqlite-3541)
@@ -168,6 +169,25 @@ Changes to the beta types:
 If you relied on the previous best-effort behavior, inspect `failures` and, for each reported element, either include or update the elements that reference it, or remove it from `ids` together with every requested element it was cascaded from; then call `deleteElements` again. Retries may reveal further violators. Callers that ignored the result, or treated a non-`Success` status as non-fatal, now delete nothing instead of the valid subset.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full details.
+
+### Bulk ElementAspect operations
+
+The new `@beta` [EditTxn.insertAspects]($backend), [EditTxn.updateAspects]($backend) and [EditTxn.deleteAspects]($backend) methods write many [ElementAspect]($backend)s in one call. The aspects can belong to any number of elements and classes. Each owning element is updated once per call instead of once per aspect, which makes these methods faster than calling [EditTxn.insertAspect]($backend), [EditTxn.updateAspect]($backend) or [EditTxn.deleteAspect]($backend) for each aspect, especially when an element has several aspects. The single-aspect methods now use the same native implementation and still throw an [IModelError]($common).
+
+Each bulk method validates its input and calls the per-aspect `onInsert`, `onUpdate` or `onDelete` handlers before it writes anything, and throws on the first problem: an [ITwinError]($bentley) for invalid input, or the unchanged exception of a handler. The handlers before the problem have already run, so the caller must call [EditTxn.abandonChanges]($backend) when one of these methods throws anything. Unlike [EditTxn.updateAspect]($backend), `updateAspects` by default requires the complete props of each aspect: every property that is not in the props is set to undefined. Pass `{ incremental: true }` to keep the stored values of the properties that are not in the props, like `updateAspect` does.
+
+Aspect ids passed to the bulk methods, and to [EditTxn.updateAspect]($backend) and [EditTxn.deleteAspect]($backend), must now be well-formed [Id64String]($bentley)s, such as `"0x1a"`. Ids with leading zeros, uppercase digits or a decimal value were previously accepted by `updateAspect` and `deleteAspect`, and are now rejected. Use [Id64.fromString]($bentley) to normalize them.
+Prefer the bulk methods even for a single aspect: a call with one aspect costs the same as the matching single-aspect method. For `updateAspects`, use the default mode when the complete aspect is available, and `{ incremental: true }` when only the changed properties are.
+
+```ts
+const ids = txn.insertAspects(aspectProps);
+txn.updateAspects(ids.map((id, i) => ({ ...aspectProps[i], id, label: "updated" })));
+txn.deleteAspects(ids);
+```
+
+The per-aspect `onInsert`, `onUpdate`, `onDelete` and matching post-handlers of [ElementAspect]($backend) are still called for every aspect. `onDelete` and `onDeleted` now also receive the owning element in [OnAspectIdArg.element]($backend).
+
+See [Bulk ElementAspect Operations]($docs/learning/backend/BulkElementAspects.md) for details.
 
 ### CompressedId64Set size limit
 

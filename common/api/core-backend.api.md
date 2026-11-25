@@ -2866,6 +2866,7 @@ export class EditTxn {
     changeElementModel(props: ChangeElementModelProps): void;
     changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
+    deleteAspects(ids: Id64Array): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
     deleteElements(ids: Id64Array, _deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
@@ -2881,6 +2882,7 @@ export class EditTxn {
     readonly iModel: IModelDb;
     static implicitWriteEnforcement: ImplicitWriteEnforcement;
     insertAspect(aspectProps: ElementAspectProps): Id64String;
+    insertAspects(aspectProps: ReadonlyArray<ElementAspectProps>): Id64String[];
     insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
     insertModel(props: ModelProps): Id64String;
     insertRelationship(props: RelationshipProps): Id64String;
@@ -2892,6 +2894,9 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
+    updateAspects(aspectProps: ReadonlyArray<ElementAspectProps>, options?: {
+        incremental?: boolean;
+    }): void;
     updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;
@@ -5659,6 +5664,7 @@ export interface OnAspectArg {
 // @beta
 export interface OnAspectIdArg extends OnAspectArg {
     aspectId: Id64String;
+    element?: Id64String;
 }
 
 // @beta
