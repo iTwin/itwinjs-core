@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Avoid duplicate metadata requests when opening saved views, let independent loads finish without waiting on unrelated iModels, and notify viewport listeners when replacing a view changes its rendered appearance.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
