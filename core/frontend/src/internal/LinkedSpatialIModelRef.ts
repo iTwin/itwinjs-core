@@ -174,8 +174,9 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
       // Refresh the owning tile-reference collection - e.g., batched tile sets copy the viewed model Ids into the set
       // used for visibility and fit ranges - mirroring SpatialViewState.markModelSelectorChanged for the primary reference.
       this[_treeRefs].update();
-      scheduleViewedModelsLoad(this);
     });
+    this.viewedModels.onAdded.addListener((id) => scheduleViewedModelsLoad(this, id));
+    this.viewedModels.onBatchAdded.addListener(() => scheduleViewedModelsLoad(this));
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
     this.#disposalFunctions.push(this.overrides.onContoursChanged.addListener(() => this.onActiveContoursChanged.raiseEvent()));

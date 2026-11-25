@@ -338,8 +338,10 @@ function hasUnloadedModels(ref: SpatialIModelDisplayReference): boolean {
   return false;
 }
 
-export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference): void {
-  if (unlinked.has(ref) || !hasUnloadedModels(ref))
+export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, addedId?: Id64String): void {
+  if (unlinked.has(ref) || modelLoads.get(ref)?.refreshViewed)
+    return;
+  if (undefined !== addedId ? undefined !== ref.iModel.models.getLoaded(addedId) : !hasUnloadedModels(ref))
     return;
   const loads = getModelLoads(ref);
   loads.refreshViewed = true;

@@ -380,9 +380,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
   #boundViewedModels?: ObservableSet<Id64String>;
-  #removeViewedModelsListener?: VoidFunction;
-  readonly #viewedModelsChanged = () => {
-    scheduleViewedModelsLoad(this);
+  #removeViewedModelsListeners?: VoidFunction[];
+  readonly #viewedModelsChanged = (addedId?: Id64String) => {
+    scheduleViewedModelsLoad(this, addedId);
   };
 
   public constructor(refs: SpatialIModelDisplayReferences) {
@@ -433,9 +433,12 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     if (current === this.#boundViewedModels)
       return;
 
-    this.#removeViewedModelsListener?.();
+    this.#removeViewedModelsListeners?.forEach((remove) => remove());
     this.#boundViewedModels = current;
-    this.#removeViewedModelsListener = current.onChanged.addListener(this.#viewedModelsChanged);
+    this.#removeViewedModelsListeners = [
+      current.onAdded.addListener(this.#viewedModelsChanged),
+      current.onBatchAdded.addListener(() => this.#viewedModelsChanged()),
+    ];
     this.#viewedModelsChanged();
   }
 
@@ -501,8 +504,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public override[_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
     super[_detachFromViewport]();
-    this.#removeViewedModelsListener?.();
-    this.#removeViewedModelsListener = this.#boundViewedModels = undefined;
+    this.#removeViewedModelsListeners?.forEach((remove) => remove());
+    this.#removeViewedModelsListeners = this.#boundViewedModels = undefined;
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {

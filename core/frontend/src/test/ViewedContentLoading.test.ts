@@ -87,6 +87,46 @@ describe("Viewed content loading", () => {
     expect(loaded).not.toHaveBeenCalled();
   });
 
+  it("does not rescan a warm model selector on every individual addition or removal", async () => {
+    using vp = openBlankViewport();
+    const db = vp.iModel;
+    const warmIds = createIds(2000);
+    await db.models.updateLoadedWithModelProps(warmIds.map((id) => ({ id, classFullName: "BisCore:PhysicalModel", modeledElement: { id } })));
+    const props = vp.view.toProps();
+    props.modelSelectorProps!.models = warmIds;
+    const view = SpatialViewState.createFromProps(props, db);
+    vp.changeView(view);
+    const ref = view.iModelRefs.primary;
+    if (!ref.isSpatial())
+      throw new Error("Expected a spatial reference");
+    for (const ttRef of ref.tileTreeRefs)
+      vi.spyOn(ttRef, "isLoadingComplete", "get").mockReturnValue(true);
+    expect(ref.isLoadingComplete).toBe(true);
+
+    const newIds = Array.from({ length: 200 }, (_, i) => Id64.fromLocalAndBriefcaseIds(5000 + i, 0));
+    const getLoaded = vi.spyOn(db.models, "getLoaded");
+    const getProps = vi.spyOn(db.models, "getProps").mockResolvedValue([]);
+
+    // Dropping models never scans the selector.
+    for (const id of warmIds.slice(0, 50))
+      ref.viewedModels.delete(id);
+    expect(getLoaded).not.toHaveBeenCalled();
+
+    // Direct single-ID additions check only the newly added ID, and stop scanning once refreshViewed is scheduled.
+    for (const id of warmIds.slice(0, 50))
+      ref.viewedModels.add(id);
+    expect(getLoaded).toHaveBeenCalledTimes(50);
+
+    getLoaded.mockClear();
+    for (const id of newIds)
+      vp.changeModelDisplay(id, true);
+    // Only the first changeModelDisplay scans the warm prefix (<= 2,001 checks); the remaining 199 short-circuit.
+    expect(getLoaded.mock.calls.length).toBeLessThanOrEqual(warmIds.length + 1);
+
+    await vi.waitFor(() => expect(getProps).toHaveBeenCalledOnce());
+    expect([...Id64.iterable(getProps.mock.calls[0][0])].sort()).toEqual([...newIds].sort());
+  });
+
   it.each([false, true])("shares connection and viewport model loads without blocking disjoint IDs (select A first: %s)", async (selectFirst) => {
     using vp = openBlankViewport();
     await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));
