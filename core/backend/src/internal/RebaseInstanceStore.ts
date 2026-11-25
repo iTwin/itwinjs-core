@@ -6,7 +6,7 @@
  * @module ECDb
  */
 import { assert, DbResult, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { Base64EncodedString, ECJsNames } from "@itwin/core-common";
+import { Base64EncodedString, ECJsNames, QueryBinder } from "@itwin/core-common";
 import { SchemaView, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { ChangeInstance, ChangeSource } from "../ChangesetReaderTypes";
 import type { ECSqlRow } from "../Entity";
@@ -52,7 +52,7 @@ export interface RebaseInstanceChange {
   /**
    * The JS-cased names of the properties that were part of the actual changeset Update captured for
    * `change` (across however many tables it spans), or `undefined` for an Insert/Delete (whose raw rows
-   * always carry every column already, so there's nothing to narrow down).
+   * carry every physical column, so there's nothing to narrow down).
    */
   changedProperties?: string[];
 
@@ -159,14 +159,17 @@ export interface RebaseIdentityValue {
  * keyed by instanceKey *and* stage, requiring old/new snapshots to be paired up after the fact -
  * this store keys rows by instanceKey alone and holds the old and new snapshots in separate
  * columns of the same row, so no further coalescing is needed once capture is complete.
+ * Relationship endpoint class names are resolved from the source database during [[appendChange]],
+ * then from captured instances during [[completeCapture]] when the endpoints have been deleted.
  * @internal
  */
 export class RebaseInstanceStore implements Disposable {
   private readonly _db = new SQLiteDb();
   private readonly _writable: boolean;
-  /** The db that changes are being captured from. Only set (and needed) on stores created via [[createNew]],
-   * to seed an update's instance snapshots with their unchanged properties (see [[merge]]). */
+  /** The db that changes are being captured from. Only set on stores created via [[createNew]], to
+   * seed update snapshots and resolve relationship endpoint classes. */
   private readonly _sourceDb?: AnyDb;
+  private readonly _unresolvedRelationshipClasses = new Set<string>();
 
   /** The `SchemaView` used to classify embedding ownership (`owners`/`ownerKind`) as changes are
    * appended. Only set on stores created via [[createNew]]; a store opened via [[openExisting]] never
@@ -221,6 +224,7 @@ export class RebaseInstanceStore implements Disposable {
       [identityValues] TEXT,
       [navigationRefs] TEXT
     )`);
+    store._db.executeSQL(`CREATE INDEX [InstanceChangesById] ON ${tableName} ([instanceId])`);
     return store;
   }
 
@@ -281,7 +285,77 @@ export class RebaseInstanceStore implements Disposable {
       change.old = change.old ? RebaseInstanceStore.combine(change.old, source.deleted) : { ...source.deleted };
     }
 
+    for (const props of [change.old, change.new]) {
+      if (props !== undefined && !this.fillRelationshipClassNames(props, false))
+        this._unresolvedRelationshipClasses.add(instanceKey);
+    }
     this.set(change);
+  }
+
+  /** Completes endpoint class names after all rows have been appended, including endpoints deleted
+   * in the same Txn. Invalid references that resolve in neither database retain their missing class name.
+   */
+  public completeCapture(): void {
+    for (const instanceKey of this._unresolvedRelationshipClasses) {
+      const change = this.get(instanceKey);
+      assert(change !== undefined, "Unresolved relationship must have been captured");
+      for (const props of [change.old, change.new]) {
+        if (props !== undefined)
+          this.fillRelationshipClassNames(props, true);
+      }
+      this.set(change);
+    }
+    this._unresolvedRelationshipClasses.clear();
+  }
+
+  private fillRelationshipClassNames(props: ChangeInstance, fromStore: boolean): boolean {
+    const relationship = this._schemaView?.findClass(props.classFullName);
+    if (relationship === undefined || !relationship.isRelationship())
+      return true;
+
+    let complete = true;
+    for (const { constraint, idName, className } of [
+      { constraint: relationship.source, idName: "sourceId", className: "sourceClassName" },
+      { constraint: relationship.target, idName: "targetId", className: "targetClassName" },
+    ]) {
+      if (props[className] !== undefined || typeof props[idName] !== "string" || constraint === undefined)
+        continue;
+      const resolved = this.findEndpointClass(constraint, props[idName], fromStore);
+      if (resolved !== undefined)
+        props[className] = resolved;
+      else
+        complete = false;
+    }
+    return complete;
+  }
+
+  private findEndpointClass(constraint: SchemaView.RelConstraint, id: Id64String, fromStore: boolean): string | undefined {
+    const classes = constraint.constraintClasses.length > 0 ? constraint.constraintClasses
+      : constraint.abstractConstraint === undefined ? [] : [constraint.abstractConstraint];
+    if (fromStore) {
+      return this._db.withPreparedSqliteStatement(`SELECT [classFullName] FROM ${tableName} WHERE [instanceId]=?`, (stmt) => {
+        stmt.bindString(1, id);
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const classFullName = stmt.getValueString(0);
+          const schemaClass = this._schemaView?.findClass(classFullName);
+          if (schemaClass !== undefined && classes.some((allowed) => schemaClass.fullName === allowed.fullName || (constraint.polymorphic && schemaClass.is(allowed))))
+            return classFullName;
+        }
+        return undefined;
+      });
+    }
+
+    assert(this._sourceDb !== undefined, "Endpoint lookup requires a store created via createNew");
+    for (const schemaClass of classes) {
+      const className = this._sourceDb.withQueryReader(
+        `SELECT ec_classname(ECClassId, 's:c') FROM ${constraint.polymorphic ? "" : "ONLY "}${schemaClass.fullName} WHERE ECInstanceId=?`,
+        (reader) => reader.step() ? reader.current[0] as string : undefined,
+        new QueryBinder().bindId(1, id),
+      );
+      if (className !== undefined)
+        return className;
+    }
+    return undefined;
   }
 
   public get(instanceKey: string): RebaseInstanceChange | undefined {

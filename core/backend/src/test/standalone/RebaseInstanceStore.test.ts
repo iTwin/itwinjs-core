@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Guid } from "@itwin/core-bentley";
+import { assert, Guid } from "@itwin/core-bentley";
 import type { SchemaView } from "@itwin/ecschema-metadata";
 import { RebaseInstanceStore } from "../../internal/RebaseInstanceStore";
 import type { RebaseInstanceMetadata } from "../../internal/RebaseInstanceStore";
 import type { ChangeInstance, ChangeMeta } from "../../ChangesetReaderTypes";
+import { ChangesetReader } from "../../ChangesetReader";
+import { withEditTxn } from "../../EditTxn";
+import { Subject } from "../../Element";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -35,7 +38,7 @@ describe("RebaseInstanceStore", () => {
   let schemaView: SchemaView;
 
   before(async () => {
-    iModel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("RebaseInstanceStore", `${Guid.createValue()}.bim`), { rootSubject: { name: "RebaseInstanceStoreTest" } });
+    iModel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("RebaseInstanceStore", `${Guid.createValue()}.bim`), { rootSubject: { name: "RebaseInstanceStoreTest" }, enableTransactions: true });
     schemaView = await iModel.getSchemaView();
   });
 
@@ -46,6 +49,82 @@ describe("RebaseInstanceStore", () => {
   function newStorePath(): string {
     return IModelTestUtils.prepareOutputFile("RebaseInstanceStore", `${Guid.createValue()}.sqlite`);
   }
+
+  it("fills relationship endpoint classes from live instances without replacing captured class names", () => {
+    using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);
+    const old = makeInstance("0x100", "BisCore:ElementGroupsMembers", { sourceId: "0x1", targetId: "0x1" });
+    store.appendChange({ op: "Deleted", deleted: old });
+    chai.expect(store.get(old.$meta.instanceKey)?.old).to.include({
+      sourceClassName: "BisCore:Subject", targetClassName: "BisCore:Subject",
+    });
+    chai.expect(old).not.to.have.property("sourceClassName");
+    chai.expect(store.get(old.$meta.instanceKey)?.old?.$meta.changeFetchedPropNames).to.be.empty;
+
+    const inserted = makeInstance("0x101", "BisCore:ElementGroupsMembers", {
+      sourceId: "0x1", targetId: "0x1", sourceClassName: "Captured.Source",
+    });
+    store.appendChange({ op: "Inserted", inserted });
+    store.completeCapture();
+    chai.expect(store.get(inserted.$meta.instanceKey)?.new).to.include({
+      sourceClassName: "Captured.Source", targetClassName: "BisCore:Subject",
+    });
+  });
+
+  it("fills missing endpoint classes from deleted instances after all rows are captured", () => {
+    const [sourceId, targetId, relId] = withEditTxn(iModel, (txn) => {
+      const source = Subject.insert(txn, "0x1", Guid.createValue());
+      const target = Subject.insert(txn, "0x1", Guid.createValue());
+      const relationship = txn.insertRelationship({ classFullName: "BisCore:ElementGroupsMembers", sourceId: source, targetId: target });
+      return [source, target, relationship];
+    });
+    const dbPath = newStorePath();
+    withEditTxn(iModel, (txn) => {
+      txn.deleteRelationship(iModel.relationships.getInstanceProps("BisCore:ElementGroupsMembers", relId));
+      txn.deleteElement(sourceId);
+      txn.deleteElement(targetId);
+    });
+    {
+      const savedTxn = iModel.txns.getLastSavedTxnProps();
+      assert(savedTxn !== undefined, "Deletion Txn must have been saved");
+      using reader = ChangesetReader.openTxn({
+        db: iModel, txnId: savedTxn.id, rowOptions: { useJsNames: true, useClassFullNameInsteadofClassName: true },
+      });
+      const deleted: ChangeInstance[] = [];
+      while (reader.step()) {
+        if (reader.deleted !== undefined)
+          deleted.push(reader.deleted);
+      }
+      const relationship = deleted.find((instance) => instance.id === relId && instance.classFullName === "BisCore:ElementGroupsMembers");
+      assert(relationship !== undefined, "Deleted relationship must be captured");
+      using store = RebaseInstanceStore.createNew(dbPath, iModel, schemaView);
+      store.appendChange({ op: "Deleted", deleted: relationship });
+      chai.expect(store.get(relationship.$meta.instanceKey)?.old?.sourceClassName).to.be.undefined;
+      chai.expect(store.get(relationship.$meta.instanceKey)?.old?.targetClassName).to.be.undefined;
+      // Models can share element IDs; the relationship constraint must select the element's class.
+      store.set({ instanceKey: `${sourceId}-model`, old: makeInstance(sourceId, "BisCore:RepositoryModel") });
+      for (const instance of deleted) {
+        if (instance !== relationship)
+          store.appendChange({ op: "Deleted", deleted: instance });
+      }
+      store.completeCapture();
+      chai.expect(store.get(relationship.$meta.instanceKey)?.old).to.include({
+        sourceClassName: "BisCore:Subject", targetClassName: "BisCore:Subject",
+      });
+    }
+
+    using reopened = RebaseInstanceStore.openExisting(dbPath);
+    const reopenedRelationship = [...reopened.all()].find((change) => change.old?.id === relId && change.old.classFullName === "BisCore:ElementGroupsMembers");
+    chai.expect(reopenedRelationship?.old).to.include({ sourceClassName: "BisCore:Subject", targetClassName: "BisCore:Subject" });
+  });
+
+  it("leaves invalid relationship endpoints unresolved when neither database contains them", () => {
+    using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);
+    const old = makeInstance("0x102", "BisCore:ElementGroupsMembers", { sourceId: "0xffff", targetId: "0x1" });
+    store.appendChange({ op: "Deleted", deleted: old });
+    store.completeCapture();
+    chai.expect(store.get(old.$meta.instanceKey)?.old?.sourceClassName).to.be.undefined;
+    chai.expect(store.get(old.$meta.instanceKey)?.old?.targetClassName).to.equal("BisCore:Subject");
+  });
 
   it("classifies operation/ownerKind/owners from an Update at capture time", () => {
     using store = RebaseInstanceStore.createNew(newStorePath(), iModel, schemaView);

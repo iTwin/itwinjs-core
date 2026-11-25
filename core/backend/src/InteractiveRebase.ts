@@ -717,6 +717,7 @@ export class InteractiveRebase {
     using store = RebaseInstanceStore.createNew(dbPath, this._db, this._schemaView);
     while (reader.step())
       store.appendChange(reader);
+    store.completeCapture();
   }
 
   public [Symbol.dispose](): void {

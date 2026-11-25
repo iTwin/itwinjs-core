@@ -3924,8 +3924,7 @@ describe("InteractiveRebase deletion replay", () => {
     chai.expect(danglingLinkTableRelationships()).to.not.include(relId);
   });
 
-  // Gap: the captured original of our relationship Delete lacks sourceClassName/targetClassName, which the current read includes, so it always looks changed.
-  it("known gap: records no conflict for our deletion of an existing link-table relationship upstream left unchanged", async () => {
+  it("records no conflict for our deletion of an existing link-table relationship upstream left unchanged", async () => {
     const [aId, yId, bId] = await withEditTxn(briefcase1, async (txn) => [insertGraphic(txn, "A"), insertGraphic(txn, "Y"), insertGraphic(txn, "B")]);
     const relId = await withEditTxn(briefcase1, async (txn) => insertGroupsMembers(txn, aId, yId));
     await briefcase1.pushChanges({ description: "Insert A, Y, and B, and relate A to Y" });
