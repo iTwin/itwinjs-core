@@ -48,6 +48,45 @@ describe("Viewed content loading", () => {
     expect(models).toHaveBeenCalledOnce();
   });
 
+  it("stays loading-complete without dispatching a model load when all viewed models are already loaded", async () => {
+    using vp = openBlankViewport();
+    const db = vp.iModel;
+    await db.models.updateLoadedWithModelProps([{ id: "0x20", classFullName: "BisCore:PhysicalModel", modeledElement: { id: "0x20" } }]);
+    const props = vp.view.toProps();
+    props.modelSelectorProps!.models = ["0x20"];
+    const loadModels = vi.spyOn(db.models, "load");
+    const view = SpatialViewState.createFromProps(props, db);
+    vp.changeView(view);
+    const ref = view.iModelRefs.primary;
+    // The mock model has no tile tree, so only check model/category metadata readiness before any tile tree load starts.
+    const tileTreeRefs = [...ref.tileTreeRefs];
+    for (const ttRef of tileTreeRefs)
+      vi.spyOn(ttRef, "isLoadingComplete", "get").mockReturnValue(true);
+    expect(ref.isLoadingComplete).toBe(true);
+    const loaded = vi.fn();
+    ref.onViewedModelsLoaded.addListener(loaded);
+    await Promise.resolve();
+    expect(ref.isLoadingComplete).toBe(true);
+    expect(loadModels).not.toHaveBeenCalled();
+    expect(loaded).not.toHaveBeenCalled();
+
+    // Toggling an already-loaded model off/on must not schedule a model load or mark the reference incomplete.
+    vp.changeModelDisplay("0x20", false);
+    vp.changeModelDisplay("0x20", true);
+    expect(ref.isLoadingComplete).toBe(true);
+    await Promise.resolve();
+    expect(loadModels).not.toHaveBeenCalled();
+    expect(loaded).not.toHaveBeenCalled();
+
+    // If a scheduled selector load has its model dropped before dispatch, it must finish quietly without calling models.load([]).
+    vp.changeModelDisplay("0x21", true);
+    expect(ref.isLoadingComplete).toBe(false);
+    vp.changeModelDisplay("0x21", false);
+    await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+    expect(loadModels).not.toHaveBeenCalled();
+    expect(loaded).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])("shares connection and viewport model loads without blocking disjoint IDs (select A first: %s)", async (selectFirst) => {
     using vp = openBlankViewport();
     await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));

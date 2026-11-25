@@ -308,7 +308,7 @@ function nextModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): 
             ids.delete(id);
           }
         }
-        if (ids.size || !requests.size) {
+        if (ids.size) {
           const load = models.load(ids);
           const first = ids.values().next().value;
           const started = first ? modelLoadRequests.get(models)?.get(first) : undefined;
@@ -330,8 +330,16 @@ function nextModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): 
   return loads.next = { ids, dispatched };
 }
 
+function hasUnloadedModels(ref: SpatialIModelDisplayReference): boolean {
+  const models = ref.iModel.models;
+  for (const id of ref.viewedModels)
+    if (!models.getLoaded(id))
+      return true;
+  return false;
+}
+
 export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference): void {
-  if (unlinked.has(ref))
+  if (unlinked.has(ref) || !hasUnloadedModels(ref))
     return;
   const loads = getModelLoads(ref);
   loads.refreshViewed = true;
