@@ -14,6 +14,7 @@ import type { ViewState } from "../ViewState";
 import type { SceneContext } from "../ViewContext";
 import type { FeatureSymbology } from "../render/FeatureSymbology";
 import { _backingView } from "../common/internal/Symbols";
+import { modelLoadRequests, retireModelRequests } from "./ModelLoadRequests";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
@@ -199,8 +200,8 @@ export function getTileSymbologyOverrides(ref: IModelDisplayReference, context?:
 
 const unlinked = new WeakSet<IModelDisplayReference>();
 const scheduledCategoryLoads = new WeakMap<IModelDisplayReference, number>();
-interface ModelBatch { ids: Set<Id64String>, promise: Promise<void> }
-interface ModelLoads { active: Map<Id64String, Promise<void>>, next?: ModelBatch, refreshViewed: boolean }
+interface ModelBatch { ids: Set<Id64String>, dispatched: Promise<Map<Id64String, Promise<void>>> }
+interface ModelLoads { active: Map<Promise<void>, Promise<void>>, next?: ModelBatch, refreshViewed: boolean }
 const modelLoads = new WeakMap<SpatialIModelDisplayReference, ModelLoads>();
 
 export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void {
@@ -241,6 +242,7 @@ export function cancelSelectorRefresh(ref: IModelDisplayReference): void {
 export function unlinkDisplayReference(ref: IModelDisplayReference): void {
   unlinked.add(ref);
   cancelSelectorRefresh(ref);
+  retireModelRequests(ref.iModel.models, ref.guid);
   ref.parent.subcategories.cancel(ref.guid);
 }
 
@@ -251,42 +253,75 @@ function getModelLoads(ref: SpatialIModelDisplayReference): ModelLoads {
   return loads;
 }
 
+function finishModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): void {
+  if (!loads.next && !loads.active.size) {
+    if (loads.refreshViewed)
+      nextModelBatch(ref, loads);
+    else
+      modelLoads.delete(ref);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+function watchModelLoad(ref: SpatialIModelDisplayReference, loads: ModelLoads, request: Promise<void>, completion = request): Promise<void> {
+  let ready = loads.active.get(request);
+  if (!ready) {
+    ready = completion.then(() => ref.onViewedModelsLoaded.raiseEvent()).finally(() => {
+      loads.active.delete(request);
+      finishModelBatch(ref, loads);
+    });
+    loads.active.set(request, ready);
+    void ready.catch(() => {}); // Selector listeners don't await loads; explicit callers still receive the rejection.
+  }
+  return ready;
+}
+
 function nextModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): ModelBatch {
   if (loads.next)
     return loads.next;
 
   const ids = new Set<Id64String>();
-  const promise = Promise.resolve().then(async () => {
+  const dispatched = Promise.resolve().then(() => {
     loads.next = undefined;
+    const requests = new Map<Id64String, Promise<void>>();
     const refresh = loads.refreshViewed;
     loads.refreshViewed = false;
     try {
-      if (!refresh && !ids.size)
-        return; // Detached before a selector-only refresh ran.
-      if (refresh) {
-        for (const id of ref.viewedModels)
-          if (!loads.active.has(id))
+      if (refresh || ids.size) {
+        if (refresh)
+          for (const id of ref.viewedModels)
             ids.add(id);
+        const models = ref.iModel.models;
+        const active = modelLoadRequests.get(models);
+        for (const id of ids) {
+          const request = active?.get(id);
+          if (request) {
+            requests.set(id, watchModelLoad(ref, loads, request.promise));
+            ids.delete(id);
+          } else if (models.getLoaded(id)) {
+            ids.delete(id);
+          }
+        }
+        if (ids.size || !requests.size) {
+          const load = models.load(ids);
+          const first = ids.values().next().value;
+          const started = first ? modelLoadRequests.get(models)?.get(first) : undefined;
+          if (started)
+            started.owner = ref.guid;
+          const ready = watchModelLoad(ref, loads, started?.promise ?? load, load);
+          for (const id of ids)
+            requests.set(id, ready);
+          if (started && unlinked.has(ref))
+            retireModelRequests(models, ref.guid);
+        }
       }
-      for (const id of ids)
-        if (!ref.iModel.models.getLoaded(id))
-          loads.active.set(id, promise);
-      await ref.iModel.models.load(ids);
+      return requests;
     } finally {
-      for (const id of ids)
-        if (loads.active.get(id) === promise)
-          loads.active.delete(id);
-      if (!loads.next && !loads.active.size) {
-        if (loads.refreshViewed)
-          nextModelBatch(ref, loads);
-        else
-          modelLoads.delete(ref);
-      }
+      finishModelBatch(ref, loads);
     }
-    ref.onViewedModelsLoaded.raiseEvent();
   });
-  void promise.catch(() => {}); // Selector listeners don't await loads; explicit callers still receive the rejection.
-  return loads.next = { ids, promise };
+  void dispatched.catch(() => {});
+  return loads.next = { ids, dispatched };
 }
 
 export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference): void {
@@ -336,17 +371,15 @@ export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference,
   if (!unloaded)
     return;
 
-  const loads = getModelLoads(ref);
+  const batch = nextModelBatch(ref, getModelLoads(ref));
+  for (const id of unloaded)
+    batch.ids.add(id); // Keep explicit IDs even if they leave the selector before dispatch.
+  const dispatched = await batch.dispatched;
   const waitFor = new Set<Promise<void>>();
   for (const id of unloaded) {
-    const active = loads.active.get(id);
-    if (active) {
-      waitFor.add(active);
-    } else {
-      const batch = nextModelBatch(ref, loads);
-      batch.ids.add(id); // Keep explicit IDs even if they leave the selector before dispatch.
-      waitFor.add(batch.promise);
-    }
+    const request = dispatched.get(id);
+    if (request)
+      waitFor.add(request);
   }
   await Promise.all(waitFor);
 }

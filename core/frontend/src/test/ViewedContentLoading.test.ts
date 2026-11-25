@@ -48,6 +48,159 @@ describe("Viewed content loading", () => {
     expect(models).toHaveBeenCalledOnce();
   });
 
+  it.each([false, true])("shares connection and viewport model loads without blocking disjoint IDs (select A first: %s)", async (selectFirst) => {
+    using vp = openBlankViewport();
+    await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));
+    const models = vp.iModel.models;
+    const ref = vp.primaryIModelRef;
+    if (!ref.isSpatial())
+      throw new Error("Expected a spatial reference");
+    const loaded = vi.fn();
+    ref.onViewedModelsLoaded.addListener(loaded);
+    const first = deferred();
+    const second = deferred();
+    const calls: string[][] = [];
+    vi.spyOn(models, "getProps").mockImplementation(async (ids) => {
+      const batch = [...Id64.iterable(ids)];
+      calls.push(batch);
+      await (batch.includes("0x30") ? first : second).promise;
+      return batch.map((id) => ({ id, classFullName: "BisCore:Model", modeledElement: { id } }));
+    });
+    try {
+      if (selectFirst)
+        vp.changeModelDisplay("0x30", true);
+      const directA = models.load("0x30");
+      await vi.waitFor(() => expect(calls).toEqual([["0x30"]]));
+      const bothReady = vi.fn();
+      const mixed = vp.addViewedModels(["0x30", "0x31"]).then(bothReady);
+      await vi.waitFor(() => expect(calls).toEqual([["0x30"], ["0x31"]]));
+      const bReady = vi.fn();
+      const directB = Promise.all([models.load("0x31"), vp.addViewedModels("0x31")]).then(bReady);
+      second.resolve();
+      await vi.waitFor(() => expect(bReady).toHaveBeenCalledOnce());
+      expect(bothReady).not.toHaveBeenCalled();
+      expect(loaded).toHaveBeenCalledOnce();
+      expect(vp.primaryIModelRef.isLoadingComplete).toBe(false);
+      expect(models.getLoaded("0x31")).toBeDefined();
+      first.resolve();
+      await Promise.all([directA, mixed, directB]);
+      expect(loaded).toHaveBeenCalledTimes(2);
+      expect(models.getLoaded("0x30")).toBeDefined();
+      expect(calls).toEqual([["0x30"], ["0x31"]]);
+    } finally {
+      first.resolve();
+      second.resolve();
+    }
+  });
+
+  it("shares a model between viewports of one connection but not another connection", async () => {
+    const db = createBlankConnection();
+    const gate = deferred();
+    const id = "0x30";
+    const row = (name: string) => ({ id, classFullName: "BisCore:Model", modeledElement: { id }, name });
+    try {
+      using first = openBlankViewport({ iModel: db });
+      using second = openBlankViewport({ iModel: db });
+      using other = openBlankViewport();
+      const shared = vi.spyOn(db.models, "getProps").mockImplementation(async () => { await gate.promise; return [row("shared")]; });
+      vi.spyOn(other.iModel.models, "getProps").mockResolvedValue([row("independent")]);
+      const a = first.addViewedModels(id);
+      const b = second.addViewedModels(id);
+      await vi.waitFor(() => expect(shared).toHaveBeenCalledOnce());
+      await other.addViewedModels(id);
+      expect(other.iModel.models.getLoaded(id)?.name).toBe("independent");
+      expect(db.models.getLoaded(id)).toBeUndefined();
+      gate.resolve();
+      await Promise.all([a, b]);
+      expect(db.models.getLoaded(id)?.name).toBe("shared");
+      expect(shared).toHaveBeenCalledOnce();
+    } finally {
+      gate.resolve();
+      db.closeSync();
+    }
+  });
+
+  it.each(["replace", "remove", "public"] as const)("retires only a removed reference's model request, without canceling its promise (%s)", async (mode) => {
+    using vp = openBlankViewport();
+    const refs = vp.iModelRefs;
+    if (!refs.isSpatial)
+      throw new Error("Expected spatial references");
+    const db = createBlankConnection();
+    const gate = deferred();
+    const id = "0x30";
+    const row = (name: string) => ({ id, classFullName: "BisCore:Model", modeledElement: { id }, name });
+    try {
+      const old = refs.link({ iModel: db });
+      const query = vi.spyOn(db.models, "getProps").mockImplementationOnce(async () => { await gate.promise; return [row("old")]; })
+        .mockResolvedValueOnce([row("replacement")]);
+      const direct = mode === "public" ? db.models.load(id) : undefined;
+      const oldLoad = old.addAndLoadViewedModels([id]);
+      await vi.waitFor(() => expect(query).toHaveBeenCalledOnce());
+      refs.unlink(old);
+      const replacement = mode === "remove" ? undefined : refs.link({ iModel: db }).addAndLoadViewedModels([id]);
+      if (mode === "replace")
+        await vi.waitFor(() => expect(db.models.getLoaded(id)?.name).toBe("replacement"));
+      await Promise.resolve();
+      gate.resolve();
+      await Promise.all([direct, oldLoad, replacement]);
+      expect(query).toHaveBeenCalledTimes(mode === "replace" ? 2 : 1);
+      expect(db.models.getLoaded(id)?.name).toBe(mode === "replace" ? "replacement" : "old");
+    } finally {
+      gate.resolve();
+      db.closeSync();
+    }
+  });
+
+  it("shares failed and incomplete model responses without preventing a later retry", async () => {
+    using vp = openBlankViewport();
+    const models = vp.iModel.models;
+    const row = (id: string) => ({ id, classFullName: "BisCore:Model", modeledElement: { id } });
+    const query = vi.spyOn(models, "getProps").mockRejectedValueOnce(new Error("unavailable"))
+      .mockResolvedValueOnce([row("0x30")]).mockResolvedValueOnce([row("0x31")]);
+    await Promise.all([models.load("0x30"), models.load("0x30")]);
+    expect(models.getLoaded("0x30")).toBeUndefined();
+    await Promise.all([models.load(["0x30", "0x31"]), models.load("0x31")]);
+    expect(models.getLoaded("0x30")).toBeDefined();
+    expect(models.getLoaded("0x31")).toBeUndefined();
+    await models.load(["0x30", "0x31"]);
+    expect(models.getLoaded("0x31")).toBeDefined();
+    expect(query.mock.calls.map(([ids]) => [...Id64.iterable(ids)])).toEqual([["0x30"], ["0x30", "0x31"], ["0x31"]]);
+  });
+
+  it("does not publish pre-unload model data or evict a newer request while resolving a class", async () => {
+    using vp = openBlankViewport();
+    const db = vp.iModel;
+    const resolveClass = deferred();
+    const newProps = deferred();
+    const id = "0x30";
+    const row = (name: string) => ({ id, classFullName: "BisCore:Model", modeledElement: { id }, name });
+    const query = vi.spyOn(db.models, "getProps").mockResolvedValueOnce([row("old")])
+      .mockImplementationOnce(async () => { await newProps.promise; return [row("new")]; });
+    const findClass = db.findClassFor.bind(db);
+    const lookup = vi.spyOn(db, "findClassFor").mockImplementationOnce(async (name, fallback) => {
+      await resolveClass.promise;
+      return findClass(name, fallback);
+    });
+    try {
+      const old = db.models.load(id);
+      await vi.waitFor(() => expect(lookup).toHaveBeenCalledOnce());
+      db.models.unload(id);
+      const fresh = db.models.load(id);
+      await vi.waitFor(() => expect(query).toHaveBeenCalledTimes(2));
+      resolveClass.resolve();
+      await old;
+      expect(db.models.getLoaded(id)).toBeUndefined();
+      const alsoFresh = db.models.load(id);
+      newProps.resolve();
+      await Promise.all([fresh, alsoFresh]);
+      expect(db.models.getLoaded(id)?.name).toBe("new");
+      expect(query).toHaveBeenCalledTimes(2);
+    } finally {
+      resolveClass.resolve();
+      newProps.resolve();
+    }
+  });
+
   it("does not cancel a replacement reference linked by an earlier unlink listener", async () => {
     using vp = openBlankViewport();
     const refs = vp.iModelRefs;
