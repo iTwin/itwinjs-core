@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export type { DecorationGeometryProps, SnapRequestProps, SnapResponseProps } from "./Snapping";
+export { _ignoreAnimationOverridesExcept, _matchesFeatureOverrides } from "./FeatureOverrides";
 export {
   type EdgeAppearanceOverrides, EdgeArgs, MeshEdge, MeshEdges, MeshPolyline, type MeshPolylineList, PolylineEdgeArgs, SilhouetteEdgeArgs
 } from "./RenderMesh";

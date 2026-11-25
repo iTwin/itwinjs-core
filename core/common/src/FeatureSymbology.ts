@@ -13,6 +13,31 @@ import { GeometryClass } from "./GeometryParams";
 import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { SubCategoryOverride } from "./SubCategoryOverride";
+import { _ignoreAnimationOverridesExcept, _matchesFeatureOverrides } from "./internal/FeatureOverrides";
+
+function sameSet<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+  if (a === b)
+    return true;
+  if (a.size !== b.size)
+    return false;
+  for (const item of a)
+    if (!b.has(item))
+      return false;
+  return true;
+}
+
+function sameIdMap<T>(a: Id64.Uint32Map<T>, b: Id64.Uint32Map<T>, equals: (x: T, y: T) => boolean): boolean {
+  if (a.size !== b.size)
+    return false;
+  let same = true;
+  a.forEach((lo, hi, x) => {
+    if (same) {
+      const y = b.get(lo, hi);
+      same = y !== undefined && equals(x, y);
+    }
+  });
+  return same;
+}
 
 function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void {
   dst.clear();
@@ -523,7 +548,7 @@ const scratchIgnoreAnimationOverridesArgs = {
  */
 export class FeatureOverrides implements FeatureAppearanceSource {
   /** @internal */
-  private readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[] = [];
+  private readonly _ignoreAnimationOverrides: Array<IgnoreAnimationOverrides | ReadonlySet<Id64String>> = [];
   /** Ids of elements that should never be drawn. This takes precedence over [[alwaysDrawn]]. @internal */
   private readonly _neverDrawn = new Id64.Uint32Set();
   /** Ids of elements that should always be drawn. [[neverDrawn]] takes precedence over this set. @internal */
@@ -586,6 +611,42 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     this._ignoreAnimationOverrides.push(ignore);
   }
 
+  /** @internal */
+  public [_ignoreAnimationOverridesExcept](ids: ReadonlySet<Id64String>): void {
+    this._ignoreAnimationOverrides.push(new Set(ids)); // An installed snapshot must not follow later edits to the provider's set.
+  }
+
+  /** Compare installed data, not the identity of newly built snapshots. Used only on attachment. @internal */
+  public [_matchesFeatureOverrides](other: FeatureOverrides): boolean {
+    const equalAppearance = (a: FeatureAppearance, b: FeatureAppearance) => a.equals(b);
+    if (this.isAlwaysDrawnExclusive !== other.isAlwaysDrawnExclusive || this.alwaysDrawnIgnoresSubCategory !== other.alwaysDrawnIgnoresSubCategory
+      || this.ignoreSubCategory !== other.ignoreSubCategory || this._lineWeights !== other._lineWeights || this._constructions !== other._constructions
+      || this._dimensions !== other._dimensions || this._patterns !== other._patterns || !this._defaultOverrides.equals(other._defaultOverrides)
+      || !this._neverDrawn.equals(other._neverDrawn) || !this._alwaysDrawn.equals(other._alwaysDrawn) || !this._visibleSubCategories.equals(other._visibleSubCategories))
+      return false;
+
+    if (!sameIdMap(this._modelOverrides, other._modelOverrides, equalAppearance) || !sameIdMap(this._elementOverrides, other._elementOverrides, equalAppearance)
+      || !sameIdMap(this._subCategoryOverrides, other._subCategoryOverrides, equalAppearance) || !sameIdMap(this._subCategoryPriorities, other._subCategoryPriorities, (a, b) => a === b)
+      || !sameIdMap(this._modelSubCategoryOverrides, other._modelSubCategoryOverrides, (a, b) => a.equals(b))
+      || !sameSet(this.neverDrawnAnimationNodes, other.neverDrawnAnimationNodes) || this.animationNodeOverrides.size !== other.animationNodeOverrides.size)
+      return false;
+
+    for (const [id, app] of this.animationNodeOverrides) {
+      const rhs = other.animationNodeOverrides.get(id);
+      if (!rhs || !app.equals(rhs))
+        return false;
+    }
+
+    // Filters cannot affect node zero. For animated nodes compare the built-in ID sets by value;
+    // application predicates are opaque, so only the same function is known to be unchanged.
+    if (this.animationNodeOverrides.size === (this.animationNodeOverrides.has(0) ? 1 : 0))
+      return true;
+    return this._ignoreAnimationOverrides.length === other._ignoreAnimationOverrides.length && this._ignoreAnimationOverrides.every((a, i) => {
+      const b = other._ignoreAnimationOverrides[i];
+      return a === b || (typeof a !== "function" && typeof b !== "function" && sameSet(a, b));
+    });
+  }
+
   /** Overrides applied to features for which no other overrides are defined */
   public get defaultOverrides(): FeatureAppearance { return this._defaultOverrides; }
   /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
@@ -644,7 +705,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     args.elementId.lower = idLo;
     args.elementId.upper = idHi;
     args.animationNodeId = animationNodeId;
-    return this._ignoreAnimationOverrides.some((ignore) => ignore(args)) ? undefined : app;
+    return this._ignoreAnimationOverrides.some((ignore) => typeof ignore === "function" ? ignore(args) : !ignore.has(Id64.fromUint32Pair(idLo, idHi))) ? undefined : app;
   }
 
   private getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {

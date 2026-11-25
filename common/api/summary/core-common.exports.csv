@@ -468,6 +468,7 @@ internal;interface;HydrateViewStateResponseProps
 internal;class;I3dmHeader
 public;type;IgnoreAnimationOverrides
 public;interface;IgnoreAnimationOverridesArgs
+internal;const;_ignoreAnimationOverridesExcept
 public;class;ImageBuffer
 public;enum;ImageBufferFormat
 public;class;ImageGraphic
@@ -580,6 +581,7 @@ public;interface;MassPropertiesPerCandidateResponseProps
 deprecated;interface;MassPropertiesPerCandidateResponseProps
 public;interface;MassPropertiesRequestProps
 public;interface;MassPropertiesResponseProps
+internal;const;_matchesFeatureOverrides
 public;interface;MaterialProps
 internal;class;MeshEdge
 internal;class;MeshEdges

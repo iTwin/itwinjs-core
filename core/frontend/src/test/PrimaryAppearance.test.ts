@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-deprecated -- Verify the still-supported viewport visibility methods. */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { EmptyLocalization, FeatureAppearance, PlanProjectionSettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
+import { EmptyLocalization, Feature, FeatureAppearance, PlanProjectionSettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
+import { EmphasizeElements } from "../EmphasizeElements";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { type ChangeFlags } from "../ChangeFlags";
 import { ContextRealityModelState } from "../ContextRealityModelState";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -237,6 +239,121 @@ describe("Primary appearance changes", () => {
     expect(providerChanged).not.toHaveBeenCalled();
     expect(vp.findFeatureOverrideProvider((p) => p === provider)).toBe(provider);
   });
+
+  for (const replace of ["changeView", "applyViewState"] as const) {
+    it.each(["default", "reference provider", "model-dependent provider", "constant provider"] as const)(`${replace}: reports the installed appearance, not merely a new snapshot (%s)`, async (source) => {
+      using vp = openBlankViewport();
+      const model = "0x123";
+      if (source === "model-dependent provider" || source === "constant provider") {
+        vp.addFeatureOverrideProvider({ addFeatureOverrides: (overrides, viewport) => {
+          const transparency = source === "model-dependent provider" && viewport.view.viewsModel(model) ? 0.8 : 0.2;
+          overrides.override({ elementId: "0x321", appearance: FeatureAppearance.fromJSON({ transparency }) });
+        } });
+      }
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+      vp.renderFrame();
+      const next = vp.view.clone();
+      if (source === "default")
+        next.iModelRefs.primary.overrides.defaultFeatureAppearance = FeatureAppearance.fromJSON({ transparency: 0.8 });
+      else if (source === "reference provider")
+        next.iModelRefs.primary.featureOverrideProviders.add({ addFeatureOverrides: (overrides) => overrides.setNeverDrawn("0x321") });
+      else if (next.isSpatialView())
+        next.modelSelector.models.add(model);
+
+      const dirty = vi.fn();
+      vp.onViewportChanged.addListener((_vp, flags) => dirty(flags.areFeatureOverridesDirty));
+      const readAppearance = () => {
+        const installed = applied.mock.lastCall?.[0];
+        if (source === "reference provider")
+          return installed?.neverDrawn.hasId("0x321");
+        return source === "default" ? installed?.defaultOverrides.transparency : installed?.getElementOverridesById("0x321")?.transparency;
+      };
+      const changed = vi.fn();
+      vp.onFeatureOverridesChanged.addListener(() => changed(readAppearance()));
+      const registration = vi.fn();
+      vp.onFeatureOverrideProviderChanged.addListener(registration);
+      vp[replace](next);
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      const expected = source === "reference provider" ? true : source === "constant provider" ? 0.2 : 0.8;
+      expect(readAppearance()).toBe(expected);
+      if (source === "constant provider") {
+        expect(changed).not.toHaveBeenCalled();
+        expect(dirty).not.toHaveBeenCalledWith(true);
+      } else {
+        expect(changed).toHaveBeenCalledExactlyOnceWith(expected);
+        expect(dirty).toHaveBeenCalledExactlyOnceWith(true);
+      }
+      if (source !== "reference provider")
+        expect(registration).not.toHaveBeenCalled();
+      vp.renderFrame();
+      expect(changed).toHaveBeenCalledTimes(source === "constant provider" ? 0 : 1);
+    });
+
+    it(`${replace}: compares animated emphasis with the IDs installed on the previous frame`, async () => {
+      using vp = openBlankViewport();
+      const emphasis = EmphasizeElements.getOrCreate(vp);
+      emphasis.isolateElements(["0x1", "0x2"], vp);
+      emphasis.emphasizeElements(["0x1"], vp);
+      vp.addFeatureOverrideProvider({ addFeatureOverrides: (overrides) => {
+        // Keep the element entries equal across snapshots: only the animation filter changes.
+        overrides.override({ elementId: "0x2", appearance: FeatureAppearance.defaults });
+        overrides.animationNodeOverrides.set(1, FeatureAppearance.fromJSON({ transparency: 0.35 }));
+      } });
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+      vp.renderFrame();
+      const appearance = () => applied.mock.lastCall?.[0].getFeatureAppearance(new Feature("0x2"), "0x3", undefined, 1);
+      expect(appearance()).toBeDefined();
+      expect(appearance()?.transparency).toBeUndefined();
+      const changed = vi.fn();
+      vp.onFeatureOverridesChanged.addListener(() => changed(appearance()?.transparency));
+      emphasis.getEmphasizedIsolatedElements()!.add("0x2");
+      vp[replace](vp.view.clone());
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      expect(appearance()?.transparency).toBe(0.35);
+      expect(changed).toHaveBeenCalledExactlyOnceWith(0.35);
+    });
+
+    it(`${replace}: preserves a real visibility edit made by a listener during migration`, async () => {
+      using vp = openBlankViewport();
+      vp.setNeverDrawn(new Set(["0x77"]));
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      const next = vp.view.clone();
+      const hidden = next.iModelRefs.primary.neverDrawnElements;
+      hidden.onBatchAdded.addOnce(() => hidden.add("0x78"));
+      const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+      const changed = vi.fn();
+      vp.onNeverDrawnChanged.addListener(() => changed(applied.mock.lastCall?.[0].neverDrawn.hasId("0x78")));
+      vp[replace](next);
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      expect(changed).toHaveBeenCalledExactlyOnceWith(true);
+    });
+
+    it(`${replace}: does not announce copied visibility or unchanged emphasis`, async () => {
+      using vp = openBlankViewport();
+      vp.iModel.subcategories.add("0x10", "0x11", new SubCategoryAppearance(), true);
+      vp.setNeverDrawn(new Set(["0x77"]));
+      EmphasizeElements.getOrCreate(vp).emphasizeElements(["0x88"], vp);
+      vp.addFeatureOverrideProvider({ addFeatureOverrides: (overrides) => overrides.animationNodeOverrides.set(1, FeatureAppearance.fromJSON({ transparency: 0.3 })) });
+      vp.perModelCategoryVisibility.setOverride("0x20", "0x10", PerModelCategoryVisibility.Override.Hide);
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      const changed = vi.fn();
+      for (const event of [vp.onFeatureOverridesChanged, vp.onNeverDrawnChanged, vp.onAlwaysDrawnChanged, vp.onViewedCategoriesPerModelChanged, vp.onFeatureOverrideProviderChanged])
+        event.addListener(changed);
+      vp[replace](vp.view.clone());
+      await vi.waitFor(() => expect(vp.areAllTileTreesLoaded).toBe(true));
+      vp.renderFrame();
+      expect(vp.neverDrawn?.has("0x77")).toBe(true);
+      expect(vp.alwaysDrawn?.has("0x88")).toBe(true);
+      expect(changed).not.toHaveBeenCalled();
+    });
+  }
 
   it.each([true, false])("does not move or drop a provider when a view is already attached (same connection: %s)", (same) => {
     const model = createBlankConnection();

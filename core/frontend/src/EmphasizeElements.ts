@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
+import { _ignoreAnimationOverridesExcept, AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
 import { IModelDisplayReference } from "./IModelDisplayReference";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FeatureOverrideProvider, IModelDisplayReferenceFeatureOverrideProvider } from "./FeatureOverrideProvider";
@@ -38,10 +38,7 @@ function addFeatureOverrides(overrides: FeatureSymbology.Overrides, ref: IModelD
       overrides.override(args);
     }
 
-    overrides.ignoreAnimationOverrides((args) => {
-      const id = Id64.fromUint32Pair(args.elementId.lower, args.elementId.upper);
-      return !emphasizedElements.has(id);
-    });
+    overrides[_ignoreAnimationOverridesExcept](emphasizedElements);
   }
 
   const overriddenElements = getOverriddenElements(state);
@@ -511,7 +508,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         overrides.override(overrideArgs);
       }
 
-      overrides.ignoreAnimationOverrides((args) => !emphasized.has(Id64.fromUint32Pair(args.elementId.lower, args.elementId.upper)));
+      overrides[_ignoreAnimationOverridesExcept](emphasized);
     }
 
     const overridden = this.getOverriddenElements();
