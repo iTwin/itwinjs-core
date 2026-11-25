@@ -183,29 +183,9 @@ describe("Legacy display compatibility", () => {
     expect(overrides.getElementOverridesById("0x123")?.transparency).toBe(0.9);
   });
 
-  it("invalidates once per visibility edit and still invalidates when updateIdSet returns an empty set", () => {
+  it("targets the supplied reference in EmphasizeIModelElements.isolateSelectedElements", () => {
     using vp = openBlankViewport();
     const ref = vp.primaryIModelRef;
-    const invalidated = vi.fn();
-    ref.onSymbologyOverridesInvalidated.addListener(invalidated);
-
-    class EmptySetProvider extends EmphasizeElements {
-      public override updateIdSet() { return new Set<string>(); }
-    }
-    const emptyProvider = new EmptySetProvider();
-    expect(emptyProvider.setNeverDrawnElements(["0x1"], vp)).toBe(true);
-    expect(invalidated).toHaveBeenCalledTimes(1);
-    expect(emptyProvider.setAlwaysDrawnElements(["0x1"], vp, false)).toBe(true);
-    expect(invalidated).toHaveBeenCalledTimes(2);
-
-    invalidated.mockClear();
-    const provider = new EmphasizeElements();
-    expect(provider.hideElements(["0x1"], vp)).toBe(true);
-    expect(invalidated).toHaveBeenCalledTimes(1);
-    expect(provider.clearHiddenElements(vp)).toBe(true);
-    expect(invalidated).toHaveBeenCalledTimes(2);
-
-    // Selected-element operations on EmphasizeIModelElements still target the supplied reference.
     const other = createBlankConnection();
     try {
       const refs = vp.iModelRefs;
