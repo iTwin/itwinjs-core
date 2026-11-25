@@ -26,8 +26,10 @@ import { GraphicType } from "../common/render/GraphicType";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
-function translateBold(key: string) {
-  return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
+function appendMeasurement(toolTip: HTMLElement, key: string, value: string): void {
+  const label = document.createElement("b");
+  label.textContent = `${CoreTools.translate(`Measure.Labels.${key}`)}:`;
+  toolTip.append(label, ` ${value}`, document.createElement("br"));
 }
 
 async function getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceUnitName: string): Promise<FormatterSpec | undefined> {
@@ -510,15 +512,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined === distanceFormatterSpec)
       return toolTip;
 
-    let toolTipHtml = "";
     const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
-    toolTipHtml += `${translateBold("Distance") + formattedDistance}<br>`;
+    appendMeasurement(toolTip, "Distance", formattedDistance);
 
     if (is3d) {
       const angleFormatterSpec = this._angleFormatterSpec;
       if (undefined !== angleFormatterSpec) {
         const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
-        toolTipHtml += `${translateBold("Slope") + formattedSlope}<br>`;
+        appendMeasurement(toolTip, "Slope", formattedSlope);
       }
     }
 
@@ -537,31 +538,21 @@ export class MeasureDistanceTool extends PrimitiveTool {
         const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
         const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
         const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
-        toolTipHtml += `${translateBold("StartCoord") + formattedStartX}, ${formattedStartY}`;
-        if (is3d)
-          toolTipHtml += `, ${formattedStartZ}`;
-        toolTipHtml += "<br>";
+        appendMeasurement(toolTip, "StartCoord", (is3d ? [formattedStartX, formattedStartY, formattedStartZ] : [formattedStartX, formattedStartY]).join(", "));
       }
       const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, coordFormatterSpec);
       const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, coordFormatterSpec);
       const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, coordFormatterSpec);
-      toolTipHtml += `${translateBold("EndCoord") + formattedEndX}, ${formattedEndY}`;
-      if (is3d)
-        toolTipHtml += `, ${formattedEndZ}`;
-      toolTipHtml += "<br>";
+      appendMeasurement(toolTip, "EndCoord", (is3d ? [formattedEndX, formattedEndY, formattedEndZ] : [formattedEndX, formattedEndY]).join(", "));
     }
 
     if (undefined !== delta) {
       const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
       const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
       const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
-      toolTipHtml += `${translateBold("Delta") + formattedDeltaX}, ${formattedDeltaY}`;
-      if (is3d)
-        toolTipHtml += `, ${formattedDeltaZ}`;
-      toolTipHtml += "<br>";
+      appendMeasurement(toolTip, "Delta", (is3d ? [formattedDeltaX, formattedDeltaY, formattedDeltaZ] : [formattedDeltaX, formattedDeltaY]).join(", "));
     }
 
-    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 
@@ -786,7 +777,6 @@ export class MeasureLocationTool extends PrimitiveTool {
     const isSpatial = (undefined !== this.targetView && this.targetView.view.isSpatialView());
     const toolTip = document.createElement("div");
 
-    let toolTipHtml = "";
     const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH_COORDINATE", "Units.M");
     if (undefined !== coordFormatterSpec) {
       let pointAdjusted = point;
@@ -797,11 +787,7 @@ export class MeasureLocationTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-      toolTipHtml += `${translateBold("Coordinate") + formattedPointX}, ${formattedPointY}`;
-      if (is3d)
-        toolTipHtml += `, ${formattedPointZ}`;
-
-      toolTipHtml += "<br>";
+      appendMeasurement(toolTip, "Coordinate", (is3d ? [formattedPointX, formattedPointY, formattedPointZ] : [formattedPointX, formattedPointY]).join(", "));
     }
 
     if (isSpatial) {
@@ -814,13 +800,12 @@ export class MeasureLocationTool extends PrimitiveTool {
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
           const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
           const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
-          toolTipHtml += `${translateBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
-          toolTipHtml += `${translateBold("Altitude") + formattedHeight}<br>`;
+          appendMeasurement(toolTip, "LatLong", `${formattedLat}${latDir}, ${formattedLong}${longDir}`);
+          appendMeasurement(toolTip, "Altitude", formattedHeight);
         } catch { }
       }
     }
 
-    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 
@@ -1148,17 +1133,16 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     const is3d = (undefined === this.targetView || this.targetView.view.is3d());
     const isSpatial = (undefined !== this.targetView && this.targetView.view.isSpatialView());
     const toolTip = document.createElement("div");
-    let toolTipHtml = "";
 
     const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
     if (undefined !== areaFormatterSpec) {
       const formattedArea = IModelApp.quantityFormatter.formatQuantity(this._area, areaFormatterSpec);
-      toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
+      appendMeasurement(toolTip, "Area", formattedArea);
     }
     const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
     if (undefined !== perimeterFormatterSpec) {
       const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(this._perimeter, perimeterFormatterSpec);
-      toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
+      appendMeasurement(toolTip, "Perimeter", formattedPerimeter);
     }
     const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH_COORDINATE", "Units.M");
     if (undefined !== coordFormatterSpec) {
@@ -1170,14 +1154,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-      toolTipHtml += `${translateBold("Centroid") + formattedPointX}, ${formattedPointY}`;
-      if (is3d)
-        toolTipHtml += `, ${formattedPointZ}`;
-
-      toolTipHtml += "<br>";
+      appendMeasurement(toolTip, "Centroid", (is3d ? [formattedPointX, formattedPointY, formattedPointZ] : [formattedPointX, formattedPointY]).join(", "));
     }
 
-    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 
@@ -1417,14 +1396,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     const is3d = (undefined === this.targetView || this.targetView.view.is3d());
     const isSpatial = (undefined !== this.targetView && this.targetView.view.isSpatialView());
     const toolTip = document.createElement("div");
-    let toolTipHtml = "";
 
     switch (this.getOperation()) {
       case MassPropertiesOperation.AccumulateLengths: {
         const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
         if (undefined !== distanceFormatterSpec) {
           const formattedLength = IModelApp.quantityFormatter.formatQuantity(responseProps.length ? responseProps.length : 0, distanceFormatterSpec);
-          toolTipHtml += `${translateBold("Length") + formattedLength}<br>`;
+          appendMeasurement(toolTip, "Length", formattedLength);
         }
         break;
       }
@@ -1432,13 +1410,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
         if (undefined !== areaFormatterSpec) {
           const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area ? responseProps.area : 0, areaFormatterSpec);
-          toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
+          appendMeasurement(toolTip, "Area", formattedArea);
         }
         if (responseProps.perimeter) {
           const perimeterFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.LENGTH", "Units.M");
           if (undefined !== perimeterFormatterSpec) {
             const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(responseProps.perimeter, perimeterFormatterSpec);
-            toolTipHtml += `${translateBold("Perimeter") + formattedPerimeter}<br>`;
+            appendMeasurement(toolTip, "Perimeter", formattedPerimeter);
           }
         }
         break;
@@ -1447,13 +1425,13 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const volumeFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.VOLUME", "Units.CUB_M");
         if (undefined !== volumeFormatterSpec) {
           const formattedVolume = IModelApp.quantityFormatter.formatQuantity(responseProps.volume ? responseProps.volume : 0, volumeFormatterSpec);
-          toolTipHtml += `${translateBold("Volume") + formattedVolume}<br>`;
+          appendMeasurement(toolTip, "Volume", formattedVolume);
         }
         if (responseProps.area) {
           const areaFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("DefaultToolsUnits.AREA", "Units.SQ_M");
           if (undefined !== areaFormatterSpec) {
             const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area, areaFormatterSpec);
-            toolTipHtml += `${translateBold("Area") + formattedArea}<br>`;
+            appendMeasurement(toolTip, "Area", formattedArea);
           }
         }
         break;
@@ -1471,14 +1449,10 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
         const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
         const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-        toolTipHtml += `${translateBold("Centroid") + formattedPointX}, ${formattedPointY}`;
-        if (is3d)
-          toolTipHtml += `, ${formattedPointZ}`;
-        toolTipHtml += "<br>";
+        appendMeasurement(toolTip, "Centroid", (is3d ? [formattedPointX, formattedPointY, formattedPointZ] : [formattedPointX, formattedPointY]).join(", "));
       }
     }
 
-    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 

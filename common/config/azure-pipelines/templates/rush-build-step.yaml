@@ -1,0 +1,51 @@
+parameters:
+  - name: cacheMode
+    type: string
+    values: ["off", "read", "write"]
+  - name: args
+    type: string
+  - name: workingDir
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+  - name: env
+    type: object
+    default: {}
+
+steps:
+  # Probe inline because a linked checkout may predate the wrapper.
+  - script: >
+      node -e "
+      const { ITWIN_NATIVE_PR_VALIDATION, IMODELJS_NATIVE_OVERRIDE, RUSH_BUILD_CACHE_ENABLED } = process.env;
+      const native = ITWIN_NATIVE_PR_VALIDATION?.toLowerCase() === 'true' || !!IMODELJS_NATIVE_OVERRIDE;
+      const mode = process.argv[1];
+      const file = './common/scripts/run-rush-build.js';
+      const cached = mode !== 'off' && RUSH_BUILD_CACHE_ENABLED !== '0' && (!native || mode === 'read')
+      && require('node:fs').existsSync(file) && (!native || require(file).nativeCacheKeyEnv === 'ITWIN_NATIVE_CACHE_KEY');
+      console.log('##vso[task.setvariable variable=ITWIN_RUSH_BUILD_COMMAND]' + (cached ? 'cached' : native ? 'rebuild' : 'build'));
+      " -- ${{ parameters.cacheMode }}
+    displayName: Select Rush build path
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ""
+
+  - script: node common/scripts/run-rush-build.js ${{ parameters.cacheMode }} ${{ parameters.args }}
+    displayName: rush build
+    condition: and(succeeded(), eq(variables['ITWIN_RUSH_BUILD_COMMAND'], 'cached'))
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ${{ iif(eq(parameters.cacheMode, 'write'), '$(RushBuildCacheWriteSAS)', iif(eq(parameters.cacheMode, 'read'), '$(RushBuildCacheReadSAS)', '')) }}
+
+  - script: node common/scripts/install-run-rush.js $(ITWIN_RUSH_BUILD_COMMAND) ${{ parameters.args }}
+    displayName: rush build (cache off)
+    condition: and(succeeded(), in(variables['ITWIN_RUSH_BUILD_COMMAND'], 'build', 'rebuild'))
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      ${{ insert }}: ${{ parameters.env }}
+      RUSH_BUILD_CACHE_CREDENTIAL: ""
+      RUSH_BUILD_CACHE_ENABLED: "0"
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: "0"
+      RUSH_BUILD_CACHE_OVERRIDE_JSON: ""
+      RUSH_BUILD_CACHE_OVERRIDE_JSON_FILE_PATH: ""
+      ITWIN_NATIVE_CACHE_KEY: ""
