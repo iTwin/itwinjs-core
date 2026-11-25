@@ -1503,7 +1503,7 @@ export abstract class Viewport implements Disposable, TileUser {
       // Providers and public view/style hooks can derive visibility from the fraction, including for shadow casters.
       if (this.primaryIModelRef.featureOverrideProviders.size || this.view.isSubCategoryVisible !== ViewState.prototype.isSubCategoryVisible
         || this.view.getSubCategoryOverride !== ViewState.prototype.getSubCategoryOverride || style.getSubCategoryOverride !== DisplayStyleState.prototype.getSubCategoryOverride
-        || settings.getSubCategoryOverride !== DisplayStyleSettings.prototype.getSubCategoryOverride)
+        || settings.getSubCategoryOverride !== DisplayStyleSettings.prototype.getSubCategoryOverride || style.forEachRealityModel !== DisplayStyleState.prototype.forEachRealityModel)
         this.primaryIModelRef.invalidateSymbologyOverrides();
       this._changeFlags.setDisplayStyle();
       this._analysisFractionValid = false;
@@ -2859,16 +2859,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.animate();
     this._frameStatsCollector.endTime("animationTime");
 
-    const view = this.view;
     const target = this.target;
-    let changeFlags = this._changeFlags.hasChanges ? this._changeFlags : Viewport._noFrameChanges;
-    if (changeFlags.hasChanges)
-      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
-    const primaryUpdate = this._primaryOverridesUpdate;
-    this._primaryOverridesUpdate = undefined;
-    let overridesNeeded = primaryUpdate !== undefined || changeFlags.alwaysDrawn || changeFlags.neverDrawn
-      || changeFlags.viewedCategories || changeFlags.viewedCategoriesPerModel || changeFlags.featureOverrideProvider;
-
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
     this._redrawPending = false;
 
@@ -2880,6 +2871,15 @@ export abstract class Viewport implements Disposable, TileUser {
 
     if (!this._controllerValid)
       this.setupFromView();
+
+    const view = this.view;
+    let changeFlags = this._changeFlags.hasChanges ? this._changeFlags : Viewport._noFrameChanges;
+    if (changeFlags.hasChanges)
+      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
+    const primaryUpdate = this._primaryOverridesUpdate;
+    this._primaryOverridesUpdate = undefined;
+    let overridesNeeded = primaryUpdate !== undefined || changeFlags.alwaysDrawn || changeFlags.neverDrawn
+      || changeFlags.viewedCategories || changeFlags.viewedCategoriesPerModel || changeFlags.featureOverrideProvider;
 
     if (this._selectionSetDirty) {
       target.invalidateHilites();
@@ -2908,7 +2908,7 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     if (overridesNeeded) {
-      if (primaryUpdate !== "attach" && !changeFlags.areFeatureOverridesDirty)
+      if (primaryUpdate === "change" && !changeFlags.areFeatureOverridesDirty)
         changeFlags = new MutableChangeFlags(changeFlags.value | ChangeFlag.Symbology);
       target.overrideFeatureSymbology(this.primaryIModelRef.getSymbologyOverrides());
       isRedrawNeeded = true;

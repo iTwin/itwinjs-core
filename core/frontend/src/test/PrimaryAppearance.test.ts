@@ -7,9 +7,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { EmptyLocalization, FeatureAppearance, PlanProjectionSettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { type ChangeFlags } from "../ChangeFlags";
+import { ContextRealityModelState } from "../ContextRealityModelState";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { SceneContext } from "../ViewContext";
 import { GeometricModel3dState } from "../ModelState";
+import { OffScreenViewport } from "../Viewport";
+import { SpatialViewState } from "../SpatialViewState";
+import { ViewRect } from "../common/ViewRect";
 import { createPrimaryTileTreeReference } from "../internal/tile/PrimaryTileTree";
 import { openBlankViewport } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
@@ -319,6 +323,85 @@ describe("Primary appearance changes", () => {
       expect(linked.getSymbologyOverrides().getModelOverridesById("0x123")?.transparency).toBe(0.5);
     } finally {
       other.closeSync();
+    }
+  });
+
+  it("applies visibility changes made during setupFromView before completing an offscreen render", async () => {
+    const iModel = createBlankConnection();
+    try {
+      const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+      using vp = OffScreenViewport.create({ view, viewRect: new ViewRect(0, 0, 100, 100) });
+      await vp.waitForSceneCompletion();
+
+      let installed: FeatureSymbology.Overrides | undefined;
+      vi.spyOn(vp.target, "overrideFeatureSymbology").mockImplementation((ovrs) => { installed = ovrs; });
+      const events: boolean[] = [];
+      vp.onNeverDrawnChanged.addListener(() => events.push(installed?.neverDrawn.hasId("0x123") ?? false));
+      vp.onViewChanged.addOnce(() => vp.setNeverDrawn(new Set(["0x123"])));
+
+      vp.invalidateController();
+      await vp.waitForSceneCompletion();
+
+      expect(installed?.neverDrawn.hasId("0x123")).toBe(true);
+      expect(events).toEqual([true]);
+    } finally {
+      iModel.closeSync();
+    }
+  });
+
+  it("does not emit spurious symbology change events when invalidating a settled schedule script scene", async () => {
+    using vp = openBlankViewport();
+    await vi.waitFor(() => expect(vp.primaryIModelRef.isLoadingComplete).toBe(true));
+    const script = RenderSchedule.Script.fromJSON([{
+      modelId: "0x123", elementTimelines: [],
+      visibilityTimeline: [{ time: 0, value: 100, interpolation: RenderSchedule.Interpolation.Linear }, { time: 60, value: 0 }],
+    }])!;
+    vp.displayStyle.scheduleScript = script;
+    vp.timePoint = 30;
+    vp.renderFrame();
+
+    const changed = vi.fn();
+    vp.onFeatureOverridesChanged.addListener(changed);
+    const viewportChanged = vi.fn();
+    vp.onViewportChanged.addListener(viewportChanged);
+
+    for (let i = 0; i < 3; ++i) {
+      vp.invalidateScene();
+      vp.renderFrame();
+    }
+
+    expect(changed).not.toHaveBeenCalled();
+    expect(viewportChanged).not.toHaveBeenCalled();
+
+    const applied = vi.spyOn(vp.target, "overrideFeatureSymbology");
+    vp.timePoint = 45;
+    vp.renderFrame();
+    expect(changed).toHaveBeenCalledOnce();
+    expect(viewportChanged).toHaveBeenCalledOnce();
+    expect(applied.mock.lastCall?.[0].getModelOverridesById("0x123")?.transparency).toBe(0.75);
+  });
+
+  it("refreshes fraction-dependent reality model appearance from a custom forEachRealityModel hook", () => {
+    using vp = openBlankViewport();
+    vp.renderFrame();
+
+    const apply = vi.spyOn(vp.target, "overrideFeatureSymbology");
+    vp.displayStyle.settings.analysisFraction = 0.5;
+    vp.renderFrame();
+    expect(apply).not.toHaveBeenCalled();
+    expect(vp.target.analysisFraction).toBe(0.5);
+
+    vi.spyOn(vp.displayStyle, "forEachRealityModel").mockImplementation((func) => {
+      func({
+        modelId: "0x99",
+        appearanceOverrides: FeatureAppearance.fromJSON({ transparency: vp.displayStyle.settings.analysisFraction }),
+      } as ContextRealityModelState);
+    });
+
+    for (const fraction of [0.2, 0.8]) {
+      vp.displayStyle.settings.analysisFraction = fraction;
+      vp.renderFrame();
+      expect(apply.mock.lastCall?.[0].getModelOverridesById("0x99")?.transparency).toBe(fraction);
     }
   });
 });
