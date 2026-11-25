@@ -382,7 +382,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   #boundViewedModels?: ObservableSet<Id64String>;
   #removeViewedModelsListener?: VoidFunction;
   readonly #viewedModelsChanged = () => {
-    void scheduleViewedModelsLoad(this);
+    scheduleViewedModelsLoad(this);
   };
 
   public constructor(refs: SpatialIModelDisplayReferences) {
@@ -415,7 +415,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
     scheduleViewedCategoriesLoad(this);
 
-    void scheduleViewedModelsLoad(this);
+    scheduleViewedModelsLoad(this);
     this._view.onViewedModelsChanged.addListener(() => this.#syncViewedModelsBinding());
   }
 

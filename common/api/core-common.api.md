@@ -3655,6 +3655,10 @@ export enum FeatureIndexType {
 
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
+    // @internal (undocumented)
+    [_ignoreAnimationOverridesExcept](ids: ReadonlySet<Id64String>): void;
+    // @internal
+    [_matchesFeatureOverrides](other: FeatureOverrides): boolean;
     constructor();
     addInvisibleElementOverridesToNeverDrawn(): void;
     get alwaysDrawn(): Id64.Uint32Set;
@@ -5156,6 +5160,9 @@ export interface IgnoreAnimationOverridesArgs {
     readonly elementId: Readonly<Id64.Uint32Pair>;
 }
 
+// @internal
+export const _ignoreAnimationOverridesExcept: unique symbol;
+
 // @public
 export class ImageBuffer {
     static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer;
@@ -6371,6 +6378,9 @@ export interface MassPropertiesResponseProps {
     status: BentleyStatus;
     volume?: number;
 }
+
+// @internal
+export const _matchesFeatureOverrides: unique symbol;
 
 // @public
 export interface MaterialProps {

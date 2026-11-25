@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
@@ -55,6 +56,22 @@ describe("ViewState", () => {
       assert.isUndefined(compare.errorTracker, str);
     assert.isTrue(val, str);
   };
+
+  it("loads a cold saved spatial view without duplicating its hydration requests", async () => {
+    const db = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    const sandbox = sinon.createSandbox();
+    try {
+      const categories = sandbox.spy(db, "querySubCategories");
+      const modelProps = sandbox.spy(db.models, "getProps");
+      const view = await db.views.load("0x24");
+      assert.isTrue(view.isSubCategoryVisible("0x18"));
+      assert.isDefined(db.models.getLoaded("0x1c"));
+      expect([categories.callCount, modelProps.callCount]).to.deep.equal([1, 0]);
+    } finally {
+      sandbox.restore();
+      await db.close();
+    }
+  });
 
   it("should be able to create ViewState from SpatialViewDefinition", async () => {
     assert.equal(viewState.code.value, "A Views - View 1", "Code value is A Views - View 1");

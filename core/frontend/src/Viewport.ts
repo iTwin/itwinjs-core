@@ -8,7 +8,6 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
-  ObservableSet,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -16,7 +15,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettings, DisplayStyleSettingsProps,
+  _matchesFeatureOverrides, AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettings, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
@@ -530,6 +529,8 @@ export abstract class Viewport implements Disposable, TileUser {
   private _animator?: Animator;
   private static readonly _noFrameChanges = new ChangeFlags(ChangeFlag.None);
   private _movingProviderProxy = false;
+  // Compare against what listeners actually saw on the previous frame; do not re-run the old view's providers.
+  private _lastPrimaryOverrides?: FeatureSymbology.Overrides;
   /** @internal */
   protected _changeFlags = new MutableChangeFlags();
   private _primaryOverridesUpdate?: "attach" | "change";
@@ -1204,6 +1205,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     this.clearFeatureOverrideProviderRegistrations();
     this._target = dispose(this._target);
+    this._lastPrimaryOverrides = undefined;
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
@@ -1227,7 +1229,6 @@ export abstract class Viewport implements Disposable, TileUser {
     const primaryRef = view.iModelRefs.primary;
     this.attachToView();
     this.updateFeatureOverrideProviderRegistrations(primaryRef);
-
     // The render target tracks the primary reference for decorations and pick exclusions. changeView refreshes it via
     // Target.reset, but other paths (e.g., applyViewState) replace the view without a full reset - update it here.
     this._target?.changePrimaryIModelRef(primaryRef);
@@ -1243,6 +1244,8 @@ export abstract class Viewport implements Disposable, TileUser {
    * state belonged to the viewport rather than to the view's primary IModelDisplayReference.
    */
   private migratePrimaryRefDisplayState(prev: IModelDisplayReference, next: IModelDisplayReference): void {
+    const pendingFlags = this._changeFlags.value;
+    const pendingUpdate = this._primaryOverridesUpdate;
     next.neverDrawnElements.clear();
     next.neverDrawnElements.addAll(prev.neverDrawnElements);
 
@@ -1252,10 +1255,25 @@ export abstract class Viewport implements Disposable, TileUser {
     next.isAlwaysDrawnExclusive = prev.isAlwaysDrawnExclusive;
 
     next.perModelCategoryVisibility.clearOverrides();
+    let numOverrides = 0;
     for (const { modelId, categoryId, visible } of prev.perModelCategoryVisibility) {
       const override = visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
       next.perModelCategoryVisibility.setOverride(modelId, categoryId, override);
+      ++numOverrides;
     }
+
+    // The reference changed, but the viewport retained these values. Preserve pending flags and actual edits made by listeners during the copy.
+    const raised = this._changeFlags.value & ~pendingFlags;
+    if ((raised & ChangeFlag.NeverDrawn) && sameEntries(next.neverDrawnElements, prev.neverDrawnElements.size, (id) => prev.neverDrawnElements.has(id)))
+      this._changeFlags.clear(ChangeFlag.NeverDrawn);
+    if ((raised & ChangeFlag.AlwaysDrawn) && next.isAlwaysDrawnExclusive === prev.isAlwaysDrawnExclusive
+      && sameEntries(next.alwaysDrawnElements, prev.alwaysDrawnElements.size, (id) => prev.alwaysDrawnElements.has(id)))
+      this._changeFlags.clear(ChangeFlag.AlwaysDrawn);
+    if ((raised & ChangeFlag.ViewedCategoriesPerModel) && sameEntries(next.perModelCategoryVisibility, numOverrides, ({ modelId, categoryId, visible }) =>
+      prev.perModelCategoryVisibility.getOverride(modelId, categoryId) === (visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide)))
+      this._changeFlags.clear(ChangeFlag.ViewedCategoriesPerModel);
+    if (pendingUpdate === "attach")
+      this._primaryOverridesUpdate = "attach"; // Compare the result with the installed snapshot at render time.
   }
 
   private updateFeatureOverrideProviderRegistrations(iModelRef: IModelDisplayReference): void {
@@ -1503,7 +1521,7 @@ export abstract class Viewport implements Disposable, TileUser {
       // Providers and public view/style hooks can derive visibility from the fraction, including for shadow casters.
       if (this.primaryIModelRef.featureOverrideProviders.size || this.view.isSubCategoryVisible !== ViewState.prototype.isSubCategoryVisible
         || this.view.getSubCategoryOverride !== ViewState.prototype.getSubCategoryOverride || style.getSubCategoryOverride !== DisplayStyleState.prototype.getSubCategoryOverride
-        || settings.getSubCategoryOverride !== DisplayStyleSettings.prototype.getSubCategoryOverride)
+        || settings.getSubCategoryOverride !== DisplayStyleSettings.prototype.getSubCategoryOverride || style.forEachRealityModel !== DisplayStyleState.prototype.forEachRealityModel)
         this.primaryIModelRef.invalidateSymbologyOverrides();
       this._changeFlags.setDisplayStyle();
       this._analysisFractionValid = false;
@@ -1689,7 +1707,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
-  public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
+  public get neverDrawn(): Id64Set | undefined {
+    const ids = this.primaryIModelRef.neverDrawnElements;
+    return 0 < ids.size ? ids : undefined;
+  }
 
   /** Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
@@ -1697,7 +1718,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]].
    */
-  public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
+  public get alwaysDrawn(): Id64Set | undefined {
+    const ids = this.primaryIModelRef.alwaysDrawnElements;
+    return 0 < ids.size ? ids : undefined;
+  }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
@@ -2859,16 +2883,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.animate();
     this._frameStatsCollector.endTime("animationTime");
 
-    const view = this.view;
     const target = this.target;
-    let changeFlags = this._changeFlags.hasChanges ? this._changeFlags : Viewport._noFrameChanges;
-    if (changeFlags.hasChanges)
-      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
-    const primaryUpdate = this._primaryOverridesUpdate;
-    this._primaryOverridesUpdate = undefined;
-    let overridesNeeded = primaryUpdate !== undefined || changeFlags.alwaysDrawn || changeFlags.neverDrawn
-      || changeFlags.viewedCategories || changeFlags.viewedCategoriesPerModel || changeFlags.featureOverrideProvider;
-
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
     this._redrawPending = false;
 
@@ -2880,6 +2895,15 @@ export abstract class Viewport implements Disposable, TileUser {
 
     if (!this._controllerValid)
       this.setupFromView();
+
+    const view = this.view;
+    let changeFlags = this._changeFlags.hasChanges ? this._changeFlags : Viewport._noFrameChanges;
+    if (changeFlags.hasChanges)
+      this._changeFlags = new MutableChangeFlags(ChangeFlag.None);
+    const primaryUpdate = this._primaryOverridesUpdate;
+    this._primaryOverridesUpdate = undefined;
+    let overridesNeeded = primaryUpdate !== undefined || changeFlags.alwaysDrawn || changeFlags.neverDrawn
+      || changeFlags.viewedCategories || changeFlags.viewedCategoriesPerModel || changeFlags.featureOverrideProvider;
 
     if (this._selectionSetDirty) {
       target.invalidateHilites();
@@ -2908,9 +2932,14 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     if (overridesNeeded) {
-      if (primaryUpdate !== "attach" && !changeFlags.areFeatureOverridesDirty)
-        changeFlags = new MutableChangeFlags(changeFlags.value | ChangeFlag.Symbology);
-      target.overrideFeatureSymbology(this.primaryIModelRef.getSymbologyOverrides());
+      const overrides = this.primaryIModelRef.getSymbologyOverrides();
+      if (!changeFlags.areFeatureOverridesDirty) {
+        const changedOnAttach = primaryUpdate === "attach" && this._lastPrimaryOverrides && !overrides[_matchesFeatureOverrides](this._lastPrimaryOverrides);
+        if (primaryUpdate === "change" || changedOnAttach)
+          changeFlags = new MutableChangeFlags(changeFlags.value | ChangeFlag.Symbology);
+      }
+      target.overrideFeatureSymbology(overrides);
+      this._lastPrimaryOverrides = overrides;
       isRedrawNeeded = true;
     }
 
@@ -4179,6 +4208,16 @@ export class ScreenViewport extends Viewport {
 
     return promise;
   }
+}
+
+function sameEntries<T>(entries: Iterable<T>, expectedCount: number, matches: (entry: T) => boolean): boolean {
+  let count = 0;
+  for (const entry of entries) {
+    if (!matches(entry))
+      return false;
+    ++count;
+  }
+  return count === expectedCount;
 }
 
 function _clear2dCanvas(canvas: HTMLCanvasElement) {

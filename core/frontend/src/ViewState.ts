@@ -2441,13 +2441,13 @@ export abstract class ViewState2d extends ViewState {
   public readonly angle: Angle;
   protected _baseModelId: Id64String;
   public get baseModelId(): Id64String { return this._baseModelId; }
-  readonly #iModelRefs: IModelDisplayReferences2d;
+  #iModelRefs?: IModelDisplayReferences2d;
 
   /** The set of iModels displayed by this view.
    * @beta
    */
   public override get iModelRefs(): IModelDisplayReferences2d {
-    return this.#iModelRefs;
+    return this.#iModelRefs ??= createIModelDisplayReferences2d(this);
   }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
@@ -2460,8 +2460,6 @@ export abstract class ViewState2d extends ViewState {
     this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
 
     this._details = new ViewDetails(this.jsonProperties);
-
-    this.#iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {

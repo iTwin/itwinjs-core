@@ -10949,6 +10949,7 @@ export namespace SubCategoriesCache {
             owner?: Owner;
             retainOnRetry?: boolean;
         }): void;
+        pushSelector(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, owner: Owner): void;
         // (undocumented)
         protected _request?: SubCategoriesRequest;
     }
@@ -13881,7 +13882,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @deprecated
     addViewedModels(models: Id64Arg): Promise<void>;
     // @deprecated
-    get alwaysDrawn(): ObservableSet<Id64String>;
+    get alwaysDrawn(): Id64Set | undefined;
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
@@ -14062,7 +14063,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     // @deprecated
-    get neverDrawn(): ObservableSet<Id64String>;
+    get neverDrawn(): Id64Set | undefined;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
     npcToViewArray(pts: Point3d[]): void;
     npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;

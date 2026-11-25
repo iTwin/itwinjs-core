@@ -1181,28 +1181,37 @@ describe("Viewport", () => {
     it("accept the viewport's own sets without emptying them", () => {
       testBlankViewport((viewport) => {
         /* eslint-disable @typescript-eslint/no-deprecated -- verifies compatibility of deprecated methods */
-        viewport.setNeverDrawn(new Set(["0x1"]));
-        expect(viewport.neverDrawn.has("0x1")).toBe(true);
+        expect(viewport.neverDrawn).toBeUndefined();
+        expect(viewport.alwaysDrawn).toBeUndefined();
 
-        viewport.neverDrawn.add("0x2");
-        viewport.setNeverDrawn(viewport.neverDrawn);
-        expect(viewport.neverDrawn.size).toBe(2);
-        expect(viewport.neverDrawn.has("0x1")).toBe(true);
-        expect(viewport.neverDrawn.has("0x2")).toBe(true);
+        viewport.setNeverDrawn(new Set(["0x1"]));
+        expect(viewport.neverDrawn?.has("0x1")).toBe(true);
+
+        viewport.neverDrawn!.add("0x2");
+        viewport.setNeverDrawn(viewport.neverDrawn!);
+        expect(viewport.neverDrawn?.size).toBe(2);
+        expect(viewport.neverDrawn?.has("0x1")).toBe(true);
+        expect(viewport.neverDrawn?.has("0x2")).toBe(true);
+
+        viewport.clearNeverDrawn();
+        expect(viewport.neverDrawn).toBeUndefined();
 
         viewport.setAlwaysDrawn(new Set(["0x3"]));
         expect(viewport.isAlwaysDrawnExclusive).toBe(false);
 
-        viewport.setAlwaysDrawn(viewport.alwaysDrawn, true);
-        expect(viewport.alwaysDrawn.size).toBe(1);
-        expect(viewport.alwaysDrawn.has("0x3")).toBe(true);
+        viewport.setAlwaysDrawn(viewport.alwaysDrawn!, true);
+        expect(viewport.alwaysDrawn?.size).toBe(1);
+        expect(viewport.alwaysDrawn?.has("0x3")).toBe(true);
         expect(viewport.isAlwaysDrawnExclusive).toBe(true);
 
         // A distinct set still replaces the contents.
         viewport.setAlwaysDrawn(new Set(["0x4"]), false);
-        expect(viewport.alwaysDrawn.size).toBe(1);
-        expect(viewport.alwaysDrawn.has("0x4")).toBe(true);
+        expect(viewport.alwaysDrawn?.size).toBe(1);
+        expect(viewport.alwaysDrawn?.has("0x4")).toBe(true);
         expect(viewport.isAlwaysDrawnExclusive).toBe(false);
+
+        viewport.clearAlwaysDrawn();
+        expect(viewport.alwaysDrawn).toBeUndefined();
         /* eslint-enable @typescript-eslint/no-deprecated */
       });
     });

@@ -14,6 +14,7 @@ import type { ViewState } from "../ViewState";
 import type { SceneContext } from "../ViewContext";
 import type { FeatureSymbology } from "../render/FeatureSymbology";
 import { _backingView } from "../common/internal/Symbols";
+import { modelLoadRequests, retireModelRequests } from "./ModelLoadRequests";
 
 // This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
@@ -62,7 +63,7 @@ function notifyCategoriesLoaded(ref: IModelDisplayReference, ids: Iterable<Id64S
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
   // args.categories may be a one-shot iterable (e.g., a generator) - materialize it exactly once.
-  const categories = Id64.toIdSet(args.categories);
+  const categories = Id64.toIdSet(args.categories, args.display && args.enableAllSubCategories);
   if (!args.display) {
     if (args.noBatchNotify) {
       for (const id of categories)
@@ -84,14 +85,20 @@ export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeC
   if (unlinked.has(ref))
     return; // A synchronous selector listener can unlink this reference during addAll.
 
-  ref.parent.subcategories.push(ref.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
-    if (args.enableAllSubCategories) {
-      for (const catId of categories) {
-        const subCatIds = ref.iModel.subcategories.getSubCategories(catId);
+  const cache = ref.iModel.subcategories;
+  let toEnable = args.enableAllSubCategories ? categories : undefined;
+  ref.parent.subcategories.push(cache, categories, (anySubCategoriesLoaded) => {
+    if (toEnable) {
+      const missing = cache.getMissing(toEnable);
+      for (const catId of toEnable) {
+        if (missing?.has(catId))
+          continue;
+        const subCatIds = cache.getSubCategories(catId);
         if (subCatIds)
           for (const subCatId of subCatIds)
             ref.changeSubCategoryDisplay(subCatId, true);
       }
+      toEnable = missing; // Replaying a completed category could undo a newer visibility edit.
     }
 
     if (anySubCategoriesLoaded) {
@@ -199,8 +206,9 @@ export function getTileSymbologyOverrides(ref: IModelDisplayReference, context?:
 
 const unlinked = new WeakSet<IModelDisplayReference>();
 const scheduledCategoryLoads = new WeakMap<IModelDisplayReference, number>();
-const scheduledModelLoads = new WeakMap<SpatialIModelDisplayReference, { promise: Promise<void>, explicitIds: Set<Id64String>, includeViewed: boolean }>();
-const pendingModelLoads = new WeakMap<SpatialIModelDisplayReference, Promise<void>>();
+interface ModelBatch { ids: Set<Id64String>, dispatched: Promise<Map<Id64String, Promise<void>>> }
+interface ModelLoads { active: Map<Promise<void>, Promise<void>>, next?: ModelBatch, refreshViewed: boolean }
+const modelLoads = new WeakMap<SpatialIModelDisplayReference, ModelLoads>();
 
 export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void {
   if (unlinked.has(ref) || scheduledCategoryLoads.has(ref))
@@ -217,12 +225,12 @@ export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void 
 
     const missing = cache.getMissing(ref.viewedCategories);
     if (missing) {
-      ref.parent.subcategories.push(cache, missing, (anyLoaded) => {
+      ref.parent.subcategories.pushSelector(cache, missing, (anyLoaded) => {
         if (anyLoaded)
           notifyCategoriesLoaded(ref, missing);
         else
           ref.invalidateSymbologyOverrides();
-      }, { owner: ref.guid });
+      }, ref.guid);
     }
     // Publish independently loaded categories even if the remaining request fails. Register it before notifying listeners.
     if (cache.loadedSince(ref.viewedCategories, version))
@@ -232,62 +240,111 @@ export function scheduleViewedCategoriesLoad(ref: IModelDisplayReference): void 
 
 export function cancelSelectorRefresh(ref: IModelDisplayReference): void {
   scheduledCategoryLoads.delete(ref);
-  const batch = ref.isSpatial() ? scheduledModelLoads.get(ref) : undefined;
-  if (batch)
-    batch.includeViewed = false; // Do not cancel IDs promised to explicit addAndLoad callers.
+  const loads = ref.isSpatial() ? modelLoads.get(ref) : undefined;
+  if (loads)
+    loads.refreshViewed = false; // Do not cancel IDs promised to explicit addAndLoad callers.
 }
 
 export function unlinkDisplayReference(ref: IModelDisplayReference): void {
   unlinked.add(ref);
   cancelSelectorRefresh(ref);
+  retireModelRequests(ref.iModel.models, ref.guid);
   ref.parent.subcategories.cancel(ref.guid);
 }
 
-// Return the shared promise itself, including its rejection handler for fire-and-forget selector listeners.
-// eslint-disable-next-line @typescript-eslint/promise-function-async
-export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference, modelIds?: Iterable<Id64String>): Promise<void> {
-  const scheduled = scheduledModelLoads.get(ref);
-  if (scheduled) {
-    scheduled.includeViewed ||= !modelIds && !unlinked.has(ref);
-    for (const id of modelIds ?? [])
-      scheduled.explicitIds.add(id);
-    return scheduled.promise;
+function getModelLoads(ref: SpatialIModelDisplayReference): ModelLoads {
+  let loads = modelLoads.get(ref);
+  if (!loads)
+    modelLoads.set(ref, loads = { active: new Map(), refreshViewed: false });
+  return loads;
+}
+
+function finishModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): void {
+  if (!loads.next && !loads.active.size) {
+    if (loads.refreshViewed)
+      nextModelBatch(ref, loads);
+    else
+      modelLoads.delete(ref);
   }
+}
 
-  const explicitIds = new Set(modelIds);
-  const previous = pendingModelLoads.get(ref);
-  const load = (async () => {
-    // Defer synchronous bursts, and serialize later bursts behind the current request so loaded Ids aren't re-requested.
-    await previous?.catch(() => {});
-    const includeViewed = scheduledModelLoads.get(ref)?.includeViewed;
-    scheduledModelLoads.delete(ref);
-    if (!includeViewed && !explicitIds.size)
-      return;
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+function watchModelLoad(ref: SpatialIModelDisplayReference, loads: ModelLoads, request: Promise<void>, completion = request): Promise<void> {
+  let ready = loads.active.get(request);
+  if (!ready) {
+    ready = completion.then(() => ref.onViewedModelsLoaded.raiseEvent()).finally(() => {
+      loads.active.delete(request);
+      finishModelBatch(ref, loads);
+    });
+    loads.active.set(request, ready);
+    void ready.catch(() => {}); // Selector listeners don't await loads; explicit callers still receive the rejection.
+  }
+  return ready;
+}
 
-    // Explicit requests must finish even if their models are hidden before this batch is dispatched.
-    const ids = new Set(includeViewed ? ref.viewedModels : undefined);
-    for (const id of explicitIds)
-      ids.add(id);
-    await ref.iModel.models.load(ids);
-    ref.onViewedModelsLoaded.raiseEvent();
-  })();
+function nextModelBatch(ref: SpatialIModelDisplayReference, loads: ModelLoads): ModelBatch {
+  if (loads.next)
+    return loads.next;
 
-  const batch = { promise: load, explicitIds, includeViewed: !modelIds && !unlinked.has(ref) };
-  scheduledModelLoads.set(ref, batch);
-  pendingModelLoads.set(ref, load);
-  const complete = () => {
-    if (pendingModelLoads.get(ref) === load)
-      pendingModelLoads.delete(ref);
-  };
-  void load.then(complete, complete);
-  return load;
+  const ids = new Set<Id64String>();
+  const dispatched = Promise.resolve().then(() => {
+    loads.next = undefined;
+    const requests = new Map<Id64String, Promise<void>>();
+    const refresh = loads.refreshViewed;
+    loads.refreshViewed = false;
+    try {
+      if (refresh || ids.size) {
+        if (refresh)
+          for (const id of ref.viewedModels)
+            ids.add(id);
+        const models = ref.iModel.models;
+        const active = modelLoadRequests.get(models);
+        for (const id of ids) {
+          const request = active?.get(id);
+          if (request) {
+            requests.set(id, watchModelLoad(ref, loads, request.promise));
+            ids.delete(id);
+          } else if (models.getLoaded(id)) {
+            ids.delete(id);
+          }
+        }
+        if (ids.size || !requests.size) {
+          const load = models.load(ids);
+          const first = ids.values().next().value;
+          const started = first ? modelLoadRequests.get(models)?.get(first) : undefined;
+          if (started)
+            started.owner = ref.guid;
+          const ready = watchModelLoad(ref, loads, started?.promise ?? load, load);
+          for (const id of ids)
+            requests.set(id, ready);
+          if (started && unlinked.has(ref))
+            retireModelRequests(models, ref.guid);
+        }
+      }
+      return requests;
+    } finally {
+      finishModelBatch(ref, loads);
+    }
+  });
+  void dispatched.catch(() => {});
+  return loads.next = { ids, dispatched };
+}
+
+export function scheduleViewedModelsLoad(ref: SpatialIModelDisplayReference): void {
+  if (unlinked.has(ref))
+    return;
+  const loads = getModelLoads(ref);
+  loads.refreshViewed = true;
+  // Coalesce selector-only edits behind outstanding work; an explicit request can dispatch its missing IDs immediately.
+  if (!loads.active.size)
+    nextModelBatch(ref, loads);
 }
 
 export function isLoadingComplete(iModelRef: IModelDisplayReference): boolean {
   const cache = iModelRef.iModel.subcategories;
   const scheduledAt = scheduledCategoryLoads.get(iModelRef);
   if ((scheduledAt !== undefined && (cache.loadedSince(iModelRef.viewedCategories, scheduledAt) || cache.getMissing(iModelRef.viewedCategories))) || iModelRef.parent.subcategories.hasPending(iModelRef.guid)
-    || (iModelRef.isSpatial() && pendingModelLoads.has(iModelRef)))
+    || (iModelRef.isSpatial() && modelLoads.has(iModelRef)))
     return false;
 
   for (const ttRef of iModelRef.tileTreeRefs)
@@ -320,6 +377,15 @@ export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference,
   if (!unloaded)
     return;
 
-  // Reuse the selector listener's load. Also schedule on retries, when the Ids are already in the selector.
-  await scheduleViewedModelsLoad(ref, unloaded);
+  const batch = nextModelBatch(ref, getModelLoads(ref));
+  for (const id of unloaded)
+    batch.ids.add(id); // Keep explicit IDs even if they leave the selector before dispatch.
+  const dispatched = await batch.dispatched;
+  const waitFor = new Set<Promise<void>>();
+  for (const id of unloaded) {
+    const request = dispatched.get(id);
+    if (request)
+      waitFor.add(request);
+  }
+  await Promise.all(waitFor);
 }
