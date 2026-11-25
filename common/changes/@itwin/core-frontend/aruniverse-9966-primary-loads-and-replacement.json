@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Avoid duplicate metadata requests when opening saved views, let independent loads finish without waiting on unrelated iModels, notify viewport listeners when replacing a view changes its rendered appearance, and restore undefined returns when deprecated Viewport.neverDrawn and Viewport.alwaysDrawn sets are empty.",
+      "comment": "Avoid duplicate metadata requests when opening saved views, let independent loads finish without waiting on unrelated iModels, notify viewport listeners when replacing a view changes its rendered appearance, and preserve the Id64Set | undefined return type on deprecated Viewport.neverDrawn and Viewport.alwaysDrawn.",
       "type": "none"
     }
   ],

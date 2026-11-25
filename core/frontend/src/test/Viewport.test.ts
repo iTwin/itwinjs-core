@@ -1181,8 +1181,8 @@ describe("Viewport", () => {
     it("accept the viewport's own sets without emptying them", () => {
       testBlankViewport((viewport) => {
         /* eslint-disable @typescript-eslint/no-deprecated -- verifies compatibility of deprecated methods */
-        expect(viewport.neverDrawn).toBeUndefined();
-        expect(viewport.alwaysDrawn).toBeUndefined();
+        expect(viewport.neverDrawn?.size).toBe(0);
+        expect(viewport.alwaysDrawn?.size).toBe(0);
 
         viewport.setNeverDrawn(new Set(["0x1"]));
         expect(viewport.neverDrawn?.has("0x1")).toBe(true);
@@ -1194,7 +1194,7 @@ describe("Viewport", () => {
         expect(viewport.neverDrawn?.has("0x2")).toBe(true);
 
         viewport.clearNeverDrawn();
-        expect(viewport.neverDrawn).toBeUndefined();
+        expect(viewport.neverDrawn?.size).toBe(0);
 
         viewport.setAlwaysDrawn(new Set(["0x3"]));
         expect(viewport.isAlwaysDrawnExclusive).toBe(false);
@@ -1211,7 +1211,7 @@ describe("Viewport", () => {
         expect(viewport.isAlwaysDrawnExclusive).toBe(false);
 
         viewport.clearAlwaysDrawn();
-        expect(viewport.alwaysDrawn).toBeUndefined();
+        expect(viewport.alwaysDrawn?.size).toBe(0);
         /* eslint-enable @typescript-eslint/no-deprecated */
       });
     });

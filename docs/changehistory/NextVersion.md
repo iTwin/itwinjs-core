@@ -34,6 +34,7 @@ publish: false
     - [View-owned visibility state](#view-owned-visibility-state)
     - [Viewport feature override provider lifetime](#viewport-feature-override-provider-lifetime)
     - [TileTreeReference transform hook removal](#tiletreereference-transform-hook-removal)
+    - [Always-present viewport visibility sets](#always-present-viewport-visibility-sets)
 
 ## Frontend
 
@@ -274,3 +275,9 @@ Applications that register a provider once and reuse a viewport for multiple iMo
 The beta `TileTreeReference.getTransformFromIModel` method was removed. Remove overrides of this method from custom tile-tree references, including those supplied by [TiledGraphicsProvider]($frontend), to avoid TypeScript error TS4113.
 
 Feature attribution and the transform from an iModel into the parent view now come from the [IModelDisplayReference]($frontend) associated with [SceneContext.iModelRef]($frontend) or [GraphicBranchOptions.iModelRef]($frontend), including its `linearTransformToParent`. There is no direct replacement for the removed attribution hook. The protected `TileTreeReference.computeTransform` method still controls a tile tree's drawing location; it does not replace reference attribution.
+
+### Always-present viewport visibility sets
+
+The deprecated `Viewport.neverDrawn` and `Viewport.alwaysDrawn` getters now always return the primary reference's sets, including when those sets are empty. They no longer return `undefined` before the first assignment, while retaining their `Id64Set | undefined` return type for compatibility. Replace truthiness checks such as `if (viewport.neverDrawn)` with a size check, preferably `if (viewport.primaryIModelRef.neverDrawnElements.size > 0)`, and do the same for always-drawn elements.
+
+`EmphasizeElements.getNeverDrawnElements` and `getAlwaysDrawnElements` continue to return `undefined` for empty sets. Serialization continues to omit the corresponding JSON properties.

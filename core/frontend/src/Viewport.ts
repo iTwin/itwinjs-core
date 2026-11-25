@@ -1707,10 +1707,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.neverDrawnElements]].
    */
-  public get neverDrawn(): Id64Set | undefined {
-    const ids = this.primaryIModelRef.neverDrawnElements;
-    return 0 < ids.size ? ids : undefined;
-  }
+  public get neverDrawn(): Id64Set | undefined { return this.primaryIModelRef.neverDrawnElements; }
 
   /** Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
@@ -1718,10 +1715,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
    * @deprecated Use [[IModelDisplayReference.alwaysDrawnElements]].
    */
-  public get alwaysDrawn(): Id64Set | undefined {
-    const ids = this.primaryIModelRef.alwaysDrawnElements;
-    return 0 < ids.size ? ids : undefined;
-  }
+  public get alwaysDrawn(): Id64Set | undefined { return this.primaryIModelRef.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
