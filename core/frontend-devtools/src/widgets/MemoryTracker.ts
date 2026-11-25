@@ -155,7 +155,7 @@ class MemoryPanel {
     assert(this._labels.length === stats.length);
     assert(this._labels.length === this._elems.length);
 
-    this._header.innerHTML = `${this._label}: ${formatMemory(total)}`;
+    this._header.textContent = `${this._label}: ${formatMemory(total)}`;
 
     for (let i = 0; i < this._labels.length; i++) {
       const elem = this._elems[i];
@@ -166,7 +166,7 @@ class MemoryPanel {
       }
 
       elem.style.display = "block";
-      elem.innerHTML = `${this._labels[i]} (${stat.count}): ${formatMemory(stat.totalBytes)}`; // + "\n(max: " + formatMemory(stat.maxBytes) + ")";
+      elem.textContent = `${this._labels[i]} (${stat.count}): ${formatMemory(stat.totalBytes)}`;
     }
   }
 }

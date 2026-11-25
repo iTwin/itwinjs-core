@@ -449,7 +449,7 @@ export class Markup {
 
     // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
-      this.markupDiv.innerHTML = sanitizeSvg(markupData.svg); // make it a child of the markupDiv
+      this.markupDiv.appendChild(sanitizeSvg(markupData.svg));
       this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
       this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
       if (!this.svgContainer || !this.svgMarkup) { // if either isn't present, its not a valid markup

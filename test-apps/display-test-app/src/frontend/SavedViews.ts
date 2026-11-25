@@ -114,7 +114,8 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     for (const view of this._views) {
       const option = document.createElement("option");
-      option.value = option.innerHTML = view.name;
+      option.value = view.name;
+      option.textContent = view.name;
       option.addEventListener("dblclick", async () => this.recallView());
       viewsList.appendChild(option);
     }
