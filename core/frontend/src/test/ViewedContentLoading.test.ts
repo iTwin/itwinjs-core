@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-deprecated -- Exercise the viewport APIs that exhibited the regressions. */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { CompressedId64Set, Id64 } from "@itwin/core-bentley";
-import { EmptyLocalization, SubCategoryAppearance } from "@itwin/core-common";
+import { EmptyLocalization, IModelReadRpcInterface, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { SpatialViewState } from "../SpatialViewState";
@@ -149,6 +149,16 @@ describe("Viewed content loading", () => {
       gate.resolve();
       db.closeSync();
     }
+  });
+
+  it("still constructs the next model of the same class when one model's constructor fails", async () => {
+    using vp = openBlankViewport();
+    const models = vp.iModel.models;
+    const rows = ["0x30", "0x31"].map((id) => ({ id, classFullName: "BisCore:Model", modeledElement: { id } }));
+    vi.spyOn(RelatedElement, "fromJSON").mockReturnValueOnce(undefined);
+    await models.updateLoadedWithModelProps(rows);
+    expect(models.getLoaded("0x30")).toBeUndefined();
+    expect(models.getLoaded("0x31")).toBeDefined();
   });
 
   it("shares failed and incomplete model responses without preventing a later retry", async () => {
@@ -657,7 +667,7 @@ describe("Viewed content loading", () => {
         }
       });
 
-      it("loads a valid explicitly requested model even if an earlier model's class lookup fails", async () => {
+      it("only queries a failing class hierarchy once per batch and still loads unrelated models", async () => {
         using vp = openBlankViewport();
         const other = createBlankConnection();
         try {
@@ -666,13 +676,24 @@ describe("Viewed content loading", () => {
             throw new Error("Expected spatial references");
           const ref = linked ? refs.link({ iModel: other }) : refs.primary;
           await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
-          const query = vi.spyOn(ref.iModel.models, "getProps").mockResolvedValue(["0x31", "0x32"].map((id) => ({ id, classFullName: id === "0x31" ? "Test:Unknown" : "BisCore:PhysicalModel", modeledElement: { id } })));
-          vi.spyOn(ref.iModel, "findClassFor").mockRejectedValueOnce(new Error("class lookup failed"));
-          ref.viewedModels.add("0x31");
-          await ref.addAndLoadViewedModels(["0x32"]);
+          const ids = createIds(25);
+          const unknown = ids.map((id, i) => ({ id, classFullName: i % 2 ? "Test:Unknown" : "test:unknown", modeledElement: { id } }));
+          const good = { id: "0x32", classFullName: "BisCore:PhysicalModel", modeledElement: { id: "0x32" } };
+          const query = vi.spyOn(ref.iModel.models, "getProps").mockResolvedValueOnce([...unknown, good]).mockResolvedValueOnce([unknown[0]]);
+          vi.spyOn(ref.iModel, "isOpen", "get").mockReturnValue(true);
+          const hierarchy = vi.fn<IModelReadRpcInterface["getClassHierarchy"]>().mockRejectedValue(new Error("class hierarchy unavailable"));
+          vi.spyOn(IModelReadRpcInterface, "getClientForRouting").mockReturnValue({ getClassHierarchy: hierarchy } as unknown as IModelReadRpcInterface);
+          ref.viewedModels.addAll(ids);
+          await ref.addAndLoadViewedModels([good.id]);
+          expect(hierarchy).toHaveBeenCalledOnce();
           expect(query).toHaveBeenCalledOnce();
-          expect(ref.iModel.models.getLoaded("0x31")).toBeUndefined();
-          expect(ref.iModel.models.getLoaded("0x32")).toBeDefined();
+          expect(ids.every((id) => !ref.iModel.models.getLoaded(id))).toBe(true);
+          expect(ref.iModel.models.getLoaded(good.id)).toBeDefined();
+
+          hierarchy.mockResolvedValueOnce([]); // A later batch can resolve the class using the default ModelState.
+          await ref.addAndLoadViewedModels([ids[0]]);
+          expect(hierarchy).toHaveBeenCalledTimes(2);
+          expect(ref.iModel.models.getLoaded(ids[0])).toBeDefined();
         } finally {
           other.closeSync();
         }

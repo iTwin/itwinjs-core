@@ -1046,15 +1046,27 @@ export namespace IModelConnection {
     }
 
     private async updateLoaded(modelProps: ModelProps[], requested?: Id64Set): Promise<void> {
+      let failedClasses: Set<string> | undefined;
       for (const props of modelProps) {
+        const className = props?.classFullName;
+        if (typeof className !== "string" || failedClasses?.has(className.toLowerCase()))
+          continue;
+
+        let ctor: typeof ModelState | undefined;
         try {
-          const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
+          ctor = await this._iModel.findClassFor(className, ModelState);
+        } catch {
+          (failedClasses ??= new Set()).add(className.toLowerCase());
+          continue;
+        }
+
+        try {
           if (undefined !== ctor && undefined !== props.id && (!requested || requested.has(props.id)) && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         } catch {
-          // A class lookup or constructor can fail for one model without invalidating its batch mates.
+          // A bad model's properties do not invalidate other rows of its class.
         }
       }
     }
