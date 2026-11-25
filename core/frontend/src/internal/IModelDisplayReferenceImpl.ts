@@ -63,7 +63,7 @@ function notifyCategoriesLoaded(ref: IModelDisplayReference, ids: Iterable<Id64S
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
   // args.categories may be a one-shot iterable (e.g., a generator) - materialize it exactly once.
-  const categories = Id64.toIdSet(args.categories);
+  const categories = Id64.toIdSet(args.categories, args.display && args.enableAllSubCategories);
   if (!args.display) {
     if (args.noBatchNotify) {
       for (const id of categories)
@@ -85,14 +85,20 @@ export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeC
   if (unlinked.has(ref))
     return; // A synchronous selector listener can unlink this reference during addAll.
 
-  ref.parent.subcategories.push(ref.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
-    if (args.enableAllSubCategories) {
-      for (const catId of categories) {
-        const subCatIds = ref.iModel.subcategories.getSubCategories(catId);
+  const cache = ref.iModel.subcategories;
+  let toEnable = args.enableAllSubCategories ? categories : undefined;
+  ref.parent.subcategories.push(cache, categories, (anySubCategoriesLoaded) => {
+    if (toEnable) {
+      const missing = cache.getMissing(toEnable);
+      for (const catId of toEnable) {
+        if (missing?.has(catId))
+          continue;
+        const subCatIds = cache.getSubCategories(catId);
         if (subCatIds)
           for (const subCatId of subCatIds)
             ref.changeSubCategoryDisplay(subCatId, true);
       }
+      toEnable = missing; // Replaying a completed category could undo a newer visibility edit.
     }
 
     if (anySubCategoriesLoaded) {

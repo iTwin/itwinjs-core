@@ -566,6 +566,43 @@ describe("Viewed content loading", () => {
         }
       }
 
+      it("does not re-enable a subcategory hidden by the user while another category retries", async () => {
+        using vp = openBlankViewport();
+        const other = createBlankConnection();
+        const retry = deferred();
+        try {
+          const refs = vp.iModelRefs;
+          if (!refs.isSpatial)
+            throw new Error("Expected spatial references");
+          const ref = linked ? refs.link({ iModel: other }) : refs.primary;
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          vi.spyOn(ref.iModel, "isClosed", "get").mockReturnValue(false);
+          const a = { parentId: "0x10", id: "0x11", appearance: { invisible: true } };
+          const b = { parentId: "0x20", id: "0x21", appearance: { invisible: true } };
+          const query = vi.spyOn(ref.iModel, "querySubCategories")
+            // @ts-expect-error -- ECSQL can return malformed JSON text instead of decoded appearance props.
+            .mockResolvedValueOnce([a, { ...b, appearance: "{" }])
+            .mockImplementationOnce(async () => { await retry.promise; return [b]; });
+          const ids = new Set([a.parentId, b.parentId]);
+          if (linked)
+            ref.changeCategoryDisplay({ categories: ids, display: true, enableAllSubCategories: true });
+          else
+            vp.changeCategoryDisplay(ids, true, true);
+          await vi.waitFor(() => expect(query).toHaveBeenCalledTimes(2));
+          expect(ref.isSubCategoryVisible(a.id)).toBe(true);
+          expect(ref.changeSubCategoryDisplay(a.id, false)).toBe(true);
+          retry.resolve();
+          await vi.waitFor(() => expect(ref.isLoadingComplete).toBe(true));
+          expect(ref.isSubCategoryVisible(a.id)).toBe(false);
+          expect(ref.isSubCategoryVisible(b.id)).toBe(true);
+          expect([...ids]).toEqual([a.parentId, b.parentId]);
+          expect(query.mock.calls.map(([packed]) => [...CompressedId64Set.iterable(packed)])).toEqual([[a.parentId, b.parentId], [b.parentId]]);
+        } finally {
+          retry.resolve();
+          other.closeSync();
+        }
+      });
+
       it("applies enableAllSubCategories when a queued retry loads the metadata", async () => {
         using vp = openBlankViewport();
         const other = createBlankConnection();
