@@ -31,10 +31,13 @@ publish: false
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
     - [@itwin/ecschema2ts](#itwinecschema2ts)
   - [Breaking changes](#breaking-changes)
-    - [View-owned visibility state](#view-owned-visibility-state)
-    - [Viewport feature override provider lifetime](#viewport-feature-override-provider-lifetime)
-    - [TileTreeReference transform hook removal](#tiletreereference-transform-hook-removal)
-    - [Always-present viewport visibility sets](#always-present-viewport-visibility-sets)
+    - [Compile-time](#compile-time)
+      - [TileTreeReference.getTransformFromIModel removed (@beta)](#tiletreereferencegettransformfromimodel-removed-beta)
+    - [Runtime](#runtime)
+      - [Frontend](#frontend-1)
+        - [Reopening a cached ViewState retains visibility state](#reopening-a-cached-viewstate-retains-visibility-state)
+        - [Switching primary connections unregisters viewport override providers](#switching-primary-connections-unregisters-viewport-override-providers)
+        - [Viewport.neverDrawn and Viewport.alwaysDrawn return empty sets before assignment](#viewportneverdrawn-and-viewportalwaysdrawn-return-empty-sets-before-assignment)
 
 ## Frontend
 
@@ -258,26 +261,36 @@ The `@itwin/ecschema2ts` package, including its `ecschema2ts` command-line tool 
 
 ## Breaking changes
 
-### View-owned visibility state
+Existing `@public` TypeScript callers do not require compile-time changes. The only compile-time removal below is a single `@beta` method; the runtime entries cover narrow lifecycle and empty-set cases for applications that reuse cached `ViewState` instances across viewports or switch a viewport to a different [IModelConnection]($frontend).
 
-Never-drawn and always-drawn elements, the exclusive always-drawn flag, and per-model category visibility now belong to a view's primary [IModelDisplayReference]($frontend), rather than its viewport. Disposing a viewport does not clear them. Opening the same `ViewState` object in a new viewport retains its hidden or isolated elements and category overrides. This affects applications that cache and reuse views, even if they never link iModels.
+### Compile-time
 
-To start with clean visibility when reusing a view, clear its primary reference's `neverDrawnElements` and `alwaysDrawnElements`, set `isAlwaysDrawnExclusive` to `false`, and call `perModelCategoryVisibility.clearOverrides()`. When changing between views of the same iModel in an existing viewport, the viewport still transfers its previous view's visibility state to the replacement.
+#### TileTreeReference.getTransformFromIModel removed (@beta)
 
-### Viewport feature override provider lifetime
+The `@beta` `TileTreeReference.getTransformFromIModel` method was removed. Only custom tile-tree references overriding this method (for example, through a [TiledGraphicsProvider]($frontend)) need to remove the override to avoid TypeScript error TS4113.
 
-Viewport-level [FeatureOverrideProvider]($frontend)s, including [EmphasizeElements]($frontend), remain registered when changing views within the same [IModelConnection]($frontend), but are removed when the primary connection changes. Previously, they stayed registered across connection changes. This prevents element IDs from the previous iModel from overriding unrelated elements in the new iModel.
+Feature attribution and the transform from an iModel into the parent view now come from the [IModelDisplayReference]($frontend) associated with [SceneContext.iModelRef]($frontend) or [GraphicBranchOptions.iModelRef]($frontend), including its `linearTransformToParent`. There is no direct replacement for the removed attribution hook; the protected `TileTreeReference.computeTransform` method still controls drawing placement rather than reference attribution.
 
-Applications that register a provider once and reuse a viewport for multiple iModels must register the appropriate provider again after `changeView` switches connections. Recreate any connection-specific IDs and emphasis state before registering it. For state that belongs to a particular display reference, use [IModelDisplayReferenceFeatureOverrideProvider]($frontend) instead.
+### Runtime
 
-### TileTreeReference transform hook removal
+These changes have no compile-time impact; standard single-viewport flows and `changeView` within the same [IModelConnection]($frontend) continue to work as before.
 
-The beta `TileTreeReference.getTransformFromIModel` method was removed. Remove overrides of this method from custom tile-tree references, including those supplied by [TiledGraphicsProvider]($frontend), to avoid TypeScript error TS4113.
+#### Frontend
 
-Feature attribution and the transform from an iModel into the parent view now come from the [IModelDisplayReference]($frontend) associated with [SceneContext.iModelRef]($frontend) or [GraphicBranchOptions.iModelRef]($frontend), including its `linearTransformToParent`. There is no direct replacement for the removed attribution hook. The protected `TileTreeReference.computeTransform` method still controls a tile tree's drawing location; it does not replace reference attribution.
+##### Reopening a cached ViewState retains visibility state
 
-### Always-present viewport visibility sets
+Never-drawn and always-drawn elements, the exclusive always-drawn flag, and per-model category visibility now live on a view's primary [IModelDisplayReference]($frontend) rather than on the viewport, so disposing a viewport does not clear them. Changing views within the same [IModelConnection]($frontend) still carries over existing viewport visibility state.
 
-The deprecated `Viewport.neverDrawn` and `Viewport.alwaysDrawn` getters now always return the primary reference's sets, including when those sets are empty. They no longer return `undefined` before the first assignment, while retaining their `Id64Set | undefined` return type for compatibility. Replace truthiness checks such as `if (viewport.neverDrawn)` with a size check, preferably `if (viewport.primaryIModelRef.neverDrawnElements.size > 0)`, and do the same for always-drawn elements.
+If your application caches a `ViewState` instance and opens that same object in a new viewport expecting a clean slate, clear `neverDrawnElements` and `alwaysDrawnElements`, set `isAlwaysDrawnExclusive` to `false`, and call `perModelCategoryVisibility.clearOverrides()` on its primary reference.
 
-`EmphasizeElements.getNeverDrawnElements` and `getAlwaysDrawnElements` continue to return `undefined` for empty sets. Serialization continues to omit the corresponding JSON properties.
+##### Switching primary connections unregisters viewport override providers
+
+Viewport-level [FeatureOverrideProvider]($frontend)s, including [EmphasizeElements]($frontend), remain registered when changing views within the same [IModelConnection]($frontend). When `changeView` switches a viewport to a different [IModelConnection]($frontend), viewport-level providers are now unregistered automatically rather than carried over, preventing element IDs from the previous connection from overriding unrelated elements in the new one.
+
+If your application reuses one viewport across multiple connections, register the appropriate provider after switching connections with any connection-specific state rebuilt, or attach providers directly to a reference via [IModelDisplayReferenceFeatureOverrideProvider]($frontend).
+
+##### Viewport.neverDrawn and Viewport.alwaysDrawn return empty sets before assignment
+
+The deprecated `Viewport.neverDrawn` and `Viewport.alwaysDrawn` getters keep their `Id64Set | undefined` return type for compile-time compatibility and delegate directly to the primary reference's sets, returning an empty set rather than `undefined` before the first assignment (as they already did after clearing).
+
+Check `.size > 0` instead of relying on truthiness alone, or migrate to `viewport.primaryIModelRef.neverDrawnElements` / `alwaysDrawnElements`. `EmphasizeElements.getNeverDrawnElements`, `getAlwaysDrawnElements`, and emphasis JSON serialization continue to omit empty sets.

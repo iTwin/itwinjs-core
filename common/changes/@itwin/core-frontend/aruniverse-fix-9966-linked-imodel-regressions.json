@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Coalesce category and model metadata loads, stop waiting for discarded views, and preserve raster attachments and reference-specific symbology without rebuilding ordinary primary scenes for appearance changes.",
+      "comment": "Coalesce and share category and model metadata loads without redundant cold-open requests, preserve single-iModel display customization and viewport appearance notifications without rebuilding ordinary primary scenes, qualify plain pixel exclusions to same-iModel attachments, release shared selector listeners on detach, and preserve the Id64Set | undefined return type on deprecated Viewport.neverDrawn and Viewport.alwaysDrawn.",
       "type": "none"
     }
   ],
