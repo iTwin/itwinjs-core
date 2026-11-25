@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { _ignoreAnimationOverridesExcept, AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
+import { _ignoreAnimationOverridesExcept, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
 import { IModelDisplayReference } from "./IModelDisplayReference";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FeatureOverrideProvider, IModelDisplayReferenceFeatureOverrideProvider } from "./FeatureOverrideProvider";
@@ -22,60 +22,60 @@ interface EmphasizeElementsState {
   emphasizedAppearance: FeatureAppearance;
 }
 
-const defaultEmphasizeAppearance = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xe4, 0xe4, 0xe4), transparency: 0.8, nonLocatable: true });
-
-function addFeatureOverrides(overrides: FeatureSymbology.Overrides, ref: IModelDisplayReference, state: EmphasizeElementsState): void {
-  if (undefined !== state.defaultAppearance)
-    overrides.setDefaultOverrides(state.defaultAppearance);
-
-  const emphasizedElements = getEmphasizedElements(ref, state);
-  if (undefined !== emphasizedElements) {
-    const appearance = state.wantEmphasis ? state.emphasizedAppearance : FeatureAppearance.defaults;
-
-    const args = { elementId: "", appearance };
-    for (const elementId of emphasizedElements) {
-      args.elementId = elementId;
-      overrides.override(args);
-    }
-
-    overrides[_ignoreAnimationOverridesExcept](emphasizedElements);
-  }
-
-  const overriddenElements = getOverriddenElements(state);
-  if (undefined !== overriddenElements) {
-    const args = { elementId: "", appearance: FeatureAppearance.defaults };
-    for (const [key, ids] of overriddenElements) {
-      args.appearance = createAppearanceFromKey(key, state.wantEmphasis);
-      for (const elementId of ids) {
-        args.elementId = elementId;
-        overrides.override(args);
-      }
-    }
-  }
-
-  if (state.unanimatedAppearance) {
-    if (state.unanimatedAppearance.isFullyTransparent)
-      overrides.neverDrawnAnimationNodes.add(0);
-    else
-      overrides.animationNodeOverrides.set(0, state.unanimatedAppearance);
-  }
+/** Shared hook surface for EmphasizeElements (which dispatches through virtual methods) and EmphasizeIModelElements. */
+interface EmphasizeOps {
+  readonly state: EmphasizeElementsState;
+  readonly ref: IModelDisplayReference;
+  readonly wantEmphasis: boolean;
+  defaultAppearance: FeatureAppearance | undefined;
+  unanimatedAppearance: FeatureAppearance | undefined;
+  createDefaultAppearance(): FeatureAppearance;
+  createAppearanceFromKey(key: number): FeatureAppearance;
+  createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+  getOverrideFromKey(key: number): { overrideType: FeatureOverrideType, color: ColorDef };
+  getNeverDrawnElements(): Id64Set | undefined;
+  getAlwaysDrawnElements(): Id64Set | undefined;
+  getIsolatedElements(): Id64Set | undefined;
+  getEmphasizedIsolatedElements(): Id64Set | undefined;
+  getEmphasizedElements(): Id64Set | undefined;
+  getOverriddenElements(): Map<number, Id64Set> | undefined;
+  getOverriddenElementsByKey(key: number): Id64Set | undefined;
+  clearAlwaysDrawnElements(): boolean;
+  clearEmphasizedIsolatedElements(setToAlwaysDrawn: boolean): boolean;
+  updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
+  setNeverDrawnElements(ids: Id64Arg, replace?: boolean): boolean;
+  setAlwaysDrawnElements(ids: Id64Arg, exclusive?: boolean, replace?: boolean): boolean;
+  overrideElements(ids: Id64Arg, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
+  notifyChanged(): void;
 }
 
-function createAppearanceFromKey(key: number, wantEmphasis: boolean): FeatureAppearance {
-  let transparency: number | undefined;
-  let rgb: RgbColor | undefined;
+const defaultEmphasizeAppearance = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xe4, 0xe4, 0xe4), transparency: 0.8, nonLocatable: true });
 
-  if (key < 0) {
-    transparency = Math.abs(key);
-  } else {
-    const color = ColorDef.fromJSON(key);
-    rgb = RgbColor.fromColorDef(color);
-    if (0 !== color.getAlpha())
-      transparency = color.getTransparency() / 255;
-  }
+// Pass JSON's empty-exclusive state through the virtual setter without changing normal empty-input calls.
+class RestoredAlwaysDrawnIds extends Set<string> { }
 
-  const emphasized = wantEmphasis ? true : undefined;
-  return FeatureAppearance.fromJSON({ rgb, transparency, emphasized });
+function createState(): EmphasizeElementsState {
+  return {
+    emphasizedAppearance: FeatureAppearance.fromJSON({ emphasized: true }),
+    wantEmphasis: false,
+  };
+}
+
+function createDefaultAppearance(): FeatureAppearance {
+  return FeatureAppearance.fromJSON({
+    rgb: new RgbColor(0xe4, 0xe4, 0xe4),
+    transparency: 0.8,
+    nonLocatable: true,
+  });
+}
+
+function createAppearanceFromKey(ops: Pick<EmphasizeOps, "getOverrideFromKey" | "wantEmphasis">, key: number): FeatureAppearance {
+  const { color, overrideType } = ops.getOverrideFromKey(key);
+  return FeatureAppearance.fromJSON({
+    rgb: overrideType === FeatureOverrideType.AlphaOnly ? undefined : RgbColor.fromColorDef(color),
+    transparency: overrideType === FeatureOverrideType.ColorOnly ? undefined : color.getTransparency() / 255,
+    emphasized: ops.wantEmphasis || undefined,
+  });
 }
 
 function createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined {
@@ -110,99 +110,104 @@ function getOverrideFromKey(key: number): { overrideType: FeatureOverrideType, c
   return { overrideType, color };
 }
 
-function getNeverDrawnElements(ref: IModelDisplayReference): Id64Set | undefined {
-  return (undefined !== ref.neverDrawnElements && 0 !== ref.neverDrawnElements.size ? ref.neverDrawnElements : undefined);
+function addFeatureOverrides(ops: EmphasizeOps, overrides: FeatureSymbology.Overrides): void {
+  const defaultAppearance = ops.defaultAppearance;
+  if (defaultAppearance)
+    overrides.setDefaultOverrides(defaultAppearance);
+
+  const emphasized = ops.getEmphasizedElements();
+  if (emphasized) {
+    const appearance = ops.wantEmphasis ? ops.state.emphasizedAppearance : FeatureAppearance.defaults;
+    const args = { elementId: "", appearance };
+    for (const elementId of emphasized) {
+      args.elementId = elementId;
+      overrides.override(args);
+    }
+
+    overrides[_ignoreAnimationOverridesExcept](emphasized);
+  }
+
+  const overridden = ops.getOverriddenElements();
+  if (overridden) {
+    const args = { elementId: "", appearance: FeatureAppearance.defaults };
+    for (const [key, ids] of overridden) {
+      args.appearance = ops.createAppearanceFromKey(key);
+      for (const elementId of ids) {
+        args.elementId = elementId;
+        overrides.override(args);
+      }
+    }
+  }
+
+  const unanimated = ops.unanimatedAppearance;
+  if (unanimated) {
+    if (unanimated.isFullyTransparent)
+      overrides.neverDrawnAnimationNodes.add(0);
+    else
+      overrides.animationNodeOverrides.set(0, unanimated);
+  }
 }
 
-function getAlwaysDrawnElements(ref: IModelDisplayReference): Id64Set | undefined {
-  return (undefined !== ref.alwaysDrawnElements && 0 !== ref.alwaysDrawnElements.size ? ref.alwaysDrawnElements : undefined);
-}
-
-function getHiddenElements(ref: IModelDisplayReference): Id64Set | undefined {
-  return getNeverDrawnElements(ref);
-}
-
-function getIsolatedElements(ref: IModelDisplayReference): Id64Set | undefined {
-  return (ref.isAlwaysDrawnExclusive ? getAlwaysDrawnElements(ref) : undefined);
-}
-
-function getEmphasizedIsolatedElements(state: EmphasizeElementsState): Id64Set | undefined {
-  return (undefined !== state.defaultAppearance && undefined !== state.emphasizeIsolated && 0 !== state.emphasizeIsolated.size ? state.emphasizeIsolated : undefined);
-}
-
-function getEmphasizedElements(ref: IModelDisplayReference, state: EmphasizeElementsState): Id64Set | undefined {
-  return (undefined !== getEmphasizedIsolatedElements(state) ? state.emphasizeIsolated : (undefined !== state.defaultAppearance && !ref.isAlwaysDrawnExclusive ? getAlwaysDrawnElements(ref) : undefined));
-}
-
-function getOverriddenElements(state: EmphasizeElementsState): Map<number, Id64Set> | undefined {
-  return (undefined !== state.overrideAppearance && 0 !== state.overrideAppearance.size ? state.overrideAppearance : undefined);
-}
-
-function getOverriddenElementsByKey(state: EmphasizeElementsState, key: number): Id64Set | undefined {
-  return (undefined !== state.overrideAppearance ? state.overrideAppearance.get(key) : undefined);
-}
-
-function clearNeverDrawnElements(ref: IModelDisplayReference): boolean {
-  if (undefined === getNeverDrawnElements(ref))
+function clearNeverDrawnElements(ops: EmphasizeOps): boolean {
+  if (undefined === ops.getNeverDrawnElements())
     return false;
 
-  ref.neverDrawnElements.clear();
-  ref.invalidateSymbologyOverrides();
+  const hadEntries = 0 < ops.ref.neverDrawnElements.size;
+  ops.ref.neverDrawnElements.clear();
+  if (!hadEntries)
+    ops.ref.invalidateSymbologyOverrides();
   return true;
 }
 
-function clearAlwaysDrawnElements(ref: IModelDisplayReference): boolean {
-  if (!ref.isAlwaysDrawnExclusive && undefined === getAlwaysDrawnElements(ref))
+function clearAlwaysDrawnElements(ops: EmphasizeOps): boolean {
+  const ref = ops.ref;
+  if (!ref.isAlwaysDrawnExclusive && undefined === ops.getAlwaysDrawnElements())
     return false;
 
+  const changed = 0 < ref.alwaysDrawnElements.size || ref.isAlwaysDrawnExclusive;
   ref.alwaysDrawnElements.clear();
   ref.isAlwaysDrawnExclusive = false;
-  ref.invalidateSymbologyOverrides();
+  if (!changed)
+    ref.invalidateSymbologyOverrides();
   return true;
 }
 
-function clearHiddenElements(ref: IModelDisplayReference): boolean {
-  return clearNeverDrawnElements(ref);
+function clearIsolatedElements(ops: EmphasizeOps): boolean {
+  if (undefined === ops.getIsolatedElements() && !(ops.ref.isAlwaysDrawnExclusive && !ops.ref.alwaysDrawnElements.size))
+    return false;
+
+  return ops.clearEmphasizedIsolatedElements(true) || ops.clearAlwaysDrawnElements();
 }
 
-function clearIsolatedElements(ref: IModelDisplayReference, state: EmphasizeElementsState): boolean {
-  if (!ref.isAlwaysDrawnExclusive)
-    return false;
-  if (clearEmphasizedIsolatedElements(ref, state, true))
-    return true;
-  return clearAlwaysDrawnElements(ref);
-}
-
-function clearEmphasizedElements(ref: IModelDisplayReference, state: EmphasizeElementsState): boolean {
-  if (undefined === getEmphasizedElements(ref, state))
+function clearEmphasizedElements(ops: EmphasizeOps): boolean {
+  if (undefined === ops.getEmphasizedElements())
     return false;
 
-  if (clearEmphasizedIsolatedElements(ref, state, false))
+  if (ops.clearEmphasizedIsolatedElements(false))
     return true;
 
-  if (!clearAlwaysDrawnElements(ref))
+  if (!ops.clearAlwaysDrawnElements())
     return false;
 
-  state.defaultAppearance = undefined;
-  ref.invalidateSymbologyOverrides();
+  ops.defaultAppearance = undefined;
+  ops.notifyChanged();
   return true;
 }
 
-function clearEmphasizedIsolatedElements(ref: IModelDisplayReference, state: EmphasizeElementsState, setToAlwaysDrawn: boolean): boolean {
-  const emphasizedIsolated = getEmphasizedIsolatedElements(state);
-  state.emphasizeIsolated = undefined;
-  if (undefined === emphasizedIsolated)
+function clearEmphasizedIsolatedElements(ops: EmphasizeOps, setToAlwaysDrawn: boolean): boolean {
+  const emphasized = ops.getEmphasizedIsolatedElements();
+  ops.state.emphasizeIsolated = undefined;
+  if (undefined === emphasized)
     return false;
 
-  if (setToAlwaysDrawn && setAlwaysDrawnElements(emphasizedIsolated, ref, false))
-    return true;
-
-  state.defaultAppearance = undefined;
-  ref.invalidateSymbologyOverrides();
+  if (!setToAlwaysDrawn || !ops.setAlwaysDrawnElements(emphasized, false))
+    ops.defaultAppearance = undefined;
+  ops.notifyChanged();
   return true;
 }
 
-function clearOverriddenElements(ref: IModelDisplayReference, state: EmphasizeElementsState, keyOrIds?: number | Id64Arg): boolean {
+function clearOverriddenElements(ops: EmphasizeOps, keyOrIds?: number | Id64Arg): boolean {
+  const state = ops.state;
   if (undefined === state.overrideAppearance)
     return false;
 
@@ -231,7 +236,8 @@ function clearOverriddenElements(ref: IModelDisplayReference, state: EmphasizeEl
   } else {
     state.overrideAppearance = undefined;
   }
-  ref.invalidateSymbologyOverrides();
+
+  ops.notifyChanged();
   return true;
 }
 
@@ -254,177 +260,6 @@ function updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id6
   return newIds;
 }
 
-function setNeverDrawnElements(ids: Id64Arg, ref: IModelDisplayReference, replace: boolean = true): boolean {
-  const hiddenIds = updateIdSet(ids, replace, ref.neverDrawnElements);
-  if (undefined === hiddenIds)
-    return false;
-
-  ref.neverDrawnElements.clear();
-  ref.neverDrawnElements.addAll(hiddenIds);
-  ref.invalidateSymbologyOverrides();
-  return true;
-}
-
-// Pass JSON's empty-exclusive state through the legacy virtual setter without changing normal empty-input calls.
-class RestoredAlwaysDrawnIds extends Set<string> { }
-
-function setAlwaysDrawnElements(ids: Id64Arg, ref: IModelDisplayReference, exclusive: boolean = true, replace: boolean = true): boolean {
-  if (replace && exclusive && ids instanceof RestoredAlwaysDrawnIds && !ids.size)
-    return setEmptyExclusive(ref);
-  const visibleIds = updateIdSet(ids, replace, ref.alwaysDrawnElements);
-  if (undefined === visibleIds)
-    return false;
-
-  ref.alwaysDrawnElements.clear();
-  ref.alwaysDrawnElements.addAll(visibleIds);
-  ref.isAlwaysDrawnExclusive = exclusive;
-  ref.invalidateSymbologyOverrides();
-  return true;
-}
-
-function hideElements(ids: Id64Arg, ref: IModelDisplayReference, replace: boolean = false): boolean {
-  return setNeverDrawnElements(ids, ref, replace);
-}
-
-function isolateElements(ids: Id64Arg, ref: IModelDisplayReference, state: EmphasizeElementsState, replace: boolean = true): boolean {
-  const wasEmphasized = (undefined !== getEmphasizedElements(ref, state));
-  if (!setAlwaysDrawnElements(ids, ref, true, replace))
-    return false;
-
-  if (wasEmphasized)
-    state.defaultAppearance = state.emphasizeIsolated = undefined;
-
-  return true;
-}
-
-function isolateSelectedElements(ref: IModelDisplayReference, state: EmphasizeElementsState, replace: boolean = true, clearSelection: boolean = true): boolean {
-  const selection = ref.iModel.selectionSet;
-  if (!selection.isActive || !isolateElements(selection.elements, ref, state, replace))
-    return false;
-  if (clearSelection)
-    selection.emptyAll();
-  return true;
-}
-
-function emphasizeElements(ids: Id64Arg, ref: IModelDisplayReference, state: EmphasizeElementsState, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-  if (undefined !== getIsolatedElements(ref)) {
-    const emphasizeIds = updateIdSet(ids, replace, state.emphasizeIsolated);
-    if (undefined === emphasizeIds)
-      return false;
-
-    state.emphasizeIsolated = emphasizeIds;
-    ref.invalidateSymbologyOverrides();
-  } else {
-    if (!setAlwaysDrawnElements(ids, ref, false, replace))
-      return false;
-
-    state.emphasizeIsolated = undefined;
-  }
-
-  state.defaultAppearance = defaultAppearance ?? defaultEmphasizeAppearance;
-  return true;
-}
-
-function emphasizeSelectedElements(ref: IModelDisplayReference, state: EmphasizeElementsState, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-  const selection = ref.iModel.selectionSet;
-  if (!selection.isActive || !emphasizeElements(selection.elements, ref, state, defaultAppearance, replace))
-    return false;
-
-  if (clearSelection)
-    selection.emptyAll();
-
-  return true;
-}
-
-function updateElementOverrides(state: EmphasizeElementsState, key: number, requestedIds: Id64Set, existingIds?: Id64Set): boolean {
-  const overrideIds = new Set(requestedIds);
-  const oldSize = existingIds?.size ?? 0;
-  if (existingIds)
-    for (const id of existingIds)
-      overrideIds.add(id);
-  if (oldSize === overrideIds.size)
-    return false;
-
-  state.overrideAppearance ??= new Map<number, Id64Set>();
-  for (const [otherKey, otherIds] of state.overrideAppearance) {
-    if (otherKey === key)
-      continue;
-    for (const id of requestedIds)
-      otherIds.delete(id);
-    if (0 === otherIds.size)
-      state.overrideAppearance.delete(otherKey);
-  }
-  state.overrideAppearance.set(key, overrideIds);
-  return true;
-}
-
-function overrideElements(ids: Id64Arg, ref: IModelDisplayReference, state: EmphasizeElementsState, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
-  const key = createOverrideKey(color, override);
-  if (undefined === key)
-    return false;
-  const requestedIds = Id64.toIdSet(ids, true);
-  if (0 === requestedIds.size)
-    return false;
-  const changed = updateElementOverrides(state, key, requestedIds, replace ? undefined : getOverriddenElementsByKey(state, key));
-  if (changed)
-    ref.invalidateSymbologyOverrides();
-  return changed;
-}
-
-function overrideSelectedElements(ref: IModelDisplayReference, state: EmphasizeElementsState, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
-  const selection = ref.iModel.selectionSet;
-  if (!selection.isActive || !overrideElements(selection.elements, ref, state, color, override, replace))
-    return false;
-  if (clearSelection)
-    selection.emptyAll();
-  return true;
-}
-
-function isActive(ref: IModelDisplayReference, state: EmphasizeElementsState): boolean {
-  return ref.isAlwaysDrawnExclusive || undefined !== state.defaultAppearance || undefined !== getNeverDrawnElements(ref) || undefined !== getAlwaysDrawnElements(ref) || undefined !== getOverriddenElements(state);
-}
-
-function toJSON(ref: IModelDisplayReference, state: EmphasizeElementsState): EmphasizeElementsProps {
-  const props: EmphasizeElementsProps = {};
-  const neverDrawn = getNeverDrawnElements(ref);
-  if (undefined !== neverDrawn)
-    props.neverDrawn = [...neverDrawn];
-
-  const alwaysDrawn = getAlwaysDrawnElements(ref);
-  if (undefined !== alwaysDrawn)
-    props.alwaysDrawn = [...alwaysDrawn];
-
-  if (ref.isAlwaysDrawnExclusive)
-    props.isAlwaysDrawnExclusive = true;
-
-  const alwaysDrawnExclusiveEmphasized = getEmphasizedIsolatedElements(state);
-  if (undefined !== alwaysDrawnExclusiveEmphasized)
-    props.alwaysDrawnExclusiveEmphasized = [...alwaysDrawnExclusiveEmphasized];
-
-  if (undefined !== state.defaultAppearance)
-    props.defaultAppearance = state.defaultAppearance;
-
-  if (state.unanimatedAppearance)
-    props.unanimatedAppearance = state.unanimatedAppearance;
-
-  const overriddenElements = getOverriddenElements(state);
-  if (undefined !== overriddenElements) {
-    const appearanceOverride: AppearanceOverrideProps[] = [];
-    for (const [key, ovrIds] of overriddenElements) {
-      const { color, overrideType } = { ...getOverrideFromKey(key) };
-      const ids = [...ovrIds];
-      appearanceOverride.push({ overrideType, color: color.toJSON(), ids });
-    }
-
-    props.appearanceOverride = appearanceOverride;
-  }
-
-  if (state.wantEmphasis)
-    props.wantEmphasis = true;
-
-  return props;
-}
-
 // Empty ID arrays are omitted from JSON, but exclusive + empty means hide everything.
 function setEmptyExclusive(ref: IModelDisplayReference): boolean {
   if (ref.isAlwaysDrawnExclusive && !ref.alwaysDrawnElements.size)
@@ -434,43 +269,183 @@ function setEmptyExclusive(ref: IModelDisplayReference): boolean {
   return true;
 }
 
-function fromJSON(props: EmphasizeElementsProps, ref: IModelDisplayReference, state: EmphasizeElementsState): boolean {
+function setNeverDrawnElements(ops: EmphasizeOps, ids: Id64Arg, replace: boolean = true): boolean {
+  const target = ops.ref.neverDrawnElements;
+  const hidden = ops.updateIdSet(ids, replace, target);
+  if (undefined === hidden)
+    return false;
+
+  if (hidden !== target) {
+    target.clear();
+    target.addAll(hidden);
+  } else {
+    ops.ref.invalidateSymbologyOverrides();
+  }
+  return true;
+}
+
+function setAlwaysDrawnElements(ops: EmphasizeOps, ids: Id64Arg, exclusive: boolean = true, replace: boolean = true): boolean {
+  const ref = ops.ref;
+  if (replace && exclusive && ids instanceof RestoredAlwaysDrawnIds && !ids.size)
+    return setEmptyExclusive(ref);
+
+  const target = ref.alwaysDrawnElements;
+  const visible = ops.updateIdSet(ids, replace, target);
+  if (undefined === visible)
+    return false;
+
+  const changedExclusive = ref.isAlwaysDrawnExclusive !== exclusive;
+  if (visible !== target) {
+    target.clear();
+    target.addAll(visible);
+  }
+  ref.isAlwaysDrawnExclusive = exclusive;
+  if (visible === target && !changedExclusive)
+    ref.invalidateSymbologyOverrides();
+  return true;
+}
+
+function isolateElements(ops: EmphasizeOps, ids: Id64Arg, replace: boolean = true): boolean {
+  const wasEmphasized = undefined !== ops.getEmphasizedElements();
+  if (!ops.setAlwaysDrawnElements(ids, true, replace))
+    return false;
+
+  if (wasEmphasized) {
+    ops.defaultAppearance = undefined;
+    ops.state.emphasizeIsolated = undefined;
+  }
+
+  return true;
+}
+
+function emphasizeElements(ops: EmphasizeOps, ids: Id64Arg, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
+  if (undefined !== ops.getIsolatedElements()) {
+    const emphasized = ops.updateIdSet(ids, replace, ops.state.emphasizeIsolated);
+    if (undefined === emphasized)
+      return false;
+
+    ops.state.emphasizeIsolated = emphasized;
+  } else {
+    if (!ops.setAlwaysDrawnElements(ids, false, replace))
+      return false;
+
+    ops.state.emphasizeIsolated = undefined;
+  }
+
+  ops.defaultAppearance = defaultAppearance ?? ops.createDefaultAppearance();
+  ops.notifyChanged();
+  return true;
+}
+
+function overrideElements(ops: EmphasizeOps, ids: Id64Arg, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
+  const key = ops.createOverrideKey(color, override);
+  if (undefined === key)
+    return false;
+  const requestedIds = Id64.toIdSet(ids, true);
+  if (0 === requestedIds.size)
+    return false;
+
+  const existingIds = replace ? undefined : ops.getOverriddenElementsByKey(key);
+  const overrideIds = new Set(requestedIds);
+  const oldSize = existingIds?.size ?? 0;
+  if (existingIds)
+    for (const id of existingIds)
+      overrideIds.add(id);
+  if (oldSize === overrideIds.size)
+    return false;
+
+  ops.state.overrideAppearance ??= new Map<number, Id64Set>();
+  for (const [otherKey, otherIds] of ops.state.overrideAppearance) {
+    if (otherKey === key)
+      continue;
+    for (const id of requestedIds)
+      otherIds.delete(id);
+    if (0 === otherIds.size)
+      ops.state.overrideAppearance.delete(otherKey);
+  }
+  ops.state.overrideAppearance.set(key, overrideIds);
+  ops.notifyChanged();
+  return true;
+}
+
+function applyToSelection(ref: IModelDisplayReference, clearSelection: boolean, apply: (ids: Id64Set) => boolean): boolean {
+  const selection = ref.iModel.selectionSet;
+  if (!selection.isActive || !apply(selection.elements))
+    return false;
+  if (clearSelection)
+    selection.emptyAll();
+  return true;
+}
+
+function isActive(ops: EmphasizeOps): boolean {
+  return ops.ref.isAlwaysDrawnExclusive || undefined !== ops.defaultAppearance || undefined !== ops.getNeverDrawnElements()
+    || undefined !== ops.getAlwaysDrawnElements() || undefined !== ops.getOverriddenElements();
+}
+
+function toJSON(ops: EmphasizeOps): EmphasizeElementsProps {
+  const props: EmphasizeElementsProps = {};
+  const neverDrawn = ops.getNeverDrawnElements();
+  if (neverDrawn)
+    props.neverDrawn = [...neverDrawn];
+
+  const alwaysDrawn = ops.getAlwaysDrawnElements();
+  if (alwaysDrawn)
+    props.alwaysDrawn = [...alwaysDrawn];
+
+  if (ops.ref.isAlwaysDrawnExclusive)
+    props.isAlwaysDrawnExclusive = true;
+
+  const emphasized = ops.getEmphasizedIsolatedElements();
+  if (emphasized)
+    props.alwaysDrawnExclusiveEmphasized = [...emphasized];
+
+  const defaultAppearance = ops.defaultAppearance;
+  if (defaultAppearance)
+    props.defaultAppearance = defaultAppearance;
+
+  if (ops.unanimatedAppearance)
+    props.unanimatedAppearance = ops.unanimatedAppearance;
+
+  const overridden = ops.getOverriddenElements();
+  if (overridden)
+    props.appearanceOverride = [...overridden].map(([key, ids]) => {
+      const { color, overrideType } = ops.getOverrideFromKey(key);
+      return { color: color.toJSON(), overrideType, ids: [...ids] };
+    });
+
+  if (ops.wantEmphasis)
+    props.wantEmphasis = true;
+
+  return props;
+}
+
+function fromJSON(ops: EmphasizeOps, props: EmphasizeElementsProps, setWantEmphasis: (value: boolean) => void): boolean {
   let changed = false;
-  if (undefined !== props.neverDrawn && setNeverDrawnElements(new Set<string>(props.neverDrawn), ref, true))
+  if (props.neverDrawn && ops.setNeverDrawnElements(new Set(props.neverDrawn), true))
     changed = true;
-
-  if ((props.alwaysDrawn || props.isAlwaysDrawnExclusive) && setAlwaysDrawnElements(new RestoredAlwaysDrawnIds(props.alwaysDrawn), ref, true === props.isAlwaysDrawnExclusive))
+  if ((props.alwaysDrawn || props.isAlwaysDrawnExclusive) && ops.setAlwaysDrawnElements(new RestoredAlwaysDrawnIds(props.alwaysDrawn), true === props.isAlwaysDrawnExclusive))
     changed = true;
-
-  if (undefined !== props.alwaysDrawnExclusiveEmphasized)
-    state.emphasizeIsolated = new Set<string>(props.alwaysDrawnExclusiveEmphasized);
-
-  if (undefined !== props.defaultAppearance) {
-    const defaultAppearance = FeatureAppearance.fromJSON(props.defaultAppearance);
-    if (undefined === state.defaultAppearance || !state.defaultAppearance.equals(defaultAppearance))
+  if (props.alwaysDrawnExclusiveEmphasized)
+    ops.state.emphasizeIsolated = new Set(props.alwaysDrawnExclusiveEmphasized);
+  if (props.defaultAppearance) {
+    const appearance = FeatureAppearance.fromJSON(props.defaultAppearance);
+    if (!ops.defaultAppearance?.equals(appearance))
       changed = true;
-    state.defaultAppearance = defaultAppearance;
+    ops.defaultAppearance = appearance;
   }
-
   if (props.unanimatedAppearance)
-    state.unanimatedAppearance = FeatureAppearance.fromJSON(props.unanimatedAppearance);
-
-  if (undefined !== props.appearanceOverride) {
-    for (const ovrApp of props.appearanceOverride) {
-      if (undefined === ovrApp.ids)
-        continue;
-
-      if (overrideElements(new Set<string>(ovrApp.ids), ref, state, ColorDef.fromJSON(ovrApp.color), ovrApp.overrideType, true))
+    ops.unanimatedAppearance = FeatureAppearance.fromJSON(props.unanimatedAppearance);
+  if (props.appearanceOverride)
+    for (const override of props.appearanceOverride)
+      if (override.ids && ops.overrideElements(new Set(override.ids), ColorDef.fromJSON(override.color), override.overrideType, true))
         changed = true;
-    }
-  }
-
   const wantEmphasis = true === props.wantEmphasis;
-  if (wantEmphasis !== state.wantEmphasis) {
-    state.wantEmphasis = wantEmphasis;
+  if (wantEmphasis !== ops.wantEmphasis) {
+    setWantEmphasis(wantEmphasis);
     changed = true;
   }
-
+  if (changed)
+    ops.notifyChanged();
   return changed;
 }
 
@@ -479,11 +454,39 @@ function fromJSON(props: EmphasizeElementsProps, ref: IModelDisplayReference, st
  * @extensions
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
-  // Preserve virtual dispatch through legacy instance methods; applications subclass this provider.
-  readonly #state: EmphasizeElementsState = {
-    emphasizedAppearance: FeatureAppearance.fromJSON({ emphasized: true }),
-    wantEmphasis: false,
-  };
+  readonly #state = createState();
+
+  #ops(vp: Viewport): EmphasizeOps {
+    // Route shared logic through virtual instance methods so legacy subclasses keep their hooks.
+    const self = this;
+    return {
+      state: this.#state,
+      ref: vp.primaryIModelRef,
+      get wantEmphasis() { return self.wantEmphasis; },
+      get defaultAppearance() { return self.defaultAppearance; },
+      set defaultAppearance(value) { self.defaultAppearance = value; },
+      get unanimatedAppearance() { return self.unanimatedAppearance; },
+      set unanimatedAppearance(value) { self.unanimatedAppearance = value; },
+      createDefaultAppearance: () => this.createDefaultAppearance(),
+      createAppearanceFromKey: (key) => this.createAppearanceFromKey(key),
+      createOverrideKey: (color, override) => this.createOverrideKey(color, override),
+      getOverrideFromKey: (key) => this.getOverrideFromKey(key),
+      getNeverDrawnElements: () => this.getNeverDrawnElements(vp),
+      getAlwaysDrawnElements: () => this.getAlwaysDrawnElements(vp),
+      getIsolatedElements: () => this.getIsolatedElements(vp),
+      getEmphasizedIsolatedElements: () => this.getEmphasizedIsolatedElements(),
+      getEmphasizedElements: () => this.getEmphasizedElements(vp),
+      getOverriddenElements: () => this.getOverriddenElements(),
+      getOverriddenElementsByKey: (key) => this.getOverriddenElementsByKey(key),
+      clearAlwaysDrawnElements: () => this.clearAlwaysDrawnElements(vp),
+      clearEmphasizedIsolatedElements: (setToAlwaysDrawn) => this.clearEmphasizedIsolatedElements(vp, setToAlwaysDrawn),
+      updateIdSet: (ids, replace, existingIds) => this.updateIdSet(ids, replace, existingIds),
+      setNeverDrawnElements: (ids, replace) => this.setNeverDrawnElements(ids, vp, replace),
+      setAlwaysDrawnElements: (ids, exclusive, replace) => this.setAlwaysDrawnElements(ids, vp, exclusive, replace),
+      overrideElements: (ids, color, override, replace) => this.overrideElements(ids, vp, color, override, replace),
+      notifyChanged: () => vp.setFeatureOverrideProviderChanged(),
+    };
+  }
 
   public static get defaultAppearance() { return defaultEmphasizeAppearance; }
 
@@ -495,51 +498,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {
-    const defaultAppearance = this.defaultAppearance;
-    if (defaultAppearance)
-      overrides.setDefaultOverrides(defaultAppearance);
-
-    const emphasized = this.getEmphasizedElements(vp);
-    if (emphasized) {
-      const appearance = this.wantEmphasis ? this.#state.emphasizedAppearance : FeatureAppearance.defaults;
-      const overrideArgs = { elementId: "", appearance };
-      for (const elementId of emphasized) {
-        overrideArgs.elementId = elementId;
-        overrides.override(overrideArgs);
-      }
-
-      overrides[_ignoreAnimationOverridesExcept](emphasized);
-    }
-
-    const overridden = this.getOverriddenElements();
-    if (overridden) {
-      const overrideArgs = { elementId: "", appearance: FeatureAppearance.defaults };
-      for (const [key, ids] of overridden) {
-        overrideArgs.appearance = this.createAppearanceFromKey(key);
-        for (const elementId of ids) {
-          overrideArgs.elementId = elementId;
-          overrides.override(overrideArgs);
-        }
-      }
-    }
-
-    const unanimated = this.unanimatedAppearance;
-    if (unanimated) {
-      if (unanimated.isFullyTransparent)
-        overrides.neverDrawnAnimationNodes.add(0);
-      else
-        overrides.animationNodeOverrides.set(0, unanimated);
-    }
+    addFeatureOverrides(this.#ops(vp), overrides);
   }
 
   /** @internal */
   public createAppearanceFromKey(key: number): FeatureAppearance {
-    const { color, overrideType } = this.getOverrideFromKey(key);
-    return FeatureAppearance.fromJSON({
-      rgb: overrideType === FeatureOverrideType.AlphaOnly ? undefined : RgbColor.fromColorDef(color),
-      transparency: overrideType === FeatureOverrideType.ColorOnly ? undefined : color.getTransparency() / 255,
-      emphasized: this.wantEmphasis || undefined,
-    });
+    return createAppearanceFromKey(this, key);
   }
 
   /** Get override key from color and override type */
@@ -576,21 +540,19 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */
   public createDefaultAppearance(): FeatureAppearance {
-    return FeatureAppearance.fromJSON({
-      rgb: new RgbColor(0xe4, 0xe4, 0xe4),
-      transparency: 0.8,
-      nonLocatable: true,
-    });
+    return createDefaultAppearance();
   }
 
   /** Get the IDs of the currently never drawn elements. */
   public getNeverDrawnElements(vp: Viewport): Id64Set | undefined {
-    return getNeverDrawnElements(vp.primaryIModelRef);
+    const ids = vp.primaryIModelRef.neverDrawnElements;
+    return 0 !== ids.size ? ids : undefined;
   }
 
   /** Get the IDs of the currently always drawn elements. */
   public getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined {
-    return getAlwaysDrawnElements(vp.primaryIModelRef);
+    const ids = vp.primaryIModelRef.alwaysDrawnElements;
+    return 0 !== ids.size ? ids : undefined;
   }
 
   /** Get the IDs of the currently hidden elements. */
@@ -615,37 +577,26 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
   /** Get the map of current elements with color/transparency overrides. */
   public getOverriddenElements(): Map<number, Id64Set> | undefined {
-    return getOverriddenElements(this.#state);
+    return this.#state.overrideAppearance?.size ? this.#state.overrideAppearance : undefined;
   }
 
   /** Get the IDs of current elements with the specified color/transparency override. */
   public getOverriddenElementsByKey(key: number): Id64Set | undefined {
-    return getOverriddenElementsByKey(this.#state, key);
+    return this.#state.overrideAppearance?.get(key);
   }
 
   /** Clear never drawn elements.
    * @return false if nothing to clear.
    */
   public clearNeverDrawnElements(vp: Viewport): boolean {
-    if (undefined === this.getNeverDrawnElements(vp))
-      return false;
-
-    vp.primaryIModelRef.neverDrawnElements.clear();
-    vp.primaryIModelRef.invalidateSymbologyOverrides();
-    return true;
+    return clearNeverDrawnElements(this.#ops(vp));
   }
 
   /** Clear always drawn elements.
    * @return false if nothing to clear.
    */
   public clearAlwaysDrawnElements(vp: Viewport): boolean {
-    if (!vp.primaryIModelRef.isAlwaysDrawnExclusive && undefined === this.getAlwaysDrawnElements(vp))
-      return false;
-
-    vp.primaryIModelRef.alwaysDrawnElements.clear();
-    vp.primaryIModelRef.isAlwaysDrawnExclusive = false;
-    vp.primaryIModelRef.invalidateSymbologyOverrides();
-    return true;
+    return clearAlwaysDrawnElements(this.#ops(vp));
   }
 
   /** Clear hidden elements.
@@ -659,40 +610,21 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return false if nothing to clear.
    */
   public clearIsolatedElements(vp: Viewport): boolean {
-    if (undefined === this.getIsolatedElements(vp) && !(vp.primaryIModelRef.isAlwaysDrawnExclusive && !vp.primaryIModelRef.alwaysDrawnElements.size))
-      return false;
-
-    return this.clearEmphasizedIsolatedElements(vp, true) || this.clearAlwaysDrawnElements(vp);
+    return clearIsolatedElements(this.#ops(vp));
   }
 
   /** Clear emphasized elements.
    * @return false if nothing to clear.
    */
   public clearEmphasizedElements(vp: Viewport): boolean {
-    if (undefined === this.getEmphasizedElements(vp))
-      return false;
-    if (this.clearEmphasizedIsolatedElements(vp, false))
-      return true;
-    if (!this.clearAlwaysDrawnElements(vp))
-      return false;
-
-    this.defaultAppearance = undefined;
-    return this.#notifyIfChanged(vp, true);
+    return clearEmphasizedElements(this.#ops(vp));
   }
 
   /** Clear emphasized isolated elements.
    * @return false if nothing to clear.
    */
   public clearEmphasizedIsolatedElements(vp: Viewport, setToAlwaysDrawn: boolean): boolean {
-    const emphasized = this.getEmphasizedIsolatedElements();
-    this.#state.emphasizeIsolated = undefined;
-    if (undefined === emphasized)
-      return false;
-    if (setToAlwaysDrawn && this.setAlwaysDrawnElements(emphasized, vp, false))
-      return this.#notifyIfChanged(vp, true);
-
-    this.defaultAppearance = undefined;
-    return this.#notifyIfChanged(vp, true);
+    return clearEmphasizedIsolatedElements(this.#ops(vp), setToAlwaysDrawn);
   }
 
   /** Clear color/transparency overrides from elements. Removes all overrides when keyOrIds isn't supplied.
@@ -702,17 +634,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return false if nothing to clear.
    */
   public clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean {
-    return this.#notifyIfChanged(vp, clearOverriddenElements(vp.primaryIModelRef, this.#state, keyOrIds));
-  }
-
-  /** Notifies the viewport that this provider's state changed, so that [[Viewport.onFeatureOverridesChanged]] and
-   * [[Viewport.onFeatureOverrideProviderChanged]] are raised for the change.
-   */
-  #notifyIfChanged(vp: Viewport, changed: boolean): boolean {
-    if (changed)
-      vp.setFeatureOverrideProviderChanged();
-
-    return changed;
+    return clearOverriddenElements(this.#ops(vp), keyOrIds);
   }
 
   /** @internal */
@@ -729,16 +651,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @internal
    */
   public setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace: boolean = true): boolean {
-    const hidden = this.updateIdSet(ids, replace, vp.primaryIModelRef.neverDrawnElements);
-    if (undefined === hidden)
-      return false;
-
-    if (hidden !== vp.primaryIModelRef.neverDrawnElements) {
-      vp.primaryIModelRef.neverDrawnElements.clear();
-      vp.primaryIModelRef.neverDrawnElements.addAll(hidden);
-    }
-    vp.primaryIModelRef.invalidateSymbologyOverrides();
-    return true;
+    return setNeverDrawnElements(this.#ops(vp), ids, replace);
   }
 
   /** Set the element IDs to be always drawn.
@@ -752,19 +665,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @internal
    */
   public setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive: boolean = true, replace: boolean = true): boolean {
-    if (replace && exclusive && ids instanceof RestoredAlwaysDrawnIds && !ids.size)
-      return setEmptyExclusive(vp.primaryIModelRef);
-    const visible = this.updateIdSet(ids, replace, vp.primaryIModelRef.alwaysDrawnElements);
-    if (undefined === visible)
-      return false;
-
-    if (visible !== vp.primaryIModelRef.alwaysDrawnElements) {
-      vp.primaryIModelRef.alwaysDrawnElements.clear();
-      vp.primaryIModelRef.alwaysDrawnElements.addAll(visible);
-    }
-    vp.primaryIModelRef.isAlwaysDrawnExclusive = exclusive;
-    vp.primaryIModelRef.invalidateSymbologyOverrides();
-    return true;
+    return setAlwaysDrawnElements(this.#ops(vp), ids, exclusive, replace);
   }
 
   /** Set the element IDs to be never drawn.
@@ -786,12 +687,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.neverDrawn]]
    */
   public hideSelectedElements(vp: Viewport, replace: boolean = false, clearSelection: boolean = true): boolean {
-    const selection = vp.iModel.selectionSet;
-    if (!selection.isActive || !this.hideElements(selection.elements, vp, replace))
-      return false;
-    if (clearSelection)
-      selection.emptyAll();
-    return true;
+    return applyToSelection(vp.primaryIModelRef, clearSelection, (ids) => this.hideElements(ids, vp, replace));
   }
 
   /** Set the element IDs to be always drawn exclusively.
@@ -803,14 +699,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public isolateElements(ids: Id64Arg, vp: Viewport, replace: boolean = true): boolean {
-    const wasEmphasized = undefined !== this.getEmphasizedElements(vp);
-    if (!this.setAlwaysDrawnElements(ids, vp, true, replace))
-      return false;
-    if (wasEmphasized) {
-      this.defaultAppearance = undefined;
-      this.#state.emphasizeIsolated = undefined;
-    }
-    return true;
+    return isolateElements(this.#ops(vp), ids, replace);
   }
 
   /** Set the currently selected elements to be always drawn exclusively.
@@ -822,12 +711,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public isolateSelectedElements(vp: Viewport, replace: boolean = true, clearSelection: boolean = true): boolean {
-    const selection = vp.iModel.selectionSet;
-    if (!selection.isActive || !this.isolateElements(selection.elements, vp, replace))
-      return false;
-    if (clearSelection)
-      selection.emptyAll();
-    return true;
+    return applyToSelection(vp.primaryIModelRef, clearSelection, (ids) => this.isolateElements(ids, vp, replace));
   }
 
   /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
@@ -840,18 +724,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-    if (undefined !== this.getIsolatedElements(vp)) {
-      const emphasized = this.updateIdSet(ids, replace, this.#state.emphasizeIsolated);
-      if (undefined === emphasized)
-        return false;
-      this.#state.emphasizeIsolated = emphasized;
-    } else {
-      if (!this.setAlwaysDrawnElements(ids, vp, false, replace))
-        return false;
-      this.#state.emphasizeIsolated = undefined;
-    }
-    this.defaultAppearance = defaultAppearance ?? this.createDefaultAppearance();
-    return this.#notifyIfChanged(vp, true);
+    return emphasizeElements(this.#ops(vp), ids, defaultAppearance, replace);
   }
 
   /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
@@ -864,12 +737,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.isAlwaysDrawnExclusive]]
    */
   public emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-    const selection = vp.iModel.selectionSet;
-    if (!selection.isActive || !this.emphasizeElements(selection.elements, vp, defaultAppearance, replace))
-      return false;
-    if (clearSelection)
-      selection.emptyAll();
-    return true;
+    return applyToSelection(vp.primaryIModelRef, clearSelection, (ids) => this.emphasizeElements(ids, vp, defaultAppearance, replace));
   }
 
   /** Set the element IDs to display with a color/transparency override.
@@ -882,14 +750,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
-    const key = this.createOverrideKey(color, override);
-    if (undefined === key)
-      return false;
-    const requestedIds = Id64.toIdSet(ids, true);
-    if (0 === requestedIds.size)
-      return false;
-    const changed = updateElementOverrides(this.#state, key, requestedIds, replace ? undefined : this.getOverriddenElementsByKey(key));
-    return this.#notifyIfChanged(vp, changed);
+    return overrideElements(this.#ops(vp), ids, color, override, replace);
   }
 
   /** Set the currently selected elements to display with a color/transparency override.
@@ -902,81 +763,26 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideSelectedElements(vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
-    const selection = vp.iModel.selectionSet;
-    if (!selection.isActive || !this.overrideElements(selection.elements, vp, color, override, replace))
-      return false;
-    if (clearSelection)
-      selection.emptyAll();
-    return true;
+    return applyToSelection(vp.primaryIModelRef, clearSelection, (ids) => this.overrideElements(ids, vp, color, override, replace));
   }
 
   /** @return true if provider is currently overriding the display of any elements. */
   public isActive(vp: Viewport): boolean {
-    return vp.primaryIModelRef.isAlwaysDrawnExclusive || undefined !== this.defaultAppearance || undefined !== this.getNeverDrawnElements(vp)
-      || undefined !== this.getAlwaysDrawnElements(vp) || undefined !== this.getOverriddenElements();
+    return isActive(this.#ops(vp));
   }
 
   /** Serialize to JSON representation.
    * @see [[EmphasizeElements.fromJSON]]
    */
   public toJSON(vp: Viewport): EmphasizeElementsProps {
-    const props: EmphasizeElementsProps = {};
-    const neverDrawn = this.getNeverDrawnElements(vp);
-    if (neverDrawn)
-      props.neverDrawn = [...neverDrawn];
-    const alwaysDrawn = this.getAlwaysDrawnElements(vp);
-    if (alwaysDrawn)
-      props.alwaysDrawn = [...alwaysDrawn];
-    if (vp.primaryIModelRef.isAlwaysDrawnExclusive)
-      props.isAlwaysDrawnExclusive = true;
-    const emphasized = this.getEmphasizedIsolatedElements();
-    if (emphasized)
-      props.alwaysDrawnExclusiveEmphasized = [...emphasized];
-    const defaultAppearance = this.defaultAppearance;
-    if (defaultAppearance)
-      props.defaultAppearance = defaultAppearance;
-    if (this.unanimatedAppearance)
-      props.unanimatedAppearance = this.unanimatedAppearance;
-    const overridden = this.getOverriddenElements();
-    if (overridden)
-      props.appearanceOverride = [...overridden].map(([key, ids]) => {
-        const { color, overrideType } = this.getOverrideFromKey(key);
-        return { color: color.toJSON(), overrideType, ids: [...ids] };
-      });
-    if (this.wantEmphasis)
-      props.wantEmphasis = true;
-    return props;
+    return toJSON(this.#ops(vp));
   }
 
   /** Initialize from JSON representation.
    * @see [[EmphasizeElements.toJSON]]
    */
   public fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean {
-    let changed = false;
-    if (props.neverDrawn && this.setNeverDrawnElements(new Set(props.neverDrawn), vp, true))
-      changed = true;
-    if ((props.alwaysDrawn || props.isAlwaysDrawnExclusive) && this.setAlwaysDrawnElements(new RestoredAlwaysDrawnIds(props.alwaysDrawn), vp, true === props.isAlwaysDrawnExclusive))
-      changed = true;
-    if (props.alwaysDrawnExclusiveEmphasized)
-      this.#state.emphasizeIsolated = new Set(props.alwaysDrawnExclusiveEmphasized);
-    if (props.defaultAppearance) {
-      const appearance = FeatureAppearance.fromJSON(props.defaultAppearance);
-      if (!this.defaultAppearance?.equals(appearance))
-        changed = true;
-      this.defaultAppearance = appearance;
-    }
-    if (props.unanimatedAppearance)
-      this.unanimatedAppearance = FeatureAppearance.fromJSON(props.unanimatedAppearance);
-    if (props.appearanceOverride)
-      for (const override of props.appearanceOverride)
-        if (override.ids && this.overrideElements(new Set(override.ids), vp, ColorDef.fromJSON(override.color), override.overrideType, true))
-          changed = true;
-    const wantEmphasis = true === props.wantEmphasis;
-    if (wantEmphasis !== this.wantEmphasis) {
-      this.wantEmphasis = wantEmphasis;
-      changed = true;
-    }
-    return this.#notifyIfChanged(vp, changed);
+    return fromJSON(this.#ops(vp), props, (value) => { this.wantEmphasis = value; });
   }
 
   /** Return the EmphasizeElements provider currently registered with the specified Viewport, if one is already registered. */
@@ -1016,13 +822,39 @@ export class EmphasizeElements implements FeatureOverrideProvider {
  */
 export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOverrideProvider {
   readonly #iModelRef: IModelDisplayReference;
-  readonly #state: EmphasizeElementsState = {
-    emphasizedAppearance: FeatureAppearance.fromJSON({ emphasized: true }),
-    wantEmphasis: false,
-  };
+  readonly #state = createState();
+  readonly #ops: EmphasizeOps;
 
   private constructor(iModelRef: IModelDisplayReference) {
     this.#iModelRef = iModelRef;
+    const self = this;
+    this.#ops = {
+      state: this.#state,
+      ref: iModelRef,
+      get wantEmphasis() { return self.wantEmphasis; },
+      get defaultAppearance() { return self.defaultAppearance; },
+      set defaultAppearance(value) { self.defaultAppearance = value; },
+      get unanimatedAppearance() { return self.unanimatedAppearance; },
+      set unanimatedAppearance(value) { self.unanimatedAppearance = value; },
+      createDefaultAppearance: () => this.createDefaultAppearance(),
+      createAppearanceFromKey: (key) => this.createAppearanceFromKey(key),
+      createOverrideKey: (color, override) => this.createOverrideKey(color, override),
+      getOverrideFromKey: (key) => this.getOverrideFromKey(key),
+      getNeverDrawnElements: () => this.getNeverDrawnElements(),
+      getAlwaysDrawnElements: () => this.getAlwaysDrawnElements(),
+      getIsolatedElements: () => this.getIsolatedElements(),
+      getEmphasizedIsolatedElements: () => this.getEmphasizedIsolatedElements(),
+      getEmphasizedElements: () => this.getEmphasizedElements(),
+      getOverriddenElements: () => this.getOverriddenElements(),
+      getOverriddenElementsByKey: (key) => this.getOverriddenElementsByKey(key),
+      clearAlwaysDrawnElements: () => this.clearAlwaysDrawnElements(),
+      clearEmphasizedIsolatedElements: (setToAlwaysDrawn) => this.clearEmphasizedIsolatedElements(setToAlwaysDrawn),
+      updateIdSet: (ids, replace, existingIds) => this.updateIdSet(ids, replace, existingIds),
+      setNeverDrawnElements: (ids, replace) => this.setNeverDrawnElements(ids, replace),
+      setAlwaysDrawnElements: (ids, exclusive, replace) => this.setAlwaysDrawnElements(ids, exclusive, replace),
+      overrideElements: (ids, color, override, replace) => this.overrideElements(ids, color, override, replace),
+      notifyChanged: () => this.#iModelRef.invalidateSymbologyOverrides(),
+    };
   }
 
   public static get defaultAppearance() { return defaultEmphasizeAppearance; }
@@ -1033,12 +865,12 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Establish active feature overrides to emphasize elements and apply color/transparency overrides. */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
-    addFeatureOverrides(overrides, this.#iModelRef, this.#state);
+    addFeatureOverrides(this.#ops, overrides);
   }
 
   /** @internal */
   public createAppearanceFromKey(key: number): FeatureAppearance {
-    return createAppearanceFromKey(key, this.wantEmphasis);
+    return createAppearanceFromKey(this, key);
   }
 
   /** Get override key from color and override type */
@@ -1071,86 +903,84 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */
   public createDefaultAppearance(): FeatureAppearance {
-    return FeatureAppearance.fromJSON({
-      rgb: new RgbColor(0xe4, 0xe4, 0xe4),
-      transparency: 0.8,
-      nonLocatable: true,
-    });
+    return createDefaultAppearance();
   }
 
   /** Get the IDs of the currently never drawn elements. */
   public getNeverDrawnElements(): Id64Set | undefined {
-    return getNeverDrawnElements(this.#iModelRef);
+    const ids = this.#iModelRef.neverDrawnElements;
+    return 0 !== ids.size ? ids : undefined;
   }
 
   /** Get the IDs of the currently always drawn elements. */
   public getAlwaysDrawnElements(): Id64Set | undefined {
-    return getAlwaysDrawnElements(this.#iModelRef);
+    const ids = this.#iModelRef.alwaysDrawnElements;
+    return 0 !== ids.size ? ids : undefined;
   }
 
   /** Get the IDs of the currently hidden elements. */
   public getHiddenElements(): Id64Set | undefined {
-    return getHiddenElements(this.#iModelRef);
+    return this.getNeverDrawnElements();
   }
 
   /** Get the IDs of the currently isolated elements. */
   public getIsolatedElements(): Id64Set | undefined {
-    return getIsolatedElements(this.#iModelRef);
+    return this.#iModelRef.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements() : undefined;
   }
 
   /** Get the IDs of the currently emphasized isolated elements. */
   public getEmphasizedIsolatedElements(): Id64Set | undefined {
-    return getEmphasizedIsolatedElements(this.#state);
+    return this.defaultAppearance && this.#state.emphasizeIsolated?.size ? this.#state.emphasizeIsolated : undefined;
   }
 
   /** Get the IDs of the currently emphasized elements. */
   public getEmphasizedElements(): Id64Set | undefined {
-    return getEmphasizedElements(this.#iModelRef, this.#state);
+    return this.getEmphasizedIsolatedElements() ?? (this.defaultAppearance && !this.#iModelRef.isAlwaysDrawnExclusive ? this.getAlwaysDrawnElements() : undefined);
   }
 
   /** Get the map of current elements with color/transparency overrides. */
   public getOverriddenElements(): Map<number, Id64Set> | undefined {
-    return getOverriddenElements(this.#state);
+    return this.#state.overrideAppearance?.size ? this.#state.overrideAppearance : undefined;
   }
 
   /** Get the IDs of current elements with the specified color/transparency override. */
   public getOverriddenElementsByKey(key: number): Id64Set | undefined {
-    return getOverriddenElementsByKey(this.#state, key);
+    return this.#state.overrideAppearance?.get(key);
   }
 
   /** Clear never drawn elements. */
   public clearNeverDrawnElements(): boolean {
-    return clearNeverDrawnElements(this.#iModelRef);
+    return clearNeverDrawnElements(this.#ops);
   }
 
   /** Clear always drawn elements. */
   public clearAlwaysDrawnElements(): boolean {
-    return clearAlwaysDrawnElements(this.#iModelRef);
+    return clearAlwaysDrawnElements(this.#ops);
   }
 
   /** Clear hidden elements. */
   public clearHiddenElements(): boolean {
-    return clearHiddenElements(this.#iModelRef);
+    return this.clearNeverDrawnElements();
   }
 
   /** Clear isolated elements. */
   public clearIsolatedElements(): boolean {
-    return clearIsolatedElements(this.#iModelRef, this.#state);
+    return clearIsolatedElements(this.#ops);
   }
 
   /** Clear emphasized elements. */
   public clearEmphasizedElements(): boolean {
-    return clearEmphasizedElements(this.#iModelRef, this.#state);
+    return clearEmphasizedElements(this.#ops);
   }
 
   /** Clear emphasized isolated elements. */
   public clearEmphasizedIsolatedElements(setToAlwaysDrawn: boolean): boolean {
-    return clearEmphasizedIsolatedElements(this.#iModelRef, this.#state, setToAlwaysDrawn);
+    return clearEmphasizedIsolatedElements(this.#ops, setToAlwaysDrawn);
   }
 
   /** Clear color/transparency overrides from elements. */
   public clearOverriddenElements(keyOrIds?: number | Id64Arg): boolean {
-    return clearOverriddenElements(this.#iModelRef, this.#state, keyOrIds);
+    return clearOverriddenElements(this.#ops, keyOrIds);
   }
 
   /** @internal */
@@ -1160,68 +990,62 @@ export class EmphasizeIModelElements implements IModelDisplayReferenceFeatureOve
 
   /** Set the element IDs to be never drawn. */
   public setNeverDrawnElements(ids: Id64Arg, replace: boolean = true): boolean {
-    return setNeverDrawnElements(ids, this.#iModelRef, replace);
+    return setNeverDrawnElements(this.#ops, ids, replace);
   }
 
   /** Set the element IDs to be always drawn. */
   public setAlwaysDrawnElements(ids: Id64Arg, exclusive: boolean = true, replace: boolean = true): boolean {
-    return setAlwaysDrawnElements(ids, this.#iModelRef, exclusive, replace);
+    return setAlwaysDrawnElements(this.#ops, ids, exclusive, replace);
   }
 
   /** Set the element IDs to be never drawn. */
   public hideElements(ids: Id64Arg, replace: boolean = false): boolean {
-    return hideElements(ids, this.#iModelRef, replace);
+    return this.setNeverDrawnElements(ids, replace);
   }
 
   /** Set the element IDs to be always drawn exclusively. */
   public isolateElements(ids: Id64Arg, replace: boolean = true): boolean {
-    return isolateElements(ids, this.#iModelRef, this.#state, replace);
+    return isolateElements(this.#ops, ids, replace);
   }
 
   /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance. */
   public emphasizeElements(ids: Id64Arg, defaultAppearance?: FeatureAppearance, replace: boolean = true): boolean {
-    return emphasizeElements(ids, this.#iModelRef, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace);
+    return emphasizeElements(this.#ops, ids, defaultAppearance, replace);
   }
 
   /** Set the element IDs to display with a color/transparency override. */
   public overrideElements(ids: Id64Arg, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
-    return overrideElements(ids, this.#iModelRef, this.#state, color, override, replace);
+    return overrideElements(this.#ops, ids, color, override, replace);
   }
 
   /** Set the currently selected elements to be always drawn exclusively. */
   public isolateSelectedElements(ref: IModelDisplayReference, replace: boolean = true, clearSelection: boolean = true): boolean {
-    return isolateSelectedElements(ref, this.#state, replace, clearSelection);
+    return applyToSelection(ref, clearSelection, (ids) => this.isolateElements(ids, replace));
   }
 
   /** Set the currently selected elements to be always drawn normally with all other elements in the view overridden to draw using a default appearance. */
   public emphasizeSelectedElements(ref: IModelDisplayReference, defaultAppearance?: FeatureAppearance, replace: boolean = true, clearSelection: boolean = true): boolean {
-    return emphasizeSelectedElements(ref, this.#state, defaultAppearance ?? this.createDefaultAppearance(), replace, clearSelection);
+    return applyToSelection(ref, clearSelection, (ids) => this.emphasizeElements(ids, defaultAppearance, replace));
   }
 
   /** Set the currently selected elements to display with a color/transparency override. */
   public overrideSelectedElements(ref: IModelDisplayReference, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
-    return overrideSelectedElements(ref, this.#state, color, override, replace, clearSelection);
+    return applyToSelection(ref, clearSelection, (ids) => this.overrideElements(ids, color, override, replace));
   }
 
   /** @return true if provider is currently overriding the display of any elements. */
   public get isActive(): boolean {
-    return isActive(this.#iModelRef, this.#state);
+    return isActive(this.#ops);
   }
 
   /** Serialize to JSON representation. */
   public toJSON(): EmphasizeElementsProps {
-    return toJSON(this.#iModelRef, this.#state);
+    return toJSON(this.#ops);
   }
 
   /** Initialize from JSON representation. */
   public fromJSON(props: EmphasizeElementsProps): boolean {
-    const changed = fromJSON(props, this.#iModelRef, this.#state);
-    // Some properties (e.g., defaultAppearance, wantEmphasis) live purely in this provider's state - mutating them
-    // raises no event on the reference, so invalidate its cached overrides for the change to take effect.
-    if (changed)
-      this.#iModelRef.invalidateSymbologyOverrides();
-
-    return changed;
+    return fromJSON(this.#ops, props, (value) => { this.wantEmphasis = value; });
   }
 
   /** Return the EmphasizeIModelElements provider currently registered with the specified IModelDisplayReference, if one is already registered. */
