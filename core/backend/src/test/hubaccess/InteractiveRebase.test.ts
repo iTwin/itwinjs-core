@@ -205,6 +205,9 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirs?.foo).to.equal("Theirs");
     chai.expect(conflict.ours?.foo).to.equal("Ours");
     chai.expect(conflict.ourModifiedProperties).to.include("foo");
+    chai.expect(conflict.conflictingProperties).to.include("foo");
+    chai.expect(() => conflict.acceptOurs(["foo"])).to.not.throw();
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("Ours");
     chai.expect(continued).to.be.true;
     chai.expect(interactive.nextGroup()).to.be.false;
     chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(otherId).foo).to.equal("Other ours");
@@ -742,6 +745,51 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours!.code.value).not.to.equal(newCodeValue);
   });
 
+  it("reports the applied value when a UNIQUE constraint retry fails", async () => {
+    const code = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "RetryFailure",
+    });
+    await withEditTxn(briefcase1, async (txn) => txn.insertElement({
+      classFullName: "irt:SomeGraphicalElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code,
+      foo: "Theirs",
+      somePoint: new Point2d(0, 0),
+    } as SomeGraphicalElementProps));
+    await briefcase1.pushChanges({ description: "Insert conflicting code" });
+    await withEditTxn(briefcase2, async (txn) => txn.updateElement<SomeGraphicalElementProps>({ id, code }));
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    const nativeDb = briefcase2[_nativeDb];
+    const update = nativeDb.updateInstance.bind(nativeDb);
+    const failure = new Error("simulated constraint retry failure");
+    let attempts = 0;
+    Object.defineProperty(nativeDb, "updateInstance", {
+      configurable: true,
+      value: (...args: Parameters<typeof nativeDb.updateInstance>) => {
+        if (args[0].id === id && ++attempts === 2)
+          throw failure;
+        return update(...args);
+      },
+    });
+    try {
+      chai.expect(interactive.nextGroup()).to.be.true;
+    } finally {
+      Reflect.deleteProperty(nativeDb, "updateInstance");
+    }
+
+    const conflict = interactive.conflicts.find((candidate) => candidate.id === id)!;
+    chai.expect(conflict.replayErrors).to.deep.equal([failure]);
+    const currentCode = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).code;
+    chai.expect(conflict.uniqueConstraintViolations).to.have.length(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedValue).to.deep.equal([currentCode.spec, currentCode.scope, currentCode.value || null]);
+  });
+
   it("Update triggers UNIQUE constraint violation with their updated element", async () => {
     const code1 = new Code({
       spec: IModel.dictionaryId,
@@ -1193,6 +1241,68 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.theirs?.federationGuid).to.equal(guids[index]);
     chai.expect(conflict.ours?.federationGuid).to.equal(guids[1 - index]);
     chai.expect(conflict.ourModifiedProperties).to.include("federationGuid").and.not.include("$meta");
+  });
+
+  it("reports the original federationGuid when a deferred correction fails after a data conflict", async () => {
+    const guids = [Guid.createValue(), Guid.createValue()];
+    const ids = await withEditTxn(briefcase1, async (txn) => guids.map((guid) => txn.insertElement({
+      classFullName: "irt:SomeGraphicalElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      foo: "Swap",
+      somePoint: new Point2d(0, 0),
+      federationGuid: guid,
+    } as SomeGraphicalElementProps)));
+    await briefcase1.pushChanges({ description: "Insert swap elements" });
+    await briefcase2.pullChanges();
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id: ids[0], foo: "Ours", federationGuid: Guid.createValue() });
+      txn.updateElement<SomeGraphicalElementProps>({ id: ids[1], foo: "Ours", federationGuid: guids[0] });
+      txn.updateElement<SomeGraphicalElementProps>({ id: ids[0], federationGuid: guids[1] });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "Ours" });
+    });
+    await withEditTxn(briefcase1, async (txn) => {
+      for (const instanceId of ids)
+        txn.updateElement<SomeGraphicalElementProps>({ id: instanceId, foo: "Theirs" });
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "Theirs" });
+    });
+    await briefcase1.pushChanges({ description: "Update swap elements" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    const nativeDb = briefcase2[_nativeDb];
+    const update = nativeDb.updateInstance.bind(nativeDb);
+    const failure = new Error("simulated deferred correction failure");
+    const attempts = new Map<string, number>();
+    let failedId: Id64String | undefined;
+    Object.defineProperty(nativeDb, "updateInstance", {
+      configurable: true,
+      value: (...args: Parameters<typeof nativeDb.updateInstance>) => {
+        const instanceId = args[0].id;
+        if (typeof instanceId === "string" && ids.includes(instanceId)) {
+          const count = (attempts.get(instanceId) ?? 0) + 1;
+          attempts.set(instanceId, count);
+          if (count === 3) {
+            failedId = instanceId;
+            throw failure;
+          }
+        }
+        return update(...args);
+      },
+    });
+    try {
+      chai.expect(interactive.nextGroup()).to.be.true;
+    } finally {
+      Reflect.deleteProperty(nativeDb, "updateInstance");
+    }
+
+    chai.expect(failedId).to.not.be.undefined;
+    const index = ids.findIndex((instanceId) => instanceId === failedId);
+    const conflict = interactive.conflicts.find((candidate) => candidate.id === failedId)!;
+    chai.expect(conflict.replayErrors).to.deep.equal([failure]);
+    chai.expect(conflict.ours?.federationGuid).to.equal(guids[1 - index]);
   });
 
   it("Applies a large federationGuid cycle with zero reported conflicts", async () => {
@@ -3824,6 +3934,44 @@ describe("InteractiveRebase deletion replay", () => {
     chai.expect(effects).to.have.length(1);
     chai.expect(effects[0].action).to.equal("cascade");
     chai.expect(effects[0].affectedId).to.equal(xId);
+  });
+
+  it("reports a failed explicit child deletion on the child conflict", async () => {
+    const [codeSpecId, pId] = await withEditTxn(briefcase1, async (txn) => [insertCodeSpec(txn, "FailedChildDeletion"), insertGraphic(txn, "P")]);
+    const aId = await withEditTxn(briefcase1, async (txn) => insertGraphic(txn, "A", pId));
+    await briefcase1.pushChanges({ description: "Insert P and its child A" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => insertScopedGraphic(txn, codeSpecId, aId, "X", pId));
+    await briefcase1.pushChanges({ description: "Insert X under P, scoped by A" });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(aId);
+      txn.deleteElement(pId);
+    });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+    const nativeDb = briefcase2[_nativeDb];
+    const deleteInstance = nativeDb.deleteInstance.bind(nativeDb);
+    const failure = new Error("simulated explicit child deletion failure");
+    Object.defineProperty(nativeDb, "deleteInstance", {
+      configurable: true,
+      value: (...args: Parameters<typeof nativeDb.deleteInstance>) => {
+        if (args[0].id === aId)
+          throw failure;
+        return deleteInstance(...args);
+      },
+    });
+    try {
+      chai.expect(interactive.nextGroup()).to.be.true;
+    } finally {
+      Reflect.deleteProperty(nativeDb, "deleteInstance");
+    }
+
+    const childConflict = interactive.conflicts.find((candidate) => candidate.id === aId);
+    chai.expect(childConflict).to.not.be.undefined;
+    chai.expect(childConflict!.replayErrors).to.include(failure);
   });
 
   it("blocks our deletions that no local deletion can unblock, and still applies an independent one", async () => {

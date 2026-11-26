@@ -1802,6 +1802,7 @@ export class InteractiveRebase {
     assert(deletionSet.lifts.length === 0, "indirect changes must be lifted before applying a deletion set");
     const nativeDb = this._db[_nativeDb];
     const failures: { targetKey: string, error: unknown }[] = [];
+    const targetKeys = new Set(deletionSet.targets.map((target) => target.instanceKey));
     const targetByEffect = new Map([...effectsByTarget].flatMap(([target, effects]) => effects.map((effect) => [effect, target] as const)));
     const cascadeByInstance = new Map(deletionSet.effects.filter((effect): effect is CascadeDeletionEffectImpl => effect.action === "cascade")
       .map((effect) => [effect.affectedInstanceKey, effect]));
@@ -1843,7 +1844,8 @@ export class InteractiveRebase {
         outcome = { applied: false, reason: "failed", error };
         const targets = new Set(step.map((instance) => {
           const effect = cascadeByInstance.get(instance.instanceKey);
-          const targetKey = effect === undefined ? deletionSet.roots.get(instance.instanceKey)?.instanceKey : targetByEffect.get(effect);
+          const targetKey = targetKeys.has(instance.instanceKey) ? instance.instanceKey
+            : effect === undefined ? deletionSet.roots.get(instance.instanceKey)?.instanceKey : targetByEffect.get(effect);
           assert(targetKey !== undefined, "A deleted instance must belong to a target");
           return targetKey;
         }));
@@ -1922,50 +1924,60 @@ export class InteractiveRebase {
     let error = initialError;
     const attempted = new Set<string>();
     let applied = false;
-    while (true) {
-      if (error !== undefined) {
-        if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
-          const broken = this.findBrokenRelationships(props);
-          if (broken.length === 0)
-            throw duringReplay ? new ReplayWriteError(error) : error;
-          conflict.addBrokenRelationships(broken);
-          if (!automatic)
+    const refreshConstraintValues = () => {
+      const written = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
+      conflict.setRetryProps(written === undefined ? props : undefined);
+      conflict.refreshConstraintValues(written, applied);
+    };
+    try {
+      while (true) {
+        if (error !== undefined) {
+          if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
+            const broken = this.findBrokenRelationships(props);
+            if (broken.length === 0)
+              throw duringReplay ? new ReplayWriteError(error) : error;
+            conflict.addBrokenRelationships(broken);
+            if (!automatic)
+              break;
+            const fallback = this.fixBrokenNavigationProperties(props, broken, current);
+            if (fallback === undefined)
+              break;
+            props = fallback;
+          } else if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE || error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
+            conflict.upsertUniqueConstraintViolation(error.conflictDetail);
+            if (!automatic)
+              break;
+            const fix = this.fixUniqueConstraintViolation(props, error.conflictDetail?.uniqueConstraintProperties, current);
+            if (fix === undefined)
+              break;
+            props = fix.props;
+          } else {
+            if (automatic)
+              throw duringReplay ? new ReplayWriteError(error) : error;
             break;
-          const fallback = this.fixBrokenNavigationProperties(props, broken, current);
-          if (fallback === undefined)
-            break;
-          props = fallback;
-        } else if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE || error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
-          conflict.upsertUniqueConstraintViolation(error.conflictDetail);
-          if (!automatic)
-            break;
-          const fix = this.fixUniqueConstraintViolation(props, error.conflictDetail?.uniqueConstraintProperties, current);
-          if (fix === undefined)
-            break;
-          props = fix.props;
-        } else {
-          if (automatic)
-            throw duringReplay ? new ReplayWriteError(error) : error;
+          }
+        }
+        const signature = JSON.stringify(props);
+        if (attempted.has(signature))
           break;
+        attempted.add(signature);
+        try {
+          this.writeConstraintRetry(current, props);
+          applied = true;
+          break;
+        } catch (err) {
+          if (!isConstraintError(err))
+            throw duringReplay ? new ReplayWriteError(err) : err;
+          error = err;
         }
       }
-      const signature = JSON.stringify(props);
-      if (attempted.has(signature))
-        break;
-      attempted.add(signature);
-      try {
-        this.writeConstraintRetry(current, props);
-        applied = true;
-        break;
-      } catch (err) {
-        if (!isConstraintError(err))
-          throw duringReplay ? new ReplayWriteError(err) : err;
-        error = err;
-      }
+    } catch (err) {
+      if (!(err instanceof ReplayWriteError))
+        throw err;
+      refreshConstraintValues();
+      throw err;
     }
-    const written = this.tryReadCurrentInstance(conflict.id, conflict.classFullName);
-    conflict.setRetryProps(written === undefined ? props : undefined);
-    conflict.refreshConstraintValues(written, applied);
+    refreshConstraintValues();
     return applied;
   }
 
@@ -2658,15 +2670,19 @@ class RebaseConflictImpl implements RebaseConflict {
     const conflict = this.getOrCreate(rebase, conflicts, instanceKey, ours.id, ours.classFullName);
     const classDef = rebase.getConflictClass(ours.classFullName);
     if (original !== undefined) {
-      addPropsAccessStrings(conflict.ourModifiedProperties, classDef, computeChangedProperties(original, ours));
-      if (theirs !== undefined)
-        addPropsAccessStrings(conflict.theirModifiedProperties, classDef, computeChangedProperties(original, theirs));
+      const ourChanges = computeChangedProperties(original, ours);
+      addPropsAccessStrings(conflict.ourModifiedProperties, classDef, ourChanges);
+      if (theirs !== undefined) {
+        const theirChanges = computeChangedProperties(original, theirs);
+        addPropsAccessStrings(conflict.theirModifiedProperties, classDef, theirChanges);
+        addPropsAccessStrings(conflict.conflictingProperties, classDef, ourChanges.filter((property) => theirChanges.includes(property)));
+      }
     }
     if (theirs !== undefined)
       addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(theirs, ours));
     conflict._original ??= original;
     conflict._theirs ??= theirs;
-    conflict._ours ??= ours;
+    conflict._ours = ours;
     conflict.replayErrors.push(error);
   }
 
