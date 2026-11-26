@@ -366,6 +366,8 @@ export class ToolAdmin {
   private _lastHandledMotionTime?: BeTimePoint;
   private _mouseMoveOverTimeout?: ReturnType<typeof setTimeout>;
   private _editCommandHandler?: EditCommandHandler;
+  /** Cleared on capture phase Escape down; set when the down reaches the bubble phase unclaimed by a ui element. */
+  private _escapeDownUnclaimed = true;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
    * Defaults to "Select", referring to [[SelectionTool]].
@@ -511,6 +513,18 @@ export class ToolAdmin {
     }
   };
 
+  /** Last observed AccuDraw input focus state; used to avoid invalidating decorations on unrelated focus changes. */
+  private static _lastHasInputFocus?: boolean;
+
+  /** Handler for focus transitions so that decorations reflecting input focus, like the AccuDraw compass, update immediately. */
+  private static _focusChangeHandler = () => {
+    const hasInputFocus = IModelApp.accuDraw.hasInputFocus;
+    if (hasInputFocus === ToolAdmin._lastHasInputFocus)
+      return;
+    ToolAdmin._lastHasInputFocus = hasInputFocus;
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  };
+
   /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
@@ -524,6 +538,11 @@ export class ToolAdmin {
 
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
       ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
+    });
+
+    ["focusin", "focusout"].forEach((type) => {
+      document.addEventListener(type, ToolAdmin._focusChangeHandler, false);
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._focusChangeHandler, false));
     });
 
     ToolAdmin._removals.push(() => window.onfocus = null);
@@ -1598,13 +1617,28 @@ export class ToolAdmin {
    * For other shortcuts, override processShortcutKey.
    * @return true if handled and no further processing of event should occur.
    */
-  protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
+  protected processKeyboardEvent(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
     // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
     // Escape is the only practical choice with its default behavior that can cancel/close/blur.
-    // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
     // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
+    if ("Escape" !== keyEvent.key)
+      return false;
+
+    // An Escape down that reaches the bubble phase without preventDefault wasn't claimed by a ui element.
+    if (wentDown && !keyEvent.defaultPrevented)
+      this._escapeDownUnclaimed = true;
+
+    // When a ui element claims the Escape down (e.g. closing a menu or dialog and managing focus itself,
+    // includes AccuDrawViewportUI.onKeyboardEvent), don't steal focus on the down or up transition.
+    // The next unclaimed Escape press will still move focus to Home. See onKeyTransitionCaptured.
+    if (!this._escapeDownUnclaimed) {
+      if (!wentDown)
+        this._escapeDownUnclaimed = true; // Press complete; reset for next press
+      return true;
+    }
+
     // Let AccuDraw handle Escape when it has focus—AccuDrawViewportUI.onKeyboardEvent manages this directly.
-    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !ToolAdmin.isFocusHome() && undefined === IModelApp.accuDraw.getFocusItem()) {
+    if (ToolSettings.escapeMovesFocusToHome && !ToolAdmin.isFocusHome() && undefined === IModelApp.accuDraw.getFocusItem()) {
       ToolAdmin.setFocusHome();
       return true;
     }
@@ -1617,6 +1651,12 @@ export class ToolAdmin {
    */
   private async onKeyTransitionCaptured(keyEvent: KeyboardEvent): Promise<void> {
     this.currentInputState.setKeyQualifiers(keyEvent);
+
+    // Provisionally mark the Escape press as claimed by a ui element; processKeyboardEvent sets
+    // this when the down reaches the bubble phase unclaimed (no stopPropagation or preventDefault).
+    if ("keydown" === keyEvent.type && "Escape" === keyEvent.key)
+      this._escapeDownUnclaimed = false;
+
     const modifierKey = ToolAdmin.getModifierKey(keyEvent);
 
     if (BeModifierKeys.None !== modifierKey)
