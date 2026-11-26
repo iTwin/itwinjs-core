@@ -12476,7 +12476,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
-    protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
+    protected processKeyboardEvent(keyEvent: KeyboardEvent, wentDown: boolean): boolean;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     get reloadToolSettingsHandler(): (() => void) | undefined;
