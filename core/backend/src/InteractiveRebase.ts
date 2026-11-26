@@ -67,9 +67,10 @@ export namespace InteractiveRebaseError {
  * | Instance already exists (Insert) | `original` undefined; `ours` and `theirs` defined | Update their existing instance with our values. |
  * | Instance doesn't exist (Delete) | `original` defined; `ours` and `theirs` undefined | Leave the instance deleted. |
  * | Data conflict (Delete) | `original` and `theirs` defined; `ours` undefined; `theirModifiedProperties` nonempty | Delete the instance, discarding their changes. |
- * | Instance is referenced (Delete) | `original` defined; `ours` undefined; `deletionEffects` nonempty | If blocked, change nothing; otherwise clear outside references and delete the owned set. |
+ * | Instance is referenced (Delete) | `original` defined; `ours` undefined; `deletionEffects` nonempty | If blocked, change nothing; otherwise attempt to clear outside references and delete the owned set. |
  * | UNIQUE constraint violation | `uniqueConstraintViolations` nonempty | Substitute a non-conflicting value where possible. |
  * | Broken relationship | `brokenRelationships` nonempty | Keep their reference, use null if nullable, or leave the insert unapplied. |
+ * | Replay write failure | `replayErrors` nonempty | Report the error and attempt remaining changes. |
  *
  * Constraint violations can prevent or modify the initial handling. The snapshots describe the input sides,
  * not the instance's current state after replay or subsequent resolutions. Accepting a side only changes
@@ -172,8 +173,16 @@ export interface RebaseConflict {
    */
   brokenRelationships: BrokenRelationship[];
 
+  /** Errors encountered while replaying this instance's change, including its deletion effects.
+   * Other changes may still be replayed. Values are the original thrown errors and may not be `Error` objects.
+   * Failures outside an individual replay write are thrown instead.
+   */
+  readonly replayErrors: ReadonlyArray<unknown>;
+
   /**
    * Effects of our deletion on other instances, or proposed effects if any reference blocks the deletion.
+   * The outcome of each cascade or set-null describes its individual attempt, even if a later change
+   * affects the same instance.
    * Effects that our original deletion also caused are not listed here. Once the deletion is no longer blocked,
    * they are replayed as our own changes to the affected instances, which can report their own conflicts.
    */
@@ -248,18 +257,30 @@ export interface RebaseConflictProperties {
   [propertyName: string]: any;
 }
 
+/** The result of attempting a deletion effect during initial replay. `blocked` means a known reference blocked
+ * the whole deletion. `not-attempted` means replay did not reach this effect. A `failed` attempt retains the
+ * original error. This describes the attempt, not the instance's current state after subsequent changes.
+ * @beta
+ */
+export type DeletionEffectOutcome =
+  | { readonly applied: true }
+  | { readonly applied: false, readonly reason: "blocked" | "not-attempted" }
+  | { readonly applied: false, readonly reason: "failed", readonly error: unknown };
+
 /** One instance affected by our deletion. If any effect blocks deletion, none of the effects are applied.
  * @beta
  */
 export type DeletionEffect = DeletionEffectDetails & (
   | {
     readonly action: "set-null";
+    readonly outcome: DeletionEffectOutcome;
     /** @deprecated Use `references` instead. The target id of the first reference, retained until test refactoring. */
     readonly previousValue: Id64String;
   }
   | {
     readonly action: "cascade";
-    /** The entity removed by the referential action. */
+    readonly outcome: DeletionEffectOutcome;
+    /** The entity before the attempted referential action. */
     readonly deletedInstance: RebaseConflictProperties;
   }
   | {
@@ -399,6 +420,12 @@ interface ConstraintError extends Error {
 function isConstraintError(error: unknown): error is ConstraintError {
   return error instanceof Error && "errorNumber" in error
     && typeof error.errorNumber === "number" && (error.errorNumber & 0xff) === DbResult.BE_SQLITE_CONSTRAINT_BASE;
+}
+
+class ReplayWriteError extends Error {
+  public constructor(public readonly error: unknown) {
+    super("A replay write failed");
+  }
 }
 
 /** The result of [[InteractiveRebase.fixUniqueConstraintViolation]]: the properties to write, plus which property
@@ -560,6 +587,7 @@ export class InteractiveRebase {
    * [[applyDeferredCorrections]] once the whole forest has been replayed.
    */
   private _pendingSubstitutions = new Map<string, { accessString: string, placeholderValue: any }[]>();
+  private _deferredBaselines = new Map<string, RebaseConflictProperties | undefined>();
 
   /** The real values [[orderNodes]] deferred while breaking a self-contained ordering cycle, to be
    * applied for real by [[applyDeferredCorrections]] after the whole forest has been replayed.
@@ -988,6 +1016,7 @@ export class InteractiveRebase {
   private reinstateDataTxn(txnProps: TxnProps): void {
     this._deletedInstanceKeys.clear();
     this._liftedInstanceKeys.clear();
+    this._deferredBaselines.clear();
     if (!BriefcaseManager.semanticRebaseDataFolderExists(this._db, txnProps.id)) {
       throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
     }
@@ -1512,10 +1541,26 @@ export class InteractiveRebase {
 
       // Not an Insert (the placeholder-substituted row was already written during replay) - pass a
       // defined `oldProps` so a UNIQUE violation isn't misclassified as a colliding primary-key insert.
-      const oldProps = change.old ?? { id: node.id, classFullName: node.classFullName };
-      this.applyOrRecordConstraintConflict(instanceKey, node.id, node.classFullName, oldProps, newProps, () =>
-        nativeDb.updateInstance(propsToWrite, { useJsNames: true }), propsToWrite);
+      let original: RebaseConflictProperties | undefined;
+      if (change.old !== undefined) {
+        const { $meta: _oldMeta, ...props } = change.old;
+        original = props;
+      }
+      const oldProps = original ?? { id: node.id, classFullName: node.classFullName };
+      const theirs = this._deferredBaselines.get(instanceKey);
+      try {
+        this.applyOrRecordConstraintConflict(instanceKey, node.id, node.classFullName, oldProps, newProps, () => {
+          const result = nativeDb.updateInstance(propsToWrite, { useJsNames: true });
+          if (result === false || typeof result === "object" && !result.updated)
+            throw new IModelError(IModelStatus.BadRequest, `Failed to apply deferred correction to ${node.classFullName} ${node.id}`);
+        }, propsToWrite);
+      } catch (error) {
+        if (!(error instanceof ReplayWriteError))
+          throw error;
+        RebaseConflictImpl.recordReplayError(this, this._conflicts, instanceKey, original, theirs, newProps, error.error);
+      }
     }
+    this._deferredBaselines.clear();
   }
 
   /** Applies a single node's change in the order computed by [[orderNodes]]. */
@@ -1537,11 +1582,25 @@ export class InteractiveRebase {
   private applyInteractiveInstanceChange(change: RebaseInstanceChange): void {
     if (change.new) {
       const { $meta: _newMeta, ...newProps } = change.new;
-      if (change.old) {
-        const { $meta: _oldMeta, ...oldProps } = change.old;
-        this.applyInteractiveUpdate(change.instanceKey, oldProps, newProps, change.changedProperties);
-      } else {
-        this.applyInteractiveInsert(change.instanceKey, newProps);
+      let oldProps: RebaseConflictProperties | undefined;
+      if (change.old !== undefined) {
+        const { $meta: _oldMeta, ...props } = change.old;
+        oldProps = props;
+      }
+      const theirs = this.tryReadCurrentInstance(newProps.id, newProps.classFullName);
+      if (this._pendingSubstitutions.has(change.instanceKey))
+        this._deferredBaselines.set(change.instanceKey, theirs);
+      try {
+        if (oldProps !== undefined)
+          this.applyInteractiveUpdate(change.instanceKey, oldProps, newProps, change.changedProperties);
+        else
+          this.applyInteractiveInsert(change.instanceKey, newProps);
+      } catch (error) {
+        if (!(error instanceof ReplayWriteError))
+          throw error;
+        const originalChange = this._pendingSubstitutions.has(change.instanceKey) ? this._store?.get(change.instanceKey)?.new : undefined;
+        const { $meta: _originalMeta, ...ours } = originalChange ?? newProps;
+        RebaseConflictImpl.recordReplayError(this, this._conflicts, change.instanceKey, oldProps, theirs, ours, error.error);
       }
     } else if (change.old) {
       const { $meta: _oldMeta, ...oldProps } = change.old;
@@ -1601,18 +1660,36 @@ export class InteractiveRebase {
     const blocked = deletionSet.effects.some((effect) => effect.action === "blocks-deletion");
     if (!blocked)
       deletionSet = this.liftIndirectChanges(deletionSet);
+    else {
+      for (const effect of deletionSet.effects) {
+        if (effect.action !== "blocks-deletion")
+          effect.outcome = { applied: false, reason: "blocked" };
+      }
+    }
     const effectsByTarget = attributeDeletionEffects(deletionSet);
+    const conflictsByTarget = new Map<string, RebaseConflictImpl>();
     for (const { oldProps, target } of present) {
       const effects = effectsByTarget.get(target.instanceKey) ?? [];
       // Every member of a blocked combined deletion is left in place, even one the blockers are not attributed to.
       if (effects.length > 0 || blocked || computeChangedProperties(oldProps, target.theirs).length > 0) {
         const conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, target.instanceKey, oldProps, target.theirs);
         conflict.deletionEffects.push(...effects);
+        conflictsByTarget.set(target.instanceKey, conflict);
       }
     }
 
-    if (!blocked)
-      this.applyDeletionSet(deletionSet);
+    if (!blocked) {
+      for (const { targetKey, error } of this.applyDeletionSet(deletionSet, effectsByTarget)) {
+        let conflict = conflictsByTarget.get(targetKey);
+        if (conflict === undefined) {
+          const entry = present.find(({ target }) => target.instanceKey === targetKey);
+          assert(entry !== undefined, "A deletion failure must belong to a target");
+          conflict = RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, targetKey, entry.oldProps, entry.target.theirs);
+          conflictsByTarget.set(targetKey, conflict);
+        }
+        conflict.replayErrors.push(error);
+      }
+    }
   }
 
   /** Finds the members of the union of the targets' deletion sets and every instance that references them. */
@@ -1674,6 +1751,8 @@ export class InteractiveRebase {
       const action = members.roots.has(entry.instanceKey) ? "cascade"
         : entry.references.some((reference) => !reference.property.nullable) ? "blocks-deletion" : "set-null";
       if (action !== "blocks-deletion" && this.isLiftable(entry, action)) {
+        if (this._liftedInstanceKeys.has(entry.instanceKey))
+          continue;
         if (action === "cascade")
           liftedCascades.add(entry.instanceKey);
         else
@@ -1689,8 +1768,6 @@ export class InteractiveRebase {
 
   /** Whether our original change made the same referential action on `entry` through an indirect change. */
   private isLiftable(entry: DeletionSetInstance, action: "cascade" | "set-null"): boolean {
-    if (this._liftedInstanceKeys.has(entry.instanceKey))
-      return false;
     const meta = this._store?.getMetadata(entry.instanceKey);
     if (meta === undefined || !meta.isIndirect)
       return false;
@@ -1721,9 +1798,13 @@ export class InteractiveRebase {
     return this.computeDeletionSet(deletionSet.targets);
   }
 
-  private applyDeletionSet(deletionSet: DeletionSet): void {
+  private applyDeletionSet(deletionSet: DeletionSet, effectsByTarget: Map<string, DeletionSet["effects"]>): { targetKey: string, error: unknown }[] {
     assert(deletionSet.lifts.length === 0, "indirect changes must be lifted before applying a deletion set");
     const nativeDb = this._db[_nativeDb];
+    const failures: { targetKey: string, error: unknown }[] = [];
+    const targetByEffect = new Map([...effectsByTarget].flatMap(([target, effects]) => effects.map((effect) => [effect, target] as const)));
+    const cascadeByInstance = new Map(deletionSet.effects.filter((effect): effect is CascadeDeletionEffectImpl => effect.action === "cascade")
+      .map((effect) => [effect.affectedInstanceKey, effect]));
     for (const effect of deletionSet.effects) {
       if (effect.action !== "set-null")
         continue;
@@ -1731,28 +1812,54 @@ export class InteractiveRebase {
       const classDef = this.getConflictClass(effect.affectedClassFullName);
       for (const reference of effect.references)
         setPropertyValue(props, classDef.toInstanceAccessString(reference.navigationProperty), null);
-      const result = nativeDb.updateInstance(props, { useJsNames: true, useIncrementalUpdate: true });
-      if (result === false || typeof result === "object" && !result.updated)
-        throw new IModelError(IModelStatus.BadRequest, `Failed to clear references on ${effect.affectedClassFullName} ${effect.affectedId}`);
+      try {
+        const result = nativeDb.updateInstance(props, { useJsNames: true, useIncrementalUpdate: true });
+        if (result === false || typeof result === "object" && !result.updated)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to clear references on ${effect.affectedClassFullName} ${effect.affectedId}`);
+        effect.outcome = { applied: true };
+      } catch (error) {
+        effect.outcome = { applied: false, reason: "failed", error };
+        const targetKey = targetByEffect.get(effect);
+        assert(targetKey !== undefined, "A deletion effect must belong to a target");
+        failures.push({ targetKey, error });
+      }
     }
     for (const step of deletionSet.steps) {
-      if (step.length === 1) {
-        const [instance] = step;
-        const result = nativeDb.deleteInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true });
-        if (result === false || typeof result === "object" && !result.deleted)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to delete ${instance.classFullName} ${instance.id}`);
-      } else {
-        // A failed foreign key check means a reference was missed or the iModel already violated a foreign key; JavaScript
-        // has no savepoint to undo this node's earlier writes, so they cannot be rolled back here.
-        const { status } = nativeDb.deleteInstancesDeferringForeignKeys(
-          step.map((instance) => ({ id: instance.id, classFullName: instance.classFullName })), { useJsNames: true });
-        if (status !== "deleted")
-          throw new IModelError(IModelStatus.ForeignKeyConstraint, `Failed to delete a cycle of foreign key references among ${step.map((instance) => `${instance.classFullName} ${instance.id}`).join(", ")}: ${status}`);
+      let outcome: DeletionEffectOutcome;
+      try {
+        if (step.length === 1) {
+          const [instance] = step;
+          const result = nativeDb.deleteInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true });
+          if (result === false || typeof result === "object" && !result.deleted)
+            throw new IModelError(IModelStatus.BadRequest, `Failed to delete ${instance.classFullName} ${instance.id}`);
+        } else {
+          const { status } = nativeDb.deleteInstancesDeferringForeignKeys(
+            step.map((instance) => ({ id: instance.id, classFullName: instance.classFullName })), { useJsNames: true });
+          if (status !== "deleted")
+            throw new IModelError(IModelStatus.ForeignKeyConstraint, `Failed to delete a cycle of foreign key references among ${step.map((instance) => `${instance.classFullName} ${instance.id}`).join(", ")}: ${status}`);
+        }
+        outcome = { applied: true };
+      } catch (error) {
+        outcome = { applied: false, reason: "failed", error };
+        const targets = new Set(step.map((instance) => {
+          const effect = cascadeByInstance.get(instance.instanceKey);
+          const targetKey = effect === undefined ? deletionSet.roots.get(instance.instanceKey)?.instanceKey : targetByEffect.get(effect);
+          assert(targetKey !== undefined, "A deleted instance must belong to a target");
+          return targetKey;
+        }));
+        for (const targetKey of targets)
+          failures.push({ targetKey, error });
       }
-      for (const instance of step)
-        this._deletedInstanceKeys.add(instance.instanceKey);
+      for (const instance of step) {
+        const effect = cascadeByInstance.get(instance.instanceKey);
+        if (effect !== undefined)
+          effect.outcome = outcome;
+        if (outcome.applied)
+          this._deletedInstanceKeys.add(instance.instanceKey);
+      }
     }
     this._db.clearCaches({ instanceCachesOnly: true });
+    return failures;
   }
 
   private navigationTargetExists(relationship: SchemaView.RelationshipClass, direction: StrengthDirection, id: Id64String): boolean {
@@ -1793,7 +1900,7 @@ export class InteractiveRebase {
     } catch (err) {
       if (!isConstraintError(err) || newProps === undefined
         || err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY)
-        throw err;
+        throw new ReplayWriteError(err);
       const current = this.tryReadCurrentInstance(id, classFullName);
       if (oldProps === undefined && current !== undefined && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
         RebaseConflictImpl.recordInsert(this, this._conflicts, instanceKey, newProps, current);
@@ -1805,12 +1912,12 @@ export class InteractiveRebase {
       const conflict = err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY
         ? RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, this.findBrokenRelationships(retryProps))
         : RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, instanceKey, oldProps, newProps, current, err.conflictDetail);
-      this.writeConstraintChange(conflict, retryProps, current, true, err);
+      this.writeConstraintChange(conflict, retryProps, current, true, err, true);
       return undefined;
     }
   }
 
-  private writeConstraintChange(conflict: RebaseConflictImpl, initialProps: RebaseConflictProperties, current: RebaseConflictProperties | undefined, automatic: boolean, initialError?: ConstraintError): boolean {
+  private writeConstraintChange(conflict: RebaseConflictImpl, initialProps: RebaseConflictProperties, current: RebaseConflictProperties | undefined, automatic: boolean, initialError?: ConstraintError, duringReplay = false): boolean {
     let props = initialProps;
     let error = initialError;
     const attempted = new Set<string>();
@@ -1820,7 +1927,7 @@ export class InteractiveRebase {
         if (error.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
           const broken = this.findBrokenRelationships(props);
           if (broken.length === 0)
-            throw error;
+            throw duringReplay ? new ReplayWriteError(error) : error;
           conflict.addBrokenRelationships(broken);
           if (!automatic)
             break;
@@ -1838,7 +1945,7 @@ export class InteractiveRebase {
           props = fix.props;
         } else {
           if (automatic)
-            throw error;
+            throw duringReplay ? new ReplayWriteError(error) : error;
           break;
         }
       }
@@ -1852,7 +1959,7 @@ export class InteractiveRebase {
         break;
       } catch (err) {
         if (!isConstraintError(err))
-          throw err;
+          throw duringReplay ? new ReplayWriteError(err) : err;
         error = err;
       }
     }
@@ -2476,6 +2583,7 @@ abstract class DeletionEffectImpl implements DeletionEffectDetails {
 
 class SetNullDeletionEffectImpl extends DeletionEffectImpl {
   public readonly action = "set-null";
+  public outcome: DeletionEffectOutcome = { applied: false, reason: "not-attempted" };
 
   /** @deprecated Use `references` instead. */
   public get previousValue(): Id64String { return this.references[0].targetId; }
@@ -2483,6 +2591,7 @@ class SetNullDeletionEffectImpl extends DeletionEffectImpl {
 
 class CascadeDeletionEffectImpl extends DeletionEffectImpl {
   public readonly action = "cascade";
+  public outcome: DeletionEffectOutcome = { applied: false, reason: "not-attempted" };
   public readonly rawDeletedInstance: RebaseConflictProperties;
 
   public constructor(rebase: InteractiveRebase, entry: DeletionSetInstance) {
@@ -2523,6 +2632,7 @@ class RebaseConflictImpl implements RebaseConflict {
   public readonly differentProperties: string[] = [];
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
   public readonly brokenRelationships: BrokenRelationship[] = [];
+  public readonly replayErrors: unknown[] = [];
   public readonly deletionEffects: DeletionEffect[] = [];
   /** @deprecated Owner conflict linking has been removed. Always empty; retained until the test refactoring is complete. */
   public readonly ownerConflicts: ReadonlyArray<RebaseConflict> = [];
@@ -2542,6 +2652,22 @@ class RebaseConflictImpl implements RebaseConflict {
       conflicts.push(conflict);
     }
     return conflict;
+  }
+
+  public static recordReplayError(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties | undefined, theirs: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, error: unknown): void {
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, ours.id, ours.classFullName);
+    const classDef = rebase.getConflictClass(ours.classFullName);
+    if (original !== undefined) {
+      addPropsAccessStrings(conflict.ourModifiedProperties, classDef, computeChangedProperties(original, ours));
+      if (theirs !== undefined)
+        addPropsAccessStrings(conflict.theirModifiedProperties, classDef, computeChangedProperties(original, theirs));
+    }
+    if (theirs !== undefined)
+      addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(theirs, ours));
+    conflict._original ??= original;
+    conflict._theirs ??= theirs;
+    conflict._ours ??= ours;
+    conflict.replayErrors.push(error);
   }
 
   /** Deserializes a raw row (one of {@link _original}/{@link _theirs}/{@link _ours}) into the public
