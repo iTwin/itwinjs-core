@@ -22,15 +22,31 @@ export interface SubCategoriesRequest {
   cancel(): void;
 }
 
+class LoadedSubCategories extends Set<Id64String> {
+  public version = 0;
+}
+
 /** A cache of information about the subcategories contained within an [[IModelConnection]]. It is populated on demand.
  * @internal
  */
 export class SubCategoriesCache {
-  private readonly _byCategoryId = new Map<string, Id64Set>();
+  private readonly _byCategoryId = new Map<string, LoadedSubCategories>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
   private readonly _staleCategoryIds = new Set<string>();
   private readonly _imodel: IModelConnection;
   private _invalidationGeneration = 0;
+  private _loadVersion = 0;
+  /** Changes when a load publishes new category data. @internal */
+  public get loadVersion(): number { return this._loadVersion; }
+
+  /** Whether any of these categories were actually published after the caller began waiting. @internal */
+  public loadedSince(ids: Iterable<Id64String>, version: number): boolean {
+    if (version !== this._loadVersion)
+      for (const id of ids)
+        if ((this._byCategoryId.get(id)?.version ?? 0) > version)
+          return true;
+    return false;
+  }
 
   private readonly _onChanged = new BeEvent<() => void>();
 
@@ -121,12 +137,7 @@ export class SubCategoriesCache {
     const generation = this._invalidationGeneration;
     const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
       const completed = undefined !== result && !request.wasCanceled && generation === this._invalidationGeneration;
-      if (completed)
-        this.processResults(result, missing);
-
-      // On failure (result undefined due to query error), do NOT cache empty sets for uncached categories.
-      // Leave them absent so getMissing() will include them in subsequent load() retries.
-      return completed;
+      return completed && this.processResults(result, missing); // Never mark failed or malformed categories fresh.
     });
     return {
       missingCategoryIds: missing,
@@ -144,8 +155,11 @@ export class SubCategoriesCache {
         const staleCategories = new Set(this._staleCategoryIds);
         // This preload can return partial results on very large iModels, so keep stale categories additive and
         // preserve their stale state until a targeted reload can fully reconcile them.
-        for (const row of results)
-          this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), staleCategories.has(row.parentId));
+        const { appearances, invalid } = SubCategoriesCache.decode(results);
+        ++this._loadVersion;
+        for (const [i, row] of results.entries())
+          if (!invalid?.has(row.parentId))
+            this.add(row.parentId, row.id, appearances[i], staleCategories.has(row.parentId));
 
         if (staleCategories.size > 0)
           this.markCategoriesStale(staleCategories);
@@ -155,8 +169,8 @@ export class SubCategoriesCache {
     }
 
   }
-  /** Given categoryIds, return which of these are not cached. */
-  private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
+  /** IDs requiring a load, including stale categories. @internal */
+  public getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {
       if (undefined === this._byCategoryId.get(catId) || this.isCategoryStale(catId)) {
@@ -181,28 +195,40 @@ export class SubCategoriesCache {
     this.clear();
   }
 
-  private static createSubCategoryAppearance(json?: any) {
-    let props: SubCategoryAppearance.Props | undefined;
-    if ("string" === typeof json && 0 < json.length)
-      props = JSON.parse(json);
-
-    return new SubCategoryAppearance(props);
+  private static decode(rows: SubCategoriesCache.Result) {
+    const appearances: SubCategoryAppearance[] = [];
+    let invalid: Set<Id64String> | undefined;
+    for (const [i, row] of rows.entries()) {
+      try {
+        const value = row.appearance; // ECSQL returns JSON text; other connections can return decoded properties.
+        appearances[i] = new SubCategoryAppearance(typeof value === "string" ? (value ? JSON.parse(value) : undefined) : value);
+      } catch {
+        (invalid ??= new Set()).add(row.parentId);
+      }
+    }
+    return { appearances, invalid };
   }
 
-  private processResults(result: SubCategoriesCache.Result, refreshedCategoryIds: Id64Set, override: boolean = true): void {
+  private processResults(result: SubCategoriesCache.Result, refreshedCategoryIds: Id64Set, override: boolean = true): boolean {
+    const { appearances, invalid } = SubCategoriesCache.decode(result);
+    ++this._loadVersion;
     const previousSubCategoryIds = new Map<Id64String, Id64Set>();
     for (const id of refreshedCategoryIds) {
+      if (invalid?.has(id))
+        continue;
       const previous = this._byCategoryId.get(id);
       if (undefined !== previous)
         previousSubCategoryIds.set(id, previous);
 
-      this._byCategoryId.set(id, new Set<string>());
+      const fresh = new LoadedSubCategories();
+      fresh.version = this._loadVersion;
+      this._byCategoryId.set(id, fresh);
       this.markCategoryFresh(id);
     }
 
-    for (const row of result) {
-      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
-    }
+    for (const [i, row] of result.entries())
+      if (!invalid?.has(row.parentId))
+        this.add(row.parentId, row.id, appearances[i], override);
 
     for (const [categoryId, previous] of previousSubCategoryIds) {
       const current = this._byCategoryId.get(categoryId);
@@ -211,6 +237,7 @@ export class SubCategoriesCache {
           this._appearances.delete(subCategoryId);
       }
     }
+    return !invalid;
   }
 
   /** Exposed strictly for tests.
@@ -219,8 +246,9 @@ export class SubCategoriesCache {
   public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
-      this._byCategoryId.set(categoryId, set = new Set<string>());
+      this._byCategoryId.set(categoryId, set = new LoadedSubCategories());
 
+    set.version = this._loadVersion;
     set.add(subCategoryId);
     this.markCategoryFresh(categoryId);
     if (override || !this._appearances.has(subCategoryId))
@@ -358,16 +386,17 @@ export namespace SubCategoriesCache {
   }
 
   export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
+  /** Identity used to cancel related loads independently of the cache used for fetching. @internal */
+  export type Owner = SubCategoriesCache | string;
 
   export class QueueEntry {
     public readonly cache: SubCategoriesCache;
     public readonly categoryIds: Id64Set;
-    public readonly funcs: QueueFunc[];
+    public funcs: Array<{ notify: QueueFunc, ids: Id64Set, version: number, retry?: "once" | "queued" }> = [];
 
-    public constructor(cache: SubCategoriesCache, categoryIds: Id64Set, func: QueueFunc) {
+    public constructor(cache: SubCategoriesCache, categoryIds: Iterable<Id64String>, public readonly owner: Owner = cache) {
       this.cache = cache;
-      this.categoryIds = categoryIds;
-      this.funcs = [func];
+      this.categoryIds = new Set(categoryIds);
     }
   }
 
@@ -383,28 +412,121 @@ export namespace SubCategoriesCache {
     protected _next: QueueEntry[] = [];
     protected _request?: SubCategoriesRequest;
     protected _disposed = false;
-    /** True while processNext is invoking an already-satisfied entry's callbacks. A nested push must then always wait in
-     * [[_next]] - even if the queue momentarily looks idle - because the drain loop owns [[_request]]/[[_current]] and
-     * would clobber a request that became current mid-loop.
-     */
-    protected _draining = false;
+    private readonly _selectors = new Map<SubCategoriesCache, Queue>();
+    /** All previously pending category requests have settled, including failed requests. @internal */
+    public readonly onDrained = new BeEvent<() => void>();
 
-    /** Push a request onto the queue. The requested categories will be loaded through the supplied cache if necessary, and then
-     * the supplied function will be invoked. Any previously-pushed requests are guaranteed to be processed before this one.
-     */
-    public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
+    /** Whether work for this connection is queued or in flight. @internal */
+    public hasPending(owner: Owner): boolean {
+      return this._current?.owner === owner || this._next.some((entry) => entry.owner === owner) || undefined !== this.selectorForOwner(owner);
+    }
+
+    private selectorForOwner(owner: Owner): Queue | undefined {
+      for (const queue of this._selectors.values())
+        if (queue.hasPending(owner))
+          return queue;
+      return undefined;
+    }
+
+    /** Load a selector's metadata independently unless an earlier ordered operation uses its cache or owner. @internal */
+    public pushSelector(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, owner: Owner): void {
       if (this._disposed)
         return;
-      else if (undefined === this._current && 0 === this._next.length && !this._draining)
-        this.pushCurrent(cache, categoryIds, func);
-      else
-        this.pushNext(cache, categoryIds, func);
+      const conflicts = (entry: QueueEntry) => entry.cache === cache || entry.owner === owner;
+      const existing = this._selectors.get(cache);
+      const ownerQueue = this.selectorForOwner(owner);
+      if ((ownerQueue && ownerQueue !== existing) || (this._current && conflicts(this._current)) || this._next.some(conflicts)) {
+        this.push(cache, categoryIds, func, { owner });
+        return;
+      }
+
+      if (existing) {
+        existing.push(cache, categoryIds, func, { owner });
+        return;
+      }
+
+      const queue = new Queue();
+      const release = (notifyDrained: boolean) => {
+        if (this._selectors.get(cache) !== queue)
+          return;
+        this._selectors.delete(cache);
+        if (!this._current && (notifyDrained || this._next.length))
+          this.processNext();
+      };
+      this._selectors.set(cache, queue);
+      queue.onDrained.addOnce(() => release(true));
+      try {
+        queue.push(cache, categoryIds, func, { owner });
+      } finally {
+        if (queue.isEmpty)
+          release(false); // A synchronous hit raises no drain event, but its callback can queue ordered work.
+      }
+    }
+
+    /** Push a request onto the queue. The requested categories will be loaded through the supplied cache if necessary, and then
+     * the supplied function will be invoked. `owner` defaults to the destination cache. An operation marked `retainOnRetry`
+     * runs on a covering retry, scheduling one retry if necessary. Ordinary load notifications are not replayed.
+     */
+    public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, options?: { owner?: Owner, retainOnRetry?: boolean }): void {
+      if (this._disposed)
+        return;
+      const owner = options?.owner ?? cache;
+      const version = cache.loadVersion;
+      const start = !this._current && !this._next.length && !this._selectors.has(cache) && !this.selectorForOwner(owner);
+      if (start) {
+        this._request = cache.load(categoryIds);
+        if (!this._request) {
+          func(false);
+          return;
+        }
+      }
+      const ids = Id64.toIdSet(categoryIds, true);
+      let entry = this._next.at(-1);
+      if (start || !entry || entry.owner !== owner || entry.cache !== cache) {
+        entry = new QueueEntry(cache, ids, owner);
+        if (!start)
+          this._next.push(entry);
+      } else {
+        for (const id of ids)
+          entry.categoryIds.add(id);
+      }
+      entry.funcs.push({ notify: func, ids, version, retry: options?.retainOnRetry ? "once" : undefined });
+      if (start)
+        this.processCurrent(entry);
+    }
+
+    /** Cancel all queued and in-flight work of one owner, including requests through another connection's cache.
+     * @internal
+     */
+    public cancel(owner: Owner): void {
+      this._next = this._next.filter((entry) => entry.owner !== owner);
+      this.selectorForOwner(owner)?.cancel(owner);
+      if (this._current?.owner !== owner) {
+        if (!this._current && this._next.length)
+          this.processNext();
+        return;
+      }
+
+      this._current.funcs.length = 0;
+      if (!this._request)
+        return; // The synchronous drain loop advances after the current callback returns.
+
+      this._request.cancel();
+      this._request = undefined;
+      this._current = undefined;
+      this.processNext();
     }
 
     /** Cancel all requests and empty the queue. */
     public [Symbol.dispose](): void {
+      for (const queue of this._selectors.values()) {
+        queue.onDrained.clear();
+        queue[Symbol.dispose]();
+      }
+      this._selectors.clear();
+      if (this._current)
+        this._current.funcs.length = 0;
       if (undefined !== this._request) {
-        assert(undefined !== this._current);
         this._request.cancel();
         this._request = undefined;
       }
@@ -415,23 +537,7 @@ export namespace SubCategoriesCache {
     }
 
     public get isEmpty(): boolean {
-      return undefined === this._current && 0 === this._next.length;
-    }
-
-    private pushCurrent(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
-      assert(0 === this._next.length);
-      assert(undefined === this._current);
-      assert(undefined === this._request);
-
-      this._request = cache.load(categoryIds);
-      if (undefined === this._request) {
-        // All requested categories are already loaded.
-        func(false);
-        return;
-      } else {
-        // We need to load the requested categories before invoking the function.
-        this.processCurrent(new QueueEntry(cache, Id64.toIdSet(categoryIds, true), func));
-      }
+      return !this._current && !this._next.length && !this._selectors.size;
     }
 
     private processCurrent(entry: QueueEntry): void {
@@ -439,38 +545,71 @@ export namespace SubCategoriesCache {
       assert(undefined === this._current);
 
       this._current = entry;
-      this._request.promise.then((completed: boolean) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (this._disposed)
+      const finish = (completed: boolean) => {
+        if (this._disposed || this._current !== entry)
           return;
 
-        // Invoke all the functions which were awaiting this set of IModelConnection.Categories.
-        assert(undefined !== this._current);
-        if (completed)
-          for (const func of this._current.funcs)
-            func(true);
-
-        this._request = undefined;
-        this._current = undefined;
-
-        // If we have more requests, process them.
-        this.processNext();
-      });
+        try {
+          const replays = new Map<QueueEntry, typeof entry.funcs>();
+          let fallback: QueueEntry | undefined;
+          for (const operation of entry.funcs) {
+            const loaded = entry.cache.loadedSince(operation.ids, operation.version);
+            const missing = !completed && operation.retry ? entry.cache.getMissing(operation.ids) : undefined;
+            if (completed || loaded || (operation.retry && !missing)) {
+              operation.notify(loaded);
+              if (this._current !== entry)
+                return; // A callback canceled this entry and may have started another request.
+            }
+            if (!missing)
+              continue;
+            const ids = [...missing];
+            let retry = this._next.find((next) => next.owner === entry.owner && next.cache === entry.cache && ids.every((id) => next.categoryIds.has(id)));
+            if (!retry) {
+              if (operation.retry !== "once")
+                continue;
+              // Coalesced operations share one replacement request, even if the backend remains unavailable.
+              if (!fallback)
+                this._next.push(fallback = new QueueEntry(entry.cache, [], entry.owner));
+              for (const id of ids)
+                fallback.categoryIds.add(id);
+              retry = fallback;
+            }
+            operation.retry = "queued"; // May follow existing work, but cannot generate another retry.
+            operation.version = entry.cache.loadVersion;
+            const earlier = replays.get(retry);
+            if (earlier)
+              earlier.push(operation);
+            else
+              replays.set(retry, [operation]);
+          }
+          for (const [retry, operations] of replays)
+            retry.funcs = operations.concat(retry.funcs);
+        } finally {
+          if (this._current === entry) {
+            this._request = undefined;
+            this._current = undefined;
+            this.processNext();
+          }
+        }
+      };
+      void this._request.promise.then(finish, () => finish(false));
     }
 
     private processNext(): void {
       let next;
-      while (undefined !== (next = this._next.shift())) {
+      while (undefined !== (next = this._next[0])) {
+        if (this._selectors.has(next.cache) || this.selectorForOwner(next.owner))
+          return;
+        this._next.shift();
         this._request = next.cache.load(next.categoryIds);
         if (undefined === this._request) {
-          // All categories loaded. Nested pushes from these callbacks must wait in the queue (see push) - after the
-          // final shift the queue looks idle, and a push that became current mid-loop would be clobbered by the next
-          // iteration overwriting _request and re-entering processCurrent.
-          this._draining = true;
+          // Keep the entry visible to nested pushes and cancellation until its callbacks finish.
+          this._current = next;
           try {
-            for (const func of next.funcs)
-              func(true);
+            for (const { notify, ids, version } of next.funcs)
+              notify(next.cache.loadedSince(ids, version));
           } finally {
-            this._draining = false;
+            this._current = undefined;
           }
         } else {
           // We need to load the requested categories before invoking the pending functions.
@@ -478,25 +617,8 @@ export namespace SubCategoriesCache {
           return;
         }
       }
-    }
-
-    private pushNext(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
-      // Either a request is in flight, or a completion callback is pushing while processNext is draining
-      // already-satisfied pending entries - in both cases this request must wait its turn behind the existing work.
-      assert(undefined !== this._current || 0 < this._next.length || this._draining);
-
-      const last = this._next[this._next.length - 1];
-      if (undefined === last || last.cache !== cache) {
-        // We have a request currently in process and no pending request on the same cache to batch with.
-        // We could potentially determine that this request doesn't require any categories that are not already loaded or being loaded by the current request.
-        // But we will find that out (synchronously) when current request completes, unless more requests come in. Probably not worth it.
-        this._next.push(new QueueEntry(cache, Id64.toIdSet(categoryIds, true), func));
-      } else {
-        // We have a request currently in process, and the most recently pended request targets the same cache. Append this one to it.
-        last.funcs.push(func);
-        for (const categoryId of Id64.iterable(categoryIds))
-          last.categoryIds.add(categoryId);
-      }
+      if (!this._disposed && this.isEmpty)
+        this.onDrained.raiseEvent();
     }
   }
 }

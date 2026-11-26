@@ -84,7 +84,10 @@ export interface IModelDisplayReference {
   readonly parent: IModelDisplayReferences;
   /** A transform from the coordinate system of this [[iModel]] to that of the view's primary iModel. */
   readonly linearTransformToParent: Transform;
-  /** The set of categories that are visible when displaying this reference. */
+  /** The set of categories that are visible when displaying this reference.
+   * If a tiled graphics provider uses a detached view's primary reference, use [[changeCategoryDisplay]] to load newly
+   * enabled categories. Detached views do not observe selector edits. Invalidate the drawing viewport's scene after loading.
+   */
   readonly viewedCategories: ObservableSet<Id64String>;
   /** Event dispatched when any asynchronous loading of categories initiated by a change to [[viewedCategories]] completes. */
   readonly onViewedCategoriesLoaded: BeEvent<() => void>;

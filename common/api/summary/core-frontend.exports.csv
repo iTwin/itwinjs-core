@@ -255,6 +255,7 @@ public;function;getImageSourceMimeType
 internal;const;_getModelClip
 public;interface;GetPixelDataWorldPointArgs
 public;function;getQuantityTypeKey
+internal;function;getTileSymbologyOverrides
 public;interface;GlobalAlignmentOptions
 public;interface;GlobalLocation
 public;interface;GlobalLocationArea

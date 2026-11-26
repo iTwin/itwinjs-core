@@ -2081,6 +2081,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
+    Symbology = 256,
     ViewedCategories = 4,
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
@@ -4075,6 +4076,9 @@ export interface GetPixelDataWorldPointArgs {
 
 // @public
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
+
+// @internal
+export function getTileSymbologyOverrides(ref: IModelDisplayReference, context?: SceneContext): FeatureSymbology.Overrides | undefined;
 
 // @public
 export interface GlobalAlignmentOptions {
@@ -8231,6 +8235,8 @@ export namespace PerModelCategoryVisibility {
     // @internal
     export interface CreateOverridesArgs {
         iModel: IModelConnection;
+        // (undocumented)
+        owner?: string;
         queue: SubCategoriesCache.Queue;
     }
     export enum Override {
@@ -10034,6 +10040,8 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
+    // @internal (undocumented)
+    protected onSceneVisibilityChanged(): void;
     // @internal
     onViewManagerAdd(): void;
     // @internal
@@ -10908,42 +10916,59 @@ export class SubCategoriesCache {
     clear(): void;
     // (undocumented)
     getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>>;
+    getMissing(categoryIds: Id64Arg): Id64Set | undefined;
     getSubCategories(categoryId: string): Id64Set | undefined;
     getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
     // (undocumented)
     getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     loadAllUsedSpatialSubCategories(): Promise<void>;
+    loadedSince(ids: Iterable<Id64String>, version: number): boolean;
+    get loadVersion(): number;
     // (undocumented)
     onIModelConnectionClose(): void;
 }
 
 // @internal
 export namespace SubCategoriesCache {
+    export type Owner = SubCategoriesCache | string;
     export class Queue {
         [Symbol.dispose](): void;
+        cancel(owner: Owner): void;
         // (undocumented)
         protected _current?: QueueEntry;
         // (undocumented)
         protected _disposed: boolean;
-        protected _draining: boolean;
+        hasPending(owner: Owner): boolean;
         // (undocumented)
         get isEmpty(): boolean;
         // (undocumented)
         protected _next: QueueEntry[];
-        push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void;
+        readonly onDrained: BeEvent<() => void>;
+        push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, options?: {
+            owner?: Owner;
+            retainOnRetry?: boolean;
+        }): void;
+        pushSelector(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc, owner: Owner): void;
         // (undocumented)
         protected _request?: SubCategoriesRequest;
     }
     // (undocumented)
     export class QueueEntry {
-        constructor(cache: SubCategoriesCache, categoryIds: Id64Set, func: QueueFunc);
+        constructor(cache: SubCategoriesCache, categoryIds: Iterable<Id64String>, owner?: Owner);
         // (undocumented)
         readonly cache: SubCategoriesCache;
         // (undocumented)
         readonly categoryIds: Id64Set;
         // (undocumented)
-        readonly funcs: QueueFunc[];
+        funcs: Array<{
+            notify: QueueFunc;
+            ids: Id64Set;
+            version: number;
+            retry?: "once" | "queued";
+        }>;
+        // (undocumented)
+        readonly owner: Owner;
     }
     // (undocumented)
     export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
@@ -12275,7 +12300,7 @@ export abstract class TileTreeReference {
     getLocation(): Transform | undefined;
     // @alpha
     getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>;
-    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    protected getSymbologyOverrides(_tree: TileTree, _context?: SceneContext): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
@@ -13857,7 +13882,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @deprecated
     addViewedModels(models: Id64Arg): Promise<void>;
     // @deprecated
-    get alwaysDrawn(): ObservableSet<Id64String>;
+    get alwaysDrawn(): Id64Set | undefined;
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
@@ -14038,7 +14063,7 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     // @deprecated
-    get neverDrawn(): ObservableSet<Id64String>;
+    get neverDrawn(): Id64Set | undefined;
     npcToView(pt: Point3d, out?: Point3d): Point3d;
     npcToViewArray(pts: Point3d[]): void;
     npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;
@@ -14066,6 +14091,8 @@ export abstract class Viewport implements Disposable, TileUser {
     readonly onResized: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
+    // @internal
+    protected onSceneVisibilityChanged(): void;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;

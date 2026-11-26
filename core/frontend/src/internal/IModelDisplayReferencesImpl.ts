@@ -13,6 +13,7 @@ import { GenericIModelDisplayReferences, IModelDisplayReferences2d, LinkSpatialI
 import { SpatialViewState } from "../SpatialViewState";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
+import { unlinkDisplayReference } from "./IModelDisplayReferenceImpl";
 import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
 import { createGenericPrimaryIModelDisplayReference, createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
 import { DisplayStyleSettings, FeatureAppearance } from "@itwin/core-common";
@@ -192,7 +193,14 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
       if (removeIModel)
         this.#iModels.delete(refToRemove.iModel);
 
-      this.onUnlinked.raiseEvent(refToRemove);
+      unlinkDisplayReference(refToRemove);
+      try {
+        this.onUnlinked.raiseEvent(refToRemove);
+      } finally {
+        // An unlink listener can submit more work for the removed reference or relink a replacement on the same connection.
+        if (this.subcategories.hasPending(refToRemove.guid))
+          this.subcategories.cancel(refToRemove.guid);
+      }
 
       // The periodic purge only reclaims tile trees of iModels currently associated with a TileUser - once unlinked from
       // every view, nothing else would free this iModel's unused trees while the connection remains open.

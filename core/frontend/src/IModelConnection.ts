@@ -28,6 +28,7 @@ import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
+import { modelLoadRequests } from "./internal/ModelLoadRequests";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
@@ -929,6 +930,7 @@ export namespace IModelConnection {
     private _geometryChangedListener?: (changes: readonly ModelIdAndGeometryGuid[]) => void;
 
     private _loaded = new Map<string, ModelState>();
+    private readonly _loadingIds = new Set<Id64Set>();
 
     /** @internal */
     public get loaded(): Map<string, ModelState> { return this._loaded; }
@@ -1006,26 +1008,66 @@ export namespace IModelConnection {
       if (undefined === notLoaded)
         return; // all requested models are already loaded
 
-      try {
-        const propArray = await this.getProps(notLoaded);
-        await this.updateLoadedWithModelProps(propArray);
-      } catch {
-        // ignore error, we had nothing to do.
+      let active = modelLoadRequests.get(this);
+      if (!active)
+        modelLoadRequests.set(this, active = new Map());
+      const waits = new Set<Promise<void>>();
+      for (const id of notLoaded) {
+        const request = active.get(id);
+        if (request) {
+          waits.add(request.promise);
+          notLoaded.delete(id);
+        }
       }
+      if (notLoaded.size) {
+        let finish!: () => void;
+        const batch = { promise: new Promise<void>((resolve) => { finish = resolve; }) };
+        for (const id of notLoaded)
+          active.set(id, batch);
+        this._loadingIds.add(notLoaded);
+        try {
+          await this.updateLoaded(await this.getProps(notLoaded), notLoaded);
+        } catch {
+          // Unavailable models remain uncached and can be retried.
+        } finally {
+          this._loadingIds.delete(notLoaded);
+          for (const id of notLoaded)
+            if (active.get(id) === batch)
+              active.delete(id);
+          finish();
+        }
+      }
+      await Promise.all(waits);
     }
 
     /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
     public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
-      try {
-        for (const props of modelProps) {
-          const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
-          if (undefined !== ctor && undefined !== props.id && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
+      await this.updateLoaded(modelProps);
+    }
+
+    private async updateLoaded(modelProps: ModelProps[], requested?: Id64Set): Promise<void> {
+      let failedClasses: Set<string> | undefined;
+      for (const props of modelProps) {
+        const className = props?.classFullName;
+        if (typeof className !== "string" || failedClasses?.has(className.toLowerCase()))
+          continue;
+
+        let ctor: typeof ModelState | undefined;
+        try {
+          ctor = await this._iModel.findClassFor(className, ModelState);
+        } catch {
+          (failedClasses ??= new Set()).add(className.toLowerCase());
+          continue;
+        }
+
+        try {
+          if (undefined !== ctor && undefined !== props.id && (!requested || requested.has(props.id)) && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
+        } catch {
+          // A bad model's properties do not invalidate other rows of its class.
         }
-      } catch {
-        // ignore error, we had nothing to do.
       }
     }
 
@@ -1033,6 +1075,10 @@ export namespace IModelConnection {
      * @internal
      */
     public unload(modelId: Id64String): void {
+      // Ignore pre-deletion props even from a retired owner whose request is no longer joinable.
+      for (const ids of this._loadingIds)
+        ids.delete(modelId);
+      modelLoadRequests.get(this)?.delete(modelId);
       this._loaded.delete(modelId);
     }
 

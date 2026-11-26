@@ -5,6 +5,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
+import { _ignoreAnimationOverridesExcept, _matchesFeatureOverrides } from "../internal/FeatureOverrides";
 import { RgbColor } from "../RgbColor";
 import { BatchType, Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
@@ -308,6 +309,32 @@ describe("FeatureOverrides", () => {
     expect(ovrs.isSubCategoryVisible(2, 0)).to.be.true;
     expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
     expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
+  });
+
+  it("compares and applies emphasis animation filters by element ID", () => {
+    const a = new Overrides();
+    const b = new Overrides();
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    const ids = new Set(["0x123"]);
+    a[_ignoreAnimationOverridesExcept](ids);
+    b[_ignoreAnimationOverridesExcept](new Set(ids));
+    for (const overrides of [a, b]) {
+      overrides.animationNodeOverrides.set(1, blue);
+      expect(overrides.getFeatureAppearance(new Feature("0x123"), "0x456", undefined, 1)).to.equal(blue);
+      expect(overrides.getFeatureAppearance(new Feature("0x321"), "0x456", undefined, 1)).not.to.equal(blue);
+    }
+    expect(a[_matchesFeatureOverrides](b)).to.be.true;
+    ids.add("0x321");
+    const next = new Overrides();
+    next[_ignoreAnimationOverridesExcept](ids);
+    next.animationNodeOverrides.set(1, blue);
+    expect(a[_matchesFeatureOverrides](b)).to.be.true;
+    expect(a[_matchesFeatureOverrides](next)).to.be.false;
+    expect(a.getFeatureAppearance(new Feature("0x321"), "0x456", undefined, 1)).not.to.equal(blue);
+    expect(next.getFeatureAppearance(new Feature("0x321"), "0x456", undefined, 1)).to.equal(blue);
+    a.animationNodeOverrides.clear();
+    next.animationNodeOverrides.clear();
+    expect(a[_matchesFeatureOverrides](next)).to.be.true; // Neither predicate can affect an unanimated feature.
   });
 
   it("hides animation nodes", () => {

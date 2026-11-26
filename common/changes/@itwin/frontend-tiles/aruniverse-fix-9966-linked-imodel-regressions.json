@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-tiles",
+      "comment": "Inherit viewport symbology for primary batched tiles so appearance-only changes do not rebuild the scene, while keeping batched tiles supplied by another view styled by their owning display reference.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-tiles"
+}

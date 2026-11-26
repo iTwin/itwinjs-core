@@ -29,6 +29,8 @@ export enum ChangeFlag {
   ViewedCategoriesPerModel = 1 << 6,
   /** See [[ChangeFlags.viewState]]. */
   ViewState = 1 << 7,
+  /** Primary-reference symbology changed without a more specific override flag (e.g., its default feature appearance). */
+  Symbology = 1 << 8,
   /** A bitmask indicating all aspects of the viewport's state have changed. */
   All = 0x0fffffff,
   /** A bitmask indicating all aspects of the viewport's state related to symbology overrides have changed. */

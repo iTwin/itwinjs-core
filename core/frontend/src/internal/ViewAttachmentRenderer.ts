@@ -371,7 +371,10 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this._attachment = attachment;
       this._isAspectRatioLocked = true;
       this.changeView(view);
+      this.onSceneInvalidated.addListener(() => attachment.invalidatePendingParent());
     }
+
+    protected override onSceneVisibilityChanged(): void { this._attachment.invalidatePendingParent(); }
 
     public override createSceneContext(): SceneContext {
       assert(!this._isSceneReady);
@@ -383,20 +386,15 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
     public override renderFrame(): void {
       assert(!this._isSceneReady);
 
-      this.clearSceneContext();
       super.renderFrame();
 
-      if (undefined !== this._sceneContext) {
-        this._isSceneReady = !this._sceneContext.hasMissingTiles && this.view.areAllTileTreesLoaded;
-        if (this._isSceneReady)
-          this._attachment.produceGraphics(this._sceneContext);
-
+      // Metadata can become ready without rebuilding the scene. Keep the last selection until rasterization.
+      const context = this._sceneContext;
+      if (context && !context.hasMissingTiles && this.view.areAllTileTreesLoaded) {
+        this._isSceneReady = true;
         this._sceneContext = undefined;
+        this._attachment.produceGraphics(context);
       }
-    }
-
-    private clearSceneContext(): void {
-      this._sceneContext = undefined;
     }
 
     public override addDecorations(): void {
@@ -415,6 +413,8 @@ class RasterAttachment {
   public readonly zDepth: number;
   private _viewport?: OffScreenViewport;
   private _graphics?: RenderGraphic;
+  private _pendingParent?: Viewport;
+  private _removeQueueListener?: VoidFunction;
 
   public constructor(view: ViewState, props: ViewAttachmentProps, bgColor: ColorDef) {
     // Render to a 2048x2048 view rect. Scale in Y to preserve aspect ratio.
@@ -430,6 +430,7 @@ class RasterAttachment {
     }
 
     this._viewport = createRasterAttachmentViewport(view, rect, this);
+    this._removeQueueListener = view.iModelRefs.subcategories.onDrained.addListener(() => this.invalidatePendingParent());
     this._props = props;
     this._placement = Placement2d.fromJSON(props.placement);
     this._transform = this._placement.transform;
@@ -437,7 +438,18 @@ class RasterAttachment {
   }
 
   public [Symbol.dispose](): void {
-    this._viewport?.[Symbol.dispose]();
+    this._removeQueueListener?.();
+    this._removeQueueListener = undefined;
+    this._pendingParent = undefined;
+    this._viewport = dispose(this._viewport);
+  }
+
+  public invalidatePendingParent(): void {
+    // Only the sheet's scene selection drives this offscreen viewport. Wake it once when child data changes.
+    const parent = this._pendingParent;
+    this._pendingParent = undefined;
+    if (parent && !parent.isDisposed)
+      parent.invalidateScene();
   }
 
   public get viewAttachmentProps() {
@@ -475,12 +487,17 @@ class RasterAttachment {
     if (undefined === this._viewport)
       return;
 
+    this._pendingParent = undefined;
     this._viewport.debugBoundingBoxes = context.viewport.debugBoundingBoxes;
     this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
 
     this._viewport.renderFrame();
     if (this._graphics)
       context.outputGraphic(this._graphics);
+    else if (this._viewport) {
+      this._pendingParent = context.viewport;
+      context.markChildrenLoading();
+    }
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet) {
@@ -491,6 +508,8 @@ class RasterAttachment {
   public produceGraphics(context: SceneContext): void {
     assert(context.viewport === this._viewport);
     this._graphics = this.createGraphics(this._viewport);
+    this._removeQueueListener?.();
+    this._removeQueueListener = undefined;
     this._viewport = dispose(this._viewport);
 
     if (undefined !== this._graphics)

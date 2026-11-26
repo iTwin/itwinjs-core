@@ -122,8 +122,8 @@ export class ViewportChangedHandler {
     if (undefined !== this._changeFlags)
       expect(this._changeFlags.areFeatureOverridesDirty).to.equal(expectFeatureOverridesChanged);
 
-    // No dedicated deferred event for ViewState changed...just the immediate one.
-    expect(this._eventFlags.value).to.equal(flags & ~ChangeFlag.ViewState);
+    // ViewState has an immediate event; generic Symbology uses onFeatureOverridesChanged, checked above.
+    expect(this._eventFlags.value).to.equal(flags & ~(ChangeFlag.ViewState | ChangeFlag.Symbology));
 
     // Reset for next frame.
     this._eventFlags.clear();

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Coalesce and share category and model metadata loads without redundant cold-open requests, preserve single-iModel display customization and viewport appearance notifications without rebuilding ordinary primary scenes, qualify plain pixel exclusions to same-iModel attachments, release shared selector listeners on detach, and preserve the Id64Set | undefined return type on deprecated Viewport.neverDrawn and Viewport.alwaysDrawn.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

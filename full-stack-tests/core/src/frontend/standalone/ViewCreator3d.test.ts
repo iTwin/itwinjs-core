@@ -86,24 +86,18 @@ describe("ViewCreator3d", async () => {
   });
 
   it("when internal logic of loadAllSubCategories throws, should fall back to loading all subcategories through standard paging", async () => {
-    imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance(), true);
-    imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
-
-    const loadSpy = sinon.spy(imodel.subcategories, "load");
-    const queryStub = sinon.stub(imodel, "queryAllUsedSpatialSubCategories").rejects(new Error("Internal Server Error"));
-
-    const creator = new ViewCreator3d(imodel);
-    const view = await creator.createDefaultView();
-    function expectVisible(subcat18Vis: boolean, subcat20Vis: boolean): void {
-      expect(view.isSubCategoryVisible("0x18")).to.equal(subcat18Vis);
-      expect(view.isSubCategoryVisible("0x20")).to.equal(subcat20Vis);
+    imodel.subcategories.clear();
+    const sandbox = sinon.createSandbox();
+    try {
+      sandbox.stub(imodel, "queryAllUsedSpatialSubCategories").rejects(new Error("Internal Server Error"));
+      const query = sandbox.spy(imodel, "querySubCategories");
+      const view = await new ViewCreator3d(imodel).createDefaultView();
+      expect([...view.categorySelector.categories]).to.deep.equal(["0x17"]);
+      expect(view.isSubCategoryVisible("0x18")).to.be.true;
+      expect(query).to.be.calledOnce;
+    } finally {
+      sandbox.restore();
     }
-
-    expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
-    expectVisible(true, true);
-    expect(loadSpy).to.be.calledTwice;
-    loadSpy.restore();
-    queryStub.restore();
   });
 });
 
