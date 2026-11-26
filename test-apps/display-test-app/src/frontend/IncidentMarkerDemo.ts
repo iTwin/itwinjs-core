@@ -118,17 +118,15 @@ class IncidentClusterMarker extends Marker {
     this.labelFont = "bold 14px sans-serif";
     this.setScaleFactor({ low: .7, high: 1.2 });
 
-    let title = "";
-    sorted.forEach((marker) => {
-      if (title !== "")
-        title += "<br>";
-      title += `Severity: ${marker.severity} Id: ${marker.id}`;
+    const div = document.createElement("div");
+    sorted.forEach((marker, index) => {
+      if (index > 0)
+        div.append(document.createElement("br"));
+      div.append(`Severity: ${marker.severity} Id: ${marker.id}`);
     });
     if (cluster.markers.length > maxLen)
-      title += "<br>...";
+      div.append(document.createElement("br"), "...");
 
-    const div = document.createElement("div"); // Use HTML as markup isn't supported for string.
-    div.innerHTML = title;
     this.title = div;
     this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     if (image)

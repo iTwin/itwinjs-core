@@ -111,7 +111,7 @@ export class DisplayTestAppShortcutsUI {
 
   private createLabelElement(label: string): HTMLLabelElement {
     const labelElement = document.createElement("label");
-    labelElement.innerHTML = label;
+    labelElement.textContent = label;
     this.initializeElementStyle(labelElement.style, true);
 
     return labelElement;
@@ -129,11 +129,11 @@ export class DisplayTestAppShortcutsUI {
         row.style.backgroundColor = "rgba(100, 100, 100, 0.5)";
 
       const columnKey = row.insertCell();
-      columnKey.innerHTML = shortcut.key;
+      columnKey.textContent = shortcut.key;
       columnKey.style.paddingLeft = columnKey.style.paddingRight = "0.5em";
 
       const columnDesc = row.insertCell();
-      columnDesc.innerHTML = shortcut.description ?? "";
+      columnDesc.textContent = shortcut.description ?? "";
       columnDesc.style.paddingLeft = columnDesc.style.paddingRight = "0.5em";
     }
 

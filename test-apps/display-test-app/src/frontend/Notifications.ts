@@ -76,7 +76,7 @@ export class Notifications extends NotificationManager {
 
     // make the ok button
     const button = IModelApp.makeHTMLElement("button", { parent: dialog, className: "notification-messageboxbutton" });
-    button.innerHTML = "Ok";
+    button.textContent = "Ok";
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
       button.addEventListener("click", () => {

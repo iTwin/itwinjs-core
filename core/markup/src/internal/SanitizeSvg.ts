@@ -55,29 +55,28 @@ function logRemoved(items: Array<RemovedElement | RemovedAttribute>): void {
 }
 
 /** Sanitize `input`, dropping the top-level nodes rejected by `filter`, and log what was removed. */
-function sanitize(input: string, filter: (node: ChildNode, index: number) => boolean): ChildNode[] {
+function sanitize(input: string, filter: (node: ChildNode, index: number) => boolean): DocumentFragment {
   const instance = getPurifier();
   const fragment = instance.sanitize(input, svgConfig);
   const removed: Array<RemovedElement | RemovedAttribute> = [...instance.removed];
-  const kept = Array.from(fragment.childNodes).filter((node, index) => {
-    if (filter(node, index))
-      return true;
-
-    removed.push({ element: node });
-    return false;
+  Array.from(fragment.childNodes).forEach((node, index) => {
+    if (!filter(node, index)) {
+      removed.push({ element: node });
+      node.remove();
+    }
   });
 
   logRemoved(removed);
 
-  return kept;
+  return fragment;
 }
 
-/** Remove script-capable and non-SVG content from an SVG document string that will be parsed as HTML (e.g. assigned to `innerHTML`).
+/** Sanitize an SVG document string into a fragment that can be inserted directly.
  * Only top-level `<svg>` elements are returned; text and HTML elements beside them are dropped.
  * @internal
  */
-export function sanitizeSvg(svg: string): string {
-  return sanitize(svg, (node) => node instanceof SVGSVGElement).map((node) => (node as Element).outerHTML).join("");
+export function sanitizeSvg(svg: string): DocumentFragment {
+  return sanitize(svg, (node) => node instanceof SVGSVGElement);
 }
 
 /** Remove script-capable and non-SVG content from a string that will be parsed as the content of an `<svg>` element,
@@ -85,7 +84,7 @@ export function sanitizeSvg(svg: string): string {
  * @internal
  */
 export function sanitizeSvgContent(content: string): string {
-  // content that closes the wrapper early ends up beside it, and is dropped.
-  const [wrapper] = sanitize(`<svg>${content}</svg>`, (_node, index) => index === 0);
-  return wrapper instanceof Element ? wrapper.innerHTML : "";
+  // Content that closes the SVG root early ends up beside it and is dropped.
+  const svgRoot = sanitize(`<svg>${content}</svg>`, (_node, index) => index === 0).firstChild;
+  return svgRoot instanceof Element ? svgRoot.innerHTML : "";
 }

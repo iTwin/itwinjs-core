@@ -181,7 +181,6 @@ class TimelinePanel extends ToolBarDropDown {
     this._durationElement.step = "0.1";
     this._durationElement.value = durationInSeconds.toString();
     this._durationElement.style.width = "4em";
-    this._durationElement.innerHTML = " second(s)";
     this._durationElement.onchange = () => this.updateDuration();
     durationDiv.appendChild(this._durationElement);
     controls.appendChild(durationDiv);

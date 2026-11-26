@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { expectDefined, expectNotNull } from "@itwin/core-bentley";
 import {
   ColorDef, EmptyLocalization, ImageMapLayerProps, ImageMapLayerSettings, ImageSource, ImageSourceFormat, MapImageryProps, MapLayerProviderProperties,
@@ -13,6 +13,8 @@ import { IModelApp } from "../../../IModelApp";
 import { LocateOptions } from "../../../ElementLocateManager";
 import { HitDetail } from "../../../HitDetail";
 import { ScreenViewport } from "../../../Viewport";
+import { WmsCapabilities } from "../../../internal/tile/map/WmsCapabilities";
+import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { MapLayerFeatureInfo } from "../../../tile/map/MapFeatureInfo";
 import { ImageryMapLayerFormat } from "../../../tile/map/MapLayerImageryFormats";
 import { MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../tile/map/MapLayerImageryProvider";
@@ -38,9 +40,6 @@ class TestProvider extends MapLayerImageryProvider {
     featureInfos.push({ layerName: this._settings.name, subLayerInfos: [{ subLayerName: this._settings.name, features }] });
   }
   public override async getToolTip(strings: string[]) {
-    const markup = this._properties.tooltipMarkup;
-    if (typeof markup === "string")
-      strings.push(markup);
     if (this._properties.feature)
       strings.push(`feature of ${this._settings.name}`);
   }
@@ -189,19 +188,46 @@ describe("Map feature info", { timeout: 60000 }, () => {
     });
   });
 
-  it("preserves formatted map tooltip content without inserting unsupported markup", async () => {
-    await testBlankViewportAsync(async (vp) => {
-      const tooltipMarkup = '<h3>Feature info</h3><table style="color: red"><tr><th>Parcel</th><td><strong>42</strong></td></tr></table><svg><title>Not tooltip HTML</title></svg>';
-      const hit = await pickMap(vp, { backgroundBase: layer("Base", { tooltipMarkup }) });
-      const tooltip = await vp.getToolTip(hit);
-      if (!(tooltip instanceof HTMLElement))
-        throw new Error("Expected an HTML map tooltip");
+  it("preserves formatted WMS GetFeatureInfo content without inserting unsupported markup", async () => {
+    const markup = '<h3>Feature info</h3><table style="color: red"><tr><th>Parcel</th><td><strong>42</strong></td></tr></table><svg><title>Not tooltip HTML</title></svg>';
+    const capabilities = vi.spyOn(WmsCapabilities, "create").mockResolvedValue(new WmsCapabilities({
+      version: "1.1.1",
+      /* eslint-disable @typescript-eslint/naming-convention -- Match the WMS capabilities parser's property names. */
+      Capability: {
+        Request: { GetFeatureInfo: { Format: ["text/html"] } },
+        Layer: { Name: "Parcels", queryable: true, SRS: ["EPSG:3857"] },
+      },
+      /* eslint-enable @typescript-eslint/naming-convention */
+    }));
+    const loadTile = vi.spyOn(WmsMapLayerImageryProvider.prototype, "loadTile").mockResolvedValue(solidTile);
+    const originalFetch = globalThis.fetch.bind(globalThis);
+    const featureInfo = vi.fn((_queryLayers: string | null) => new Response(markup, { headers: { "Content-Type": "text/html" } }));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = new URL(input instanceof Request ? input.url : input, location.href);
+      if (url.origin === "https://test.invalid" && url.searchParams.get("REQUEST") === "GetFeatureInfo")
+        return featureInfo(url.searchParams.get("QUERY_LAYERS"));
 
-      expect(tooltip.querySelector("h3")?.textContent).toBe("Feature info");
-      expect(tooltip.querySelector("th")?.textContent).toBe("Parcel");
-      expect(tooltip.querySelector("td strong")?.textContent).toBe("42");
-      expect(tooltip.querySelector("[style], svg")).toBeNull();
+      return originalFetch(input, init);
     });
+
+    try {
+      await testBlankViewportAsync(async (vp) => {
+        const hit = await pickMap(vp, { backgroundBase: layer("Parcels", {}, { formatId: "WMS" }) });
+        const tooltip = await vp.getToolTip(hit);
+        expect(featureInfo).toHaveBeenCalledWith("Parcels");
+        if (!(tooltip instanceof HTMLElement))
+          throw new Error("Expected an HTML map tooltip");
+
+        expect(tooltip.querySelector("h3")?.textContent).toBe("Feature info");
+        expect(tooltip.querySelector("th")?.textContent).toBe("Parcel");
+        expect(tooltip.querySelector("td strong")?.textContent).toBe("42");
+        expect(tooltip.querySelector("[style], svg")).toBeNull();
+      });
+    } finally {
+      fetchMock.mockRestore();
+      loadTile.mockRestore();
+      capabilities.mockRestore();
+    }
   });
 
   it("lists the layers to query for feature info, topmost first", async () => {
