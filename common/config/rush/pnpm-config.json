@@ -170,20 +170,6 @@
     "@azure/msal-node@>=5.0.0-beta.0 <7.1.0": "^7.1.0", // https://github.com/advisories/GHSA-xcx6-jx8p-x3h5 azurite>applicationinsights|sequelize>tedious>@azure/identity>@azure/msal-node; latest @azure/identity (4.14.0) still requires ^6.0.0
     "@itwin/reality-capture>zod": "^4.6.6" // https://github.com/advisories/GHSA-mrhx-c7xc-m3w5 reality-data-client>reality-capture>zod; no zod 3.x fix exists and latest reality-capture still requires ^3.22.2. reality-capture only uses zod for schema/type declarations (no runtime parse), verified to load and type-check with zod 4
   },
-  // A list of temporary advisories excluded from the High and Critical list.
-  // Warning this should only be used as a temporary measure to avoid build failures
-  // for development dependencies only.
-  // All security issues should be addressed asap.
-  // every entry should look like:
-  // "CVE-202x-xxxxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
-  "unsupportedPackageJsonSettings": {
-    "pnpm": {
-      // ⚠️ Currently ignored. For more information see https://github.com/iTwin/itwinjs-core/issues/9505
-      "auditConfig": {
-        "ignoreCves": []
-      }
-    }
-  },
   "minimumReleaseAgeMinutes": 1440,
   "minimumReleaseAgeExclude": [
     "@bentley/*",

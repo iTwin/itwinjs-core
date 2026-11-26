@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, IModelError, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
@@ -18,18 +18,20 @@ import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
+import { sanitizeHtml } from "../../internal/SanitizeHtml";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, escapeHtml, GeometryTileTreeReference,
-  ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
+  ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
+const loggerCategory = "MapTileTree";
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
@@ -741,6 +743,41 @@ const mapTreeSupplier = new MapTreeSupplier();
 /** @internal */
 type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
 
+interface MapLayerOnMap {
+  map: MapTileTreeReference;
+  layer: MapLayerTileTreeReference;
+}
+
+interface FeatureInfoLayers {
+  /** Queryable layers drawn above the picked pixel, topmost first. */
+  above: MapLayerOnMap[];
+  /** The layer that owns the picked pixel; undefined over the base color. */
+  picked?: MapLayerOnMap;
+}
+
+async function getHitCartographic(hit: HitDetail): Promise<Cartographic | undefined> {
+  try {
+    const geometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    const cartographics = await geometry?.dbToWGS84CartographicFromGcs([hit.hitPoint]);
+    return cartographics?.[0];
+  } catch (error) {
+    // IModelError: the iModel has no geolocation or its GCS cannot convert the point. Anything else is unexpected.
+    if (!(error instanceof IModelError))
+      Logger.logError(loggerCategory, error);
+
+    return undefined;
+  }
+}
+
+function isLayerDrawn(settings: MapLayerSettings): boolean {
+  return settings.visible && !settings.allSubLayersInvisible && settings.transparency < 1;
+}
+
+/** The pick passes through transparent fills, so the layers drawn above the picked pixel come before it. */
+function topDown({ above, picked }: FeatureInfoLayers): MapLayerOnMap[] {
+  return picked ? [...above, picked] : above;
+}
+
 /** Specialization of tile tree that represents background map.
  * @internal
  */
@@ -761,7 +798,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return true; // catch-all for other cases (skip reality models, though).
   }
 
-  public constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
+  public constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride, private readonly _mapAbove?: MapTileTreeReference) {
     super();
 
     this.iModel = iModel;
@@ -780,8 +817,8 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const layerTree of this._layerRefHandler.layerTrees) {
-      assert(layerTree instanceof MapLayerTileTreeReference);
-      func(layerTree);
+      if (layerTree)
+        func(layerTree);
     }
   }
 
@@ -960,67 +997,114 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
-    const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
-    return imageryTree.map((tree) => {
-      const isBaseLayer = (this._layerRefHandler.baseImageryLayerIncluded && tree.layerIndex === 0);
-      return {
-        isBaseLayer,
-        index: isBaseLayer ? undefined : { isOverlay: this._layerRefHandler.isOverlay, index: this._layerRefHandler.baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
-        settings: tree.layerSettings, provider: tree.imageryProvider,
-      };
-    });
+    return this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId).map((layer) => this.getLayerInfo(layer));
   }
 
-  // Utility method that execute the provided function for every *imagery* tiles under a given HitDetail object.
-  private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => Promise<void>): Promise<void> {
-    const tree = this.treeOwner.tileTree as MapTileTree;
-    if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
+  /** The map layers that [[getMapFeatureInfo]] queries for a hit on this map, topmost first. */
+  public mapFeatureInfoLayersFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
+    const layers = this.getFeatureInfoLayers(hit);
+    return layers ? topDown(layers).map(({ map, layer }) => map.getLayerInfo(layer)) : [];
+  }
+
+  private getLayerInfo(layer: MapLayerTileTreeReference): MapLayerInfoFromTileTree {
+    // Derive the display style index from the position, as getLayerImageryTreeRef does; layer.layerIndex can be off by one.
+    const index = this._layerRefHandler.layerTrees.indexOf(layer) - (this._layerRefHandler.baseImageryLayerIncluded ? 1 : 0);
+    const isBaseLayer = index < 0;
+    return {
+      isBaseLayer,
+      index: isBaseLayer ? undefined : { isOverlay: this._layerRefHandler.isOverlay, index },
+      settings: layer.layerSettings, provider: layer.imageryProvider,
+    };
+  }
+
+  private getFeatureInfoLayers(hit: HitDetail): FeatureInfoLayers | undefined {
+    const tree = this.treeOwner.tileTree;
+    if (!(tree instanceof MapTileTree) || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d || undefined === hit.tileId)
       return undefined;
 
-    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
-    if (undefined === backgroundMapGeometry)
+    // Identical layers share a tree; the topmost drawn one owns the pixel.
+    const picked = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId).filter((layer) => isLayerDrawn(layer.layerSettings)).pop();
+    if (undefined === picked && hit.sourceId !== tree.modelId)
       return undefined;
 
-    const worldPoint = hit.hitPoint.clone();
-    let cartoGraphic: Cartographic | undefined;
-    try {
-      cartoGraphic = (await backgroundMapGeometry.dbToWGS84CartographicFromGcs([worldPoint]))[0];
-    } catch {
+    // A hit on the map tree itself is the base color, below every layer.
+    const pickedPosition = picked ? this._layerRefHandler.layerTrees.indexOf(picked) : -1;
+    // The map above (the overlay) is drawn over all of this map's layers, so all of its queryable layers come first.
+    const overlayLayers = this._mapAbove?.getQueryableLayersAbove(-1) ?? [];
+    const layersAbovePick = this.getQueryableLayersAbove(pickedPosition);
+    return { above: [...overlayLayers, ...layersAbovePick], picked: picked && { map: this, layer: picked } };
+  }
+
+  private getQueryableLayersAbove(position: number): MapLayerOnMap[] {
+    const layers: MapLayerOnMap[] = [];
+    const tree = this.treeOwner.tileTree;
+    const layerTrees = this._layerRefHandler.layerTrees;
+    for (let i = layerTrees.length - 1; i > position; i--) {
+      const layer = layerTrees[i];
+      // Check the settings first: imageryProvider loads the layer's tree.
+      if (!layer || !isLayerDrawn(layer.layerSettings))
+        continue;
+
+      const provider = layer.imageryProvider;
+      if (provider?.status !== MapLayerImageryProviderStatus.Valid || !provider.supportsMapFeatureInfo)
+        continue;
+
+      // A layer out of its zoom range across the whole view draws nothing to query.
+      const imageryTreeId = layer.treeOwner.tileTree?.id;
+      const visibility = tree instanceof MapTileTree && undefined !== imageryTreeId ? tree.getImageryTreeState(imageryTreeId)?.getScaleRangeVisibility() : undefined;
+      if (MapTileTreeScaleRangeVisibility.Hidden !== visibility)
+        layers.push({ map: this, layer });
     }
-    if (!cartoGraphic) {
-      return undefined;
+
+    return layers;
+  }
+
+  private getImageryTilesAt(hit: HitDetail, layer: MapLayerTileTreeReference, carto: Cartographic): ImageryMapTile[] {
+    const tree = this.treeOwner.tileTree;
+    if (!(tree instanceof MapTileTree))
+      return [];
+
+    // hit.tileId is the picked map's tile; the overlay loads its own tiles and may still draw a parent of it, so use the nearest tile with imagery.
+    let quadId = QuadId.createFromContentId(expectDefined(hit.tileId));
+    let imageryTiles = tree.tileFromQuadId(quadId)?.imageryTiles;
+    while (undefined === imageryTiles && quadId.level > tree.sourceTilingScheme.rootLevel) {
+      quadId = new QuadId(quadId.level - 1, quadId.column >> 1, quadId.row >> 1);
+      imageryTiles = tree.tileFromQuadId(quadId)?.imageryTiles;
     }
 
-    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
-    if (imageryTreeRef.length > 0) {
-      if (hit.tileId !== undefined) {
-        const terrainQuadId = QuadId.createFromContentId(hit.tileId);
-        const terrainTile = tree.tileFromQuadId(terrainQuadId);
+    const imageryTree = layer.treeOwner.tileTree;
+    return [...new Set(imageryTiles?.filter((tile) => tile.imageryTree === imageryTree && !tile.isOutOfLodRange && tile.rectangle.containsCartographic(carto)))];
+  }
 
-        for (const treeRef of imageryTreeRef) {
-          const processedTileIds: string[] = [];
-          if (terrainTile && terrainTile.imageryTiles) {
-            const imageryTree = treeRef.treeOwner.tileTree as ImageryMapTileTree;
-            if (imageryTree) {
-              for (const imageryTile of terrainTile.imageryTiles) {
-                if (!processedTileIds.includes(imageryTile.contentId)
-                  && imageryTree === imageryTile.imageryTree
-                  && imageryTile.rectangle.containsCartographic(cartoGraphic)) {
-                  processedTileIds.push(imageryTile.contentId);
-                  try {
-                    await func(treeRef, imageryTile.quadId, cartoGraphic, imageryTree);
-                  } catch {
-                    // continue iterating even though we got a failure.
-                  }
-
-                }
-
-              }
-            }
-          }
-        }
+  private async getLayerFeatureInfo(layer: MapLayerTileTreeReference, hit: HitDetail, carto: Cartographic, options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[]> {
+    const info: MapLayerFeatureInfo[] = [];
+    for (const tile of this.getImageryTilesAt(hit, layer, carto)) {
+      try {
+        await tile.imageryTree.imageryLoader.getMapFeatureInfo(info, tile.quadId, carto, tile.imageryTree, hit, options);
+      } catch {
+        // Skip a failed tile.
       }
     }
+
+    return info;
+  }
+
+  private async getLayerToolTip(layer: MapLayerTileTreeReference, hit: HitDetail, carto: Cartographic): Promise<string[]> {
+    const tiles = this.getImageryTilesAt(hit, layer, carto);
+    if (0 === tiles.length)
+      return [];
+
+    // The layer name is plain text even when providers supply formatted markup.
+    const strings = [`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${escapeHtml(layer.layerSettings.name)}`];
+    for (const tile of tiles) {
+      try {
+        await tile.imageryTree.imageryLoader.getToolTip(strings, tile.quadId, carto, tile.imageryTree);
+      } catch {
+        // Skip a failed tile.
+      }
+    }
+
+    return strings;
   }
 
   public override canSupplyToolTip(hit: HitDetail): boolean {
@@ -1033,24 +1117,12 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || tree.modelId !== hit.modelId)
       return undefined;
 
-    let carto: Cartographic | undefined;
+    // Only the picked layer: AccuSnap asks at every cursor pause, and asking the layers above would send a request per layer.
+    const picked = this.getFeatureInfoLayers(hit)?.picked;
+    const carto = picked && await getHitCartographic(hit);
+    const strings = picked && carto ? await this.getLayerToolTip(picked.layer, hit, carto) : [];
 
-    const strings: string[] = [];
-
-    const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-      // innerHTML is used below because imageryLoader.getToolTip may deliberately supply markup.
-      const layerName = escapeHtml(imageryTreeRef.layerSettings.name);
-      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${layerName}`);
-      carto = cartoGraphic;
-      await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
-    };
-    try {
-      await this.forEachImageryTileHit(hit, getTooltipFunc);
-    } catch {
-      // No results added
-    }
-
-    if (carto) {
+    if (carto && strings.length > 0) {
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Latitude")}: ${carto.latitudeDegrees.toFixed(4)}`);
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Longitude")}: ${carto.longitudeDegrees.toFixed(4)}`);
       if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
@@ -1060,7 +1132,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    div.appendChild(sanitizeHtml(strings.join("<br>")));
     return div;
   }
 
@@ -1069,25 +1141,16 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
 
-    const info: MapLayerFeatureInfo[] = [];
-    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
-    if (imageryTreeRef !== undefined) {
+    const layers = this.getFeatureInfoLayers(hit);
+    const asked = layers ? topDown(layers) : [];
+    const carto = asked.length > 0 ? await getHitCartographic(hit) : undefined;
+    if (!carto)
+      return [];
 
-      const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-        try {
-          await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree, hit, options);
-        } catch {
-        }
-      };
-      try {
-        await this.forEachImageryTileHit(hit, getFeatureInfoFunc);
-      } catch {
-        // No results added
-      }
-
-    }
-
-    return info;
+    // Ask all at once so a click waits about one round trip; the topmost with a feature wins, else the picked layer answers.
+    const results = await Promise.all(asked.map(async ({ map, layer }) => map.getLayerFeatureInfo(layer, hit, carto, options)));
+    const hasFeature = (info: MapLayerFeatureInfo[]) => info.some((layerInfo) => layerInfo.subLayerInfos?.some((subLayer) => subLayer.features.length > 0));
+    return results.find(hasFeature) ?? (layers?.picked ? results[results.length - 1] : []);
   }
 
   /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */

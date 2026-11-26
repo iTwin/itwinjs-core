@@ -396,8 +396,20 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
+/** Annotations whose fields are currently being re-evaluated. Writing re-evaluated fields back calls
+ * `Element.update`, whose `onUpdated` handler synchronously re-evaluates the same annotation's fields again.
+ * That nested pass is redundant, and never terminates if a field's value changes as a consequence of
+ * updating the annotation, so it is skipped.
+ */
+const annotationsBeingUpdated = new Set<Id64String>();
+
 function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
+  if (annotationsBeingUpdated.has(annotationId)) {
+    return;
+  }
+
   const iModel = txn.iModel;
+  annotationsBeingUpdated.add(annotationId);
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
@@ -416,6 +428,8 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
     }
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);
+  } finally {
+    annotationsBeingUpdated.delete(annotationId);
   }
 }
 

@@ -315,11 +315,10 @@ describe("MapLayerImageryProvider authorization", () => {
 
     expect(strings).toHaveLength(1);
     expect(strings[0]).not.toContain("<img");
-    // Escaped text renders literally when later assigned to innerHTML.
-    const div = document.createElement("div");
-    div.innerHTML = strings[0];
-    expect(div.querySelector("img")).toBeNull();
-    expect(div.textContent).toEqual(`<img src="x" onerror="1">`);
+    const template = document.createElement("template");
+    template.innerHTML = strings[0];
+    expect(template.content.querySelector("img")).toBeNull();
+    expect(template.content.textContent).toEqual(`<img src="x" onerror="1">`);
   });
 
   it("preserves html in tooltip text from the settings origin", async () => {
@@ -340,10 +339,10 @@ describe("MapLayerImageryProvider authorization", () => {
     await provider.testToolTipFromUrl(strings, sameOriginUrl);
 
     expect(strings).toHaveLength(1);
-    const div = document.createElement("div");
-    div.innerHTML = strings[0];
-    expect(div.querySelector("b")).toBeNull();
-    expect(div.textContent).toEqual("<b>feature info</b>");
+    const template = document.createElement("template");
+    template.innerHTML = strings[0];
+    expect(template.content.querySelector("b")).toBeNull();
+    expect(template.content.textContent).toEqual("<b>feature info</b>");
   });
 
   it("preserves html in tooltip text when restriction is disabled (legacy default)", async () => {

@@ -681,6 +681,8 @@ export class Element extends Entity {
 
   /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
+   * @note Treat the returned strings as untrusted HTML. If you render the tooltip yourself, localize the strings first,
+   * then sanitize the resulting HTML before inserting it into the DOM.
    */
   public getToolTipMessage(): string[] {
     const addKey = (key: string) => `<b>%{iModelJs:Element.${key}}:</b> `; // %{iModelJs:Element.xxx} is replaced with localized value of xxx in frontend.

@@ -120,7 +120,8 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     return request(url, "json", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 
@@ -142,7 +143,7 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     // If tile is a reference to a tileset, iterate over tileset url's search params and store them in this._searchParams so we can pass them down to children
     if (this.getTileContentType(url.toString()) === "tileset" && url.searchParams.size !== 0) {
       for (const [key, value] of url.searchParams.entries()) {
-        this._searchParams?.append(key, value);
+        this._searchParams?.set(key, value);
       }
     }
 
@@ -180,7 +181,8 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     return request(url, "arraybuffer", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 
@@ -197,7 +199,8 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     return request(url, "json", authToken ? {
       headers: {
         authorization: `Bearer ${authToken}`
-      }} : undefined
+      }
+    } : undefined
     );
   }
 

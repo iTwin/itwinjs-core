@@ -143,7 +143,7 @@ export class GpuProfiler {
   private toggleProfileCheckBox(isEnabled: boolean): void {
     if (isEnabled) {
       this._debugControl.resultsCallback = this._resultsCallback;
-      this._resultsDiv.innerHTML = "";
+      this._resultsDiv.replaceChildren();
       this._div.style.display = "block";
     } else {
       this._debugControl.resultsCallback = undefined;
@@ -246,7 +246,6 @@ export class GpuProfiler {
       fragment.appendChild(div);
     });
 
-    this._resultsDiv.innerHTML = "";
-    this._resultsDiv.appendChild(fragment);
+    this._resultsDiv.replaceChildren(fragment);
   };
 }

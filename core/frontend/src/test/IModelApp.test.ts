@@ -88,6 +88,60 @@ describe("IModelApp", () => {
   });
   afterAll(async () => TestApp.shutdown());
 
+  it("sanitizes logo card strings while preserving headings, links, and line breaks", () => {
+    const card = IModelApp.makeLogoCard({
+      heading: '<span class="lead" onclick="">Powered by</span>&nbsp;iTwin.js',
+      notice: '<a href="https://example.org/" style="color: red">Credits</a><br>Version 2<svg></svg>',
+    });
+
+    const heading = card.querySelector("h2.logo-card-header");
+    expect(heading?.querySelector("span.lead")?.textContent).toBe("Powered by");
+    expect(heading?.textContent).toBe("Powered by\u00a0iTwin.js");
+    expect(heading?.querySelector("[onclick]")).toBeNull();
+
+    const notice = card.querySelector("p.logo-cards");
+    expect(notice?.querySelector("a")?.getAttribute("href")).toBe("https://example.org/");
+    expect(notice?.querySelector("br")).not.toBeNull();
+    expect(notice?.textContent).toBe("CreditsVersion 2");
+    expect(notice?.querySelector("[style], svg")).toBeNull();
+  });
+
+  it("sanitizes element tooltips after localization and preserves formatting and escaped labels", () => {
+    const localized = vi.spyOn(IModelApp.localization, "getLocalizedKeys")
+      .mockReturnValueOnce('<strong style="color: red">Element</strong>: &lt;em&gt;label&lt;/em&gt;')
+      .mockReturnValueOnce("Model: Example");
+    try {
+      const tooltip = IModelApp.formatElementToolTip(["elementLabel", "modelLabel"]);
+      expect(tooltip.querySelector("strong")?.textContent).toBe("Element");
+      expect(tooltip.querySelector("[style], em")).toBeNull();
+      expect(tooltip.textContent).toBe("Element: <em>label</em>Model: Example");
+      expect(tooltip.querySelectorAll("br")).toHaveLength(2);
+    } finally {
+      localized.mockRestore();
+    }
+  });
+
+  it("displays exception details as literal text with line breaks", async () => {
+    const openMessageBox = vi.spyOn(IModelApp.notifications, "openMessageBox");
+    const originalOptions = ToolAdmin.exceptionOptions;
+    ToolAdmin.exceptionOptions = { ...originalOptions, log: false, launchDebugger: false };
+    try {
+      const firstLine = "Unexpected <em>value</em>";
+      const lastLine = "Expected &lt;value&gt;";
+      await ToolAdmin.exceptionHandler({ stack: `${firstLine}\n\n${lastLine}` });
+
+      expect(openMessageBox).toHaveBeenCalledTimes(1);
+      const message = openMessageBox.mock.calls[0][1];
+      expect(message).toBeInstanceOf(HTMLElement);
+      const details = typeof message === "string" ? undefined : message.querySelector("h4");
+      expect(details?.textContent).toBe(firstLine + lastLine);
+      expect(Array.from(details?.children ?? [], (child) => child.tagName)).toEqual(["BR", "BR", "BR"]);
+    } finally {
+      ToolAdmin.exceptionOptions = originalOptions;
+      openMessageBox.mockRestore();
+    }
+  });
+
   it("TestApp should override correctly", async () => {
     expect(IModelApp.accuDraw).toBeInstanceOf(TestAccuDraw);
     expect(IModelApp.toolAdmin.idleTool).toBeInstanceOf(TestIdleTool);
