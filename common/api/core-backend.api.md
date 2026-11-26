@@ -8007,6 +8007,10 @@ export class TxnManager {
     readonly onChangesApplied: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onChangesApplied(): void;
+    // @beta
+    readonly onChangesDiscarded: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesDiscarded(changeset: ChangesetIndexAndId): void;
     readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     // @internal (undocumented)
     _onChangesPulled(changeset: ChangesetIndexAndId): void;

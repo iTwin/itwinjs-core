@@ -1848,6 +1848,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyChangesApplied(): void;
     // @internal (undocumented)
+    notifyChangesDiscarded(parentChangeset: ChangesetIndexAndId): void;
+    // @internal (undocumented)
     notifyCommit(): void;
     // @internal (undocumented)
     notifyCommitted(hasPendingTxns: boolean, time: number): void;
@@ -1904,6 +1906,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
+    // @beta
+    readonly onChangesDiscarded: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;

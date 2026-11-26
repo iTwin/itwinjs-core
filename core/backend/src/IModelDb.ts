@@ -3920,13 +3920,16 @@ export class BriefcaseDb extends IModelDb {
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
     BriefcaseManager.deleteRebaseFolders(this);
-    if (args?.retainLocks) {
-      return;
+    try {
+      if (!args?.retainLocks) {
+        // attempt to release locks must happen after changes are undone successfully
+        Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
+        await this.locks.abandonAllLocks();
+      }
+    } finally {
+      // The local changes are already gone, so notify listeners even if releasing the locks failed.
+      this.txns._onChangesDiscarded(this.changeset as ChangesetIndexAndId);
     }
-
-    // attempt to release locks must happen after changes are undone successfully
-    Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
-    await this.locks.abandonAllLocks();
   }
 
   /**

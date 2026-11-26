@@ -1140,6 +1140,14 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
   }
 
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesDiscarded(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesDiscarded.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyChangesDiscarded", changeset);
+  }
+
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
     const args = new RebaseChangesetConflictArgs(internalArg, this._iModel);
 
@@ -1374,6 +1382,12 @@ export class TxnManager {
    * @see [[BriefcaseDb.pushChanges]].
    */
   public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /** Event raised after [[BriefcaseDb.discardChanges]] permanently discards all of the briefcase's local (unpushed) changes.
+   * @see [[BriefcaseDb.discardChanges]].
+   * @beta
+   */
+  public readonly onChangesDiscarded = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /**
    * if handler is set and it does not return undefined then default handler will not be called

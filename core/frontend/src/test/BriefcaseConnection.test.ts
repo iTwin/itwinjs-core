@@ -382,4 +382,30 @@ describe("BriefcaseConnection", () => {
       expect(abortSignal.listeners.size).toBe(0);
     });
   });
+
+  describe("txns.onChangesDiscarded", () => {
+    const discardedChangeset: ChangesetIndexAndId = { index: 1, id: "original-changeset-id" };
+
+    it("is raised when the backend sends notifyChangesDiscarded", async () => {
+      const connection = await openTestBriefcase({});
+      const txnListener = findProgressListener(connection.txns.channelName);
+      expect(txnListener).toBeDefined();
+
+      const onDiscarded = vi.fn();
+      connection.txns.onChangesDiscarded.addListener(onDiscarded);
+      txnListener?.({} as any, "notifyChangesDiscarded", discardedChangeset);
+
+      expect(onDiscarded).toHaveBeenCalledOnce();
+      expect(onDiscarded).toHaveBeenCalledWith(discardedChangeset);
+    });
+
+    it("has its listeners cleared when txns is disposed", async () => {
+      const connection = await openTestBriefcase({});
+      connection.txns.onChangesDiscarded.addListener(vi.fn());
+      expect(connection.txns.onChangesDiscarded.numberOfListeners).toBe(1);
+
+      connection.txns[Symbol.dispose]();
+      expect(connection.txns.onChangesDiscarded.numberOfListeners).toBe(0);
+    });
+  });
 });

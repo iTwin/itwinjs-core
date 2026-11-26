@@ -3,23 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, expect, use } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as sinon from "sinon";
 import { BeDuration, BeEvent, Guid, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, TxnEntityMetadata, UpgradeOptions,
+  ChangesetIndexAndId, Code, ColorByName, DomainOptions, EntityIdAndClassId, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, TxnEntityMetadata, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  DocumentListModel, Drawing, EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, SectionDrawing, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntitiesWithMetadata, TxnChangedEntity, TxnManager, withEditTxn,
+  DocumentListModel, Drawing, EditTxn, IModelDb, IModelJsFs, IpcHost, PhysicalModel, PhysicalPartition, RebaseHandler, SectionDrawing, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntitiesWithMetadata, TxnChangedEntity, TxnManager, withEditTxn,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
 import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 /// cspell:ignore accum
+
+use(chaiAsPromised);
 
 function insertPhysicalModel(txn: EditTxn, parentSubjectId: Id64String, name: string, privateModel = false): Id64String {
   const partition = txn.iModel.elements.createElement({
@@ -1178,6 +1182,88 @@ describe("TxnManager", () => {
 
       // The element should NOT exist
       assert.isUndefined(imodel.elements.tryGetElement(elId));
+    });
+
+    describe("onChangesDiscarded", () => {
+      afterEach(() => sinon.restore());
+
+      const listen = () => {
+        const events: ChangesetIndexAndId[] = [];
+        imodel.txns.onChangesDiscarded.addListener((changeset) => events.push(changeset));
+        return events;
+      };
+
+      it("is raised once with the parent changeset after discardChanges", async () => {
+        withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const events = listen();
+        const parent = { ...imodel.changeset };
+        const abandonLocks = sinon.spy(imodel.locks, "abandonAllLocks");
+        // Capture state inside the listener and assert afterward: BeEvent swallows exceptions thrown by listeners.
+        let hadLocalChanges: boolean | undefined;
+        let locksReleased = false;
+        imodel.txns.onChangesDiscarded.addListener(() => {
+          hadLocalChanges = imodel.txns.hasLocalChanges;
+          locksReleased = abandonLocks.calledOnce;
+        });
+
+        await imodel.discardChanges();
+
+        // The event is raised after the local changes are gone and the locks have been released.
+        expect(hadLocalChanges).to.be.false;
+        expect(locksReleased).to.be.true;
+        expect(events).to.have.lengthOf(1);
+        expect(events[0].id).to.equal(parent.id);
+        expect(events[0].index).to.equal(parent.index);
+      });
+
+      it("is raised when locks are retained", async () => {
+        withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const events = listen();
+        const abandonLocks = sinon.spy(imodel.locks, "abandonAllLocks");
+
+        await imodel.discardChanges({ retainLocks: true });
+
+        expect(events).to.have.lengthOf(1);
+        expect(abandonLocks.called).to.be.false;
+      });
+
+      it("is raised and sent to the frontend even if releasing locks fails, and the failure is rethrown", async () => {
+        const elId = withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const events = listen();
+        const notifyTxns = sinon.spy(IpcHost, "notifyTxns");
+        const lockError = new Error("lock release failed");
+        sinon.stub(imodel.locks, "abandonAllLocks").rejects(lockError);
+
+        await expect(imodel.discardChanges()).to.eventually.be.rejected.and.equal(lockError);
+
+        // The local changes were discarded before the lock release failed.
+        expect(imodel.elements.tryGetElement(elId)).to.be.undefined;
+        expect(events).to.have.lengthOf(1);
+        expect(notifyTxns.getCalls().filter((call) => call.args[1] === "notifyChangesDiscarded")).to.have.lengthOf(1);
+      });
+
+      it("is not raised if discardChanges fails before discarding the changes", async () => {
+        const elId = withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const events = listen();
+        sinon.stub(imodel.txns.rebaser, "inProgress").returns(true);
+
+        await expect(imodel.discardChanges()).to.eventually.be.rejectedWith("Cannot discard changes while a rebase is in progress");
+
+        expect(events).to.have.lengthOf(0);
+        expect(imodel.elements.tryGetElement(elId)).to.not.be.undefined;
+      });
+
+      it("notifies the frontend via IPC", async () => {
+        withEditTxn(imodel, (txn) => txn.insertElement(props));
+        const notifyTxns = sinon.spy(IpcHost, "notifyTxns");
+
+        await imodel.discardChanges();
+
+        const calls = notifyTxns.getCalls().filter((call) => call.args[1] === "notifyChangesDiscarded");
+        expect(calls).to.have.lengthOf(1);
+        expect(calls[0].args[0]).to.equal(imodel);
+        expect((calls[0].args[2] as ChangesetIndexAndId).id).to.equal(imodel.changeset.id);
+      });
     });
 
     it("TxnManager.deleteAllTxns does not revert local changes", () => {
