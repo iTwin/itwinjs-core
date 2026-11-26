@@ -333,8 +333,16 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     this._special = new SpecialElements(iModelOrTxn instanceof EditTxn ? iModelOrTxn : undefined);
   }
 
-  protected override shouldExploreModel(_model: Model): boolean { return true; }
+  protected override shouldExploreModel(model: Model): boolean { return !this.isDefinitionSubModel(model); }
+  protected override shouldVisitModel(model: Model): boolean { return !this.isDefinitionSubModel(model); }
   protected override shouldVisitElement(_elementId: Id64String): boolean { return true; }
+
+  /** The sub-model of a DefinitionElement is deleted together with its definition by deleteSpecialElements,
+   * and only if that definition is no longer in use, so that shared content is not lost.
+   */
+  private isDefinitionSubModel(model: Model): boolean {
+    return !isDefinitionModel(model) && classifyElementForPruning(this.txn.iModel, model.modeledElement.id) === ElementPruningClassification.PRUNING_CLASS_Definition;
+  }
 
   protected override visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
     if (isDefinitionModel(model))

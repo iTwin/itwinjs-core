@@ -72,6 +72,16 @@ A [DrawingViewDefinition](./BisCore.ecschema.md#drawingviewdefinition) specifies
 
 A [SpatialViewDefinition](./BisCore.ecschema.md#spatialviewdefinition) specifies parameters for a view of a spatially-located volume. For additional settings about a `SpatialViewDefinition` that can be captured in its `JsonProperties` attribute as JSON, please see [ViewDetails3dProps](https://www.itwinjs.org/reference/core-common/views/viewdetails3dprops/).
 
+### SheetPrototype
+
+A [SheetPrototype](./BisCore.ecschema.md#sheetprototype) is a `DefinitionElement` that serves as a template from which new `Sheet`s are created. It records the _Scale_, _Height_ and _Width_ to be given to sheets created from it, and is sub-modeled by a `SheetModel` (via `SheetModelBreaksDownSheetPrototype`) that holds the prototype content to be copied onto new sheets. A `SheetPrototype` may optionally reference a `SheetBorderPrototype` through its _Border_ navigation property (`SheetPrototypeHasSheetBorderPrototype`).
+
+A `Sheet` created from a prototype records its origin via the _SheetPrototype_ navigation property (`SheetHasSheetPrototype`). `SheetPrototype` supersedes the legacy `SheetTemplate` class, which has no sub-model and therefore cannot carry template graphics.
+
+### SheetBorderPrototype
+
+A [SheetBorderPrototype](./BisCore.ecschema.md#sheetborderprototype) is a `DefinitionElement` that holds the reusable border and title-block graphics of a sheet. It records the _Height_ and _Width_ of the sheet it is designed for and is sub-modeled by a `DrawingModel` (via `DrawingModelBreaksDownSheetBorderPrototype`) containing the border graphics. It supersedes the legacy `SheetBorderTemplate` class.
+
 ## Sheet Index
 
 A sheet index is a structured collection of sheets in a BIS repository. A sheet index can link any sheet in a BIS repository and organize them hierarchically into folders.

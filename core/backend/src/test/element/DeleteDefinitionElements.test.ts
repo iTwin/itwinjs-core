@@ -1053,6 +1053,16 @@ describe("DeleteDefinitionElements", () => {
         assertModelDeleted(containerId, "DefinitionModel sub-model row must be deleted after container is purged");
       });
 
+      it("deleteDefinitionElements does not cascade into a DefinitionContainer's sub-model", () => {
+        const containerId = insertDefinitionContainer();
+        const part = insertDefinitionElement(txn, undefined, containerId);
+
+        assert.throws(() => txn.deleteDefinitionElements([containerId]), /error deleting element/); // sub-model must be deleted explicitly, as before
+        assert.isDefined(iModelDb.elements.tryGetElement(containerId));
+        assert.isDefined(iModelDb.elements.tryGetElement(part));
+        assertModelExists(containerId, "DefinitionContainer sub-model must survive");
+      });
+
       it("reports an in-use element inside a DefinitionContainer sub-model as a failure", () => {
         const containerId = insertDefinitionContainer();
         const usedPart = insertDefinitionElement(txn, undefined, containerId);

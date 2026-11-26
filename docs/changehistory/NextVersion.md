@@ -18,6 +18,7 @@ publish: false
     - [CompressedId64Set size limit](#compressedid64set-size-limit)
     - [Cloud SQLite query timings](#cloud-sqlite-query-timings)
     - [SQLite 3.54.1](#sqlite-3541)
+    - [Sheet prototypes](#sheet-prototypes)
   - [Electron](#electron)
     - [Restricting IPC to the frontend origin](#restricting-ipc-to-the-frontend-origin)
     - [`electron://` requests are confined to `webResourcesPath`](#electron-requests-are-confined-to-webresourcespath)
@@ -27,6 +28,7 @@ publish: false
     - [HitDetail feature identity](#hitdetail-feature-identity)
     - [Viewport display APIs](#viewport-display-apis)
     - [Graphic branch iModel attribution](#graphic-branch-imodel-attribution)
+    - [Sheet templates](#sheet-templates)
     - [@itwin/ecschema2ts](#itwinecschema2ts)
 
 ## Frontend
@@ -187,6 +189,31 @@ The native platform now uses [SQLite 3.54.1](https://sqlite.org/releaselog/3_54_
 
 iTwin.js queries have been updated for this behavior. Applications with raw SQLite or ECSQL queries that embed JSON-valued scalar subqueries should restore the JSON subtype explicitly by wrapping the complete subquery with `json(...)`, for example `json_object('items', json((SELECT json_group_array(1))))`.
 
+### Sheet prototypes
+
+BisCore 01.00.27 introduces reusable sheet layouts. The new `@beta` [SheetPrototype]($backend) and [SheetBorderPrototype]($backend) classes are [DefinitionElement]($backend)s, so they live in a [DefinitionModel]($backend) and can be shared through catalogs:
+
+- A `SheetPrototype` records the scale, height and width of the sheets created from it. It is sub-modeled by a [SheetModel]($backend) holding the content to copy onto each new sheet, and may reference a `SheetBorderPrototype` through its `border` property.
+- A `SheetBorderPrototype` is sub-modeled by a [DrawingModel]($backend) holding the border and title-block graphics.
+- A [Sheet]($backend) records the prototype it was created from in the new [SheetProps.sheetPrototype]($common) property.
+
+`SheetPrototype.insert` and `SheetBorderPrototype.insert` insert the element together with its template sub-model. Both require the iModel to contain BisCore 01.00.27 or newer and throw otherwise.
+
+```ts
+const borderId = SheetBorderPrototype.insert(txn, { definitionModelId, height: 0.594, width: 0.841 });
+const prototypeId = SheetPrototype.insert(txn, { definitionModelId, height: 0.594, width: 0.841, scale: 50, borderId });
+// borderId and prototypeId are also the Ids of the sub-models to populate.
+```
+
+Related behavior changes:
+
+- [EditTxn.deleteDefinitionElements]($backend) now deletes an unused definition element that has a sub-model together with that sub-model's contents; previously the call threw. This does not apply to a [DefinitionContainer]($backend), whose sub-model must still be deleted explicitly. A definition is kept, and returned as in use, while something outside the requested set references its sub-model's contents.
+- `deleteDefinitionElements` now keeps a definition element of any class that is still in use, and repeats until nothing more can be deleted, so a requested definition whose last reference came from another deleted definition is deleted in the same call.
+- [ElementTreeDeleter]($backend) no longer deletes the sub-model of a definition element that is still in use.
+- [ViewCreator2d]($frontend) sizes the sheet of a view of a prototype's `SheetModel` from the `SheetPrototype`.
+
+See [SheetPrototype](../bis/domains/drawings-sheets.md#sheetprototype) for the data model.
+
 ## Electron
 
 ### Restricting IPC to the frontend origin
@@ -228,6 +255,19 @@ Viewport-level APIs for model and category display overrides, viewed models, and
 ### Graphic branch iModel attribution
 
 The `iModel` and `transformFromIModel` members of [GraphicBranchOptions]($frontend) are deprecated in favor of [GraphicBranchOptions.iModelRef]($frontend). When only `iModel` is supplied, the branch's graphics are attributed to the view's [IModelDisplayReference]($frontend) displaying that iModel if one exists, or otherwise to a reference identifying it as a foreign iModel; a supplied `transformFromIModel` becomes that reference's [IModelDisplayReference.linearTransformToParent]($frontend). When both `iModel` and `iModelRef` are supplied, `iModelRef` takes precedence.
+
+### Sheet templates
+
+[SheetTemplate]($backend), [SheetBorderTemplate]($backend), [SheetTemplateProps]($common), [SheetBorderTemplateProps]($common) and [SheetProps.sheetTemplate]($common) are deprecated in favor of [SheetPrototype]($backend), [SheetBorderPrototype]($backend), [SheetPrototypeProps]($common), [SheetBorderPrototypeProps]($common) and [SheetProps.sheetPrototype]($common). The template classes have no sub-model and so cannot carry graphics.
+
+Migrating is more than a rename:
+
+- The iModel must contain BisCore 01.00.27 or newer.
+- Templates are [Document]($backend)s, while prototypes are [DefinitionElement]($backend)s: insert them into a [DefinitionModel]($backend) and delete them with [EditTxn.deleteDefinitionElements]($backend).
+- Each prototype needs a sub-model for its graphics; `SheetPrototype.insert` and `SheetBorderPrototype.insert` create it.
+- `sheetPrototype` and `SheetPrototypeProps.border` are navigation properties ([RelatedElementProps]($common)), where `sheetTemplate` and `SheetTemplateProps.border` are typed as plain Ids.
+
+Existing sheets that reference a template keep working. A sheet may have both a `sheetTemplate` and a `sheetPrototype`; new sheets should set only `sheetPrototype`.
 
 ### @itwin/ecschema2ts
 

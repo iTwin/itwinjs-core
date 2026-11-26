@@ -266,6 +266,46 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
   }
 }
 
+/** Relates a [[Sheet]] to the [[SheetPrototype]] it was created from.
+ * @beta
+ */
+export class SheetHasSheetPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetHasSheetPrototype";
+  public constructor(sheetPrototypeId: Id64String, relClassName: string = SheetHasSheetPrototype.classFullName) {
+    super({ id: sheetPrototypeId, relClassName });
+  }
+}
+
+/** Relates a [[SheetPrototype]] to the [[SheetBorderPrototype]] that supplies its border and title-block content.
+ * @beta
+ */
+export class SheetPrototypeHasSheetBorderPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetPrototypeHasSheetBorderPrototype";
+  public constructor(sheetBorderPrototypeId: Id64String, relClassName: string = SheetPrototypeHasSheetBorderPrototype.classFullName) {
+    super({ id: sheetBorderPrototypeId, relClassName });
+  }
+}
+
+/** Relates a [[SheetModel]] to the [[SheetPrototype]] that it sub-models.
+ * @beta
+ */
+export class SheetModelBreaksDownSheetPrototype extends RelatedElement {
+  public static classFullName = "BisCore:SheetModelBreaksDownSheetPrototype";
+  public constructor(sheetPrototypeId: Id64String, relClassName: string = SheetModelBreaksDownSheetPrototype.classFullName) {
+    super({ id: sheetPrototypeId, relClassName });
+  }
+}
+
+/** Relates a [[DrawingModel]] to the [[SheetBorderPrototype]] that it sub-models.
+ * @beta
+ */
+export class DrawingModelBreaksDownSheetBorderPrototype extends RelatedElement {
+  public static classFullName = "BisCore:DrawingModelBreaksDownSheetBorderPrototype";
+  public constructor(sheetBorderPrototypeId: Id64String, relClassName: string = DrawingModelBreaksDownSheetBorderPrototype.classFullName) {
+    super({ id: sheetBorderPrototypeId, relClassName });
+  }
+}
+
 /** Relates a [[Subject]] to the [[ProjectInformationRecord]] that describes its project-level properties.
  * @beta
  */

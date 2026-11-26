@@ -318,6 +318,7 @@ export interface SubjectProps extends ElementProps {
 
 /** Properties of a [SheetBorderTemplate]($backend)
  * @beta
+ * @deprecated Use [SheetBorderPrototypeProps]($common) instead.
  */
 export interface SheetBorderTemplateProps extends ElementProps {
   height?: number;
@@ -326,6 +327,7 @@ export interface SheetBorderTemplateProps extends ElementProps {
 
 /** Properties of a [SheetTemplate]($backend)
  * @beta
+ * @deprecated Use [SheetPrototypeProps]($common) instead.
  */
 export interface SheetTemplateProps extends ElementProps {
   height?: number;
@@ -341,7 +343,15 @@ export interface SheetProps extends ElementProps {
   width?: number;
   height?: number;
   scale?: number;
+  /** The [SheetTemplate]($backend) this sheet was created from, if any.
+   * @deprecated Use [[SheetProps.sheetPrototype]] instead.
+   */
   sheetTemplate?: Id64String;
+  /** The [SheetPrototype]($backend) this sheet was created from, if any.
+   * A legacy Sheet may also have a [[SheetProps.sheetTemplate]]; the sheetPrototype takes precedence.
+   * @beta
+   */
+  sheetPrototype?: RelatedElementProps;
   attachments?: Id64String[];
 }
 
@@ -351,6 +361,30 @@ export interface SheetProps extends ElementProps {
  */
 export interface DefinitionElementProps extends ElementProps {
   isPrivate?: boolean;
+}
+
+/** Properties of a [SheetBorderPrototype]($backend).
+ * @beta
+ */
+export interface SheetBorderPrototypeProps extends DefinitionElementProps {
+  /** Height of the sheet border, in meters. */
+  height?: number;
+  /** Width of the sheet border, in meters. */
+  width?: number;
+}
+
+/** Properties of a [SheetPrototype]($backend).
+ * @beta
+ */
+export interface SheetPrototypeProps extends DefinitionElementProps {
+  /** The drawing scale applied to sheets created from this prototype. */
+  scale?: number;
+  /** Height of sheets created from this prototype, in meters. */
+  height?: number;
+  /** Width of sheets created from this prototype, in meters. */
+  width?: number;
+  /** The [SheetBorderPrototype]($backend) that supplies the border and title-block content, if any. */
+  border?: RelatedElementProps;
 }
 
 /** Properties of a [TypeDefinitionElement]($backend)
