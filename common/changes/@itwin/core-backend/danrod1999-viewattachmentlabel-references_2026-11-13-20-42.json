@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ViewAttachmentLabel and Callout now report their ViewAttachment and DrawingModel references from getReferenceIds.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
