@@ -18,7 +18,7 @@ import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { sanitizeTooltipHtml } from "../../internal/TooltipHtml";
+import { sanitizeHtml } from "../../internal/SanitizeHtml";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
@@ -1132,7 +1132,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const div = document.createElement("div");
-    div.appendChild(sanitizeTooltipHtml(strings.join("<br>")));
+    div.appendChild(sanitizeHtml(strings.join("<br>")));
     return div;
   }
 
