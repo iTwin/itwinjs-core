@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
@@ -30,6 +30,7 @@ class TestTile extends Tile {
   private _rejectRead?: (error: Error) => void;
   public empty?: boolean;
   public displayable?: boolean;
+  public retriesWhenOnline = false;
 
   public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
     super({
@@ -64,6 +65,10 @@ class TestTile extends Tile {
 
   public override get isEmpty(): boolean {
     return this.empty ?? super.isEmpty;
+  }
+
+  public override get retriesLoadWhenOnline(): boolean {
+    return this.retriesWhenOnline;
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -639,6 +644,93 @@ describe("TileRequestChannel", () => {
     channel.expectRequests(0, 0);
     expect(t2.isActive).toBe(false);
     t2.expectStatus(TileLoadStatus.Ready);
+  });
+
+  it("retries tiles that failed while offline once the browser is back online", async () => {
+    const channel = new LoggingChannel(10);
+    const tree = new TestTree(imodel, channel);
+    const failedOnline = new TestTile(tree, channel, 1);
+    const failedOffline = new TestTile(tree, channel, 2);
+    failedOnline.retriesWhenOnline = failedOffline.retriesWhenOnline = true;
+    const vp = mockViewport(imodel);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+
+    try {
+      requestTiles(vp, [failedOnline]);
+      IModelApp.tileAdmin.process();
+      failedOnline.rejectRequest();
+      await processOnce();
+      failedOnline.expectStatus(TileLoadStatus.NotFound);
+
+      onLine.mockReturnValue(false);
+      requestTiles(vp, [failedOffline]);
+      IModelApp.tileAdmin.process();
+      // Map imagery providers return no content when the fetch fails.
+      failedOffline.resolveRequest("undefined");
+      await processOnce();
+      failedOffline.expectStatus(TileLoadStatus.NotFound);
+
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      failedOnline.expectStatus(TileLoadStatus.NotFound);
+      failedOffline.expectStatus(TileLoadStatus.NotLoaded);
+
+      requestTiles(vp, [failedOffline]);
+      IModelApp.tileAdmin.process();
+      await failedOffline.resolveBoth();
+      failedOffline.expectStatus(TileLoadStatus.Ready);
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
+  it("keeps tiles that do not retry when online not found after the browser is back online", async () => {
+    const channel = new LoggingChannel(10);
+    const tree = new TestTree(imodel, channel);
+    const tile = new TestTile(tree, channel);
+    const vp = mockViewport(imodel);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      requestTiles(vp, [tile]);
+      IModelApp.tileAdmin.process();
+      tile.resolveRequest("undefined");
+      await processOnce();
+      tile.expectStatus(TileLoadStatus.NotFound);
+
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      tile.expectStatus(TileLoadStatus.NotFound);
+    } finally {
+      onLine.mockRestore();
+    }
+  });
+
+  it("requests a tile once more if the browser reconnected while its request was pending", async () => {
+    const channel = new LoggingChannel(10);
+    const tree = new TestTree(imodel, channel);
+    const tile = new TestTile(tree, channel);
+    tile.retriesWhenOnline = true;
+    const vp = mockViewport(imodel);
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+
+    try {
+      requestTiles(vp, [tile]);
+      IModelApp.tileAdmin.process();
+      onLine.mockReturnValue(true);
+      window.dispatchEvent(new Event("online"));
+      tile.resolveRequest("undefined");
+      await processOnce();
+      tile.expectStatus(TileLoadStatus.NotLoaded);
+
+      requestTiles(vp, [tile]);
+      IModelApp.tileAdmin.process();
+      tile.rejectRequest();
+      await processOnce();
+      tile.expectStatus(TileLoadStatus.NotFound);
+    } finally {
+      onLine.mockRestore();
+    }
   });
 
   it("records statistics", async () => {

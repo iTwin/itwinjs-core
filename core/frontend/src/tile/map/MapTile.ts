@@ -351,12 +351,20 @@ export class MapTile extends RealityTile {
     }
   }
 
+  /** Map and terrain content is fetched from map servers, so a load that failed while offline is worth retrying.
+   * @internal
+   */
+  public override get retriesLoadWhenOnline(): boolean {
+    return true;
+  }
+
   /** @internal */
   public override setNotFound(): void {
     super.setNotFound();
 
     // For map tiles assume that an unfound tile implies descendants and siblings will also be unfound.
-    if (undefined !== this.parent)
+    // A tile that failed while offline is retried once online, so keep it and its siblings.
+    if (undefined !== this.parent && !IModelApp.tileAdmin.isOffline)
       this.parent.setLeaf();
   }
 

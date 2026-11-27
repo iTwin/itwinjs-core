@@ -32,6 +32,7 @@ export interface ImageryTileContent extends TileContent {
 export class ImageryMapTile extends RealityTile {
   private _texture?: RenderTexture;
   private _mapTileUsageCount = 0;
+  private _failedWhileOffline = false;
 
   private readonly _outOfLodRange: boolean;
 
@@ -54,10 +55,24 @@ export class ImageryMapTile extends RealityTile {
     this.setIsReady();
   }
 
+  /** Imagery is fetched from map servers, so a load that failed while offline is worth retrying.
+   * @internal
+   */
+  public override get retriesLoadWhenOnline(): boolean {
+    return true;
+  }
+
+  /** @internal */
+  public override setNotFound(): void {
+    super.setNotFound();
+    this._failedWhileOffline = IModelApp.tileAdmin.isOffline;
+  }
+
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
-    if ((this.isLeaf && !this.isNotFound)           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
+    // A leaf that failed while offline stays selected, so the map tile keeps waiting for it instead of caching a graphic without imagery.
+    if ((this.isLeaf && (!this.isNotFound || this._failedWhileOffline))           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
       || isSmallerThanDrape) {
       if (this.isOutOfLodRange) {
         drapeTiles.push(this);
