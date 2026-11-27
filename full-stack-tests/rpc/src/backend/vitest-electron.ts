@@ -50,14 +50,14 @@ function routeMessagesToVitestFrame() {
 }
 
 async function init() {
-  await commonSetup(registerBackendCallback);
+  await commonSetup();
   routeMessagesToVitestFrame();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "electron");
   registerBackendCallback(BackendTestCallbacks.setChunkThreshold, (value: number) => {
     ElectronHost.rpcConfig.protocol.transferChunkThreshold = value;
     return true;
   });
-  setupIpcTestElectron(registerBackendCallback);
+  setupIpcTestElectron();
 }
 
 module.exports = init();
