@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/hypermodeling-frontend",
+      "comment": "SectionDrawingLocationState.placement.bbox now holds the section location's bounding box instead of always being null",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/hypermodeling-frontend"
+}

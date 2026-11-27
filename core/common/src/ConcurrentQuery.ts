@@ -147,7 +147,7 @@ export interface BaseReaderOptions {
  * */
 export interface QueryOptions extends BaseReaderOptions {
   /**
-   * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
+   * default to false. When true, each blob is replaced by a string holding its size, e.g. {"bytes":123}. This helps cases where wildcard is
    * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
    * */
   abbreviateBlobs?: boolean;

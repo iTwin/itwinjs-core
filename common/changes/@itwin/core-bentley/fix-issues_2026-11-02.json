@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "`Logger.configureLevels` accepts the same log level names as `Logger.parseLogLevel`, in any casing. Numeric strings such as \"1\" are rejected instead of silently turning logging off.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
