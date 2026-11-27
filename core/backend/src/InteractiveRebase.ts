@@ -741,7 +741,7 @@ export class InteractiveRebase {
       },
     });
 
-    const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._db, id);
+    const dbPath = BriefcaseManager.createAndGetInteractiveRebaseChangedInstancePath(this._db, id);
     using store = RebaseInstanceStore.createNew(dbPath, this._db, this._schemaView);
     while (reader.step())
       store.appendChange(reader);
@@ -1022,7 +1022,7 @@ export class InteractiveRebase {
     }
 
     this._store?.[Symbol.dispose]();
-    const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._db, txnProps.id);
+    const dbPath = BriefcaseManager.createAndGetInteractiveRebaseChangedInstancePath(this._db, txnProps.id);
     this._store = RebaseInstanceStore.openForReplay(dbPath);
     this.buildDependencyForest(this._store);
     this.replayNodes();

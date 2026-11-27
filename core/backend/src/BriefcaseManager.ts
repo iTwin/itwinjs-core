@@ -1012,12 +1012,12 @@ export class BriefcaseManager {
   private static readonly EC_FOLDER = "ec";
   private static readonly SCHEMAS_FOLDER = "schemas";
   private static readonly DATA_FOLDER = "data";
-  private static readonly DATA_FILE_NAME = "changed-instances.sqlite";
+  private static readonly DATA_FILE_NAME = "data.json";
 
-  public static createAndGetTxnChangedInstancePath(db: BriefcaseDb, txnId: string): string {
+  public static createAndGetInteractiveRebaseChangedInstancePath(db: BriefcaseDb, txnId: string): string {
     const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
     const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
-    const filePath = path.join(targetDir, this.DATA_FILE_NAME);
+    const filePath = path.join(targetDir, "changed-instances.sqlite");
     if (!IModelJsFs.existsSync(targetDir))
       IModelJsFs.recursiveMkDirSync(targetDir);
     return filePath;
