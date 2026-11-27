@@ -7874,6 +7874,8 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @beta
     cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
+    // @internal
+    protected _captureInstanceChanges(id: TxnIdString): void;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
