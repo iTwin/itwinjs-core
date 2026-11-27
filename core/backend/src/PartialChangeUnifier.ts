@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { SqliteStatement } from "./SqliteStatement";
 import { ChangeInstance, ChangeSource } from "./ChangesetReaderTypes";
@@ -55,8 +55,7 @@ export namespace ChangeUnifierCache {
    * @beta
    */
   export function createSqliteBackedCache(
-    // TODO: switch to an options parameter
-    bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10
+    bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
   ): ChangeCache {
     return new SqliteBackedCache(bufferedReadInstanceSizeInBytes);
   }
@@ -104,14 +103,14 @@ class InMemoryCache implements ChangeCache {
 // ---------------------------------------------------------------------------
 
 class SqliteBackedCache implements ChangeCache {
-  private readonly _cacheTable = `[ChangeInstances]`;
+  private readonly _cacheTable = `[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
   private _db: SQLiteDb;
   public constructor(
     public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedCache.defaultBufferSize,
   ) {
     this._db = new SQLiteDb();
-    this._db.createDb("", undefined, { skipFileCheck: true, rawSQLite: true }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
+    this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceSizeInBytes must be greater than 0");
     this.createTempTable();

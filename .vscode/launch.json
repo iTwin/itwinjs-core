@@ -43,10 +43,7 @@
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "test",
-        "--",
-        "-f",
-        "InteractiveRebase"
+        "test"
       ],
       "outFiles": [
         "${workspaceFolder}/core/*/lib/**/*.js"

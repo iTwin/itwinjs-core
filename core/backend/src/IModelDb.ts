@@ -4102,7 +4102,6 @@ export class BriefcaseDb extends IModelDb {
   private _fastForwardOnlyMerge: boolean = false;
 
   public async withFastForwardOnlyMerge<T>(callback: () => Promise<T>): Promise<T> {
-    // Implementation for fast-forward only merging
     try {
       this._fastForwardOnlyMerge = true;
       return await callback();

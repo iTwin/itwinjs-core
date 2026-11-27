@@ -19,9 +19,10 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
-import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { ChangesetReader } from "./ChangesetReader";
+import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -537,57 +538,6 @@ export class RebaseManager {
     this.onDownloadChangesetsEnd.clear();
   }
 
-  public async resumeInteractive(/*args: {
-    // TODO: receive description of EC-level conflicts
-    // TODO: where does the propagate / recompute / validate happen?
-    // TODO: are we resolving each Txn in turn? Potential for changes made here to impact subsequent Txns. Do we care?
-    //resolveConflicts: () => Promise<void>
-  }*/): Promise<void> {
-    const nativeDb = this._iModel[_nativeDb];
-    const txns = this._iModel.txns;
-    try {
-      const reversedTxns = nativeDb.pullMergeRebaseBegin();
-      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
-      this.notifyRebaseBegin(reversedTxnProps);
-
-      let txnId = nativeDb.pullMergeRebaseNext();
-      while (txnId) {
-        const txnProps = txns.getTxnProps(txnId);
-        if (!txnProps) {
-          throw new Error(`Transaction ${txnId} not found`);
-        }
-        this.notifyRebaseTxnBegin(txnProps);
-        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
-        // const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
-        // if (shouldReinstate) {
-        nativeDb.pullMergeRebaseReinstateTxn();
-        Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
-        // }
-
-        // if (this._customHandler) {
-        //   await this._customHandler.recompute(txnProps);
-        // }
-
-        nativeDb.pullMergeRebaseUpdateTxn();
-        this.notifyRebaseTxnEnd(txnProps);
-        txnId = nativeDb.pullMergeRebaseNext();
-      }
-
-      nativeDb.pullMergeRebaseEnd();
-      this.notifyRebaseEnd(reversedTxnProps);
-      if (!nativeDb.isReadonly) {
-        nativeDb.saveChanges("Merge.");
-      }
-      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
-      }
-      this.notifyPullMergeEnd(this._iModel.changeset);
-    } catch (err) {
-      nativeDb.pullMergeRebaseAbortTxn();
-      throw err;
-    }
-  }
-
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
    * on top of the latest pulled changes from the remote source.
@@ -767,16 +717,14 @@ export class RebaseManager {
         throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
-      const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, txnProps.id);
-      using store = RebaseInstanceStore.openExisting(dbPath);
-      for (const change of store.all()) {
-        if (change.new?.$meta.isIndirectChange || change.old?.$meta.isIndirectChange) {
+      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
+        if (instance.$meta.isIndirectChange) {
           this._iModel.txns.withIndirectTxnMode(() => {
-            this.applyInstanceChange(change);
+            this.applyInstancePatch(instance);
           });
           continue;
         }
-        this.applyInstanceChange(change);
+        this.applyInstancePatch(instance);
       }
 
       BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
@@ -787,31 +735,40 @@ export class RebaseManager {
   }
 
   /**
-   * Applies a single instance's captured old/new snapshot pair during rebase, inferring
-   * Insert/Update/Delete from which of "old"/"new" were captured.
-   * @param change
+   * Applies instance patch during rebase
+   * @param instance
    * @internal
    */
-  private applyInstanceChange(change: RebaseInstanceChange) {
+  private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
-    if (change.new) {
-      const { $meta: _newMeta, ...props } = change.new;
-      if (change.old) {
-        const isSuccess = nativeDb.updateInstance(props, { convertClassIdsToClassNames: true });
-        if (!isSuccess)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
-      } else {
+    const { $meta, ...props } = instance;
+    switch ($meta.op) {
+      case "Inserted": {
+        if (!props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
         const options = { forceUseId: true, convertClassIdsToClassNames: true };
         const id = nativeDb.insertInstance(props, options);
         if (!Id64.isValidId64(id))
           throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.ECInstanceId}`);
+        break;
       }
-    } else if (change.old) {
-      const { $meta: _oldMeta, ...props } = change.old;
-      const key = { ECInstanceId: props.ECInstanceId, ECClassId: props.ECClassId };
-      const isSuccess = nativeDb.deleteInstance(key, { convertClassIdsToClassNames: true });
-      if (!isSuccess)
-        throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.ECInstanceId}`);
+      case "Updated": {
+        if (!props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
+        const isSuccess = nativeDb.updateInstance(props, { convertClassIdsToClassNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.ECInstanceId}`);
+        break;
+      }
+      case "Deleted": {
+        const key = { ECInstanceId: props.ECInstanceId, ECClassId: props.ECClassId };   // eslint-disable-line @typescript-eslint/naming-convention
+        const isSuccess = nativeDb.deleteInstance(key, { convertClassIdsToClassNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.ECInstanceId}`);
+        break;
+      }
+      default:
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
     }
   }
 
@@ -1070,6 +1027,26 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
+  }
+
+  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
+   * @internal */
+  protected _captureInstanceChanges(id: TxnIdString) {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+
+    // We shouldn't use strict mode here because lets think of a scenario:
+    // 1) an element is inserted in a txn which inserted some data in table A first row
+    // 2) In second txn, importing a schema increased the number of columns of table A
+    // 3) During rebase when we are reversing the schema txn, the newly added columns are not deleted
+    // so using strict mode will cause error in this case when we will try to capture changes for first txn
+    // because the number of columns in table A will be different than what it was when the changes were originally made.
+    // So to avoid this issue we are not using strict mode here.
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { classIdsToClassNames: true, abbreviateBlobs: false } });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      pcu.appendFrom(reader);
+    }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
