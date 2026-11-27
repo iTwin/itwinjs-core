@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { strict as assert } from "node:assert";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
@@ -105,14 +105,14 @@ export namespace AzuriteTest {
     };
 
     export const uploadFile = async (container: CloudSqlite.CloudContainer, cache: CloudSqlite.CloudCache, dbName: string, localFileName: LocalFileName) => {
-      expect(container.isConnected).false;
+      assert.equal(container.isConnected, false);
       container.connect(cache);
-      expect(container.isConnected);
+      assert.equal(container.isConnected, true);
 
       await CloudSqlite.withWriteLock({ user: "upload", container }, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
-      expect(container.isConnected);
+      assert.equal(container.isConnected, true);
       container.disconnect({ detach: true });
-      expect(container.isConnected).false;
+      assert.equal(container.isConnected, false);
     };
   }
 

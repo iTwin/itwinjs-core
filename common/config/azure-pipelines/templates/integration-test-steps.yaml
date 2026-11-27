@@ -66,7 +66,7 @@ steps:
           cacheMode: ${{ iif(or(eq(parameters.rushBuildCacheEnabled, 0), eq(parameters.cacheMode, 'off')), 'off', 'read') }}
           args: -v --to core-full-stack-tests
 
-      - script: npm run -s webpack:test
+      - script: npm run -s --if-present webpack:test
         workingDirectory: full-stack-tests/core
         displayName: "Rebundle integration tests with current environment"
 

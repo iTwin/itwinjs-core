@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection, ViewRect } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -12,35 +12,35 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Wait for scene completion", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
   function expectColors(vp: TestViewport, expected: ColorDef[]): void {
     const actual = vp.readUniqueColors();
-    expect(actual.length).to.equal(expected.length);
+    expect(actual.length).toBe(expected.length);
     for (const color of expected) {
-      expect(actual.contains(Color.fromColorDef(color))).to.be.true;
+      expect(actual.contains(Color.fromColorDef(color))).toBe(true);
     }
   }
 
   it("should successfully wait for scene completion", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
+      expect(vp.view.is3d()).toBe(true);
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade });
 
       vp.invalidateScene();
       await vp.waitForSceneCompletion();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
+      expect(vp.numRequestedTiles).toBe(0);
+      expect(vp.numSelectedTiles).toBe(1);
 
       const white = ColorDef.white;
       const black = ColorDef.black;
