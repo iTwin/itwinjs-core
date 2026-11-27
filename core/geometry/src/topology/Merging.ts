@@ -312,7 +312,7 @@ export class HalfEdgeGraphMerge {
   //   * only want to do anything here when curves are present.
   //   * k0<=k<k1 are around a vertex
   //   * These are sorted by theta.
-  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number, radianTol: number = Geometry.smallAngleRadians) {
+  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number, radianTol: number = Geometry.smallAngleRadians, clusterTol: number = Geometry.smallMetricDistance, sortAlmostTangentEdgesByProbe: boolean = true) {
     const sortData: VertexNeighborhoodSortData[] = [];
 
     for (let k = k0; k < k1;) {
@@ -332,6 +332,116 @@ export class HalfEdgeGraphMerge {
       }
       k = kB;
     }
+    // Second pass: edges with the same or almost the same tangent are ordered by points on the edges.
+    if (!sortAlmostTangentEdgesByProbe)
+      return;
+    for (let k = k0; k < k1;) {
+      const kB = this.getAlmostTangentEndIndex(clusters, order, allNodes, k, k1, radianTol, clusterTol);
+      if (k + 1 < kB) {
+        sortData.length = 0;
+        for (let kA = k; kA < kB; kA++) {
+          const node = allNodes[clusters.getExtraData(order[kA], 1)];
+          sortData.push(new VertexNeighborhoodSortData(order[kA], this.curvatureSortKey(node), node));
+        }
+        if (this.sortTangentEdgesByProbe(sortData, clusters.getExtraData(order[k], 0), clusterTol)) {
+          for (let i = 0; i < sortData.length; i++)
+            order[k + i] = sortData[i].index;
+        }
+      }
+      k = kB;
+    }
+  }
+  /**
+   * Return the end index of the run of edges starting at `k` whose consecutive angles are equal within `radianTol`, or
+   * differ so little that the edges stay closer than `clusterTol` over half the length of the shorter one.
+   * Within such a run the angle alone does not tell the order of the edges.
+   */
+  private static getAlmostTangentEndIndex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k: number, k1: number, radianTol: number, clusterTol: number): number {
+    let kB = k + 1;
+    while (kB < k1) {
+      const delta = Math.abs(clusters.getExtraData(order[kB], 0) - clusters.getExtraData(order[kB - 1], 0));
+      if (delta > radianTol) {
+        const nodeA = allNodes[clusters.getExtraData(order[kB - 1], 1)];
+        const nodeB = allNodes[clusters.getExtraData(order[kB], 1)];
+        // the chord is not longer than the edge, so test it first to skip computing edge lengths at most vertices
+        const chord = Math.min(nodeA.distanceXY(nodeA.edgeMate), nodeB.distanceXY(nodeB.edgeMate));
+        if (delta * 0.5 * chord > clusterTol)
+          break;
+        const lengthA = this.edgeLength(nodeA);
+        const lengthB = this.edgeLength(nodeB);
+        if (lengthA === undefined || lengthB === undefined || delta * 0.5 * Math.min(lengthA, lengthB) > clusterTol)
+          break;
+      }
+      kB++;
+    }
+    return kB;
+  }
+  /**
+   * Refine the order of edges that leave a vertex with the same tangent, using points on the edges.
+   * * The edges are compared at a common distance `L` from the vertex: half the length of the shortest edge.
+   * Edges of the graph do not cross between vertices, so their order at that distance is also their order at the vertex.
+   * This also covers higher than tangent contact, and edges that turn to the same side, where the signed radius of
+   * curvature gives the wrong order (the edge with the smaller radius turns further away from the tangent).
+   * * Edges that are closer than `clusterTol` to each other at that distance (for example coincident edges, or curves
+   * that differ by less than the tolerance before they reach their next vertex) keep the order of `sortData`.
+   * * ASSUME: `sortData` is in the order by angle (and by signed radius of curvature for equal angles), and `theta` is
+   * the angle of the first edge. Return false (and leave `sortData` unchanged) if an edge has no curve.
+   */
+  private static sortTangentEdgesByProbe(sortData: VertexNeighborhoodSortData[], theta: number, clusterTol: number): boolean {
+    let probeLength = Number.MAX_VALUE;
+    for (const data of sortData) {
+      const length = this.edgeLength(data.node);
+      if (length === undefined)
+        return false;
+      probeLength = Math.min(probeLength, 0.5 * length);
+    }
+    if (!(probeLength > clusterTol))
+      return false;
+    const c = Math.cos(theta), s = Math.sin(theta);
+    const probeOffsets: number[] = []; // signed distance of the probe point to the left of the tangent line
+    for (const data of sortData) {
+      const offset = this.probeOffsetFromTangent(data.node, probeLength, c, s);
+      if (offset === undefined)
+        return false;
+      probeOffsets.push(offset);
+    }
+    const indices = sortData.map((_data: VertexNeighborhoodSortData, i: number) => i);
+    indices.sort((i: number, j: number) => probeOffsets[i] - probeOffsets[j]);
+    // keep the incoming order within runs of probe points closer than the tolerance
+    const result: VertexNeighborhoodSortData[] = [];
+    for (let i0 = 0; i0 < indices.length;) {
+      let i1 = i0 + 1;
+      while (i1 < indices.length && probeOffsets[indices[i1]] - probeOffsets[indices[i1 - 1]] <= clusterTol)
+        i1++;
+      const run = indices.slice(i0, i1).sort((i: number, j: number) => i - j);
+      for (const i of run)
+        result.push(sortData[i]);
+      i0 = i1;
+    }
+    for (let i = 0; i < result.length; i++)
+      sortData[i] = result[i];
+    return true;
+  }
+  /** Return the length of the curve segment of the edge, or undefined if the edge has no `CurveLocationDetail`. */
+  private static edgeLength(node: HalfEdge): number | undefined {
+    const cld = node.edgeTag;
+    if (!(cld instanceof CurveLocationDetail) || cld.curve === undefined || cld.fraction1 === undefined)
+      return undefined;
+    return cld.curve.curveLengthBetweenFractions(cld.fraction, cld.fraction1);
+  }
+  /**
+   * Return the signed distance from the tangent line at the node to the edge point at arc length `probeLength` from the
+   * node. Positive is to the left of the direction `(c, s)`.
+   */
+  private static probeOffsetFromTangent(node: HalfEdge, probeLength: number, c: number, s: number): number | undefined {
+    const cld = node.edgeTag;
+    if (!(cld instanceof CurveLocationDetail) || cld.curve === undefined || cld.fraction1 === undefined)
+      return undefined;
+    const reverse = node.sortData !== undefined && node.sortData < 0;
+    const [f0, f1] = reverse ? [cld.fraction1, cld.fraction] : [cld.fraction, cld.fraction1];
+    const start = cld.curve.fractionToPoint(f0);
+    const probe = cld.curve.moveSignedDistanceFromFraction(f0, f1 >= f0 ? probeLength : -probeLength, false).point;
+    return c * (probe.y - start.y) - s * (probe.x - start.x);
   }
   /** Return the sort key for sorting by curvature.
    * * This is the signed distance from the curve at the edge start, to center of curvature.
@@ -372,12 +482,16 @@ export class HalfEdgeGraphMerge {
    * @param graph input graph
    * @param outboundRadiansFunction optional function to compute the sort angle of an edge at its start vertex
    * @param clusterTol optional distance tolerance for clustering vertices. Default value is [[Geometry.smallMetricDistance]].
+   * @param radianTol optional angle tolerance for equal outbound angles. Default value is [[Geometry.smallAngleRadians]].
+   * @param sortAlmostTangentEdgesByProbe whether to order edges leaving a vertex with almost the same tangent by points
+   * on the edges (default `true`). If `false`, such edges are ordered only by their exact angle and curvature.
    */
   public static clusterAndMergeXYTheta(
     graph: HalfEdgeGraph,
     outboundRadiansFunction?: (he: HalfEdge) => number,
     clusterTol: number = Geometry.smallMetricDistance,
     radianTol: number = Geometry.smallAngleRadians,
+    sortAlmostTangentEdgesByProbe: boolean = true,
   ) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
@@ -442,7 +556,7 @@ export class HalfEdgeGraphMerge {
         // nodes identified in order[k0]..order[k1-1] are tentatively sorted around a vertex by theta
         if (k1 > k0) {
           if (k1 > k0 + 1)
-            this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1, radianTol); // finalize order by resolving ties via curvature
+            this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1, radianTol, clusterTol, sortAlmostTangentEdgesByProbe); // finalize order by resolving ties via curvature
           this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);
           const iA = clusters.getExtraData(order[k0], 1);
           thetaA = clusters.getExtraData(order[k0], 0);

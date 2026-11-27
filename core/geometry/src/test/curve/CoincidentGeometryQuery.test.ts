@@ -152,4 +152,45 @@ describe("CoincidentGeometryQuery", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("ArcArcOverlapAcrossStartOfArc", () => {
+    // arcB lies within the full circle arcA, and may straddle the start/end of arcA. In that case, the overlap is reported
+    // in two pieces, regardless of the direction of arcB's sweep. The piece that wraps backward across the start of
+    // arcA is reported only if requested, as region booleans do.
+    const ck = new Checker();
+    const context = CoincidentGeometryQuery.create();
+    ck.testFalse(context.reportBackwardWrappedArcOverlaps, "wrapped overlaps are not reported by default");
+    context.reportBackwardWrappedArcOverlaps = true;
+    const center = Point3d.create(1, 2, 0);
+    const radius = 3;
+    for (const sweepStartDegrees of [-180, -178, 0, 45]) {
+      for (const sweepDirection of [1, -1]) {
+        const arcA = Arc3d.createXY(center, radius, AngleSweep.createStartSweepDegrees(sweepStartDegrees, 360 * sweepDirection));
+        for (const seamOffsetDegrees of [-45, -30, -1, 1, 30, 45]) {
+          for (const sweepB of [61.5, -61.5, 5, -5]) {
+            const arcB = Arc3d.createXY(center, radius, AngleSweep.createStartSweepDegrees(sweepStartDegrees + seamOffsetDegrees, sweepB));
+            const pairs = context.coincidentArcIntersectionXY(arcA, arcB, true);
+            const message = `start=${sweepStartDegrees} direction=${sweepDirection} offset=${seamOffsetDegrees} sweepB=${sweepB}`;
+            if (!ck.testDefined(pairs, message) || !pairs)
+              continue;
+            // the pieces of arcB (in its own fraction space) must cover it entirely, and match arcA piece-by-piece
+            let fractionLengthB = 0;
+            for (const pair of pairs) {
+              if (!ck.testTrue(pair.detailA.isInterval() && pair.detailB.isInterval(), message))
+                continue;
+              fractionLengthB += Math.abs(pair.detailB.fraction1! - pair.detailB.fraction);
+              const piece = arcB.clonePartialCurve(pair.detailB.fraction, pair.detailB.fraction1!);
+              const pieceInA = arcA.clonePartialCurve(pair.detailA.fraction, pair.detailA.fraction1!);
+              if (piece && pieceInA) {
+                const mid = piece.fractionToPoint(0.5);
+                ck.testPoint3d(mid, pieceInA.fractionToPoint(0.5), message);
+              }
+            }
+            ck.testCoordinate(1, fractionLengthB, message);
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
 });

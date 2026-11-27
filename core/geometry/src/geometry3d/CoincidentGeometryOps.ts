@@ -28,8 +28,19 @@ export class CoincidentGeometryQuery {
   private _point0?: Point3d;
   private _point1?: Point3d;
   private _tolerance: number;
+  private _numBackwardWrappedArcOverlaps = 0;
   public get tolerance(): number {
     return this._tolerance;
+  }
+  /**
+   * Whether [[coincidentArcIntersectionXY]] reports the part of an overlap that wraps across the start of arcA when arcB
+   * sweeps backward across it. Default value is `false`, which keeps the results of the public intersection methods.
+   * * Region booleans turn this on (see [[AllIntersectionsAmongPrimitivesXYOptions.reportBackwardWrappedArcOverlaps]]).
+   */
+  public reportBackwardWrappedArcOverlaps = false;
+  /** Number of such parts reported by [[coincidentArcIntersectionXY]] since this instance was created. */
+  public get numBackwardWrappedArcOverlaps(): number {
+    return this._numBackwardWrappedArcOverlaps;
   }
   private constructor(tolerance: number = Geometry.smallMetricDistance) {
     this._tolerance = tolerance;
@@ -254,6 +265,10 @@ export class CoincidentGeometryQuery {
             appendCoincidentIntersection(Segment1d.create(fractionB0 - fractionPeriodA, fractionB1 - fractionPeriodA), true);
           else if (fractionB0 === 0.0)
             appendCoincidentIntersection(Segment1d.create(fractionB0 + fractionPeriodA, fractionB1 + fractionPeriodA), true);
+          else if (fractionB1 < 0.0 && this.reportBackwardWrappedArcOverlaps) { // arcB sweeps backward across the start of arcA
+            if (appendCoincidentIntersection(Segment1d.create(fractionB0 + fractionPeriodA, fractionB1 + fractionPeriodA), false))
+              this._numBackwardWrappedArcOverlaps++;
+          }
         }
       }
     }

@@ -112,15 +112,7 @@ export class CurveCurve {
   public static allIntersectionsAmongPrimitivesXY(
     primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
-    for (let i = 0; i < primitives.length; i++) {
-      const curveA = primitives[i];
-      for (let j = i + 1; j < primitives.length; j++) {
-        handler.resetGeometryB(primitives[j]);
-        curveA.dispatchToGeometryHandler(handler);
-      }
-    }
-    return handler.grabPairedResults();
+    return CurveCurveIntersectXY.allIntersectionsAmongPrimitivesXY(primitives, tolerance).pairs;
   }
   /**
    * Return at least one XY close approach between 2 curves.
