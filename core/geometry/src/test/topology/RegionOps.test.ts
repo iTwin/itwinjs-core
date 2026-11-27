@@ -26,7 +26,7 @@ import { Loop, SignedLoops } from "../../curve/Loop";
 import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { RectangleCoverageOptions, RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
@@ -206,7 +206,6 @@ class PolygonBooleanTests {
   }
 }
 describe("RegionOps", () => {
-
   it("BooleanRectangles", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
@@ -2868,7 +2867,7 @@ describe("RegionOps.tolerance", () => {
     const ls2 = LineString3d.create([[705602.65237928, 4269297.049642875], [705578.5919971699, 4269245.921330891]]);
     const arc4 = Arc3d.create(Point3d.create(705601.1484672636, 4269275.957979588), Vector3d.create(7.62), Vector3d.create(0, 7.62), AngleSweep.createStartEndDegrees(-89.99999999999999, -205.20112364527367));
     const arc5 = Arc3d.create(Point3d.create(705584.3053140851, 4269275.957979588), Vector3d.create(7.619999999999999), Vector3d.create(0, 7.619999999999999), AngleSweep.createStartEndDegrees(-25.2011236452737, -90));
-    const arc6 = Arc3d.create(Point3d.create(705577.1335493792, 4269260.717979588), Vector3d.create(7.619999999999999), Vector3d.create(0, 7.619999999999999), AngleSweep.createStartEndDegrees(90,-25.201123645389096));
+    const arc6 = Arc3d.create(Point3d.create(705577.1335493792, 4269260.717979588), Vector3d.create(7.619999999999999), Vector3d.create(0, 7.619999999999999), AngleSweep.createStartEndDegrees(90, -25.201123645389096));
     const arc7 = Arc3d.create(Point3d.create(705593.9767025578, 4269260.717979588), Vector3d.create(7.62), Vector3d.create(0, 7.62), AngleSweep.createStartEndDegrees(154.7988763546109, 90));
     verifyAstroidArcsIntersectAtEnds([ls2, ls1], [arc4, arc5, arc6, arc7], 10 * Geometry.smallFraction, false, "Astroid #1");
 
@@ -2957,6 +2956,37 @@ describe("RegionOps.tolerance", () => {
       ck.testExactNumber(4, result.children.length, "RegionOps.collectChains returned a Path with 4 children");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.tolerance", "collectChains");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
+describe("ComputeRectangleCoverage", () => {
+  it.only("Ellipse", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const ellipse = Arc3d.create(Point3d.create(), Vector3d.create(10, 0, 0), Vector3d.create(0, 31, 0));
+    const orientation = Angle.createDegrees(30);
+    ellipse.tryTransformInPlace(
+      Transform.createFixedPointAndMatrix(
+        Point3d.create(), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), orientation)!
+      )
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse);
+
+    const options: RectangleCoverageOptions = {
+      width: 4,
+      height: 2,
+      orientation,
+      minOverlap: 1,
+    };
+    const rectangles = RegionOps.computeRectangleCoverage(Loop.create(ellipse), options);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangles);
+    ck.testDefined(rectangles, "computeRectangleCoverage returns a result");
+
+    // TODO: add test to verify full coverage and min overlap
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ComputeRectangleCoverage", "Ellipse");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
