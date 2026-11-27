@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import * as sinonChai from "sinon-chai";
+import * as sinonChaiModule from "sinon-chai";
 import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
@@ -14,11 +14,12 @@ import {
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
+import { resolveChaiPlugin } from "../../testAssertions";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { IModelTile, IModelTileContent, IModelTileTree, TileStorage } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
-use(sinonChai);
+use(resolveChaiPlugin(sinonChaiModule));
 
 function createViewState(iModel: IModelConnection): ViewState {
   return SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
