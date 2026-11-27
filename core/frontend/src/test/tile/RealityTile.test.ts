@@ -5,17 +5,20 @@
 
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
-import { GltfV2ChunkTypes, GltfVersions, TileFormat, TileReadStatus } from "@itwin/core-common";
+import { GltfV2ChunkTypes, GltfVersions, RealityModelDisplaySettings, TileFormat, TileReadStatus } from "@itwin/core-common";
 import { Angle, Matrix3d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
+import { HitDetail, HitPriority, HitSource } from "../../HitDetail";
 import { MockRender } from "../../internal/render/MockRender";
+import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, GltfGraphicsReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
-  Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
+  B3dmReader, BatchedTileIdMap, GltfGraphicsReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree, RealityTreeReference,
+  Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileTreeLoadStatus,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { testBlankViewportAsync } from "../openBlankViewport";
 
 class TestRealityTile extends RealityTile {
   private readonly _contentSize: number;
@@ -236,6 +239,47 @@ afterEach(async () => {
     await MockRender.App.shutdown();
 
   vi.restoreAllMocks();
+});
+
+describe("Reality tree tooltip", () => {
+  it("renders the model name and batch metadata as literal text", async () => {
+    await testBlankViewportAsync(async (vp) => {
+      const name = "<strong>Reality model</strong>";
+      const property = "<b>Parcel</b>";
+      const value = "<em>42</em>";
+      const batches = new BatchedTileIdMap(vp.iModel);
+      const sourceId = batches.getBatchId({ [property]: value });
+      vi.spyOn(reader, "getBatchIdMap").mockReturnValue(batches);
+      const loader = Object.assign(reader, { tree: { dataSource: { realityDataType: undefined } } });
+      using tree = new TestRealityTree(0, vp.iModel, loader, false);
+      const ref = new RealityTreeReference({
+        iModel: vp.iModel,
+        source: vp.displayStyle,
+        modelId: tree.modelId,
+        rdSourceKey: RealityDataSource.createKeyFromUrl("https://test.invalid/tileset.json"),
+        name,
+        getDisplaySettings: () => RealityModelDisplaySettings.defaults,
+      });
+      vi.spyOn(ref, "treeOwner", "get").mockReturnValue({
+        iModel: vp.iModel,
+        tileTree: tree,
+        loadStatus: TileTreeLoadStatus.Loaded,
+        load: () => tree,
+        loadTree: async () => tree,
+        [Symbol.dispose]: () => {},
+      });
+
+      const point = Point3d.createZero();
+      const hit = new HitDetail({ viewport: vp, sourceId, testPoint: point, hitPoint: point, hitSource: HitSource.MotionLocate, priority: HitPriority.NonPlanarSurface, distXY: 0, distFraction: 0 });
+      const tooltip = await ref.getToolTip(hit);
+      if (!(tooltip instanceof HTMLElement))
+        throw new Error("Expected an HTML reality tree tooltip");
+
+      expect(tooltip.textContent).toContain(name);
+      expect(tooltip.textContent).toContain(`${property}: ${JSON.stringify(value)}`);
+      expect(Array.from(tooltip.children, (child) => child.tagName)).toEqual(["BR"]);
+    });
+  });
 });
 
 describe("RealityTile", () => {

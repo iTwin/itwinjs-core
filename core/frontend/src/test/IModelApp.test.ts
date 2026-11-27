@@ -88,6 +88,24 @@ describe("IModelApp", () => {
   });
   afterAll(async () => TestApp.shutdown());
 
+  it("sanitizes logo card strings while preserving headings, links, and line breaks", () => {
+    const card = IModelApp.makeLogoCard({
+      heading: '<span class="lead" onclick="">Powered by</span>&nbsp;iTwin.js',
+      notice: '<a href="https://example.org/" style="color: red">Credits</a><br>Version 2<svg></svg>',
+    });
+
+    const heading = card.querySelector("h2.logo-card-header");
+    expect(heading?.querySelector("span.lead")?.textContent).toBe("Powered by");
+    expect(heading?.textContent).toBe("Powered by\u00a0iTwin.js");
+    expect(heading?.querySelector("[onclick]")).toBeNull();
+
+    const notice = card.querySelector("p.logo-cards");
+    expect(notice?.querySelector("a")?.getAttribute("href")).toBe("https://example.org/");
+    expect(notice?.querySelector("br")).not.toBeNull();
+    expect(notice?.textContent).toBe("CreditsVersion 2");
+    expect(notice?.querySelector("[style], svg")).toBeNull();
+  });
+
   it("sanitizes element tooltips after localization and preserves formatting and escaped labels", () => {
     const localized = vi.spyOn(IModelApp.localization, "getLocalizedKeys")
       .mockReturnValueOnce('<strong style="color: red">Element</strong>: &lt;em&gt;label&lt;/em&gt;')

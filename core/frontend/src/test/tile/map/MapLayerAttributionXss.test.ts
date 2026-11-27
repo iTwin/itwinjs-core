@@ -76,12 +76,12 @@ describe("Map layer attribution XSS hardening", () => {
     await provider.getToolTip(strings, {} as any, {} as any, {} as any);
 
     expect(strings).toHaveLength(1);
-    // Emulate MapLayerTileTreeReference.getToolTip, which joins the strings into innerHTML.
-    const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
-    expect(div.querySelector("img")).toBeNull();
-    expect(div.querySelector("script")).toBeNull();
-    expect(div.textContent).toContain(`<img src="x" onerror="(window.__xss = true)">`);
+    // Parse into an inert template to verify escaping independently of the renderer's sanitizer.
+    const template = document.createElement("template");
+    template.innerHTML = strings.join("<br>");
+    expect(template.content.querySelector("img")).toBeNull();
+    expect(template.content.querySelector("script")).toBeNull();
+    expect(template.content.textContent).toContain(`<img src="x" onerror="(window.__xss = true)">`);
   });
 
   it("reality model tooltip renders tileset-provided name and batch-table properties as plain text", () => {

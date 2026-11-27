@@ -62,7 +62,8 @@ export class RpcPendingQueue {
       return;
 
     const i = this._pending.indexOf(request);
-    this._pending.splice(i, 1);
+    if (i !== -1)
+      this._pending.splice(i, 1);
     this.clearPendingInterval();
   }
 
