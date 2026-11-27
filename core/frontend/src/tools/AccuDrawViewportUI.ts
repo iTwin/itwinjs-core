@@ -712,19 +712,19 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     switch (item) {
       case ItemField.DIST_Item:
-        itemLock.innerHTML = "\u21A6"; // right arrow from bar...
+        itemLock.textContent = "\u21A6"; // right arrow from bar...
         break;
       case ItemField.ANGLE_Item:
-        itemLock.innerHTML = "\u2221"; // measured angle...
+        itemLock.textContent = "\u2221"; // measured angle...
         break;
       case ItemField.X_Item:
-        itemLock.innerHTML = "X";
+        itemLock.textContent = "X";
         break;
       case ItemField.Y_Item:
-        itemLock.innerHTML = "Y";
+        itemLock.textContent = "Y";
         break;
       case ItemField.Z_Item:
-        itemLock.innerHTML = "Z";
+        itemLock.textContent = "Z";
         break;
     }
 

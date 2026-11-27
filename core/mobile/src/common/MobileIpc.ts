@@ -8,8 +8,9 @@
 
 import {
   IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
-  SerializedRpcRequest,
+  SerializedRpcRequest, serializeIpcError,
 } from "@itwin/core-common";
+import { Logger } from "@itwin/core-bentley";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";
@@ -26,6 +27,9 @@ class IpcInterface extends RpcInterface {
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
+  private _generation = 0;
+  /** Tracks invoke channels and send completion without retaining arguments or large upload buffers. */
+  private _pendingInvocations = new Map<number, { channel: string, sent: boolean }>();
 
   public constructor(protocol: MobileRpcProtocol) {
     super();
@@ -57,14 +61,58 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
+    if (message.response !== undefined)
+      this._pendingInvocations.delete(message.response);
     this.broadcast({} as Event, message);
     return true;
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    using request = new MobileRpcRequest(this._client, "send", [message]);
-    const encoded = await MobileRpcProtocol.encodeRequest(request);
-    this._protocol.sendToBackend(encoded);
+    const invocation = (message.type === IpcWebSocketMessageType.Invoke && message.request !== undefined)
+      ? { request: message.request, channel: message.channel }
+      : undefined;
+    if (invocation)
+      this._pendingInvocations.set(invocation.request, { channel: invocation.channel, sent: false });
+
+    const generation = this._generation;
+    try {
+      using request = new MobileRpcRequest(this._client, "send", [message], this._protocol);
+      const encoded = await MobileRpcProtocol.encodeRequest(request);
+      if (generation !== this._generation)
+        return;
+      if (message.type === IpcWebSocketMessageType.Invoke && (invocation === undefined || !this._pendingInvocations.has(invocation.request)))
+        return;
+
+      this._protocol.sendToBackend(encoded, undefined, invocation ? () => {
+        const pending = this._pendingInvocations.get(invocation.request);
+        if (pending)
+          pending.sent = true;
+      } : undefined);
+    } catch (error) {
+      if (invocation)
+        this.failInvocation(invocation.channel, invocation.request, error);
+      else
+        Logger.logError("core-mobile.MobileIpc", "Mobile IPC send failed.", { error });
+    }
+  }
+
+  public notifyConnectionError(error: Error, preserveSent = false): void {
+    ++this._generation;
+    const pending = Array.from(this._pendingInvocations.entries());
+    for (const [request, { channel, sent }] of pending) {
+      if (!preserveSent || !sent)
+        this.failInvocation(channel, request, error);
+    }
+  }
+
+  private failInvocation(channel: string, request: number, error: unknown) {
+    if (!this._pendingInvocations.delete(request))
+      return;
+
+    this.broadcast({} as Event, {
+      type: IpcWebSocketMessageType.Response, channel, response: request, sequence: -1,
+      data: serializeIpcError(error, false) as any,
+    });
   }
 
   private sendToFrontend(message: IpcWebSocketMessage) {
@@ -74,7 +122,16 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
 
     const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 };
     const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
-    this._protocol.sendToFrontend(encoded);
+    try {
+      this._protocol.sendToFrontend(encoded);
+    } catch (error) {
+      // Backend-originated messages (IpcHost.send / IpcHost.invoke) must observe the transport failure so pending invokes reject.
+      if (message.type !== IpcWebSocketMessageType.Response)
+        throw error;
+
+      // An undeliverable reply to a frontend invoke is safe to drop: the frontend settles its own pending invocations on disconnect.
+      Logger.logError("core-mobile.MobileIpc", "Dropped IPC response: socket failed.", { error });
+    }
   }
 
   private broadcast(evt: Event, message: IpcWebSocketMessage) {
