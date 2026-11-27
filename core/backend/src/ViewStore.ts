@@ -62,6 +62,11 @@ import { _nativeDb } from "./internal/Symbols";
  * Views may be "tagged" with one or more Tags. Tags are named with an arbitrary string that can be used to group Views. A Tag may
  * be associated with multiple Views, and a View may have multiple Tags. Tags are stored in the "tags" table.
  *
+ * Views may be shared or private. A private view has an owner name and is not listed for other users: it is only returned by `queryViews`
+ * when that owner name is supplied. Note: privacy is not enforced. Owner names are supplied by the caller and are not verified, so anyone
+ * with read access to the ViewStore can still load a private view by its Id or name, and anyone with write access can rename, modify,
+ * or delete a private view, or change its owner or whether it is shared.
+ *
  * Views may optionally have a thumbnail, paired via the View's Id. Thumbnails are stored in the "thumbnails" table.
  *
  * Note: All ElementIds and ModelIds in ModelSelectors, CategorySelectors, DisplayStyles, Timelines, etc. are converted to guid-based identifiers when stored in the ViewStore.

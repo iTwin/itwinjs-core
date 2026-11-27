@@ -11870,10 +11870,8 @@ export namespace ViewStoreRpc {
         readonly displayStyleProps?: DisplayStyleProps;
         // (undocumented)
         readonly group?: IdString;
-        // (undocumented)
         readonly isPrivate?: boolean;
         readonly modelSelectorProps?: ModelSelectorProps;
-        // (undocumented)
         readonly owner?: OwnerName;
         // (undocumented)
         readonly tags?: TagName[];
@@ -11903,7 +11901,6 @@ export namespace ViewStoreRpc {
         readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
         readonly nameSearch?: string;
         readonly offset?: number;
-        // (undocumented)
         readonly owner?: OwnerName;
         readonly tags?: TagName[];
     }

@@ -348,7 +348,7 @@ export namespace ViewStoreRpc {
     readonly group?: IdString;
     /** A list of tags to filter views. If present, only views that have one or more of the tags will be returned. */
     readonly tags?: TagName[];
-    /* The name of an owner for private views. If present, private views owned by the owner will also be returned. Shared views are always returned. */
+    /** The name of an owner for private views. If present, private views owned by the owner will also be returned. Shared views are always returned. */
     readonly owner?: OwnerName;
   }
 
@@ -391,7 +391,11 @@ export namespace ViewStoreRpc {
     className: ClassFullName;
     /** The Id of the view group containing the view. */
     groupId: IdString;
-    /** If true, the view is private (unshared) and will only be returned by queries that specify the owner's name. */
+    /** If true, the view is private (unshared): it is not listed for other users, and is only returned by queries that specify the owner's name.
+     * @note Privacy is not enforced. Owner names are supplied by the caller and are not verified, so any user with read access to the
+     * ViewStore can still load a private view by its Id or name, or query for it using the owner's name. Likewise, any user with write
+     * access can rename, modify, or delete a private view, or change its owner or whether it is shared.
+     */
     isPrivate: boolean;
     /** The Id of a ModelSelector, if the view has one. */
     modelSelectorId?: IdString;
@@ -445,13 +449,15 @@ export namespace ViewStoreRpc {
      */
     readonly displayStyleProps?: DisplayStyleProps;
 
-    /* the owner of the view. Must be present if isPrivate is true. */
+    /** The owner of the view. Must be present if isPrivate is true. */
     readonly owner?: OwnerName;
 
     /* the Id of the view group for the view. If not present, the view is added to the root group. */
     readonly group?: IdString;
 
-    /* if true, the view is private (unshared). */
+    /** If true, the view is private (unshared) and is not listed for other users.
+     * @note Privacy is not enforced. See `ViewInfo.isPrivate`.
+     */
     readonly isPrivate?: boolean;
 
     /* an optional list of tags for the view. */
