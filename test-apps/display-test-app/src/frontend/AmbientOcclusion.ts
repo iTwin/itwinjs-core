@@ -69,8 +69,8 @@ export class AmbientOcclusionEditor {
       name: "Length Cap: ",
       id: "viewAttr_AOZLengthCap",
       min: "0.0",
-      step: "0.000025",
-      max: "0.25",
+      step: "0.00000005",
+      max: "0.003",
       value: "0.0",
       readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
